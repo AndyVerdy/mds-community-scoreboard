@@ -752,13 +752,27 @@ function dicebear(name) {
   return 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(name);
 }
 
+// Facebook default silhouette avatars — not real profile photos
+function isFbDefault(url) {
+  if (!url) return true;
+  return url.includes('static.xx.fbcdn.net/rsrc.php');
+}
+
+function isRealPhoto(url) {
+  if (!url) return false;
+  if (isFbDefault(url)) return false;
+  if (url.includes('dicebear')) return false;
+  if (url.startsWith('data:')) return false;
+  return true;
+}
+
 function avatarSrc(member) {
-  // Priority: 1) Override, 2) API photo, 3) Cached photo, 4) DiceBear
+  // Priority: 1) Override, 2) Real API photo (skip FB defaults), 3) Cached photo, 4) DiceBear
   var override = getOverride(member.name);
   if (override) return override;
-  if (member.profilePhoto) return member.profilePhoto;
+  if (isRealPhoto(member.profilePhoto)) return member.profilePhoto;
   var cached = getCachedPhoto(member.name);
-  if (cached) return cached;
+  if (isRealPhoto(cached)) return cached;
   return dicebear(member.name);
 }
 
@@ -775,9 +789,9 @@ function handleImgError(img, name) {
 }
 
 function handleImgLoad(img, name) {
-  // Cache successful photo loads (skip dicebear/data urls)
+  // Cache successful photo loads (skip dicebear/data urls/FB defaults)
   var src = img.src || '';
-  if (src && !src.includes('dicebear') && !src.startsWith('data:')) {
+  if (isRealPhoto(src)) {
     cachePhoto(name, src);
   }
 }
