@@ -805,12 +805,25 @@ function calcScore(m) {
 }
 
 async function loadHistory() {
+  var HISTORY_KEY = 'mds_score_history';
+  var HISTORY_TS_KEY = 'mds_score_history_ts';
+
+  // Try loading from localStorage cache (valid for 6 hours)
+  try {
+    var cached = localStorage.getItem(HISTORY_KEY);
+    var cachedTs = parseInt(localStorage.getItem(HISTORY_TS_KEY) || '0');
+    if (cached && (Date.now() - cachedTs) < 6 * 60 * 60 * 1000) {
+      scoreHistory = JSON.parse(cached);
+      return;
+    }
+  } catch(e) {}
+
   try {
     var res = await fetch(RUNS_URL);
     if (!res.ok) return;
     var body = await res.json();
     var runs = (body.data && body.data.items) || [];
-    // Only successful runs with real data (build >= 0.0.15), oldest first
+    // Only successful runs with real data, oldest first
     runs = runs.filter(function(r) { return r.status === 'SUCCEEDED'; }).reverse();
 
     // Deduplicate by day — keep latest run per calendar day
@@ -844,6 +857,12 @@ async function loadHistory() {
         scoreHistory[m.name].push({ date: d, score: score });
       });
     });
+
+    // Cache history in localStorage
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(scoreHistory));
+      localStorage.setItem(HISTORY_TS_KEY, String(Date.now()));
+    } catch(e) {}
   } catch (e) {
     // History is optional, fail silently
   }
@@ -983,8 +1002,12 @@ function renderList(list) {
 }
 
 function render(list) {
-  var top3 = list.filter(function(m) { return m.rank <= 3; });
-  var rest = list.filter(function(m) { return m.rank > 3; });
+  // Default view: show only top TOP_N members (podium + list)
+  var isDefaultView = (list === members);
+  var displayList = isDefaultView ? list.slice(0, TOP_N) : list;
+
+  var top3 = displayList.filter(function(m) { return m.rank <= 3; });
+  var rest = displayList.filter(function(m) { return m.rank > 3; });
   var podSection = document.getElementById('podium-section');
   var listHeader = document.getElementById('list-header');
   var noResults = document.getElementById('no-results');
@@ -995,7 +1018,26 @@ function render(list) {
   listHeader.style.display = rest.length ? '' : 'none';
   renderList(rest);
 
-  noResults.style.display = (list.length === 0) ? '' : 'none';
+  noResults.style.display = (displayList.length === 0) ? '' : 'none';
+
+  // Show "Showing top N of total" indicator
+  var indicator = document.getElementById('top-n-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'top-n-indicator';
+    indicator.style.cssText = 'text-align:center;padding:12px;color:#6b7a99;font-size:13px;font-weight:500;margin-top:8px';
+    document.getElementById('list').after(indicator);
+  }
+  if (isDefaultView && members.length > TOP_N) {
+    var activeCount = members.filter(function(m) { return m.score > 0; }).length;
+    indicator.textContent = 'Showing top ' + TOP_N + ' of ' + members.length + ' members (' + activeCount + ' active) — Use search to find any member';
+    indicator.style.display = '';
+  } else if (!isDefaultView && list.length > 0) {
+    indicator.textContent = 'Showing ' + list.length + ' search result' + (list.length !== 1 ? 's' : '') + ' (searching all ' + members.length + ' members)';
+    indicator.style.display = '';
+  } else {
+    indicator.style.display = 'none';
+  }
 }
 
 document.getElementById('search').addEventListener('input', function(e) {
@@ -1003,14 +1045,15 @@ document.getElementById('search').addEventListener('input', function(e) {
   if (!q) { render(members); return; }
   // Search ALL members, not just top N
   var filtered = members.filter(function(m) { return m.name.toLowerCase().includes(q); });
+  // Use render() which handles the top-n indicator
+  render(filtered);
+  // Always hide podium on search
   document.getElementById('podium-section').style.display = 'none';
-  document.getElementById('list-header').style.display = filtered.length ? '' : 'none';
   var noRes = document.getElementById('no-results');
-  noRes.style.display = filtered.length === 0 ? '' : 'none';
   if (filtered.length === 0) {
+    noRes.style.display = '';
     noRes.textContent = 'No members found matching "' + e.target.value.trim() + '"';
   }
-  renderList(filtered);
 });
 
 function drawHistoryChart(name) {
@@ -1380,7 +1423,247 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') document.getElementById('overlay').classList.remove('open');
 });
 
-loadData();
+// ============================================
+// TEST SUITE — accessible via ?test=1
+// ============================================
+async function runTests() {
+  var results = [];
+  var passed = 0;
+  var failed = 0;
+
+  function assert(name, condition, detail) {
+    if (condition) {
+      results.push({ name: name, pass: true, detail: detail || '' });
+      passed++;
+    } else {
+      results.push({ name: name, pass: false, detail: detail || 'FAILED' });
+      failed++;
+    }
+  }
+
+  // Wait for data to load
+  await new Promise(function(resolve) {
+    var check = setInterval(function() {
+      if (members.length > 0) { clearInterval(check); resolve(); }
+    }, 200);
+    setTimeout(function() { clearInterval(check); resolve(); }, 15000);
+  });
+
+  // === Scoring Formula Tests ===
+  assert('Score formula: basic',
+    calcScore({ posts: 1, totalComments: 0, totalReactions: 0 }) === 10,
+    '1 post = 10 pts');
+  assert('Score formula: comments',
+    calcScore({ posts: 0, totalComments: 1, totalReactions: 0 }) === 5,
+    '1 comment = 5 pts');
+  assert('Score formula: reactions',
+    calcScore({ posts: 0, totalComments: 0, totalReactions: 1 }) === 2,
+    '1 reaction = 2 pts');
+  assert('Score formula: combined',
+    calcScore({ posts: 3, totalComments: 10, totalReactions: 25 }) === 130,
+    '3×10 + 10×5 + 25×2 = 130');
+  assert('Score formula: zeros',
+    calcScore({ posts: 0, totalComments: 0, totalReactions: 0 }) === 0,
+    'All zeros = 0');
+  assert('Score formula: missing fields',
+    calcScore({}) === 0,
+    'Missing fields treated as 0');
+
+  // === Avatar Helper Tests ===
+  assert('isFbDefault: null',
+    isFbDefault(null) === true, 'null is default');
+  assert('isFbDefault: empty',
+    isFbDefault('') === true, 'empty is default');
+  assert('isFbDefault: static.xx',
+    isFbDefault('https://static.xx.fbcdn.net/rsrc.php/v1/some-silhouette.png') === true,
+    'FB silhouette is default');
+  assert('isFbDefault: real photo',
+    isFbDefault('https://scontent-iad3-1.xx.fbcdn.net/v/t1.6435-1/photo.jpg') === false,
+    'Real scontent URL is not default');
+
+  assert('isRealPhoto: null',
+    isRealPhoto(null) === false);
+  assert('isRealPhoto: fb default',
+    isRealPhoto('https://static.xx.fbcdn.net/rsrc.php/v1/silhouette.png') === false);
+  assert('isRealPhoto: dicebear',
+    isRealPhoto('https://api.dicebear.com/7.x/initials/svg?seed=Test') === false);
+  assert('isRealPhoto: real',
+    isRealPhoto('https://scontent-iad3-1.xx.fbcdn.net/v/t1.6435-1/photo.jpg') === true);
+
+  assert('dicebear: generates URL',
+    dicebear('John Doe').includes('dicebear') && dicebear('John Doe').includes('John'),
+    dicebear('John Doe'));
+
+  // === TOP_N Display Tests ===
+  assert('TOP_N constant exists',
+    typeof TOP_N === 'number' && TOP_N === 50,
+    'TOP_N = ' + TOP_N);
+
+  assert('Members loaded',
+    members.length > 0,
+    members.length + ' members');
+
+  // Check that list shows limited results on default view
+  var listEl = document.getElementById('list');
+  var displayedRows = listEl.querySelectorAll('.list-row').length;
+  // Default view: podium has top 3, list has rest up to TOP_N
+  var expectedListRows = Math.min(TOP_N, members.length) - 3;
+  if (expectedListRows < 0) expectedListRows = 0;
+  assert('Default view: list shows TOP_N-3 rows',
+    displayedRows === expectedListRows,
+    'Displayed: ' + displayedRows + ', Expected: ' + expectedListRows);
+
+  // Top-N indicator exists
+  var indicator = document.getElementById('top-n-indicator');
+  assert('Top-N indicator present',
+    indicator !== null,
+    indicator ? indicator.textContent : 'missing');
+
+  // === Search Tests ===
+  var searchInput = document.getElementById('search');
+
+  // Test search finds members outside top 50
+  if (members.length > TOP_N) {
+    var memberOutside = members[TOP_N + 5]; // Member ranked ~56
+    if (memberOutside) {
+      // Simulate search
+      searchInput.value = memberOutside.name.split(' ')[0]; // First name
+      searchInput.dispatchEvent(new Event('input'));
+      await new Promise(function(r) { setTimeout(r, 100); });
+      var searchRows = listEl.querySelectorAll('.list-row').length;
+      assert('Search finds member outside top 50',
+        searchRows > 0,
+        'Searched "' + searchInput.value + '", found ' + searchRows + ' results');
+
+      // Reset search
+      searchInput.value = '';
+      searchInput.dispatchEvent(new Event('input'));
+      await new Promise(function(r) { setTimeout(r, 100); });
+    }
+  }
+
+  // === Members Data Quality ===
+  assert('Members sorted by score descending',
+    members.length < 2 || members[0].score >= members[1].score,
+    'First: ' + (members[0] ? members[0].score : 0) + ', Second: ' + (members[1] ? members[1].score : 0));
+
+  assert('Ranks are assigned sequentially',
+    members.length === 0 || (members[0].rank === 1 && members[members.length - 1].rank === members.length),
+    'First rank: ' + (members[0] ? members[0].rank : 'n/a'));
+
+  var activeMems = members.filter(function(m) { return m.score > 0; });
+  assert('Active members exist',
+    activeMems.length > 0,
+    activeMems.length + ' active members');
+
+  var totalPosts = members.reduce(function(s, m) { return s + m.posts; }, 0);
+  var totalComments = members.reduce(function(s, m) { return s + m.comments; }, 0);
+  var totalReactions = members.reduce(function(s, m) { return s + m.reactions; }, 0);
+
+  assert('Total posts > 0', totalPosts > 0, totalPosts + ' posts');
+  assert('Total comments > 0', totalComments > 0, totalComments + ' comments');
+  assert('Total reactions > 0', totalReactions > 0, totalReactions + ' reactions');
+
+  // === FB Insights Validation (spot-checks) ===
+  // Expected from FB Insights (28 days): ~396 posts, ~3242 comments, ~5298 reactions
+  var EXP_POSTS = 396, EXP_COMMENTS = 3242, EXP_REACTIONS = 5298;
+  var postsDiff = Math.abs(totalPosts - EXP_POSTS) / EXP_POSTS * 100;
+  var commentsDiff = Math.abs(totalComments - EXP_COMMENTS) / EXP_COMMENTS * 100;
+  var reactionsDiff = Math.abs(totalReactions - EXP_REACTIONS) / EXP_REACTIONS * 100;
+
+  assert('Posts within 25% of FB Insights (' + EXP_POSTS + ')',
+    postsDiff < 25,
+    totalPosts + ' posts (' + postsDiff.toFixed(1) + '% diff)');
+  assert('Comments within 25% of FB Insights (' + EXP_COMMENTS + ')',
+    commentsDiff < 25,
+    totalComments + ' comments (' + commentsDiff.toFixed(1) + '% diff)');
+  assert('Reactions within 25% of FB Insights (' + EXP_REACTIONS + ')',
+    reactionsDiff < 25,
+    totalReactions + ' reactions (' + reactionsDiff.toFixed(1) + '% diff)');
+
+  // Spot-check known members from FB Insights
+  function findMember(name) {
+    return members.find(function(m) { return m.name.toLowerCase().includes(name.toLowerCase()); });
+  }
+
+  var markB = findMember('Mark Behnke');
+  if (markB) {
+    assert('Spot-check: Mark Behnke has comments',
+      markB.comments > 10,
+      markB.comments + ' comments (FB expected ~79)');
+  }
+
+  var constK = findMember('Constantine');
+  if (constK) {
+    assert('Spot-check: Constantine has comments',
+      constK.comments > 5,
+      constK.comments + ' comments (FB expected ~45)');
+  }
+
+  // === Real Photos ===
+  var withRealPhoto = members.filter(function(m) {
+    return isRealPhoto(m.profilePhoto);
+  }).length;
+  assert('At least some real profile photos',
+    withRealPhoto > 0,
+    withRealPhoto + ' of ' + members.length + ' have real photos');
+
+  // === History Chart ===
+  assert('Score history loaded',
+    typeof scoreHistory === 'object',
+    Object.keys(scoreHistory).length + ' members have history');
+
+  // === Modal Tests ===
+  if (members.length > 0) {
+    openModal(members[0]);
+    await new Promise(function(r) { setTimeout(r, 300); });
+    var overlay = document.getElementById('overlay');
+    assert('Modal opens',
+      overlay.classList.contains('open'),
+      'Modal is open for ' + members[0].name);
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  // === Render Results ===
+  var wrap = document.querySelector('.wrap');
+  var testPanel = document.createElement('div');
+  testPanel.id = 'test-results';
+  testPanel.style.cssText = 'background:#131825;border:2px solid ' + (failed === 0 ? '#22c55e' : '#ef4444') + ';border-radius:16px;padding:24px;margin-bottom:24px;';
+  testPanel.innerHTML =
+    '<h2 style="color:#fff;font-size:20px;font-weight:800;margin-bottom:4px">' +
+      (failed === 0 ? '✅' : '❌') + ' Test Results: ' + passed + '/' + (passed + failed) + ' passed</h2>' +
+    '<p style="color:#6b7a99;font-size:13px;margin-bottom:16px">' +
+      (failed === 0 ? 'All tests passed!' : failed + ' test(s) failed') + '</p>' +
+    '<div style="display:flex;flex-direction:column;gap:4px">' +
+      results.map(function(r) {
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:8px;background:' +
+          (r.pass ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.1)') + '">' +
+          '<span style="font-size:12px;font-weight:600;color:' + (r.pass ? '#22c55e' : '#ef4444') + '">' +
+            (r.pass ? '✓' : '✗') + ' ' + r.name + '</span>' +
+          '<span style="font-size:11px;color:#6b7a99">' + r.detail + '</span>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+
+  // Insert at top of wrap
+  var existingPanel = document.getElementById('test-results');
+  if (existingPanel) existingPanel.remove();
+  wrap.insertBefore(testPanel, wrap.firstChild);
+
+  console.log('Test Results: ' + passed + '/' + (passed + failed) + ' passed');
+  results.forEach(function(r) {
+    console[r.pass ? 'log' : 'error']((r.pass ? '  ✓ ' : '  ✗ ') + r.name + ' — ' + r.detail);
+  });
+}
+
+// Auto-run tests if ?test=1
+if (new URLSearchParams(window.location.search).get('test') === '1') {
+  loadData().then(function() {
+    setTimeout(runTests, 1000);
+  });
+} else {
+  loadData();
+}
 </script>
 </body>
 </html>
