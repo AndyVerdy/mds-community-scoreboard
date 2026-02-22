@@ -958,7 +958,8 @@ async function loadData() {
       posts: m.posts || 0,
       comments: m.totalComments || 0,
       reactions: m.totalReactions || 0,
-      score: (m.posts || 0) * 10 + (m.totalComments || 0) * 5 + (m.totalReactions || 0) * 2
+      score: (m.posts || 0) * 10 + (m.totalComments || 0) * 5 + (m.totalReactions || 0) * 2,
+      dailyActivity: m.dailyActivity || [] // Array of { date, posts, reactions }
     }));
 
     members.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
@@ -1104,6 +1105,35 @@ document.getElementById('search').addEventListener('input', function(e) {
   }
 });
 
+// Build daily activity chart data from a member's dailyActivity array
+// Returns array of { date, value } for charting (activity points per day)
+function getDailyChartData(member) {
+  var m = members.find(function(x) { return x.name === member; });
+  if (!m || !m.dailyActivity || m.dailyActivity.length === 0) return null;
+
+  // dailyActivity: [{ date: "YYYY-MM-DD", posts: N, reactions: N }]
+  // We chart "daily activity points" = posts×10 + reactions×2
+  // (comments are 30-day totals from profile pages, can't be broken down by day)
+  var dataMap = {};
+  m.dailyActivity.forEach(function(d) {
+    dataMap[d.date] = (d.posts || 0) * 10 + (d.reactions || 0) * 2;
+  });
+
+  // Fill in all dates in the range (last 30 days) so chart has no gaps
+  var dates = Object.keys(dataMap).sort();
+  if (dates.length === 0) return null;
+
+  var allDates = [];
+  var start = new Date(dates[0]);
+  var end = new Date(dates[dates.length - 1]);
+  for (var d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    var key = d.toISOString().substring(0, 10);
+    allDates.push({ date: key, value: dataMap[key] || 0 });
+  }
+
+  return allDates.length >= 2 ? allDates : null;
+}
+
 function drawHistoryChart(name) {
   var canvas = document.getElementById('m-canvas');
   var ctx = canvas.getContext('2d');
@@ -1118,9 +1148,99 @@ function drawHistoryChart(name) {
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, w, h);
 
-  var history = scoreHistory[name] || [];
   var changeEl = document.getElementById('m-change');
   var labelsEl = document.getElementById('m-history-labels');
+  var titleEl = document.querySelector('.score-history-title');
+
+  // Prefer daily activity breakdown (from single run) over multi-run history
+  var dailyData = getDailyChartData(name);
+  var history = scoreHistory[name] || [];
+
+  if (dailyData && dailyData.length >= 2) {
+    // === Draw DAILY ACTIVITY chart (bar chart style) ===
+    titleEl.textContent = 'Daily Activity (30 Days)';
+    var values = dailyData.map(function(d) { return d.value; });
+    var dates = dailyData.map(function(d) { return d.date; });
+    var maxV = Math.max.apply(null, values);
+    if (maxV === 0) maxV = 1;
+    var totalActivity = values.reduce(function(s, v) { return s + v; }, 0);
+
+    // Change badge: show total activity points
+    changeEl.className = 'score-history-change up';
+    changeEl.textContent = totalActivity + ' activity pts';
+
+    var pad = { top: 12, bottom: 24, left: 4, right: 4 };
+    var cw = w - pad.left - pad.right;
+    var ch = h - pad.top - pad.bottom;
+
+    // Grid lines
+    ctx.strokeStyle = '#1e2a42';
+    ctx.lineWidth = 1;
+    for (var g = 0; g <= 3; g++) {
+      var gy = pad.top + (ch / 3) * g;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, gy);
+      ctx.lineTo(w - pad.right, gy);
+      ctx.stroke();
+    }
+
+    // Draw bars
+    var barWidth = Math.max(Math.floor(cw / dailyData.length) - 2, 2);
+    var barGap = (cw - barWidth * dailyData.length) / (dailyData.length + 1);
+    if (barGap < 1) barGap = 1;
+
+    for (var i = 0; i < dailyData.length; i++) {
+      var barH = (values[i] / maxV) * ch;
+      var bx = pad.left + barGap + i * (barWidth + barGap);
+      var by = pad.top + ch - barH;
+
+      // Bar gradient
+      var barGrad = ctx.createLinearGradient(0, by, 0, pad.top + ch);
+      barGrad.addColorStop(0, values[i] > 0 ? '#3b82f6' : '#1e2a42');
+      barGrad.addColorStop(1, values[i] > 0 ? 'rgba(59,130,246,0.3)' : '#1e2a42');
+      ctx.fillStyle = barGrad;
+      ctx.beginPath();
+      ctx.roundRect(bx, by, barWidth, barH || 1, 2);
+      ctx.fill();
+    }
+
+    // Value labels on tallest bars (only show a few to avoid clutter)
+    ctx.fillStyle = '#e4e8f1';
+    ctx.font = '700 9px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    // Show labels on top 5 values and first/last
+    var sortedByVal = values.map(function(v, i) { return { v: v, i: i }; })
+      .filter(function(x) { return x.v > 0; })
+      .sort(function(a, b) { return b.v - a.v; })
+      .slice(0, 5);
+    var labelSet = {};
+    sortedByVal.forEach(function(x) { labelSet[x.i] = true; });
+    for (var i in labelSet) {
+      var idx = parseInt(i);
+      var barH = (values[idx] / maxV) * ch;
+      var bx = pad.left + barGap + idx * (barWidth + barGap) + barWidth / 2;
+      if (barH > 15) {
+        ctx.fillText(values[idx], bx, pad.top + ch - barH - 4);
+      }
+    }
+
+    // X-axis date labels
+    labelsEl.innerHTML = '';
+    var labelIndices = [0, Math.floor(dates.length / 2), dates.length - 1];
+    if (dates.length <= 5) labelIndices = dates.map(function(_, i) { return i; });
+    var unique = [];
+    labelIndices.forEach(function(idx) { if (unique.indexOf(idx) === -1) unique.push(idx); });
+    unique.forEach(function(idx) {
+      var d = new Date(dates[idx] + 'T12:00:00');
+      var span = document.createElement('span');
+      span.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      labelsEl.appendChild(span);
+    });
+    return;
+  }
+
+  // === Fallback: Multi-run SCORE HISTORY chart (line chart) ===
+  titleEl.textContent = 'Score History (30 Days)';
 
   if (history.length < 2) {
     ctx.fillStyle = '#6b7a99';
