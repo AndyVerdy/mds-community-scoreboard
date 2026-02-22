@@ -726,7 +726,7 @@
 <script>
 const TOKEN = 'apify_api_g53jsGNcHxP9RRalCAGtBgaVUTZyyL1OOKQT';
 const API_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs/last/dataset/items?token=' + TOKEN;
-const RUNS_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs?token=' + TOKEN + '&limit=30&desc=true';
+const RUNS_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs?token=' + TOKEN + '&limit=100&desc=true';
 const TOP_N = 50;
 const DB_KEY = 'mds_scoreboard_db';
 
@@ -1126,9 +1126,15 @@ function drawHistoryChart(name) {
     ctx.fillStyle = '#6b7a99';
     ctx.font = '500 12px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Score history builds with daily updates', w / 2, h / 2);
+    if (history.length === 1) {
+      ctx.fillText('Current score: ' + history[0].score + ' pts', w / 2, h / 2 - 10);
+      ctx.font = '400 11px Inter, sans-serif';
+      ctx.fillText('Chart unlocks after tomorrow\u2019s daily update', w / 2, h / 2 + 10);
+    } else {
+      ctx.fillText('No score data yet — check back after first daily run', w / 2, h / 2);
+    }
     changeEl.className = 'score-history-change flat';
-    changeEl.textContent = '—';
+    changeEl.textContent = history.length === 1 ? history[0].score + ' pts' : '—';
     labelsEl.innerHTML = '';
     return;
   }
