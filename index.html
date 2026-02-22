@@ -429,6 +429,124 @@
   .total-box .tv { font-size: 36px; font-weight: 900; color: #fff; }
   .total-box .ts { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
 
+  /* My Profile Banner */
+  .my-profile-banner {
+    background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(59,130,246,0.08));
+    border: 1.5px solid rgba(99,102,241,0.3);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 16px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .my-profile-banner:hover {
+    border-color: rgba(99,102,241,0.5);
+    box-shadow: 0 4px 20px rgba(99,102,241,0.1);
+  }
+  .my-profile-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    overflow: hidden; flex-shrink: 0;
+    border: 2.5px solid rgba(99,102,241,0.4);
+    position: relative;
+  }
+  .my-profile-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .my-profile-avatar .avatar-edit {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.2s;
+    font-size: 14px; color: #fff; cursor: pointer;
+  }
+  .my-profile-avatar:hover .avatar-edit { opacity: 1; }
+  .my-profile-info { flex: 1; min-width: 0; }
+  .my-profile-name { font-size: 15px; font-weight: 700; color: #fff; }
+  .my-profile-rank { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+  .my-profile-tips {
+    display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;
+  }
+  .my-profile-tip {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 100px;
+    border: 1px solid;
+  }
+  .tip-post { color: #fbbf24; border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.08); }
+  .tip-comment { color: #3b82f6; border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.08); }
+  .tip-react { color: #94a3b8; border-color: rgba(148,163,184,0.3); background: rgba(148,163,184,0.08); }
+  .my-profile-score {
+    font-size: 22px; font-weight: 900; color: #fff;
+    text-align: right;
+  }
+  .my-profile-score .pts-label { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+
+  /* Setup Profile Prompt */
+  .setup-profile {
+    background: var(--surface);
+    border: 1.5px dashed var(--border-light);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .setup-profile:hover { border-color: var(--accent); }
+  .setup-profile p { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+  .setup-profile strong { color: var(--accent); }
+
+  /* Name Picker Dialog */
+  .name-picker-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    z-index: 300;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .name-picker {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    width: 100%; max-width: 420px;
+    padding: 28px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  }
+  .name-picker h3 { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .name-picker .np-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+  .name-picker input {
+    width: 100%; padding: 12px 16px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 14px;
+    outline: none; margin-bottom: 8px;
+  }
+  .name-picker input:focus { border-color: var(--accent); }
+  .name-picker .np-results {
+    max-height: 200px; overflow-y: auto;
+    margin-bottom: 12px;
+  }
+  .name-picker .np-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .name-picker .np-item:hover { background: var(--surface2); }
+  .name-picker .np-item img {
+    width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+  }
+  .name-picker .np-item-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .name-picker .np-item-score { font-size: 11px; color: var(--text-muted); }
+  .name-picker .np-actions { display: flex; gap: 8px; }
+  .name-picker .np-btn {
+    flex: 1; padding: 10px;
+    border: none; border-radius: 8px;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .name-picker .np-btn:hover { opacity: 0.85; }
+  .np-btn-primary { background: var(--accent); color: #fff; }
+  .np-btn-secondary { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border) !important; }
+
   /* Footer */
   .page-footer {
     margin-top: 40px; padding-top: 20px;
@@ -506,6 +624,10 @@
 
   <!-- Content (hidden until loaded) -->
   <div id="content" style="display:none">
+
+    <!-- My Profile Banner (shown after user sets their name) -->
+    <div id="my-profile" style="display:none"></div>
+
     <div class="podium-section" id="podium-section">
       <div class="podium" id="podium"></div>
     </div>
@@ -584,18 +706,80 @@ const TOKEN = 'apify_api_g53jsGNcHxP9RRalCAGtBgaVUTZyyL1OOKQT';
 const API_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs/last/dataset/items?token=' + TOKEN;
 const RUNS_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs?token=' + TOKEN + '&limit=30&desc=true';
 const TOP_N = 50;
+const DB_KEY = 'mds_scoreboard_db';
+
+// ============================================
+// Local DB: localStorage-backed member database
+// Stores: photo cache, avatar overrides, user identity
+// ============================================
+function getDB() {
+  try {
+    return JSON.parse(localStorage.getItem(DB_KEY)) || { photos: {}, overrides: {}, myName: null };
+  } catch(e) { return { photos: {}, overrides: {}, myName: null }; }
+}
+function saveDB(db) {
+  try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch(e) {}
+}
+
+// Cache a working photo URL for a member
+function cachePhoto(name, url) {
+  if (!name || !url) return;
+  var db = getDB();
+  db.photos[name] = url;
+  saveDB(db);
+}
+
+// Get avatar override if set
+function getOverride(name) {
+  var db = getDB();
+  return db.overrides[name] || null;
+}
+
+// Set avatar override
+function setOverride(name, url) {
+  var db = getDB();
+  db.overrides[name] = url;
+  saveDB(db);
+}
+
+// Get cached photo
+function getCachedPhoto(name) {
+  var db = getDB();
+  return db.photos[name] || null;
+}
 
 function dicebear(name) {
   return 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(name);
 }
 
 function avatarSrc(member) {
-  return member.profilePhoto || dicebear(member.name);
+  // Priority: 1) Override, 2) API photo, 3) Cached photo, 4) DiceBear
+  var override = getOverride(member.name);
+  if (override) return override;
+  if (member.profilePhoto) return member.profilePhoto;
+  var cached = getCachedPhoto(member.name);
+  if (cached) return cached;
+  return dicebear(member.name);
 }
 
 function handleImgError(img, name) {
   img.onerror = null;
-  img.src = dicebear(name);
+  // Try cached photo before falling back to dicebear
+  var cached = getCachedPhoto(name);
+  if (cached && img.src !== cached) {
+    img.src = cached;
+    img.onerror = function() { this.onerror = null; this.src = dicebear(name); };
+  } else {
+    img.src = dicebear(name);
+  }
+}
+
+function handleImgLoad(img, name) {
+  // Cache successful photo loads (skip dicebear/data urls)
+  var src = img.src || '';
+  if (src && !src.includes('dicebear') && !src.startsWith('data:')) {
+    cachePhoto(name, src);
+  }
 }
 
 let members = [];
@@ -712,7 +896,8 @@ async function loadData() {
 
     loading.style.display = 'none';
     content.style.display = '';
-    render(members.slice(0, TOP_N));
+    render(members);
+    renderMyProfile();
   } catch (err) {
     loading.style.display = 'none';
     error.style.display = '';
@@ -745,7 +930,7 @@ function renderPodium(top3) {
       '<div class="podium-top">' +
         '<div class="crown">' + crowns[i] + '</div>' +
         '<div class="podium-avatar-wrap">' +
-          '<div class="podium-avatar"><img src="' + avatarSrc(m) + '" alt="' + m.name + '" loading="lazy" onerror="handleImgError(this,\'' + m.name.replace(/'/g, "\\'") + '\')"></div>' +
+          '<div class="podium-avatar"><img src="' + avatarSrc(m) + '" alt="' + m.name + '" loading="lazy" onload="handleImgLoad(this,\'' + m.name.replace(/'/g, "\\'") + '\')" onerror="handleImgError(this,\'' + m.name.replace(/'/g, "\\'") + '\')"></div>' +
           '<div class="rank-badge">' + m.rank + '</div>' +
         '</div>' +
         '<div class="podium-name">' + m.name + '</div>' +
@@ -773,7 +958,7 @@ function renderList(list) {
     row.innerHTML =
       '<div class="row-rank">' + m.rank + '</div>' +
       '<div class="row-member">' +
-        '<div class="row-avatar"><img src="' + avatarSrc(m) + '" alt="' + m.name + '" loading="lazy" onerror="handleImgError(this,\'' + m.name.replace(/'/g, "\\'") + '\')"></div>' +
+        '<div class="row-avatar"><img src="' + avatarSrc(m) + '" alt="' + m.name + '" loading="lazy" onload="handleImgLoad(this,\'' + m.name.replace(/'/g, "\\'") + '\')" onerror="handleImgError(this,\'' + m.name.replace(/'/g, "\\'") + '\')"></div>' +
         '<div class="row-name">' + m.name + '</div>' +
       '</div>' +
       '<div class="row-score">' + m.score.toLocaleString() + '</div>' +
@@ -801,7 +986,7 @@ function render(list) {
 
 document.getElementById('search').addEventListener('input', function(e) {
   var q = e.target.value.toLowerCase().trim();
-  if (!q) { render(members.slice(0, TOP_N)); return; }
+  if (!q) { render(members); return; }
   // Search ALL members, not just top N
   var filtered = members.filter(function(m) { return m.name.toLowerCase().includes(q); });
   document.getElementById('podium-section').style.display = 'none';
@@ -953,7 +1138,6 @@ function drawHistoryChart(name) {
 
 function getImprovementTip(m) {
   if (m.score === 0) {
-    // Find what rank they'd get with 1 post
     var scoreWith1Post = 10;
     var rank = members.filter(function(x) { return x.score > scoreWith1Post; }).length + 1;
     return 'You haven\'t been active in the last 30 days. Make <strong>1 post</strong> to jump to <strong>position #' + rank + '</strong>!';
@@ -964,7 +1148,6 @@ function getImprovementTip(m) {
     return 'You\'ve been commenting but haven\'t posted yet. Make <strong>1 post</strong> (+10 pts) to reach <strong>position #' + rank + '</strong>!';
   }
   if (m.rank > 10) {
-    // Calculate what they need to break into top 10
     var target = members.length >= 10 ? members[9].score : 0;
     var gap = target - m.score + 1;
     if (gap > 0) {
@@ -973,6 +1156,161 @@ function getImprovementTip(m) {
     }
   }
   return null;
+}
+
+// Granular tips: show what rank you'd reach for each action type
+function getGranularTips(m) {
+  var tips = [];
+  // What rank if you make 1 post (+10 pts)?
+  var scoreAfterPost = m.score + 10;
+  var rankAfterPost = members.filter(function(x) { return x.score > scoreAfterPost; }).length + 1;
+  if (rankAfterPost < m.rank) {
+    tips.push({ type: 'post', text: '1 post → #' + rankAfterPost });
+  }
+  // What rank if you get 1 comment on your post (+5 pts)?
+  var scoreAfterComment = m.score + 5;
+  var rankAfterComment = members.filter(function(x) { return x.score > scoreAfterComment; }).length + 1;
+  if (rankAfterComment < m.rank) {
+    tips.push({ type: 'comment', text: '1 comment → #' + rankAfterComment });
+  }
+  // What rank if you get 1 reaction (+2 pts)?
+  var scoreAfterReact = m.score + 2;
+  var rankAfterReact = members.filter(function(x) { return x.score > scoreAfterReact; }).length + 1;
+  if (rankAfterReact < m.rank) {
+    tips.push({ type: 'react', text: '1 reaction → #' + rankAfterReact });
+  }
+  return tips;
+}
+
+// ============================================
+// My Profile: name picker and banner
+// ============================================
+function showNamePicker() {
+  var existing = document.querySelector('.name-picker-overlay');
+  if (existing) existing.remove();
+
+  var overlay = document.createElement('div');
+  overlay.className = 'name-picker-overlay';
+  overlay.innerHTML =
+    '<div class="name-picker">' +
+      '<h3>Find Yourself</h3>' +
+      '<p class="np-sub">Search for your name in the member list</p>' +
+      '<input type="text" id="np-search" placeholder="Type your name..." autofocus />' +
+      '<div class="np-results" id="np-results"></div>' +
+      '<div class="np-actions">' +
+        '<button class="np-btn np-btn-secondary" id="np-cancel">Cancel</button>' +
+        '<button class="np-btn np-btn-secondary" id="np-clear">Reset Identity</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
+
+  var search = document.getElementById('np-search');
+  var results = document.getElementById('np-results');
+
+  search.addEventListener('input', function() {
+    var q = this.value.toLowerCase().trim();
+    results.innerHTML = '';
+    if (q.length < 2) return;
+    var matches = members.filter(function(m) { return m.name.toLowerCase().includes(q); }).slice(0, 10);
+    matches.forEach(function(m) {
+      var item = document.createElement('div');
+      item.className = 'np-item';
+      item.innerHTML =
+        '<img src="' + avatarSrc(m) + '" onerror="handleImgError(this,\'' + m.name.replace(/'/g, "\\'") + '\')">' +
+        '<div><div class="np-item-name">' + m.name + '</div>' +
+        '<div class="np-item-score">Rank #' + m.rank + ' • ' + m.score + ' pts</div></div>';
+      item.addEventListener('click', function() {
+        var db = getDB();
+        db.myName = m.name;
+        saveDB(db);
+        overlay.remove();
+        renderMyProfile();
+      });
+      results.appendChild(item);
+    });
+  });
+
+  document.getElementById('np-cancel').addEventListener('click', function() { overlay.remove(); });
+  document.getElementById('np-clear').addEventListener('click', function() {
+    var db = getDB();
+    db.myName = null;
+    saveDB(db);
+    overlay.remove();
+    renderMyProfile();
+  });
+
+  // Close on overlay click
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+}
+
+function renderMyProfile() {
+  var container = document.getElementById('my-profile');
+  var db = getDB();
+
+  if (!db.myName) {
+    // Show "set up your profile" prompt
+    container.style.display = '';
+    container.innerHTML =
+      '<div class="setup-profile" onclick="showNamePicker()">' +
+        '<p><strong>Find yourself</strong> on the scoreboard to track your rank and get tips to climb</p>' +
+      '</div>';
+    return;
+  }
+
+  var me = members.find(function(m) { return m.name === db.myName; });
+  if (!me) {
+    // User not found in data — show as unranked
+    me = { name: db.myName, posts: 0, comments: 0, reactions: 0, score: 0, rank: members.length + 1, profilePhoto: '' };
+  }
+
+  var tips = getGranularTips(me);
+  var tipsHtml = '';
+  tips.forEach(function(t) {
+    var cls = t.type === 'post' ? 'tip-post' : t.type === 'comment' ? 'tip-comment' : 'tip-react';
+    tipsHtml += '<span class="my-profile-tip ' + cls + '">' + t.text + '</span>';
+  });
+
+  var rankText = me.score > 0 ? 'Rank #' + me.rank + ' of ' + members.length : 'Not ranked yet — take action to get on the board!';
+
+  container.style.display = '';
+  container.innerHTML =
+    '<div class="my-profile-banner" onclick="openModal(members.find(function(m){return m.name===\'' + me.name.replace(/'/g, "\\'") + '\'}) || {name:\'' + me.name.replace(/'/g, "\\'") + '\',posts:0,comments:0,reactions:0,score:0,rank:' + me.rank + ',profilePhoto:\'\'})">' +
+      '<div class="my-profile-avatar">' +
+        '<img src="' + avatarSrc(me) + '" onload="handleImgLoad(this,\'' + me.name.replace(/'/g, "\\'") + '\')" onerror="handleImgError(this,\'' + me.name.replace(/'/g, "\\'") + '\')">' +
+        '<div class="avatar-edit" onclick="event.stopPropagation(); promptAvatarOverride(\'' + me.name.replace(/'/g, "\\'") + '\')">&#9998;</div>' +
+      '</div>' +
+      '<div class="my-profile-info">' +
+        '<div class="my-profile-name">' + me.name + ' <span style="font-size:11px;color:var(--text-muted);font-weight:500;cursor:pointer" onclick="event.stopPropagation(); showNamePicker()">change</span></div>' +
+        '<div class="my-profile-rank">' + rankText + '</div>' +
+        (tipsHtml ? '<div class="my-profile-tips">' + tipsHtml + '</div>' : '') +
+      '</div>' +
+      '<div class="my-profile-score">' +
+        '<div>' + me.score.toLocaleString() + '</div>' +
+        '<div class="pts-label">points</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function promptAvatarOverride(name) {
+  var url = prompt('Enter image URL for your avatar (or leave empty to reset):');
+  if (url === null) return; // cancelled
+  if (url.trim() === '') {
+    // Reset override
+    var db = getDB();
+    delete db.overrides[name];
+    saveDB(db);
+  } else {
+    setOverride(name, url.trim());
+  }
+  renderMyProfile();
+  // Re-render list to update avatar everywhere
+  var q = document.getElementById('search').value.toLowerCase().trim();
+  if (!q) render(members);
+  else {
+    var filtered = members.filter(function(m) { return m.name.toLowerCase().includes(q); });
+    renderList(filtered);
+  }
 }
 
 function openModal(m) {
@@ -993,9 +1331,21 @@ function openModal(m) {
   // Improvement tips for inactive or low-score members
   var tipEl = document.getElementById('m-tip');
   var tip = getImprovementTip(m);
-  if (tip) {
+  var granularTips = getGranularTips(m);
+  if (tip || granularTips.length > 0) {
     tipEl.style.display = '';
-    tipEl.innerHTML = '<div class="tip-box"><div class="tip-label">Level Up</div>' + tip + '</div>';
+    var html = '<div class="tip-box"><div class="tip-label">Level Up</div>';
+    if (tip) html += tip;
+    if (granularTips.length > 0) {
+      html += '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">';
+      granularTips.forEach(function(t) {
+        var cls = t.type === 'post' ? 'tip-post' : t.type === 'comment' ? 'tip-comment' : 'tip-react';
+        html += '<span class="my-profile-tip ' + cls + '">' + t.text + '</span>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+    tipEl.innerHTML = html;
   } else {
     tipEl.style.display = 'none';
   }
