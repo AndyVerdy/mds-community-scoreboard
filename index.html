@@ -404,6 +404,20 @@
     font-size: 12px; color: var(--text-muted); font-weight: 500;
   }
 
+  .tip-box {
+    background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(34,197,94,0.03));
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    font-size: 13px; color: var(--text); line-height: 1.5;
+  }
+  .tip-box .tip-label {
+    font-size: 10px; font-weight: 700; color: #22c55e;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
   .total-box {
     background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.1));
     border: 1px solid rgba(59,130,246,0.2);
@@ -467,8 +481,9 @@
       <p>Facebook Group &middot; Posts &middot; Comments &middot; Reactions</p>
     </div>
     <div class="stats-row">
+      <div class="stat-pill">Active <strong id="stat-active">&mdash;</strong></div>
       <div class="stat-pill">Members <strong id="stat-members">&mdash;</strong></div>
-      <div class="stat-pill">Total Posts <strong id="stat-posts">&mdash;</strong></div>
+      <div class="stat-pill">Posts <strong id="stat-posts">&mdash;</strong></div>
       <div class="stat-pill">Updated <strong>Today</strong></div>
     </div>
   </div>
@@ -477,7 +492,7 @@
     <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
     </svg>
-    <input type="text" id="search" placeholder="Search members..." />
+    <input type="text" id="search" placeholder="Search all members by name..." />
   </div>
 
   <!-- Loading state -->
@@ -506,11 +521,11 @@
     <div id="no-results" class="no-results" style="display:none">No members found matching your search.</div>
 
     <div class="page-footer">
-      <p>MDS Community Scoreboard &middot; Scores = Posts &times;10 + Comments &times;5 + Reactions &times;2</p>
+      <p>MDS Community Scoreboard &middot; Score = Posts &times;10 + Comments Received &times;5 + Reactions Received &times;2</p>
       <div class="legend">
         <div class="legend-item"><div class="ldot" style="background:var(--gold)"></div>Post = 10 pts</div>
-        <div class="legend-item"><div class="ldot" style="background:var(--accent)"></div>Comment = 5 pts</div>
-        <div class="legend-item"><div class="ldot" style="background:var(--silver)"></div>Reaction = 2 pts</div>
+        <div class="legend-item"><div class="ldot" style="background:var(--accent)"></div>Comment Received = 5 pts</div>
+        <div class="legend-item"><div class="ldot" style="background:var(--silver)"></div>Reaction Received = 2 pts</div>
       </div>
     </div>
   </div>
@@ -537,23 +552,24 @@
         </div>
         <div class="bd-card">
           <div class="bv" id="m-comments"></div>
-          <div class="bl">Comments</div>
+          <div class="bl">Comments Received</div>
           <div class="bp" id="m-comments-pts"></div>
         </div>
         <div class="bd-card">
           <div class="bv" id="m-reactions"></div>
-          <div class="bl">Reactions</div>
+          <div class="bl">Reactions Received</div>
           <div class="bp" id="m-reactions-pts"></div>
         </div>
       </div>
       <div class="score-history" id="m-history">
         <div class="score-history-header">
-          <div class="score-history-title">Score Changes</div>
+          <div class="score-history-title">Score History (30 Days)</div>
           <div class="score-history-change flat" id="m-change">—</div>
         </div>
         <canvas id="m-canvas" width="430" height="120"></canvas>
         <div class="score-history-labels" id="m-history-labels"></div>
       </div>
+      <div id="m-tip" style="display:none"></div>
       <div class="total-box">
         <div class="tl">Total Score</div>
         <div class="tv" id="m-total"></div>
@@ -566,7 +582,8 @@
 <script>
 const TOKEN = 'apify_api_g53jsGNcHxP9RRalCAGtBgaVUTZyyL1OOKQT';
 const API_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs/last/dataset/items?token=' + TOKEN;
-const RUNS_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs?token=' + TOKEN + '&limit=20&desc=true';
+const RUNS_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs?token=' + TOKEN + '&limit=30&desc=true';
+const TOP_N = 50;
 
 function dicebear(name) {
   return 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(name);
@@ -595,11 +612,19 @@ async function loadHistory() {
     if (!res.ok) return;
     var body = await res.json();
     var runs = (body.data && body.data.items) || [];
-    // Only use successful runs, oldest first
+    // Only successful runs with real data (build >= 0.0.15), oldest first
     runs = runs.filter(function(r) { return r.status === 'SUCCEEDED'; }).reverse();
 
-    // Fetch each run's dataset (in parallel, max 10)
-    var fetches = runs.slice(0, 10).map(function(run) {
+    // Deduplicate by day — keep latest run per calendar day
+    var byDay = {};
+    runs.forEach(function(run) {
+      var day = run.startedAt.substring(0, 10); // YYYY-MM-DD
+      byDay[day] = run; // last one wins (runs are oldest-first)
+    });
+    var dedupedRuns = Object.keys(byDay).sort().map(function(k) { return byDay[k]; });
+
+    // Fetch each run's dataset (in parallel, max 30 days)
+    var fetches = dedupedRuns.slice(-30).map(function(run) {
       var url = 'https://api.apify.com/v2/datasets/' + run.defaultDatasetId + '/items?token=' + TOKEN;
       return fetch(url).then(function(r) { return r.ok ? r.json() : []; })
         .then(function(data) { return { date: run.startedAt, items: data }; })
@@ -611,11 +636,14 @@ async function loadHistory() {
 
     results.forEach(function(r) {
       if (!r || !Array.isArray(r.items) || r.items.length === 0) return;
+      // Skip diagnostic runs (items without proper member data)
+      if (r.items.length < 5) return;
       var d = r.date;
       r.items.forEach(function(m) {
-        var name = m.name || 'Unknown';
-        if (!scoreHistory[name]) scoreHistory[name] = [];
-        scoreHistory[name].push({ date: d, score: calcScore(m) });
+        if (!m.name || m.name === 'Unknown') return;
+        var score = calcScore(m);
+        if (!scoreHistory[m.name]) scoreHistory[m.name] = [];
+        scoreHistory[m.name].push({ date: d, score: score });
       });
     });
   } catch (e) {
@@ -635,8 +663,29 @@ async function loadData() {
   try {
     // Fetch current data and history in parallel
     var [res] = await Promise.all([fetch(API_URL), loadHistory()]);
-    if (!res.ok) throw new Error('API returned ' + res.status);
-    const data = await res.json();
+    var data = [];
+    if (res.ok) data = await res.json();
+
+    // If last run returned empty/diagnostic data, find the most recent run with real member data
+    if (!Array.isArray(data) || data.length < 5) {
+      var runsRes = await fetch(RUNS_URL);
+      if (runsRes.ok) {
+        var runsBody = await runsRes.json();
+        var allRuns = (runsBody.data && runsBody.data.items) || [];
+        var successRuns = allRuns.filter(function(r) { return r.status === 'SUCCEEDED'; });
+        for (var i = 0; i < successRuns.length && i < 15; i++) {
+          var dsUrl = 'https://api.apify.com/v2/datasets/' + successRuns[i].defaultDatasetId + '/items?token=' + TOKEN;
+          var dsRes = await fetch(dsUrl);
+          if (dsRes.ok) {
+            var dsData = await dsRes.json();
+            if (Array.isArray(dsData) && dsData.length >= 5) {
+              data = dsData;
+              break;
+            }
+          }
+        }
+      }
+    }
 
     if (!Array.isArray(data) || data.length === 0) {
       throw new Error('No data received from API');
@@ -656,12 +705,14 @@ async function loadData() {
 
     maxScore = members.length > 0 ? members[0].score : 1;
 
+    var activeCount = members.filter(m => m.score > 0).length;
+    document.getElementById('stat-active').textContent = activeCount;
     document.getElementById('stat-members').textContent = members.length;
     document.getElementById('stat-posts').textContent = members.reduce((s, m) => s + m.posts, 0);
 
     loading.style.display = 'none';
     content.style.display = '';
-    render(members);
+    render(members.slice(0, TOP_N));
   } catch (err) {
     loading.style.display = 'none';
     error.style.display = '';
@@ -750,11 +801,16 @@ function render(list) {
 
 document.getElementById('search').addEventListener('input', function(e) {
   var q = e.target.value.toLowerCase().trim();
-  if (!q) { render(members); return; }
+  if (!q) { render(members.slice(0, TOP_N)); return; }
+  // Search ALL members, not just top N
   var filtered = members.filter(function(m) { return m.name.toLowerCase().includes(q); });
   document.getElementById('podium-section').style.display = 'none';
   document.getElementById('list-header').style.display = filtered.length ? '' : 'none';
-  document.getElementById('no-results').style.display = filtered.length === 0 ? '' : 'none';
+  var noRes = document.getElementById('no-results');
+  noRes.style.display = filtered.length === 0 ? '' : 'none';
+  if (filtered.length === 0) {
+    noRes.textContent = 'No members found matching "' + e.target.value.trim() + '"';
+  }
   renderList(filtered);
 });
 
@@ -763,7 +819,7 @@ function drawHistoryChart(name) {
   var ctx = canvas.getContext('2d');
   var dpr = window.devicePixelRatio || 1;
   var rect = canvas.parentElement.getBoundingClientRect();
-  var w = rect.width - 36; // account for padding
+  var w = rect.width - 36;
   var h = 120;
   canvas.width = w * dpr;
   canvas.height = h * dpr;
@@ -777,11 +833,10 @@ function drawHistoryChart(name) {
   var labelsEl = document.getElementById('m-history-labels');
 
   if (history.length < 2) {
-    // Not enough data — show message
     ctx.fillStyle = '#6b7a99';
     ctx.font = '500 12px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Not enough data for history chart', w / 2, h / 2);
+    ctx.fillText('Score history builds with daily updates', w / 2, h / 2);
     changeEl.className = 'score-history-change flat';
     changeEl.textContent = '—';
     labelsEl.innerHTML = '';
@@ -803,13 +858,13 @@ function drawHistoryChart(name) {
   var diff = last - first;
   if (diff > 0) {
     changeEl.className = 'score-history-change up';
-    changeEl.textContent = '▲ +' + diff + ' pts';
+    changeEl.textContent = '+' + diff + ' pts';
   } else if (diff < 0) {
     changeEl.className = 'score-history-change down';
-    changeEl.textContent = '▼ ' + diff + ' pts';
+    changeEl.textContent = diff + ' pts';
   } else {
     changeEl.className = 'score-history-change flat';
-    changeEl.textContent = '— No change';
+    changeEl.textContent = 'No change';
   }
 
   // Grid lines
@@ -877,7 +932,6 @@ function drawHistoryChart(name) {
   ctx.font = '700 10px Inter, sans-serif';
   ctx.textAlign = 'center';
   points.forEach(function(p, i) {
-    // Only label first, last, and points where score changed
     if (i === 0 || i === points.length - 1 || scores[i] !== scores[i - 1]) {
       ctx.fillText(p.score, p.x, p.y - 10);
     }
@@ -892,9 +946,33 @@ function drawHistoryChart(name) {
   unique.forEach(function(idx) {
     var d = new Date(dates[idx]);
     var span = document.createElement('span');
-    span.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    span.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     labelsEl.appendChild(span);
   });
+}
+
+function getImprovementTip(m) {
+  if (m.score === 0) {
+    // Find what rank they'd get with 1 post
+    var scoreWith1Post = 10;
+    var rank = members.filter(function(x) { return x.score > scoreWith1Post; }).length + 1;
+    return 'You haven\'t been active in the last 30 days. Make <strong>1 post</strong> to jump to <strong>position #' + rank + '</strong>!';
+  }
+  if (m.posts === 0 && m.comments > 0) {
+    var newScore = m.score + 10;
+    var rank = members.filter(function(x) { return x.score > newScore; }).length + 1;
+    return 'You\'ve been commenting but haven\'t posted yet. Make <strong>1 post</strong> (+10 pts) to reach <strong>position #' + rank + '</strong>!';
+  }
+  if (m.rank > 10) {
+    // Calculate what they need to break into top 10
+    var target = members.length >= 10 ? members[9].score : 0;
+    var gap = target - m.score + 1;
+    if (gap > 0) {
+      var postsNeeded = Math.ceil(gap / 10);
+      return 'You\'re <strong>' + gap + ' pts</strong> from the top 10. That\'s about <strong>' + postsNeeded + ' post' + (postsNeeded > 1 ? 's' : '') + '</strong> away!';
+    }
+  }
+  return null;
 }
 
 function openModal(m) {
@@ -911,6 +989,16 @@ function openModal(m) {
   document.getElementById('m-total').textContent = m.score.toLocaleString();
   document.getElementById('m-formula').textContent =
     '(' + m.posts + ' \u00D7 10) + (' + m.comments + ' \u00D7 5) + (' + m.reactions + ' \u00D7 2)';
+
+  // Improvement tips for inactive or low-score members
+  var tipEl = document.getElementById('m-tip');
+  var tip = getImprovementTip(m);
+  if (tip) {
+    tipEl.style.display = '';
+    tipEl.innerHTML = '<div class="tip-box"><div class="tip-label">Level Up</div>' + tip + '</div>';
+  } else {
+    tipEl.style.display = 'none';
+  }
 
   document.getElementById('overlay').classList.add('open');
 
