@@ -295,11 +295,32 @@
     border: 2px solid var(--border);
   }
   .row-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .row-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .row-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; min-width: 0; }
   .row-score { font-size: 17px; font-weight: 800; color: var(--text); text-align: right; }
   .row-bar-cell { padding-left: 12px; }
   .bar-track { width: 100%; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
   .bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #3b82f6, #6366f1); transition: width 0.6s ease; }
+
+  /* Profile Link */
+  .profile-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    color: var(--accent); font-size: 12px; font-weight: 600;
+    text-decoration: none; padding: 5px 10px;
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 8px; background: rgba(59,130,246,0.06);
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .profile-link:hover { background: rgba(59,130,246,0.15); border-color: var(--accent); }
+  .profile-link svg { flex-shrink: 0; }
+  .row-profile-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    color: var(--text-muted); background: transparent;
+    border: 1px solid transparent;
+    transition: all 0.15s; text-decoration: none;
+    flex-shrink: 0;
+  }
+  .row-profile-link:hover { color: var(--accent); background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.25); }
 
   /* No results */
   .no-results { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; font-weight: 500; }
@@ -643,11 +664,11 @@
     <div id="no-results" class="no-results" style="display:none">No members found matching your search.</div>
 
     <div class="page-footer">
-      <p>MDS Community Scoreboard &middot; Score = Posts &times;10 + Comments Received &times;5 + Reactions Received &times;2</p>
+      <p>MDS Community Scoreboard &middot; Score = Posts &times;10 + Comments &times;5 + Reactions &times;2</p>
       <div class="legend">
         <div class="legend-item"><div class="ldot" style="background:var(--gold)"></div>Post = 10 pts</div>
-        <div class="legend-item"><div class="ldot" style="background:var(--accent)"></div>Comment Received = 5 pts</div>
-        <div class="legend-item"><div class="ldot" style="background:var(--silver)"></div>Reaction Received = 2 pts</div>
+        <div class="legend-item"><div class="ldot" style="background:var(--accent)"></div>Comment = 5 pts</div>
+        <div class="legend-item"><div class="ldot" style="background:var(--silver)"></div>Reaction = 2 pts</div>
       </div>
     </div>
   </div>
@@ -662,6 +683,7 @@
       <div>
         <div class="modal-name" id="m-name"></div>
         <div class="modal-sub" id="m-sub"></div>
+        <div id="m-profile-link" style="margin-top:6px"></div>
       </div>
       <div class="modal-close" id="modal-close">&#10005;</div>
     </div>
@@ -674,12 +696,12 @@
         </div>
         <div class="bd-card">
           <div class="bv" id="m-comments"></div>
-          <div class="bl">Comments Received</div>
+          <div class="bl">Comments</div>
           <div class="bp" id="m-comments-pts"></div>
         </div>
         <div class="bd-card">
           <div class="bv" id="m-reactions"></div>
-          <div class="bl">Reactions Received</div>
+          <div class="bl">Reactions</div>
           <div class="bp" id="m-reactions-pts"></div>
         </div>
       </div>
@@ -794,6 +816,15 @@ function handleImgLoad(img, name) {
   if (isRealPhoto(src)) {
     cachePhoto(name, src);
   }
+}
+
+const GROUP_ID = '699138040189700';
+function fbProfileUrl(userId) {
+  if (!userId) return null;
+  return 'https://www.facebook.com/groups/' + GROUP_ID + '/user/' + userId + '/';
+}
+function fbProfileLinkIcon() {
+  return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
 }
 
 let members = [];
@@ -922,6 +953,7 @@ async function loadData() {
 
     members = data.map(m => ({
       name: m.name || 'Unknown',
+      userId: m.userId || null,
       profilePhoto: m.profilePhoto || '',
       posts: m.posts || 0,
       comments: m.totalComments || 0,
@@ -997,6 +1029,9 @@ function renderList(list) {
   el.innerHTML = '';
   list.forEach(function(m, idx) {
     var pct = Math.max(Math.round((m.score / maxScore) * 100), 2);
+    var profileUrl = fbProfileUrl(m.userId);
+    var linkHtml = profileUrl ?
+      '<a href="' + profileUrl + '" target="_blank" rel="noopener" class="row-profile-link" title="View on Facebook" onclick="event.stopPropagation()">' + fbProfileLinkIcon() + '</a>' : '';
     var row = document.createElement('div');
     row.className = 'list-row';
     row.style.animationDelay = (idx * 0.03) + 's';
@@ -1005,6 +1040,7 @@ function renderList(list) {
       '<div class="row-member">' +
         '<div class="row-avatar"><img src="' + avatarSrc(m) + '" alt="' + m.name + '" loading="lazy" onload="handleImgLoad(this,\'' + m.name.replace(/'/g, "\\'") + '\')" onerror="handleImgError(this,\'' + m.name.replace(/'/g, "\\'") + '\')"></div>' +
         '<div class="row-name">' + m.name + '</div>' +
+        linkHtml +
       '</div>' +
       '<div class="row-score">' + m.score.toLocaleString() + '</div>' +
       '<div class="row-bar-cell"><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div></div>';
@@ -1387,6 +1423,17 @@ function openModal(m) {
   document.getElementById('m-photo').onerror = function() { handleImgError(this, m.name); };
   document.getElementById('m-name').textContent = m.name;
   document.getElementById('m-sub').textContent = 'Rank #' + m.rank + ' of ' + members.length;
+
+  // Profile link
+  var profileLinkEl = document.getElementById('m-profile-link');
+  var profileUrl = fbProfileUrl(m.userId);
+  if (profileUrl) {
+    profileLinkEl.innerHTML = '<a href="' + profileUrl + '" target="_blank" rel="noopener" class="profile-link">' +
+      fbProfileLinkIcon() + ' View Facebook Profile</a>';
+    profileLinkEl.style.display = '';
+  } else {
+    profileLinkEl.style.display = 'none';
+  }
   document.getElementById('m-posts').textContent = m.posts;
   document.getElementById('m-posts-pts').textContent = '+' + (m.posts * 10) + ' pts';
   document.getElementById('m-comments').textContent = m.comments;
@@ -1611,6 +1658,26 @@ async function runTests() {
       constK.comments > 5,
       constK.comments + ' comments (FB expected ~45)');
   }
+
+  // === Profile Links ===
+  var withUserId = members.filter(function(m) { return m.userId; }).length;
+  assert('Members have userId for profile links',
+    withUserId > members.length * 0.5,
+    withUserId + ' of ' + members.length + ' have userId');
+
+  assert('fbProfileUrl generates correct URL',
+    fbProfileUrl('123456') === 'https://www.facebook.com/groups/' + GROUP_ID + '/user/123456/',
+    fbProfileUrl('123456'));
+
+  assert('fbProfileUrl returns null for missing userId',
+    fbProfileUrl(null) === null && fbProfileUrl(undefined) === null,
+    'null/undefined → null');
+
+  // Check that profile links render in list rows
+  var listLinks = document.querySelectorAll('.row-profile-link');
+  assert('Profile link icons in list rows',
+    listLinks.length > 0,
+    listLinks.length + ' profile links rendered');
 
   // === Real Photos ===
   var withRealPhoto = members.filter(function(m) {

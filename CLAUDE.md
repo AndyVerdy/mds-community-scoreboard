@@ -22,12 +22,14 @@ README.md       — Repo readme
 
 ## Data source
 - **Apify API endpoint**: `https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs/last/dataset/items?token=<APIFY_TOKEN>` (token is embedded in `index.html`)
-- API returns an array of member objects with: `name`, `profilePhoto`, `posts`, `totalReactions`, `totalComments`, `score`
+- API returns an array of member objects with: `name`, `userId`, `profilePhoto`, `posts`, `totalReactions`, `totalComments`, `score`
 - **Important**: The `score` field from the API is NOT used. Score is always recalculated client-side.
-- **Scraper**: Custom Apify actor (build 0.0.27+) with 3 phases:
-  - Phase 1: Scroll `/members` page to get all group members
-  - Phase 2: Scroll main feed, extract posts with comments & reactions using multi-strategy DOM extraction
-  - Phase 3: Visit top 50 member profiles for real profile photos
+- **Important**: `userId` is the Facebook user ID, used to build profile links: `https://www.facebook.com/groups/699138040189700/user/{userId}/`
+- **Scraper**: Custom Apify actor (build 0.0.34+) with 3 phases:
+  - Phase 1: Scroll `/members` page to get all group members with userIds
+  - Phase 2: Visit EVERY member's group profile page (`/groups/{groupId}/user/{userId}/`) to extract exact "Participation - Last 30 days" posts & comments counts + high-quality profile photos
+  - Phase 3: Quick feed scan for reaction counts (attributed to post author)
+- **Key**: Scraper runs in non-headless mode (`headless: false`) to avoid Facebook bot detection
 - **Validation**: Scraper output compared against Facebook Group Insights engagement report (28-day window)
 - **Schedule**: Daily at 6 AM ET via Apify scheduler
 
@@ -101,31 +103,37 @@ Push to `main` branch. GitHub Pages serves from root of `main`.
 12. **My Profile**: banner with personalized rank, tips, and editable avatar
 13. **Improvement tips**: Granular rank-up tips for post/comment/reaction
 14. Avatars: Real photo → cached photo → DiceBear fallback (skip FB default silhouettes)
-15. OG meta tags with og-image.png
-16. OG image: 1200×630 dark branded PNG in repo root
-17. Single file: all in index.html
-18. Responsive: desktop and mobile
-19. Error handling: friendly error message + retry button
-20. API token not displayed in UI
-21. Fast load
+15. **Profile links**: Each member card shows a clickable link to their Facebook group profile
+16. **Profile link in modal**: Modal shows "View Facebook Profile" link
+17. **Profile link URL format**: `https://www.facebook.com/groups/699138040189700/user/{userId}/`
+18. OG meta tags with og-image.png
+19. OG image: 1200×630 dark branded PNG in repo root
+20. Single file: all in index.html
+21. Responsive: desktop and mobile
+22. Error handling: friendly error message + retry button
+23. API token not displayed in UI
+24. Fast load
 
 ### Data quality (Scraper)
-22. **Scraper totals within 25% of FB Insights** (posts, comments, reactions)
-23. **Member count accurate**: Matches FB group member count (±10)
-24. **No junk members**: Filters out "Suggested for you", page accounts, UI elements
-25. **Real profile photos**: At least 20 of top 50 members have real photos (not FB default)
-26. **Post deduplication**: Content-based keys prevent duplicate counting
-27. Multi-strategy comment extraction (text matching, aria-label, button siblings)
-28. Multi-strategy reaction extraction (aria-label, emoji-count, toolbar, like-button siblings)
+25. **Scraper totals within 25% of FB Insights** (posts, comments, reactions)
+26. **Member count accurate**: Matches FB group member count (±10)
+27. **No junk members**: Filters out "Suggested for you", page accounts, UI elements
+28. **High-quality profile photos**: Scraper captures 168px+ photos from profile pages (not 40px thumbnails)
+29. **Real profile photos**: At least 20 of top 50 members have real photos (not FB default)
+30. **userId for all members**: Scraper outputs userId for each member (for profile links)
+31. **Posts & comments from profile pages**: Phase 2 visits each member's group profile to get exact participation stats
+32. Multi-strategy reaction extraction from feed scan (Phase 3)
+33. **Non-headless mode**: Scraper runs with `headless: false` to avoid Facebook bot detection
 
 ### Testing
-29. **Test suite**: Accessible via `?test=1` URL parameter
-30. Tests cover: scoring formula, avatar helpers, TOP_N display, search, data validation
-31. **Spot-check validation**: Tests verify specific members against FB Insights
-32. All tests pass on live site
+34. **Test suite**: Accessible via `?test=1` URL parameter
+35. Tests cover: scoring formula, avatar helpers, TOP_N display, search, data validation, profile links
+36. **Profile link tests**: fbProfileUrl() helper, userId availability, link rendering
+37. **Spot-check validation**: Tests verify specific members against FB Insights
+38. All tests pass on live site
 
 ### Deployment
-33. Pushed to main branch
-34. Live on GitHub Pages
-35. Scraper running on daily schedule (6 AM ET)
-36. `?test=1` passes on live site
+39. Pushed to main branch
+40. Live on GitHub Pages
+41. Scraper running on daily schedule (6 AM ET)
+42. `?test=1` passes on live site
