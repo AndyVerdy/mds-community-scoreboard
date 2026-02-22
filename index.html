@@ -883,24 +883,36 @@ async function loadData() {
     var data = [];
     if (res.ok) data = await res.json();
 
-    // If last run returned empty/diagnostic data, find the most recent run with real member data
+    // If last run returned empty/diagnostic data, find the best recent run
+    // "Best" = most members with actual activity data (posts > 0)
     if (!Array.isArray(data) || data.length < 5) {
       var runsRes = await fetch(RUNS_URL);
       if (runsRes.ok) {
         var runsBody = await runsRes.json();
         var allRuns = (runsBody.data && runsBody.data.items) || [];
         var successRuns = allRuns.filter(function(r) { return r.status === 'SUCCEEDED'; });
+        var bestData = null;
+        var bestScore = 0;
         for (var i = 0; i < successRuns.length && i < 15; i++) {
           var dsUrl = 'https://api.apify.com/v2/datasets/' + successRuns[i].defaultDatasetId + '/items?token=' + TOKEN;
           var dsRes = await fetch(dsUrl);
           if (dsRes.ok) {
             var dsData = await dsRes.json();
             if (Array.isArray(dsData) && dsData.length >= 5) {
-              data = dsData;
-              break;
+              // Score = members with posts > 0 (active members)
+              var active = dsData.filter(function(m) { return (m.posts || 0) > 0; }).length;
+              var totalPosts = dsData.reduce(function(s, m) { return s + (m.posts || 0); }, 0);
+              var score = active * 100 + totalPosts;
+              if (score > bestScore) {
+                bestScore = score;
+                bestData = dsData;
+              }
+              // If we found a run with 100+ posts, good enough
+              if (totalPosts >= 100) break;
             }
           }
         }
+        if (bestData) data = bestData;
       }
     }
 
