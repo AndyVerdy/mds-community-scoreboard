@@ -365,50 +365,43 @@
   .bd-card .bl { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
   .bd-card .bp { font-size: 12px; font-weight: 700; color: var(--accent); margin-top: 5px; }
 
-  /* Score Chart */
-  .score-chart {
+  /* Score History Chart */
+  .score-history {
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 16px 18px;
     margin-bottom: 18px;
   }
-  .score-chart-title {
-    font-size: 10px; font-weight: 700; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px;
-  }
-  .chart-row {
-    display: flex; align-items: center; gap: 10px;
+  .score-history-header {
+    display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 12px;
   }
-  .chart-row:last-child { margin-bottom: 0; }
-  .chart-label {
-    width: 80px; flex-shrink: 0;
-    font-size: 12px; font-weight: 600; color: var(--text-muted);
+  .score-history-title {
+    font-size: 10px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
   }
-  .chart-bar-track {
-    flex: 1; height: 24px;
-    background: var(--surface2);
-    border-radius: 6px; overflow: hidden;
-    position: relative;
+  .score-history-change {
+    font-size: 12px; font-weight: 700;
+    padding: 3px 8px; border-radius: 6px;
   }
-  .chart-bar-fill {
-    height: 100%; border-radius: 6px;
-    display: flex; align-items: center;
-    padding: 0 10px;
-    transition: width 0.6s ease;
-    min-width: 0;
+  .score-history-change.up { color: #22c55e; background: rgba(34,197,94,0.12); }
+  .score-history-change.down { color: #ef4444; background: rgba(239,68,68,0.12); }
+  .score-history-change.flat { color: var(--text-muted); background: var(--surface2); }
+  .score-history canvas {
+    width: 100%; height: 120px; display: block;
+    border-radius: 8px;
   }
-  .chart-bar-fill span {
-    font-size: 11px; font-weight: 700; color: #fff;
-    white-space: nowrap;
+  .score-history-labels {
+    display: flex; justify-content: space-between;
+    margin-top: 6px;
   }
-  .chart-bar-fill.posts-bar { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
-  .chart-bar-fill.comments-bar { background: linear-gradient(90deg, #3b82f6, #6366f1); }
-  .chart-bar-fill.reactions-bar { background: linear-gradient(90deg, #94a3b8, #64748b); }
-  .chart-bar-val {
-    font-size: 12px; font-weight: 700; color: var(--text);
-    width: 50px; text-align: right; flex-shrink: 0;
+  .score-history-labels span {
+    font-size: 9px; color: var(--text-muted); font-weight: 500;
+  }
+  .score-history-empty {
+    text-align: center; padding: 20px 0;
+    font-size: 12px; color: var(--text-muted); font-weight: 500;
   }
 
   .total-box {
@@ -553,23 +546,13 @@
           <div class="bp" id="m-reactions-pts"></div>
         </div>
       </div>
-      <div class="score-chart" id="m-chart">
-        <div class="score-chart-title">Score Breakdown</div>
-        <div class="chart-row">
-          <div class="chart-label">Posts</div>
-          <div class="chart-bar-track"><div class="chart-bar-fill posts-bar" id="m-bar-posts"><span id="m-bar-posts-lbl"></span></div></div>
-          <div class="chart-bar-val" id="m-bar-posts-val"></div>
+      <div class="score-history" id="m-history">
+        <div class="score-history-header">
+          <div class="score-history-title">Score Changes</div>
+          <div class="score-history-change flat" id="m-change">—</div>
         </div>
-        <div class="chart-row">
-          <div class="chart-label">Comments</div>
-          <div class="chart-bar-track"><div class="chart-bar-fill comments-bar" id="m-bar-comments"><span id="m-bar-comments-lbl"></span></div></div>
-          <div class="chart-bar-val" id="m-bar-comments-val"></div>
-        </div>
-        <div class="chart-row">
-          <div class="chart-label">Reactions</div>
-          <div class="chart-bar-track"><div class="chart-bar-fill reactions-bar" id="m-bar-reactions"><span id="m-bar-reactions-lbl"></span></div></div>
-          <div class="chart-bar-val" id="m-bar-reactions-val"></div>
-        </div>
+        <canvas id="m-canvas" width="430" height="120"></canvas>
+        <div class="score-history-labels" id="m-history-labels"></div>
       </div>
       <div class="total-box">
         <div class="tl">Total Score</div>
@@ -581,7 +564,9 @@
 </div>
 
 <script>
-const API_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs/last/dataset/items?token=apify_api_g53jsGNcHxP9RRalCAGtBgaVUTZyyL1OOKQT';
+const TOKEN = 'apify_api_g53jsGNcHxP9RRalCAGtBgaVUTZyyL1OOKQT';
+const API_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs/last/dataset/items?token=' + TOKEN;
+const RUNS_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs?token=' + TOKEN + '&limit=20&desc=true';
 
 function dicebear(name) {
   return 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(name);
@@ -598,6 +583,45 @@ function handleImgError(img, name) {
 
 let members = [];
 let maxScore = 0;
+var scoreHistory = {}; // { memberName: [{date, score}, ...] }
+
+function calcScore(m) {
+  return (m.posts || 0) * 10 + (m.totalComments || 0) * 5 + (m.totalReactions || 0) * 2;
+}
+
+async function loadHistory() {
+  try {
+    var res = await fetch(RUNS_URL);
+    if (!res.ok) return;
+    var body = await res.json();
+    var runs = (body.data && body.data.items) || [];
+    // Only use successful runs, oldest first
+    runs = runs.filter(function(r) { return r.status === 'SUCCEEDED'; }).reverse();
+
+    // Fetch each run's dataset (in parallel, max 10)
+    var fetches = runs.slice(0, 10).map(function(run) {
+      var url = 'https://api.apify.com/v2/datasets/' + run.defaultDatasetId + '/items?token=' + TOKEN;
+      return fetch(url).then(function(r) { return r.ok ? r.json() : []; })
+        .then(function(data) { return { date: run.startedAt, items: data }; })
+        .catch(function() { return null; });
+    });
+
+    var results = await Promise.all(fetches);
+    scoreHistory = {};
+
+    results.forEach(function(r) {
+      if (!r || !Array.isArray(r.items) || r.items.length === 0) return;
+      var d = r.date;
+      r.items.forEach(function(m) {
+        var name = m.name || 'Unknown';
+        if (!scoreHistory[name]) scoreHistory[name] = [];
+        scoreHistory[name].push({ date: d, score: calcScore(m) });
+      });
+    });
+  } catch (e) {
+    // History is optional, fail silently
+  }
+}
 
 async function loadData() {
   const loading = document.getElementById('loading');
@@ -609,7 +633,8 @@ async function loadData() {
   content.style.display = 'none';
 
   try {
-    const res = await fetch(API_URL);
+    // Fetch current data and history in parallel
+    var [res] = await Promise.all([fetch(API_URL), loadHistory()]);
     if (!res.ok) throw new Error('API returned ' + res.status);
     const data = await res.json();
 
@@ -733,6 +758,145 @@ document.getElementById('search').addEventListener('input', function(e) {
   renderList(filtered);
 });
 
+function drawHistoryChart(name) {
+  var canvas = document.getElementById('m-canvas');
+  var ctx = canvas.getContext('2d');
+  var dpr = window.devicePixelRatio || 1;
+  var rect = canvas.parentElement.getBoundingClientRect();
+  var w = rect.width - 36; // account for padding
+  var h = 120;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, w, h);
+
+  var history = scoreHistory[name] || [];
+  var changeEl = document.getElementById('m-change');
+  var labelsEl = document.getElementById('m-history-labels');
+
+  if (history.length < 2) {
+    // Not enough data — show message
+    ctx.fillStyle = '#6b7a99';
+    ctx.font = '500 12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Not enough data for history chart', w / 2, h / 2);
+    changeEl.className = 'score-history-change flat';
+    changeEl.textContent = '—';
+    labelsEl.innerHTML = '';
+    return;
+  }
+
+  var scores = history.map(function(h) { return h.score; });
+  var dates = history.map(function(h) { return h.date; });
+  var minS = Math.min.apply(null, scores);
+  var maxS = Math.max.apply(null, scores);
+  var range = maxS - minS || 1;
+  var pad = { top: 18, bottom: 24, left: 4, right: 4 };
+  var cw = w - pad.left - pad.right;
+  var ch = h - pad.top - pad.bottom;
+
+  // Change badge
+  var first = scores[0];
+  var last = scores[scores.length - 1];
+  var diff = last - first;
+  if (diff > 0) {
+    changeEl.className = 'score-history-change up';
+    changeEl.textContent = '▲ +' + diff + ' pts';
+  } else if (diff < 0) {
+    changeEl.className = 'score-history-change down';
+    changeEl.textContent = '▼ ' + diff + ' pts';
+  } else {
+    changeEl.className = 'score-history-change flat';
+    changeEl.textContent = '— No change';
+  }
+
+  // Grid lines
+  ctx.strokeStyle = '#1e2a42';
+  ctx.lineWidth = 1;
+  for (var g = 0; g <= 3; g++) {
+    var gy = pad.top + (ch / 3) * g;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, gy);
+    ctx.lineTo(w - pad.right, gy);
+    ctx.stroke();
+  }
+
+  // Y-axis labels
+  ctx.fillStyle = '#6b7a99';
+  ctx.font = '500 9px Inter, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(maxS, pad.left, pad.top - 4);
+  ctx.fillText(minS, pad.left, h - pad.bottom + 12);
+
+  // Points
+  var points = scores.map(function(s, i) {
+    var x = pad.left + (i / (scores.length - 1)) * cw;
+    var y = pad.top + ch - ((s - minS) / range) * ch;
+    return { x: x, y: y, score: s };
+  });
+
+  // Gradient fill under line
+  var gradient = ctx.createLinearGradient(0, pad.top, 0, h - pad.bottom);
+  gradient.addColorStop(0, 'rgba(59, 130, 246, 0.25)');
+  gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, h - pad.bottom);
+  points.forEach(function(p) { ctx.lineTo(p.x, p.y); });
+  ctx.lineTo(points[points.length - 1].x, h - pad.bottom);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (var i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i].x, points[i].y);
+  }
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Dots
+  points.forEach(function(p, i) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, i === points.length - 1 ? 5 : 3, 0, Math.PI * 2);
+    ctx.fillStyle = i === points.length - 1 ? '#3b82f6' : '#1a2035';
+    ctx.fill();
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  // Score labels on dots
+  ctx.fillStyle = '#e4e8f1';
+  ctx.font = '700 10px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  points.forEach(function(p, i) {
+    // Only label first, last, and points where score changed
+    if (i === 0 || i === points.length - 1 || scores[i] !== scores[i - 1]) {
+      ctx.fillText(p.score, p.x, p.y - 10);
+    }
+  });
+
+  // X-axis date labels
+  labelsEl.innerHTML = '';
+  var labelIndices = [0, Math.floor(dates.length / 2), dates.length - 1];
+  if (dates.length <= 3) labelIndices = dates.map(function(_, i) { return i; });
+  var unique = [];
+  labelIndices.forEach(function(idx) { if (unique.indexOf(idx) === -1) unique.push(idx); });
+  unique.forEach(function(idx) {
+    var d = new Date(dates[idx]);
+    var span = document.createElement('span');
+    span.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    labelsEl.appendChild(span);
+  });
+}
+
 function openModal(m) {
   document.getElementById('m-photo').src = avatarSrc(m);
   document.getElementById('m-photo').onerror = function() { handleImgError(this, m.name); };
@@ -748,25 +912,10 @@ function openModal(m) {
   document.getElementById('m-formula').textContent =
     '(' + m.posts + ' \u00D7 10) + (' + m.comments + ' \u00D7 5) + (' + m.reactions + ' \u00D7 2)';
 
-  // Chart bars
-  var postsPts = m.posts * 10;
-  var commentsPts = m.comments * 5;
-  var reactionsPts = m.reactions * 2;
-  var chartMax = Math.max(postsPts, commentsPts, reactionsPts, 1);
-
-  document.getElementById('m-bar-posts').style.width = Math.max((postsPts / chartMax) * 100, postsPts > 0 ? 8 : 0) + '%';
-  document.getElementById('m-bar-posts-lbl').textContent = postsPts > 0 ? (m.posts + ' × 10') : '';
-  document.getElementById('m-bar-posts-val').textContent = postsPts + ' pts';
-
-  document.getElementById('m-bar-comments').style.width = Math.max((commentsPts / chartMax) * 100, commentsPts > 0 ? 8 : 0) + '%';
-  document.getElementById('m-bar-comments-lbl').textContent = commentsPts > 0 ? (m.comments + ' × 5') : '';
-  document.getElementById('m-bar-comments-val').textContent = commentsPts + ' pts';
-
-  document.getElementById('m-bar-reactions').style.width = Math.max((reactionsPts / chartMax) * 100, reactionsPts > 0 ? 8 : 0) + '%';
-  document.getElementById('m-bar-reactions-lbl').textContent = reactionsPts > 0 ? (m.reactions + ' × 2') : '';
-  document.getElementById('m-bar-reactions-val').textContent = reactionsPts + ' pts';
-
   document.getElementById('overlay').classList.add('open');
+
+  // Draw history chart after modal is visible (needs layout)
+  requestAnimationFrame(function() { drawHistoryChart(m.name); });
 }
 
 document.getElementById('modal-close').addEventListener('click', function() {
