@@ -365,6 +365,52 @@
   .bd-card .bl { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
   .bd-card .bp { font-size: 12px; font-weight: 700; color: var(--accent); margin-top: 5px; }
 
+  /* Score Chart */
+  .score-chart {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+  }
+  .score-chart-title {
+    font-size: 10px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px;
+  }
+  .chart-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .chart-row:last-child { margin-bottom: 0; }
+  .chart-label {
+    width: 80px; flex-shrink: 0;
+    font-size: 12px; font-weight: 600; color: var(--text-muted);
+  }
+  .chart-bar-track {
+    flex: 1; height: 24px;
+    background: var(--surface2);
+    border-radius: 6px; overflow: hidden;
+    position: relative;
+  }
+  .chart-bar-fill {
+    height: 100%; border-radius: 6px;
+    display: flex; align-items: center;
+    padding: 0 10px;
+    transition: width 0.6s ease;
+    min-width: 0;
+  }
+  .chart-bar-fill span {
+    font-size: 11px; font-weight: 700; color: #fff;
+    white-space: nowrap;
+  }
+  .chart-bar-fill.posts-bar { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+  .chart-bar-fill.comments-bar { background: linear-gradient(90deg, #3b82f6, #6366f1); }
+  .chart-bar-fill.reactions-bar { background: linear-gradient(90deg, #94a3b8, #64748b); }
+  .chart-bar-val {
+    font-size: 12px; font-weight: 700; color: var(--text);
+    width: 50px; text-align: right; flex-shrink: 0;
+  }
+
   .total-box {
     background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.1));
     border: 1px solid rgba(59,130,246,0.2);
@@ -505,6 +551,24 @@
           <div class="bv" id="m-reactions"></div>
           <div class="bl">Reactions</div>
           <div class="bp" id="m-reactions-pts"></div>
+        </div>
+      </div>
+      <div class="score-chart" id="m-chart">
+        <div class="score-chart-title">Score Breakdown</div>
+        <div class="chart-row">
+          <div class="chart-label">Posts</div>
+          <div class="chart-bar-track"><div class="chart-bar-fill posts-bar" id="m-bar-posts"><span id="m-bar-posts-lbl"></span></div></div>
+          <div class="chart-bar-val" id="m-bar-posts-val"></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label">Comments</div>
+          <div class="chart-bar-track"><div class="chart-bar-fill comments-bar" id="m-bar-comments"><span id="m-bar-comments-lbl"></span></div></div>
+          <div class="chart-bar-val" id="m-bar-comments-val"></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label">Reactions</div>
+          <div class="chart-bar-track"><div class="chart-bar-fill reactions-bar" id="m-bar-reactions"><span id="m-bar-reactions-lbl"></span></div></div>
+          <div class="chart-bar-val" id="m-bar-reactions-val"></div>
         </div>
       </div>
       <div class="total-box">
@@ -683,6 +747,25 @@ function openModal(m) {
   document.getElementById('m-total').textContent = m.score.toLocaleString();
   document.getElementById('m-formula').textContent =
     '(' + m.posts + ' \u00D7 10) + (' + m.comments + ' \u00D7 5) + (' + m.reactions + ' \u00D7 2)';
+
+  // Chart bars
+  var postsPts = m.posts * 10;
+  var commentsPts = m.comments * 5;
+  var reactionsPts = m.reactions * 2;
+  var chartMax = Math.max(postsPts, commentsPts, reactionsPts, 1);
+
+  document.getElementById('m-bar-posts').style.width = Math.max((postsPts / chartMax) * 100, postsPts > 0 ? 8 : 0) + '%';
+  document.getElementById('m-bar-posts-lbl').textContent = postsPts > 0 ? (m.posts + ' × 10') : '';
+  document.getElementById('m-bar-posts-val').textContent = postsPts + ' pts';
+
+  document.getElementById('m-bar-comments').style.width = Math.max((commentsPts / chartMax) * 100, commentsPts > 0 ? 8 : 0) + '%';
+  document.getElementById('m-bar-comments-lbl').textContent = commentsPts > 0 ? (m.comments + ' × 5') : '';
+  document.getElementById('m-bar-comments-val').textContent = commentsPts + ' pts';
+
+  document.getElementById('m-bar-reactions').style.width = Math.max((reactionsPts / chartMax) * 100, reactionsPts > 0 ? 8 : 0) + '%';
+  document.getElementById('m-bar-reactions-lbl').textContent = reactionsPts > 0 ? (m.reactions + ' × 2') : '';
+  document.getElementById('m-bar-reactions-val').textContent = reactionsPts + ' pts';
+
   document.getElementById('overlay').classList.add('open');
 }
 
