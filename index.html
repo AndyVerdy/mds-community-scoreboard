@@ -1344,9 +1344,19 @@ async function findBestDataset() {
       var active = dsData.filter(function(m) { return (m.posts || 0) > 0; }).length;
       var totalPosts = dsData.reduce(function(s, m) { return s + (m.posts || 0); }, 0);
       var totalComments = dsData.reduce(function(s, m) { return s + (m.totalComments || 0); }, 0);
-      var realPhotos = dsData.filter(function(m) {
-        return m.profilePhoto && m.profilePhoto.includes('scontent');
-      }).length;
+      // Count UNIQUE real photos (skip duplicates — they indicate a bogus nav bar avatar)
+      var photoUrls = {};
+      dsData.forEach(function(m) {
+        var p = m.profilePhoto || '';
+        if (p && p.includes('scontent')) {
+          var base = p.split('?')[0];
+          photoUrls[base] = (photoUrls[base] || 0) + 1;
+        }
+      });
+      var realPhotos = 0;
+      Object.keys(photoUrls).forEach(function(base) {
+        if (photoUrls[base] <= 3) realPhotos += photoUrls[base]; // Only count unique photos
+      });
       // Skip datasets with zero posts AND zero comments (broken Phase 2 runs)
       if (totalPosts === 0 && totalComments === 0) continue;
       // Score: reward real photos + activity + content. Photos 50ea, active 100ea, posts 2ea, comments 1ea
@@ -1402,10 +1412,33 @@ async function loadData() {
       throw new Error('No data received from API');
     }
 
+    // Detect duplicate photos: if >50% of photos share the same URL, they're bogus (nav bar avatar)
+    var photoCounts = {};
+    data.forEach(function(m) {
+      var p = m.profilePhoto || '';
+      if (p && p.includes('scontent')) {
+        var base = p.split('?')[0];
+        photoCounts[base] = (photoCounts[base] || 0) + 1;
+      }
+    });
+    var photoMembers = data.filter(function(m) { return m.profilePhoto && m.profilePhoto.includes('scontent'); }).length;
+    var bogusPhotos = {};
+    Object.keys(photoCounts).forEach(function(base) {
+      if (photoCounts[base] > 3 && photoCounts[base] > photoMembers * 0.3) {
+        bogusPhotos[base] = true;
+      }
+    });
+    var bogusCount = Object.keys(bogusPhotos).length;
+    if (bogusCount > 0) console.log('Detected ' + bogusCount + ' bogus photo URL(s), stripping from ' + Object.values(photoCounts).reduce(function(s,v){return s+v;},0) + ' members');
+
     members = data.map(m => ({
       name: m.name || 'Unknown',
       userId: m.userId || null,
-      profilePhoto: m.profilePhoto || '',
+      profilePhoto: (function() {
+        var p = m.profilePhoto || '';
+        if (p && bogusPhotos[p.split('?')[0]]) return ''; // Strip bogus duplicate
+        return p;
+      })(),
       posts: m.posts || 0,
       comments: m.totalComments || 0,
       reactions: m.totalReactions || 0,
