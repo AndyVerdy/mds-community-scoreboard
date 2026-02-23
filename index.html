@@ -1343,17 +1343,20 @@ async function findBestDataset() {
       if (!Array.isArray(dsData) || dsData.length < 5) continue;
       var active = dsData.filter(function(m) { return (m.posts || 0) > 0; }).length;
       var totalPosts = dsData.reduce(function(s, m) { return s + (m.posts || 0); }, 0);
+      var totalComments = dsData.reduce(function(s, m) { return s + (m.totalComments || 0); }, 0);
       var realPhotos = dsData.filter(function(m) {
         return m.profilePhoto && m.profilePhoto.includes('scontent');
       }).length;
-      // Score: heavily reward real photos + activity. Photos worth 50 each, active members 100, posts 1 each
-      var score = realPhotos * 50 + active * 100 + totalPosts;
+      // Skip datasets with zero posts AND zero comments (broken Phase 2 runs)
+      if (totalPosts === 0 && totalComments === 0) continue;
+      // Score: reward real photos + activity + content. Photos 50ea, active 100ea, posts 2ea, comments 1ea
+      var score = realPhotos * 50 + active * 100 + totalPosts * 2 + totalComments;
       if (score > bestScore) {
         bestScore = score;
         bestData = dsData;
       }
-      // Good enough: 10+ real photos and 50+ posts
-      if (realPhotos >= 10 && totalPosts >= 50) break;
+      // Good enough: 10+ real photos and 20+ posts
+      if (realPhotos >= 10 && totalPosts >= 20) break;
     }
     return bestData;
   } catch(e) { return null; }
@@ -1373,6 +1376,12 @@ async function loadData() {
     var data = [];
     if (res.ok) data = await res.json();
 
+    // Validate last run data — reject if broken (0 posts AND 0 comments means Phase 2 failed)
+    if (Array.isArray(data) && data.length >= 5) {
+      var lastRunPosts = data.reduce(function(s, m) { return s + (m.posts || 0); }, 0);
+      var lastRunComments = data.reduce(function(s, m) { return s + (m.totalComments || 0); }, 0);
+      if (lastRunPosts === 0 && lastRunComments === 0) data = [];
+    }
     if (!Array.isArray(data) || data.length < 5) {
       data = await findBestDataset();
     }
