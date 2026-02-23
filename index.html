@@ -488,7 +488,7 @@ body {
 .podium-card--gold .podium-card__avatar   { width: 90px; height: 90px; border-color: var(--gold); }
 .podium-card--silver .podium-card__avatar { width: 74px; height: 74px; border-color: var(--silver); }
 .podium-card--bronze .podium-card__avatar { width: 70px; height: 70px; border-color: var(--bronze); }
-.podium-card__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.podium-card__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: -webkit-optimize-contrast; }
 
 .podium-card__badge {
   position: absolute; bottom: -2px; right: -2px;
@@ -579,7 +579,7 @@ body {
   overflow: hidden; flex-shrink: 0;
   border: 2px solid var(--border);
 }
-.member-row__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.member-row__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; image-rendering: -webkit-optimize-contrast; }
 
 .member-row__name { font-size: var(--font-md); font-weight: 600; color: var(--text); flex: 1; min-width: 0; }
 
@@ -637,11 +637,11 @@ body {
   position: relative;
 }
 .modal__photo {
-  width: 64px; height: 64px; border-radius: 50%;
+  width: 80px; height: 80px; border-radius: 50%;
   overflow: hidden; flex-shrink: 0;
   border: 3px solid var(--border);
 }
-.modal__photo img { width: 100%; height: 100%; object-fit: cover; }
+.modal__photo img { width: 100%; height: 100%; object-fit: cover; image-rendering: -webkit-optimize-contrast; }
 .modal__name { font-size: var(--font-xl); font-weight: 800; color: var(--text-strong); }
 .modal__sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
 .modal__close {
@@ -967,7 +967,7 @@ body {
 
   .modal { max-width: 100%; border-radius: var(--radius-lg); }
   .modal__hero { padding: var(--space-md); gap: var(--space-md); }
-  .modal__photo { width: 52px; height: 52px; }
+  .modal__photo { width: 64px; height: 64px; }
   .modal__name { font-size: var(--font-lg); }
   .modal__body { padding: var(--space-md); }
 
@@ -1326,6 +1326,39 @@ async function loadHistory() {
   } catch (e) {}
 }
 
+async function findBestDataset() {
+  try {
+    var runsRes = await fetch(RUNS_URL);
+    if (!runsRes.ok) return null;
+    var runsBody = await runsRes.json();
+    var allRuns = (runsBody.data && runsBody.data.items) || [];
+    var successRuns = allRuns.filter(function(r) { return r.status === 'SUCCEEDED'; });
+    var bestData = null;
+    var bestScore = 0;
+    for (var i = 0; i < successRuns.length && i < 15; i++) {
+      var dsUrl = 'https://api.apify.com/v2/datasets/' + successRuns[i].defaultDatasetId + '/items?token=' + TOKEN;
+      var dsRes = await fetch(dsUrl);
+      if (!dsRes.ok) continue;
+      var dsData = await dsRes.json();
+      if (!Array.isArray(dsData) || dsData.length < 5) continue;
+      var active = dsData.filter(function(m) { return (m.posts || 0) > 0; }).length;
+      var totalPosts = dsData.reduce(function(s, m) { return s + (m.posts || 0); }, 0);
+      var realPhotos = dsData.filter(function(m) {
+        return m.profilePhoto && m.profilePhoto.includes('scontent');
+      }).length;
+      // Score: heavily reward real photos + activity. Photos worth 50 each, active members 100, posts 1 each
+      var score = realPhotos * 50 + active * 100 + totalPosts;
+      if (score > bestScore) {
+        bestScore = score;
+        bestData = dsData;
+      }
+      // Good enough: 10+ real photos and 50+ posts
+      if (realPhotos >= 10 && totalPosts >= 50) break;
+    }
+    return bestData;
+  } catch(e) { return null; }
+}
+
 async function loadData() {
   const loading = document.getElementById('loading');
   const error = document.getElementById('error');
@@ -1341,31 +1374,18 @@ async function loadData() {
     if (res.ok) data = await res.json();
 
     if (!Array.isArray(data) || data.length < 5) {
-      var runsRes = await fetch(RUNS_URL);
-      if (runsRes.ok) {
-        var runsBody = await runsRes.json();
-        var allRuns = (runsBody.data && runsBody.data.items) || [];
-        var successRuns = allRuns.filter(function(r) { return r.status === 'SUCCEEDED'; });
-        var bestData = null;
-        var bestScore = 0;
-        for (var i = 0; i < successRuns.length && i < 15; i++) {
-          var dsUrl = 'https://api.apify.com/v2/datasets/' + successRuns[i].defaultDatasetId + '/items?token=' + TOKEN;
-          var dsRes = await fetch(dsUrl);
-          if (dsRes.ok) {
-            var dsData = await dsRes.json();
-            if (Array.isArray(dsData) && dsData.length >= 5) {
-              var active = dsData.filter(function(m) { return (m.posts || 0) > 0; }).length;
-              var totalPosts = dsData.reduce(function(s, m) { return s + (m.posts || 0); }, 0);
-              var score = active * 100 + totalPosts;
-              if (score > bestScore) {
-                bestScore = score;
-                bestData = dsData;
-              }
-              if (totalPosts >= 100) break;
-            }
-          }
-        }
-        if (bestData) data = bestData;
+      data = await findBestDataset();
+    }
+    // Even if we got data from last run, check if a better dataset exists
+    // (one with real profile photos and more active members)
+    if (Array.isArray(data) && data.length >= 5) {
+      var realPhotos = data.filter(function(m) {
+        return m.profilePhoto && m.profilePhoto.includes('scontent');
+      }).length;
+      // If current dataset has few real photos, try to find a better one
+      if (realPhotos < 10) {
+        var better = await findBestDataset();
+        if (better) data = better;
       }
     }
 
@@ -1681,18 +1701,78 @@ function drawHistoryChart(name) {
   titleEl.textContent = 'Score History (30 Days)';
 
   if (history.length < 2) {
+    // Draw a score breakdown bar chart instead of empty state
+    var member = members.find(function(x) { return x.name === name; });
+    if (member && member.score > 0) {
+      titleEl.textContent = 'Score Breakdown';
+      var categories = [
+        { label: 'Posts', raw: member.posts, pts: member.posts * 10, color: '#3b82f6' },
+        { label: 'Comments', raw: member.comments, pts: member.comments * 5, color: '#8b5cf6' },
+        { label: 'Reactions', raw: member.reactions, pts: member.reactions * 2, color: '#06b6d4' }
+      ];
+      var maxPts = Math.max.apply(null, categories.map(function(c) { return c.pts; }));
+      if (maxPts === 0) maxPts = 1;
+
+      var pad = { top: 8, bottom: 4, left: 80, right: 50 };
+      var cw = w - pad.left - pad.right;
+      var barHeight = 22;
+      var barGap = 12;
+      var totalH = categories.length * (barHeight + barGap) - barGap;
+      var startY = pad.top + (h - pad.top - pad.bottom - totalH) / 2;
+
+      categories.forEach(function(cat, i) {
+        var y = startY + i * (barHeight + barGap);
+        var barW = Math.max((cat.pts / maxPts) * cw, 4);
+
+        // Label
+        ctx.fillStyle = colors.text;
+        ctx.font = '600 12px Inter, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(cat.label, pad.left - 10, y + barHeight / 2 + 4);
+
+        // Bar background
+        ctx.fillStyle = colors.grid;
+        ctx.beginPath();
+        ctx.roundRect(pad.left, y, cw, barHeight, 4);
+        ctx.fill();
+
+        // Bar fill with gradient
+        var grad = ctx.createLinearGradient(pad.left, 0, pad.left + barW, 0);
+        grad.addColorStop(0, cat.color);
+        grad.addColorStop(1, cat.color + '88');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(pad.left, y, barW, barHeight, 4);
+        ctx.fill();
+
+        // Value label
+        ctx.fillStyle = colors.text;
+        ctx.font = '700 11px Inter, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(cat.pts + ' pts', pad.left + barW + 6, y + barHeight / 2 + 4);
+
+        // Raw count inside bar (if wide enough)
+        if (barW > 40) {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '500 10px Inter, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(cat.raw + 'x', pad.left + barW - 6, y + barHeight / 2 + 3);
+        }
+      });
+
+      changeEl.className = 'chart__change chart__change--up';
+      changeEl.textContent = member.score + ' total pts';
+      labelsEl.innerHTML = '<span style="font-size:11px;color:var(--text-muted)">Posts \u00D710 + Comments \u00D75 + Reactions \u00D72</span>';
+      return;
+    }
+
+    // Truly no data at all
     ctx.fillStyle = colors.textMuted;
     ctx.font = '500 12px Inter, sans-serif';
     ctx.textAlign = 'center';
-    if (history.length === 1) {
-      ctx.fillText('Current score: ' + history[0].score + ' pts', w / 2, h / 2 - 10);
-      ctx.font = '400 11px Inter, sans-serif';
-      ctx.fillText('Chart unlocks after tomorrow\u2019s daily update', w / 2, h / 2 + 10);
-    } else {
-      ctx.fillText('No score data yet \u2014 check back after first daily run', w / 2, h / 2);
-    }
+    ctx.fillText('No activity data yet', w / 2, h / 2);
     changeEl.className = 'chart__change chart__change--flat';
-    changeEl.textContent = history.length === 1 ? history[0].score + ' pts' : '\u2014';
+    changeEl.textContent = '\u2014';
     labelsEl.innerHTML = '';
     return;
   }
@@ -1977,7 +2057,8 @@ function openModal(m) {
   document.getElementById('m-photo').src = avatarSrc(m);
   document.getElementById('m-photo').onerror = function() { handleImgError(this, m.name); };
   document.getElementById('m-name').textContent = m.name;
-  document.getElementById('m-sub').textContent = 'Rank #' + m.rank + ' of ' + members.length;
+  var rankContext = m.rank <= TOP_N ? TOP_N : members.length;
+  document.getElementById('m-sub').textContent = 'Rank #' + m.rank + ' of ' + rankContext + ' members';
 
   var profileLinkEl = document.getElementById('m-profile-link');
   var profileUrl = fbProfileUrl(m.userId);
