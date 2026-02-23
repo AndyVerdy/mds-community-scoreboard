@@ -19,605 +19,987 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
-  :root {
-    --bg: #0b0f1a;
-    --surface: #131825;
-    --surface2: #1a2035;
-    --border: #1e2a42;
-    --border-light: #253352;
-    --text: #e4e8f1;
-    --text-muted: #6b7a99;
-    --accent: #3b82f6;
-    --accent-glow: rgba(59, 130, 246, 0.15);
-    --gold: #fbbf24;
-    --gold-dim: rgba(251, 191, 36, 0.12);
-    --silver: #94a3b8;
-    --silver-dim: rgba(148, 163, 184, 0.12);
-    --bronze: #d97706;
-    --bronze-dim: rgba(217, 119, 6, 0.12);
-  }
+/* ==============================================
+   DESIGN TOKENS — All colors, spacing, radii
+   These are the ONLY place colors are defined.
+   To re-skin: change tokens, everything follows.
+   ============================================== */
+:root {
+  /* Color Scheme */
+  --color-scheme: dark;
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* Backgrounds */
+  --bg: #0b0f1a;
+  --surface: #131825;
+  --surface2: #1a2035;
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-  }
+  /* Borders */
+  --border: #1e2a42;
+  --border-light: #253352;
 
-  /* Top Banner */
-  .top-banner {
-    background: linear-gradient(90deg, #3b82f6, #6366f1);
-    color: #fff;
-    text-align: center;
-    padding: 10px 20px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
+  /* Text */
+  --text: #e4e8f1;
+  --text-strong: #ffffff;
+  --text-muted: #6b7a99;
 
-  /* Nav */
-  nav {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .nav-logo { display: flex; align-items: center; gap: 10px; }
-  .nav-logo img {
-    height: 32px;
-    width: auto;
-    display: block;
-  }
-  .nav-right { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); font-weight: 500; }
-  .live-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #22c55e;
-    box-shadow: 0 0 0 3px rgba(34,197,94,0.25);
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.25); }
-    50% { box-shadow: 0 0 0 7px rgba(34,197,94,0.06); }
-  }
+  /* Accent */
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-glow: rgba(59, 130, 246, 0.15);
+  --accent-soft: rgba(59, 130, 246, 0.08);
 
-  /* Wrap */
-  .wrap { max-width: 900px; margin: 0 auto; padding: 36px 20px 60px; }
+  /* Semantic */
+  --success: #22c55e;
+  --success-soft: rgba(34, 197, 94, 0.12);
+  --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.1);
 
-  /* Page Header */
-  .page-header {
-    display: flex; align-items: flex-end; justify-content: space-between;
-    margin-bottom: 30px; gap: 16px;
-  }
-  .page-header h1 {
-    font-size: clamp(28px, 4.5vw, 42px);
-    font-weight: 900; color: #fff;
-    letter-spacing: -1.5px; line-height: 1.05;
-  }
-  .page-header h1 span {
-    background: linear-gradient(135deg, #3b82f6, #a78bfa);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .page-header p { font-size: 13px; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
-  .stats-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-  .stat-pill {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 6px 14px;
-    font-size: 12px; color: var(--text-muted); font-weight: 500;
-  }
-  .stat-pill strong { color: var(--accent); font-weight: 700; }
+  /* Medal Colors */
+  --gold: #fbbf24;
+  --gold-dim: rgba(251, 191, 36, 0.12);
+  --gold-border: rgba(251, 191, 36, 0.3);
+  --silver: #94a3b8;
+  --silver-dim: rgba(148, 163, 184, 0.12);
+  --silver-border: rgba(148, 163, 184, 0.3);
+  --bronze: #d97706;
+  --bronze-dim: rgba(217, 119, 6, 0.12);
+  --bronze-border: rgba(217, 119, 6, 0.3);
 
-  /* Search */
-  .search-wrap { position: relative; margin-bottom: 30px; }
-  .search-wrap input {
-    width: 100%;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 13px 16px 13px 44px;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px; color: var(--text);
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .search-wrap input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-glow);
-  }
-  .search-wrap input::placeholder { color: var(--text-muted); }
-  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+  /* Gradients */
+  --gradient-brand: linear-gradient(90deg, #3b82f6, #6366f1);
+  --gradient-title: linear-gradient(135deg, #3b82f6, #a78bfa);
+  --gradient-bar: linear-gradient(90deg, #3b82f6, #6366f1);
+  --gradient-total: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.1));
+  --gradient-profile: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(59,130,246,0.08));
 
-  /* Loading */
-  .loading-state {
-    text-align: center; padding: 80px 20px;
-  }
-  .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-state p { color: var(--text-muted); font-size: 14px; font-weight: 500; }
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.15);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.25);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,0.4);
+  --shadow-xl: 0 24px 80px rgba(0,0,0,0.5);
+  --shadow-accent: 0 4px 20px rgba(59,130,246,0.1);
 
-  /* Error */
-  .error-state {
-    text-align: center; padding: 60px 20px;
-    background: var(--surface);
-    border: 1px solid #ef4444;
-    border-radius: 16px;
-  }
-  .error-state .error-icon { font-size: 40px; margin-bottom: 12px; }
-  .error-state h3 { color: #ef4444; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-  .error-state p { color: var(--text-muted); font-size: 14px; line-height: 1.5; }
-  .error-state button {
-    margin-top: 16px; padding: 10px 24px;
-    background: var(--accent); color: #fff;
-    border: none; border-radius: 8px;
-    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: opacity 0.2s;
-  }
-  .error-state button:hover { opacity: 0.85; }
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 36px;
 
-  /* Podium */
-  .podium-section { margin-bottom: 28px; }
-  .podium { display: flex; align-items: flex-end; justify-content: center; gap: 12px; }
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 100px;
 
-  .podium-card {
-    flex: 1; max-width: 260px;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 18px;
-    display: flex; flex-direction: column; align-items: center;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-    overflow: hidden;
-  }
-  .podium-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
-  }
+  /* Typography */
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-xs: 10px;
+  --font-sm: 12px;
+  --font-md: 14px;
+  --font-lg: 18px;
+  --font-xl: 20px;
+  --font-2xl: 28px;
+  --font-score: 36px;
 
-  .p1 { border-color: rgba(251,191,36,0.3); margin-bottom: 40px; }
-  .p1:hover { border-color: rgba(251,191,36,0.6); }
-  .p2 { margin-bottom: 12px; border-color: rgba(148,163,184,0.3); }
-  .p2:hover { border-color: rgba(148,163,184,0.5); }
-  .p3 { margin-bottom: 0; border-color: rgba(217,119,6,0.3); }
-  .p3:hover { border-color: rgba(217,119,6,0.5); }
+  /* Chart Colors */
+  --chart-grid: #1e2a42;
+  --chart-bar: #3b82f6;
+  --chart-bar-fade: rgba(59,130,246,0.3);
+  --chart-line: #3b82f6;
+  --chart-fill-start: rgba(59, 130, 246, 0.25);
+  --chart-fill-end: rgba(59, 130, 246, 0.0);
+  --chart-dot-bg: #1a2035;
 
-  .podium-top {
-    width: 100%; padding: 22px 14px 16px;
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-  }
-  .p1 .podium-top { background: linear-gradient(160deg, rgba(251,191,36,0.08) 0%, transparent 60%); }
-  .p2 .podium-top { background: linear-gradient(160deg, rgba(148,163,184,0.06) 0%, transparent 60%); }
-  .p3 .podium-top { background: linear-gradient(160deg, rgba(217,119,6,0.06) 0%, transparent 60%); }
+  /* Logo */
+  --logo-filter: none;
+}
 
-  .crown { font-size: 24px; line-height: 1; }
+/* ==============================================
+   LIGHT MODE — auto-detected via system setting
+   ============================================== */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --color-scheme: light;
 
-  .podium-avatar-wrap { position: relative; }
-  .podium-avatar {
-    border-radius: 50%; overflow: hidden;
-    border: 3px solid var(--border);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    display: block;
-  }
-  .p1 .podium-avatar { width: 90px; height: 90px; border-color: var(--gold); }
-  .p2 .podium-avatar { width: 74px; height: 74px; border-color: var(--silver); }
-  .p3 .podium-avatar { width: 70px; height: 70px; border-color: var(--bronze); }
-  .podium-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --surface2: #f0f2f5;
 
-  .rank-badge {
-    position: absolute; bottom: -2px; right: -2px;
-    width: 24px; height: 24px; border-radius: 50%;
-    border: 2px solid var(--surface);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 800; color: #fff;
-  }
-  .p1 .rank-badge { background: var(--gold); color: #000; }
-  .p2 .rank-badge { background: var(--silver); color: #000; }
-  .p3 .rank-badge { background: var(--bronze); }
+    --border: #e2e5ea;
+    --border-light: #d1d5db;
 
-  .podium-name {
-    font-size: 14px; font-weight: 700; color: var(--text);
-    text-align: center; line-height: 1.3;
-  }
-  .podium-score { font-weight: 900; letter-spacing: -0.5px; }
-  .p1 .podium-score { font-size: 32px; color: var(--gold); }
-  .p2 .podium-score { font-size: 26px; color: var(--silver); }
-  .p3 .podium-score { font-size: 24px; color: var(--bronze); }
-  .podium-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    --text: #1e293b;
+    --text-strong: #0f172a;
+    --text-muted: #64748b;
 
-  .podium-bottom {
-    width: 100%; padding: 10px 8px;
-    border-top: 1px solid var(--border);
-    display: flex; justify-content: space-around;
-  }
-  .podium-stat .sv { font-size: 15px; font-weight: 700; color: var(--text); text-align: center; }
-  .podium-stat .sl { font-size: 9px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-glow: rgba(37, 99, 235, 0.12);
+    --accent-soft: rgba(37, 99, 235, 0.06);
 
-  /* List */
-  .list-header {
-    display: grid;
-    grid-template-columns: 50px 1fr 100px 100px;
-    padding: 0 16px 10px;
-    font-size: 11px; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 8px;
-  }
+    --success: #16a34a;
+    --success-soft: rgba(22, 163, 74, 0.1);
+    --danger: #dc2626;
+    --danger-soft: rgba(220, 38, 38, 0.08);
 
-  .list-section { display: flex; flex-direction: column; gap: 6px; }
+    --gold: #d97706;
+    --gold-dim: rgba(217, 119, 6, 0.08);
+    --gold-border: rgba(217, 119, 6, 0.3);
+    --silver: #64748b;
+    --silver-dim: rgba(100, 116, 139, 0.08);
+    --silver-border: rgba(100, 116, 139, 0.25);
+    --bronze: #b45309;
+    --bronze-dim: rgba(180, 83, 9, 0.08);
+    --bronze-border: rgba(180, 83, 9, 0.25);
 
-  .list-row {
-    display: grid;
-    grid-template-columns: 50px 1fr 100px 100px;
-    align-items: center;
-    padding: 12px 16px;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 14px;
-    cursor: pointer;
-    transition: all 0.15s;
-    animation: fadeUp 0.35s ease both;
-    position: relative; overflow: hidden;
-  }
-  .list-row::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-    width: 3px; background: transparent;
-    border-radius: 14px 0 0 14px;
-    transition: background 0.15s;
-  }
-  .list-row:hover {
-    border-color: var(--accent);
-    box-shadow: 0 4px 20px rgba(59,130,246,0.1);
-    transform: translateY(-1px);
-  }
-  .list-row:hover::before { background: var(--accent); }
+    --gradient-brand: linear-gradient(90deg, #2563eb, #4f46e5);
+    --gradient-title: linear-gradient(135deg, #2563eb, #7c3aed);
+    --gradient-bar: linear-gradient(90deg, #2563eb, #4f46e5);
+    --gradient-total: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(79,70,229,0.06));
+    --gradient-profile: linear-gradient(135deg, rgba(79,70,229,0.08), rgba(37,99,235,0.05));
 
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+    --shadow-xl: 0 16px 48px rgba(0,0,0,0.12);
+    --shadow-accent: 0 2px 12px rgba(37,99,235,0.08);
 
-  .row-rank { font-size: 15px; font-weight: 700; color: var(--text-muted); text-align: center; }
-  .row-member { display: flex; align-items: center; gap: 12px; }
-  .row-avatar {
-    width: 38px; height: 38px; border-radius: 50%;
-    overflow: hidden; flex-shrink: 0;
-    border: 2px solid var(--border);
-  }
-  .row-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .row-name { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; min-width: 0; }
-  .row-score { font-size: 17px; font-weight: 800; color: var(--text); text-align: right; }
-  .row-bar-cell { padding-left: 12px; }
-  .bar-track { width: 100%; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #3b82f6, #6366f1); transition: width 0.6s ease; }
+    --chart-grid: #e2e5ea;
+    --chart-bar: #2563eb;
+    --chart-bar-fade: rgba(37,99,235,0.2);
+    --chart-line: #2563eb;
+    --chart-fill-start: rgba(37, 99, 235, 0.15);
+    --chart-fill-end: rgba(37, 99, 235, 0.0);
+    --chart-dot-bg: #ffffff;
 
-  /* Profile Link */
-  .profile-link {
-    display: inline-flex; align-items: center; gap: 5px;
-    color: var(--accent); font-size: 12px; font-weight: 600;
-    text-decoration: none; padding: 5px 10px;
-    border: 1px solid rgba(59,130,246,0.25);
-    border-radius: 8px; background: rgba(59,130,246,0.06);
-    transition: all 0.15s; white-space: nowrap;
+    --logo-filter: invert(1);
   }
-  .profile-link:hover { background: rgba(59,130,246,0.15); border-color: var(--accent); }
-  .profile-link svg { flex-shrink: 0; }
-  .row-profile-link {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px; border-radius: 50%;
-    color: var(--text-muted); background: transparent;
-    border: 1px solid transparent;
-    transition: all 0.15s; text-decoration: none;
-    flex-shrink: 0;
-  }
-  .row-profile-link:hover { color: var(--accent); background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.25); }
+}
 
-  /* No results */
-  .no-results { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; font-weight: 500; }
+/* Manual dark override */
+:root[data-theme="dark"] {
+  --color-scheme: dark;
+}
 
-  /* Modal */
-  .overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(8px);
-    z-index: 200;
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.22s;
-  }
-  .overlay.open { opacity: 1; pointer-events: all; }
+/* Manual light override */
+:root[data-theme="light"] {
+  --color-scheme: light;
 
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto;
-    transform: scale(0.95) translateY(16px);
-    transition: transform 0.22s ease;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
-  }
-  .overlay.open .modal { transform: scale(1) translateY(0); }
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --surface2: #f0f2f5;
 
-  .modal-hero {
-    display: flex; align-items: center; gap: 16px;
-    padding: 24px 24px 18px;
-    border-bottom: 1px solid var(--border);
-    position: relative;
-  }
-  .modal-photo {
-    width: 64px; height: 64px; border-radius: 50%;
-    overflow: hidden; flex-shrink: 0;
-    border: 3px solid var(--border);
-  }
-  .modal-photo img { width: 100%; height: 100%; object-fit: cover; }
-  .modal-name { font-size: 20px; font-weight: 800; color: #fff; }
-  .modal-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
-  .modal-close {
-    position: absolute; top: 18px; right: 18px;
-    width: 32px; height: 32px; border-radius: 50%;
-    background: var(--surface2); border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--text-muted); font-size: 14px;
-    transition: all 0.15s;
-  }
-  .modal-close:hover { border-color: var(--accent); color: var(--accent); }
+  --border: #e2e5ea;
+  --border-light: #d1d5db;
 
-  .modal-body { padding: 20px 24px 24px; }
+  --text: #1e293b;
+  --text-strong: #0f172a;
+  --text-muted: #64748b;
 
-  .breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 18px; }
-  .bd-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 10px; text-align: center;
-  }
-  .bd-card .bv { font-size: 28px; font-weight: 900; color: #fff; line-height: 1; }
-  .bd-card .bl { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
-  .bd-card .bp { font-size: 12px; font-weight: 700; color: var(--accent); margin-top: 5px; }
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-glow: rgba(37, 99, 235, 0.12);
+  --accent-soft: rgba(37, 99, 235, 0.06);
 
-  /* Score History Chart */
-  .score-history {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 18px;
-    margin-bottom: 18px;
-  }
-  .score-history-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 12px;
-  }
-  .score-history-title {
-    font-size: 10px; font-weight: 700; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.08em;
-  }
-  .score-history-change {
-    font-size: 12px; font-weight: 700;
-    padding: 3px 8px; border-radius: 6px;
-  }
-  .score-history-change.up { color: #22c55e; background: rgba(34,197,94,0.12); }
-  .score-history-change.down { color: #ef4444; background: rgba(239,68,68,0.12); }
-  .score-history-change.flat { color: var(--text-muted); background: var(--surface2); }
-  .score-history canvas {
-    width: 100%; height: 120px; display: block;
-    border-radius: 8px;
-  }
-  .score-history-labels {
-    display: flex; justify-content: space-between;
-    margin-top: 6px;
-  }
-  .score-history-labels span {
-    font-size: 9px; color: var(--text-muted); font-weight: 500;
-  }
-  .score-history-empty {
-    text-align: center; padding: 20px 0;
-    font-size: 12px; color: var(--text-muted); font-weight: 500;
-  }
+  --success: #16a34a;
+  --success-soft: rgba(22, 163, 74, 0.1);
+  --danger: #dc2626;
+  --danger-soft: rgba(220, 38, 38, 0.08);
 
-  .tip-box {
-    background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(34,197,94,0.03));
-    border: 1px solid rgba(34,197,94,0.2);
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 14px;
-    font-size: 13px; color: var(--text); line-height: 1.5;
-  }
-  .tip-box .tip-label {
-    font-size: 10px; font-weight: 700; color: #22c55e;
-    text-transform: uppercase; letter-spacing: 0.08em;
-    margin-bottom: 6px;
-  }
+  --gold: #d97706;
+  --gold-dim: rgba(217, 119, 6, 0.08);
+  --gold-border: rgba(217, 119, 6, 0.3);
+  --silver: #64748b;
+  --silver-dim: rgba(100, 116, 139, 0.08);
+  --silver-border: rgba(100, 116, 139, 0.25);
+  --bronze: #b45309;
+  --bronze-dim: rgba(180, 83, 9, 0.08);
+  --bronze-border: rgba(180, 83, 9, 0.25);
 
-  .total-box {
-    background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.1));
-    border: 1px solid rgba(59,130,246,0.2);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-  }
-  .total-box .tl { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-  .total-box .tv { font-size: 36px; font-weight: 900; color: #fff; }
-  .total-box .ts { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+  --gradient-brand: linear-gradient(90deg, #2563eb, #4f46e5);
+  --gradient-title: linear-gradient(135deg, #2563eb, #7c3aed);
+  --gradient-bar: linear-gradient(90deg, #2563eb, #4f46e5);
+  --gradient-total: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(79,70,229,0.06));
+  --gradient-profile: linear-gradient(135deg, rgba(79,70,229,0.08), rgba(37,99,235,0.05));
 
-  /* My Profile Banner */
-  .my-profile-banner {
-    background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(59,130,246,0.08));
-    border: 1.5px solid rgba(99,102,241,0.3);
-    border-radius: 16px;
-    padding: 18px 20px;
-    margin-bottom: 24px;
-    display: flex; align-items: center; gap: 16px;
-    cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .my-profile-banner:hover {
-    border-color: rgba(99,102,241,0.5);
-    box-shadow: 0 4px 20px rgba(99,102,241,0.1);
-  }
-  .my-profile-avatar {
-    width: 48px; height: 48px; border-radius: 50%;
-    overflow: hidden; flex-shrink: 0;
-    border: 2.5px solid rgba(99,102,241,0.4);
-    position: relative;
-  }
-  .my-profile-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .my-profile-avatar .avatar-edit {
-    position: absolute; inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.2s;
-    font-size: 14px; color: #fff; cursor: pointer;
-  }
-  .my-profile-avatar:hover .avatar-edit { opacity: 1; }
-  .my-profile-info { flex: 1; min-width: 0; }
-  .my-profile-name { font-size: 15px; font-weight: 700; color: #fff; }
-  .my-profile-rank { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
-  .my-profile-tips {
-    display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;
-  }
-  .my-profile-tip {
-    font-size: 11px; font-weight: 600;
-    padding: 3px 10px; border-radius: 100px;
-    border: 1px solid;
-  }
-  .tip-post { color: #fbbf24; border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.08); }
-  .tip-comment { color: #3b82f6; border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.08); }
-  .tip-react { color: #94a3b8; border-color: rgba(148,163,184,0.3); background: rgba(148,163,184,0.08); }
-  .my-profile-score {
-    font-size: 22px; font-weight: 900; color: #fff;
-    text-align: right;
-  }
-  .my-profile-score .pts-label { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+  --shadow-xl: 0 16px 48px rgba(0,0,0,0.12);
+  --shadow-accent: 0 2px 12px rgba(37,99,235,0.08);
 
-  /* Setup Profile Prompt */
-  .setup-profile {
-    background: var(--surface);
-    border: 1.5px dashed var(--border-light);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 24px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.2s;
-  }
-  .setup-profile:hover { border-color: var(--accent); }
-  .setup-profile p { font-size: 13px; color: var(--text-muted); font-weight: 500; }
-  .setup-profile strong { color: var(--accent); }
+  --chart-grid: #e2e5ea;
+  --chart-bar: #2563eb;
+  --chart-bar-fade: rgba(37,99,235,0.2);
+  --chart-line: #2563eb;
+  --chart-fill-start: rgba(37, 99, 235, 0.15);
+  --chart-fill-end: rgba(37, 99, 235, 0.0);
+  --chart-dot-bg: #ffffff;
 
-  /* Name Picker Dialog */
-  .name-picker-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(8px);
-    z-index: 300;
-    display: flex; align-items: center; justify-content: center;
-    padding: 20px;
-  }
-  .name-picker {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    width: 100%; max-width: 420px;
-    padding: 28px;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
-  }
-  .name-picker h3 { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 4px; }
-  .name-picker .np-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
-  .name-picker input {
-    width: 100%; padding: 12px 16px;
-    background: var(--bg); border: 1.5px solid var(--border);
-    border-radius: 10px; color: var(--text);
-    font-family: 'Inter', sans-serif; font-size: 14px;
-    outline: none; margin-bottom: 8px;
-  }
-  .name-picker input:focus { border-color: var(--accent); }
-  .name-picker .np-results {
-    max-height: 200px; overflow-y: auto;
-    margin-bottom: 12px;
-  }
-  .name-picker .np-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 10px; border-radius: 8px;
-    cursor: pointer; transition: background 0.15s;
-  }
-  .name-picker .np-item:hover { background: var(--surface2); }
-  .name-picker .np-item img {
-    width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
-  }
-  .name-picker .np-item-name { font-size: 13px; font-weight: 600; color: var(--text); }
-  .name-picker .np-item-score { font-size: 11px; color: var(--text-muted); }
-  .name-picker .np-actions { display: flex; gap: 8px; }
-  .name-picker .np-btn {
-    flex: 1; padding: 10px;
-    border: none; border-radius: 8px;
-    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: opacity 0.15s;
-  }
-  .name-picker .np-btn:hover { opacity: 0.85; }
-  .np-btn-primary { background: var(--accent); color: #fff; }
-  .np-btn-secondary { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border) !important; }
+  --logo-filter: invert(1);
+}
 
-  /* Footer */
-  .page-footer {
-    margin-top: 40px; padding-top: 20px;
-    border-top: 1px solid var(--border);
-    display: flex; justify-content: space-between;
-    align-items: center; flex-wrap: wrap; gap: 12px;
-  }
-  .page-footer p { font-size: 11px; color: var(--text-muted); font-weight: 500; }
-  .legend { display: flex; gap: 14px; flex-wrap: wrap; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); font-weight: 500; }
-  .ldot { width: 7px; height: 7px; border-radius: 50%; }
 
-  /* Mobile */
-  @media (max-width: 640px) {
-    .page-header { flex-direction: column; align-items: flex-start; }
-    .stats-row { justify-content: flex-start; }
-    .podium { flex-direction: column; align-items: center; gap: 10px; }
-    .podium-card { max-width: 100%; }
-    .p1, .p2, .p3 { margin-bottom: 0; }
-    .p2 { order: 2; }
-    .p1 { order: 1; }
-    .p3 { order: 3; }
-    .list-header { display: none; }
-    .list-row { grid-template-columns: 40px 1fr 80px; }
-    .row-bar-cell { display: none; }
-    .breakdown { grid-template-columns: 1fr; }
-    .modal { max-width: 100%; }
-  }
+/* ==============================================
+   COMPONENT: Reset
+   ============================================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-family);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  color-scheme: var(--color-scheme);
+  transition: background 0.3s, color 0.3s;
+}
+
+
+/* ==============================================
+   COMPONENT: Banner
+   The top gradient stripe with announcement text.
+   ============================================== */
+.banner {
+  background: var(--gradient-brand);
+  color: #fff;
+  text-align: center;
+  padding: var(--space-sm) var(--space-lg);
+  font-size: var(--font-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+
+/* ==============================================
+   COMPONENT: Nav
+   Top navigation bar with logo + live indicator.
+   ============================================== */
+.nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav__logo { display: flex; align-items: center; gap: var(--space-sm); }
+.nav__logo img {
+  height: 32px;
+  width: auto;
+  display: block;
+  filter: var(--logo-filter);
+}
+
+.nav__right { display: flex; align-items: center; gap: var(--space-sm); }
+
+.nav__live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 3px var(--success-soft);
+  animation: pulse 2s infinite;
+}
+
+.nav__label { font-size: var(--font-sm); color: var(--text-muted); font-weight: 500; }
+
+.nav__theme-toggle {
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; line-height: 1;
+  color: var(--text-muted);
+  transition: border-color 0.2s, color 0.2s;
+  margin-left: var(--space-sm);
+}
+.nav__theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.25); }
+  50% { box-shadow: 0 0 0 7px rgba(34,197,94,0.06); }
+}
+
+
+/* ==============================================
+   COMPONENT: Layout
+   Main content wrapper with max-width.
+   ============================================== */
+.layout { max-width: 900px; margin: 0 auto; padding: var(--space-xl) var(--space-lg) 60px; }
+
+
+/* ==============================================
+   COMPONENT: PageHeader
+   Title + subtitle + stat pills.
+   ============================================== */
+.page-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 30px; gap: var(--space-md);
+}
+
+.page-header__title {
+  font-size: clamp(24px, 4.5vw, 42px);
+  font-weight: 900; color: var(--text-strong);
+  letter-spacing: -1.5px; line-height: 1.05;
+}
+.page-header__title span {
+  background: var(--gradient-title);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.page-header__subtitle { font-size: 13px; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
+
+.stats-row { display: flex; gap: var(--space-sm); flex-wrap: wrap; justify-content: flex-end; }
+
+.stat-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  font-size: var(--font-sm); color: var(--text-muted); font-weight: 500;
+}
+.stat-pill strong { color: var(--accent); font-weight: 700; }
+
+
+/* ==============================================
+   COMPONENT: SearchBar
+   Input with magnifying glass icon.
+   ============================================== */
+.search { position: relative; margin-bottom: 30px; }
+
+.search__input {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 13px 16px 13px 44px;
+  font-family: var(--font-family);
+  font-size: var(--font-md); color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search__input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.search__input::placeholder { color: var(--text-muted); }
+
+.search__icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+
+/* ==============================================
+   COMPONENT: LoadingState
+   Spinner + text shown while fetching data.
+   ============================================== */
+.loading { text-align: center; padding: 80px var(--space-lg); }
+
+.loading__spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto var(--space-md);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading__text { color: var(--text-muted); font-size: var(--font-md); font-weight: 500; }
+
+
+/* ==============================================
+   COMPONENT: ErrorState
+   Friendly error with retry button.
+   ============================================== */
+.error-state {
+  text-align: center; padding: 60px var(--space-lg);
+  background: var(--surface);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-lg);
+}
+.error-state__icon { font-size: 40px; margin-bottom: var(--space-md); }
+.error-state__title { color: var(--danger); font-size: var(--font-lg); font-weight: 700; margin-bottom: var(--space-sm); }
+.error-state__text { color: var(--text-muted); font-size: var(--font-md); line-height: 1.5; }
+.error-state__btn {
+  margin-top: var(--space-md); padding: 10px 24px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--font-family); font-size: var(--font-md); font-weight: 600;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.error-state__btn:hover { opacity: 0.85; }
+
+
+/* ==============================================
+   COMPONENT: Podium
+   Top 3 members in medal layout.
+   ============================================== */
+.podium-section { margin-bottom: 28px; }
+
+.podium {
+  display: flex; align-items: flex-end; justify-content: center; gap: var(--space-md);
+}
+
+.podium-card {
+  flex: 1; max-width: 260px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xl);
+  display: flex; flex-direction: column; align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  overflow: hidden;
+}
+.podium-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.podium-card--gold    { border-color: var(--gold-border); margin-bottom: 40px; }
+.podium-card--gold:hover   { border-color: var(--gold); }
+.podium-card--silver  { margin-bottom: 12px; border-color: var(--silver-border); }
+.podium-card--silver:hover { border-color: var(--silver); }
+.podium-card--bronze  { margin-bottom: 0; border-color: var(--bronze-border); }
+.podium-card--bronze:hover { border-color: var(--bronze); }
+
+.podium-card__top {
+  width: 100%; padding: 22px 14px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.podium-card--gold .podium-card__top   { background: linear-gradient(160deg, var(--gold-dim) 0%, transparent 60%); }
+.podium-card--silver .podium-card__top { background: linear-gradient(160deg, var(--silver-dim) 0%, transparent 60%); }
+.podium-card--bronze .podium-card__top { background: linear-gradient(160deg, var(--bronze-dim) 0%, transparent 60%); }
+
+.podium-card__crown { font-size: 24px; line-height: 1; }
+
+.podium-card__avatar-wrap { position: relative; }
+.podium-card__avatar {
+  border-radius: 50%; overflow: hidden;
+  border: 3px solid var(--border);
+  box-shadow: var(--shadow-md);
+  display: block;
+}
+.podium-card--gold .podium-card__avatar   { width: 90px; height: 90px; border-color: var(--gold); }
+.podium-card--silver .podium-card__avatar { width: 74px; height: 74px; border-color: var(--silver); }
+.podium-card--bronze .podium-card__avatar { width: 70px; height: 70px; border-color: var(--bronze); }
+.podium-card__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.podium-card__badge {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: #fff;
+}
+.podium-card--gold .podium-card__badge   { background: var(--gold); color: #000; }
+.podium-card--silver .podium-card__badge { background: var(--silver); color: #000; }
+.podium-card--bronze .podium-card__badge { background: var(--bronze); }
+
+.podium-card__name {
+  font-size: var(--font-md); font-weight: 700; color: var(--text);
+  text-align: center; line-height: 1.3;
+}
+
+.podium-card__score { font-weight: 900; letter-spacing: -0.5px; }
+.podium-card--gold .podium-card__score   { font-size: 32px; color: var(--gold); }
+.podium-card--silver .podium-card__score { font-size: 26px; color: var(--silver); }
+.podium-card--bronze .podium-card__score { font-size: 24px; color: var(--bronze); }
+
+.podium-card__label {
+  font-size: 11px; color: var(--text-muted);
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+.podium-card__bottom {
+  width: 100%; padding: 10px var(--space-sm);
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-around;
+}
+.podium-stat__value { font-size: 15px; font-weight: 700; color: var(--text); text-align: center; }
+.podium-stat__label { font-size: 9px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; }
+
+
+/* ==============================================
+   COMPONENT: MemberList
+   Ranked list of remaining members.
+   ============================================== */
+.list-header {
+  display: grid;
+  grid-template-columns: 50px 1fr 100px 100px;
+  padding: 0 var(--space-md) 10px;
+  font-size: 11px; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space-sm);
+}
+
+.member-list { display: flex; flex-direction: column; gap: 6px; }
+
+.member-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 100px 100px;
+  align-items: center;
+  padding: 12px var(--space-md);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.15s;
+  animation: fadeUp 0.35s ease both;
+  position: relative; overflow: hidden;
+  min-height: 62px;
+}
+.member-row::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: transparent;
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+  transition: background 0.15s;
+}
+.member-row:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-accent);
+  transform: translateY(-1px);
+}
+.member-row:hover::before { background: var(--accent); }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.member-row__rank { font-size: 15px; font-weight: 700; color: var(--text-muted); text-align: center; }
+
+.member-row__info { display: flex; align-items: center; gap: var(--space-md); }
+
+.member-row__avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  overflow: hidden; flex-shrink: 0;
+  border: 2px solid var(--border);
+}
+.member-row__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.member-row__name { font-size: var(--font-md); font-weight: 600; color: var(--text); flex: 1; min-width: 0; }
+
+.member-row__score { font-size: 17px; font-weight: 800; color: var(--text); text-align: right; }
+
+.member-row__bar { padding-left: var(--space-md); }
+.bar-track { width: 100%; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; background: var(--gradient-bar); transition: width 0.6s ease; }
+
+/* Profile link icon in list row */
+.profile-link-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  color: var(--text-muted); background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.15s; text-decoration: none;
+  flex-shrink: 0;
+}
+.profile-link-icon:hover { color: var(--accent); background: var(--accent-soft); border-color: var(--accent-glow); }
+
+.no-results { text-align: center; padding: 40px; color: var(--text-muted); font-size: var(--font-md); font-weight: 500; }
+
+
+/* ==============================================
+   COMPONENT: Modal
+   Member detail overlay with score breakdown.
+   ============================================== */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-lg);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.22s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto;
+  transform: scale(0.95) translateY(16px);
+  transition: transform 0.22s ease;
+  box-shadow: var(--shadow-xl);
+}
+.overlay.open .modal { transform: scale(1) translateY(0); }
+
+.modal__hero {
+  display: flex; align-items: center; gap: var(--space-md);
+  padding: var(--space-lg) var(--space-lg) 18px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.modal__photo {
+  width: 64px; height: 64px; border-radius: 50%;
+  overflow: hidden; flex-shrink: 0;
+  border: 3px solid var(--border);
+}
+.modal__photo img { width: 100%; height: 100%; object-fit: cover; }
+.modal__name { font-size: var(--font-xl); font-weight: 800; color: var(--text-strong); }
+.modal__sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
+.modal__close {
+  position: absolute; top: 18px; right: 18px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-muted); font-size: var(--font-md);
+  transition: all 0.15s;
+}
+.modal__close:hover { border-color: var(--accent); color: var(--accent); }
+
+.modal__body { padding: var(--space-lg); }
+
+/* Profile link in modal */
+.profile-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: var(--accent); font-size: var(--font-sm); font-weight: 600;
+  text-decoration: none; padding: 5px 10px;
+  border: 1px solid var(--accent-glow);
+  border-radius: var(--radius-sm); background: var(--accent-soft);
+  transition: all 0.15s; white-space: nowrap;
+}
+.profile-link:hover { background: var(--accent-glow); border-color: var(--accent); }
+.profile-link svg { flex-shrink: 0; }
+
+
+/* ==============================================
+   COMPONENT: ScoreBreakdown
+   3-column card grid for posts/comments/reactions.
+   ============================================== */
+.breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-sm); margin-bottom: 18px; }
+
+.breakdown__card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) 10px; text-align: center;
+}
+.breakdown__value { font-size: 28px; font-weight: 900; color: var(--text-strong); line-height: 1; }
+.breakdown__label { font-size: var(--font-xs); color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+.breakdown__pts { font-size: var(--font-sm); font-weight: 700; color: var(--accent); margin-top: 5px; }
+
+
+/* ==============================================
+   COMPONENT: ScoreChart
+   Canvas-based daily activity / history chart.
+   ============================================== */
+.chart {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) 18px;
+  margin-bottom: 18px;
+}
+.chart__header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: var(--space-md);
+}
+.chart__title {
+  font-size: var(--font-xs); font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.chart__change {
+  font-size: var(--font-sm); font-weight: 700;
+  padding: 3px var(--space-sm); border-radius: 6px;
+}
+.chart__change--up   { color: var(--success); background: var(--success-soft); }
+.chart__change--down { color: var(--danger); background: var(--danger-soft); }
+.chart__change--flat { color: var(--text-muted); background: var(--surface2); }
+
+.chart canvas {
+  width: 100%; height: 120px; display: block;
+  border-radius: var(--radius-sm);
+}
+.chart__labels {
+  display: flex; justify-content: space-between;
+  margin-top: 6px;
+}
+.chart__labels span {
+  font-size: 9px; color: var(--text-muted); font-weight: 500;
+}
+
+
+/* ==============================================
+   COMPONENT: TipBox
+   Improvement suggestion card.
+   ============================================== */
+.tip-box {
+  background: linear-gradient(135deg, var(--success-soft), rgba(34,197,94,0.03));
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: var(--radius-md);
+  padding: 14px var(--space-md);
+  margin-bottom: 14px;
+  font-size: 13px; color: var(--text); line-height: 1.5;
+}
+.tip-box__label {
+  font-size: var(--font-xs); font-weight: 700; color: var(--success);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+
+
+/* ==============================================
+   COMPONENT: TotalScore
+   Highlighted total score card.
+   ============================================== */
+.total-box {
+  background: var(--gradient-total);
+  border: 1px solid var(--accent-glow);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  text-align: center;
+}
+.total-box__label { font-size: var(--font-xs); font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.total-box__value { font-size: var(--font-score); font-weight: 900; color: var(--text-strong); }
+.total-box__formula { font-size: var(--font-sm); color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+
+
+/* ==============================================
+   COMPONENT: MyProfile
+   User's own profile banner + tips.
+   ============================================== */
+.my-profile {
+  background: var(--gradient-profile);
+  border: 1.5px solid rgba(99,102,241,0.3);
+  border-radius: var(--radius-lg);
+  padding: 18px var(--space-lg);
+  margin-bottom: var(--space-lg);
+  display: flex; align-items: center; gap: var(--space-md);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.my-profile:hover {
+  border-color: rgba(99,102,241,0.5);
+  box-shadow: var(--shadow-md);
+}
+
+.my-profile__avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  overflow: hidden; flex-shrink: 0;
+  border: 2.5px solid rgba(99,102,241,0.4);
+  position: relative;
+}
+.my-profile__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.my-profile__avatar-edit {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s;
+  font-size: 14px; color: #fff; cursor: pointer;
+}
+.my-profile__avatar:hover .my-profile__avatar-edit { opacity: 1; }
+
+.my-profile__info { flex: 1; min-width: 0; }
+.my-profile__name { font-size: 15px; font-weight: 700; color: var(--text-strong); }
+.my-profile__rank { font-size: var(--font-sm); color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+
+.my-profile__tips { display: flex; gap: 6px; margin-top: var(--space-sm); flex-wrap: wrap; }
+
+.tip-pill {
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: var(--radius-full);
+  border: 1px solid;
+}
+.tip-pill--post    { color: var(--gold); border-color: var(--gold-border); background: var(--gold-dim); }
+.tip-pill--comment { color: var(--accent); border-color: var(--accent-glow); background: var(--accent-soft); }
+.tip-pill--react   { color: var(--silver); border-color: var(--silver-border); background: var(--silver-dim); }
+
+.my-profile__score { font-size: 22px; font-weight: 900; color: var(--text-strong); text-align: right; }
+.my-profile__score-label { font-size: var(--font-xs); color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+
+
+/* ==============================================
+   COMPONENT: SetupProfile
+   Prompt to pick your name.
+   ============================================== */
+.setup-profile {
+  background: var(--surface);
+  border: 1.5px dashed var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.setup-profile:hover { border-color: var(--accent); }
+.setup-profile p { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+.setup-profile strong { color: var(--accent); }
+
+
+/* ==============================================
+   COMPONENT: NamePicker
+   Dialog to search and select your name.
+   ============================================== */
+.name-picker-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-lg);
+}
+
+.name-picker {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  width: 100%; max-width: 420px;
+  padding: 28px;
+  box-shadow: var(--shadow-xl);
+}
+.name-picker__title { font-size: var(--font-lg); font-weight: 800; color: var(--text-strong); margin-bottom: 4px; }
+.name-picker__sub { font-size: 13px; color: var(--text-muted); margin-bottom: var(--space-md); }
+.name-picker__input {
+  width: 100%; padding: 12px var(--space-md);
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: var(--font-family); font-size: var(--font-md);
+  outline: none; margin-bottom: var(--space-sm);
+}
+.name-picker__input:focus { border-color: var(--accent); }
+
+.name-picker__results { max-height: 200px; overflow-y: auto; margin-bottom: var(--space-md); }
+
+.name-picker__item {
+  display: flex; align-items: center; gap: 10px;
+  padding: var(--space-sm) 10px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: background 0.15s;
+}
+.name-picker__item:hover { background: var(--surface2); }
+.name-picker__item img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.name-picker__item-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.name-picker__item-score { font-size: 11px; color: var(--text-muted); }
+
+.name-picker__actions { display: flex; gap: var(--space-sm); }
+.name-picker__btn {
+  flex: 1; padding: 10px;
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--font-family); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.name-picker__btn:hover { opacity: 0.85; }
+.name-picker__btn--primary { background: var(--accent); color: #fff; }
+.name-picker__btn--secondary { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border) !important; }
+
+
+/* ==============================================
+   COMPONENT: Footer
+   Bottom bar with scoring legend.
+   ============================================== */
+.page-footer {
+  margin-top: 40px; padding-top: var(--space-lg);
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: var(--space-md);
+}
+.page-footer__text { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+.legend { display: flex; gap: 14px; flex-wrap: wrap; }
+.legend__item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.legend__dot { width: 7px; height: 7px; border-radius: 50%; }
+
+
+/* ==============================================
+   RESPONSIVE: Tablet (max 768px)
+   ============================================== */
+@media (max-width: 768px) {
+  .page-header { flex-direction: column; align-items: flex-start; }
+  .stats-row { justify-content: flex-start; }
+
+  .podium { gap: var(--space-sm); }
+  .podium-card { max-width: 200px; }
+  .podium-card--gold .podium-card__avatar { width: 72px; height: 72px; }
+  .podium-card--silver .podium-card__avatar { width: 62px; height: 62px; }
+  .podium-card--bronze .podium-card__avatar { width: 58px; height: 58px; }
+  .podium-card--gold .podium-card__score { font-size: 26px; }
+  .podium-card--silver .podium-card__score { font-size: 22px; }
+  .podium-card--bronze .podium-card__score { font-size: 20px; }
+
+  .member-row { grid-template-columns: 40px 1fr 80px; }
+  .member-row__bar { display: none; }
+  .list-header { display: none; }
+}
+
+
+/* ==============================================
+   RESPONSIVE: Phone (max 480px)
+   ============================================== */
+@media (max-width: 480px) {
+  .layout { padding: var(--space-lg) var(--space-md) 40px; }
+  .nav { padding: 12px var(--space-md); }
+  .banner { font-size: 10px; padding: var(--space-sm) var(--space-md); }
+
+  .page-header__title { letter-spacing: -1px; }
+  .stat-pill { font-size: 10px; padding: 4px 10px; }
+
+  .podium { flex-direction: column; align-items: center; gap: var(--space-sm); }
+  .podium-card { max-width: 100%; width: 100%; }
+  .podium-card--gold, .podium-card--silver, .podium-card--bronze { margin-bottom: 0; }
+  .podium-card--silver { order: 2; }
+  .podium-card--gold   { order: 1; }
+  .podium-card--bronze { order: 3; }
+  .podium-card__top { flex-direction: row; padding: 14px var(--space-md); gap: var(--space-md); }
+  .podium-card__crown { font-size: 20px; }
+  .podium-card--gold .podium-card__avatar,
+  .podium-card--silver .podium-card__avatar,
+  .podium-card--bronze .podium-card__avatar { width: 52px; height: 52px; }
+  .podium-card--gold .podium-card__score,
+  .podium-card--silver .podium-card__score,
+  .podium-card--bronze .podium-card__score { font-size: 22px; }
+
+  .member-row { grid-template-columns: 36px 1fr auto; padding: 10px var(--space-md); min-height: 54px; }
+  .member-row__avatar { width: 32px; height: 32px; }
+  .member-row__name { font-size: 13px; }
+  .member-row__score { font-size: 15px; }
+  .member-row__info { gap: var(--space-sm); }
+
+  .breakdown { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .breakdown__value { font-size: 22px; }
+  .breakdown__label { font-size: 9px; }
+
+  .modal { max-width: 100%; border-radius: var(--radius-lg); }
+  .modal__hero { padding: var(--space-md); gap: var(--space-md); }
+  .modal__photo { width: 52px; height: 52px; }
+  .modal__name { font-size: var(--font-lg); }
+  .modal__body { padding: var(--space-md); }
+
+  .my-profile { padding: 14px var(--space-md); gap: var(--space-md); }
+  .my-profile__avatar { width: 40px; height: 40px; }
+  .my-profile__score { font-size: 18px; }
+
+  .page-footer { flex-direction: column; align-items: flex-start; }
+}
 </style>
 </head>
 <body>
 
-<div class="top-banner">Community Engagement Scoreboard &middot; Last 30 Days</div>
+<div class="banner">Community Engagement Scoreboard &middot; Last 30 Days</div>
 
-<nav>
-  <div class="nav-logo">
+<nav class="nav">
+  <div class="nav__logo">
     <img src="https://cdn.prod.website-files.com/617a17ccf1268b31f48c390f/65cbb383d13b462e431d79a9_MDS-logo-dark.svg" alt="MDS Logo">
   </div>
-  <div class="nav-right">
-    <div class="live-dot"></div>
-    <span>Live Scoreboard</span>
+  <div class="nav__right">
+    <div class="nav__live-dot"></div>
+    <span class="nav__label">Live Scoreboard</span>
+    <button class="nav__theme-toggle" id="theme-toggle" title="Toggle dark/light mode" aria-label="Toggle dark/light mode">
+      <span id="theme-icon">&#9790;</span>
+    </button>
   </div>
 </nav>
 
-<div class="wrap">
+<div class="layout">
 
   <div class="page-header">
     <div>
-      <h1>Community <span>Scoreboard</span></h1>
-      <p>Facebook Group &middot; Posts &middot; Comments &middot; Reactions</p>
+      <h1 class="page-header__title">Community <span>Scoreboard</span></h1>
+      <p class="page-header__subtitle">Facebook Group &middot; Posts &middot; Comments &middot; Reactions</p>
     </div>
     <div class="stats-row">
       <div class="stat-pill">Active <strong id="stat-active">&mdash;</strong></div>
@@ -627,17 +1009,17 @@
     </div>
   </div>
 
-  <div class="search-wrap">
-    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <div class="search">
+    <svg class="search__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
     </svg>
-    <input type="text" id="search" placeholder="Search all members by name..." />
+    <input class="search__input" type="text" id="search" placeholder="Search all members by name..." />
   </div>
 
   <!-- Loading state -->
-  <div id="loading" class="loading-state">
-    <div class="spinner"></div>
-    <p>Loading scoreboard data...</p>
+  <div id="loading" class="loading">
+    <div class="loading__spinner"></div>
+    <p class="loading__text">Loading scoreboard data...</p>
   </div>
 
   <!-- Error state (hidden by default) -->
@@ -646,7 +1028,7 @@
   <!-- Content (hidden until loaded) -->
   <div id="content" style="display:none">
 
-    <!-- My Profile Banner (shown after user sets their name) -->
+    <!-- My Profile Banner -->
     <div id="my-profile" style="display:none"></div>
 
     <div class="podium-section" id="podium-section">
@@ -659,16 +1041,16 @@
       <div style="text-align:right">Score</div>
       <div></div>
     </div>
-    <div class="list-section" id="list"></div>
+    <div class="member-list" id="list"></div>
 
     <div id="no-results" class="no-results" style="display:none">No members found matching your search.</div>
 
     <div class="page-footer">
-      <p>MDS Community Scoreboard &middot; Score = Posts &times;10 + Comments &times;5 + Reactions &times;2</p>
+      <p class="page-footer__text">MDS Community Scoreboard &middot; Score = Posts &times;10 + Comments &times;5 + Reactions &times;2</p>
       <div class="legend">
-        <div class="legend-item"><div class="ldot" style="background:var(--gold)"></div>Post = 10 pts</div>
-        <div class="legend-item"><div class="ldot" style="background:var(--accent)"></div>Comment = 5 pts</div>
-        <div class="legend-item"><div class="ldot" style="background:var(--silver)"></div>Reaction = 2 pts</div>
+        <div class="legend__item"><div class="legend__dot" style="background:var(--gold)"></div>Post = 10 pts</div>
+        <div class="legend__item"><div class="legend__dot" style="background:var(--accent)"></div>Comment = 5 pts</div>
+        <div class="legend__item"><div class="legend__dot" style="background:var(--silver)"></div>Reaction = 2 pts</div>
       </div>
     </div>
   </div>
@@ -678,62 +1060,107 @@
 <!-- Modal -->
 <div class="overlay" id="overlay">
   <div class="modal">
-    <div class="modal-hero">
-      <div class="modal-photo"><img id="m-photo" src="" alt=""></div>
+    <div class="modal__hero">
+      <div class="modal__photo"><img id="m-photo" src="" alt=""></div>
       <div>
-        <div class="modal-name" id="m-name"></div>
-        <div class="modal-sub" id="m-sub"></div>
+        <div class="modal__name" id="m-name"></div>
+        <div class="modal__sub" id="m-sub"></div>
         <div id="m-profile-link" style="margin-top:6px"></div>
       </div>
-      <div class="modal-close" id="modal-close">&#10005;</div>
+      <div class="modal__close" id="modal-close">&#10005;</div>
     </div>
-    <div class="modal-body">
+    <div class="modal__body">
       <div class="breakdown">
-        <div class="bd-card">
-          <div class="bv" id="m-posts"></div>
-          <div class="bl">Posts</div>
-          <div class="bp" id="m-posts-pts"></div>
+        <div class="breakdown__card">
+          <div class="breakdown__value" id="m-posts"></div>
+          <div class="breakdown__label">Posts</div>
+          <div class="breakdown__pts" id="m-posts-pts"></div>
         </div>
-        <div class="bd-card">
-          <div class="bv" id="m-comments"></div>
-          <div class="bl">Comments</div>
-          <div class="bp" id="m-comments-pts"></div>
+        <div class="breakdown__card">
+          <div class="breakdown__value" id="m-comments"></div>
+          <div class="breakdown__label">Comments</div>
+          <div class="breakdown__pts" id="m-comments-pts"></div>
         </div>
-        <div class="bd-card">
-          <div class="bv" id="m-reactions"></div>
-          <div class="bl">Reactions</div>
-          <div class="bp" id="m-reactions-pts"></div>
+        <div class="breakdown__card">
+          <div class="breakdown__value" id="m-reactions"></div>
+          <div class="breakdown__label">Reactions</div>
+          <div class="breakdown__pts" id="m-reactions-pts"></div>
         </div>
       </div>
-      <div class="score-history" id="m-history">
-        <div class="score-history-header">
-          <div class="score-history-title">Score History (30 Days)</div>
-          <div class="score-history-change flat" id="m-change">—</div>
+      <div class="chart" id="m-history">
+        <div class="chart__header">
+          <div class="chart__title">Score History (30 Days)</div>
+          <div class="chart__change chart__change--flat" id="m-change">&mdash;</div>
         </div>
         <canvas id="m-canvas" width="430" height="120"></canvas>
-        <div class="score-history-labels" id="m-history-labels"></div>
+        <div class="chart__labels" id="m-history-labels"></div>
       </div>
       <div id="m-tip" style="display:none"></div>
       <div class="total-box">
-        <div class="tl">Total Score</div>
-        <div class="tv" id="m-total"></div>
-        <div class="ts" id="m-formula"></div>
+        <div class="total-box__label">Total Score</div>
+        <div class="total-box__value" id="m-total"></div>
+        <div class="total-box__formula" id="m-formula"></div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+// ==============================================
+// THEME: Dark/Light mode toggle
+// Auto-detects system preference, allows manual override
+// ==============================================
+(function initTheme() {
+  var saved = localStorage.getItem('mds_theme');
+  if (saved === 'dark' || saved === 'light') {
+    document.documentElement.setAttribute('data-theme', saved);
+  }
+  updateThemeIcon();
+})();
+
+function updateThemeIcon() {
+  var icon = document.getElementById('theme-icon');
+  if (!icon) return;
+  var isDark = getEffectiveTheme() === 'dark';
+  icon.textContent = isDark ? '\u263E' : '\u2600';
+}
+
+function getEffectiveTheme() {
+  var attr = document.documentElement.getAttribute('data-theme');
+  if (attr) return attr;
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+document.getElementById('theme-toggle').addEventListener('click', function() {
+  var current = getEffectiveTheme();
+  var next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('mds_theme', next);
+  updateThemeIcon();
+});
+
+// Listen for system theme changes
+window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function() {
+  if (!localStorage.getItem('mds_theme')) {
+    updateThemeIcon();
+  }
+});
+
+
+// ==============================================
+// CONFIG & CONSTANTS
+// ==============================================
 const TOKEN = 'apify_api_g53jsGNcHxP9RRalCAGtBgaVUTZyyL1OOKQT';
 const API_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs/last/dataset/items?token=' + TOKEN;
 const RUNS_URL = 'https://api.apify.com/v2/acts/sSX1L7hnaohLSWTdB/runs?token=' + TOKEN + '&limit=100&desc=true';
 const TOP_N = 50;
 const DB_KEY = 'mds_scoreboard_db';
 
-// ============================================
-// Local DB: localStorage-backed member database
+
+// ==============================================
+// LOCAL DB: localStorage-backed member database
 // Stores: photo cache, avatar overrides, user identity
-// ============================================
+// ==============================================
 function getDB() {
   try {
     return JSON.parse(localStorage.getItem(DB_KEY)) || { photos: {}, overrides: {}, myName: null };
@@ -743,7 +1170,6 @@ function saveDB(db) {
   try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch(e) {}
 }
 
-// Cache a working photo URL for a member
 function cachePhoto(name, url) {
   if (!name || !url) return;
   var db = getDB();
@@ -751,30 +1177,30 @@ function cachePhoto(name, url) {
   saveDB(db);
 }
 
-// Get avatar override if set
 function getOverride(name) {
   var db = getDB();
   return db.overrides[name] || null;
 }
 
-// Set avatar override
 function setOverride(name, url) {
   var db = getDB();
   db.overrides[name] = url;
   saveDB(db);
 }
 
-// Get cached photo
 function getCachedPhoto(name) {
   var db = getDB();
   return db.photos[name] || null;
 }
 
+
+// ==============================================
+// AVATAR HELPERS
+// ==============================================
 function dicebear(name) {
   return 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(name);
 }
 
-// Facebook default silhouette avatars — not real profile photos
 function isFbDefault(url) {
   if (!url) return true;
   return url.includes('static.xx.fbcdn.net/rsrc.php');
@@ -789,7 +1215,6 @@ function isRealPhoto(url) {
 }
 
 function avatarSrc(member) {
-  // Priority: 1) Override, 2) Real API photo (skip FB defaults), 3) Cached photo, 4) DiceBear
   var override = getOverride(member.name);
   if (override) return override;
   if (isRealPhoto(member.profilePhoto)) return member.profilePhoto;
@@ -800,7 +1225,6 @@ function avatarSrc(member) {
 
 function handleImgError(img, name) {
   img.onerror = null;
-  // Try cached photo before falling back to dicebear
   var cached = getCachedPhoto(name);
   if (cached && img.src !== cached) {
     img.src = cached;
@@ -811,25 +1235,34 @@ function handleImgError(img, name) {
 }
 
 function handleImgLoad(img, name) {
-  // Cache successful photo loads (skip dicebear/data urls/FB defaults)
   var src = img.src || '';
   if (isRealPhoto(src)) {
     cachePhoto(name, src);
   }
 }
 
+
+// ==============================================
+// FACEBOOK PROFILE LINKS
+// ==============================================
 const GROUP_ID = '699138040189700';
+
 function fbProfileUrl(userId) {
   if (!userId) return null;
   return 'https://www.facebook.com/groups/' + GROUP_ID + '/user/' + userId + '/';
 }
+
 function fbProfileLinkIcon() {
   return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
 }
 
+
+// ==============================================
+// DATA LOADING
+// ==============================================
 let members = [];
 let maxScore = 0;
-var scoreHistory = {}; // { memberName: [{date, score}, ...] }
+var scoreHistory = {};
 
 function calcScore(m) {
   return (m.posts || 0) * 10 + (m.totalComments || 0) * 5 + (m.totalReactions || 0) * 2;
@@ -839,7 +1272,6 @@ async function loadHistory() {
   var HISTORY_KEY = 'mds_score_history';
   var HISTORY_TS_KEY = 'mds_score_history_ts';
 
-  // Try loading from localStorage cache (valid for 6 hours)
   try {
     var cached = localStorage.getItem(HISTORY_KEY);
     var cachedTs = parseInt(localStorage.getItem(HISTORY_TS_KEY) || '0');
@@ -854,18 +1286,15 @@ async function loadHistory() {
     if (!res.ok) return;
     var body = await res.json();
     var runs = (body.data && body.data.items) || [];
-    // Only successful runs with real data, oldest first
     runs = runs.filter(function(r) { return r.status === 'SUCCEEDED'; }).reverse();
 
-    // Deduplicate by day — keep latest run per calendar day
     var byDay = {};
     runs.forEach(function(run) {
-      var day = run.startedAt.substring(0, 10); // YYYY-MM-DD
-      byDay[day] = run; // last one wins (runs are oldest-first)
+      var day = run.startedAt.substring(0, 10);
+      byDay[day] = run;
     });
     var dedupedRuns = Object.keys(byDay).sort().map(function(k) { return byDay[k]; });
 
-    // Fetch each run's dataset (in parallel, max 30 days)
     var fetches = dedupedRuns.slice(-30).map(function(run) {
       var url = 'https://api.apify.com/v2/datasets/' + run.defaultDatasetId + '/items?token=' + TOKEN;
       return fetch(url).then(function(r) { return r.ok ? r.json() : []; })
@@ -878,7 +1307,6 @@ async function loadHistory() {
 
     results.forEach(function(r) {
       if (!r || !Array.isArray(r.items) || r.items.length === 0) return;
-      // Skip diagnostic runs (items without proper member data)
       if (r.items.length < 5) return;
       var d = r.date;
       r.items.forEach(function(m) {
@@ -889,14 +1317,11 @@ async function loadHistory() {
       });
     });
 
-    // Cache history in localStorage
     try {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(scoreHistory));
       localStorage.setItem(HISTORY_TS_KEY, String(Date.now()));
     } catch(e) {}
-  } catch (e) {
-    // History is optional, fail silently
-  }
+  } catch (e) {}
 }
 
 async function loadData() {
@@ -909,13 +1334,10 @@ async function loadData() {
   content.style.display = 'none';
 
   try {
-    // Fetch current data and history in parallel
     var [res] = await Promise.all([fetch(API_URL), loadHistory()]);
     var data = [];
     if (res.ok) data = await res.json();
 
-    // If last run returned empty/diagnostic data, find the best recent run
-    // "Best" = most members with actual activity data (posts > 0)
     if (!Array.isArray(data) || data.length < 5) {
       var runsRes = await fetch(RUNS_URL);
       if (runsRes.ok) {
@@ -930,7 +1352,6 @@ async function loadData() {
           if (dsRes.ok) {
             var dsData = await dsRes.json();
             if (Array.isArray(dsData) && dsData.length >= 5) {
-              // Score = members with posts > 0 (active members)
               var active = dsData.filter(function(m) { return (m.posts || 0) > 0; }).length;
               var totalPosts = dsData.reduce(function(s, m) { return s + (m.posts || 0); }, 0);
               var score = active * 100 + totalPosts;
@@ -938,7 +1359,6 @@ async function loadData() {
                 bestScore = score;
                 bestData = dsData;
               }
-              // If we found a run with 100+ posts, good enough
               if (totalPosts >= 100) break;
             }
           }
@@ -959,7 +1379,7 @@ async function loadData() {
       comments: m.totalComments || 0,
       reactions: m.totalReactions || 0,
       score: (m.posts || 0) * 10 + (m.totalComments || 0) * 5 + (m.totalReactions || 0) * 2,
-      dailyActivity: m.dailyActivity || [] // Array of { date, posts, reactions }
+      dailyActivity: m.dailyActivity || []
     }));
 
     members.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
@@ -983,48 +1403,56 @@ async function loadData() {
     const errDiv = document.createElement('div');
     errDiv.className = 'error-state';
     errDiv.innerHTML =
-      '<div class="error-icon">&#9888;&#65039;</div>' +
-      '<h3>Unable to load scoreboard</h3>' +
-      '<p>We couldn\'t fetch the latest data. Please check your connection and try again.</p>' +
-      '<button onclick="loadData()">Retry</button>';
+      '<div class="error-state__icon">&#9888;&#65039;</div>' +
+      '<h3 class="error-state__title">Unable to load scoreboard</h3>' +
+      '<p class="error-state__text">We couldn\'t fetch the latest data. Please check your connection and try again.</p>' +
+      '<button class="error-state__btn" onclick="loadData()">Retry</button>';
     error.appendChild(errDiv);
   }
 }
 
+
+// ==============================================
+// RENDERING: Podium
+// ==============================================
 function renderPodium(top3) {
   const pod = document.getElementById('podium');
   pod.innerHTML = '';
   if (!top3.length) return;
 
   const order = top3.length >= 3 ? [top3[1], top3[0], top3[2]] : top3;
-  const pClasses = top3.length >= 3 ? ['p2', 'p1', 'p3'] : ['p1'];
+  const medals = top3.length >= 3 ? ['silver', 'gold', 'bronze'] : ['gold'];
   const crowns = top3.length >= 3 ? ['\uD83E\uDD48', '\uD83E\uDD47', '\uD83E\uDD49'] : ['\uD83E\uDD47'];
 
   order.forEach(function(m, i) {
-    var pc = pClasses[i] || 'p1';
+    var medal = medals[i] || 'gold';
     var card = document.createElement('div');
-    card.className = 'podium-card ' + pc;
+    card.className = 'podium-card podium-card--' + medal;
     card.innerHTML =
-      '<div class="podium-top">' +
-        '<div class="crown">' + crowns[i] + '</div>' +
-        '<div class="podium-avatar-wrap">' +
-          '<div class="podium-avatar"><img src="' + avatarSrc(m) + '" alt="' + m.name + '" loading="lazy" onload="handleImgLoad(this,\'' + m.name.replace(/'/g, "\\'") + '\')" onerror="handleImgError(this,\'' + m.name.replace(/'/g, "\\'") + '\')"></div>' +
-          '<div class="rank-badge">' + m.rank + '</div>' +
+      '<div class="podium-card__top">' +
+        '<div class="podium-card__crown">' + crowns[i] + '</div>' +
+        '<div class="podium-card__avatar-wrap">' +
+          '<div class="podium-card__avatar"><img src="' + avatarSrc(m) + '" alt="' + m.name + '" loading="lazy" onload="handleImgLoad(this,\'' + m.name.replace(/'/g, "\\'") + '\')" onerror="handleImgError(this,\'' + m.name.replace(/'/g, "\\'") + '\')"></div>' +
+          '<div class="podium-card__badge">' + m.rank + '</div>' +
         '</div>' +
-        '<div class="podium-name">' + m.name + '</div>' +
-        '<div class="podium-score">' + m.score.toLocaleString() + '</div>' +
-        '<div class="podium-label">points</div>' +
+        '<div class="podium-card__name">' + m.name + '</div>' +
+        '<div class="podium-card__score">' + m.score.toLocaleString() + '</div>' +
+        '<div class="podium-card__label">points</div>' +
       '</div>' +
-      '<div class="podium-bottom">' +
-        '<div class="podium-stat"><div class="sv">' + m.posts + '</div><div class="sl">Posts</div></div>' +
-        '<div class="podium-stat"><div class="sv">' + m.comments + '</div><div class="sl">Cmts</div></div>' +
-        '<div class="podium-stat"><div class="sv">' + m.reactions + '</div><div class="sl">Reacts</div></div>' +
+      '<div class="podium-card__bottom">' +
+        '<div class="podium-stat"><div class="podium-stat__value">' + m.posts + '</div><div class="podium-stat__label">Posts</div></div>' +
+        '<div class="podium-stat"><div class="podium-stat__value">' + m.comments + '</div><div class="podium-stat__label">Cmts</div></div>' +
+        '<div class="podium-stat"><div class="podium-stat__value">' + m.reactions + '</div><div class="podium-stat__label">Reacts</div></div>' +
       '</div>';
     card.addEventListener('click', function() { openModal(m); });
     pod.appendChild(card);
   });
 }
 
+
+// ==============================================
+// RENDERING: Member List
+// ==============================================
 function renderList(list) {
   var el = document.getElementById('list');
   el.innerHTML = '';
@@ -1032,26 +1460,29 @@ function renderList(list) {
     var pct = Math.max(Math.round((m.score / maxScore) * 100), 2);
     var profileUrl = fbProfileUrl(m.userId);
     var linkHtml = profileUrl ?
-      '<a href="' + profileUrl + '" target="_blank" rel="noopener" class="row-profile-link" title="View on Facebook" onclick="event.stopPropagation()">' + fbProfileLinkIcon() + '</a>' : '';
+      '<a href="' + profileUrl + '" target="_blank" rel="noopener" class="profile-link-icon" title="View on Facebook" onclick="event.stopPropagation()">' + fbProfileLinkIcon() + '</a>' : '';
     var row = document.createElement('div');
-    row.className = 'list-row';
+    row.className = 'member-row';
     row.style.animationDelay = (idx * 0.03) + 's';
     row.innerHTML =
-      '<div class="row-rank">' + m.rank + '</div>' +
-      '<div class="row-member">' +
-        '<div class="row-avatar"><img src="' + avatarSrc(m) + '" alt="' + m.name + '" loading="lazy" onload="handleImgLoad(this,\'' + m.name.replace(/'/g, "\\'") + '\')" onerror="handleImgError(this,\'' + m.name.replace(/'/g, "\\'") + '\')"></div>' +
-        '<div class="row-name">' + m.name + '</div>' +
+      '<div class="member-row__rank">' + m.rank + '</div>' +
+      '<div class="member-row__info">' +
+        '<div class="member-row__avatar"><img src="' + avatarSrc(m) + '" alt="' + m.name + '" loading="lazy" onload="handleImgLoad(this,\'' + m.name.replace(/'/g, "\\'") + '\')" onerror="handleImgError(this,\'' + m.name.replace(/'/g, "\\'") + '\')"></div>' +
+        '<div class="member-row__name">' + m.name + '</div>' +
         linkHtml +
       '</div>' +
-      '<div class="row-score">' + m.score.toLocaleString() + '</div>' +
-      '<div class="row-bar-cell"><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div></div>';
+      '<div class="member-row__score">' + m.score.toLocaleString() + '</div>' +
+      '<div class="member-row__bar"><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div></div>';
     row.addEventListener('click', function() { openModal(m); });
     el.appendChild(row);
   });
 }
 
+
+// ==============================================
+// RENDERING: Main render (handles TOP_N)
+// ==============================================
 function render(list) {
-  // Default view: show only top TOP_N members (podium + list)
   var isDefaultView = (list === members);
   var displayList = isDefaultView ? list.slice(0, TOP_N) : list;
 
@@ -1069,17 +1500,16 @@ function render(list) {
 
   noResults.style.display = (displayList.length === 0) ? '' : 'none';
 
-  // Show "Showing top N of total" indicator
   var indicator = document.getElementById('top-n-indicator');
   if (!indicator) {
     indicator = document.createElement('div');
     indicator.id = 'top-n-indicator';
-    indicator.style.cssText = 'text-align:center;padding:12px;color:#6b7a99;font-size:13px;font-weight:500;margin-top:8px';
+    indicator.style.cssText = 'text-align:center;padding:12px;color:var(--text-muted);font-size:13px;font-weight:500;margin-top:8px';
     document.getElementById('list').after(indicator);
   }
   if (isDefaultView && members.length > TOP_N) {
     var activeCount = members.filter(function(m) { return m.score > 0; }).length;
-    indicator.textContent = 'Showing top ' + TOP_N + ' of ' + members.length + ' members (' + activeCount + ' active) — Use search to find any member';
+    indicator.textContent = 'Showing top ' + TOP_N + ' of ' + members.length + ' members (' + activeCount + ' active) \u2014 Use search to find any member';
     indicator.style.display = '';
   } else if (!isDefaultView && list.length > 0) {
     indicator.textContent = 'Showing ' + list.length + ' search result' + (list.length !== 1 ? 's' : '') + ' (searching all ' + members.length + ' members)';
@@ -1089,14 +1519,15 @@ function render(list) {
   }
 }
 
+
+// ==============================================
+// SEARCH
+// ==============================================
 document.getElementById('search').addEventListener('input', function(e) {
   var q = e.target.value.toLowerCase().trim();
   if (!q) { render(members); return; }
-  // Search ALL members, not just top N
   var filtered = members.filter(function(m) { return m.name.toLowerCase().includes(q); });
-  // Use render() which handles the top-n indicator
   render(filtered);
-  // Always hide podium on search
   document.getElementById('podium-section').style.display = 'none';
   var noRes = document.getElementById('no-results');
   if (filtered.length === 0) {
@@ -1105,21 +1536,19 @@ document.getElementById('search').addEventListener('input', function(e) {
   }
 });
 
-// Build daily activity chart data from a member's dailyActivity array
-// Returns array of { date, value } for charting (activity points per day)
+
+// ==============================================
+// CHART: Daily Activity + Score History
+// ==============================================
 function getDailyChartData(member) {
   var m = members.find(function(x) { return x.name === member; });
   if (!m || !m.dailyActivity || m.dailyActivity.length === 0) return null;
 
-  // dailyActivity: [{ date: "YYYY-MM-DD", posts: N, reactions: N }]
-  // We chart "daily activity points" = posts×10 + reactions×2
-  // (comments are 30-day totals from profile pages, can't be broken down by day)
   var dataMap = {};
   m.dailyActivity.forEach(function(d) {
     dataMap[d.date] = (d.posts || 0) * 10 + (d.reactions || 0) * 2;
   });
 
-  // Fill in all dates in the range (last 30 days) so chart has no gaps
   var dates = Object.keys(dataMap).sort();
   if (dates.length === 0) return null;
 
@@ -1132,6 +1561,21 @@ function getDailyChartData(member) {
   }
 
   return allDates.length >= 2 ? allDates : null;
+}
+
+function getChartColors() {
+  var s = getComputedStyle(document.documentElement);
+  return {
+    grid: s.getPropertyValue('--chart-grid').trim() || '#1e2a42',
+    bar: s.getPropertyValue('--chart-bar').trim() || '#3b82f6',
+    barFade: s.getPropertyValue('--chart-bar-fade').trim() || 'rgba(59,130,246,0.3)',
+    line: s.getPropertyValue('--chart-line').trim() || '#3b82f6',
+    fillStart: s.getPropertyValue('--chart-fill-start').trim() || 'rgba(59,130,246,0.25)',
+    fillEnd: s.getPropertyValue('--chart-fill-end').trim() || 'rgba(59,130,246,0)',
+    dotBg: s.getPropertyValue('--chart-dot-bg').trim() || '#1a2035',
+    text: s.getPropertyValue('--text').trim() || '#e4e8f1',
+    textMuted: s.getPropertyValue('--text-muted').trim() || '#6b7a99'
+  };
 }
 
 function drawHistoryChart(name) {
@@ -1148,16 +1592,15 @@ function drawHistoryChart(name) {
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, w, h);
 
+  var colors = getChartColors();
   var changeEl = document.getElementById('m-change');
   var labelsEl = document.getElementById('m-history-labels');
-  var titleEl = document.querySelector('.score-history-title');
+  var titleEl = document.querySelector('.chart__title');
 
-  // Prefer daily activity breakdown (from single run) over multi-run history
   var dailyData = getDailyChartData(name);
   var history = scoreHistory[name] || [];
 
   if (dailyData && dailyData.length >= 2) {
-    // === Draw DAILY ACTIVITY chart (bar chart style) ===
     titleEl.textContent = 'Daily Activity (30 Days)';
     var values = dailyData.map(function(d) { return d.value; });
     var dates = dailyData.map(function(d) { return d.date; });
@@ -1165,16 +1608,14 @@ function drawHistoryChart(name) {
     if (maxV === 0) maxV = 1;
     var totalActivity = values.reduce(function(s, v) { return s + v; }, 0);
 
-    // Change badge: show total activity points
-    changeEl.className = 'score-history-change up';
+    changeEl.className = 'chart__change chart__change--up';
     changeEl.textContent = totalActivity + ' activity pts';
 
     var pad = { top: 12, bottom: 24, left: 4, right: 4 };
     var cw = w - pad.left - pad.right;
     var ch = h - pad.top - pad.bottom;
 
-    // Grid lines
-    ctx.strokeStyle = '#1e2a42';
+    ctx.strokeStyle = colors.grid;
     ctx.lineWidth = 1;
     for (var g = 0; g <= 3; g++) {
       var gy = pad.top + (ch / 3) * g;
@@ -1184,7 +1625,6 @@ function drawHistoryChart(name) {
       ctx.stroke();
     }
 
-    // Draw bars
     var barWidth = Math.max(Math.floor(cw / dailyData.length) - 2, 2);
     var barGap = (cw - barWidth * dailyData.length) / (dailyData.length + 1);
     if (barGap < 1) barGap = 1;
@@ -1194,21 +1634,18 @@ function drawHistoryChart(name) {
       var bx = pad.left + barGap + i * (barWidth + barGap);
       var by = pad.top + ch - barH;
 
-      // Bar gradient
       var barGrad = ctx.createLinearGradient(0, by, 0, pad.top + ch);
-      barGrad.addColorStop(0, values[i] > 0 ? '#3b82f6' : '#1e2a42');
-      barGrad.addColorStop(1, values[i] > 0 ? 'rgba(59,130,246,0.3)' : '#1e2a42');
+      barGrad.addColorStop(0, values[i] > 0 ? colors.bar : colors.grid);
+      barGrad.addColorStop(1, values[i] > 0 ? colors.barFade : colors.grid);
       ctx.fillStyle = barGrad;
       ctx.beginPath();
       ctx.roundRect(bx, by, barWidth, barH || 1, 2);
       ctx.fill();
     }
 
-    // Value labels on tallest bars (only show a few to avoid clutter)
-    ctx.fillStyle = '#e4e8f1';
+    ctx.fillStyle = colors.text;
     ctx.font = '700 9px Inter, sans-serif';
     ctx.textAlign = 'center';
-    // Show labels on top 5 values and first/last
     var sortedByVal = values.map(function(v, i) { return { v: v, i: i }; })
       .filter(function(x) { return x.v > 0; })
       .sort(function(a, b) { return b.v - a.v; })
@@ -1224,7 +1661,6 @@ function drawHistoryChart(name) {
       }
     }
 
-    // X-axis date labels
     labelsEl.innerHTML = '';
     var labelIndices = [0, Math.floor(dates.length / 2), dates.length - 1];
     if (dates.length <= 5) labelIndices = dates.map(function(_, i) { return i; });
@@ -1239,11 +1675,11 @@ function drawHistoryChart(name) {
     return;
   }
 
-  // === Fallback: Multi-run SCORE HISTORY chart (line chart) ===
+  // Fallback: Multi-run score history line chart
   titleEl.textContent = 'Score History (30 Days)';
 
   if (history.length < 2) {
-    ctx.fillStyle = '#6b7a99';
+    ctx.fillStyle = colors.textMuted;
     ctx.font = '500 12px Inter, sans-serif';
     ctx.textAlign = 'center';
     if (history.length === 1) {
@@ -1251,10 +1687,10 @@ function drawHistoryChart(name) {
       ctx.font = '400 11px Inter, sans-serif';
       ctx.fillText('Chart unlocks after tomorrow\u2019s daily update', w / 2, h / 2 + 10);
     } else {
-      ctx.fillText('No score data yet — check back after first daily run', w / 2, h / 2);
+      ctx.fillText('No score data yet \u2014 check back after first daily run', w / 2, h / 2);
     }
-    changeEl.className = 'score-history-change flat';
-    changeEl.textContent = history.length === 1 ? history[0].score + ' pts' : '—';
+    changeEl.className = 'chart__change chart__change--flat';
+    changeEl.textContent = history.length === 1 ? history[0].score + ' pts' : '\u2014';
     labelsEl.innerHTML = '';
     return;
   }
@@ -1268,23 +1704,21 @@ function drawHistoryChart(name) {
   var cw = w - pad.left - pad.right;
   var ch = h - pad.top - pad.bottom;
 
-  // Change badge
   var first = scores[0];
   var last = scores[scores.length - 1];
   var diff = last - first;
   if (diff > 0) {
-    changeEl.className = 'score-history-change up';
+    changeEl.className = 'chart__change chart__change--up';
     changeEl.textContent = '+' + diff + ' pts';
   } else if (diff < 0) {
-    changeEl.className = 'score-history-change down';
+    changeEl.className = 'chart__change chart__change--down';
     changeEl.textContent = diff + ' pts';
   } else {
-    changeEl.className = 'score-history-change flat';
+    changeEl.className = 'chart__change chart__change--flat';
     changeEl.textContent = 'No change';
   }
 
-  // Grid lines
-  ctx.strokeStyle = '#1e2a42';
+  ctx.strokeStyle = colors.grid;
   ctx.lineWidth = 1;
   for (var g = 0; g <= 3; g++) {
     var gy = pad.top + (ch / 3) * g;
@@ -1294,24 +1728,21 @@ function drawHistoryChart(name) {
     ctx.stroke();
   }
 
-  // Y-axis labels
-  ctx.fillStyle = '#6b7a99';
+  ctx.fillStyle = colors.textMuted;
   ctx.font = '500 9px Inter, sans-serif';
   ctx.textAlign = 'left';
   ctx.fillText(maxS, pad.left, pad.top - 4);
   ctx.fillText(minS, pad.left, h - pad.bottom + 12);
 
-  // Points
   var points = scores.map(function(s, i) {
     var x = pad.left + (i / (scores.length - 1)) * cw;
     var y = pad.top + ch - ((s - minS) / range) * ch;
     return { x: x, y: y, score: s };
   });
 
-  // Gradient fill under line
   var gradient = ctx.createLinearGradient(0, pad.top, 0, h - pad.bottom);
-  gradient.addColorStop(0, 'rgba(59, 130, 246, 0.25)');
-  gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+  gradient.addColorStop(0, colors.fillStart);
+  gradient.addColorStop(1, colors.fillEnd);
   ctx.beginPath();
   ctx.moveTo(points[0].x, h - pad.bottom);
   points.forEach(function(p) { ctx.lineTo(p.x, p.y); });
@@ -1320,31 +1751,28 @@ function drawHistoryChart(name) {
   ctx.fillStyle = gradient;
   ctx.fill();
 
-  // Line
   ctx.beginPath();
   ctx.moveTo(points[0].x, points[0].y);
   for (var i = 1; i < points.length; i++) {
     ctx.lineTo(points[i].x, points[i].y);
   }
-  ctx.strokeStyle = '#3b82f6';
+  ctx.strokeStyle = colors.line;
   ctx.lineWidth = 2.5;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
   ctx.stroke();
 
-  // Dots
   points.forEach(function(p, i) {
     ctx.beginPath();
     ctx.arc(p.x, p.y, i === points.length - 1 ? 5 : 3, 0, Math.PI * 2);
-    ctx.fillStyle = i === points.length - 1 ? '#3b82f6' : '#1a2035';
+    ctx.fillStyle = i === points.length - 1 ? colors.line : colors.dotBg;
     ctx.fill();
-    ctx.strokeStyle = '#3b82f6';
+    ctx.strokeStyle = colors.line;
     ctx.lineWidth = 2;
     ctx.stroke();
   });
 
-  // Score labels on dots
-  ctx.fillStyle = '#e4e8f1';
+  ctx.fillStyle = colors.text;
   ctx.font = '700 10px Inter, sans-serif';
   ctx.textAlign = 'center';
   points.forEach(function(p, i) {
@@ -1353,7 +1781,6 @@ function drawHistoryChart(name) {
     }
   });
 
-  // X-axis date labels
   labelsEl.innerHTML = '';
   var labelIndices = [0, Math.floor(dates.length / 2), dates.length - 1];
   if (dates.length <= 3) labelIndices = dates.map(function(_, i) { return i; });
@@ -1367,6 +1794,10 @@ function drawHistoryChart(name) {
   });
 }
 
+
+// ==============================================
+// IMPROVEMENT TIPS
+// ==============================================
 function getImprovementTip(m) {
   if (m.score === 0) {
     var scoreWith1Post = 10;
@@ -1389,33 +1820,30 @@ function getImprovementTip(m) {
   return null;
 }
 
-// Granular tips: show what rank you'd reach for each action type
 function getGranularTips(m) {
   var tips = [];
-  // What rank if you make 1 post (+10 pts)?
   var scoreAfterPost = m.score + 10;
   var rankAfterPost = members.filter(function(x) { return x.score > scoreAfterPost; }).length + 1;
   if (rankAfterPost < m.rank) {
-    tips.push({ type: 'post', text: '1 post → #' + rankAfterPost });
+    tips.push({ type: 'post', text: '1 post \u2192 #' + rankAfterPost });
   }
-  // What rank if you get 1 comment on your post (+5 pts)?
   var scoreAfterComment = m.score + 5;
   var rankAfterComment = members.filter(function(x) { return x.score > scoreAfterComment; }).length + 1;
   if (rankAfterComment < m.rank) {
-    tips.push({ type: 'comment', text: '1 comment → #' + rankAfterComment });
+    tips.push({ type: 'comment', text: '1 comment \u2192 #' + rankAfterComment });
   }
-  // What rank if you get 1 reaction (+2 pts)?
   var scoreAfterReact = m.score + 2;
   var rankAfterReact = members.filter(function(x) { return x.score > scoreAfterReact; }).length + 1;
   if (rankAfterReact < m.rank) {
-    tips.push({ type: 'react', text: '1 reaction → #' + rankAfterReact });
+    tips.push({ type: 'react', text: '1 reaction \u2192 #' + rankAfterReact });
   }
   return tips;
 }
 
-// ============================================
-// My Profile: name picker and banner
-// ============================================
+
+// ==============================================
+// MY PROFILE: Name picker + banner
+// ==============================================
 function showNamePicker() {
   var existing = document.querySelector('.name-picker-overlay');
   if (existing) existing.remove();
@@ -1424,13 +1852,13 @@ function showNamePicker() {
   overlay.className = 'name-picker-overlay';
   overlay.innerHTML =
     '<div class="name-picker">' +
-      '<h3>Find Yourself</h3>' +
-      '<p class="np-sub">Search for your name in the member list</p>' +
-      '<input type="text" id="np-search" placeholder="Type your name..." autofocus />' +
-      '<div class="np-results" id="np-results"></div>' +
-      '<div class="np-actions">' +
-        '<button class="np-btn np-btn-secondary" id="np-cancel">Cancel</button>' +
-        '<button class="np-btn np-btn-secondary" id="np-clear">Reset Identity</button>' +
+      '<h3 class="name-picker__title">Find Yourself</h3>' +
+      '<p class="name-picker__sub">Search for your name in the member list</p>' +
+      '<input class="name-picker__input" type="text" id="np-search" placeholder="Type your name..." autofocus />' +
+      '<div class="name-picker__results" id="np-results"></div>' +
+      '<div class="name-picker__actions">' +
+        '<button class="name-picker__btn name-picker__btn--secondary" id="np-cancel">Cancel</button>' +
+        '<button class="name-picker__btn name-picker__btn--secondary" id="np-clear">Reset Identity</button>' +
       '</div>' +
     '</div>';
 
@@ -1446,11 +1874,11 @@ function showNamePicker() {
     var matches = members.filter(function(m) { return m.name.toLowerCase().includes(q); }).slice(0, 10);
     matches.forEach(function(m) {
       var item = document.createElement('div');
-      item.className = 'np-item';
+      item.className = 'name-picker__item';
       item.innerHTML =
         '<img src="' + avatarSrc(m) + '" onerror="handleImgError(this,\'' + m.name.replace(/'/g, "\\'") + '\')">' +
-        '<div><div class="np-item-name">' + m.name + '</div>' +
-        '<div class="np-item-score">Rank #' + m.rank + ' • ' + m.score + ' pts</div></div>';
+        '<div><div class="name-picker__item-name">' + m.name + '</div>' +
+        '<div class="name-picker__item-score">Rank #' + m.rank + ' \u2022 ' + m.score + ' pts</div></div>';
       item.addEventListener('click', function() {
         var db = getDB();
         db.myName = m.name;
@@ -1471,7 +1899,6 @@ function showNamePicker() {
     renderMyProfile();
   });
 
-  // Close on overlay click
   overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
 }
 
@@ -1480,7 +1907,6 @@ function renderMyProfile() {
   var db = getDB();
 
   if (!db.myName) {
-    // Show "set up your profile" prompt
     container.style.display = '';
     container.innerHTML =
       '<div class="setup-profile" onclick="showNamePicker()">' +
@@ -1491,43 +1917,41 @@ function renderMyProfile() {
 
   var me = members.find(function(m) { return m.name === db.myName; });
   if (!me) {
-    // User not found in data — show as unranked
     me = { name: db.myName, posts: 0, comments: 0, reactions: 0, score: 0, rank: members.length + 1, profilePhoto: '' };
   }
 
   var tips = getGranularTips(me);
   var tipsHtml = '';
   tips.forEach(function(t) {
-    var cls = t.type === 'post' ? 'tip-post' : t.type === 'comment' ? 'tip-comment' : 'tip-react';
-    tipsHtml += '<span class="my-profile-tip ' + cls + '">' + t.text + '</span>';
+    var cls = t.type === 'post' ? 'tip-pill--post' : t.type === 'comment' ? 'tip-pill--comment' : 'tip-pill--react';
+    tipsHtml += '<span class="tip-pill ' + cls + '">' + t.text + '</span>';
   });
 
-  var rankText = me.score > 0 ? 'Rank #' + me.rank + ' of ' + members.length : 'Not ranked yet — take action to get on the board!';
+  var rankText = me.score > 0 ? 'Rank #' + me.rank + ' of ' + members.length : 'Not ranked yet \u2014 take action to get on the board!';
 
   container.style.display = '';
   container.innerHTML =
-    '<div class="my-profile-banner" onclick="openModal(members.find(function(m){return m.name===\'' + me.name.replace(/'/g, "\\'") + '\'}) || {name:\'' + me.name.replace(/'/g, "\\'") + '\',posts:0,comments:0,reactions:0,score:0,rank:' + me.rank + ',profilePhoto:\'\'})">' +
-      '<div class="my-profile-avatar">' +
+    '<div class="my-profile" onclick="openModal(members.find(function(m){return m.name===\'' + me.name.replace(/'/g, "\\'") + '\'}) || {name:\'' + me.name.replace(/'/g, "\\'") + '\',posts:0,comments:0,reactions:0,score:0,rank:' + me.rank + ',profilePhoto:\'\'})">' +
+      '<div class="my-profile__avatar">' +
         '<img src="' + avatarSrc(me) + '" onload="handleImgLoad(this,\'' + me.name.replace(/'/g, "\\'") + '\')" onerror="handleImgError(this,\'' + me.name.replace(/'/g, "\\'") + '\')">' +
-        '<div class="avatar-edit" onclick="event.stopPropagation(); promptAvatarOverride(\'' + me.name.replace(/'/g, "\\'") + '\')">&#9998;</div>' +
+        '<div class="my-profile__avatar-edit" onclick="event.stopPropagation(); promptAvatarOverride(\'' + me.name.replace(/'/g, "\\'") + '\')">&#9998;</div>' +
       '</div>' +
-      '<div class="my-profile-info">' +
-        '<div class="my-profile-name">' + me.name + ' <span style="font-size:11px;color:var(--text-muted);font-weight:500;cursor:pointer" onclick="event.stopPropagation(); showNamePicker()">change</span></div>' +
-        '<div class="my-profile-rank">' + rankText + '</div>' +
-        (tipsHtml ? '<div class="my-profile-tips">' + tipsHtml + '</div>' : '') +
+      '<div class="my-profile__info">' +
+        '<div class="my-profile__name">' + me.name + ' <span style="font-size:11px;color:var(--text-muted);font-weight:500;cursor:pointer" onclick="event.stopPropagation(); showNamePicker()">change</span></div>' +
+        '<div class="my-profile__rank">' + rankText + '</div>' +
+        (tipsHtml ? '<div class="my-profile__tips">' + tipsHtml + '</div>' : '') +
       '</div>' +
-      '<div class="my-profile-score">' +
+      '<div class="my-profile__score">' +
         '<div>' + me.score.toLocaleString() + '</div>' +
-        '<div class="pts-label">points</div>' +
+        '<div class="my-profile__score-label">points</div>' +
       '</div>' +
     '</div>';
 }
 
 function promptAvatarOverride(name) {
   var url = prompt('Enter image URL for your avatar (or leave empty to reset):');
-  if (url === null) return; // cancelled
+  if (url === null) return;
   if (url.trim() === '') {
-    // Reset override
     var db = getDB();
     delete db.overrides[name];
     saveDB(db);
@@ -1535,7 +1959,6 @@ function promptAvatarOverride(name) {
     setOverride(name, url.trim());
   }
   renderMyProfile();
-  // Re-render list to update avatar everywhere
   var q = document.getElementById('search').value.toLowerCase().trim();
   if (!q) render(members);
   else {
@@ -1544,13 +1967,16 @@ function promptAvatarOverride(name) {
   }
 }
 
+
+// ==============================================
+// MODAL
+// ==============================================
 function openModal(m) {
   document.getElementById('m-photo').src = avatarSrc(m);
   document.getElementById('m-photo').onerror = function() { handleImgError(this, m.name); };
   document.getElementById('m-name').textContent = m.name;
   document.getElementById('m-sub').textContent = 'Rank #' + m.rank + ' of ' + members.length;
 
-  // Profile link
   var profileLinkEl = document.getElementById('m-profile-link');
   var profileUrl = fbProfileUrl(m.userId);
   if (profileUrl) {
@@ -1570,19 +1996,18 @@ function openModal(m) {
   document.getElementById('m-formula').textContent =
     '(' + m.posts + ' \u00D7 10) + (' + m.comments + ' \u00D7 5) + (' + m.reactions + ' \u00D7 2)';
 
-  // Improvement tips for inactive or low-score members
   var tipEl = document.getElementById('m-tip');
   var tip = getImprovementTip(m);
   var granularTips = getGranularTips(m);
   if (tip || granularTips.length > 0) {
     tipEl.style.display = '';
-    var html = '<div class="tip-box"><div class="tip-label">Level Up</div>';
+    var html = '<div class="tip-box"><div class="tip-box__label">Level Up</div>';
     if (tip) html += tip;
     if (granularTips.length > 0) {
       html += '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">';
       granularTips.forEach(function(t) {
-        var cls = t.type === 'post' ? 'tip-post' : t.type === 'comment' ? 'tip-comment' : 'tip-react';
-        html += '<span class="my-profile-tip ' + cls + '">' + t.text + '</span>';
+        var cls = t.type === 'post' ? 'tip-pill--post' : t.type === 'comment' ? 'tip-pill--comment' : 'tip-pill--react';
+        html += '<span class="tip-pill ' + cls + '">' + t.text + '</span>';
       });
       html += '</div>';
     }
@@ -1593,8 +2018,6 @@ function openModal(m) {
   }
 
   document.getElementById('overlay').classList.add('open');
-
-  // Draw history chart after modal is visible (needs layout)
   requestAnimationFrame(function() { drawHistoryChart(m.name); });
 }
 
@@ -1608,9 +2031,10 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') document.getElementById('overlay').classList.remove('open');
 });
 
-// ============================================
+
+// ==============================================
 // TEST SUITE — accessible via ?test=1
-// ============================================
+// ==============================================
 async function runTests() {
   var results = [];
   var passed = 0;
@@ -1626,7 +2050,6 @@ async function runTests() {
     }
   }
 
-  // Wait for data to load
   await new Promise(function(resolve) {
     var check = setInterval(function() {
       if (members.length > 0) { clearInterval(check); resolve(); }
@@ -1634,112 +2057,60 @@ async function runTests() {
     setTimeout(function() { clearInterval(check); resolve(); }, 15000);
   });
 
-  // === Scoring Formula Tests ===
-  assert('Score formula: basic',
-    calcScore({ posts: 1, totalComments: 0, totalReactions: 0 }) === 10,
-    '1 post = 10 pts');
-  assert('Score formula: comments',
-    calcScore({ posts: 0, totalComments: 1, totalReactions: 0 }) === 5,
-    '1 comment = 5 pts');
-  assert('Score formula: reactions',
-    calcScore({ posts: 0, totalComments: 0, totalReactions: 1 }) === 2,
-    '1 reaction = 2 pts');
-  assert('Score formula: combined',
-    calcScore({ posts: 3, totalComments: 10, totalReactions: 25 }) === 130,
-    '3×10 + 10×5 + 25×2 = 130');
-  assert('Score formula: zeros',
-    calcScore({ posts: 0, totalComments: 0, totalReactions: 0 }) === 0,
-    'All zeros = 0');
-  assert('Score formula: missing fields',
-    calcScore({}) === 0,
-    'Missing fields treated as 0');
+  // Scoring formula
+  assert('Score formula: basic', calcScore({ posts: 1, totalComments: 0, totalReactions: 0 }) === 10, '1 post = 10 pts');
+  assert('Score formula: comments', calcScore({ posts: 0, totalComments: 1, totalReactions: 0 }) === 5, '1 comment = 5 pts');
+  assert('Score formula: reactions', calcScore({ posts: 0, totalComments: 0, totalReactions: 1 }) === 2, '1 reaction = 2 pts');
+  assert('Score formula: combined', calcScore({ posts: 3, totalComments: 10, totalReactions: 25 }) === 130, '3x10 + 10x5 + 25x2 = 130');
+  assert('Score formula: zeros', calcScore({ posts: 0, totalComments: 0, totalReactions: 0 }) === 0, 'All zeros = 0');
+  assert('Score formula: missing fields', calcScore({}) === 0, 'Missing fields treated as 0');
 
-  // === Avatar Helper Tests ===
-  assert('isFbDefault: null',
-    isFbDefault(null) === true, 'null is default');
-  assert('isFbDefault: empty',
-    isFbDefault('') === true, 'empty is default');
-  assert('isFbDefault: static.xx',
-    isFbDefault('https://static.xx.fbcdn.net/rsrc.php/v1/some-silhouette.png') === true,
-    'FB silhouette is default');
-  assert('isFbDefault: real photo',
-    isFbDefault('https://scontent-iad3-1.xx.fbcdn.net/v/t1.6435-1/photo.jpg') === false,
-    'Real scontent URL is not default');
+  // Avatar helpers
+  assert('isFbDefault: null', isFbDefault(null) === true, 'null is default');
+  assert('isFbDefault: empty', isFbDefault('') === true, 'empty is default');
+  assert('isFbDefault: static.xx', isFbDefault('https://static.xx.fbcdn.net/rsrc.php/v1/some-silhouette.png') === true, 'FB silhouette is default');
+  assert('isFbDefault: real photo', isFbDefault('https://scontent-iad3-1.xx.fbcdn.net/v/t1.6435-1/photo.jpg') === false, 'Real scontent URL is not default');
+  assert('isRealPhoto: null', isRealPhoto(null) === false);
+  assert('isRealPhoto: fb default', isRealPhoto('https://static.xx.fbcdn.net/rsrc.php/v1/silhouette.png') === false);
+  assert('isRealPhoto: dicebear', isRealPhoto('https://api.dicebear.com/7.x/initials/svg?seed=Test') === false);
+  assert('isRealPhoto: real', isRealPhoto('https://scontent-iad3-1.xx.fbcdn.net/v/t1.6435-1/photo.jpg') === true);
+  assert('dicebear: generates URL', dicebear('John Doe').includes('dicebear') && dicebear('John Doe').includes('John'), dicebear('John Doe'));
 
-  assert('isRealPhoto: null',
-    isRealPhoto(null) === false);
-  assert('isRealPhoto: fb default',
-    isRealPhoto('https://static.xx.fbcdn.net/rsrc.php/v1/silhouette.png') === false);
-  assert('isRealPhoto: dicebear',
-    isRealPhoto('https://api.dicebear.com/7.x/initials/svg?seed=Test') === false);
-  assert('isRealPhoto: real',
-    isRealPhoto('https://scontent-iad3-1.xx.fbcdn.net/v/t1.6435-1/photo.jpg') === true);
+  // TOP_N
+  assert('TOP_N constant exists', typeof TOP_N === 'number' && TOP_N === 50, 'TOP_N = ' + TOP_N);
+  assert('Members loaded', members.length > 0, members.length + ' members');
 
-  assert('dicebear: generates URL',
-    dicebear('John Doe').includes('dicebear') && dicebear('John Doe').includes('John'),
-    dicebear('John Doe'));
-
-  // === TOP_N Display Tests ===
-  assert('TOP_N constant exists',
-    typeof TOP_N === 'number' && TOP_N === 50,
-    'TOP_N = ' + TOP_N);
-
-  assert('Members loaded',
-    members.length > 0,
-    members.length + ' members');
-
-  // Check that list shows limited results on default view
   var listEl = document.getElementById('list');
-  var displayedRows = listEl.querySelectorAll('.list-row').length;
-  // Default view: podium has top 3, list has rest up to TOP_N
+  var displayedRows = listEl.querySelectorAll('.member-row').length;
   var expectedListRows = Math.min(TOP_N, members.length) - 3;
   if (expectedListRows < 0) expectedListRows = 0;
-  assert('Default view: list shows TOP_N-3 rows',
-    displayedRows === expectedListRows,
-    'Displayed: ' + displayedRows + ', Expected: ' + expectedListRows);
+  assert('Default view: list shows TOP_N-3 rows', displayedRows === expectedListRows, 'Displayed: ' + displayedRows + ', Expected: ' + expectedListRows);
 
-  // Top-N indicator exists
   var indicator = document.getElementById('top-n-indicator');
-  assert('Top-N indicator present',
-    indicator !== null,
-    indicator ? indicator.textContent : 'missing');
+  assert('Top-N indicator present', indicator !== null, indicator ? indicator.textContent : 'missing');
 
-  // === Search Tests ===
+  // Search
   var searchInput = document.getElementById('search');
-
-  // Test search finds members outside top 50
   if (members.length > TOP_N) {
-    var memberOutside = members[TOP_N + 5]; // Member ranked ~56
+    var memberOutside = members[TOP_N + 5];
     if (memberOutside) {
-      // Simulate search
-      searchInput.value = memberOutside.name.split(' ')[0]; // First name
+      searchInput.value = memberOutside.name.split(' ')[0];
       searchInput.dispatchEvent(new Event('input'));
       await new Promise(function(r) { setTimeout(r, 100); });
-      var searchRows = listEl.querySelectorAll('.list-row').length;
-      assert('Search finds member outside top 50',
-        searchRows > 0,
-        'Searched "' + searchInput.value + '", found ' + searchRows + ' results');
-
-      // Reset search
+      var searchRows = listEl.querySelectorAll('.member-row').length;
+      assert('Search finds member outside top 50', searchRows > 0, 'Searched "' + searchInput.value + '", found ' + searchRows + ' results');
       searchInput.value = '';
       searchInput.dispatchEvent(new Event('input'));
       await new Promise(function(r) { setTimeout(r, 100); });
     }
   }
 
-  // === Members Data Quality ===
-  assert('Members sorted by score descending',
-    members.length < 2 || members[0].score >= members[1].score,
-    'First: ' + (members[0] ? members[0].score : 0) + ', Second: ' + (members[1] ? members[1].score : 0));
-
-  assert('Ranks are assigned sequentially',
-    members.length === 0 || (members[0].rank === 1 && members[members.length - 1].rank === members.length),
-    'First rank: ' + (members[0] ? members[0].rank : 'n/a'));
+  // Data quality
+  assert('Members sorted by score descending', members.length < 2 || members[0].score >= members[1].score, 'First: ' + (members[0] ? members[0].score : 0) + ', Second: ' + (members[1] ? members[1].score : 0));
+  assert('Ranks are assigned sequentially', members.length === 0 || (members[0].rank === 1 && members[members.length - 1].rank === members.length), 'First rank: ' + (members[0] ? members[0].rank : 'n/a'));
 
   var activeMems = members.filter(function(m) { return m.score > 0; });
-  assert('Active members exist',
-    activeMems.length > 0,
-    activeMems.length + ' active members');
+  assert('Active members exist', activeMems.length > 0, activeMems.length + ' active members');
 
   var totalPosts = members.reduce(function(s, m) { return s + m.posts; }, 0);
   var totalComments = members.reduce(function(s, m) { return s + m.comments; }, 0);
@@ -1749,115 +2120,87 @@ async function runTests() {
   assert('Total comments > 0', totalComments > 0, totalComments + ' comments');
   assert('Total reactions > 0', totalReactions > 0, totalReactions + ' reactions');
 
-  // === FB Insights Validation (spot-checks) ===
-  // Expected from FB Insights (28 days): ~396 posts, ~3242 comments, ~5298 reactions
+  // FB Insights validation
   var EXP_POSTS = 396, EXP_COMMENTS = 3242, EXP_REACTIONS = 5298;
   var postsDiff = Math.abs(totalPosts - EXP_POSTS) / EXP_POSTS * 100;
   var commentsDiff = Math.abs(totalComments - EXP_COMMENTS) / EXP_COMMENTS * 100;
   var reactionsDiff = Math.abs(totalReactions - EXP_REACTIONS) / EXP_REACTIONS * 100;
 
-  assert('Posts within 25% of FB Insights (' + EXP_POSTS + ')',
-    postsDiff < 25,
-    totalPosts + ' posts (' + postsDiff.toFixed(1) + '% diff)');
-  assert('Comments within 25% of FB Insights (' + EXP_COMMENTS + ')',
-    commentsDiff < 25,
-    totalComments + ' comments (' + commentsDiff.toFixed(1) + '% diff)');
-  assert('Reactions within 25% of FB Insights (' + EXP_REACTIONS + ')',
-    reactionsDiff < 25,
-    totalReactions + ' reactions (' + reactionsDiff.toFixed(1) + '% diff)');
+  assert('Posts within 25% of FB Insights (' + EXP_POSTS + ')', postsDiff < 25, totalPosts + ' posts (' + postsDiff.toFixed(1) + '% diff)');
+  assert('Comments within 25% of FB Insights (' + EXP_COMMENTS + ')', commentsDiff < 25, totalComments + ' comments (' + commentsDiff.toFixed(1) + '% diff)');
+  assert('Reactions within 25% of FB Insights (' + EXP_REACTIONS + ')', reactionsDiff < 25, totalReactions + ' reactions (' + reactionsDiff.toFixed(1) + '% diff)');
 
-  // Spot-check known members from FB Insights
   function findMember(name) {
     return members.find(function(m) { return m.name.toLowerCase().includes(name.toLowerCase()); });
   }
 
   var markB = findMember('Mark Behnke');
   if (markB) {
-    assert('Spot-check: Mark Behnke has comments',
-      markB.comments > 10,
-      markB.comments + ' comments (FB expected ~79)');
+    assert('Spot-check: Mark Behnke has comments', markB.comments > 10, markB.comments + ' comments (FB expected ~79)');
   }
 
   var constK = findMember('Constantine');
   if (constK) {
-    assert('Spot-check: Constantine has comments',
-      constK.comments > 5,
-      constK.comments + ' comments (FB expected ~45)');
+    assert('Spot-check: Constantine has comments', constK.comments > 5, constK.comments + ' comments (FB expected ~45)');
   }
 
-  // === Profile Links ===
+  // Profile links
   var withUserId = members.filter(function(m) { return m.userId; }).length;
-  assert('Members have userId for profile links',
-    withUserId > members.length * 0.5,
-    withUserId + ' of ' + members.length + ' have userId');
+  assert('Members have userId for profile links', withUserId > members.length * 0.5, withUserId + ' of ' + members.length + ' have userId');
+  assert('fbProfileUrl generates correct URL', fbProfileUrl('123456') === 'https://www.facebook.com/groups/' + GROUP_ID + '/user/123456/', fbProfileUrl('123456'));
+  assert('fbProfileUrl returns null for missing userId', fbProfileUrl(null) === null && fbProfileUrl(undefined) === null, 'null/undefined -> null');
 
-  assert('fbProfileUrl generates correct URL',
-    fbProfileUrl('123456') === 'https://www.facebook.com/groups/' + GROUP_ID + '/user/123456/',
-    fbProfileUrl('123456'));
+  var listLinks = document.querySelectorAll('.profile-link-icon');
+  assert('Profile link icons in list rows', listLinks.length > 0, listLinks.length + ' profile links rendered');
 
-  assert('fbProfileUrl returns null for missing userId',
-    fbProfileUrl(null) === null && fbProfileUrl(undefined) === null,
-    'null/undefined → null');
+  // Real photos
+  var withRealPhoto = members.filter(function(m) { return isRealPhoto(m.profilePhoto); }).length;
+  assert('At least some real profile photos', withRealPhoto > 0, withRealPhoto + ' of ' + members.length + ' have real photos');
 
-  // Check that profile links render in list rows
-  var listLinks = document.querySelectorAll('.row-profile-link');
-  assert('Profile link icons in list rows',
-    listLinks.length > 0,
-    listLinks.length + ' profile links rendered');
+  // History
+  assert('Score history loaded', typeof scoreHistory === 'object', Object.keys(scoreHistory).length + ' members have history');
 
-  // === Real Photos ===
-  var withRealPhoto = members.filter(function(m) {
-    return isRealPhoto(m.profilePhoto);
-  }).length;
-  assert('At least some real profile photos',
-    withRealPhoto > 0,
-    withRealPhoto + ' of ' + members.length + ' have real photos');
+  // Theme system
+  assert('Theme toggle exists', document.getElementById('theme-toggle') !== null, 'Toggle button present');
+  assert('CSS custom properties work', getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().length > 0, 'Accent color defined');
 
-  // === History Chart ===
-  assert('Score history loaded',
-    typeof scoreHistory === 'object',
-    Object.keys(scoreHistory).length + ' members have history');
-
-  // === Modal Tests ===
+  // Modal
   if (members.length > 0) {
     openModal(members[0]);
     await new Promise(function(r) { setTimeout(r, 300); });
-    var overlay = document.getElementById('overlay');
-    assert('Modal opens',
-      overlay.classList.contains('open'),
-      'Modal is open for ' + members[0].name);
+    var overlayEl = document.getElementById('overlay');
+    assert('Modal opens', overlayEl.classList.contains('open'), 'Modal is open for ' + members[0].name);
     document.getElementById('overlay').classList.remove('open');
   }
 
-  // === Render Results ===
-  var wrap = document.querySelector('.wrap');
+  // Render results
+  var wrap = document.querySelector('.layout');
   var testPanel = document.createElement('div');
   testPanel.id = 'test-results';
-  testPanel.style.cssText = 'background:#131825;border:2px solid ' + (failed === 0 ? '#22c55e' : '#ef4444') + ';border-radius:16px;padding:24px;margin-bottom:24px;';
+  testPanel.style.cssText = 'background:var(--surface);border:2px solid ' + (failed === 0 ? 'var(--success)' : 'var(--danger)') + ';border-radius:var(--radius-lg);padding:var(--space-lg);margin-bottom:var(--space-lg);';
   testPanel.innerHTML =
-    '<h2 style="color:#fff;font-size:20px;font-weight:800;margin-bottom:4px">' +
-      (failed === 0 ? '✅' : '❌') + ' Test Results: ' + passed + '/' + (passed + failed) + ' passed</h2>' +
-    '<p style="color:#6b7a99;font-size:13px;margin-bottom:16px">' +
+    '<h2 style="color:var(--text-strong);font-size:20px;font-weight:800;margin-bottom:4px">' +
+      (failed === 0 ? '\u2705' : '\u274C') + ' Test Results: ' + passed + '/' + (passed + failed) + ' passed</h2>' +
+    '<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">' +
       (failed === 0 ? 'All tests passed!' : failed + ' test(s) failed') + '</p>' +
     '<div style="display:flex;flex-direction:column;gap:4px">' +
       results.map(function(r) {
         return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:8px;background:' +
-          (r.pass ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.1)') + '">' +
-          '<span style="font-size:12px;font-weight:600;color:' + (r.pass ? '#22c55e' : '#ef4444') + '">' +
-            (r.pass ? '✓' : '✗') + ' ' + r.name + '</span>' +
-          '<span style="font-size:11px;color:#6b7a99">' + r.detail + '</span>' +
+          (r.pass ? 'var(--success-soft)' : 'var(--danger-soft)') + '">' +
+          '<span style="font-size:12px;font-weight:600;color:' + (r.pass ? 'var(--success)' : 'var(--danger)') + '">' +
+            (r.pass ? '\u2713' : '\u2717') + ' ' + r.name + '</span>' +
+          '<span style="font-size:11px;color:var(--text-muted)">' + r.detail + '</span>' +
         '</div>';
       }).join('') +
     '</div>';
 
-  // Insert at top of wrap
   var existingPanel = document.getElementById('test-results');
   if (existingPanel) existingPanel.remove();
   wrap.insertBefore(testPanel, wrap.firstChild);
 
   console.log('Test Results: ' + passed + '/' + (passed + failed) + ' passed');
   results.forEach(function(r) {
-    console[r.pass ? 'log' : 'error']((r.pass ? '  ✓ ' : '  ✗ ') + r.name + ' — ' + r.detail);
+    console[r.pass ? 'log' : 'error']((r.pass ? '  \u2713 ' : '  \u2717 ') + r.name + ' \u2014 ' + r.detail);
   });
 }
 
