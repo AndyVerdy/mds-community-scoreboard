@@ -20,5 +20,8 @@
     if (e.data && e.data.type === 'mds-scorecard-resize') {
       f.style.height = e.data.height + 'px';
     }
+    if (e.data && e.data.type === 'mds-scorecard-scroll-top') {
+      f.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   });
 })();

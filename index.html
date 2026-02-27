@@ -1732,6 +1732,9 @@ function openModal(m) {
   body.innerHTML = html;
 
   document.getElementById('overlay').classList.add('open');
+  if (document.body.classList.contains('embed-mode')) {
+    window.parent.postMessage({ type: 'mds-scorecard-scroll-top' }, '*');
+  }
 }
 
 document.getElementById('modal-close').addEventListener('click', function() {
@@ -1767,7 +1770,9 @@ function showNamePicker() {
     '</div>';
 
   document.body.appendChild(overlay);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (document.body.classList.contains('embed-mode')) {
+    window.parent.postMessage({ type: 'mds-scorecard-scroll-top' }, '*');
+  }
   var search = document.getElementById('np-search');
   var results = document.getElementById('np-results');
 
