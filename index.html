@@ -395,8 +395,9 @@ body.embed-mode { margin: 0; padding: 0; }
 /* ============== MEMBER LIST ============== */
 .list-header {
   display: grid;
-  grid-template-columns: 50px 1fr 80px 60px 100px;
-  padding: 0 var(--space-md) 10px;
+  grid-template-columns: 50px 1fr 80px 70px 100px;
+  gap: 0 var(--space-sm);
+  padding: 0 var(--space-lg) 10px;
   font-size: 11px; color: var(--text-muted);
   text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
   border-bottom: 1px solid var(--border);
@@ -405,8 +406,9 @@ body.embed-mode { margin: 0; padding: 0; }
 .member-list { display: flex; flex-direction: column; gap: 6px; }
 .member-row {
   display: grid;
-  grid-template-columns: 50px 1fr 80px 60px 100px;
+  grid-template-columns: 50px 1fr 80px 70px 100px;
   align-items: center;
+  gap: 0 var(--space-sm);
   padding: 14px var(--space-lg);
   background: var(--surface);
   border: 1.5px solid var(--border);
@@ -758,7 +760,7 @@ body.embed-mode { margin: 0; padding: 0; }
   .podium-card--gold .podium-card__score { font-size: 26px; }
   .podium-card--silver .podium-card__score { font-size: 22px; }
   .podium-card--bronze .podium-card__score { font-size: 20px; }
-  .member-row { grid-template-columns: 40px 1fr 60px 80px; }
+  .member-row { grid-template-columns: 40px 1fr 60px 80px; gap: 0 var(--space-sm); }
   .member-row__bar { display: none; }
   .list-header { display: none; }
 }
