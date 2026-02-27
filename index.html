@@ -1390,7 +1390,7 @@ function renderList(list) {
   var el = document.getElementById('list');
   el.innerHTML = '';
   list.forEach(function(m, idx) {
-    var pct = maxScore > 0 ? Math.max(Math.round((m.score / maxScore) * 100), 2) : 2;
+    var pct = Math.max(Math.round((m.score / 39.6) * 100), 2);
     var linkHtml = m.fbLink ?
       '<a href="' + m.fbLink + '" target="_blank" rel="noopener" class="profile-link-icon" title="View on Facebook" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>' : '';
     var esc = m.name.replace(/'/g, "\\'");
