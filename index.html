@@ -972,6 +972,8 @@ body.embed-mode { margin: 0; padding: 0; }
     var saved = localStorage.getItem('mds_theme');
     if (saved === 'dark' || saved === 'light') {
       document.documentElement.setAttribute('data-theme', saved);
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
     }
   }
   updateThemeIcon();
