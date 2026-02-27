@@ -236,6 +236,53 @@ body.embed-mode { margin: 0; padding: 0; }
 }
 .nav__theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
+.embed-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 2000;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.embed-modal-overlay.active { display: flex; }
+.embed-modal {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius-xl); padding: var(--space-xl);
+  max-width: 600px; width: 90%; position: relative;
+  box-shadow: var(--shadow-xl);
+}
+.embed-modal__title { font-size: var(--font-lg); font-weight: 700; color: var(--text-strong); margin-bottom: 4px; }
+.embed-modal__desc { font-size: var(--font-sm); color: var(--text-muted); margin-bottom: var(--space-lg); }
+.embed-modal__code {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: var(--space-md);
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 12px; color: var(--text); white-space: pre-wrap;
+  word-break: break-all; line-height: 1.5;
+  max-height: 200px; overflow-y: auto;
+}
+.embed-modal__actions { display: flex; gap: var(--space-sm); margin-top: var(--space-lg); }
+.embed-modal__btn {
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  font-size: var(--font-sm); font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border); transition: all 0.15s;
+}
+.embed-modal__btn--copy { background: var(--accent); color: #fff; border-color: var(--accent); }
+.embed-modal__btn--copy:hover { opacity: 0.9; }
+.embed-modal__btn--close { background: var(--surface2); color: var(--text); }
+.embed-modal__btn--close:hover { border-color: var(--accent); }
+.embed-modal__close {
+  position: absolute; top: 12px; right: 12px;
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px; color: var(--text-muted);
+}
+.embed-modal__close:hover { border-color: var(--accent); color: var(--accent); }
+.embed-modal__options { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-bottom: var(--space-md); }
+.embed-modal__opt {
+  display: flex; align-items: center; gap: 6px;
+  font-size: var(--font-sm); color: var(--text-muted); cursor: pointer;
+}
+.embed-modal__opt input { accent-color: var(--accent); }
+
 @keyframes pulse {
   0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.25); }
   50% { box-shadow: 0 0 0 7px rgba(34,197,94,0.06); }
@@ -816,11 +863,31 @@ body.embed-mode { margin: 0; padding: 0; }
   <div class="nav__right">
     <div class="nav__live-dot"></div>
     <span class="nav__label">Member Scorecard</span>
+    <button class="nav__theme-toggle" id="embed-btn" title="Embed this scorecard" aria-label="Embed scorecard">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    </button>
     <button class="nav__theme-toggle" id="theme-toggle" title="Toggle dark/light mode" aria-label="Toggle dark/light mode">
       <span id="theme-icon">&#9790;</span>
     </button>
   </div>
 </nav>
+
+<div class="embed-modal-overlay" id="embed-overlay">
+  <div class="embed-modal">
+    <button class="embed-modal__close" id="embed-close">&times;</button>
+    <div class="embed-modal__title">Embed Scorecard</div>
+    <div class="embed-modal__desc">Copy the code below and paste it into any HTML page.</div>
+    <div class="embed-modal__options">
+      <label class="embed-modal__opt"><input type="checkbox" id="embed-opt-dark"> Force dark mode</label>
+      <label class="embed-modal__opt"><input type="checkbox" id="embed-opt-light"> Force light mode</label>
+    </div>
+    <div class="embed-modal__code" id="embed-code"></div>
+    <div class="embed-modal__actions">
+      <button class="embed-modal__btn embed-modal__btn--copy" id="embed-copy">Copy to clipboard</button>
+      <button class="embed-modal__btn embed-modal__btn--close" id="embed-done">Done</button>
+    </div>
+  </div>
+</div>
 
 <div class="layout">
 
@@ -948,6 +1015,49 @@ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', fu
     if (nav) nav.style.display = 'none';
     if (footer) footer.style.display = 'none';
   }
+})();
+
+// ==============================================
+// EMBED BUTTON
+// ==============================================
+(function initEmbedBtn() {
+  var BASE = 'https://andyverdy.github.io/mds-community-scoreboard/';
+  var overlay = document.getElementById('embed-overlay');
+  var codeEl = document.getElementById('embed-code');
+  var optDark = document.getElementById('embed-opt-dark');
+  var optLight = document.getElementById('embed-opt-light');
+
+  function buildSnippet() {
+    var params = 'embed=1';
+    if (optDark.checked) params += '&theme=dark';
+    if (optLight.checked) params += '&theme=light';
+    return '<iframe\n  src="' + BASE + '?' + params + '"\n  width="100%"\n  height="800"\n  frameborder="0"\n  style="border:none; border-radius:12px; max-width:900px;">\n</iframe>';
+  }
+
+  function updateCode() { codeEl.textContent = buildSnippet(); }
+
+  // Mutually exclusive checkboxes
+  optDark.addEventListener('change', function() { if (optDark.checked) optLight.checked = false; updateCode(); });
+  optLight.addEventListener('change', function() { if (optLight.checked) optDark.checked = false; updateCode(); });
+
+  document.getElementById('embed-btn').addEventListener('click', function() {
+    updateCode();
+    overlay.classList.add('active');
+  });
+
+  document.getElementById('embed-copy').addEventListener('click', function() {
+    navigator.clipboard.writeText(buildSnippet()).then(function() {
+      var btn = document.getElementById('embed-copy');
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = 'Copy to clipboard'; }, 2000);
+    });
+  });
+
+  function closeEmbed() { overlay.classList.remove('active'); }
+  document.getElementById('embed-close').addEventListener('click', closeEmbed);
+  document.getElementById('embed-done').addEventListener('click', closeEmbed);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) closeEmbed(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && overlay.classList.contains('active')) closeEmbed(); });
 })();
 
 
