@@ -1017,6 +1017,15 @@ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', fu
     if (banner) banner.style.display = 'none';
     if (nav) nav.style.display = 'none';
     if (footer) footer.style.display = 'none';
+
+    // Auto-resize: send content height to parent
+    function sendHeight() {
+      var h = document.documentElement.scrollHeight;
+      window.parent.postMessage({ type: 'mds-scorecard-resize', height: h }, '*');
+    }
+    new ResizeObserver(sendHeight).observe(document.body);
+    window.addEventListener('load', sendHeight);
+    setInterval(sendHeight, 1000);
   }
 })();
 
@@ -1034,7 +1043,7 @@ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', fu
     var params = 'embed=1';
     if (optDark.checked) params += '&theme=dark';
     if (optLight.checked) params += '&theme=light';
-    return '<iframe\n  src="' + BASE + '?' + params + '"\n  width="100%"\n  height="800"\n  frameborder="0"\n  style="border:none;">\n</iframe>';
+    return '<iframe\n  id="mds-scorecard"\n  src="' + BASE + '?' + params + '"\n  width="100%"\n  frameborder="0"\n  style="border:none; overflow:hidden;"\n  scrolling="no">\n</iframe>\n<script>\nwindow.addEventListener("message", function(e) {\n  if (e.data && e.data.type === "mds-scorecard-resize") {\n    document.getElementById("mds-scorecard").style.height = e.data.height + "px";\n  }\n});\n</script>';
   }
 
   function updateCode() { codeEl.textContent = buildSnippet(); }
