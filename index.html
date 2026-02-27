@@ -1100,6 +1100,7 @@ const FIELDS = [
   'Profile Photo',
   'Facebook Profile Link',
   'FB ID',
+  'Preferred Email',
   // GET CONNECTED
   'Website Profile Complete - About Me Trigger',
   'MDSonly',
@@ -1352,10 +1353,12 @@ function parseMember(record) {
   var contribution = typeof f['Contribution points Normalized'] === 'number' ? f['Contribution points Normalized'] : 0;
   var fbLink = f['Facebook Profile Link'] || null;
   var fbId = Array.isArray(f['FB ID']) ? f['FB ID'][0] : f['FB ID'] || null;
+  var email = (f['Preferred Email'] || '').toString().trim().toLowerCase();
 
   return {
     id: record.id,
     name: name,
+    email: email,
     score: score,
     pct: pct,
     contribution: contribution,
@@ -1441,18 +1444,21 @@ async function loadData() {
     renderMyProfile();
     renderCatalog();
 
-    // Pre-select member from URL param
+    // Pre-select member from URL param (email or name)
     var p = new URLSearchParams(window.location.search);
+    var emailParam = (p.get('email') || '').trim().toLowerCase();
     var preselect = p.get('member');
-    if (preselect) {
-      var found = members.find(function(m) { return m.name.toLowerCase() === preselect.toLowerCase(); });
-      if (found) {
-        var db = getDB();
-        db.myName = found.name;
-        saveDB(db);
-        renderMyProfile();
-        openModal(found);
-      }
+    var found = null;
+    if (emailParam) {
+      found = members.find(function(m) { return m.email === emailParam; });
+    } else if (preselect) {
+      found = members.find(function(m) { return m.name.toLowerCase() === preselect.toLowerCase(); });
+    }
+    if (found) {
+      var db = getDB();
+      db.myName = found.name;
+      saveDB(db);
+      renderMyProfile();
     }
   } catch (err) {
     loading.style.display = 'none';

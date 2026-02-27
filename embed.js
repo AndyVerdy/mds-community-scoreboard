@@ -3,10 +3,12 @@
   var s = document.currentScript;
   var theme = s.getAttribute('data-theme') || 'light';
   var member = s.getAttribute('data-member') || '';
+  var email = s.getAttribute('data-email') || '';
 
   var params = 'embed=1&_v=' + Date.now();
   if (theme) params += '&theme=' + encodeURIComponent(theme);
   if (member) params += '&member=' + encodeURIComponent(member);
+  if (email) params += '&email=' + encodeURIComponent(email);
 
   var f = document.createElement('iframe');
   f.src = BASE + '?' + params;
