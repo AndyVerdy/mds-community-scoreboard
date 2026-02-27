@@ -191,6 +191,7 @@ body {
 }
 
 body.embed-mode { margin: 0; padding: 0; }
+body.embed-mode .layout { max-width: 100%; }
 
 
 /* ============== BANNER ============== */
@@ -1033,7 +1034,7 @@ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', fu
     var params = 'embed=1';
     if (optDark.checked) params += '&theme=dark';
     if (optLight.checked) params += '&theme=light';
-    return '<iframe\n  src="' + BASE + '?' + params + '"\n  width="100%"\n  height="800"\n  frameborder="0"\n  style="border:none; border-radius:12px; max-width:900px;">\n</iframe>';
+    return '<iframe\n  src="' + BASE + '?' + params + '"\n  width="100%"\n  height="800"\n  frameborder="0"\n  style="border:none;">\n</iframe>';
   }
 
   function updateCode() { codeEl.textContent = buildSnippet(); }
