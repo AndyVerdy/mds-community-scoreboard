@@ -1040,10 +1040,10 @@ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', fu
   var optLight = document.getElementById('embed-opt-light');
 
   function buildSnippet() {
-    var params = 'embed=1';
-    if (optDark.checked) params += '&theme=dark';
-    if (optLight.checked) params += '&theme=light';
-    return '<iframe\n  id="mds-scorecard"\n  src="' + BASE + '?' + params + '"\n  width="100%"\n  frameborder="0"\n  style="border:none; overflow:hidden;"\n  scrolling="no">\n</iframe>\n<script>\nwindow.addEventListener("message", function(e) {\n  if (e.data && e.data.type === "mds-scorecard-resize") {\n    document.getElementById("mds-scorecard").style.height = e.data.height + "px";\n  }\n});\n</script>';
+    var attrs = '';
+    if (optDark.checked) attrs += '\n  data-theme="dark"';
+    if (optLight.checked) attrs += '\n  data-theme="light"';
+    return '<script\n  src="' + BASE + 'embed.js"' + attrs + '>\n</script>';
   }
 
   function updateCode() { codeEl.textContent = buildSnippet(); }
