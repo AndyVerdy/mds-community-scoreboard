@@ -193,6 +193,12 @@ body {
 
 body.embed-mode { margin: 0; padding: 0; }
 body.embed-mode .layout { max-width: 100%; }
+body.embed-mode .overlay {
+  position: absolute;
+  min-height: 100%;
+  align-items: flex-start;
+  padding-top: 80px;
+}
 
 
 /* ============== BANNER ============== */
@@ -691,6 +697,12 @@ body.embed-mode .layout { max-width: 100%; }
   z-index: 300;
   display: flex; align-items: center; justify-content: center;
   padding: var(--space-lg);
+}
+body.embed-mode .name-picker-overlay {
+  position: absolute;
+  min-height: 100%;
+  align-items: flex-start;
+  padding-top: 80px;
 }
 .name-picker {
   background: var(--surface);
@@ -1755,6 +1767,7 @@ function showNamePicker() {
     '</div>';
 
   document.body.appendChild(overlay);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   var search = document.getElementById('np-search');
   var results = document.getElementById('np-results');
 
