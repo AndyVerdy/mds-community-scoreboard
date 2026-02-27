@@ -4,7 +4,7 @@
   var theme = s.getAttribute('data-theme') || 'light';
   var member = s.getAttribute('data-member') || '';
 
-  var params = 'embed=1';
+  var params = 'embed=1&_v=' + Date.now();
   if (theme) params += '&theme=' + encodeURIComponent(theme);
   if (member) params += '&member=' + encodeURIComponent(member);
 
