@@ -826,7 +826,7 @@ body.embed-mode { margin: 0; padding: 0; }
     </div>
     <div class="stats-row">
       <div class="stat-pill">Members <strong id="stat-members">&mdash;</strong></div>
-      <div class="stat-pill">Badges <strong>20</strong></div>
+      <div class="stat-pill">Badges <strong>25</strong></div>
       <div class="stat-pill">Max Score <strong>39.6</strong></div>
     </div>
   </div>
@@ -969,28 +969,33 @@ const FIELDS = [
   'FB ID',
   // GET CONNECTED
   'Website Profile Complete - About Me Trigger',
-  'Birthday Status',
-  'Niche Status',
-  'Hobbies Status',
+  'MDSonly',
   'Attended Welcome Call',
+  'Profile Image Status',
   'Coffee/Lunch Status',
+  'Perks Used in last 12 mths',
   // GIVE BACK
+  'New Member Value Add Status',
   'Give Post NEW',
   'Ask Post NEW',
   '#ValueAdd- T/FNEW',
   'Multiple #Valueadds NEW',
+  'Multiple Value Adds',
   'Submitted Document to Vault',
+  'Contribution points Normalized',
   // SHOW UP
   'Attended Virtual Call',
   'Registered for MULTIPLE Virtual Events within 12 months',
+  '# Number of Virtual Calls Hosted',
   'Registered for In Person Event within 12 months  NEW',
   'Registered for MULTIPLE In Person Event within 18 months',
+  'Chapter Events in last 12 months Status',
   'Registered for MULTIPLE Chapter Event within 12 months',
   'Chapter Affiliation Status',
   // GO DEEPER
   'Squads Status',
-  'MDS ONLY STATUS NEW',
-  'Total AC Points'
+  'FB Subgroup Status Count',
+  '# Number of Roles in MDS'
 ];
 
 
@@ -998,41 +1003,49 @@ const FIELDS = [
 // ACHIEVEMENT DEFINITIONS
 // ==============================================
 const CATEGORIES = [
-  { id: 'connected', name: 'GET CONNECTED', icon: '\uD83D\uDD17', desc: 'Profile & Onboarding', maxPts: 15, color: 'var(--cat-connected)' },
-  { id: 'giveback', name: 'GIVE BACK', icon: '\uD83D\uDCAC', desc: 'Engagement', maxPts: 25, color: 'var(--cat-giveback)' },
-  { id: 'showup', name: 'SHOW UP', icon: '\uD83C\uDFAF', desc: 'Events & Calls', maxPts: 30, color: 'var(--cat-showup)' },
-  { id: 'godeeper', name: 'GO DEEPER', icon: '\uD83D\uDE80', desc: 'Community Roles', maxPts: 15, color: 'var(--cat-godeeper)' }
+  { id: 'connected', name: 'GET CONNECTED', icon: '\uD83D\uDD17', desc: 'Profile & Onboarding', maxPts: 6, color: 'var(--cat-connected)' },
+  { id: 'giveback', name: 'GIVE BACK', icon: '\uD83D\uDCAC', desc: 'Engagement & Contributions', maxPts: 12, color: 'var(--cat-giveback)' },
+  { id: 'showup', name: 'SHOW UP', icon: '\uD83C\uDFAF', desc: 'Events & Calls', maxPts: 8, color: 'var(--cat-showup)' },
+  { id: 'godeeper', name: 'GO DEEPER', icon: '\uD83D\uDE80', desc: 'Community Roles', maxPts: 11, color: 'var(--cat-godeeper)' }
 ];
 
+// 25 achievements matching the Airtable scoring formula exactly
+// Binary achievements = 1 pt each, Variable = up to 5 pts, Bio = 10% bonus
 const ACHIEVEMENTS = [
-  // GET CONNECTED (15 pts)
-  { id: 'bio', name: 'Bio Builder', category: 'connected', points: 2, icon: '\uD83D\uDCDD', desc: 'Complete About Me on website', field: 'Website Profile Complete - About Me Trigger' },
-  { id: 'birthday', name: 'Birthday Shared', category: 'connected', points: 2, icon: '\uD83C\uDF82', desc: 'Add your birthday', field: 'Birthday Status' },
-  { id: 'niche', name: 'Niche Declared', category: 'connected', points: 2, icon: '\uD83C\uDFAF', desc: 'Set your niche', field: 'Niche Status' },
-  { id: 'hobbies', name: 'Hobbies Listed', category: 'connected', points: 2, icon: '\u26BD', desc: 'Add your hobbies', field: 'Hobbies Status' },
-  { id: 'welcome', name: 'Welcome Call', category: 'connected', points: 2, icon: '\uD83D\uDC4B', desc: 'Attend the welcome call', field: 'Attended Welcome Call' },
-  { id: 'coffee', name: 'Coffee Date', category: 'connected', points: 5, icon: '\u2615', desc: 'Have a coffee/lunch meetup', field: 'Coffee/Lunch Status' },
+  // GET CONNECTED (6 pts base)
+  { id: 'bio', name: 'Bio Builder', category: 'connected', points: 1, icon: '\uD83D\uDCDD', desc: 'Complete About Me on website (+10% bonus)', field: 'Website Profile Complete - About Me Trigger', bonus: true },
+  { id: 'mdsonly', name: 'MDS Only', category: 'connected', points: 1, icon: '\uD83D\uDD12', desc: 'Active in MDS Only group', field: 'MDSonly', check: 'any' },
+  { id: 'welcome', name: 'Welcome Call', category: 'connected', points: 1, icon: '\uD83D\uDC4B', desc: 'Attend the welcome call', field: 'Attended Welcome Call', check: 'any' },
+  { id: 'photo', name: 'Profile Photo', category: 'connected', points: 1, icon: '\uD83D\uDCF8', desc: 'Upload your profile photo', field: 'Profile Image Status' },
+  { id: 'coffee', name: 'Coffee Date', category: 'connected', points: 1, icon: '\u2615', desc: 'Have a coffee/lunch meetup', field: 'Coffee/Lunch Status' },
+  { id: 'perks', name: 'Perks Used', category: 'connected', points: 1, icon: '\uD83C\uDF81', desc: 'Use a perk in the last 12 months', field: 'Perks Used in last 12 mths' },
 
-  // GIVE BACK (25 pts)
-  { id: 'give', name: 'Give Post', category: 'giveback', points: 5, icon: '\uD83C\uDF81', desc: 'Share a Give post', field: 'Give Post NEW' },
-  { id: 'ask', name: 'Ask Post', category: 'giveback', points: 5, icon: '\u2753', desc: 'Post an Ask question', field: 'Ask Post NEW' },
-  { id: 'valueadd', name: 'Value Add', category: 'giveback', points: 5, icon: '\uD83D\uDCA1', desc: 'Provide a value-add contribution', field: '#ValueAdd- T/FNEW' },
-  { id: 'multivalueadd', name: 'Multi Value Add', category: 'giveback', points: 5, icon: '\u2B50', desc: 'Multiple value-add contributions', field: 'Multiple #Valueadds NEW' },
-  { id: 'vault', name: 'Vault Contributor', category: 'giveback', points: 5, icon: '\uD83D\uDCC1', desc: 'Submit a document to the vault', field: 'Submitted Document to Vault' },
+  // GIVE BACK (12 pts: 7 binary + Contribution up to 5)
+  { id: 'newvalueadd', name: 'New Member Value Add', category: 'giveback', points: 1, icon: '\uD83C\uDF1F', desc: 'Make a value-add contribution as new member', field: 'New Member Value Add Status' },
+  { id: 'give', name: 'Give Post', category: 'giveback', points: 1, icon: '\uD83E\uDD1D', desc: 'Share a Give post', field: 'Give Post NEW' },
+  { id: 'ask', name: 'Ask Post', category: 'giveback', points: 1, icon: '\u2753', desc: 'Post an Ask question', field: 'Ask Post NEW' },
+  { id: 'valueadd', name: 'Value Add', category: 'giveback', points: 1, icon: '\uD83D\uDCA1', desc: 'Provide a value-add contribution', field: '#ValueAdd- T/FNEW' },
+  { id: 'multivalueadd', name: 'Multi Value Add', category: 'giveback', points: 1, icon: '\u2B50', desc: 'Multiple #ValueAdd contributions', field: 'Multiple #Valueadds NEW' },
+  { id: 'multivalueadds', name: 'Multiple Value Adds', category: 'giveback', points: 1, icon: '\u2728', desc: 'Multiple value-add contributions', field: 'Multiple Value Adds' },
+  { id: 'vault', name: 'Vault Contributor', category: 'giveback', points: 1, icon: '\uD83D\uDCC1', desc: 'Submit a document to the vault', field: 'Submitted Document to Vault' },
+  { id: 'contribution', name: 'Contribution Points', category: 'giveback', points: 5, icon: '\uD83D\uDCB0', desc: 'Earn contribution points (up to 5)', field: 'Contribution points Normalized', type: 'variable', max: 5 },
 
-  // SHOW UP (30 pts)
-  { id: 'virtual', name: 'Virtual Attendee', category: 'showup', points: 5, icon: '\uD83D\uDCBB', desc: 'Attend a virtual call', field: 'Attended Virtual Call' },
-  { id: 'virtualreg', name: 'Virtual Regular', category: 'showup', points: 5, icon: '\uD83C\uDF1F', desc: 'Attend multiple virtual events (12mo)', field: 'Registered for MULTIPLE Virtual Events within 12 months' },
-  { id: 'event', name: 'Event Goer', category: 'showup', points: 5, icon: '\uD83C\uDFDF\uFE0F', desc: 'Register for an in-person event (12mo)', field: 'Registered for In Person Event within 12 months  NEW' },
-  { id: 'eventreg', name: 'Event Regular', category: 'showup', points: 5, icon: '\uD83C\uDFC6', desc: 'Multiple in-person events (18mo)', field: 'Registered for MULTIPLE In Person Event within 18 months' },
-  { id: 'chapter', name: 'Chapter Attendee', category: 'showup', points: 5, icon: '\uD83D\uDCCD', desc: 'Multiple chapter events (12mo)', field: 'Registered for MULTIPLE Chapter Event within 12 months' },
-  { id: 'chapteraff', name: 'Chapter Affiliated', category: 'showup', points: 5, icon: '\uD83C\uDFE0', desc: 'Join a chapter', field: 'Chapter Affiliation Status' },
+  // SHOW UP (8 pts)
+  { id: 'virtual', name: 'Virtual Attendee', category: 'showup', points: 1, icon: '\uD83D\uDCBB', desc: 'Attend a virtual call', field: 'Attended Virtual Call' },
+  { id: 'virtualreg', name: 'Virtual Regular', category: 'showup', points: 1, icon: '\uD83D\uDCF9', desc: 'Multiple virtual events (12mo)', field: 'Registered for MULTIPLE Virtual Events within 12 months' },
+  { id: 'callhost', name: 'Call Host', category: 'showup', points: 1, icon: '\uD83C\uDF99\uFE0F', desc: 'Host a virtual call', field: '# Number of Virtual Calls Hosted', check: 'gte1' },
+  { id: 'event', name: 'Event Goer', category: 'showup', points: 1, icon: '\uD83C\uDFDF\uFE0F', desc: 'Register for in-person event (12mo)', field: 'Registered for In Person Event within 12 months  NEW', check: 'any' },
+  { id: 'eventreg', name: 'Event Regular', category: 'showup', points: 1, icon: '\uD83C\uDFC6', desc: 'Multiple in-person events (18mo)', field: 'Registered for MULTIPLE In Person Event within 18 months' },
+  { id: 'chapterevt', name: 'Chapter Event', category: 'showup', points: 1, icon: '\uD83D\uDCC5', desc: 'Attend chapter events (12mo)', field: 'Chapter Events in last 12 months Status' },
+  { id: 'chapter', name: 'Chapter Attendee', category: 'showup', points: 1, icon: '\uD83D\uDCCD', desc: 'Multiple chapter events (12mo)', field: 'Registered for MULTIPLE Chapter Event within 12 months' },
+  { id: 'chapteraff', name: 'Chapter Affiliated', category: 'showup', points: 1, icon: '\uD83C\uDFE0', desc: 'Join a chapter', field: 'Chapter Affiliation Status' },
 
-  // GO DEEPER (15 pts)
-  { id: 'squad', name: 'Squad Member', category: 'godeeper', points: 5, icon: '\uD83D\uDC65', desc: 'Join a squad', field: 'Squads Status' },
-  { id: 'mdsonly', name: 'MDS Only', category: 'godeeper', points: 5, icon: '\uD83D\uDD12', desc: 'Active in MDS Only group', field: 'MDS ONLY STATUS NEW' },
-  { id: 'advisory', name: 'Advisory Council', category: 'godeeper', points: 5, icon: '\uD83C\uDFDB\uFE0F', desc: 'Participate in Advisory Council', field: 'Total AC Points', check: 'gt0' }
+  // GO DEEPER (11 pts: 1 binary + FB Subgroups up to 5 + Roles up to 5)
+  { id: 'squad', name: 'Squad Member', category: 'godeeper', points: 1, icon: '\uD83D\uDC65', desc: 'Join a squad', field: 'Squads Status' },
+  { id: 'fbsubgroups', name: 'FB Subgroups', category: 'godeeper', points: 5, icon: '\uD83D\uDCE2', desc: 'Join FB subgroups (up to 5)', field: 'FB Subgroup Status Count', type: 'variable', max: 5 },
+  { id: 'roles', name: 'MDS Roles', category: 'godeeper', points: 5, icon: '\uD83C\uDFAD', desc: 'Hold roles in MDS (up to 5)', field: '# Number of Roles in MDS', type: 'variable', max: 5 }
 ];
+const TOTAL_BADGES = ACHIEVEMENTS.length; // 25
 
 
 // ==============================================
@@ -1107,29 +1120,65 @@ function handleImgLoad(img, name) {
 // ==============================================
 // ACHIEVEMENT ENGINE
 // ==============================================
-function isTruthy(val) {
+// Strict TRUE check: matches ='TRUE' in Airtable formula
+function isTrue(val) {
   if (val === true) return true;
   if (val === false || val === null || val === undefined) return false;
   if (typeof val === 'string') return val.toUpperCase() === 'TRUE';
-  if (typeof val === 'object' && val !== null) {
-    // Generated object: {state: "generated", value: "TRUE", isStale: false}
-    if (val.value !== undefined) return isTruthy(val.value);
-  }
+  if (typeof val === 'object' && val !== null && val.value !== undefined) return isTrue(val.value);
   return false;
+}
+
+// Any non-empty truthiness check: matches IF({field}, 1, 0) in Airtable formula
+function isTruthyAny(val) {
+  if (val === null || val === undefined || val === false || val === 0 || val === '') return false;
+  if (typeof val === 'object' && val !== null && val.value !== undefined) return isTruthyAny(val.value);
+  if (typeof val === 'string' && val.toUpperCase() === 'FALSE') return false;
+  return true;
+}
+
+// Extract numeric value from field (handles linked record arrays like [7852])
+function getNumericValue(val) {
+  if (typeof val === 'number') return val;
+  if (Array.isArray(val) && val.length > 0) return typeof val[0] === 'number' ? val[0] : parseFloat(val[0]) || 0;
+  return parseFloat(val) || 0;
+}
+
+// Get variable achievement's current value (capped at max)
+function getVariableLevel(member, achievement) {
+  var val = getNumericValue(member._raw[achievement.field]);
+  return Math.min(val, achievement.max || 5);
 }
 
 function checkAchievement(member, achievement) {
   var val = member._raw[achievement.field];
-  if (achievement.check === 'gt0') {
-    var n = typeof val === 'number' ? val : parseFloat(val);
-    return !isNaN(n) && n > 0;
+
+  // Variable achievements: unlocked if value > 0
+  if (achievement.type === 'variable') {
+    return getNumericValue(val) > 0;
   }
-  return isTruthy(val);
+
+  // Numeric >= 1 check (e.g., # Number of Virtual Calls Hosted)
+  if (achievement.check === 'gte1') {
+    return getNumericValue(val) >= 1;
+  }
+
+  // Any truthiness check (e.g., MDSonly, Attended Welcome Call)
+  if (achievement.check === 'any') {
+    return isTruthyAny(val);
+  }
+
+  // Default: strict TRUE check (='TRUE' in formula)
+  return isTrue(val);
 }
 
 function getMemberAchievements(member) {
   return ACHIEVEMENTS.map(function(a) {
-    return { ...a, unlocked: checkAchievement(member, a) };
+    var result = Object.assign({}, a, { unlocked: checkAchievement(member, a) });
+    if (a.type === 'variable') {
+      result.currentLevel = getVariableLevel(member, a);
+    }
+    return result;
   });
 }
 
@@ -1139,6 +1188,9 @@ function countUnlocked(member) {
 
 function getUnlockedPoints(member) {
   return ACHIEVEMENTS.reduce(function(sum, a) {
+    if (a.type === 'variable') {
+      return sum + getVariableLevel(member, a);
+    }
     return sum + (checkAchievement(member, a) ? a.points : 0);
   }, 0);
 }
@@ -1232,9 +1284,9 @@ async function loadData() {
     var records = await fetchAllMembers();
     members = records.map(parseMember);
 
-    // Filter to current members only
+    // Filter: view already handles status, just ensure valid names
     members = members.filter(function(m) {
-      return m.name && m.name !== 'Unknown' && m.status === 'Current Member';
+      return m.name && m.name !== 'Unknown';
     });
 
     // Sort by score descending (score from Airtable "Member's score NEW")
@@ -1313,7 +1365,7 @@ function renderPodium(top3) {
         '</div>' +
         '<div class="podium-card__name">' + m.name + '</div>' +
         '<div class="podium-card__score">' + m.score + '</div>' +
-        '<div class="podium-card__label">' + Math.round(m.pct) + '% &middot; ' + m.badgeCount + '/20 badges</div>' +
+        '<div class="podium-card__label">' + Math.round(m.pct) + '% &middot; ' + m.badgeCount + '/' + TOTAL_BADGES + ' badges</div>' +
       '</div>' +
       '<div class="podium-card__bottom">' +
         '<div class="podium-stat"><div class="podium-stat__value">' + m.badgeCount + '</div><div class="podium-stat__label">Badges</div></div>' +
@@ -1348,7 +1400,7 @@ function renderList(list) {
         linkHtml +
       '</div>' +
       '<div class="member-row__score">' + m.score + '</div>' +
-      '<div class="member-row__badges">' + m.badgeCount + '/20</div>' +
+      '<div class="member-row__badges">' + m.badgeCount + '/' + TOTAL_BADGES + '</div>' +
       '<div class="member-row__bar"><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div></div>';
     row.addEventListener('click', function() { openModal(m); });
     el.appendChild(row);
@@ -1418,9 +1470,7 @@ document.getElementById('search').addEventListener('input', function(e) {
 // ==============================================
 function getRankUpTips(member) {
   var achievements = getMemberAchievements(member);
-  var locked = achievements.filter(function(a) { return !a.unlocked; });
-  if (locked.length === 0) return [];
-
+  var hasBio = isTrue(member._raw['Website Profile Complete - About Me Trigger']);
   var sortedScores = members.map(function(m) { return m.score; }).sort(function(a, b) { return b - a; });
 
   function findNewRank(newScore) {
@@ -1432,19 +1482,45 @@ function getRankUpTips(member) {
     return rank;
   }
 
-  var tips = locked.map(function(a) {
-    var newScore = member.score + a.points;
+  var tips = [];
+  achievements.forEach(function(a) {
+    var pointGain = 0;
+    if (a.type === 'variable') {
+      // Variable: can gain more points if below max
+      var current = a.currentLevel || 0;
+      var remaining = (a.max || 5) - current;
+      if (remaining <= 0) return;
+      pointGain = 1; // gaining 1 more level
+      // Apply Bio bonus if applicable
+      if (hasBio) pointGain *= 1.1;
+    } else if (!a.unlocked) {
+      pointGain = a.points;
+      // Bio Builder is special: gives 10% bonus on base score
+      if (a.bonus) {
+        // Approximate: base score is roughly current score (or current/1.1 if already has bonus)
+        var base = member.score;
+        pointGain = Math.round(base * 0.1 * 10) / 10;
+      } else if (hasBio) {
+        pointGain *= 1.1;
+      }
+    } else {
+      return; // already unlocked binary
+    }
+
+    if (pointGain <= 0) return;
+    var newScore = member.score + pointGain;
     var newRank = findNewRank(newScore);
     var rankJump = member.rank - newRank;
-    return {
+    tips.push({
       achievement: a,
       newRank: newRank,
       rankJump: rankJump,
-      newScore: newScore
-    };
+      newScore: Math.round(newScore * 10) / 10,
+      pointGain: Math.round(pointGain * 10) / 10
+    });
   });
 
-  tips.sort(function(a, b) { return b.rankJump - a.rankJump || a.achievement.points - b.achievement.points; });
+  tips.sort(function(a, b) { return b.rankJump - a.rankJump || b.pointGain - a.pointGain; });
   return tips.slice(0, 5);
 }
 
@@ -1474,7 +1550,7 @@ function openModal(m) {
   // Score overview
   var html = '<div class="score-overview">' +
     '<div class="score-card score-card--highlight"><div class="score-card__value">' + m.score + '</div><div class="score-card__label">Total Score</div></div>' +
-    '<div class="score-card"><div class="score-card__value">' + unlockedCount + '/20</div><div class="score-card__label">Badges Earned</div></div>' +
+    '<div class="score-card"><div class="score-card__value">' + unlockedCount + '/' + TOTAL_BADGES + '</div><div class="score-card__label">Badges Earned</div></div>' +
   '</div>';
 
   // Achievement grid by category
@@ -1486,11 +1562,19 @@ function openModal(m) {
     catAchievements.forEach(function(a) {
       var cls = a.unlocked ? 'badge-card--unlocked' : 'badge-card--locked';
       var statusCls = a.unlocked ? 'badge-card__status--unlocked' : 'badge-card__status--locked';
-      var statusText = a.unlocked ? '\u2713 Unlocked' : '\uD83D\uDD12 Locked';
+      var statusText, ptsText;
+      if (a.type === 'variable') {
+        var lvl = a.currentLevel || 0;
+        statusText = lvl > 0 ? ('\u2713 ' + lvl + '/' + (a.max || 5)) : '\uD83D\uDD12 0/' + (a.max || 5);
+        ptsText = lvl + '/' + (a.max || 5) + ' pts';
+      } else {
+        statusText = a.unlocked ? '\u2713 Unlocked' : '\uD83D\uDD12 Locked';
+        ptsText = '+' + a.points + ' pt' + (a.bonus ? ' +10% bonus' : '');
+      }
       html += '<div class="badge-card ' + cls + '">' +
         '<div class="badge-card__icon">' + a.icon + '</div>' +
         '<div class="badge-card__name">' + a.name + '</div>' +
-        '<div class="badge-card__pts">+' + a.points + ' pts</div>' +
+        '<div class="badge-card__pts">' + ptsText + '</div>' +
         '<div class="badge-card__status ' + statusCls + '">' + statusText + '</div>' +
       '</div>';
     });
@@ -1505,7 +1589,7 @@ function openModal(m) {
       if (t.rankJump <= 0) return;
       html += '<div class="tip-item">' +
         '<div class="tip-item__icon">' + t.achievement.icon + '</div>' +
-        '<div class="tip-item__text">' + t.achievement.desc + ' <strong>(+' + t.achievement.points + ' pts)</strong></div>' +
+        '<div class="tip-item__text">' + t.achievement.desc + ' <strong>(+' + t.pointGain + ' pts)</strong></div>' +
         '<div class="tip-item__rank">\u2192 #' + t.newRank + '</div>' +
       '</div>';
     });
@@ -1565,7 +1649,7 @@ function showNamePicker() {
       item.innerHTML =
         '<img src="' + getPhotoUrl(m) + '" onerror="handleImgError(this,\'' + esc + '\')">' +
         '<div><div class="name-picker__item-name">' + m.name + '</div>' +
-        '<div class="name-picker__item-score">Rank #' + m.rank + ' \u2022 ' + m.score + ' pts \u2022 ' + m.badgeCount + '/20 badges</div></div>';
+        '<div class="name-picker__item-score">Rank #' + m.rank + ' \u2022 ' + m.score + ' pts \u2022 ' + m.badgeCount + '/' + TOTAL_BADGES + ' badges</div></div>';
       item.addEventListener('click', function() {
         var db = getDB();
         db.myName = m.name;
@@ -1613,7 +1697,7 @@ function renderMyProfile() {
     tipsHtml += '<span class="tip-pill tip-pill--achievement">' + t.achievement.icon + ' ' + t.achievement.name + ' \u2192 #' + t.newRank + '</span>';
   });
 
-  var rankText = me.score > 0 ? 'Rank #' + me.rank + ' of ' + members.length + ' \u2022 ' + me.badgeCount + '/20 badges' : 'Not ranked yet';
+  var rankText = me.score > 0 ? 'Rank #' + me.rank + ' of ' + members.length + ' \u2022 ' + me.badgeCount + '/' + TOTAL_BADGES + ' badges' : 'Not ranked yet';
   var esc = me.name.replace(/'/g, "\\'");
 
   container.style.display = '';
@@ -1658,7 +1742,7 @@ function renderCatalog() {
         '<div class="catalog-card__top">' +
           '<span class="catalog-card__icon">' + a.icon + '</span>' +
           '<div><div class="catalog-card__name">' + a.name + '</div>' +
-          '<div class="catalog-card__pts">+' + a.points + ' pts</div></div>' +
+          '<div class="catalog-card__pts">' + (a.type === 'variable' ? 'up to ' + a.points + ' pts' : '+' + a.points + ' pt' + (a.bonus ? ' +10%' : '')) + '</div></div>' +
         '</div>' +
         '<div class="catalog-card__desc">' + a.desc + '</div>' +
         '<div class="catalog-card__rarity">' +
@@ -1699,16 +1783,26 @@ async function runTests() {
     setTimeout(function() { clearInterval(check); resolve(); }, 20000);
   });
 
-  // Achievement engine - isTruthy
-  assert('isTruthy: true', isTruthy(true) === true);
-  assert('isTruthy: false', isTruthy(false) === false);
-  assert('isTruthy: "TRUE"', isTruthy('TRUE') === true);
-  assert('isTruthy: "FALSE"', isTruthy('FALSE') === false);
-  assert('isTruthy: "true"', isTruthy('true') === true);
-  assert('isTruthy: generated TRUE', isTruthy({state:'generated', value:'TRUE', isStale:false}) === true);
-  assert('isTruthy: generated FALSE', isTruthy({state:'generated', value:'FALSE', isStale:false}) === false);
-  assert('isTruthy: null', isTruthy(null) === false);
-  assert('isTruthy: undefined', isTruthy(undefined) === false);
+  // Achievement engine - isTrue (strict TRUE check)
+  assert('isTrue: true', isTrue(true) === true);
+  assert('isTrue: false', isTrue(false) === false);
+  assert('isTrue: "TRUE"', isTrue('TRUE') === true);
+  assert('isTrue: "FALSE"', isTrue('FALSE') === false);
+  assert('isTrue: generated TRUE', isTrue({state:'generated', value:'TRUE', isStale:false}) === true);
+  assert('isTrue: generated FALSE', isTrue({state:'generated', value:'FALSE', isStale:false}) === false);
+  assert('isTrue: null', isTrue(null) === false);
+
+  // isTruthyAny (non-empty value check)
+  assert('isTruthyAny: "MDSonly Access"', isTruthyAny('MDSonly Access') === true);
+  assert('isTruthyAny: ""', isTruthyAny('') === false);
+  assert('isTruthyAny: "FALSE"', isTruthyAny('FALSE') === false);
+  assert('isTruthyAny: true', isTruthyAny(true) === true);
+  assert('isTruthyAny: 0', isTruthyAny(0) === false);
+
+  // getNumericValue
+  assert('getNumericValue: 5', getNumericValue(5) === 5);
+  assert('getNumericValue: [7852]', getNumericValue([7852]) === 7852);
+  assert('getNumericValue: null', getNumericValue(null) === 0);
 
   // Data loaded
   assert('Members loaded', members.length > 0, members.length + ' members');
@@ -1758,13 +1852,13 @@ async function runTests() {
     await new Promise(function(r) { setTimeout(r, 300); });
     assert('Modal opens', document.getElementById('overlay').classList.contains('open'));
     var badgeCards = document.querySelectorAll('#m-body .badge-card').length;
-    assert('Modal shows 20 badge cards', badgeCards === 20, badgeCards + ' badge cards');
+    assert('Modal shows ' + TOTAL_BADGES + ' badge cards', badgeCards === TOTAL_BADGES, badgeCards + ' badge cards');
     document.getElementById('overlay').classList.remove('open');
   }
 
   // Catalog rendered
   var catalogCards = document.querySelectorAll('.catalog-card').length;
-  assert('Catalog shows 20 achievement cards', catalogCards === 20, catalogCards + ' catalog cards');
+  assert('Catalog shows ' + TOTAL_BADGES + ' achievement cards', catalogCards === TOTAL_BADGES, catalogCards + ' catalog cards');
 
   // Rank-up engine
   if (members.length > 10) {
