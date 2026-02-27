@@ -1043,7 +1043,7 @@ window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', fu
     var attrs = '';
     if (optDark.checked) attrs += '\n  data-theme="dark"';
     if (optLight.checked) attrs += '\n  data-theme="light"';
-    return '<script\n  src="' + BASE + 'embed.js"' + attrs + '>\n</script>';
+    return '<scr' + 'ipt\n  src="' + BASE + 'embed.js"' + attrs + '>\n</scr' + 'ipt>';
   }
 
   function updateCode() { codeEl.textContent = buildSnippet(); }
