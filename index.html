@@ -906,7 +906,7 @@ body.embed-mode .name-picker-overlay {
     <div class="stats-row">
       <div class="stat-pill">Members <strong id="stat-members">&mdash;</strong></div>
       <div class="stat-pill">Badges <strong>25</strong></div>
-      <div class="stat-pill">Max Score <strong>94.6</strong></div>
+      <div class="stat-pill">Max Score <strong>126.5</strong></div>
     </div>
   </div>
 
@@ -1104,18 +1104,16 @@ const FIELDS = [
   // GET CONNECTED
   'Website Profile Complete - About Me Trigger',
   'MDSonly',
-  'Hobbies Status',
-  'Niche Status',
-  'Birthday Status',
+  'Profile Image Status',
   'Attended Welcome Call',
+  'Coffee/Lunch Status',
   // GIVE BACK
   'New Member Value Add Status',
   'Give Post NEW',
   'Ask Post NEW',
   '#ValueAdd- T/FNEW',
-  'Multiple #Valueadds NEW',
   'Multiple Value Adds',
-  'Contribution points Normalized',
+  'Submitted Document to Vault',
   // SHOW UP
   'Attended Virtual Call',
   'Registered for MULTIPLE Virtual Events within 12 months',
@@ -1126,7 +1124,10 @@ const FIELDS = [
   'Registered for MULTIPLE Chapter Event within 12 months',
   'Chapter Affiliation Status',
   // GO DEEPER
-  'Squads Status'
+  'Squads Status',
+  'FB Subgroup Status Count',
+  '# Number of Roles in MDS',
+  'Perks Used in last 12 mths'
 ];
 
 
@@ -1134,47 +1135,49 @@ const FIELDS = [
 // ACHIEVEMENT DEFINITIONS
 // ==============================================
 const CATEGORIES = [
-  { id: 'connected', name: 'GET CONNECTED', icon: '\uD83D\uDD17', desc: 'Profile & Onboarding', maxPts: 13, color: 'var(--cat-connected)' },
-  { id: 'giveback', name: 'GIVE BACK', icon: '\uD83D\uDCAC', desc: 'Engagement & Contributions', maxPts: 30, color: 'var(--cat-giveback)' },
-  { id: 'showup', name: 'SHOW UP', icon: '\uD83C\uDFAF', desc: 'Events & Calls', maxPts: 38, color: 'var(--cat-showup)' },
-  { id: 'godeeper', name: 'GO DEEPER', icon: '\uD83D\uDE80', desc: 'Community Roles', maxPts: 5, color: 'var(--cat-godeeper)' }
+  { id: 'connected', name: 'GET CONNECTED', icon: '\uD83D\uDD17', desc: 'Profile & Onboarding', maxPts: 20, color: 'var(--cat-connected)' },
+  { id: 'giveback', name: 'GIVE BACK', icon: '\uD83D\uDCAC', desc: 'Engagement & Contributions', maxPts: 35, color: 'var(--cat-giveback)' },
+  { id: 'showup', name: 'SHOW UP', icon: '\uD83C\uDFAF', desc: 'Events & Calls', maxPts: 40, color: 'var(--cat-showup)' },
+  { id: 'godeeper', name: 'GO DEEPER', icon: '\uD83D\uDE80', desc: 'Squads, Roles & Perks', maxPts: 20, color: 'var(--cat-godeeper)' }
 ];
 
-// 22 achievements matching the spreadsheet exactly
-// Weights: 2-5 pts per achievement, Contribution = 0-5 variable, Bio = 10% bonus
-// Max score: 86 base + 8.6 bio bonus = 94.6
+// 24 achievements matching Airtable reference table exactly
+// All weights: 5 pts each, Contribution = 0-5 variable, Bio = 10% bonus on base
+// Max score: 115 base + 11.5 bio bonus = 126.5
 const ACHIEVEMENTS = [
   // GET CONNECTED
-  { id: 'bio', name: 'Bio Builder', category: 'connected', points: 5, icon: '\uD83D\uDCDD', desc: 'Complete About Me on website (+10% bonus)', field: 'Website Profile Complete - About Me Trigger', bonus: true },
-  { id: 'mdsonly', name: 'MDS Only', category: 'connected', points: 5, icon: '\uD83D\uDD12', desc: 'Active in MDS Only group', field: 'MDSonly', check: 'any' },
-  { id: 'hobbies', name: 'Hobbies', category: 'connected', points: 2, icon: '\uD83C\uDFA8', desc: 'Share your hobbies', field: 'Hobbies Status' },
-  { id: 'niche', name: 'Niche', category: 'connected', points: 2, icon: '\uD83C\uDFAF', desc: 'Set your niche', field: 'Niche Status' },
-  { id: 'birthday', name: 'Birthday', category: 'connected', points: 2, icon: '\uD83C\uDF82', desc: 'Share your birthday', field: 'Birthday Status' },
-  { id: 'welcome', name: 'Welcome Call', category: 'connected', points: 2, icon: '\uD83D\uDC4B', desc: 'Attend the welcome call', field: 'Attended Welcome Call', check: 'any' },
+  { id: 'bio', name: 'Profile Complete', category: 'connected', points: 5, icon: '\uD83D\uDCDD', desc: 'Fill out all required profile fields on the MDS App (+10% score bonus)', field: 'Website Profile Complete - About Me Trigger', bonus: true },
+  { id: 'mdsonly', name: 'MDS Loyalty', category: 'connected', points: 5, icon: '\uD83D\uDD12', desc: 'Active MDS member for 365+ consecutive days', field: 'MDSonly', check: 'any' },
+  { id: 'photo', name: 'Profile Photo', category: 'connected', points: 5, icon: '\uD83D\uDCF8', desc: 'Upload a profile photo on the MDS App', field: 'Profile Image Status' },
+  { id: 'welcome', name: 'Welcome Call', category: 'connected', points: 5, icon: '\uD83D\uDC4B', desc: 'Attend a new member welcome call', field: 'Attended Welcome Call', check: 'any' },
+  { id: 'coffee', name: 'Coffee & Lunch', category: 'connected', points: 5, icon: '\u2615', desc: 'Have a coffee or lunch meetup with another member', field: 'Coffee/Lunch Status' },
 
   // GIVE BACK
-  { id: 'newvalueadd', name: 'New Member Value Add', category: 'giveback', points: 5, icon: '\uD83C\uDF1F', desc: 'Make a value-add contribution as new member', field: 'New Member Value Add Status' },
-  { id: 'give', name: 'Give Post', category: 'giveback', points: 3, icon: '\uD83E\uDD1D', desc: 'Share a Give post', field: 'Give Post NEW' },
-  { id: 'ask', name: 'Ask Post', category: 'giveback', points: 2, icon: '\u2753', desc: 'Post an Ask question', field: 'Ask Post NEW' },
-  { id: 'valueadd', name: 'Value Add', category: 'giveback', points: 5, icon: '\uD83D\uDCA1', desc: 'Provide a value-add contribution', field: '#ValueAdd- T/FNEW' },
-  { id: 'multivalueadd', name: 'Multi Value Add', category: 'giveback', points: 5, icon: '\u2B50', desc: 'Multiple #ValueAdd contributions', field: 'Multiple #Valueadds NEW' },
-  { id: 'multivalueadds', name: 'Multiple Value Adds', category: 'giveback', points: 5, icon: '\u2728', desc: 'Multiple value-add contributions', field: 'Multiple Value Adds' },
-  { id: 'contribution', name: 'Contribution Points', category: 'giveback', points: 5, icon: '\uD83D\uDCB0', desc: 'Earn contribution points (up to 5)', field: 'Contribution points Normalized', type: 'variable', max: 5 },
+  { id: 'newvalueadd', name: 'New Member #ValueAdd', category: 'giveback', points: 5, icon: '\uD83C\uDF1F', desc: 'Share a #ValueAdd post as a new member', field: 'New Member Value Add Status' },
+  { id: 'give', name: 'Give Post', category: 'giveback', points: 5, icon: '\uD83E\uDD1D', desc: 'Make a GIVE post in the Facebook group', field: 'Give Post NEW' },
+  { id: 'ask', name: 'Ask Post', category: 'giveback', points: 5, icon: '\u2753', desc: 'Make an ASK post in the Facebook group', field: 'Ask Post NEW' },
+  { id: 'valueadd', name: 'First #ValueAdd', category: 'giveback', points: 5, icon: '\uD83D\uDCA1', desc: 'Share your first #ValueAdd post in the Facebook group', field: '#ValueAdd- T/FNEW' },
+  { id: 'multivalueadds', name: 'Multiple #ValueAdds', category: 'giveback', points: 5, icon: '\u2B50', desc: 'Share multiple #ValueAdd posts in the Facebook group', field: 'Multiple Value Adds' },
+  { id: 'contribution', name: 'Engagement Score', category: 'giveback', points: 5, icon: '\uD83D\uDCB0', desc: 'Earn contribution points from Facebook group activity', field: 'Contribution points Normalized', type: 'variable', max: 5 },
+  { id: 'vault', name: 'Vault Contributor', category: 'giveback', points: 5, icon: '\uD83D\uDCC2', desc: 'Submit a document to the MDS Vault', field: 'Submitted Document to Vault' },
 
   // SHOW UP
-  { id: 'virtual', name: 'Virtual Attendee', category: 'showup', points: 3, icon: '\uD83D\uDCBB', desc: 'Attend a virtual call', field: 'Attended Virtual Call' },
-  { id: 'virtualreg', name: 'Virtual Regular', category: 'showup', points: 5, icon: '\uD83D\uDCF9', desc: 'Multiple virtual events (12mo)', field: 'Registered for MULTIPLE Virtual Events within 12 months' },
-  { id: 'callhost', name: 'Call Host', category: 'showup', points: 5, icon: '\uD83C\uDF99\uFE0F', desc: 'Host a virtual call', field: '# Number of Virtual Calls Hosted', check: 'gte1' },
-  { id: 'event', name: 'Event Goer', category: 'showup', points: 5, icon: '\uD83C\uDFDF\uFE0F', desc: 'Register for in-person event (12mo)', field: 'Registered for In Person Event within 12 months  NEW', check: 'any' },
-  { id: 'eventreg', name: 'Event Regular', category: 'showup', points: 5, icon: '\uD83C\uDFC6', desc: 'Multiple in-person events (18mo)', field: 'Registered for MULTIPLE In Person Event within 18 months' },
-  { id: 'chapterevt', name: 'Chapter Event', category: 'showup', points: 5, icon: '\uD83D\uDCC5', desc: 'Attend chapter events (12mo)', field: 'Chapter Events in last 12 months Status' },
-  { id: 'chapter', name: 'Chapter Attendee', category: 'showup', points: 5, icon: '\uD83D\uDCCD', desc: 'Multiple chapter events (12mo)', field: 'Registered for MULTIPLE Chapter Event within 12 months' },
-  { id: 'chapteraff', name: 'Chapter Affiliated', category: 'showup', points: 5, icon: '\uD83C\uDFE0', desc: 'Join a chapter', field: 'Chapter Affiliation Status' },
+  { id: 'virtual', name: 'Virtual Call', category: 'showup', points: 5, icon: '\uD83D\uDCBB', desc: 'Attend a virtual call', field: 'Attended Virtual Call' },
+  { id: 'virtualreg', name: 'Virtual Regular', category: 'showup', points: 5, icon: '\uD83D\uDCF9', desc: 'Register for multiple virtual events within 12 months', field: 'Registered for MULTIPLE Virtual Events within 12 months' },
+  { id: 'callhost', name: 'Call Host', category: 'showup', points: 5, icon: '\uD83C\uDF99\uFE0F', desc: 'Host at least one virtual call', field: '# Number of Virtual Calls Hosted', check: 'gte1' },
+  { id: 'event', name: 'In-Person Event', category: 'showup', points: 5, icon: '\uD83C\uDFDF\uFE0F', desc: 'Register for an in-person event within 12 months', field: 'Registered for In Person Event within 12 months  NEW', check: 'any' },
+  { id: 'eventreg', name: 'Event Regular', category: 'showup', points: 5, icon: '\uD83C\uDFC6', desc: 'Register for multiple in-person events within 18 months', field: 'Registered for MULTIPLE In Person Event within 18 months' },
+  { id: 'chapterevt', name: 'Chapter Event', category: 'showup', points: 5, icon: '\uD83D\uDCC5', desc: 'Attend chapter events within the last 12 months', field: 'Chapter Events in last 12 months Status' },
+  { id: 'chapter', name: 'Chapter Regular', category: 'showup', points: 5, icon: '\uD83D\uDCCD', desc: 'Register for multiple chapter events within 12 months', field: 'Registered for MULTIPLE Chapter Event within 12 months' },
+  { id: 'chapteraff', name: 'Chapter Affiliated', category: 'showup', points: 5, icon: '\uD83C\uDFE0', desc: 'Join the Chapter Affiliation program', field: 'Chapter Affiliation Status' },
 
   // GO DEEPER
-  { id: 'squad', name: 'Squad Member', category: 'godeeper', points: 5, icon: '\uD83D\uDC65', desc: 'Join a squad', field: 'Squads Status' }
+  { id: 'squad', name: 'Squad Member', category: 'godeeper', points: 5, icon: '\uD83D\uDC65', desc: 'Be an active member of an MDS Squad', field: 'Squads Status' },
+  { id: 'fbsubgroups', name: 'Subgroups', category: 'godeeper', points: 5, icon: '\uD83D\uDCAC', desc: 'Join Facebook subgroups', field: 'FB Subgroup Status Count' },
+  { id: 'roles', name: 'Event Role', category: 'godeeper', points: 5, icon: '\uD83C\uDF96\uFE0F', desc: 'Take on a role in chapter events', field: '# Number of Roles in MDS', check: 'gte1' },
+  { id: 'perks', name: 'Perks Used', category: 'godeeper', points: 5, icon: '\uD83C\uDF81', desc: 'Claim an MDS perk within the last 12 months', field: 'Perks Used in last 12 mths' }
 ];
-const TOTAL_BADGES = ACHIEVEMENTS.length; // 22
+const TOTAL_BADGES = ACHIEVEMENTS.length; // 24
 
 
 // ==============================================
@@ -1520,7 +1523,7 @@ function renderList(list) {
   var el = document.getElementById('list');
   el.innerHTML = '';
   list.forEach(function(m, idx) {
-    var pct = Math.max(Math.round((m.score / 94.6) * 100), 2);
+    var pct = Math.max(Math.round((m.score / 126.5) * 100), 2);
     var linkHtml = m.fbLink ?
       '<a href="' + m.fbLink + '" target="_blank" rel="noopener" class="profile-link-icon" title="View on Facebook" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>' : '';
     var esc = m.name.replace(/'/g, "\\'");
