@@ -906,7 +906,7 @@ body.embed-mode .name-picker-overlay {
     <div class="stats-row">
       <div class="stat-pill">Members <strong id="stat-members">&mdash;</strong></div>
       <div class="stat-pill">Badges <strong>25</strong></div>
-      <div class="stat-pill">Max Score <strong>126.5</strong></div>
+      <div class="stat-pill">Max Score <strong>192.5</strong></div>
     </div>
   </div>
 
@@ -1093,7 +1093,6 @@ const FIELDS = [
   'Full Name',
   'Member\'s score NEW',
   'Member\'s score NEW Percent',
-  'Contribution points Normalized',
   'AT Database Status',
   'Photo',
   'Member FB Photo',
@@ -1102,7 +1101,7 @@ const FIELDS = [
   'FB ID',
   'Preferred Email',
   // GET CONNECTED
-  'Website Profile Complete - About Me Trigger',
+  'Website profile completion scores out of 12(Based on provided custom fields on the MDS App)',
   'MDSonly',
   'Profile Image Status',
   'Attended Welcome Call',
@@ -1112,7 +1111,9 @@ const FIELDS = [
   'Give Post NEW',
   'Ask Post NEW',
   '#ValueAdd- T/FNEW',
+  'Multiple #Valueadds NEW',
   'Multiple Value Adds',
+  'Facebook Group Contribution points',
   'Submitted Document to Vault',
   // SHOW UP
   'Attended Virtual Call',
@@ -1136,17 +1137,17 @@ const FIELDS = [
 // ==============================================
 const CATEGORIES = [
   { id: 'connected', name: 'GET CONNECTED', icon: '\uD83D\uDD17', desc: 'Profile & Onboarding', maxPts: 20, color: 'var(--cat-connected)' },
-  { id: 'giveback', name: 'GIVE BACK', icon: '\uD83D\uDCAC', desc: 'Engagement & Contributions', maxPts: 35, color: 'var(--cat-giveback)' },
+  { id: 'giveback', name: 'GIVE BACK', icon: '\uD83D\uDCAC', desc: 'Engagement & Contributions', maxPts: 55, color: 'var(--cat-giveback)' },
   { id: 'showup', name: 'SHOW UP', icon: '\uD83C\uDFAF', desc: 'Events & Calls', maxPts: 40, color: 'var(--cat-showup)' },
-  { id: 'godeeper', name: 'GO DEEPER', icon: '\uD83D\uDE80', desc: 'Squads, Roles & Perks', maxPts: 20, color: 'var(--cat-godeeper)' }
+  { id: 'godeeper', name: 'GO DEEPER', icon: '\uD83D\uDE80', desc: 'Squads, Roles & Perks', maxPts: 60, color: 'var(--cat-godeeper)' }
 ];
 
-// 24 achievements matching Airtable reference table exactly
-// All weights: 5 pts each, Contribution = 0-5 variable, Bio = 10% bonus on base
-// Max score: 115 base + 11.5 bio bonus = 126.5
+// 25 achievements matching the Airtable "Member's score NEW" formula exactly
+// Most: 5 pts on/off. Three are variable (MIN(val,25)): Contribution, Subgroups, Roles
+// Bio: proportional bonus = (profileScore/12) * 10% * base
 const ACHIEVEMENTS = [
   // GET CONNECTED
-  { id: 'bio', name: 'Profile Complete', category: 'connected', points: 5, icon: '\uD83D\uDCDD', desc: 'Fill out all required profile fields on the MDS App (+10% score bonus)', field: 'Website Profile Complete - About Me Trigger', bonus: true },
+  { id: 'bio', name: 'Profile Complete', category: 'connected', points: 25, icon: '\uD83D\uDCDD', desc: 'Fill out all required profile fields on the MDS App (+10% score bonus)', field: 'Website profile completion scores out of 12(Based on provided custom fields on the MDS App)', bonus: true, type: 'variable', max: 12 },
   { id: 'mdsonly', name: 'MDS Loyalty', category: 'connected', points: 5, icon: '\uD83D\uDD12', desc: 'Active MDS member for 365+ consecutive days', field: 'MDSonly', check: 'any' },
   { id: 'photo', name: 'Profile Photo', category: 'connected', points: 5, icon: '\uD83D\uDCF8', desc: 'Upload a profile photo on the MDS App', field: 'Profile Image Status' },
   { id: 'welcome', name: 'Welcome Call', category: 'connected', points: 5, icon: '\uD83D\uDC4B', desc: 'Attend a new member welcome call', field: 'Attended Welcome Call', check: 'any' },
@@ -1157,8 +1158,9 @@ const ACHIEVEMENTS = [
   { id: 'give', name: 'Give Post', category: 'giveback', points: 5, icon: '\uD83E\uDD1D', desc: 'Make a GIVE post in the Facebook group', field: 'Give Post NEW' },
   { id: 'ask', name: 'Ask Post', category: 'giveback', points: 5, icon: '\u2753', desc: 'Make an ASK post in the Facebook group', field: 'Ask Post NEW' },
   { id: 'valueadd', name: 'First #ValueAdd', category: 'giveback', points: 5, icon: '\uD83D\uDCA1', desc: 'Share your first #ValueAdd post in the Facebook group', field: '#ValueAdd- T/FNEW' },
-  { id: 'multivalueadds', name: 'Multiple #ValueAdds', category: 'giveback', points: 5, icon: '\u2B50', desc: 'Share multiple #ValueAdd posts in the Facebook group', field: 'Multiple Value Adds' },
-  { id: 'contribution', name: 'Engagement Score', category: 'giveback', points: 5, icon: '\uD83D\uDCB0', desc: 'Earn contribution points from Facebook group activity', field: 'Contribution points Normalized', type: 'variable', max: 5 },
+  { id: 'multivalueadd', name: 'Multi #ValueAdd', category: 'giveback', points: 5, icon: '\u2B50', desc: 'Multiple #ValueAdd hashtag posts', field: 'Multiple #Valueadds NEW' },
+  { id: 'multivalueadds', name: 'Multiple Value Adds', category: 'giveback', points: 5, icon: '\u2728', desc: 'Share multiple #ValueAdd posts in the Facebook group', field: 'Multiple Value Adds' },
+  { id: 'contribution', name: 'Engagement Score', category: 'giveback', points: 25, icon: '\uD83D\uDCB0', desc: 'Earn contribution points from Facebook group activity (up to 25)', field: 'Facebook Group Contribution points', type: 'variable', max: 25 },
   { id: 'vault', name: 'Vault Contributor', category: 'giveback', points: 5, icon: '\uD83D\uDCC2', desc: 'Submit a document to the MDS Vault', field: 'Submitted Document to Vault' },
 
   // SHOW UP
@@ -1173,11 +1175,11 @@ const ACHIEVEMENTS = [
 
   // GO DEEPER
   { id: 'squad', name: 'Squad Member', category: 'godeeper', points: 5, icon: '\uD83D\uDC65', desc: 'Be an active member of an MDS Squad', field: 'Squads Status' },
-  { id: 'fbsubgroups', name: 'Subgroups', category: 'godeeper', points: 5, icon: '\uD83D\uDCAC', desc: 'Join Facebook subgroups', field: 'FB Subgroup Status Count' },
-  { id: 'roles', name: 'Event Role', category: 'godeeper', points: 5, icon: '\uD83C\uDF96\uFE0F', desc: 'Take on a role in chapter events', field: '# Number of Roles in MDS', check: 'gte1' },
+  { id: 'fbsubgroups', name: 'Subgroups', category: 'godeeper', points: 25, icon: '\uD83D\uDCAC', desc: 'Join Facebook subgroups (up to 25 pts)', field: 'FB Subgroup Status Count', type: 'variable', max: 25 },
+  { id: 'roles', name: 'Event Role', category: 'godeeper', points: 25, icon: '\uD83C\uDF96\uFE0F', desc: 'Take on roles in chapter events (up to 25 pts)', field: '# Number of Roles in MDS', type: 'variable', max: 25 },
   { id: 'perks', name: 'Perks Used', category: 'godeeper', points: 5, icon: '\uD83C\uDF81', desc: 'Claim an MDS perk within the last 12 months', field: 'Perks Used in last 12 mths' }
 ];
-const TOTAL_BADGES = ACHIEVEMENTS.length; // 24
+const TOTAL_BADGES = ACHIEVEMENTS.length; // 25
 
 
 // ==============================================
@@ -1354,7 +1356,7 @@ function parseMember(record) {
   var score = Math.round(rawScore * 10) / 10;
   var pctStr = f['Member\'s score NEW Percent'] || '0%';
   var pct = parseFloat(pctStr) || 0;
-  var contribution = typeof f['Contribution points Normalized'] === 'number' ? f['Contribution points Normalized'] : 0;
+  var contribution = typeof f['Facebook Group Contribution points'] === 'number' ? f['Facebook Group Contribution points'] : 0;
   var fbLink = f['Facebook Profile Link'] || null;
   var fbId = Array.isArray(f['FB ID']) ? f['FB ID'][0] : f['FB ID'] || null;
   var email = (f['Preferred Email'] || '').toString().trim().toLowerCase();
@@ -1523,7 +1525,7 @@ function renderList(list) {
   var el = document.getElementById('list');
   el.innerHTML = '';
   list.forEach(function(m, idx) {
-    var pct = Math.max(Math.round((m.score / 126.5) * 100), 2);
+    var pct = Math.max(Math.round((m.score / 192.5) * 100), 2);
     var linkHtml = m.fbLink ?
       '<a href="' + m.fbLink + '" target="_blank" rel="noopener" class="profile-link-icon" title="View on Facebook" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>' : '';
     var esc = m.name.replace(/'/g, "\\'");
@@ -1608,7 +1610,8 @@ document.getElementById('search').addEventListener('input', function(e) {
 // ==============================================
 function getRankUpTips(member) {
   var achievements = getMemberAchievements(member);
-  var hasBio = isTrue(member._raw['Website Profile Complete - About Me Trigger']);
+  var profileScore = getNumericValue(member._raw['Website profile completion scores out of 12(Based on provided custom fields on the MDS App)']);
+  var bioMultiplier = 1 + (Math.min(profileScore, 12) / 12) * 0.1;
   var sortedScores = members.map(function(m) { return m.score; }).sort(function(a, b) { return b - a; });
 
   function findNewRank(newScore) {
@@ -1624,21 +1627,18 @@ function getRankUpTips(member) {
   achievements.forEach(function(a) {
     var baseGain = 0;
     var simGain = 0;
-    if (a.type === 'variable') {
+    if (a.bonus) {
+      // Bio bonus: skip in tips (proportional, too complex to show simply)
+      return;
+    } else if (a.type === 'variable') {
       var current = a.currentLevel || 0;
       var remaining = (a.max || 5) - current;
       if (remaining <= 0) return;
       baseGain = 1;
-      simGain = hasBio ? 1.1 : 1;
+      simGain = 1 * bioMultiplier;
     } else if (!a.unlocked) {
-      if (a.bonus) {
-        var base = member.score;
-        baseGain = Math.round(base * 0.1 * 10) / 10;
-        simGain = baseGain;
-      } else {
-        baseGain = a.points;
-        simGain = hasBio ? a.points * 1.1 : a.points;
-      }
+      baseGain = a.points;
+      simGain = a.points * bioMultiplier;
     } else {
       return;
     }
