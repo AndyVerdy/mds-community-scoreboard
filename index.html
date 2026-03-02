@@ -1347,7 +1347,8 @@ function extractAttachmentUrl(fieldVal) {
 function parseMember(record) {
   var f = record.fields || {};
   var name = f['Full Name'] || 'Unknown';
-  var score = typeof f['Member\'s score NEW'] === 'number' ? f['Member\'s score NEW'] : 0;
+  var rawScore = typeof f['Member\'s score NEW'] === 'number' ? f['Member\'s score NEW'] : 0;
+  var score = Math.round(rawScore * 10) / 10;
   var pctStr = f['Member\'s score NEW Percent'] || '0%';
   var pct = parseFloat(pctStr) || 0;
   var contribution = typeof f['Contribution points Normalized'] === 'number' ? f['Contribution points Normalized'] : 0;
