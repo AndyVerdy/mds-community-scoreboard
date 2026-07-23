@@ -7,30 +7,36 @@
 
 ---
 
-# 🔄 SESSION PROTOCOL — follow every session (Olivia / MDS work)
+# 🔄 SESSION PROTOCOL — follow every session
 
-**Canonical docs live in THIS repo.** `SESSION_LOG.md` = append-only session record (newest first);
-`OLIVIA_NEXT_SESSION.md` = the live handoff (current state + next actions). ClickUp doc `2531q-103317`
-= **decisions + high-level state only**, never the blow-by-blow. **If two sources disagree, the repo wins.**
-This protocol is what keeps docs from drifting (as happened when the events chapter-gating work was built but never documented).
+**This folder is a MULTI-PROJECT MDS working directory** — it holds docs/scripts for many separate
+initiatives: **Census · GroupOS · Application v3 · Olivia · MRR · TikTok · Singapore · Member360 · WA
+digest · Tools-health · the Scorecard leaderboard** (`index.html`), and more. **Do not assume any one
+project.** Each project has its **own handoff + working docs**; they **share** `SESSION_LOG.md` (one
+append-only log for the whole folder) and the auto-memory index (`MEMORY.md`, loaded every session — it
+lists each project and points to its handoff). **Canonical = this repo; if the repo and ClickUp disagree, the repo wins.**
 
 ## OPEN — at the start of every session
-1. The `SessionStart` hook auto-injects `OLIVIA_NEXT_SESSION.md` + the `SESSION_LOG.md` tail — read them. (You no longer paste the handoff. If a restart drops it, the user opens `/hooks` once.)
-2. **VERIFY against LIVE before any new work — never trust the docs alone:** n8n workflow `12wj6h1TWqb0d4Dq` (active + recent execs green) · Supabase `digest` RPCs · run `scripts/olivia_leak_gate.py` (must be GREEN) · spot-check any specific field / RPC / flag the handoff names.
-3. **If the docs disagree with live, FIX the drift THIS session** before new work. This is the real safety net — a doc can't stay wrong for more than one session.
+1. The `SessionStart` hook injects the recent `SESSION_LOG.md` tail; the memory index is already loaded.
+   From the user's first ask, **identify WHICH project** this session is about — never default to one.
+2. **Read that project's handoff/docs** (e.g. `OLIVIA_NEXT_SESSION.md` for Olivia; the `CENSUS_*` /
+   `GROUPOS_*` / `APPLICATION_V3_*` / etc. docs for those) plus its memory entry.
+3. **VERIFY against LIVE before any new work — never trust the docs alone.** Check the systems that
+   project actually touches (its n8n workflow / Supabase / Airtable / API / gate). **If the docs disagree
+   with live, FIX the drift THIS session** before new work — a doc can't stay wrong for more than one session.
 
-## CLOSE — before ending every session (the `Stop` hook reminds once)
-Update, in this order — and do NOT claim "done" until the repo docs reflect what actually shipped + was verified:
-1. **`SESSION_LOG.md`** — prepend a dated entry: what shipped (commit hashes, migration names, IDs), what was verified (exec id / gate=green / SQL result), what's next.
-2. **`OLIVIA_NEXT_SESSION.md`** — refresh "shipped" + "next actions" so the next OPEN starts clean.
-3. **Auto-memory** (`project_mds_olivia_pilot.md`) — only durable cross-session facts.
-4. **Concept docs** (`MDS_OLIVIA_ASSISTANT.md §8x`, `MEMBER_ATTRIBUTES_SOURCE_MAP.md`) — only if a source / rule / gate actually changed.
-5. **ClickUp `2531q-103317`** — decisions + high-level state only.
+## CLOSE — before ending (the `Stop` hook reminds once)
+Update the docs for **whatever project(s) you worked on** — do NOT claim "done" until the repo reflects what shipped + was verified:
+1. **`SESSION_LOG.md`** — prepend a dated entry: which project, what shipped (commit hashes / migration names / IDs), what was verified (exec id / gate green / SQL result), what's next.
+2. **That project's handoff + working docs** — refresh state + next actions.
+3. **Auto-memory** — only durable cross-session facts.
+4. **ClickUp** (that project's doc) — decisions + high-level state only.
 
 ## Non-negotiables
-- Every "it works" claim in the log must cite a live check (exec id, gate green, SQL/curl result) — not "should work."
-- **Leak gate green** before any new data source or gated RPC ships; re-run at close if the gate surface changed.
+- Every "it works" claim cites a live check (exec id, gate green, SQL/curl result) — never "should work."
+- For any gated/data change, its safety gate must be GREEN before ship (e.g. Olivia = `scripts/olivia_leak_gate.py`).
 - n8n edits: edit the ACTIVE workflow, then ONE `[{deactivateWorkflow},{activateWorkflow}]` bounce — never deactivate first.
+- Keep separate repos separate (e.g. `mds-ai-bot`, `mds-digest-web` are their own folders — never edit one while working another).
 
 ---
 

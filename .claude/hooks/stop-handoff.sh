@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
-# Stop hook — surfaces a wrap-up reminder ONCE per session (non-blocking) so the
-# docs get updated before the session ends.
-# Non-blocking by design: "Stop" fires at every turn boundary, so a hard block would
-# either nag after every message (block-until-fresh) or mistime to the first hand-back
-# (block-once). A once-per-session systemMessage is the reliable, non-disruptive nudge;
-# the SessionStart auto-load is the actual enforcer.
+# Stop hook — once-per-session wrap-up reminder (non-blocking), generic across every
+# project in this folder. Fires once per session (sentinel keyed to session_id).
 input=$(cat)
 SID=$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null)
 SENT="/tmp/claude-handoff-${SID}"
 [ -f "$SENT" ] && exit 0
 touch "$SENT"
-jq -n '{systemMessage:"WRAP-UP REMINDER: before ending this session, update SESSION_LOG.md + OLIVIA_NEXT_SESSION.md + memory and run the context-handoff-git skill so the next session starts with zero drift."}'
+jq -n '{systemMessage:"WRAP-UP REMINDER: before ending, update the docs for whatever project you worked on this session — prepend a dated entry to SESSION_LOG.md, refresh that project handoff doc, update memory, and (decisions only) its ClickUp doc. See the SESSION PROTOCOL at the top of CLAUDE.md."}'

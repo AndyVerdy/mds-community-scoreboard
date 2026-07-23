@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# SessionStart hook — injects the Olivia handoff into context so it is ALWAYS read
-# at the start of a session, and forces a live drift-check before trusting the docs.
+# SessionStart hook — this folder holds MANY separate MDS projects. Surface the shared
+# session log + the protocol; do NOT assume a specific project. Claude identifies the
+# project from the first user message, reads THAT project's handoff, and verifies it live.
 cd /Users/Born/Scorecard 2>/dev/null || exit 0
-NEXT=$(cat OLIVIA_NEXT_SESSION.md 2>/dev/null)
-LOG=$(tail -40 SESSION_LOG.md 2>/dev/null)
-CTX=$(printf 'SESSION START — read this handoff BEFORE doing anything. Then VERIFY against LIVE systems (n8n / Supabase / the leak gate), never the docs alone, and drift-check the docs against live + fix any drift THIS session.\n\n=== OLIVIA_NEXT_SESSION.md ===\n%s\n\n=== SESSION_LOG.md (tail 40) ===\n%s\n' "$NEXT" "$LOG")
+LOG=$(tail -50 SESSION_LOG.md 2>/dev/null)
+CTX=$(printf 'SESSION START. This folder is a MULTI-PROJECT MDS working directory (Census, GroupOS, Application v3, Olivia, MRR, TikTok, Singapore, Member360, WA digest, Tools-health, Scorecard leaderboard, and more). Do NOT assume which project this session is about. From the first user message, identify the project, then READ that project handoff doc (e.g. OLIVIA_NEXT_SESSION.md for Olivia; CENSUS_* / GROUPOS_* / APPLICATION_V3_* etc. for those) plus its memory entry, VERIFY it against the LIVE systems that project touches (n8n / Supabase / Airtable / its gate), and fix any drift THIS session before new work. Follow the SESSION PROTOCOL at the top of CLAUDE.md. Recent cross-project activity is below.\n\n=== SESSION_LOG.md (tail 50) ===\n%s\n' "$LOG")
 jq -n --arg ctx "$CTX" '{hookSpecificOutput:{hookEventName:"SessionStart",additionalContext:$ctx}}'
