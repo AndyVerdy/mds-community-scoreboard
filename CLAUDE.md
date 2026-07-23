@@ -1,11 +1,45 @@
 # MDS Community Scoreboard
 
+> ⚠️ **STATUS (June 2026): mid-rebuild — much of this file below is LEGACY** and describes the old Apify-scraper design that is no longer how the system works.
+> - **Source of truth:** ClickUp doc **"MDS Member Scorecard"** (`2531q-100317`, Tech space).
+> - **Technical audit:** `SCORECARD_AUDIT.md` · **Session log:** `SESSION_LOG.md`
+> - **Current reality:** the leaderboard reads **Airtable** (base `appUM1F29IJsMsXRb`), not Apify. The FB scraper is **parked** (high ban risk); FB engagement now comes from the **native FB Group Insights xlsx export** (Plan B). The score is being **rebuilt config-driven**. Treat the Apify + scoring-formula details below as historical until this file is rewritten.
+
+---
+
+# 🔄 SESSION PROTOCOL — follow every session (Olivia / MDS work)
+
+**Canonical docs live in THIS repo.** `SESSION_LOG.md` = append-only session record (newest first);
+`OLIVIA_NEXT_SESSION.md` = the live handoff (current state + next actions). ClickUp doc `2531q-103317`
+= **decisions + high-level state only**, never the blow-by-blow. **If two sources disagree, the repo wins.**
+This protocol is what keeps docs from drifting (as happened when the events chapter-gating work was built but never documented).
+
+## OPEN — at the start of every session
+1. The `SessionStart` hook auto-injects `OLIVIA_NEXT_SESSION.md` + the `SESSION_LOG.md` tail — read them. (You no longer paste the handoff. If a restart drops it, the user opens `/hooks` once.)
+2. **VERIFY against LIVE before any new work — never trust the docs alone:** n8n workflow `12wj6h1TWqb0d4Dq` (active + recent execs green) · Supabase `digest` RPCs · run `scripts/olivia_leak_gate.py` (must be GREEN) · spot-check any specific field / RPC / flag the handoff names.
+3. **If the docs disagree with live, FIX the drift THIS session** before new work. This is the real safety net — a doc can't stay wrong for more than one session.
+
+## CLOSE — before ending every session (the `Stop` hook reminds once)
+Update, in this order — and do NOT claim "done" until the repo docs reflect what actually shipped + was verified:
+1. **`SESSION_LOG.md`** — prepend a dated entry: what shipped (commit hashes, migration names, IDs), what was verified (exec id / gate=green / SQL result), what's next.
+2. **`OLIVIA_NEXT_SESSION.md`** — refresh "shipped" + "next actions" so the next OPEN starts clean.
+3. **Auto-memory** (`project_mds_olivia_pilot.md`) — only durable cross-session facts.
+4. **Concept docs** (`MDS_OLIVIA_ASSISTANT.md §8x`, `MEMBER_ATTRIBUTES_SOURCE_MAP.md`) — only if a source / rule / gate actually changed.
+5. **ClickUp `2531q-103317`** — decisions + high-level state only.
+
+## Non-negotiables
+- Every "it works" claim in the log must cite a live check (exec id, gate green, SQL/curl result) — not "should work."
+- **Leak gate green** before any new data source or gated RPC ships; re-run at close if the gate surface changed.
+- n8n edits: edit the ACTIVE workflow, then ONE `[{deactivateWorkflow},{activateWorkflow}]` bounce — never deactivate first.
+
+---
+
 ## What this is
-Gamification leaderboard for the MDS Facebook Group. Pulls member activity data from an Apify scraper, scores and ranks members, and displays them on a public dashboard. Hosted on GitHub Pages.
+A gamified member-engagement scorecard + public leaderboard for the MDS Facebook group (plus first-party signals: events, MDS app, WhatsApp). Hosted on GitHub Pages (`index.html`).
 
 ## Stack
 - Single-file vanilla HTML/CSS/JS (`index.html`) — no frameworks, no backend
-- Apify REST API called client-side for live data
+- **Airtable** (read via REST) as the live data source — *(legacy: Apify; the Apify sections below are stale)*
 - GitHub Pages for hosting
 - DiceBear API for fallback avatars
 

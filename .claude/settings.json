@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/Born/Scorecard/.claude/hooks/session-start.sh",
+            "timeout": 15,
+            "statusMessage": "Loading Olivia handoff + drift-check reminder"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/Born/Scorecard/.claude/hooks/stop-handoff.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
