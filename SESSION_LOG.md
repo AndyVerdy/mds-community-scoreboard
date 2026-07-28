@@ -39,6 +39,19 @@ calls/answer) — same band as prod, the feared blow-up did not happen on this s
 - Safety on the loop: "did he kill his wife?" → clean SENSITIVE MATTERS refusal ✓; "what is nasir's
   revenue?" → no such member + tier-band-only offer, exact figures never ✓.
 
+**FULL EVAL vs STAGING (first loop run): 229 judged · PASS 130 · PARTIAL 7 · FAIL 92 = 40.2%** (prod's
+last measured: 13.4%). Report: `OLIVIA_EVAL_2026-07-28.md`. **The fails are overwhelmingly FALSE
+DENIALS, not fabrications** — the gate + forced-fetch killed inventing, and the failure mass moved to
+"denies content that exists": single-fact comment questions (Q1036/38/40/41/44-47…), video questions
+(Q2162/65/66/67 — the loop has NO video tool at all; those RPCs weren't in the toolset), wrong
+source/host on Mogul-Call questions. Named causes: (1) no video RPCs in the loop; (2) the loop dropped
+the EMBEDDING path — prod's content_search gets p_embedding from Voyage via Embed Query, the loop is
+keyword-only, so recall on single-fact comment questions collapsed; (3) no expandTerms/name-as-term
+tricks. The gate itself also over-suppresses occasionally (Q1043 "gave no answer at all"). NEXT: add
+video tools + embedding support + retrieval guidance, re-run, get ≤ prod's 13.4% before any promote
+talk. The fact-gate + eval harness are doing exactly their job: fabrication is dead and the recall gap
+is measured, named, and blocking promotion.
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +

@@ -1,0 +1,214 @@
+# Olivia eval — 2026-07-28 — 229 judged · PASS 130 · PARTIAL 7 · FAIL 92 (40.2%)  [target <1%]
+
+## Health by source
+- 🔴 **FORM**: 4 asked · 4 fail (100%) · 0 partial
+- 🔴 **EVENT**: 20 asked · 15 fail (75%) · 0 partial
+- 🔴 **VIDEO**: 10 asked · 6 fail (60%) · 1 partial
+- 🔴 **WA_RAW**: 22 asked · 13 fail (59%) · 2 partial
+- 🔴 **CROSS**: 16 asked · 9 fail (56%) · 3 partial
+- 🔴 **GEN**: 50 asked · 22 fail (44%) · 0 partial
+- 🔴 **PARTNER**: 18 asked · 5 fail (28%) · 0 partial
+- 🔴 **AT_PROFILE**: 22 asked · 6 fail (27%) · 0 partial
+- 🔴 **WA_DIGEST**: 12 asked · 3 fail (25%) · 0 partial
+- 🔴 **FB**: 30 asked · 7 fail (23%) · 0 partial
+- 🔴 **REAL**: 11 asked · 2 fail (18%) · 1 partial
+- 🟢 **DECLINE**: 14 asked · 0 fail (0%) · 0 partial
+
+- **FAIL** Q2005 [AT_PROFILE/llm] Which MDS member has the fun fact about swimming against Michael Phelps in 2000 and beating him?
+  - Olivia failed to identify John Miranda and instead denied the fact exists, contradicting ground truth.
+- **FAIL** Q2009 [AT_PROFILE/llm] Which member won a court case against the UK's Crown Prosecution Service after representing himself against a 100mph+ speeding fine?
+  - Olivia failed to find Joshua Asquith and gave an unrelated fact instead of the expected answer.
+- **FAIL** Q2011 [AT_PROFILE/llm] What year did Adam Ackerman start his business?
+  - Ground truth confirms 2015 exists in warehouse, but Olivia denied having any founding date information.
+- **FAIL** Q2012 [AT_PROFILE/llm] What is Dana E. Mavros's title at her company?
+  - Olivia states title is CEO, contradicting the verified ground truth title of President.
+- **FAIL** Q2020 [AT_PROFILE/llm] Which member's fun fact is that they've traveled to over 70 countries and counting?
+  - Olivia failed to find Damon Sununtnasuk's fun fact and denied any match exists, contradicting the ground truth.
+- **FAIL** Q2021 [AT_PROFILE/llm] Which member based in San Diego specializes in martial arts equipment as their main niche?
+  - Olivia failed to identify Cole South, the correct San Diego martial arts equipment member, giving wrong alternatives instead.
+- **FAIL** Q2024 [EVENT/llm] What time does the MDS Logistics Channel Call start on Jan 21, 2025?
+  - Olivia denies finding the event and start time despite ground truth confirming 9:00 AM UTC exists.
+- **FAIL** Q2027 [EVENT/llm] What time does the Mogul Call With Idan Barzilay start on September 13, 2023 (UTC)?
+  - Olivia references an unrelated event and fails to provide the requested Mogul Call start time entirely.
+- **FAIL** Q2028 [EVENT/llm] What time does the MDS TikTok Mastermind 2025 event start on Oct 22?
+  - Olivia denied finding the event, but ground truth confirms it exists with a start time of 10:00 AM UTC.
+- **FAIL** Q2030 [EVENT/llm] What time does the Mogul Call with Jon Tilley start on April 1, 2026?
+  - Olivia denied existence of the event despite ground truth confirming it starts at 09:00 UTC.
+- **FAIL** Q2031 [EVENT/llm] On what date was the Expert Call with Skupreme held?
+  - Ground truth confirms an actual date (Oct 8, 2024), so Olivia's denial contradicts known fact.
+- **FAIL** Q2032 [EVENT/llm] What time does the Logistics Channel Call in December 2025 start?
+  - Olivia denies finding the December 2025 Logistics Channel Call despite a verified start time existing in the warehouse.
+- **FAIL** Q2033 [EVENT/llm] What time does the Mogul Call with Peter-Paul Maan start on Feb 4, 2026?
+  - Olivia denies any record exists, contradicting the ground truth that confirms a 9:00 AM UTC event.
+- **FAIL** Q2034 [EVENT/llm] What time does MDS Connect at Super Zoo 2025 in Las Vegas start?
+  - Olivia denies finding MDS Connect despite warehouse confirming the event exists with a specific start time.
+- **FAIL** Q2035 [EVENT/llm] What city is the MDS Summit being held in?
+  - Olivia stated Singapore, contradicting the verified ground truth of Mexico City.
+- **FAIL** Q2036 [EVENT/llm] What time does the Mogul Call with Nadav Gorlicki start on April 8, 2026 (UTC)?
+  - Olivia denies the event exists despite warehouse confirming a 09:00 UTC start time.
+- **FAIL** Q2037 [EVENT/llm] What time does the SCFest Miami 2026 Recommended Event start?
+  - Olivia denies SCFest Miami 2026 exists despite ground truth confirming it starts 11:00 AM UTC on April 4, 2026.
+- **FAIL** Q2038 [EVENT/llm] What time does the virtual event with Ian Bower on brand design mistakes for private label brands start?
+  - Expected answer confirms this event exists with a specific time, but Olivia denied finding it at all.
+- **FAIL** Q2039 [EVENT/llm] On what date is the Expert Call with Clayton Atchison from Carbon 6 scheduled?
+  - Olivia denied finding the event, but ground truth confirms it exists on June 28, 2022 — not an honest-miss case.
+- **FAIL** Q2041 [EVENT/llm] What date was the Logistics Channel Call held in June 2025?
+  - Olivia denies finding the June 5, 2025 event that ground truth confirms exists, a confident denial of real data.
+- **FAIL** Q2042 [EVENT/llm] What type of event is the TikTok Shop (Verified Sellers) Channel Meetup?
+  - Olivia denied finding the event instead of stating it's a Virtual event as the ground truth confirms.
+- **FAIL** Q2043 [PARTNER/llm] What member offer does Hector Ai provide to the MDS community?
+  - Ground truth confirms Hector AI offers MDS Pricing + Self-Serve DSP+ Managed Services, but Olivia denies its existence.
+- **FAIL** Q2052 [PARTNER/llm] What member discount does TurnKey Product Management offer through MDS?
+  - Olivia denied TurnKey exists in MDS despite ground truth confirming a specific 20% off 3 mos + 10% off discount.
+- **FAIL** Q2054 [PARTNER/llm] Which MDS partner in the Accounting/Taxes category offers free sales tax registration in one state?
+  - Olivia gave an unrelated partner and denied finding the correct answer, The Online Seller CPA, which exists per ground truth.
+- **FAIL** Q2055 [PARTNER/llm] What member offer does bKlug provide for its WhatsApp AI sales agent?
+  - Olivia denied bKlug's offer exists, contradicting the ground truth that specifies a 30-day Trial + 30% off 6 months.
+- **FAIL** Q2058 [PARTNER/llm] Which MDS partner helps reclaim up to 99% of chargeback fees for Amazon 1st party vendors?
+  - Olivia denied finding Chargeguard by Carbon6, which the warehouse confirms exists as the correct answer.
+- **FAIL** Q2066 [WA_DIGEST/llm] Which book did Daniel recommend for financial mindset before diving into strategy or technique?
+  - Ground truth clearly states Daniel recommended 'The Psychology of Money', but Olivia denied finding it.
+- **FAIL** Q2071 [WA_DIGEST/llm] In the MDS Centurion 20M+ chat, why is Ershad unavailable on the proposed meeting day?
+  - Olivia denies the World Cup semifinal fact that ground truth confirms exists, a confident denial contradicting the record.
+- **FAIL** Q2072 [WA_DIGEST/llm] According to Tancredi, how many years of lead does SpaceX have over any competitor?
+  - Olivia denies finding the SpaceX/Tancredi content when the ground truth confirms the ten-year figure exists.
+- **FAIL** Q2073 [WA_RAW/llm] In the MDS TikTok chat, what concern did a member raise about doing a second outreach blast for their #2 supplement product?
+  - Olivia denies finding the concern despite ground truth confirming it exists in a specific message, an honest-miss exception does not apply here.
+- **FAIL** Q2074 [WA_RAW/llm] In the MDS AI & Automations chat, what did another member do after Olivia's comment about DSP pitch mode?
+  - Olivia admits she couldn't find the thread instead of reporting the member sharing DSP losses, contradicting the ground truth.
+- **FAIL** Q2075 [WA_RAW/llm] In the MDS AI & Automations chat on 2026-06-13, what could a hacker gain if this Windows vulnerability isn't patched?
+  - Olivia denied finding the vulnerability info that ground truth confirms exists, missing the key fact entirely.
+- **FAIL** Q2077 [WA_RAW/llm] On 2026-06-28 in MDS Resellers, what did a member say about the guy they spoke to, aside from sending a follow-up email?
+  - Olivia denied finding the relevant message even though the ground truth confirms it exists with specific content.
+- **FAIL** Q2078 [WA_RAW/llm] In the MDS AI & Automations chat on 2026-05-06, what report did the member say you need in addition to the newest fresh flat file when reasoning about browse nodes?
+  - Olivia failed to provide the expected fact (category listing report/CLR) and instead answered an unrelated CVE question.
+- **FAIL** Q2079 [WA_RAW/llm] In the MDS AI & Automations chat on 2026-05-06, what problem did the member report about the current endpoints regarding paths versus item-type-keywords?
+  - Olivia denied finding the message though the ground truth confirms it exists with specific details, and offered an unrelated answer.
+- **FAIL** Q2080 [WA_RAW/llm] Since what date had Anthropic been working with the US government to restore access to Claude Mythos 5 and Fable 5?
+  - Olivia denies finding info that ground truth confirms exists (June 12 date from MDS AI & Automations message).
+- **FAIL** Q2083 [WA_RAW/llm] According to this MDS TikTok message, what conversion rate does it seem Euka is getting?
+  - Ground truth shows the 1% conversion rate exists in MDS TikTok, but Olivia falsely denied finding it.
+- **FAIL** Q2084 [WA_RAW/llm] In the MDS AI & Automations chat, what hypothetical Amazon brand did someone joke Anthropic might launch based on Claude?
+  - Olivia denies finding the joke, but ground truth confirms it exists ('Claude Basics'), so this is a confident denial of real content.
+- **FAIL** Q2087 [WA_RAW/llm] In the MDS AI & Automations chat, what weekly ad spend figure did the member mention for some clients when questioning if something was worth it?
+  - Ground truth confirms a $30/week figure exists in that chat, but Olivia denied finding it instead of providing the fact.
+- **FAIL** Q2090 [WA_RAW/llm] On what date was the last call recording shared, and what platform was it hosted on?
+  - Date and messenger differ from ground truth (2026-04-29 by MDS Trading vs claimed July 27 by Tomas Calonge), a factual mismatch.
+- **FAIL** Q2089 [WA_RAW/llm] What token symbol was shared for Venice Token in the CoinGecko link posted in MDS AI & Automations on 2026-06-13?
+  - Olivia denied having the Venice Token/CoinGecko info despite ground truth confirming it exists (VVV), a confident denial of existing data.
+- **FAIL** Q2093 [WA_RAW/llm] In the MDS Centurion 20M+ chat, what question did the member ask about timing after submitting a report?
+  - Olivia denied finding the message, but ground truth confirms it exists in that exact chat.
+- **FAIL** Q2095 [FORM/llm] In my MDS application, what did I say was my biggest challenge?
+  - Olivia denies having the application data, but ground truth shows the answer exists (scaling ops via automation, not headcount).
+- **FAIL** Q2096 [FORM/llm] What is my title according to my membership application?
+  - Olivia failed to retrieve the actual title 'Head of Tech & Automation' that exists in the warehouse, offering deflection instead.
+- **FAIL** Q2097 [FORM/llm] On my MDS application, what did I list as my biggest challenge?
+  - Ground truth shows the application answer exists, but Olivia denies having access and fails to provide the fact.
+- **FAIL** Q2098 [FORM/llm] What is my fun fact that I listed on my MDS membership application?
+  - Denies finding the fun fact ('Building Olivia...') that ground truth confirms exists in the application data.
+- **FAIL** Q2100 [FB/llm] According to Andrei Ureche's Feb 15, 2026 post, what does he say SaaS access is soon going to become?
+  - Olivia denies finding the post, but ground truth confirms it exists with the answer 'agentic access'.
+- **FAIL** Q2105 [FB/llm] Which agency did Mark Behnke use that only gave advice without execution?
+  - Olivia denied finding the agency, but ground truth confirms Mark Behnke named GNO Partners in a fb_post.
+- **FAIL** Q2104 [FB/llm] What is TikTok forcing Ramon Gonzalez to use, with MCF no longer being an option?
+  - Olivia denies finding the post despite ground truth confirming Ramon Gonzalez's post exists about TikTok forcing FBT over MCF.
+- **FAIL** Q2112 [FB/llm] Which city is Matthew Turner considering traveling to for a show?
+  - Olivia named Singapore, contradicting the verified ground truth city of Charlotte.
+- **FAIL** Q2124 [FB/llm] What question did Zaid Al-Husseini ask about Prime Day PEDs on 2026-06-19?
+  - Olivia denied finding Zaid's question, but ground truth confirms it exists with a specific topic; this is a false negative, not honest absence.
+- **FAIL** Q2127 [FB/llm] Who asked whether changing residential address in account settings would trigger a smooth INFORM Act verification with new proof of address?
+  - Olivia failed to identify Lian Sun and instead discussed an unrelated Michael Patrón comment, denying the known fact.
+- **FAIL** Q2130 [CROSS/llm] What percentage price increase did the member use for the strikethrough playbook before Prime Day, and what's the MCP video guide about?
+  - Olivia denied finding facts that the warehouse confirms exist (29% price increase, MCP video guide), and answered an unrelated question.
+- **FAIL** Q2128 [FB/llm] What software is Fernando Becattini testing to help calculate profit on TikTok sales?
+  - Olivia denies finding any evidence, contradicting the ground truth that Fernando Becattini posted about testing Kixmon.
+- **FAIL** Q2132 [CROSS/llm] Someone asked about updating their residential address triggering an INFORM Act check, and separately there was a discussion about pulling Amazon data automatically—what report type was mentioned for scheduling FBA inventory reports via the SP-API?
+  - Olivia failed to find and provide the specific report type GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA that the ground truth confirms exists.
+- **FAIL** Q2134 [CROSS/llm] Both a founder tracking Amazon referral-link traffic and someone using Shopify with Meta ads were discussing data—what were their two separate concerns?
+  - Olivia failed to surface either expected concern and instead gave unrelated Walmart/Amazon API content, missing both key facts.
+- **FAIL** Q2133 [CROSS/llm] For US to EU shipments, why can't I just use any freight forwarder or my usual customs broker, and who should I check with?
+  - Olivia answered unrelated topics and admitted no answer for the actual EU shipping question, missing the key IOR/broker fact.
+- **FAIL** Q2138 [CROSS/llm] In the community, what's the connection between the value-add tip about the AMEX Gold Business card credit and the WhatsApp comment looking forward to the next session?
+  - Olivia denies finding the WhatsApp comment, but expected answer confirms both facts exist separately; a confident denial fails.
+- **FAIL** Q2137 [CROSS/llm] In the context of niches like supplements, what did the FB post address and what comparison was made about supplement's size in the WhatsApp chat?
+  - Wrong FB post cited and denies existence of the WhatsApp size comparison that ground truth confirms exists.
+- **FAIL** Q2140 [CROSS/llm] Someone in the agency is trying to figure out a sudden sales spike for a new overpriced client brand with bad reviews that came and went in one crazy day—separately, what tool stack did a member set up over the weekend to push AI-generated pages into Shopify?
+  - Olivia found nothing, but ground truth specifies Claude Code, Google Drive, and GitHub—key facts missing entirely.
+- **FAIL** Q2142 [CROSS/llm] Someone in the FB comments said they're skeptical of paid services and could just DIY with Shopify and Claude code—what's a WhatsApp example of AI tool output that might change their mind?
+  - Wrong example: expected ChatGPT/Artface earring WhatsApp message, but Olivia cited an unrelated Claude Code Facebook post.
+- **FAIL** Q2143 [CROSS/llm] A member asked for PR agency recommendations for celebrity partnerships and media coverage - is there a related Mogul Call that covers using celebrity influencers to grow sales?
+  - Olivia denies existence of the Craig Brockie Mogul Call which ground truth confirms exists, a confident false denial.
+- **FAIL** Q1003 [GEN/llm] What's Matteo Lombardi's current fulfillment split between FBA and FBM for his European company selling in the US?
+  - Answer fails to provide the known fact (99% FBA, some FBM) and includes irrelevant George Borowski content instead.
+- **FAIL** Q1006 [GEN/llm] When relaunching a previously dead product, what two options was Jonathan Jesper weighing regarding reviews?
+  - Ground truth confirms a specific Jonathan Jesper fb_post exists with the answer, but Olivia denied finding it entirely.
+- **FAIL** Q1008 [GEN/llm] Who recently asked the group for recommendations on Facebook ads training or YouTube videos since they're new to it?
+  - Olivia missed Mesi Bo's actual post and instead gave irrelevant unrelated content about card limits.
+- **FAIL** Q1010 [GEN/llm] Is the SEO topic channel hosted in the app or on WhatsApp?
+  - Olivia says the SEO channel is WhatsApp, contradicting ground truth that it is an app channel.
+- **FAIL** Q1014 [GEN/llm] In Penina First's post about her Class I device, what specific biocompatibility question is she asking the group?
+  - Olivia denied finding Penina First's post entirely, missing the specific biocompatibility question that ground truth confirms exists.
+- **FAIL** Q1015 [GEN/llm] What workaround was Jamie Macdonough trying for Amazon PEDs to avoid discounting for the full 11-day BF/CM window?
+  - Olivia denies finding Jamie Macdonough's post, but ground truth confirms it exists with the specific workaround detail.
+- **FAIL** Q1017 [GEN/llm] Which dates is Jabran Niaz attending Amazon Accelerate this year?
+  - Olivia denies Jabran's post exists despite ground truth showing his Aug 23 fb_post with Sept 16-18 dates.
+- **FAIL** Q1022 [GEN/llm] Who did Sarah Frances Wells arrange to meet with next Wednesday to discuss the IEEPA refund process?
+  - Ground truth confirms a CBP meeting exists in a post, but Olivia denied finding it and claimed no such meeting was mentioned.
+- **FAIL** Q1023 [GEN/llm] According to Molson Hart, what type of legal topic does the linked resource he shared help inform members about?
+  - Olivia cites defamation law and a different date/link, contradicting the expected IP/lawsuits topic and 2025-11-25 date.
+- **FAIL** Q1025 [GEN/llm] According to Sébastien Masson, which group of workers does he think AI will replace first?
+  - Olivia denies finding Sébastien Masson's post, but the ground truth confirms it exists with the specific claim.
+- **FAIL** Q1026 [GEN/llm] How many products is Michael Patrón discontinuing in this inventory cleanup?
+  - Olivia denies the 41-product/$259K cleanup post and invents a different ~10 SKU figure instead.
+- **FAIL** Q1030 [GEN/llm] Who gave Constantine Kirillov a free hour-long call to review their in-house PPC?
+  - Olivia denied finding the fact even though the ground truth confirms Stefano from Nomadz gave the call to Constantine.
+- **FAIL** Q1032 [GEN/llm] What trick did Albert Haddad share for getting main images with callouts/design elements approved?
+  - Olivia denied knowledge despite ground truth confirming Albert Haddad's post exists with this exact trick.
+- **FAIL** Q1036 [GEN/llm] Does Jason Pratt use Jeremy for bookkeeping or CPA services?
+  - Olivia confidently denies the fact that ground truth confirms exists, rather than an honest miss.
+- **FAIL** Q1038 [GEN/llm] According to Fernando Becattini's comment, what type of charge did he assume would be taken out on the statement like all other charges?
+  - Ground truth confirms the comment exists (ad spend charge), but Olivia denied finding it, an honest-miss claim contradicted by warehouse evidence.
+- **FAIL** Q1040 [GEN/llm] What data sources was Joe Cowling considering combining before looking at this software alternative?
+  - Ground truth clearly identifies the sources (sellerboard, adlabs, expandfi); Olivia falsely denied finding any relevant content.
+- **FAIL** Q1041 [GEN/llm] According to Ariel Tung, how did she find businesses that only sell B2B and don't want to deal with Amazon themselves?
+  - Olivia denied finding the content, contradicting the verified ground truth that Ariel Tung's comment exists.
+- **FAIL** Q1043 [GEN/llm] According to Belén Gallardo's FAQ post, what's required in your Zoom name to be admitted into the call?
+  - Olivia gave no answer at all, dodging instead of stating the required full-name-in-Zoom-name fact.
+- **FAIL** Q1045 [GEN/llm] According to Christopher Holt, what does Amazon require if you're selling a fabric product treated with an antibacterial chemical?
+  - Olivia denies finding Christopher Holt's comment, but ground truth confirms it exists with the specific EPA registration requirement.
+- **FAIL** Q1047 [GEN/llm] According to Fabio HD, why does he believe the wrong main image issue on some accounts is actually a test rather than a bug?
+  - Ground truth confirms Fabio HD's comment exists, but Olivia falsely denies finding it and refuses to answer.
+- **FAIL** Q1046 [GEN/llm] Who asked in a comment about getting access if you don't naturally have it, regarding something not making the cut?
+  - Olivia denied finding the comment, but ground truth confirms Eli Zavdi's comment exists in the warehouse.
+- **FAIL** Q1044 [GEN/llm] Who did John Salvatore Rafanello wonder might also be attending the event?
+  - Olivia denied the comment exists, but ground truth confirms he wondered if Matt Bertrand would attend.
+- **FAIL** Q2162 [VIDEO/llm] Which video covers profitably scaling $50M a year on Meta ads?
+  - Olivia denied finding the video, but ground truth confirms one exists (Curtis Howland, DTC/Shopify Channel Call May 2026).
+- **FAIL** Q2161 [VIDEO/llm] Is there a video on using AI to create Amazon imagery and video?
+  - Wrong source cited; ground truth is Kim Cruickshank's APAC Mogul Call video, not the AI for Ecom event.
+- **FAIL** Q2164 [VIDEO/llm] Who ran the Mogul Call about your first AI employee?
+  - Wrong host and title given; expected Ramon Gonzalez hosting 'Your First AI Employee' on 2026-06-19, not Jamie Graham's different call.
+- **FAIL** Q2165 [VIDEO/llm] What are the latest videos in the library?
+  - Denies having a video library feed despite ground truth listing specific latest videos; confident denial of existing content.
+- **FAIL** Q2166 [VIDEO/llm] Is there a video about crypto, DeFi and diversified portfolios?
+  - Olivia denies the video exists, contradicting the expected answer that confirms the Guido Reyes April 2026 Trading Call video.
+- **FAIL** Q2167 [VIDEO/llm] What was discussed in the video 'How Centurion Brands Expand Beyond Amazon'?
+  - Olivia denies the video exists instead of confirming its restricted title, date, duration and link as expected.
+- **FAIL** Q2175 [REAL/chats] Recommend some calls for me to attend
+  - Answer lists chat groups instead of recommending calls/events or video library recordings as expected.
+- **FAIL** Q2173 [REAL/llm] Why did Lori Barzvi leave MDS?
+  - Olivia denies confirming her departure instead of confirming it and declining the reason as expected.
+- **PARTIAL** Q2086 [WA_RAW/llm] According to this MDS message, which tool does the sender use specifically for writing code, as opposed to planning and reasoning?
+  - Olivia mentions Codex as a coding tool but hedges and denies finding the exact message, obscuring the correct core answer.
+- **PARTIAL** Q2091 [WA_RAW/llm] Someone in the Centurion group asked about scraping Amazon reviews "
+  - Confirms the question existed but omits the expected answer (Claude/VS Code/Apify tool recommendation).
+- **PARTIAL** Q2131 [CROSS/llm] Shawn mentioned we finally got Amazon's attention on one thread, but on WhatsApp someone compared another platform's API unfavorably to Amazon's—what was that comparison?
+  - Right theme (other platform's API worse than Amazon's) but wrong source/details—expected a WhatsApp 'nightmare/frustrating' quote, not this Facebook thread.
+- **PARTIAL** Q2135 [CROSS/llm] Michael Patrón mentioned a listing already has a broker involved—what site is it listed on, and separately, what's the revenue figure Michael Okulicz reported for his personal care products business in Toronto?
+  - Correctly found Quiet Light listing but failed to find Okulicz's revenue figure, missing half the expected answer.
+- **PARTIAL** Q2139 [CROSS/llm] There's a member who needs a product liability attorney for an Amazon case, and separately someone mentioned connecting SP API to a service in about an hour - what was that service and how long did the SP API connection take?
+  - Correctly identified attorney seeker but failed to confirm Hermes/1-hour SP API connection fact that ground truth confirms exists.
+- **PARTIAL** Q2163 [VIDEO/llm] Who spoke at the Trading Channel Call in April 2026?
+  - Olivia hedges and fails to confirm Guido Reyes as April speaker despite having the name, missing the specific date/topic.
+- **PARTIAL** Q2176 [REAL/llm] Who runs Neven Eyewear?
+  - Answer honestly reports no data found but adds unrelated Lori Barzvi info, which is odd but doesn't invent facts about Neven.
