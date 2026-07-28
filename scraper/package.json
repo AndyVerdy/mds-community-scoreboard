@@ -1,0 +1,15 @@
+{
+    "name": "mds-group-scraper",
+    "version": "0.0.54",
+    "type": "module",
+    "description": "MDS Facebook Group photo batch scraper — targeted member list, photo-only",
+    "dependencies": {
+        "apify": "^3.1.0",
+        "@crawlee/playwright": "^3.5.0",
+        "playwright": "*"
+    },
+    "scripts": {
+        "start": "node main.js"
+    }
+}
+

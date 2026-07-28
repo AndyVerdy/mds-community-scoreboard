@@ -1,3 +1,14 @@
+> 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
+
+## How we work — Andy's rules <!-- ANDY-WORKING-RULES -->
+- **Short replies: 1-4 paragraphs.** Lead with the answer. He asks for detail if he wants it.
+- **No "done, but...".** Say what shipped. If it is not shipped, say it is not. Never bury a list of caveats behind a "but".
+- **One ticket at a time.** No jumping between tasks. Rapid delivery.
+- **When asked what is next, give task NUMBER, NAME and STORY.** Nothing else unless asked.
+- **Work the story, ship the product, prove it end-to-end.** The story is the bar - not perfection, not a full eval run. The eval is the daily routine, never a release gate.
+- **Issues found alongside are not the job.** Check the backlog for an existing ticket, then flag for priority evaluation. Never let them become the work.
+
+
 # MDS Community Scoreboard
 
 > ⚠️ **STATUS (June 2026): mid-rebuild — much of this file below is LEGACY** and describes the old Apify-scraper design that is no longer how the system works.
@@ -31,6 +42,15 @@ Update the docs for **whatever project(s) you worked on** — do NOT claim "done
 2. **That project's handoff + working docs** — refresh state + next actions.
 3. **Auto-memory** — only durable cross-session facts.
 4. **ClickUp** (that project's doc) — decisions + high-level state only.
+
+## How Andy wants answers
+**Short and simple — 1–4 paragraphs. Not too short, not too long** (his exact words, reinforced hard
+2026-07-28: "OMG stop spamming" after over-explaining). Not one-liners, not walls of text. Lead with the
+answer; **he asks for details when he wants them** — do not pre-emptively expand. No option menus, no restating the question, no
+re-explaining what was already said. Tables/short lists beat prose for status.
+Same rule for docs he reads: keep the human-facing doc short, put depth in a `*_DETAIL.md` or
+`SESSION_LOG.md`. Brevity never means dropping a real risk or a wrong result — say it in a sentence.
+See memory `feedback_short_answers`.
 
 ## Non-negotiables
 - Every "it works" claim cites a live check (exec id, gate green, SQL/curl result) — never "should work."

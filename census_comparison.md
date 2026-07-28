@@ -1,3 +1,5 @@
+> 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
+
 # MDS Census Forms Comparison
 
 ## Form 1: "Standard - Annual Census" (I409BFlj) — 50 questions

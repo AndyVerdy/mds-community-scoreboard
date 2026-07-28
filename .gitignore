@@ -1,0 +1,10 @@
+# Secrets — never commit
+.intercom_token
+.airtable_pat
+.env
+.env.local
+*.token
+*.pat
+
+# Import artifacts
+tmp/

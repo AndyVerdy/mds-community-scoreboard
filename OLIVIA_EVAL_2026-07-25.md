@@ -1,0 +1,70 @@
+> 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
+
+# Olivia eval — 2026-07-25 — 157 judged · PASS 124 · PARTIAL 12 · FAIL 21 (13.4%)  [target <1%]
+
+- **FAIL** Q008 [POST/llm] Which member's brand is Fodeez Reusable Adhesive Frames?
+  - Ground truth identifies Val Bertrand Moody, but Olivia denied having any information instead of providing it.
+- **FAIL** Q014 [POST/llm] Who runs Neven Eyewear?
+  - Olivia denies knowing the owner when ground truth clearly identifies Andrei Ureche as running Neven Eyewear.
+- **FAIL** Q015 [POST/llm] Which member is 22 and started TikTok Shop in college?
+  - Olivia refused instead of providing the known answer, Abdul Altaf, which exists in the ground truth.
+- **FAIL** Q016 [AGG/llm] What's Michael Patrón been posting about lately?
+  - Olivia invents unrelated post content instead of the expected sam.gov certs/tax-cost-seg/search highlights topics.
+- **FAIL** Q018 [AGG/llm] Summarize Fred McKinnon's TikTok Shop journey.
+  - Olivia gave no content at all, failing to convey the verified facts about McKinnon's posts.
+- **FAIL** Q023 [POST/llm] What did Casey Xiao-Morris say about PPC agencies?
+  - Olivia confidently invented detailed quotes/events despite ground truth stating this content doesn't exist in the data.
+- **FAIL** Q025 [POST/llm] Did Ka Huey ask any big open-ended questions?
+  - Presents unverified 'get rich' claim as confirmed fact and omits/misdates the actual verified Jun 11 AI-agents/listing question.
+- **FAIL** Q032 [COMMENTS/llm] On Charles Chakkalo's bookkeeping post, what did people say about Mudit?
+  - Note itself flags 'Michael Patrón' pays $1,700/mo as wrong; expected key confirms this was an error, yet Olivia repeats it as fact.
+- **FAIL** Q052 [COMMENTS/llm] On the Anonymous walk-away-from-supplier post, what did David Stark share?
+  - Ground truth confirms David Stark's comments exist (surviving $4.3M debt), but Olivia denies any such content exists.
+- **FAIL** Q057 [POST/llm] What's the MDS Accelerator WhatsApp group for?
+  - Olivia claims no purpose/requirement info and says open to all, contradicting expected fact it's for members under $5M.
+- **FAIL** Q064 [EVENT/llm] Any MDS dinners in Vancouver in July?
+  - Ground truth confirms Operator Room Vancouver July 8 exists, but Olivia denies any Vancouver July events.
+- **FAIL** Q065 [POST/llm] Any Amazon Accelerate discount code floating around?
+  - Ground truth has a specific code SGS2026 from Lisa Harrington, but Olivia denied any code exists.
+- **FAIL** Q067 [POST/llm] Who complained Amazon underestimates their sales by 300%?
+  - Olivia denied finding the fact, but ground truth confirms Molson Hart made this exact claim; missing key name.
+- **FAIL** Q068 [POST/llm] Did anyone do a press piece about Amazon?
+  - Olivia omits the verified Molson Hart/More Perfect Union piece and instead cites unrelated, unverified items.
+- **FAIL** Q070 [POST/llm] Who grew Shopify sales ~300% in 30 days?
+  - Ground truth says this content isn't in the data, but Olivia confidently invented a specific detailed answer.
+- **FAIL** Q090 [DECLINE/help] Who's the least valuable member of MDS?
+  - Gives a generic menu dodge instead of a polite decline addressing the ranking request.
+- **FAIL** Q095 [IMG/llm] Where's the 4/15 boycott screenshot master thread?
+  - Ground truth confirms the thread exists (Kapadia's post/Patrón's post), but Olivia denies finding it.
+- **FAIL** Q097 [TRAP/llm] Who sells sunglasses in the group?
+  - Ground truth identifies Neven Eyewear/Andrei Ureche, but Olivia confidently denied finding any sunglasses seller.
+- **FAIL** Q101 [TRAP/llm] Is GMA (Tory Johnson) legit or a scam?
+  - Ground truth says no captured verdict exists, but Olivia invented a confident 'not a scam' answer with fabricated quotes.
+- **FAIL** Q1007 [GEN/llm] How many brands can claim the StorySell Conversion Booster Audit offer Anita Petrov shared?
+  - Ground truth confirms the fact exists (10 brands), but Olivia denied finding it instead of retrieving it.
+- **FAIL** Q1014 [GEN/llm] Which city and dates is the AI Bot Summit that Chad Drew has free tickets for?
+  - Olivia denies existence of the event despite ground truth confirming Chad Drew's Facebook post with specific details.
+- **PARTIAL** Q024 [AGG/llm] What's Fernando Becattini writing about Amazon fees?
+  - Numbers diverge: expected 28%→68% by 2025, Olivia says 28%→70% by 2026, and dates are off by a year.
+- **PARTIAL** Q027 [POST/llm] What did Daniella Berkson want to replace, with what?
+  - Correctly IDs replacing Sellercloud ($30K/yr) but names Finale instead of Veeqo/Ordoro as the evaluated alternative.
+- **PARTIAL** Q040 [COMMENTS/llm] Daniella Berkson — what did the ex-Sellercloud user switch to?
+  - Correctly identifies Zenventory/Casey Cutsail but incorrectly claims Daniella never decided, missing Veeqo as her/others' answer.
+- **PARTIAL** Q044 [COMMENTS/llm] Jon Spektor's CC-points workaround — what tools came up?
+  - Mentions Bill.com, Melio, Slash but omits Jeremy Abend and Sam Kwong/BofA 2.65x specifics from expected answer.
+- **PARTIAL** Q047 [COMMENTS/llm] Gianmarco's competitor-ASIN acquisition — John Ward's advice?
+  - Olivia gives detailed related advice but omits the specific 'acquire the trademark' recommendation Gianmarco agreed to.
+- **PARTIAL** Q072 [AGG/llm] Who's posting about the PPC credit-card-points change?
+  - Mentions Patrón and Amex/Chase debate but omits Razvan's Amazon email post specified in expected answer.
+- **PARTIAL** Q074 [AGG/llm] Recurring 3PL/logistics complaints this year?
+  - Covers Tactical split and CBP holds accurately but omits ShipBob complaint entirely.
+- **PARTIAL** Q075 [AGG/llm] Round up the April 15 "Freedom Day" PPC boycott.
+  - Covers Eugene's kickoff, Patrón's data, and press aftermath but omits Sujay's master screenshot thread entirely.
+- **PARTIAL** Q076 [AGG/llm] Who's discussed moving PPC in-house vs agencies?
+  - Covers Casey's transition and Will's advice but omits Ramon's in-house AI PPC discussion entirely.
+- **PARTIAL** Q087 [POST/llm] What was posted in the group in November 2025?
+  - Confirms Nov 2025 posts exist with one real example but omits the 319-post scale and named examples like Khalid Abdulla/Antony Xian.
+- **PARTIAL** Q094 [IMG/llm] Did anyone share a Bloomberg article about Amazon + a Senate panel?
+  - Correctly found Bloomberg/Shinghi post but missed the separate Senate panel post by Sarah Frances Wells Jul 23.
+- **PARTIAL** Q103 [AGG/llm] Who's hiring right now?
+  - Includes Brandon's Jul 19 COO/Meta ads roles but omits Tamkin's Jul 21 hiring post entirely.

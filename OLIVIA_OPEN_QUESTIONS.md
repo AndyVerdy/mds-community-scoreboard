@@ -1,3 +1,5 @@
+> 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
+
 # Olivia — Events / Attendees: Questions & Fixes
 
 > Opened 2026-07-23. Goal: correct attendee info for events. Chain: **AT Event Roster `tblfTLRfAqBhBZlc4`**

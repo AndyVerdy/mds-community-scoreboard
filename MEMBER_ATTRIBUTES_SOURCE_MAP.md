@@ -1,3 +1,5 @@
+> 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
+
 # Matching fields — where each one comes from
 
 **Scope (Andy, 2026-07-20): ALL member data is matching fuel by default** — every field from
@@ -64,7 +66,12 @@ reading and how old it is.
 
 ## Events (source #2 — ✅ SHIPPED 2026-07-20; model per Andy + Debbie huddle)
 
-**Live:** `digest.events_catalog` (49) + `digest.event_registrations` (424; 355 member-linked,
+**Live:** `digest.events_catalog` (**1,412 as of 2026-07-26** — was 49 at write time on 2026-07-20;
+the sync now loads the WHOLE historical table: **2018-05-31 → 2027-03-22**, 632 Virtual / 780 other,
+incl. **360 named Mogul / Expert / Channel Calls**. Source = `sync_events.py`, AT base
+`appou5JVr0WIrioWS` table `tblbDtU6DxpoeZF8i`, hourly via `events-catalog-hourly.yml`. NOTE: this is
+CALENDAR data only — name/date/type. The call CONTENT/recordings are a separate unconnected source,
+see `VIDEOS_TO_OLIVIA_NEW_SESSION.md`) + `digest.event_registrations` (424; 355 member-linked,
 69 guests never surfaced) · daily sync = 2nd step of member-profiles-sync (PR #17) · retrieval =
 gated RPCs `event_lookup` / `event_who` (NOT content_items — structured data follows the
 chat_info precedent; deliberate deviation from the original content_items plan) · leak gate 57
@@ -134,6 +141,99 @@ so under "public-in-the-app = shareable" they don't exist for Olivia. Verified c
 | Freshness | MCP snapshot pull (in-session) | **no `GROUPOS_PAT` yet** → manual refresh, same wart as app_events_snapshot; PAT converts this to a daily curl step in member-profiles-sync |
 
 **Junk guards at ingest:** skip "Untitled Partner" rows, empty-name rows, `deleted_at` non-null.
+
+## Videos (source #5 — INGESTED 2026-07-26: 1,009 rows, gate green; not yet wired into the n8n workflow)
+
+**Shipped state:** `digest.videos_catalog` **1,009 rows** — reconciles exactly to the MCP's
+`with_total` (1,009 total · 614 public · 395 restricted), 0 duplicates, 0 gaps. **725.3 hours** of
+content spanning **2018-06-27 → 2026-07-23**. Pulled in 5 parallel date windows, each page written
+byte-identical from the raw API responses. Retrieval = `digest.video_search()`. Live-fire verified:
+*"hiring a c-suite executive"* → "Hire a C-Suite That Duplicates You — Mogul Call with Lisa De Rosa".
+
+**Field coverage measured at ingest (not sampled):** description 1,008/1,009 · duration 1,008 ·
+event link **566** · attachments **605** · cliff notes **0** (not in the API).
+
+**Two gaps closed in-session without waiting on GroupOS:**
+- **Category names 14% → 97.4%** (983/1,009). Only 27 distinct category ids exist library-wide; the
+  142 videos whose names DO resolve yield 25 of them. Map mined + backfilled. Verified against the
+  admin UI (`642db2fa…`→Operations, `642db1d2…`→Amazon ads). ⚠️ **Inference, not authority** — it will
+  rot as categories are renamed; GOS-23 stays open. 2 ids (36 videos) unknown.
+- **Speakers named on 399 of 432 videos.** `speaker_ids` ARE GroupOS `user_id`s → resolved via
+  `members_list(user_ids=…)` into `digest.video_speakers` (234 of 270 distinct speakers: 170 members,
+  63 guest-tier outsiders, 2 collaborators; 36 unresolvable, probably removed users). Speaker names
+  are weighted 'A' in search — "David Ghiyam" returns his two sessions.
+  ⚠️ **`members_get` takes the member-RECORD id, not the user_id** — passing a user_id returns a bare
+  `not_found`. This trap cost a wrong conclusion; use `members_list(user_id=…)`.
+
+**Source of truth: the GroupOS content library** (community `67011d987a2a81b28438a3d8`), read via the
+GroupOS MCP (`videos_list` / `videos_get`). **Verified live 2026-07-26: 1,009 videos, ALL `published`
+(draft = 0), split 614 `public` / 395 `restricted`; newest 2026-07-23.** Supabase `public.videos` +
+`transcript_segments` are the *abandoned May-2026 video-admin POC* (15 test rows, 7 soft-deleted) —
+NOT this library, never ingest them.
+
+**Scope: `published` + `restriction_access='public'` reaches members.** ⚠️ **Restricted ≠ unpublished —
+ALL 1,009 videos are `published`, including all 395 restricted ones.** `public` == the admin UI's
+"User access: All members" (video `68aaee42…`, "849 users can see this"); `restricted` == published but
+gated by a rule.
+
+**The rule is invisible to the API.** Verified across all 1,009 records: the ONLY access key returned is
+`restriction_access` ("public"/"restricted") — restricted rows carry zero extra fields. The admin UI for
+`6a6301a0…` (Centurion Channel Call) shows the real rule is **plan (Staff (App)) + tag (Centurion
+Member) + an explicit 166-address user list → 242 users can see it**. None of that is fetchable.
+So the 395 are **fail-closed and dark** until GOS-25 lands — not a policy choice, a data gap.
+
+**Phase 1 = catalogue (metadata) only. There are NO transcripts** — `videos_get` has no transcript
+field. Searching *inside* a recording needs ~1,000 hrs transcribed (~$120–370 AssemblyAI + pipeline):
+a separate, priced, unapproved Phase 2.
+
+| What | Where | Notes |
+|---|---|---|
+| Catalogue (title, description, duration, categories, tags, dates) | `videos_list` → `digest.videos_catalog` | description HTML→text at ingest; carries the "TOPICS:" bullets = the best search signal |
+| Retrieval | `digest.video_search(p_phone, p_query, p_limit)` | gated fail-closed, service_role only; FTS w/ `expertise_query` synonyms + strict-match bonus; no query = browse newest-first |
+| Access rule | `restriction_access` stored per row | RPC filters to `public` AND `published` AND `deleted_at is null` — three independent guards |
+| Member-facing URL | `digest.member_video_url()` → `app.mds.co/videos/{id}` | shape taken from **real member-shared links in the WA archive**; ⚠️ Andy quoted `app.mds.co/s/videos/{id}` from the admin UI — **unresolved, verify before wiring** |
+| Storage paths | `video_url` / `thumbnail_url` | **never persisted** — dropped at ingest, so no future RPC edit can leak them (gate-asserted) |
+| **Cliff Notes** | admin UI only — **NOT in the MCP** (verified `videos_get` 2026-07-26) | the single highest-value field: a ~500-word structured summary of what was *said*. Column + search weight already built; a pure backfill once the API exposes it |
+| Engagement counts | `view_count` / `like_count` / `comment_count` | stored, **never emitted** — 0 on every 2026 video sampled (stale-counter bug in the GroupOS QA notes) |
+| Speakers | `speaker_ids` → stored | **432/1,009 populated** — but ids are unresolvable (no speakers endpoint, no names). Speaker→member matching is the open ask (GOS-31) |
+| Attached files | `files[]` → **`digest.video_files`** | **640 attachments on 602 videos** (178 legacy cliff-notes PDFs · 8 reports · 8 decks · 446 unclassifiable by name). Andy's ruling 2026-07-26: files are a THIRD layer, separate from description and cliff notes — classify the artefact, extract its text into the video's search body, and send on demand. `file_kind` + `extracted_text` columns live; `extracted_text` blocked on GOS-29 (paths unfetchable). Output carries **name + kind only** — never the storage path (gate-asserted) |
+| ⚠️ Attachment text extraction | vision, NOT `pdftotext` | Proven on the Ali Babul deck: `pdftotext` returned 880 words (titles + legal footer) and **silently dropped every formula and the verbatim prompt** — they're outlined vectors. Reuse the FB-image vision pipeline over rendered pages |
+| Freshness | MCP snapshot pull (in-session) | same `GROUPOS_PAT` wart as partners — no PAT ⇒ manual refresh |
+
+**Category names are unreliable in the API:** `category_names`/`tag_names` come back **empty for
+older videos** (2023-era ids `642d…`) but populated for 2026-era ids (`6a5…`). Subcategories have no
+name field at all. Same wound partners had (which needed an AT join + co-occurrence vote to reach 97%).
+
+**Junk guards at ingest:** skip non-`published`, `deleted_at` non-null, "Untitled*" titles, non-24-hex ids.
+
+### 🚨 WIRING RULE — video text is NEVER evidence of membership (Andy, 2026-07-26)
+
+**6 video descriptions assert that someone is a member**, and at least one of those people has since
+been removed:
+
+| Video says | Reality (`digest.member_profiles`) |
+|---|---|
+| Billy Evans — *"a skilled member of MDS"* (`64cd5fa4…`) | `bill@microscope.com` → **Removed - Canceled Membership** |
+| Greg Krakovskiy — *"member of MDS since 2020"* | — |
+| Leo Limin — *"the first member of MDS"* | — |
+
+**Why this is dangerous rather than merely untidy:** `member_card('Billy Evans')` returns **zero rows**
+(verified) — the directory correctly excludes removed people. So Olivia has *nothing* to contradict the
+video text, and the description becomes her only statement about his status. Silence reads as assent.
+
+**The rule:** membership status comes ONLY from the member layer. Absent from `member_card` = **unknown,
+never "member"**. Never repeat a membership claim found in a video title, description, cliff note or
+attachment. Applies equally to FB posts and chat messages, which carry the same kind of language.
+
+**Recommended (needs Andy's ruling — touches member-surface policy, not the videos source):** give the
+member layer a deliberate *negative* signal — a lookup that answers "not a current member" for
+Removed/Declined statuses instead of returning nothing. `member_profiles` already holds the truth
+(278 Removed–Canceled · 142 Removed–For Cause); today only `member_card`/`expertise_search` read it,
+and both filter to current members. Silence is the weak link.
+
+**Leak gate:** 18 video checks in `scripts/olivia_leak_gate.py` (§12) — gate **GREEN at 133 checks**
+2026-07-26. Restricted / soft-deleted / draft videos each proven invisible, including on a direct
+topical match.
 
 ## Rules
 

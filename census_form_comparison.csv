@@ -1,0 +1,108 @@
+Category,Topic/Question,Application,App Rate (All/Recent),App Quality,Standard Census,Std Rate (All/Recent),Std Quality,MDS-only Census,MDS Rate (All/Recent),MDS Quality,Overlap,Recommendation,Notes
+Identity,Full name,Full name,100%/100%,OK,Full name,100%/100%,OK,Full name,86%/92%,OK,ALL 3,KEEP in both,Required identifier
+Identity,Email,Email,53%/44%,OK,Email,100%/100%,OK,Email,86%/92%,OK,ALL 3,KEEP in both,App email question underused; hidden field captures it
+Identity,Birthdate,Birthdate,98%/100%,OK,,,,,,,App only,KEEP in App,Personal info; one-time
+Identity,Mailing address,Address (5 fields),95%/97%,OK,,,,,,,App only,KEEP in App,Swag/membership kit shipping
+Identity,Address line 2,Addr line 2,29%/32%,OK,,,,,,,App only,KEEP in App,Optional; 32% is normal for apt/suite
+Identity,Previous role,Previous role,100%/100%,OK,,,,,,,App only,KEEP in App,Good vetting context
+Identity,Formal title/role,Official role,100%/100%,OK,Formal title,100%/100%,OK,,,,App+Std,"KEEP in App, REMOVE from Census",Rarely changes
+Identity,Day to day responsibilities,,,,Responsibilities,100%/100%,OK,,,,Std only,MOVE to App,Doesn't change often; better at application
+Identity,Fun fact,Fun fact,100%/100%,OK,,,,,,,App only,KEEP in App,Community building
+Identity,Upload photo,Photo upload,65%/60%,OK,,,,,,,App only,KEEP in App,60% is acceptable
+Identity,How many kids,,,,Kids count,80%/100%,"JUNK-troll values (999, 99999)",,,,Std only,CONSIDER REMOVING,"Some troll values (999, 99999); otherwise nice but not actionable"
+Identity,Kids age ranges,,,,Age ranges,52%/69%,OK,,,,Std only,REMOVE,Low response; not actionable
+Business,Expertise area,Expertise,100%/100%,OK,Expertise,100%/100%,OK,,,,App+Std,"KEEP in App, REMOVE from Census",Doesn't change often
+Business,Business models (PL/WS/Agency/OEM),Models (checkboxes),78%/76%,OK,Models (checkboxes),90%/89%,OK,,,,App+Std,KEEP in BOTH,Can change yearly
+Business,Number of brands,# brands,98%/97%,OK,# brands,100%/100%,OK,,,,App+Std,KEEP in BOTH,Changes annually
+Business,Brand name(s),,,,Brand names,69%/92%,OK,,,,Std only,KEEP in Census,Changes as members add brands
+Business,Number of products,# products,98%/97%,OK,# products,100%/100%,OK,,,,App+Std,KEEP in BOTH,Changes annually
+Business,Product categories (10 options),Categories,~9-44%/each,OK-checkbox,Categories,~7-42%/each,OK-checkbox,,,,App+Std,KEEP in BOTH,Multi-check; low per-option is normal
+Business,Year started selling,Year started,97%/97%,OK,,,,,,,App only,KEEP in App,One-time info
+Business,Main niche,,,,Main niche,100%/100%,OK,,,,Std only,KEEP in Census,Good for segmentation
+Business,Current involvement in ecom,,,,,,,Involvement level,62%/100%,OK,MDS only,KEEP in Census,Filters exited members
+Business,Partner/spouse of member?,Partner check,100%/100%,OK,,,,,,,App only,KEEP in App,Membership policy
+Business,Actively acquiring ecom businesses?,Acquiring?,98%/97%,OK,,,,,,,App only,CONSIDER REMOVING,82% say No; low signal
+Revenue,Channel revenue % matrix (8-9 channels),Revenue % matrix,98%/97%,OK,Revenue % matrix,100%/100%,OK,,,,App+Std,SIMPLIFY: reduce to 5 channels,"Niche channels 70%+ N/A. Keep: Amazon US, EU, Walmart, DTC, Wholesale"
+Revenue,TTM revenue,TTM revenue,98%/97%,OK,TTM revenue,80%/95%,OK,,,,App+Std,KEEP in BOTH,Key metric
+Revenue,Projected FTM revenue,FTM revenue,98%/97%,OK,FTM revenue,78%/95%,OK,,,,App+Std,KEEP in BOTH,Key metric
+Revenue,Individual channel $ (TikTok/Amazon/DTC),Channel $,1-3%/2-3%,OK,,,,,,,App only,REMOVE,2-3% response rate; nobody fills these
+Revenue,What channels selling on? (checkboxes),Channels,1-2%/2-3%,OK,,,,,,,App only,REMOVE,Redundant with % matrix; <3% response
+Revenue,Purchased ecom brand?,Purchased?,98%/97%,OK,Purchased?,100%/100%,OK,,,,App+Std,KEEP in App only,One-time Q; 82% No
+Revenue,Sold ecom brand?,Sold?,98%/97%,OK,Sold?,100%/100%,OK,,,,App+Std,KEEP in BOTH,Can change year to year
+Revenue,When did you sell?,,,,When sold?,31%/32%,OK,,,,Std only,KEEP in Census,Conditional follow-up
+Revenue,Still have ecom revenue?,,,,Still rev?,26%/32%,OK,,,,Std only,KEEP in Census,Conditional follow-up
+Revenue,Plan to sell in next 12 months?,Plan to sell?,98%/97%,OK,Plan to sell?,90%/100%,OK,,,,App+Std,KEEP in Census only,Annual update Q
+Revenue,YoY change matrix (16 metrics),,,,,,,YoY matrix,20%/18%,OK,MDS only,REMOVE or SIMPLIFY to 3-4,Only 18% fill it; 16 sub-Qs is way too many
+Revenue,Cost per CBM,,,,,,,CBM cost,60%/97%,OK,MDS only,KEEP in Census,Useful benchmarking for importers
+Operations,Warehousing/fulfillment (FBA/3PL/etc),,,,,,,FBA/3PL/In-house,87%/87%,OK,MDS only,KEEP in Census,Useful operational data
+Operations,Marketing matrix (in-house/agency × channel),,,,,,,Marketing matrix,98%/97%,OK,MDS only,KEEP but SIMPLIFY,TV/Podcast/Radio mostly N/A — remove those
+Operations,Biz ops matrix (in-house/agency × function),,,,,,,Ops matrix,98%/97%,OK,MDS only,KEEP but SIMPLIFY,8 functions; some mostly N/A
+Operations,Sourcing method,,,,,,,Sourcing,87%/89%,OK,MDS only,KEEP in Census,Useful
+Operations,Manufacturing countries (9 options),,,,,,,Mfg countries,98%/97%,OK,MDS only,SIMPLIFY to Top 5 + Other,Vietnam/Mexico/India all 90%+ N/A
+Operations,Average production time,,,,,,,Production time,60%/97%,OK,MDS only,KEEP in Census,Useful benchmark
+Operations,Average shipping time,,,,,,,Shipping time,60%/97%,OK,MDS only,KEEP in Census,Useful benchmark
+Operations,Customer orders shipped,,,,,,,Orders shipped,98%/97%,OK,MDS only,KEEP in Census,Volume indicator
+Operations,Containers imported,,,,,,,Containers,98%/97%,OK,MDS only,KEEP in Census,Import-heavy members
+Operations,Products launched (last 12mo),,,,,,,Products launched,98%/97%,OK,MDS only,KEEP in Census,Activity metric
+Operations,New products planned (next 12mo),,,,,,,New products planned,98%/97%,OK,MDS only,KEEP in Census,Forward-looking
+Operations,Selling focus matrix (channel × intent),,,,,,,Selling focus,60%/97%,OK,MDS only,KEEP in Census,Strategic direction data
+Tools,Split testing tool,,,,Split testing,60%/90%,OK,,,,Std only,KEEP in Census,Useful tool benchmark
+Tools,PPC management,,,,PPC tool,55%/83%,OK,,,,Std only,KEEP in Census,Useful tool benchmark
+Tools,Reimbursement tool,,,,Reimbursement,55%/94%,OK,,,,Std only,KEEP in Census,Useful tool benchmark
+Tools,3PL management,,,,3PL tool,46%/72%,OK,,,,Std only,KEEP in Census,Useful tool benchmark
+Tools,Hiring platforms (10 options),,,,Hiring platforms,~2-42%/each,OK-checkbox,,,,Std only,SIMPLIFY to Top 5 + Other,10 options; many <5% selection rate
+Tools,Most impactful service/software,,,,Impactful tool,100%/100%,OK,,,,Std only,KEEP in Census,Great open-ended insight
+Tools,Use EOS/Traction?,,,,,,,EOS?,98%/97%,OK,MDS only,KEEP in Census,Useful ops data
+Tools,How do you implement EOS?,,,,,,,EOS how,31%/18%,OK,MDS only,KEEP (conditional),Only shows if EOS=Yes
+Team,Full time employees (W-2/1099),,,,,,,FT employees,98%/97%,OK,MDS only,KEEP in Census,Key team metric
+Team,Part time contractors,,,,,,,PT contractors,98%/97%,OK,MDS only,KEEP in Census,Key team metric
+Team,VAs/Offshore count,,,,,,,VAs/Offshore,98%/97%,OK,MDS only,KEEP in Census,Key team metric
+Team,Staff locations (9 countries),,,,,,,Staff locations,64%/52%,OK,MDS only,SIMPLIFY to Top 5 + Other,Australia/Africa <2%; too many options
+Team,Team positions salary matrix (12 roles),,,,,,,Salary matrix,98%/97%,OK,MDS only,SIMPLIFY to 5-6 key roles,12 roles × salary ranges; most N/A for unhired roles
+Team,Other essential positions?,,,,,,,Other positions,98%/97%,MIXED-yes/no answers to open text question,MDS only,REMOVE,Most answered No/NA; question structure invites yes/no instead of position names
+Team,Team building suggestion,,,,,,,Team tip,98%/97%,OK,MDS only,KEEP in Census,Good qualitative data
+Feedback,Goals for this year,,,,Goals,100%/100%,OK,,,,Std only,KEEP in Census,Good strategic data
+Feedback,Biggest challenge this year,Challenge,100%/100%,OK,Challenge,66%/100%,OK,,,,App+Std,KEEP in BOTH,Key insight
+Feedback,Competitive advantages (11 options),Advantages,~12-53%/each,OK-checkbox,Advantages,~5-45%/each,OK-checkbox,,,,App+Std,"KEEP in App, REMOVE from Census",Doesn't change much yearly
+Feedback,Growth plans,Growth plans,98%/97%,OK,Growth plans,66%/100%,OK,,,,App+Std,KEEP in Census only,Annual update better in census
+Feedback,Best thing in last 12 months,Best thing,100%/100%,OK,Best thing,100%/100%,OK,,,,App+Std,KEEP in Census only,Annual reflection
+Feedback,Other knowledge bases/groups,Other groups,99%/100%,OK,Other groups,100%/100%,OK,,,,App+Std,KEEP in App only,55% say None; no need to re-ask annually
+Feedback,Interests beyond ecom (11 options),,,,Other interests,~3-38%/each,OK-checkbox,,,,Std only,KEEP in Census,Good for community programming
+Feedback,Rank member benefits,,,,Benefits ranking,100%/100%,OK,,,,Std only,KEEP in Census,Key feedback for MDS team
+Feedback,Virtual call topics,,,,Call topics,70%/100%,OK,,,,Std only,KEEP in Census,Actionable feedback
+Feedback,Visual branding rating,,,,Branding 1-10,86%/100%,OK,,,,Std only,CONSIDER REMOVING,Nice but not critical annually
+Feedback,Branding feedback text,,,,Branding why,57%/68%,OK,,,,Std only,REMOVE (pair with above),Paired with branding Q; remove both
+Feedback,MDS community impact,,,,MDS impact,100%/100%,OK,,,,Std only,KEEP in Census,Key testimonial data
+Feedback,NPS score (1-10),,,,NPS,86%/100%,OK,,,,Std only,KEEP in Census,Critical metric
+Feedback,How can MDS be better?,,,,Improvement,86%/100%,OK,MDS better?,21%/22%,OK,Std+MDS,KEEP in Census (from Std),MDS-only version only 22% response
+Feedback,Referrals,,,,Referrals,100%/100%,OK,,,,Std only,KEEP in Census,"Even low, captures warm leads"
+Feedback,Chapter involvement,,,,Chapter?,86%/100%,OK,,,,Std only,KEEP in Census,Segmentation + conditional gate
+Feedback,Rate chapter events,,,,Chapter rating,47%/62%,OK,,,,Std only,KEEP in Census,Conditional; good feedback
+Feedback,Chapter events feedback,,,,Chapter feedback,46%/62%,MIXED-some answered Yes/YES instead of feedback,,,,Std only,KEEP in Census,Some answered Yes/YES instead of actual feedback text
+Feedback,Participated in MDS Programs?,,,,Programs?,12%/38%,OK,,,,Std only,KEEP in Census,Gate for conditional Qs
+Feedback,Rate programs,,,,Programs rating,4%/13%,OK,,,,Std only,KEEP in Census,Conditional; valid low rate
+Feedback,Programs feedback,,,,Programs text,4%/13%,OK,,,,Std only,KEEP in Census,Conditional; valid low rate
+Feedback,Involved in MDS Squad?,,,,Squad?,60%/100%,OK,,,,Std only,KEEP in Census,Gate for conditional Qs
+Feedback,Rate Squads,,,,Squads rating,10%/15%,OK,,,,Std only,KEEP in Census,Conditional; valid low rate
+Feedback,Squads feedback,,,,Squads text,10%/15%,OK,,,,Std only,KEEP in Census,Conditional; valid low rate
+Feedback,Rate UX of MDS systems,,,,UX rating,65%/100%,OK,,,,Std only,KEEP in Census,Actionable tech feedback
+Feedback,Tech enhancement suggestions,,,,Tech suggestions,48%/76%,OK,,,,Std only,KEEP in Census,Actionable tech feedback
+Feedback,Activities check (teach/coach/etc),Activities,87%/85%,OK,Activities,85%/83%,OK,,,,App+Std,KEEP in BOTH,Important member classification
+Feedback,Explain further (activities),Explain,9%/10%,OK,Explain,11%/9%,OK,,,,App+Std,KEEP (conditional),Only for those who check a box
+MDS-specific,New business venture plans,,,,,,,New venture,21%/22%,OK,MDS only,REMOVE,Only 21% respond; not actionable
+MDS-specific,Current investments,,,,,,,Investments,21%/22%,OK,MDS only,REMOVE,Only 21% respond; not actionable
+MDS-specific,Gsuite email for docs access,,,,,,,Gsuite email,100%/100%,OK,MDS only,KEEP in Census,Operational need for doc access
+App-only,Event type preferences (7 options),Event types,12-29%/each,JUNK-wrong answers (revenue numbers entered instead of event types),,,,,,,App only,MOVE to Census or SIMPLIFY,Some respondents entered revenue numbers instead of event preferences; form layout may confuse
+App-only,Social event preferences (7 options),Social events,9-30%/each,JUNK-some revenue numbers mixed in,,,,,,,App only,MOVE to Census or SIMPLIFY,Some revenue numbers mixed in with valid social event answers
+App-only,Event idea (open text),Event idea,21%/33%,OK,,,,,,,App only,MOVE to Census,Better as annual Q; 33% in app
+App-only,Bring someone to events?,Bring guest?,21%/33%,OK,,,,,,,App only,REMOVE,Low value; 33% response
+App-only,How often attend events?,Event frequency,21%/33%,OK,,,,,,,App only,REMOVE,Low value; better tracked by attendance data
+App-only,How far travel for events?,Travel distance,21%/33%,OK,,,,,,,App only,REMOVE,Low value; 33% response
+App-only,What hope to get from events?,Event hopes,21%/33%,OK,,,,,,,App only,REMOVE,Low response; open-ended + low value
+App-only,Would you bring someone?,Bring guest?,21%/33%,OK,,,,,,,App only,REMOVE,Duplicate of above
+App-only,Motivation to join MDS,Motivation,100%/100%,OK,,,,,,,App only,KEEP in App,Valuable for vetting
+App-only,Confirm your information (legal),Legal confirm,100%/100%,OK,,,,,,,App only,KEEP in App,Required legal step
+App-only,Verify your sales (upload),Sales proof,100%/100%,OK,,,,,,,App only,KEEP in App,Key vetting document
+App-only,Community engagement commitments (3),Commitments,100%/100%,OK,,,,,,,App only,KEEP in App,Sets expectations
+App-only,MDS Membership Agreement,Agreement,27%/0%,BROKEN (0% recent),,,,,,,App only,FIX,0% recent response! Something is broken
+App-only,Most impactful service/software,Impactful tool,98%/97%,OK,Impactful tool,100%/100%,OK,,,,App+Std,KEEP in Census only,Better as annual update

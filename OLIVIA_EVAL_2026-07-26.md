@@ -1,0 +1,118 @@
+> 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
+
+# Olivia eval — 2026-07-26 — 160 judged · PASS 107 · PARTIAL 10 · FAIL 43 (26.9%)  [target <1%]
+
+## Health by source
+- 🔴 **CROSS**: 16 asked · 12 fail (75%) · 3 partial
+- 🔴 **FB**: 30 asked · 9 fail (30%) · 2 partial
+- 🔴 **GEN**: 50 asked · 13 fail (26%) · 1 partial
+- 🔴 **AT_PROFILE**: 22 asked · 5 fail (23%) · 0 partial
+- 🔴 **WA_RAW**: 22 asked · 4 fail (18%) · 2 partial
+- 🟢 **EVENT**: 20 asked · 0 fail (0%) · 2 partial
+
+- **FAIL** Q2009 [AT_PROFILE/llm] Which member won a court case against the UK's Crown Prosecution Service after representing himself against a 100mph+ speeding fine?
+  - Olivia denies the fact exists when ground truth confirms Joshua Asquith won this case; this is a confident denial of verified information.
+- **FAIL** Q2011 [AT_PROFILE/llm] What year did Adam Ackerman start his business?
+  - Olivia claims no information available, but ground truth confirms 2015; answering with unavailability contradicts verified data.
+- **FAIL** Q2012 [AT_PROFILE/llm] What is Dana E. Mavros's title at her company?
+  - Olivia denied having Dana E. Mavros's title on file, but ground truth confirms she is President—an invented absence contradicts verified fact.
+- **FAIL** Q2020 [AT_PROFILE/llm] Which member's fun fact is that they've traveled to over 70 countries and counting?
+  - Olivia denied the existence of a member with this fun fact when Damon Sununtnasuk is verified ground truth.
+- **FAIL** Q2021 [AT_PROFILE/llm] Which member based in San Diego specializes in martial arts equipment as their main niche?
+  - Olivia denies the existence of a San Diego martial arts equipment specialist when ground truth verifies Cole South holds this niche.
+- **FAIL** Q2077 [WA_RAW/llm] On 2026-06-28 in MDS Resellers, what did a member say about the guy they spoke to, aside from sending a follow-up email?
+  - Olivia denied finding the expected comment about someone who 'was able to deliver results and seemed to know what he was talking about,' but ground truth confirms this message exists in the 2026-06-28 MDS Resellers thread.
+- **FAIL** Q2080 [WA_RAW/help] Since what date had Anthropic been working with the US government to restore access to Claude Mythos 5 and Fable 5?
+  - Olivia avoided the question entirely by displaying a menu of capabilities instead of answering or honestly stating she cannot find the information.
+- **FAIL** Q2088 [WA_RAW/llm] In the MDS TikTok chat on 2026-06-30, what did the member say they are still testing and playing with?
+  - Olivia claims the message is absent from the warehouse, but ground truth confirms a verified message exists stating 'Scaling' on that date.
+- **FAIL** Q2090 [WA_RAW/llm] On what date was the last call recording shared, and what platform was it hosted on?
+  - Olivia reports 2026-06-16 as last confirmed recording, contradicting ground truth 2026-04-29; platform matches but date is factually wrong.
+- **FAIL** Q2100 [FB/llm] According to Andrei Ureche's Feb 15, 2026 post, what does he say SaaS access is soon going to become?
+  - Olivia denies the existence of the Feb 15, 2026 post despite ground truth confirming it as a verified fb_comment by Andrei Ureche.
+- **FAIL** Q2105 [FB/llm] Which agency did Mark Behnke use that only gave advice without execution?
+  - Olivia denies the information exists when ground truth confirms Mark Behnke's 2026-01-08 Facebook post names GNO Partners as the advice-only agency.
+- **FAIL** Q2107 [FB/llm] Who hosted the Mogul Call about the Save Our Sellers campaign in place of Jamie Graham?
+  - Olivia denies the existence of a documented Save Our Sellers campaign and substitution; ground truth confirms Eugene Khayman hosted it on 2026-05-22.
+- **FAIL** Q2110 [FB/llm] Which member did Richard Laatz mention had the same exact percentage of growth for 3 years in a row?
+  - Olivia denied the existence of this mention; ground truth confirms Richard Laatz did comment about George Borowski's 3-year matching growth on 2026-07-07.
+- **FAIL** Q2111 [FB/llm] According to Prue Millsap's reply to Maxwell Sigurdson-Scott, what tactic was suggested if the price point is low?
+  - Olivia denies the exchange exists when ground truth confirms Prue Millsap's bundling reply to Maxwell Sigurdson-Scott occurred.
+- **FAIL** Q2112 [FB/llm] Which city is Matthew Turner considering traveling to for a show?
+  - Olivia denied the existence of travel/show information despite verified Facebook comment from 2026-01-24 stating Matthew Turner considers traveling to Charlotte for a show.
+- **FAIL** Q2116 [FB/llm] On Prime Day, what discount below the 30-day low is Amazon requiring for PEDs according to Zaid Al-Husseini?
+  - Olivia cites 5% below 30-day low; expected answer is ~15% below 30-day low per Zaid's own statement.
+- **FAIL** Q2122 [FB/llm] What destination is being discussed for the Singapore Summit side quest happening the week before the summit?
+  - Olivia denies the side quest exists when ground truth confirms Bali destination in verified Facebook post.
+- **FAIL** Q2126 [FB/llm] Who asked if anyone has sold a brand in the $100k to $10 mil range and mentioned wanting to hire or give equity to the right person to help manage his brand?
+  - Olivia denies the existence of a specific post (Chris Kjeldsen, 2026-01-14) that ground truth confirms exists; confident negation of verified fact.
+- **FAIL** Q2129 [CROSS/llm] According to the FB comment on ad spend team sizing, how many dedicated team members are needed for a $200-250K ad budget, and separately, in the MDS Resellers weekly recap whose ASIN reinstatement thread ran Monday through Saturday?
+  - Olivia refused to provide the expected facts and instead claimed absence, contradicting ground truth that verifies both pieces exist in the warehouse.
+- **FAIL** Q2131 [CROSS/llm] Shawn mentioned we finally got Amazon's attention on one thread, but on WhatsApp someone compared another platform's API unfavorably to Amazon's—what was that comparison?
+  - Olivia denies both facts the ground truth confirms exist: Shawn's Amazon attention comment and the WhatsApp API comparison.
+- **FAIL** Q2134 [CROSS/llm] Both a founder tracking Amazon referral-link traffic and someone using Shopify with Meta ads were discussing data—what were their two separate concerns?
+  - Olivia denies both records exist when ground truth confirms them; a refusal-dodge when real answers were expected.
+- **FAIL** Q2133 [CROSS/llm] For US to EU shipments, why can't I just use any freight forwarder or my usual customs broker, and who should I check with?
+  - Olivia invents a problem (no confirmed forwarders work) directly contradicting expected answer's verified examples (Flexport, DHL, Kuehne+Nagel, DSV, DB Schenker all listed as viable options).
+- **FAIL** Q2136 [CROSS/llm] Someone was asked what they're building on WhatsApp, and separately posted about building an internal War Room/Command Center - what tool is powering that command center?
+  - Olivia confidently denies finding the War Room/Command Center and Fable 5 despite ground truth confirming both exist; honest-miss would pass, but phrasing suggests thorough search rather than genuine absence from warehouse.
+- **FAIL** Q2137 [CROSS/llm] In the context of niches like supplements, what did the FB post address and what comparison was made about supplement's size in the WhatsApp chat?
+  - Olivia denies the FB post exists and provides unrelated PPC cost data instead of the expected supplement-size comparison from WhatsApp chat.
+- **FAIL** Q2138 [CROSS/llm] In the community, what's the connection between the value-add tip about the AMEX Gold Business card credit and the WhatsApp comment looking forward to the next session?
+  - Olivia denies the connection exists rather than acknowledging separate facts (card tip + WhatsApp comment) that ground truth confirms occurred.
+- **FAIL** Q2139 [CROSS/llm] There's a member who needs a product liability attorney for an Amazon case, and separately someone mentioned connecting SP API to a service in about an hour - what was that service and how long did the SP API connection take?
+  - Olivia explicitly states she cannot find the SP API service name (Hermes) or the ~1 hour connection time, and offers no matching information despite the expected answer being specific and warehouse-verified.
+- **FAIL** Q2140 [CROSS/llm] Someone in the agency is trying to figure out a sudden sales spike for a new overpriced client brand with bad reviews that came and went in one crazy day—separately, what tool stack did a member set up over the weekend to push AI-generated pages into Shopify?
+  - Olivia confirms no matching records for either the sales spike or the tool stack, contradicting ground truth of verified Claude Code + Google Drive + GitHub → Shopify setup.
+- **FAIL** Q2141 [CROSS/llm] Someone asked Brian Kelsey if he had contacts that could help, and separately a member shared a story about a contact who used to sell Nike - what happened to that Nike seller's ability to sell after years of doing it?
+  - Olivia denies the existence of both key facts the ground truth confirms occurred, failing to acknowledge verified events in the warehouse.
+- **FAIL** Q2142 [CROSS/llm] Someone in the FB comments said they're skeptical of paid services and could just DIY with Shopify and Claude code—what's a WhatsApp example of AI tool output that might change their mind?
+  - Olivia refused to provide the expected answer and redirected to members/channels instead of retrieving the specific FB comment and WhatsApp example from the warehouse.
+- **FAIL** Q2143 [CROSS/llm] A member asked for PR agency recommendations for celebrity partnerships and media coverage - is there a related Mogul Call that covers using celebrity influencers to grow sales?
+  - Olivia denies the existence of the Craig Brockie Mogul Call that warehouse confirms exists; confidently states none match when one demonstrably does.
+- **FAIL** Q1000 [GEN/llm] What months does Brandon Himmel say his product category typically becomes busier after the slow Q1 period?
+  - Olivia denies finding the April/May statement despite ground truth confirming it exists in a verified 2025-12-01 Facebook post by Brandon Himmel.
+- **FAIL** Q1008 [GEN/llm] Who recently asked the group for recommendations on Facebook ads training or YouTube videos since they're new to it?
+  - Olivia denies the specific request exists ('I don't see anyone asking') despite warehouse verification that Mesi Bo posted exactly this on 2025-11-11, contradicting ground truth.
+- **FAIL** Q1010 [GEN/llm] Is the SEO topic channel hosted in the app or on WhatsApp?
+  - Olivia states the SEO channel is WhatsApp; ground truth confirms it is an app channel at app.mds.co, contradicting the answer.
+- **FAIL** Q1012 [GEN/llm] Who posted asking for an attorney referral to deal with Amazon holding funds after a UCC letter from a financing company?
+  - Olivia denies the post exists when ground truth confirms Salomon Stroh posted it on 2025-10-09; offering unrelated posts does not answer the question.
+- **FAIL** Q1015 [GEN/llm] What workaround was Jamie Macdonough trying for Amazon PEDs to avoid discounting for the full 11-day BF/CM window?
+  - Olivia confidently denied the existence of Jamie Macdonough's PED workaround despite ground truth confirming it in a verified Facebook post from 2025-11-18.
+- **FAIL** Q1017 [GEN/llm] Which dates is Jabran Niaz attending Amazon Accelerate this year?
+  - Olivia claims she cannot find the information, but ground truth shows a verified Facebook post (2025-08-23) explicitly stating September 16-18 attendance dates.
+- **FAIL** Q1018 [GEN/llm] What discount code should MDS members use to save on the DTC event of the year in San Diego?
+  - Olivia denies the existence of a San Diego DTC event and discount code that the ground truth confirms Eugene Khayman shared (code: MDSVIP, 40% discount, 2025-07-31).
+- **FAIL** Q1022 [GEN/llm] Who did Sarah Frances Wells arrange to meet with next Wednesday to discuss the IEEPA refund process?
+  - Olivia denies the meeting exists when ground truth confirms Sarah Frances Wells arranged a CBP meeting for refund discussion.
+- **FAIL** Q1026 [GEN/llm] How many products is Michael Patrón discontinuing in this inventory cleanup?
+  - Olivia denies the existence of a verified fact (41 products, $259K COG from Michael Patrón's 2025-08-06 post) rather than acknowledging it in the warehouse data.
+- **FAIL** Q1030 [GEN/llm] Who gave Constantine Kirillov a free hour-long call to review their in-house PPC?
+  - Olivia denies the existence of the documented call, contradicting the ground-truth Facebook post from Constantine Kirillov dated 2025-09-10 confirming Stefano from Nomadz provided it.
+- **FAIL** Q1037 [GEN/llm] According to Belén's FAQ post, what must be true about your Zoom display name to be let into the call?
+  - Olivia confidently denies the FAQ exists when ground truth confirms Belén Gallardo posted this requirement on 2026-07-20.
+- **FAIL** Q1040 [GEN/llm] What data sources was Joe Cowling considering combining before looking at this software alternative?
+  - Olivia claims the specific data sources (sellerboard, adlabs, expandfi) are not in her database, contradicting the ground truth that Joe Cowling mentioned combining them in a verified fb_comment from 2026-02-13.
+- **FAIL** Q1044 [GEN/llm] Who did John Salvatore Rafanello wonder might also be attending the event?
+  - Olivia claims the source material is absent when ground truth confirms John Salvatore Rafanello's comment exists (2026-04-16), and Matt Bertrand was the subject of his wondering.
+- **PARTIAL** Q2035 [EVENT/llm] What city is the MDS Summit being held in?
+  - Olivia lists Singapore and Milan but omits the Mexico City MDS Summit that warehouse confirms is occurring.
+- **PARTIAL** Q2039 [EVENT/llm] On what date is the Expert Call with Clayton Atchison from Carbon 6 scheduled?
+  - Olivia correctly identifies June 28, 2022, but hedges by citing a second date (July 30, 2024) without clarifying which is the primary/expected call.
+- **PARTIAL** Q2076 [WA_RAW/llm] On Euka, which creator segment does the member wish they could break out separately from L5+, based on the TikTok chat?
+  - Olivia correctly identifies L3/L4 as the desired segment, but the source is WhatsApp, not TikTok chat as the question specifies.
+- **PARTIAL** Q2079 [WA_RAW/llm] In the MDS AI & Automations chat on 2026-05-06, what problem did the member report about the current endpoints regarding paths versus item-type-keywords?
+  - Core issue identified correctly (endpoints lack paths, only show item-type-keywords), but member name and specific quote attribution unverified; warehouse source confirms problem substance but not speaker identity.
+- **PARTIAL** Q2108 [FB/llm] Kevin Tao is having trouble relaunching a product as a new listing on Amazon because Amazon keeps linking the UPC to an old ASIN. What issue is causing the listing error?
+  - Olivia correctly identifies the UPC-ASIN linkage issue but omits the title conflict specifically mentioned in the ground truth as the direct cause of the error.
+- **PARTIAL** Q2125 [FB/llm] According to Ryan Ong's comment, what change is likely related to the payout issue on an older account?
+  - Olivia correctly identifies DD+7 as the change Ryan Ong linked to payouts, but hedges the core fact by framing it as from a Facebook group 'not in your chats' rather than directly confirming it as the expected answer.
+- **PARTIAL** Q2130 [CROSS/llm] What percentage price increase did the member use for the strikethrough playbook before Prime Day, and what's the MCP video guide about?
+  - Strikethrough percentage range (20-30%) aligns with expected 29%, but answer hedges the exact figure and omits confirmed 26-hour timeframe. MCP answer refuses the video guide claim, contradicting warehouse truth.
+- **PARTIAL** Q2132 [CROSS/llm] Someone asked about updating their residential address triggering an INFORM Act check, and separately there was a discussion about pulling Amazon data automatically—what report type was mentioned for scheduling FBA inventory reports via the SP-API?
+  - INFORM Act residential address question confirmed with source; SP-API FBA inventory report type not found—honest miss on the specific GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA code.
+- **PARTIAL** Q2135 [CROSS/llm] Michael Patrón mentioned a listing already has a broker involved—what site is it listed on, and separately, what's the revenue figure Michael Okulicz reported for his personal care products business in Toronto?
+  - Quiet Light listing confirmed correctly; Michael Okulicz revenue figure entirely absent from Olivia's answer despite being in ground truth.
+- **PARTIAL** Q1001 [GEN/llm] What trick does George Borowski use to get a listing reinstated within hours after it's repeatedly removed as a restricted drug product?
+  - Olivia confirms the October 2025 timeframe and restricted drug product context but hedges on the actual trick (Reply button + appeal thread method), deflecting to 'cut off' and external link rather than stating the verified technique.

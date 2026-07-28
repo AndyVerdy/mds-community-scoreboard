@@ -1,0 +1,620 @@
+> 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
+
+# MDS Members-DB — Data Cleanup Worklist
+
+> Read-only audit, generated 2026-07-10. Members DB = `appou5JVr0WIrioWS/tblfwOSROSHfuYUxv` (5604 records). Nothing changed.
+
+## Summary
+| Category | Count |
+|---|---|
+| Unmatched WA members — **should match (1 clean candidate)** — quick fix | 1 |
+| Unmatched WA members — **ambiguous (2+ candidates → dedup)** | 4 |
+| Unmatched WA members — **Leads-only (move phone to Verified/Preferred)** | 0 |
+| Unmatched WA members — **no phone in Members DB (not a member, or add Verified)** | 54 |
+| Unmatched WA members — no usable WA phone | 10 |
+| Members-DB **phone collisions** (2+ records share a phone a WA member hits) | 53 |
+| Members-DB **duplicate emails** (2+ records, same email) | 39 |
+| **Junk/typo'd Preferred phones** | 286 |
+| **Caps/format names** (active members) | 7 |
+
+## A1. Unmatched but SHOULD match — quick fixes (1 clean candidate exists)
+_These have exactly one active Members-DB record with their phone, yet aren't linked — investigate the matcher `Find Synced Member` gap or a recent edit._
+
+- WA `Tancredi` (last10 7044140792) → **Tancredi Ingrassia | tancredi@grinderpunch.com | New Member** (`rec906KtuNACp0Ike`)
+
+## A2. Unmatched — AMBIGUOUS (2+ Members-DB records share the phone → DEDUP)
+- WA `` (last10 0758346707) matches 2 records:
+    - Cristian Robert Faragau | christian@gleefullsupplements.com | Removed - Canceled Membership (`rec2hMc5tWDiyLieh`)
+    - Cristian Faragau | cristian@gleefullsupplements.com | blank (`recjun0HNolaFWcDM`)
+- WA `Mathias Jacobsen` (last10 7427080878) matches 2 records:
+    - Lorna Cruickshank | lorna@luckyegg.co | New Member (`recRr9HFjEv5armCc`)
+    - Mathias Jacobsen | mathias@luckyegg.co | New Member (`recLmbRcvanBK1Ia3`)
+- WA `` (last10 7305494555) matches 2 records:
+    - Jim Mann | jimmann.email@yahoo.co.uk | Removed - For Cause (`rec2FGDEKXZsdEYMS`)
+    - Jim Mann | jim.mann@thras.io | blank (`recVmuYBVfRg5vS65`)
+- WA `` (last10 4778844167) matches 4 records:
+    - Australia Test | sashanipp@milliondollarsellers.com | blank (`recKFGwboh4K23xeu`)
+    -   | ? | blank (`recsjVTMYohtU1tXs`)
+    -   | ? | blank (`recUViKzAykmNBsPY`)
+    - Sash2 TEST2 | yaanithelabel@gmail.com | blank (`reccexMAzXtmF0dsV`)
+
+## A3. Unmatched — LEADS-ONLY (phone only on the Leads field → move to Verified or fix Preferred)
+- none
+
+## A4. Unmatched — NO phone anywhere in Members DB (add `WhatsApp Number (Verified)`, or truly not a member)
+- WA `(no name)` — last10 `1938767655`
+- WA `Vic` — last10 `5295514218`
+- WA `(no name)` — last10 `2547250781`
+- WA `Rich` — last10 `6194324356`
+- WA `(no name)` — last10 `3725556488`
+- WA `(no name)` — last10 `9175218126`
+- WA `Thomas` — last10 `5799560762`
+- WA `(no name)` — last10 `7254675200`
+- WA `(no name)` — last10 `3480349883`
+- WA `William` — last10 `5012893053`
+- WA `(no name)` — last10 `9153665268`
+- WA `(no name)` — last10 `5033808572`
+- WA `(no name)` — last10 `9495847745`
+- WA `(no name)` — last10 `2545822828`
+- WA `(no name)` — last10 `9172703130`
+- WA `Alan Morrison` — last10 `0765984212`
+- WA `(no name)` — last10 `8139245802`
+- WA `Khalid` — last10 `5127797222`
+- WA `(no name)` — last10 `0738610340`
+- WA `Logan` — last10 `9704526436`
+- WA `Ross` — last10 `9176876789`
+- WA `(no name)` — last10 `5183295731`
+- WA `(no name)` — last10 `7253052587`
+- WA `(no name)` — last10 `5005550006`
+- WA `(no name)` — last10 `1645963314`
+- WA `(no name)` — last10 `1400199152`
+- WA `(no name)` — last10 `5297527090`
+- WA `Peter Weisberg` — last10 `4802906368`
+- WA `Leslie C` — last10 `6590282483`
+- WA `(no name)` — last10 `8176909391`
+- WA `(no name)` — last10 `4704690788`
+- WA `(no name)` — last10 `7584031258`
+- WA `Neeme Roos` — last10 `3725117432`
+- WA `(no name)` — last10 `5068970128`
+- WA `(no name)` — last10 `5802016998`
+- WA `(no name)` — last10 `7478022339`
+- WA `(no name)` — last10 `4215970918`
+- WA `Ivan Ong` — last10 `6591738074`
+- WA `Jonathan Jesper` — last10 `9074117059`
+- WA `Jun` — last10 `3104836192`
+- WA `Tomi MDS` — last10 `3413071313`
+- WA `Anthony Lazarus` — last10 `8582059725`
+- WA `(no name)` — last10 `7884226261`
+- WA `MDS Bot` — last10 `9453981285`
+- WA `(no name)` — last10 `5240816821`
+- WA `(no name)` — last10 `0455499944`
+- WA `(no name)` — last10 `3238992020`
+- WA `Rebe Rosas` — last10 `7224104309`
+- WA `(no name)` — last10 `6267295998`
+- WA `Matthew Ramirez` — last10 `7048853000`
+- WA `JI` — last10 `1451986674`
+- WA `John Cho` — last10 `6592302779`
+- WA `Owais` — last10 `4803352601`
+- WA `(no name)` — last10 `9604761457`
+
+## B. Phone collisions (duplicate Members-DB records sharing a phone) — DEDUP TARGETS
+- last10 `3472770106` → 7 records:
+    - eee dwdsd | dfsd@dsf.com | blank (`recX9m6g1rkXlxT7q`)
+    - Tim Jordan | tim@carbon6.io | blank (`recrNhPtYFjJEH5nY`)
+    - Euge khay | eugene@epare.com | blank (`recawyBlqlqOvgouU`)
+    - Eugene  | eugenekhayman@gmail.com | blank (`recwRcIhSSD6ozGYW`)
+    - Yevgeniy Khayman | eugene@mds.co | Staff (`recvSgAirIbbo9Ylb`)
+    - Eugene Khayman | eugenekhayman@gmail.com | blank (`recyEOIePUULV1crI`)
+    - Iya Ladovsky | ladovsky.iya@gmail.com | blank (`recgd8O3ZkdaAlLeu`)
+- last10 `8589522670` → 5 records:
+    - Anita Petrov | anita@milliondollarsellers.com | Staff (`reciI0OQVJvzLp5lQ`)
+    - anita testing  | anitaepetrov@gmail.com | blank (`rec3ByHcoxw5jtCQ0`)
+    - Alicja Alviso | anitatesting@gmail.com | blank (`reclosRHD3qIncGLE`)
+    - Anita Testing | ? | blank (`recJFZzmJrIXxQJm6`)
+    - Anita testing Application | anita@ykuni.com | blank (`recruftmH6Yfd4MHM`)
+- last10 `6196077048` → 5 records:
+    - Ian Sells | ian@milliondollarsellers.com | Staff (`recfpz0RHEe0mpTaA`)
+    - Ian Sells | iansells@gmail.com | blank (`recw7G2OlEC77ddVa`)
+    - Ian Sells  | ian@mds.co | blank (`recvsECD3Lo2mcREB`)
+    - ian Sells | iansells+shopify@gmail.com | blank (`recvvJvOMNPXActLk`)
+    - Jay Test | jay1@milliondollarsellers.com | blank (`recSboumF7Zeb9orl`)
+- last10 `8583668115` → 4 records:
+    - Rafay Hussain | rafay.hussain@emplicit.co | blank (`recNFrMjJX4FxC4KU`)
+    - Kenji Yoshinari | aweiler1@gmail.com | blank (`recozoRoYL9VyKSUA`)
+    - Adam Weiler | adam@sunkenstone.com | Current Member (`recOTS0MrFxcAbwXg`)
+    - Adam Weiler | adam.weiler@emplicit.co | blank (`recfbroxbrQiun8TH`)
+- last10 `7026001470` → 4 records:
+    - Brian Williams | brian@mds.co | blank (`recyLNZj3CSTTRJ2i`)
+    - Brian Williams | brian@eaglescoutmarketer.com | blank (`recTahOAdC5bS7SP1`)
+    - Brian Williams | brian@brianwilliamsinc.com | blank (`recWIJuiO0TsonLcW`)
+    - Brian Williams | brian@mds.co | Staff (`recdVq4bFsXFkNsYn`)
+- last10 `4778844167` → 4 records:
+    - Australia Test | sashanipp@milliondollarsellers.com | blank (`recKFGwboh4K23xeu`)
+    -   | ? | blank (`recsjVTMYohtU1tXs`)
+    -   | ? | blank (`recUViKzAykmNBsPY`)
+    - Sash2 TEST2 | yaanithelabel@gmail.com | blank (`reccexMAzXtmF0dsV`)
+- last10 `9734520659` → 3 records:
+    - Alice Cichon | alicecichon@gmail.com | blank (`recyin43rfjMrNt66`)
+    - Alice Trollan | info@milktoastbrands.com | blank (`recoPW7COglkB6ohI`)
+    - Alice Cichon | info@milktoastbrands.com | New Member (`recqZkDSW91fJ2qMP`)
+- last10 `9173638949` → 3 records:
+    - Chris Weese | cweese@amazon.com | blank (`rec47g3dwhFc31TR8`)
+    - Dominique Hernandez | dom@stonecutter.nyc | blank (`recJOvFzZm0IsNbHs`)
+    - Lee Assoulin | lee@stonecutter.nyc | Current Member (`recAIQdMpHPumcGuq`)
+- last10 `2035458945` → 3 records:
+    - Justin Adams | jadams8977@gmail.com | blank (`recLmdo42O83MPU53`)
+    - Justin Adams | justiin.adams@oceanblueomega.com | blank (`recgFjTHfi3EWWvy5`)
+    - Justin Adams | justin.adams@oceanblueomega.com | New Member (`rec0naKG1kOs6IFac`)
+- last10 `9546585500` → 3 records:
+    - David Redlich | david@rygrp.com | Current Member (`rec5TIaFMkqMnEjMS`)
+    - David Redlich | davidnredlich@gmail.com | blank (`recjEGdkK2fwNZEUm`)
+    - Ron Cohen | ron@rygrp.com | blank (`recO0ZPZmv6kJwQkO`)
+- last10 `3166417475` → 2 records:
+    - Jared Mortensen | jmortensen@textron.com | blank (`recV1AqJ9Xgcq8q2X`)
+    - Jared Mortensen | jaredm@rmac.store | New Member (`recxUeB4OnKgGmJSv`)
+- last10 `4152259828` → 2 records:
+    - Aaron Biner | aykbrands@gmail.com | Current Member (`recIR4rVkVrXbddWx`)
+    - Aaron Biner | aaron1105@aol.com | blank (`rec6GbuJIGtGcMEc4`)
+- last10 `7472504700` → 2 records:
+    - Kenny Rhee | smjrhee@gmail.com | Current Member (`recRWrrl78TvJF9MO`)
+    - Kendrick Rhee | tangcoral@gmail.com | blank (`reckCoMvt5jiH5dC0`)
+- last10 `8457092203` → 2 records:
+    - Abdul Altaf | abdul@yaynuts.com | blank (`recr5ac0RKCCpGOzb`)
+    - Abdul Altaf | yaynuts010@gmail.com | New Member (`recIECcful0tBg9Yb`)
+- last10 `1635926111` → 2 records:
+    - Jan Krapp | jk@pacificoa.com | Current Member (`recmO4g30ddnJTb3p`)
+    - Jan Krapp | jk@zicoto.com | blank (`recTrgIGZWR3Q6k4u`)
+- last10 `7633314845` → 2 records:
+    - Tony Brink | tonybrink1@gmail.com | Current Member (`recQdObCMfycQmRkN`)
+    - Tony  | tony@ettavita.com | blank (`recikvgptZuQkhGXB`)
+- last10 `3022301417` → 2 records:
+    - Michael Hartman | mikehartman84@gmail.com | blank (`recFRZpHVuSsinmny`)
+    - Michael Hartman | michael@mishamashallc.com | Current Member (`receDj18aNJTuY977`)
+- last10 `7882211619` → 2 records:
+    - Kayleigh Graham | kayleigh@lilyengland.com | blank (`recOipQ597wN19eJ1`)
+    - Kayleigh Graham | kayleighangus@gmail.com | Current Member (`recA4PzujaVGGs7Ye`)
+- last10 `3276227201` → 2 records:
+    - Gianmarco  Meli | gm@thesellerprocess.com | New Member (`recYLh4pVut8gLRTu`)
+    - Gianmarco Meli | gm@thesellerprocess.com | blank (`recmutCSK2xzQrLNM`)
+- last10 `7865014666` → 2 records:
+    - Jacobo Hernandez | jacobohernandez47@gmail.com | Current Member (`recUMlQlOskARZfzh`)
+    - Jacobo Hernandez | jacobo@thevestagroupco.com | blank (`recSc4NihwoVgsnsN`)
+- last10 `6262006807` → 2 records:
+    - Sanjay Chandiram | sanjay.acebiz@gmail.com | Current Member (`recVi4W1NqxqCAzI6`)
+    - Sanjay Chandiram | marketing@exkaliber.com | Removed - For Cause (`recfEe59TlXdtjBFF`)
+- last10 `5854397880` → 2 records:
+    - Jay Hunter  | jhunter@maryruthorganics.com | blank (`rechBVRD8Q7vy5X80`)
+    - Jay Hunter | jay@drinksprinter.com | Current Member (`rec6EPKD9nndEKvLA`)
+- last10 `2528078866` → 2 records:
+    - Roman Maksimenko | roman.m@neobrands.io | blank (`recpAUYWvx8mfa1dr`)
+    - Roman Maksimenko | roman.m@romarketinggroup.com | New Member (`rec4E5IJv9puH1gAM`)
+- last10 `7742495027` → 2 records:
+    - Jeremy Abend | jeremy@backbaybrand.com | Current Member (`rec9gT7NKDvwSvG2V`)
+    - Jeremy Abend | jeremy@benderbrands.co | blank (`recwzcTejZhbvCh2G`)
+- last10 `5164396992` → 2 records:
+    - Vanessa Fan | vanessaf@navaglobalpartners.com | New Member (`rec5zp0IM9w2nSVZ8`)
+    - Vanessa Fan | vanessakfan@gmail.com | blank (`recjgWoh7uxX9dOQs`)
+- last10 `9176908205` → 2 records:
+    - Bina  | bina@jederm.com | blank (`reclpiUTsxfgpk54N`)
+    - Bina Feder | federinc@gmail.com | Current Member (`recWSnyEuSu9ubCsy`)
+- last10 `2243429339` → 2 records:
+    - Alexander Kimball | alex@cuddleclubbaby.com | blank (`recifKfRHboTxkvI3`)
+    - Alex Kimball | kimballa@gmail.com | Current Member (`rectqazKC0dm2daFL`)
+- last10 `8583806212` → 2 records:
+    - Brandon Himmel | brandon@ruffliners.com | Current Member (`recqMhOh9VKed9Tsv`)
+    - Brandon Himmel | ? | blank (`recFDQ6BIuWxIyriP`)
+- last10 `5626853314` → 2 records:
+    - William Chau | ? | blank (`recJJnxyAFGAwP0md`)
+    - William Chau | willc@coopsleepgoods.com | Current Member (`recc7ho7dwBFOkQ8M`)
+- last10 `3103449385` → 2 records:
+    - Jeremy Thurswell | jeremy@mykitsch.com | New Member (`recaMu7DywruOTu6L`)
+    - Jeremy Thurswell | jeremy@mykitsch.com | blank (`recfGC5N3nL0Dm0CB`)
+- last10 `2523626299` → 2 records:
+    - Yaron Levite | yaron@nature-anywhere.com | Current Member (`rec4REeb1nTbKtVBA`)
+    - Yaron Levite | yaron@levite.co.il | blank (`recpH13eqm3JwXq5U`)
+- last10 `8622761269` → 2 records:
+    - Keira Yang | yangqiandz@gmail.com | Current Member- Paused (`recXUusSJtEyCkRJi`)
+    - Qi Yang | ? | Dead Lead (`recaAaxASctGxNTlo`)
+- last10 `5104930456` → 2 records:
+    - Sheiva Sajadpour | sajadpour.sheiva@gmail.com | Current Member (`recYo5xDJEqrj2cnk`)
+    - Sheiva Sajadpour | sheiva@epikkproducts.com | blank (`recx7MvIqvojFn8nq`)
+- last10 `5627611523` → 2 records:
+    - Francisco Farina | franky@milliondollarsellers.com | blank (`recwd9foR5DFvSug9`)
+    - Franky Farina | frankyfarina@yahoo.com | Staff (`rec3pq1YeJb4pYdgW`)
+- last10 `9043823487` → 2 records:
+    - Max Abreu | max@allyouneedllc.com | Current Member (`recI5PGUs09bVT6S6`)
+    - Maximiliano Abreu | max@atlasbrands.io | blank (`recMLpJlDfbyQZw47`)
+- last10 `3866792488` → 2 records:
+    - Chapman Root | chapman@swellquality.com | blank (`recUmRdf7VsnAI7Bp`)
+    - Chapman Root | chapman@swellquality.com | Current Member (`recssq0ijs7Z9M0U8`)
+- last10 `8185846686` → 2 records:
+    - Kyle Yamamoto | kmoto11@gmail.com | blank (`recrRpdUzgzBdJ52h`)
+    - Kyle Yamamoto | kmoto11@gmail.com | Current Member (`recjYbLNJQighQdmJ`)
+- last10 `7275038973` → 2 records:
+    - Ashtyn Almstead | nat@cgklinens.com | blank (`recu1Xl4rX1hlfyvL`)
+    - Chris Kjeldsen | chris@cgklinens.com | Current Member (`rec0tJrKQ2ICzX1uG`)
+- last10 `6465540661` → 2 records:
+    - Gary Kane | info@fly-a-flag.com | New Member (`rec4WYcHYmsaJO4Wd`)
+    - Gary B Kane | garybkane@gmail.com | blank (`recRqBg74L5JHnluo`)
+- last10 `8475082279` → 2 records:
+    - Justin  | justin@jbaction.com | blank (`recJmKIzrRk0gZF6p`)
+    - Justin Beck | justin@snappyscripts.com | Current Member (`rec38Qrz2DAgrqp2T`)
+- last10 `5037463730` → 2 records:
+    - Brian Kelsey | brian.iqnatural@gmail.com | blank (`recBcwIZTLhhCuvzt`)
+    - Brian Kelsey | brian.exile@gmail.com | Current Member (`recnLks78xiipdqh5`)
+- last10 `2146736127` → 2 records:
+    - Rich Reister | rich@houndsbay.com | Current Member (`recLtTHGjqLbqS8ra`)
+    - Rich Reister | uptownweb1@gmail.com | blank (`receAXdnwv43aM0Lv`)
+- last10 `7579870978` → 2 records:
+    - Nicholas Shucet | nick@fullcircleagency.com | blank (`recZC0GXpBzem0nH1`)
+    - Nicholas Shucet | nick@fullcircleagency.com | Current Member (`recD52S61ymLXkk5P`)
+- last10 `6304309878` → 2 records:
+    - Ryan Carey | ryan@thegoodlifeltd.com | blank (`reco2pzDizY8QN34J`)
+    - Ryan Carey | jamesrcarey@gmail.com | New Member (`rec1vCLB9TSwsoJ7X`)
+- last10 `3103187326` → 2 records:
+    - Matthew Greene | matt@suitupbrands.com | blank (`recDE4xzj0qj025fp`)
+    - Matthew Greene | matt@happyinnovations.com | Current Member (`recoJO2tysZZJcwFI`)
+- last10 `3129536808` → 2 records:
+    - Alex Mills | alex@gramercykitchen.co | Current Member (`recdCNlsBDsYcq32h`)
+    - Alex Mills | alex@gramercykitchen.co | blank (`recmXDxQNibnIO7gF`)
+- last10 `8182053915` → 2 records:
+    - Julian De Salay | jdesalay@jbofficesolutions.com | blank (`recnIHz8ArPHzey43`)
+    - Julian De Salay | jdesalay@shopjboffice.com | Current Member (`recWxvGGe70S9lSCG`)
+- last10 `4049313032` → 2 records:
+    - Joshua Inglis | jinglis@thephoozy.com | Current Member (`recm0DeYoejt1J1O6`)
+    - Matt Dial | matt@tamedsavage.com | blank (`recThzOikm6jyjm51`)
+- last10 `6199712834` → 2 records:
+    - Ryan Bastuba | ryan@bastuba.com | Current Member (`recEf1Fr2z17xGWF8`)
+    - Ryan Bastuba | ryan@varify.com | blank (`recL6LZWA7o6exLRJ`)
+- last10 `3072201181` → 2 records:
+    - Henrik Fjerdingen | henrikfjerdingen91@gmail.com | blank (`recLqFZBclHrbeVkg`)
+    - Henrik Fjerdingen | henrik@vantamo.com | New Member (`rechB6nXkuuO8qHEr`)
+- last10 `0758346707` → 2 records:
+    - Cristian Robert Faragau | christian@gleefullsupplements.com | Removed - Canceled Membership (`rec2hMc5tWDiyLieh`)
+    - Cristian Faragau | cristian@gleefullsupplements.com | blank (`recjun0HNolaFWcDM`)
+- last10 `7427080878` → 2 records:
+    - Lorna Cruickshank | lorna@luckyegg.co | New Member (`recRr9HFjEv5armCc`)
+    - Mathias Jacobsen | mathias@luckyegg.co | New Member (`recLmbRcvanBK1Ia3`)
+- last10 `7305494555` → 2 records:
+    - Jim Mann | jimmann.email@yahoo.co.uk | Removed - For Cause (`rec2FGDEKXZsdEYMS`)
+    - Jim Mann | jim.mann@thras.io | blank (`recVmuYBVfRg5vS65`)
+
+## C. Junk / typo'd Preferred Phone Numbers
+- `1234567890` — placeholder-like — John Test Barrett | johntest2@cobaltextensions.com | blank (`recAN3iS8nJn3UgI4`)
+- `1234567891` — placeholder-like — JAMIN ARVIG | j@aicommerce.com | blank (`recSrjGNFR55z2NeZ`)
+- `01234556789` — placeholder-like — Christoffer Burman | christoffer@burmanenterprise.com | Current Member (`recXouok5fizNZuOF`)
+- `1234567890` — placeholder-like — John Test Barrett | johntestnew@cobaltextensions.com | blank (`recZznxCLQly7wkyp`)
+- `11111111` — placeholder-like — MDS Test Member | admin@milliondollarsellers.com | blank (`rectwkBWd18fa36ET`)
+- `1111111111` — placeholder-like — Your Mom Strueby | astrueby@gmail.com | blank (`recw9s4suA1oqFPlT`)
+- `-` — too short () — Maksym Lazuto | lazutowork@gmail.com | blank (`rec3f0riTGYxIewgy`)
+- `abc` — too short () — abc abc | abc@abc.com | blank (`recCl4JMQ2yH3mrA2`)
+- `isabela@milliondollarsellers.com` — too short () — Isabela Tarczewski | isabela@milliondollarsellers.com | Removed - For Cause (`recFE8Ix8E2Xnd8gg`)
+- `abc` — too short () — abc abc | eugene@ykuni.com | blank (`recMwG3w67011upT6`)
+- `Clement@cometwarehouse.com` — too short () — Clement Ong | clement@cometwarehouse.com | blank (`recotZVzVhbJ82CLK`)
+- `Test` — too short () — Iliana Panagiotakakou | iliana_panag@hotmail.com | blank (`recqhNFUTesJ14A5J`)
+- `SMS` — too short () — Jane Tan | janetan880826@gmail.com | Declined Applicant (`recyr1Urwke5X3NR0`)
+- `0` — too short (0) — Sofia Tamez | stamez@globalhealing.com | blank (`rec077pootHBidody`)
+- `0` — too short (0) — David Pascht | david@adwaveinc.com | Removed - Canceled Membership (`rec0MOVacRHwEETQQ`)
+- `0` — too short (0) — jonthab smith | info@muhammadtraders.com | blank (`rec0fBsGeSMTe2n1J`)
+- `0` — too short (0) — Nomaan Bashir | nomaan@monteed.com | Removed - Replaced with other Member (`rec13d3eNRy85imjF`)
+- `0` — too short (0) — Josh Walker | jwalker@weprepship.com | blank (`rec1MBdlOHDmCic9J`)
+- `0` — too short (0) — Nathan Hirsch | nathan@ecombalance.com | blank (`rec1rCUkIIjszx6kw`)
+- `0` — too short (0) — Brynne Lindquist | brynne@mds.co | Staff (`rec1wvrhAI50ObANv`)
+- `0` — too short (0) — Gary Sullivan Sullivan | gary@ontel.com | blank (`rec27an6HPdRbRVLH`)
+- `0` — too short (0) — John Fang | john@tworoadsadvisors.com | blank (`rec2B3Pck376PZzip`)
+- `0` — too short (0) — Rodrigo Blanco | rodrigo@selflesscapital.com | Removed - For Cause (`rec2e8NzgY5SrLnix`)
+- `0` — too short (0) — John Li | john@pickfu.com | blank (`rec2rNYFlJHkmM5V7`)
+- `0` — too short (0) — Bohdan Khadiiev | bohdan.khadiiev1@amspilot.net | blank (`rec30xSWGCzzUn6xP`)
+- `0` — too short (0) — Kristin Filippi | kristin@trueops.com | blank (`rec36ouyRYLe6BTm1`)
+- `0` — too short (0) — Karina Mesh | soizgib@yahoo.com | blank (`rec39YJCxlBUErwjk`)
+- `0` — too short (0) — Jenny Lu | jmluu22@gmail.com | blank (`rec3QW66l6g1TkcmX`)
+- `0` — too short (0) —   | gilad@vaaphilippines.com | blank (`rec3X5HGjZ23GVC0n`)
+- `0` — too short (0) — Joanie Xie | rjcapitalwork@gmail.com | blank (`rec4En974YxRRhbPT`)
+- `0` — too short (0) — Zack Leonard | zack@gembah.com | blank (`rec4EwZuE0GlulZwQ`)
+- `0` — too short (0) — Faizan Qureshi  | fqureshi@newyoubrands.com | blank (`rec4OEvEBcd98vgv9`)
+- `0` — too short (0) — Scott McCreight | partnerships@brainjoltmedia.com | blank (`rec4QfYOlITtuAYvo`)
+- `0` — too short (0) —   | alyssa@hoistcapital.com | blank (`rec4RaufSjbdMvPn4`)
+- `0` — too short (0) — Drew Kennedy | drew.kennedy@antgroup.com | blank (`rec4u89dhrm01yqfx`)
+- `0` — too short (0) — Makbul Raj | rajmakbul@gmail.com | Removed - Canceled Membership (`rec5aiCfNOTUaG62x`)
+- `0` — too short (0) — Alfonso Gorena | agmimportsllc@gmail.com | blank (`rec5mBEFlylFGjhe5`)
+- `0` — too short (0) —   | susan@thorn-crest.com | blank (`rec5rWKyi1oQvHr2L`)
+- `0` — too short (0) — Brandon Rudolph | rudolph.brandon22@gmail.com | blank (`rec6C426VbjNCiM0U`)
+- `0` — too short (0) — Lisa Blake | lisa@teamchicexecs.com | blank (`rec6LADvnylyOAdWD`)
+- `0` — too short (0) — Margaret Glavey | mglavey@shipbob.com | blank (`rec6LlfRm6aT6W60H`)
+- `0` — too short (0) — Sharief Abdel-Hadi | sah@lokiga.com | Removed Applicant (`rec6q9aSLrpfknAUZ`)
+- `0` — too short (0) — Quinn Roukema | quinn@glossventures.com | blank (`rec6vVvaB1Wv0MJFC`)
+- `0` — too short (0) — Stephanie Agustin | stephanie.agustin@sheingroup.com | blank (`rec758sj6dQyrVwB6`)
+- `0` — too short (0) — Gennady Belkin | gennady@imaree.com | Current Member (`rec7Odsa6UtFEUM0b`)
+- `0` — too short (0) — Matthew Lee | mkleee@amazon.com | blank (`rec7nwSziwgflc1bw`)
+- `0` — too short (0) — High  | highlevel@gmail.com | blank (`rec7tBeMTBJMXMBsy`)
+- `0` — too short (0) — Chris Murphy | chrismurphy@pearlwestgroup.com | blank (`rec89J9fO4KTpFh0a`)
+- `0` — too short (0) — Nicholas Godwin | nicholas@techcontentlabs.com | blank (`rec89UY6HzYZfQAzs`)
+- `0` — too short (0) — Manish Kumar | ms7617670@gmail.com | blank (`rec8FIr8wcCr06jra`)
+- `0` — too short (0) — Glenn Amberson | glenn.amberson@thetaxvalet.com | blank (`rec9Cijzpx22aK3IN`)
+- `0` — too short (0) — Ashwin Menon | menonash@amazon.com | blank (`rec9QIRz7eDAzZksC`)
+- `0` — too short (0) — Will Ford | will@launchboom.com | blank (`rec9XYXkWWhxhyEiK`)
+- `0` — too short (0) — Hammad Yousaf | hammad.yousaf@oneoffgroup.com | Removed Applicant (`rec9uFs767QxBQSMC`)
+- `0` — too short (0) — Jurgis Plikaitis | jurgis@plikaitis.com | blank (`recA2b1TbEyzUzIX6`)
+- `0` — too short (0) — Nick Grant | nick.grant@adquadrant.com | blank (`recAFhMc9oey4ErIO`)
+- `0` — too short (0) — Xander Putris | xander@amzsessions.com | Current Member (`recAlib10BJHnpDOd`)
+- `0` — too short (0) — Div Shivesh | div@highbeam.co | blank (`recAnC7G9Q38H7P5F`)
+- `0` — too short (0) — Alan Medone Sparrow | alan.medone@designereyes.com | blank (`recB0tmkllnsZYm2r`)
+- `0` — too short (0) — Nick Cosgriff | nick.cosgriff@adadvance.com | blank (`recB151aSoNS6TCzP`)
+- `0` — too short (0) — Steve Kinslow | steve@kapoq.com | blank (`recB2hVMo5oYxFpin`)
+- `0` — too short (0) — Tyler Vanderveer | tylervanderveer1@outlook.com | blank (`recBWL8kdjPIot75y`)
+- `0` — too short (0) — Brandon Duncan | brandon.duncan@stenn.com | blank (`recBbDlQ4JxDUw9pC`)
+- `0` — too short (0) —   | artemby@icloud.com | blank (`recBnPqKbtMyN4m8i`)
+- `0` — too short (0) — Chris McCabe | chris@ecommercechris.com | blank (`recBnjplYkD3ATggJ`)
+- `0` — too short (0) — Caroline Urban | caroline.urban@mbmcommercial.co.uk | blank (`recBoySt24wEe2YHy`)
+- `0` — too short (0) — Rebeca Rosas | rebeca@mds.co | Staff (`recBq3DyZvmGz1jYX`)
+- `0` — too short (0) — Sarah Pink | meetsarahpink@gmail.com | blank (`recCIL17QyXA1fOrG`)
+- `0` — too short (0) —   | test@support.com | blank (`recCJJHRvU0J1YUql`)
+- `0` — too short (0) — David Katz | dkatz@archeraffiliates.com | blank (`recCYO1Mur7agypxP`)
+- `0` — too short (0) — Vismay Mahant | vismay@sellercandy.com | blank (`recCbwSpdFVDOCJr2`)
+- `0` — too short (0) — Vicki Harrell | vicki.harrell@sclogistics.com | blank (`recCdfOwgna2tMiUL`)
+- `0` — too short (0) — Matt  | matt.dreier@gmail.com | blank (`recCnEEWBjP1rPsQr`)
+- `0` — too short (0) — David Amar | david.amar@designereyes.com | blank (`recCo1w5xImTopzQP`)
+- `0` — too short (0) — Daryl Willians | otherbrothersmagic@gmail.com | blank (`recD9v3ClEbOvRJJB`)
+- `0` — too short (0) — SERIGNE OUSMANE SENE | contact.ousmane@proton.me | blank (`recDLMEwc2s5MxdtL`)
+- `0` — too short (0) — Anton Dzikusar | antony@divafam.com | blank (`recDXckYDZ5bl4nc1`)
+- `0` — too short (0) — Tina Jereza | tina@mds.co | Staff (`recDg6LL2PWL85l4A`)
+- `0` — too short (0) — Jason Ruiz | jason.r@amztailored.com | blank (`recDjEdXIDB0c9ylp`)
+- `0` — too short (0) — Yosef Parry  | yossi@jpwarehousing.com | blank (`recE9fnJtalVCNMxs`)
+- `0` — too short (0) — Kinley Shotts | kinley.shotts@cin7.com | blank (`recEBb3cjRL9MXye0`)
+- `0` — too short (0) — Eva Tang | eva@oceansxyz.com | blank (`recELRGMIFztGcRSm`)
+- `0` — too short (0) —   | oz@brandvised.com | blank (`recEQy57PR9DXTtKN`)
+- `0` — too short (0) —   | mels@intellivy.net | blank (`recEViaFJb1siQbWZ`)
+- `0` — too short (0) —   | yael@fortunet.net | blank (`recFJYBt3Rv92qvEi`)
+- `0` — too short (0) — Izabella Ritz | bella@ritzarm.com | blank (`recFOJfijJbjqwEPJ`)
+- `0` — too short (0) — Steven pan | steven@workglovesdepot.com | blank (`recFbx3sXoGh8AReP`)
+- `0` — too short (0) —   | george@clearads.co | blank (`recFtMf0t3wcoYwmG`)
+- `0` — too short (0) — Tiffany Nicholson | tiffany@therainmakerfamily.com | blank (`recG7gQsjT9JVdonc`)
+- `0` — too short (0) —   | pj@majority.co.uk | blank (`recGX4w6PTDlBEARb`)
+- `0` — too short (0) — Brian Wilkinson | wilkinson845@gmail.com | blank (`recGjaEbUfcDSfjCq`)
+- `0` — too short (0) —   | maxime@bms-inter.com | blank (`recH1YMr5lugxLx5I`)
+- `0` — too short (0) — Moran Saloner | morans@unicargo.com | blank (`recHC1CAewhGTp00G`)
+- `0` — too short (0) — Curt Williams | curtw@lintonusa.com | blank (`recHEqwJWMzp2DKZ3`)
+- `0` — too short (0) —   | nater@d8adriven.com | blank (`recI12G7WiM55e9w7`)
+- `0` — too short (0) —   | zhuc1230@gmail.com | blank (`recIF746RX3RwLSog`)
+- `0` — too short (0) —   | tarik@m19.com | blank (`recIFzo5NUIba1tGA`)
+- `0` — too short (0) — Samuel Prentice | nick@sinlesssnacks.com | blank (`recIGsGoXdqgbGnIE`)
+- `0` — too short (0) — Srikant  | srikant.jha@tjc.co.uk | blank (`recISLcVOseuhJLbq`)
+- `0` — too short (0) — Jeff Lowenstein | jeff@freetogrowcfo.com | blank (`recISQPwjT698ZBdh`)
+- `0` — too short (0) — Michael Radziszewski | michaelradz@smartscout.com | blank (`recISs89GYxPpsD8T`)
+- `0` — too short (0) — Anika Sands | anika.sands@xmars.com | blank (`recJfoujLTcuiLbSV`)
+- `0` — too short (0) — Daniel  Del Carlo | daniel@sellico.com | blank (`recKCQl0TEuUI7ctT`)
+- `0` — too short (0) — Mahdi Mahil | mahdi@socialsnowball.io | blank (`recKEtsIRSjJYhq0q`)
+- `0` — too short (0) — Efraim Green | esgbrands@gmail.com | blank (`recKG2IFcrczAYHKO`)
+- `0` — too short (0) — Sabine Lastname | sabine@intellivy.net | blank (`recKUocPKOlmikL7e`)
+- `0` — too short (0) —   | lesley@riverbendconsulting.com | blank (`recKaa61LRdjY8BEl`)
+- `0` — too short (0) — Michael Marone | michael.marone@tiktok.com | blank (`recLA8BIFp86JnGAR`)
+- `0` — too short (0) — Lauryn Snelson | lauryn.s@zipify.com | blank (`recLam95Fh8FTMYGq`)
+- `0` — too short (0) — Shane Herzig | broker9@hotmail.com | blank (`recLdUfbeFeCo7pV3`)
+- `0` — too short (0) — Jeff Zhang | jeffreyzhang@pearlwestgroup.com | blank (`recLoM1WfMbMRV6Q7`)
+- `0` — too short (0) — Aimy Steadman | aimy@beatboxbeverages.com | blank (`recLr1qjGNtrH0E12`)
+- `0` — too short (0) —   | lukelxy81@gmail.com | blank (`recMOwka4ikpLzYjD`)
+- `0` — too short (0) — Katie Foos | kfoos@pexcard.com | blank (`recMYMChoIB8DdrEv`)
+- `0` — too short (0) — James Edwards | james@edwardsonline.ca | Current Member (`recMeUkK4x71cQTgD`)
+- `0` — too short (0) — Andy mds | andy@milliondollarsellers.com | blank (`recMocKvJHoWuteHv`)
+- `0` — too short (0) — Andri Sadlak | andri@productpinion.com | blank (`recMwrZ5m3ceZzfO7`)
+- `0` — too short (0) — Bernie Thompson | bernie@plugable.com | blank (`recN0BouwZsGAryll`)
+- `0` — too short (0) — Karlo Nazarian | info@zipnbear.com | blank (`recNBiTZjBrjdu9jH`)
+- `0` — too short (0) — Matt Kostan | matt@productpinion.com | blank (`recNJmalMiiPR5GNX`)
+- `0` — too short (0) — Jamie Paros | jamie@skudrop.com | blank (`recNMv1tHsHUQFwr2`)
+- `0` — too short (0) — Nathan Hirsch | nathan@trioseo.com | blank (`recNNwiXfUxcsclpt`)
+- `0` — too short (0) — Jesse Stock | jesse@shippingbros.com | blank (`recNZDklMw6nkKkiF`)
+- `0` — too short (0) — Andy Petani | andy@petani-logistics.com | blank (`recNawf1ggwgHsnpO`)
+- `0` — too short (0) — Mike Hale | mike.hale@sage.com | blank (`recNdRrWRXKWBs38r`)
+- `0` — too short (0) —   | alejandro@goyaba.co | blank (`recORUY5Rwa56BDeJ`)
+- `0` — too short (0) — Alex Paxton | alex@ruffliners.com | blank (`recOyfSTPU5KA1XNv`)
+- `0` — too short (0) — Ari Blech | ari@conative.ai | blank (`recP3Bo7uMkcvyqMB`)
+- `0` — too short (0) — William McMacken | will@baller.me | blank (`recP66UAw1l2IEb9X`)
+- `0` — too short (0) — Charles Shatteroe | shatteroe@gmail.com | blank (`recP8OMkm7SZGAGj0`)
+- `0` — too short (0) — Troy Graham | tgraham@descartes.com | blank (`recPlxK24ajyCm02q`)
+- `0` — too short (0) — Simrita Dhillon | simrita@sanda.co | blank (`recPmNp8tQloq6FjF`)
+- `0` — too short (0) — Jisun Rhee | tidanuchjisun@gmail.com | blank (`recQFgcj6285n3NIh`)
+- `0` — too short (0) — Rob Torti | rob@yaydu.com | blank (`recQePE6u6NzE5YsA`)
+- `0` — too short (0) —   | justin@carbon6.io | blank (`recQpRUh9SuGqaZC0`)
+- `0` — too short (0) — Jesse Sells | jesse@milliondollarsellers.com | Staff (`recQsU0holfhFPRjn`)
+- `0` — too short (0) —   | mike@assureful.com | blank (`recR0FJr9QGQTC6uj`)
+- `0` — too short (0) — Nick Yebra | nick.yebra@tiktok.com | blank (`recR4BNANVCUBYknG`)
+- `0` — too short (0) — Samantha White | smw5582@gmail.com | blank (`recRqeDaRWjP57Tc9`)
+- `0` — too short (0) — Joshua Perry | joshperry234@gmail.com | Removed - Canceled Membership (`recRvIq08nO1mdXyT`)
+- `0` — too short (0) — Lisa Devashrayee-Oaks | lisa.devashrayeeoaks@pattern.com | blank (`recS29GzMiajWLp2e`)
+- `0` — too short (0) — Vince Wang | vwang626@gmail.com | blank (`recScIROEK0QiUDKp`)
+- `0` — too short (0) — Jenna Monnoleto | jenna@vimbly.com | blank (`recSnCC86Tln3X0ws`)
+- `0` — too short (0) — Giovanni Armonies-Assalone | giovanni@shopcardly.com | Removed - Canceled Membership (`recSnnnMugPd7yURK`)
+- `0` — too short (0) — William Cooper | will@revup.technology | blank (`recTB7KRB9bjZVZNZ`)
+- `0` — too short (0) — Dovi Minzer | dov@medpart.com | blank (`recTIUOXS2HSQAdA0`)
+- `0` — too short (0) — Mahima Kanda | mahima@dobbyads.com | blank (`recTetRgvJVNGxkRp`)
+- `0` — too short (0) — Michelle Barnum | michelle@ttshopsellers.com | blank (`recUSlpLeQEl4W4DF`)
+- `0` — too short (0) — Olivia Holovina | olivia@sellerboard.com | blank (`recUW7cqM6maGYbnk`)
+- `0` — too short (0) — Mason Depoy | masondepoy4444@gmail.com | blank (`recUagkzQsMyDM4lO`)
+- `0` — too short (0) — Dimitri  | support@jungleace.com | blank (`recUcupHEepwiDZ8c`)
+- `0` — too short (0) — Kayvon Nazarian | kayvon@zonprep.com | blank (`recUylIhaZkyFRXw1`)
+- `0` — too short (0) — Justin Willhite | jdubb@consumerquest.online | blank (`recW0RKASpsqIcum6`)
+- `0` — too short (0) — Dan Balda | dan@onlinebrandgrowth.com | blank (`recW7bFjaD8KsTeT0`)
+- `0` — too short (0) — Rob Emig | remig@rejuvica.com | blank (`recWRDhdQCuIn1dRo`)
+- `0` — too short (0) —   | yeungj1@yahoo.com | blank (`recWkmtXd4EmaoP51`)
+- `0` — too short (0) — Zach Rego | zachrego@triplewhale.com | blank (`recXC9p98l5I9zBcL`)
+- `0` — too short (0) — Darryl Davis | info@mymerchpros.com | blank (`recXMAJWBz4Suoqh8`)
+- `0` — too short (0) — Lydia Hoganson | admin@rejuvica.com | blank (`recXi7xSfsQ333fVS`)
+- `0` — too short (0) — Sashani Piyasena | sashani@milliondollarsellers.com | blank (`recXml3M2TtHSxlNR`)
+- `0` — too short (0) —   | sales@forceget.com | blank (`recYAHTbwOPg5Koi3`)
+- `0` — too short (0) —   | kevinm@bravadoholdings.com | blank (`recYEjQn1kJbZeNn5`)
+- `0` — too short (0) — Nathan Lind | nate@natelind.com | blank (`recZ4QvBRZOtycIjR`)
+- `0` — too short (0) — Sashani Piyasena | assistant.iansells@gmail.com | Staff (`recZ5XX9ClOmRWEts`)
+- `0` — too short (0) —   | yonim@getida.com | blank (`recZJjm4LnrBu0RY1`)
+- `0` — too short (0) — Jacob McQuoid | jacob@bluepeakconsulting.co.uk | blank (`recZU9cXUfg3qXCUk`)
+- `0` — too short (0) — Jenny Lee | jeng0304@hotmail.com | Current Member (`recZZEx3ZXFgbr4OC`)
+- `0` — too short (0) — Pasha Knish | pasha@amzoptimized.com | blank (`recaW9MuoGqZ0IzAT`)
+- `0` — too short (0) — Dafne Michan Reyes | dafne@milliondollarsellers.com | Dead Lead (`recaYdWCxWwCMKT2r`)
+- `0` — too short (0) — Hagatha Roisman | hagatha@11brands.com | blank (`recaky2KT3q30eiE5`)
+- `0` — too short (0) — Evan Lefebure | evan.w.lefebure@gmail.com | blank (`recavX63EqJsdJCSn`)
+- `0` — too short (0) — MIN KIM | min@orovo.com | Removed - Canceled Membership (`recazYGbHneSiBoLP`)
+- `0` — too short (0) — Fiona Sahakian | fsahaki@gmail.com | Current Member (`recb613YO74v9Wggi`)
+- `0` — too short (0) — Arnold Shields | ashields@dolmanbateman.com.au | blank (`recbVurdrVQ1qt31p`)
+- `0` — too short (0) — Haris Shahbaz | xmrsenior@gmail.com | Declined Applicant (`recbeVx1DUkigdOvY`)
+- `0` — too short (0) — Elaf Deyab | elaf@caspa.ai | blank (`recbkmuXb4MvnprHo`)
+- `0` — too short (0) — Carson McCallum | carson@broq.life | blank (`recd2dLVkKBBpwRzR`)
+- `0` — too short (0) — Jake Fisch | jake@danvillebrands.com | Removed - Canceled Membership (`recdXGwb2ARC65Qwa`)
+- `0` — too short (0) — Ryan  | rbegs20@yahoo.com | blank (`recdZXf58ezAQVzQ3`)
+- `0` — too short (0) — Zukhra Iakupbaeva | customercare@herbamama.com | blank (`recdZYQo4nxpkxRux`)
+- `0` — too short (0) — Peter Van der Westhuizen | peter.vanderwesthuizen@linnworks.com | blank (`recdyKfEfChjRQnfz`)
+- `0` — too short (0) — Tom Rohlf | tom@cuddleclubbaby.com | blank (`recefSISpWam9JXzp`)
+- `0` — too short (0) — Kevin Tao | kevin@neueve.com | blank (`recejbaEMi0DkCdKE`)
+- `0` — too short (0) — Gul Erdogan | gul@megagear.com | blank (`recek64mkTkxpjaqr`)
+- `0` — too short (0) — Tom Beaulieu | tom@hudsongreensolutions.com | blank (`recewVIovWD1Uw16w`)
+- `0` — too short (0) — Chad Klansnic | chad.klansnic@pingpongx.us | blank (`recf3Ir13nuqCgJPR`)
+- `0` — too short (0) — Ethan Alexander | ethan@quietlight.com | blank (`recfGCTK4qA4MgEuu`)
+- `0` — too short (0) — Jacqueline Schorr | jacqueline.schorr@navage.com | blank (`recfd0MThXzzqcD85`)
+- `0` — too short (0) — Mani Duggal | hello@zonkeepers.com.au | blank (`recfjxBzvtHE9Ezrg`)
+- `0` — too short (0) — Gary Macdonough | gary@sohl-id.com | blank (`recgAlqJa6eskedjp`)
+- `0` — too short (0) — Roy De La Espriella | roy@dlelegal.com | blank (`recgZuUoly7qIuZaX`)
+- `0` — too short (0) — Sam McKee | seebee@gmail.com | blank (`recgdPhgPHXn3sWTJ`)
+- `0` — too short (0) — Naveen Chaudhry | naveen@urtasker.com | blank (`rech5UpPKlfUCgYUb`)
+- `0` — too short (0) — Joanna Suraci | joanna.suraci@rithum.com | blank (`rechEGpSOm109KHo5`)
+- `0` — too short (0) — Liz Downing | liz@theecomcooperative.com | blank (`rechPBQiTxQgRpsIw`)
+- `0` — too short (0) — Michael Atagi | michaelatagi@pearlwestgroup.com | blank (`rechT3r55Eocd6Z5y`)
+- `0` — too short (0) — Mark Botha | mark.botha@sellervue.com | blank (`rechZ4mLXK052LmxN`)
+- `0` — too short (0) — David McMorrine | david.mcmorrine@tiktok.com | blank (`rechpL6Jclv8AbfBJ`)
+- `0` — too short (0) — Alex Kent | alex.kent@stord.com | blank (`rechzOIIEBxSkRv8C`)
+- `0` — too short (0) — Mike Itzkovitz | mike@divinederriere.com | blank (`reciRjjnk9XdLldGP`)
+- `0` — too short (0) — Lavender Xu | lavender.xu@temu.com | blank (`recjQkHTbR5z2g5qm`)
+- `0` — too short (0) — Abe Chomali | acc@xpstrategy.com | blank (`recjozcRYMhMnFLuD`)
+- `0` — too short (0) —   | dave@underdoggames.com | blank (`recjsuGTh2qfOcOre`)
+- `0` — too short (0) — Daniel Stafford | dan@shopanova.com | Removed Applicant (`reckXEltW7PkddvM9`)
+- `0` — too short (0) — Rui Zhang | rui@fastmoss.net | blank (`reckxlGmiwUTVBXpZ`)
+- `0` — too short (0) — Rolando Galeana | rgaleana@junglescout.com | blank (`reckzeSb7bHUwdoyW`)
+- `0` — too short (0) — Rich Goldstein | goldstein@goldsteinpc.com | blank (`recl3K84EVdt2T6BM`)
+- `0` — too short (0) — Marcel  | marcel@intellirank.info | blank (`recl7HmkRzxvp0u3a`)
+- `0` — too short (0) — Douglas Hwang | douglas.hwang@harrys.com | blank (`reclCEOfSv91AMXQE`)
+- `0` — too short (0) — Igor Mezhynskyi | likofit0591@gmail.com | blank (`reclItjHC3AqZF38Z`)
+- `0` — too short (0) — Scott Henshaw | scott.henshaw@groagroup.com | blank (`reclJ8eJIRKwOvbP9`)
+- `0` — too short (0) — Jeremy Ding | jeremy@euka.ai | blank (`reclJRdSY2KR9rVfP`)
+- `0` — too short (0) — Fahad Khan | fkhan@portal.ai | blank (`reclKNIbRhum40eaz`)
+- `0` — too short (0) — Peter Marlenga | petermarlenga@gmail.com | blank (`reclXtyqaQNU0i89o`)
+- `0` — too short (0) — Richie Carreon | richie@levanta.io | blank (`reclx91CJu7h9ZVyo`)
+- `0` — too short (0) — Ivan Sukhenko | ivan@paperstack.ai | blank (`recm2OyA7CqXs3jgH`)
+- `0` — too short (0) — Octavio Urzua | ourzua@osoji.com | blank (`recmO9zJiQgANH7SI`)
+- `0` — too short (0) — Timoté Chanut | tim@youngwithsolutions.com | blank (`recmUa6Cv5OwpItLH`)
+- `0` — too short (0) — Andrey test 4 with emails Verdy test 4 with emails | appsupport@milliondollarsellers.com | blank (`recmeDei2u8u9ubSl`)
+- `0` — too short (0) — Tina Gervais | tina@listingstudios.com | blank (`recmoQizwS5DNSpMG`)
+- `0` — too short (0) — John Castillo | northbreachproducts@hotmail.com | blank (`recmyf8u5O8r1Wyv4`)
+- `0` — too short (0) — Sajag Agarwal | sajag@movley.com | blank (`recnXAYl8Yj6cGG9M`)
+- `0` — too short (0) — Chirag Singla | mudit.mdsinc@gmail.com | blank (`recnZgt8J4LAWxWCp`)
+- `0` — too short (0) — Mike Pereira | mike@ctcemail.com | Removed - Canceled Membership (`recncoz9hIVS87L60`)
+- `0` — too short (0) — Muhammad Asif Imran | asifansariasifansari686@gmail.com | blank (`recnlg9RT7gxS5gIG`)
+- `0` — too short (0) — Clémentine Biard | clementine@mailsoar.com | blank (`reco4G2MsMZ8aDTBT`)
+- `0` — too short (0) — Mitesh Halani | mitesh@chilinkmassagechair.com.au | Removed - Canceled Membership (`reco8Y9LfUa9JyTmW`)
+- `0` — too short (0) — Robert Peck | robert@theaquavault.com | blank (`recoCS138VOWjtUzg`)
+- `0` — too short (0) — Jacob Kotch | jake@accrueme.com | blank (`recoD5JLVQDEIj3pf`)
+- `0` — too short (0) — Brandon Ferris | brandon@alternativeinventorysolutions.com | blank (`recoP52PpjQp9uxSj`)
+- `0` — too short (0) — Nathan Hirsch | nathan@outsourceschool.com | blank (`recoaotErJJOlJByS`)
+- `0` — too short (0) — Adam Ackerman | adam@mypuritylabs.com | Current Member (`recobIqvOHpdShwNy`)
+- `0` — too short (0) —   | chefgabrielclaycamp@gmail.com | blank (`recojZzTi8uASaRxo`)
+- `0` — too short (0) — Andy Lam | andy@baitium.com | blank (`recp0TYDPKh4LbaaM`)
+- `0` — too short (0) — Michael Page | michael@tradeboost.ca | blank (`recpHy5fTxPg5qK4e`)
+- `0` — too short (0) — Fraser Smeaton | fraser@morphsuits.co.uk | blank (`recpTB3mn5Q952OmA`)
+- `0` — too short (0) — Nate Tremblay | ntremblay@pexcard.com | blank (`recpxxZ6HND85BeFN`)
+- `0` — too short (0) — Bryce Keffeler | bryce@dewwealth.com | blank (`recqA4vQI8m9QVS3A`)
+- `0` — too short (0) — Hari Kothari | bd-team@doola.com | blank (`recqXebIXFfF0VJIx`)
+- `0` — too short (0) —   | jainmuditca@gmail.com | blank (`recqZNTCQmr8caaLA`)
+- `0` — too short (0) — Joshua Lazarus | joshual@marosavat.com | blank (`recraiEMTuYYZ2Plp`)
+- `0` — too short (0) —   | lenny@mmxdist.com | blank (`recrnu3Q2FyNTUIOt`)
+- `0` — too short (0) — Henry Barton | henry@weareuncapped.com | blank (`recrraLIFV1ycGOnU`)
+- `0` — too short (0) — Lisa Perlmutter | lisa.perlmutter@coastalpay.com | blank (`recsB0luxnSuP0VaK`)
+- `0` — too short (0) — Caleb Light | caleb@powerpractical.com | Removed - For Cause (`recsEQJvu6EzQ7C8M`)
+- `0` — too short (0) —   | kendra@braceability.com | blank (`recsHjpAbuQyoma05`)
+- `0` — too short (0) — Grace Ng | gng@mantaro.ca | blank (`recsL62HwmTF1yCh5`)
+- `0` — too short (0) — Elif Demir | elifdemir@forceget.com | blank (`recsNxsbnB6XxLgHz`)
+- `0` — too short (0) — CameroN Kikuchi | ckikuchi@rejuvica.com | blank (`recsZG4cyCoKLQiWg`)
+- `0` — too short (0) — JoMarie  | jomarie@onepageinventory.com | blank (`recslLPhAAsMl6BD6`)
+- `0` — too short (0) — Alice Ko | alice@reframedcoaching.com | blank (`recslgLlzOxoJ3uwC`)
+- `0` — too short (0) — Michael York | suprfast451@gmail.com | blank (`recssl9DVC4u0QGOx`)
+- `0` — too short (0) — EMF Harmony | service@emf-harmony.com | blank (`recsvILch6XcGm8Nz`)
+- `0` — too short (0) — Emmett Kilduff | emmett.kilduff@thefortiagroup.com | blank (`rectPFmp3LeQcjonn`)
+- `0` — too short (0) — Adam Aresenault | adam@tradeboost.ca | blank (`rectWt5hbdUINdwYg`)
+- `0` — too short (0) — Alex  | alexcastillos@msn.com | blank (`rectyRdCxn5yc5lUo`)
+- `0` — too short (0) — Maria Katrina Ibo | kat@n | Staff (`recu0AUUXTT8zaBzm`)
+- `0` — too short (0) — Kagan Adair | kagan.adair@profitcyclops.com | blank (`recu2eYbFEiE4f5lc`)
+- `0` — too short (0) — Sean Hanvey | sean.hanvey@wayflyer.com | blank (`recu59bH1mZLKpFSm`)
+- `0` — too short (0) — Susan Hess | susan@golftiniwear.com | blank (`recuK876mn0uT8jK3`)
+- `0` — too short (0) — Kyle Armstrong | armstrongkm@gmail.com | blank (`recuVQU6TfEQPmL3R`)
+- `0` — too short (0) — JJ Abbott | jabbott@premierecreative.com | blank (`recuXkHnhBnSjyZT8`)
+- `0` — too short (0) — kATHERINE Poji | katherinepoji@gmail.com | blank (`recuhvjxnJkA4fQBI`)
+- `0` — too short (0) — Shane Eddison | shaneeddison@gmail.com | Removed - For Cause (`recujZCV5iUq3hxZe`)
+- `0` — too short (0) — Vlad Ciocan | ciocanvld@gmail.com | Removed - Canceled Membership (`recvIlm1BagdVq0jP`)
+- `0` — too short (0) — Jerod McBrayer | jerod@entegy.com.au | blank (`recvXqR1QxhAyHoJP`)
+- `0` — too short (0) — Harel Levy | harelevy1@gmail.com | Removed - Canceled Membership (`recvrZkaD3LLOh7mO`)
+- `0` — too short (0) — Róbert Máté | robert.mate@taxually.com | blank (`recwETnWYzynql8pI`)
+- `0` — too short (0) — Krista Becker | krista.becker@aicommerce.com | blank (`recwJk9dlNfDZ8ezv`)
+- `0` — too short (0) — Emery Robbins | emery@btrmedia.com | blank (`recx6SzCzX6DTp2AF`)
+- `0` — too short (0) — Rishi Manda | rishi@do-or-drink.com | blank (`recxBMyfjvjRbZFE3`)
+- `0` — too short (0) — Kristen  | kristenmaggs@gmail.com | blank (`recxMM856v5FejjSt`)
+- `0` — too short (0) — Argin Gerigorian | gary@shipdepot.com | blank (`recxVOI1RwHsmYkXQ`)
+- `0` — too short (0) — Zach Sperling | zach@ewbasics.com | blank (`recy6HVgoAIYIGLBm`)
+- `0` — too short (0) — Michael Lebhar | michael@sellcord.co | blank (`recy8VilJHnqxNUmr`)
+- `0` — too short (0) — Chuck Brown | chuckbrown@gmail.com | blank (`recyCEm8c36Oienry`)
+- `0` — too short (0) — Abe Wertzberger | abe@nineyard.com | blank (`recyTxqb9BZ5Djgmh`)
+- `0` — too short (0) — Tracie Kambies | tracie@smartbrandslaboratory.com | blank (`recydvOA1elQ92eyL`)
+- `0` — too short (0) — Jaisal Jivanji | jjivanji@amazon.com | blank (`recygJuiivh8gX0M1`)
+- `0` — too short (0) — Sefa Ozkan | sefatalhaozkan@gmail.com | blank (`recyi8yPfy532CwFV`)
+- `0` — too short (0) — Patrick Lavin | patrick@versamarketinginc.com | blank (`recyk1XZMe6K4QqHH`)
+- `0` — too short (0) — David Schenkler | david.schenkler@betterrefunds.com | blank (`reczA6PD92xcdwxjx`)
+- `0` — too short (0) — Jeko Kolev | jeko@nextoria.com | blank (`reczJdX0MaNLKg6MF`)
+- `0` — too short (0) — Giang Nguyen | nguyentkgiang@gmail.com | blank (`reczU15etPZ58WeiQ`)
+- `123` — too short (123) — Errol Tiozon | erroltiozon+7@gmail.com | blank (`rec4zQHfC2NymiO3r`)
+- `123` — too short (123) — Errol Tiozon | erroltiozon+1@gmail.com | blank (`recfgF3lFXJxWScs5`)
+
+## D. Duplicate emails in Members DB (same email on 2+ records) — top 40 by count
+- **dominique@milliondollarsellers.com** — 2 records: blank(`rec0N4IsABXteFPxH`), Removed - For Cause(`recg6inZBmeOl6VtJ`)
+- **spx2000@gmail.com** — 2 records: blank(`rec0PlU3Gptmlvtaf`), blank(`rec96NydeesBNiAJO`)
+- **fernanda@mds.co** — 2 records: blank(`rec61A6vH38k3eAGD`), Staff(`recjHJURwcDyYpOBR`)
+- **eugene@mds.co** — 2 records: blank(`rec8JRXh66EOZ2835`), Staff(`recvSgAirIbbo9Ylb`)
+- **amy@hopeloveshine.com** — 2 records: blank(`rec8Zmww5jge0Nwyk`), Current Member- Not Renewing(`rech3nxlOff9VFLaN`)
+- **successgrows@gmail.com** — 2 records: Removed - For Cause(`rec9PqsYIZjouzAW4`), Removed - Replaced with other Member(`recgQ2EzvCu25kZ8i`)
+- **christina.yrng@gmail.com** — 2 records: blank(`recAdqejlI9x4rCFv`), blank(`reciemeHTZR7gbNB7`)
+- **rebeca@mds.co** — 2 records: Staff(`recBq3DyZvmGz1jYX`), blank(`recD4tufTBoEooAHd`)
+- **matt.dreier@gmail.com** — 2 records: blank(`recCnEEWBjP1rPsQr`), Current Member(`recLLr1jalzRaxC4s`)
+- **leshammcmanus@dayrep.com** — 2 records: blank(`recD3kPypZAK2x5Xq`), blank(`recy9lzOPWbLJsHjt`)
+- **nick@fullcircleagency.com** — 2 records: Current Member(`recD52S61ymLXkk5P`), blank(`recZC0GXpBzem0nH1`)
+- **travis@parcilsafety.com** — 2 records: blank(`recFYcnAsHAYb2o2T`), Current Member(`reckgaSyfwTzsYOfv`)
+- **gopalkolli@gmail.com** — 2 records: Removed - For Cause(`recFiSBYXF4vGCP1k`), Removed - Canceled Membership(`receAeTcZ5GakFofa`)
+- **jarellano@pacificcoastformulations.com** — 2 records: Current Member(`recGzRAZgNec6arSf`), blank(`recc8lnGM2uLOPBcg`)
+- **michael@kissmyketo.com** — 2 records: Removed - For Cause(`recHAZ7nYTZq3X2j6`), blank(`recOyXtKCQeaJuUHn`)
+- **joe@soundasleepproducts.com** — 2 records: New Member(`recHDxopn964tMmKf`), blank(`recOjYGtt8i0GEp82`)
+- **michelle@mimikai.com** — 2 records: blank(`recHiIaguAqIhrzIL`), blank(`reckojc3v4JWwDI0Z`)
+- **sam@medpart.com** — 2 records: blank(`recK2d5haX60rPy8W`), blank(`recqTIKUM93SAVxuy`)
+- **jason@ventureoutland.com** — 2 records: blank(`recKD3I2ysNYs0Lv1`), blank(`recp9y7x4r3DZUpN7`)
+- **arapp@shopjboffice.com** — 2 records: Removed - Replaced with other Member(`recKQJx9lCwt9nLuL`), blank(`recPr7c4XEpAsCyhi`)
+- **james@turnkeyhealthandbeauty.com** — 2 records: blank(`recL9zMArraa2vAXs`), blank(`recwsL2uuidYZlQGq`)
+- **stephanie@mimikai.com** — 2 records: blank(`recLSK8LsTvG6KUy1`), blank(`recRd4qym3YZNxf7W`)
+- **rich@houndsbay.com** — 2 records: Current Member(`recLtTHGjqLbqS8ra`), blank(`recdRp7TiJaSZu68J`)
+- **lisa@maisonovo.com** — 2 records: blank(`recN2woa7pwjHtQCE`), Removed - Canceled Membership(`recz6cZwoq4E3VH2y`)
+- **tj.magno@viral-launch.com** — 2 records: blank(`recNQMR2GrNFW4V8p`), blank(`recn0Q99RP6kaeE4v`)
+- **chapman@swellquality.com** — 2 records: blank(`recUmRdf7VsnAI7Bp`), Current Member(`recssq0ijs7Z9M0U8`)
+- **swasti.jain@maspartner.com** — 2 records: blank(`recY2n7nUKQbvpjl3`), blank(`recaVZUfKDw8qhXcW`)
+- **gm@thesellerprocess.com** — 2 records: New Member(`recYLh4pVut8gLRTu`), blank(`recmutCSK2xzQrLNM`)
+- **sajadpour.sheiva@gmail.com** — 2 records: Current Member(`recYo5xDJEqrj2cnk`), blank(`recjFFku9QEeLyxUr`)
+- **alexm@threesixty6.com** — 2 records: Removed - Canceled Membership(`recaD21LzzRitOWG7`), blank(`recx3Q9tDAlyCGOgq`)
+- **jeremy@mykitsch.com** — 2 records: New Member(`recaMu7DywruOTu6L`), blank(`recfGC5N3nL0Dm0CB`)
+- **alex@gramercykitchen.co** — 2 records: Current Member(`recdCNlsBDsYcq32h`), blank(`recmXDxQNibnIO7gF`)
+- **brian@mds.co** — 2 records: Staff(`recdVq4bFsXFkNsYn`), blank(`recyLNZj3CSTTRJ2i`)
+- **iamahmedmiri@gmail.com** — 2 records: blank(`recfZlhjzyKRSV2z9`), blank(`recqnDdEM8AolMGcR`)
+- **mouz@tmegroup.io** — 2 records: blank(`rechzbkIpEdgd2Xsn`), blank(`recsVqVycnqrVwC3m`)
+- **kmoto11@gmail.com** — 2 records: Current Member(`recjYbLNJQighQdmJ`), blank(`recrRpdUzgzBdJ52h`)
+- **info@milktoastbrands.com** — 2 records: blank(`recoPW7COglkB6ohI`), New Member(`recqZkDSW91fJ2qMP`)
+- **suprfast451@gmail.com** — 2 records: blank(`recssl9DVC4u0QGOx`), Current Member(`recwCZea3n9VPhfkl`)
+- **eugenekhayman@gmail.com** — 2 records: blank(`recwRcIhSSD6ozGYW`), blank(`recyEOIePUULV1crI`)
+
+_(total duplicate-email groups: 39)_
+
+## E. Caps / formatting names (active members)
+- `WILL MCDONALD` (`recCp0UwWa3FHkgtI`)
+- `Deepak MEHROTRA` (`recCuyIq6HB4crsSH`)
+- `Adam (AJ) Losey` (`recEAFohBwaddUEKQ`)
+- `Benjamin SAVREUX` (`recKfwUVgo0ADfBzQ`)
+- `KEVAN SOH` (`recKkm6L9pDkqpKS2`)
+- `TENG MA` (`recgmm90TDV66dijS`)
+- `HAFIZ IMRAN HAMEED` (`reco4FSsGiJwSFwpv`)

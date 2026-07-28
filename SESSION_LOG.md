@@ -1,6 +1,223 @@
+> 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
+
 # Session Log
 
 Project source of truth: **ClickUp doc "MDS Member Scorecard"** (`2531q-100317`, Tech space). Technical audit: `SCORECARD_AUDIT.md`.
+
+---
+
+## 2026-07-28 (PM) — Olivia: daily review, backlog rebuilt as stories, S1 #1 partly + #2 DONE
+
+**Daily review (priority 1).** Read all 112 real member questions from the first 36h of beta
+(`OLIVIA_DAILY_REVIEW_2026-07-28.md`). Correction that mattered: 91 of the 112 came from **staff**
+(Franky Farina 85, Eugene 6) - only 21 from 4 real members. Of the 11 wave-1 invitees, **3 have used it**
+(Jason Green, Morris Sued, Ivan Ong, all 07-28); 16 people total have ever messaged her.
+Reactions are useless as signal: 1 in 4 days.
+
+**Backlog rebuilt** (`OLIVIA_BACKLOG.md`): 219 raw items swept from every Olivia doc + the live queue,
+deduped to 20 stories, prioritised S1-S4 by Andy, smallest-first inside each group, each with
+effort (= dependencies + unknowns) and impact. Andy's framing corrections, all of which stuck:
+**no topic lists** - tax is legitimate content, tariffs are political, crypto is a member question;
+the discriminator is never the subject, it is whether a claim is hers or a source's. Four separate
+tickets collapsed into one contract (#1).
+
+**Shipped and verified live**
+- **#1 (partial)** SENSITIVE MATTERS style rule + person-scoped keyword floor above the greeting/help
+  bypass. "Did he kill his wife?" now returns the sourced pointer, no verdict. Sellico keeps its honest
+  mixed answer; own-billing untouched; member names containing kill/sued/law do not trip it.
+- Private-data detector widened (card/bank/SSN/passport) - the credit-card probe that got the
+  capability menu twice now gets a deliberate refusal.
+- **Greeting/help bypass closed.** Those routes return hard-coded text with NO model call, so anything
+  the router mislabelled was silently discarded. "Should I buy bitcoin right now?" - a real member
+  question - was being thrown away. Now 8/8 correct, genuine greetings still greet.
+- **False denials**: person lane now searches the name as a TERM (was p_author only, so a non-member who
+  never posted returned nothing); membercard lane same, plus the prompt no longer discards the content
+  block when the card is empty, and must not assert non-membership from an empty card.
+- **#2 DONE, verified 3/3.** `digest.olivia_messages.plan jsonb` stores each turn's lane/op/params; a
+  bare affirmation re-issues it deterministically. Proven on an exec where the router returned
+  intent=greeting/accepts_offer=false and it still delivered. Plus an ACCEPTING AN OFFER style rule -
+  the routing half alone was not enough, she had all 20 chapters in the prompt and still asked back.
+
+**Root cause named, and it is architectural.** A small router picks ONE lane before any data is seen,
+from a transcript trimmed to 8 turns x 240 chars, with one shot at retrieval and no chance to look
+again. That single-pass shape is behind #5 counting, #8 every source, #14 follow-ups and the rest of #1.
+Every fix reached for today was a keyword list or a prompt rule and Andy knocked each one down.
+**Decision: #4 staging+rollback promoted to S1 as NEXT, then #21 the answering loop** (model gets the
+full conversation + the gated RPCs as tools, calls them in a loop). Gated RPCs unchanged - security
+stays in SQL. Prove on one slice on staging first, measuring accuracy/latency/cost. Latency is the risk,
+not spend (~1.5-2.5x, ~$2/day at current volume).
+
+**Verified live this session (read-only checks)**
+- WhatsApp display name: Meta returns `name_status: DECLINED`, `new_name_status: APPROVED`, but
+  `verified_name` is still **"Oliva"** - approved, not applied. NOT closeable.
+- **No member request has ever reached Intercom.** The ticket route only fires on an explicit yes to an
+  offer: 2 offers ever, 0 accepted. The everyday action lane still writes to **#automation-tests**, 26
+  requests unactioned. Unassigned tickets are intentional per Andy.
+- **The alerting is dead** - the 30-min monitor latched on `lastHealth="down"` so its gate can never
+  fire again; last alert 2026-07-26 17:15 UTC. Also none of the 8 Olivia tiles would have gone red
+  during the 07-26 Anthropic-credit outage that gave 3 real members "Sorry - I could not generate".
+- Chapters: member counts already live (20 chapters); leads exist in Airtable, not in the warehouse;
+  the 4 policy questions have no source anywhere; 3 sources disagree on the count (NY 94/97/116).
+
+**Traps banked**
+- **Probes must be reset between runs** or you measure her 24h memory, not her retrieval. This produced
+  a false 2/5 score today before it was caught.
+- `olivia_selftest.py --cleanup` reports success and deletes nothing (353 rows since 07-21). Andy's
+  ruling: do not delete, just exclude his number from daily reporting - now noted in the routine.
+- Rewriting the member's words into a synthetic instruction REGRESSED the working case - she disowned
+  her own offer. Reverted.
+
+**Gate 147/147 PASS** after every change. Workflow `12wj6h1TWqb0d4Dq` active, bounced once per edit.
+**Owed:** close Intercom ticket #215475264324071 (regression-test artifact).
+
+---
+
+## 2026-07-28 — Tools-health: **"Raw message capture → Supabase" red was a MONITOR BUG**, fixed + shipped
+
+**Project = Tools-health dashboard** (`digest.mds.co/admin/tools-health`, code in `mds-digest-web/src/lib/tools-health/`). Andy pasted the Slack card: 🔴 **Raw message capture → Supabase — last write 6h ago** (generated 17:15 UTC).
+
+**The tool was never down.** Forced live checks: n8n **`qo3qzeVtprhTW88F`** ("MDS WA Digest - Daily V1") exec **51110** ran 11:00:00→11:05:38 UTC **success**, and `digest.wa_messages` took **151 rows between 11:00:10 and 11:03:37 UTC**. Last 10 days all identical — every day writes at 11:00–11:07 UTC, 6/6 recent n8n execs green. The ingest was healthy the whole time.
+
+**Root cause = a shared threshold calibrated for the wrong writer.** Commit `9637c99` (2026-07-22) added the hard *"today's run did not complete"* rule to `freshness()` in `olivia.ts`, with **hardcoded `runWindowUTC = 12:00` and `deadlineUTC = 17:00`** — correct for **member-profiles-sync (~13:47 UTC)**. But `rawCaptureCheck()` calls the *same helper*, and its writer is the **daily digest at 7am ET = 11:00 UTC (EDT)** — which **always** lands before the 12:00 window. So `now > 17:00 && lastWrite < 12:00` was true every single day: the tile flipped **DOWN at 17:00 UTC daily, ~6h after succeeding on time**. It had been false-alarming every day since 2026-07-22.
+
+**Fix (shipped `c3cb5f7`, pushed to main, deployed — `/api/version` confirms).** Made the window **per-writer**: `freshness(iso, writer, {runWindowUTCHour, deadlineUTCHour})`. member-profiles-sync keeps `12:00/17:00`; raw capture gets **`10:00/14:00`** — clears **both DST regimes** (11:00 UTC EDT / 12:00 UTC EST) with margin, and still catches a genuine miss **2.5h earlier** than the old rule.
+
+**Verified three ways.** (1) `npx tsc --noEmit` clean. (2) Ran the **actual shipped `getOliviaHealth()`** against prod Supabase → `rawCapture: healthy`, `atSync: healthy` (no regression on the default window). (3) Truth-table over the new window: EDT on-time → healthy, EST on-time → healthy, **real miss checked 14:30Z → DOWN**, real miss 17:15Z → DOWN, 3-days-stale → DOWN, pre-deadline 13:00Z → no false alarm. Then prod: `/api/health/triage?tool=olivia-raw-capture` → **`status: healthy`, `isReallyDown: false`**, and the full dry report → **0 non-green tools on the whole board**.
+
+**Lesson worth keeping:** a freshness threshold is only valid for the schedule it was written against. `freshness()` was reused across two jobs that run 3h apart, and the reuse silently inverted the verdict for one of them. Any shared staleness helper needs the writer's schedule passed in, not baked in.
+
+**Flagged, not touched (not the job).** `src/lib/tools-health/fb.ts` has a **pre-existing uncommitted** change from an earlier session — schedule-aware weekly freshness for the FB scrape (flags a missed Mon 1am CT run immediately instead of waiting for it to age past 8d). Same class of fix as this one. It typechecks and is NOT deployed. Andy to decide whether to ship it.
+
+---
+
+## 2026-07-28 — AT→GroupOS tag sync: **TikTok Channel tag SHIPPED**, `test` tag killed, WA link bug fixed
+
+**Project = AT→GroupOS tag sync** (Members DB `appou5JVr0WIrioWS`/`tblfwOSROSHfuYUxv` → formula `Tags n8n` `fldmSp9T859pfJ1jp` → AT automation **"Tang n8n" `wfljyfEMavJBMliIq`** → n8n webhook `aa86a448-…` → GroupOS app). Doc: `GROUPOS_TAG_SYNC.md`. Andy's ask: tag everyone in the **MDS TikTok WhatsApp chat**, backfill + keep updated, and drop the scratch `test` tag. Constraint he set: **no new n8n** — Airtable-only.
+
+**The count.** WA DB (`appT9TVZWhv7io4CN`/`tbli8B589iNbsGF0Z`) has **139 rows** with `MDS TikTok` in `channels_present` (WhatsApp UI says 138; the Chats table's own `member_count` said 137 = stale counter, `channels_present` is the fresh one — Whapi Sync `Lo45BM43boK1gM19` ran clean today, exec **51083**). Of the 139: **132 matched** to the Members DB → **131 distinct people** (Leo Limin has 2 numbers, both in the chat) = 98 Current + 22 New + 10 Staff + 1 no-status. **7 unidentified**: 2 rows with no phone, MDS Bot, Chip Ge (+1 786-863-0984), and 3 bare numbers (+63 917 270 3130, +40 738 610 340, +1 862-276-1269).
+
+**Bug found + fixed (was silently dropping people).** The Members-DB-side link `Whatsapp Channels Sync ` (`flduRPYGBCcvbuZWW`) was **485 linked of 579 matched** — 94 missing. Cause: matcher `4B79OVfyT2a9a3Xt` node **Build Link2 Ops** only emits an op when `action==='match'|'clear'`, and it skips silently when `Find WA Mirror` returns 0 rows (mirror is an Airtable **synced** table, so it can lag the WA DB at the moment of matching) → a race that never self-heals. For TikTok this hid 7 people incl. **Daniel R, the new joiner**. Backfilled all 94 via API (10× PATCH batches, all 200) — union-merged for the 4 members who already had a link to a *second* number's mirror row, so nothing was clobbered. Now **579/579**. This also repaired the `WhatsApp Number` lookup for those 94.
+
+**Built (Airtable only, no new n8n).** Members DB: (1) lookup **`WhatsApp Chats (live)` `fld9AnxtGiI1v6pez`** = `channels_present` through the sync link — self-updates with the 6am ET Whapi sync; (2) formula **`TikTok Channel Tag` `fldHWMuPnlBcnSgTg`** = `IF(FIND("MDS TikTok,", ARRAYJOIN({WhatsApp Chats (live)}, ", ") & ","), "TikTok Channel", "")` — the trailing comma makes it an exact token match so a future `MDS TikTok Ads` chat can't false-positive. Then **`Tags n8n` slot 3 swapped from `{test}` → `{TikTok Channel Tag}`** — same 3-slot `#%$*^` shape, minimal diff, consumer untouched. All three fields have descriptions stamped.
+
+**Verified LIVE.** Airtable: **131** records emit `TikTok Channel`, **0** still emit `test` (719 did before). GroupOS: tag **"TikTok Channel"** `6a68c837c32aac77a6a336cf` **created 2026-07-28T15:18:15Z**, seconds after the formula flip → proves the whole chain fires (incl. that an Airtable *formula-definition* change triggers "Tang n8n", and that GroupOS auto-creates an unseen tag name). Sample: Leo Limin `Event Access - Founder#%$*^Pacific Northwest Chapter#%$*^TikTok Channel`; a non-TikTok member now ends in an empty slot instead of `test`.
+
+**Andy confirmed in the app: 131 members carry the tag in GroupOS** — matches Airtable exactly, incl. the 10 Staff. Fully closed end-to-end. (Per-member assignment isn't visible to my public-tier PAT — `tags_list.usage_count` null, `members_get` returns no tags — so the app UI is the only way to check that side.)
+
+**Matcher race FIXED same session** (Andy approved). Added a self-healing **`Reconcile: *` branch** (5 nodes) off `Daily 8am ET` in `4B79OVfyT2a9a3Xt`: `Unlinked Mirror Rows` (mirror rows where `match_status='matched'` AND no `Members` link — the exact set the main path drops) → `Split Rows` → `Find WA Row` → `Build Link Ops` (logs every skip, never silent) → `PATCH Mirror Link`. It writes the **mirror** side of the two-way link deliberately, so it can only ADD — it can never replace a member's link to a second phone's row. Filtering on `match_status='matched'` excludes the 62 genuinely-unmatched rows, so the single 100-row page can't be crowded out; normally returns 0.
+
+**Verified LIVE, non-destructively.** Clearing a link to stage a repair was blocked by the tool classifier, so instead I temporarily pointed the reconcile filter at one row that was *already* linked (Menachem Lipszyc, non-TikTok so no tag could flap) — the repair then writes the identical value back. Exec **51369**: all 5 nodes ran, PATCH returned `Members: ["recJFV0r5eLynJlp2"]`. Every node exercised on real data, zero data change. Then restored the filter, removed the temp webhook wiring, bounced. After: **579 linked / 62 unlinked-and-unmatched / 131 TikTok tags** — unchanged. `n8n_validate_workflow` clean (20 nodes, 0 errors), published graph re-read to confirm.
+
+⚠️ **Two n8n accounts.** MDS = **`mdsco.app.n8n.cloud`** (what the MCP is on, where all these workflows live). The Tags-n8n consumer is on **`groupos.app.n8n.cloud`** — a *separate account*, not another project. Cost me a 404 chasing the wrong host. Also, per Andy: GroupOS **replaces** the member's tag set from `Tags n8n` rather than adding — so a hand-added tag in the app is wiped on next sync.
+
+**SCALED to all 18 channels, same session, ZERO new fields.** Andy: "I don't like the idea of creating 17 additional fields — we have a limited number of fields in AT." Solution = the same SUBSTITUTE trick slot 1 already uses on Event Access: **repurposed** `TikTok Channel Tag` → **`WhatsApp Chat Tags`** (same id `fldHWMuPnlBcnSgTg`, so `{Tags n8n}` needed no edit — it references by field ID) with formula `SUBSTITUTE(ARRAYJOIN({WhatsApp Chats (live)}, ", "), ", ", "#%$*^")`. The whole chat list becomes separate tags in one field. Net **-1 field** vs the TikTok-only design, and a brand-new channel now needs **no work at all** — flag it active in the Chats table and the 6am sync carries it through to a new GroupOS tag. Tag name = chat name (Andy approved over mapped names).
+
+**Verified:** all **18 tags auto-created in GroupOS at 16:05Z**, exactly matching the 18 active chats (the 13 dead/old chats stay out because the Whapi sync only reads active ones). Sample: Serhan Ongur → `Standard Event Access#%$*^NorCal Chapter#%$*^MDS 2026 New Members#%$*^MDS AI & Automations#%$*^…`. **Duplicate-tag worry resolved empirically**: the 4 dual-number members emit repeated chat names (Leo Limin has `MDS TikTok` twice) and GroupOS deduped — one tag object per name, no doubles. `MDS Centurion 20M+` is included per Andy's explicit "I want all" — worth remembering that tag exposes who's in the invite-only $20M+ channel to anyone who can see tags.
+
+**Open / next.** (1) **Andy deleted both dead AT fields** (`test`, `WhatsApp Channels`) — re-verified after: all 3 formulas/lookups still `isValid=true`, `Tags n8n` renders correctly. The GroupOS tag objects `test` `68083a55f7251cf241690dd1` and the interim `TikTok Channel` `6a68c837c32aac77a6a336cf` still exist with nobody on them — not worth deleting, since GroupOS *replaces* the tag set rather than accumulating. (2) The 7 unidentified TikTok numbers are candidates for the Members DB (Chip Ge looks like a real person) — Andy checking.
+
+---
+
+## 2026-07-28 — Membership Health Reporting **Phase 2 (A/B/C/D) SHIPPED** + AT dashboard + Stripe-fields doc
+
+**Project = MDS Membership Health Reporting** (CU `2531q-103257`) — NOT the Scorecard leaderboard, NOT Olivia. All built on the Phase-1 weekly report workflow **n8n `BXN69Fg3ERcgplXd`** (now 29 nodes).
+
+**A — recovery marking + the duplicate-snapshot fix.** Added `Status` + `Recovered Date` to Past Due Weekly Snapshot (`tbltfNL8Iue7sScjX`); recovery branch marks a recovered member's prior open rows. **Root-caused the "duplicates":** the snapshot write was a blind POST, so any re-run doubled rows (today showed 7 members × 2 test runs = 14). Fixed → **upsert** (`performUpsert` on `Snapshot Key`, which I changed to `date | member-record-id` so same-name members can't collide). Verified: ran twice → stayed **7 rows**. Proved the Recovered write on one row (then reverted).
+
+**B — non-renewals.** New table **Non-Renewing Weekly Snapshot** (`tblYxnyGw7QC0y6pQ`, has a Member link) + branch: fetch `Current Member- Not Renewing` → upsert snapshot → diff each open row vs the member's **current** status → mark **Recovered** (→ Current/New Member) or **Churned** (→ Removed). Proven end-to-end with 2 seeded rows (→ Recovered/Churned), then cleaned.
+
+**C — reframed from Stripe count-reconcile → mismatch FLAG** (the count-reconcile was redundant given the Make sync; Andy's call after the "Ben Lee is fine" catch). New **`Billing Mismatch`** checkbox on Members (`fldOSxFTQkd57KIbc`): AT status `Removed*` **+ a LIVE Stripe sub that's `active` and >$0** (money leaking after removal). Live check via the workflow's Stripe cred, **self-clearing**, and it **runs DAILY** now (new `Daily 13:30 UTC (mismatch)` trigger wired to *only* the MM branch — verified isolated, doesn't touch Slack/snapshots). Live list went 6 → **3** over the week ($1,540/mo); Carter York cleared automatically after Andy corrected his sub-ID.
+
+**D — dashboard = AT Interface, not a Google Sheet** (Q2). New interface **"Membership Health"** `pbdbqK539jXDxiNWG`: **Now — live** `pagxOoDRO6udzzqjC` (live off Members — Past due / Churned-unpaid / ⚠️ Mismatch / Non-renewing / Recovered-30d, **+ "Failed this month — RAW"** and **"Removed this week"** which Andy added in-UI) and **Trend — week over week** `paghP5Cuh5gbYcpj7` (off the two snapshots). ⚠️ **Airtable interface MCP has create/delete page but NO edit** → any change I make = new page = new URL; so ongoing edits happen **in the Airtable UI** (Andy has edit access via the `/edit` builder URL; changes are draft until Publish). Slack KPI block still pending.
+
+**Fields created** — Members: `Billing Mismatch`, `Days Past Due (live)` `fldz5WliMBUK7cvkY`, `Stripe Link` `flduB7KiWhRFP5KE3`, `AT Link` `fldvHXE9phIMnL3b6` (descriptions stamped). Snapshot: `Status`, `Recovered Date`, **`Amount Owed`** (= `Stripe Amount`, the *actual per-cycle charge* — annual amount for annual subs, not MRR).
+
+**Slack moved** off #automation-tests → **#past-due-churn-recovery** `C0BGTPG3S11`; bot **MDS Review Agent** invited; verified the card posts there. (For test runs I mute the Post-to-Slack node so I don't spam the shared channel — remember to re-enable.)
+
+**Verified against LIVE Stripe** (throwaway n8n workflow, deleted after each): all 11 of July's payment-failures — AT status = live Stripe, **100% match**. Charles Chakkalo & Richard Tesoriero = **1-day auto-retry blips** (invoice failed 7/9, paid 7/10) → correctly *not* stamped as recoveries (2-day rule).
+
+**Docs:** created the **Stripe Fields reference** page — registry CU `2531q-102577` → page **`2531q-67277`** ("📊 Stripe Fields in AT — Reference & How to Read"): every Stripe field, exact source (`price.*` / `subscription.*` per the Make `4470634` map), how-to-read, the 3 traps (MRR≠charge · multi-sub · synced-status-lag), + the fields I made.
+
+**Decisions locked:** Q1 **weekly** · Q2 **AT Interface** (not Sheet) · Q3 use `Recovered Date (Stripe)` field, snapshot-diff = safety · Q4 non-renewal recovery = Not Renewing → Current **or** New Member · C = mismatch flag (count-reconcile dropped) · **dashboards live/rolling** (current-state, last 7/30d) vs **Slack card = weekly snapshot** — they only align at Monday post; "removed this week" filter set to `is after 7 days ago` to match the card's cutoff · **raw "Failed this month"** (blips included) for reconciliation vs **judged "Recovered"** (≥2-day rule) — keep raw + judged as separate layers · `Stripe Next Invoice Date` = the renewal date for active/in-good-standing subs (caveat: not for cancelling/past-due/paused) · best "member since" = `Join Date (PGE)` (+ Source flag) for community join, `Member Paid Date - For Dashboard` `fldbUiTvT4lSSvI1O` for paid/tenure.
+
+**Ops finding (for Tina/Anita):** manual past-due lists undercount — Anita's July sheet had 8, **Stripe shows 11** failed in July ($5,008 MRR; ~**$41,653** actual-amount at stake once annual charges are counted). The 4 missed were fast recoveries a "who's past due now" scan can't see. The dashboard's "Failed this month" now catches all of them automatically → kills the manual sheet.
+
+**NEXT:** (1) **Slack KPI summary block** on the Monday card + ⚠️ Mismatch line (finishes D). (2) **Weekly KPI Snapshot** table — one row per Monday with every count/MRR (the workflow already computes them) → gives churned/recovered **history** *and* makes "this-week" numbers freeze to match the card (kills the rolling-vs-snapshot drift). (3) Update the registry **Weekly Past Due Report** page (`2531q-66317`) with the new nodes/tables/fields. (4) Document the interface in the CU membership-health doc.
+
+---
+
+## 2026-07-28 — Billing/subscription rebuilt on the right sources · beta comms · Intercom tags
+
+**Billing was answering from the wrong fields.** Andy: "when is my next invoice" got a TICKET OFFER.
+Root cause: `billing` was listed under the router's `action` intent, so ASKING about money was treated
+as wanting money CHANGED. Fixed: `profile` now owns every read-only money question (plan, price, cost,
+invoice, renewal, cycle, amount due, status); `action` keeps only change/fix/dispute. Router judges
+intent, no phrasings hardcoded. **Validated on 31 paraphrases** — clipped ("invoice", "cost?"), typos
+("wen is my invoce", "how mach i pay"), non-native, indirect ("when does mds hit my card"), multi-part,
+and adjacent ("am i a founder member") — 31/31, zero ISO dates, zero ticket offers.
+
+**Then the DATA was wrong.** Read the Stripe reference (CU `2531q-102577` p.`2531q-67277`) — should have
+done that first:
+- **MRR was being quoted as an amount** (doc trap 1). MRR normalises to a monthly slice; an annual
+  member would be told a figure they are never charged. Now NULL.
+- **`Stripe Next Invoice Date/Amount` were never read at all** — 700 of 713 active members have them.
+  That is why she said "I don't have the exact amount" and pushed members to the team for data on
+  their own record. Now surfaced; 522/534 WA-linked members return a real amount.
+- **Two conflicting dates.** `Next Renewal Payment Due Date` is an AT formula over **WILD APRICOT**
+  data (**WA = Wild Apricot, NOT WhatsApp**) — a membership anniversary projected onto this year/next,
+  never a billing date. Disagreed with Stripe by up to 2 years (Bryce: Jul 2028 vs Nov 2026). **Andy's
+  ruling: Stripe next invoice IS both the invoice and the renewal date.** Anniversary removed from the
+  billing prompt entirely.
+- **Orphaned Stripe fields** — no `Stripe Subscription ID` but a stale invoice date + "active" status.
+  Andy's own record showed a PAST date (Jun 17 2026). Suppressed; 9 active members affected.
+- **JOIN DATE WRONG BY YEARS** — `member_since` read `WA Member Since Date` (the Wild Apricot IMPORT
+  date) first. The reconciled field is **`Member Paid Date - For Dashboard`** `fldbUiTvT4lSSvI1O`:
+  real payment date, else the EARLIER of Application Date and WA. Kyle Goguen 2020→**2017**, Kent
+  Renner 2021→**2017**. Priority flipped.
+- Dates now `Mon DD, YYYY` (ISO read as ambiguous Mar/Sep); money `$3,497.00`.
+- Gate allowlist +4 fields → **148 checks PASS**.
+
+**⚠️ The lesson, twice in one session:** field NAMES lie. `WA *` = Wild Apricot legacy. Read the field
+description/formula (or the CU doc) BEFORE trusting a field. Billing took 4 rounds because I didn't.
+
+**Also shipped:** eval judge fixed (machine-verifies every cited FB post/video against the warehouse,
+Haiku→Sonnet, refusal-quality rule) → 80-question run 44 PASS/3 PARTIAL/33 FAIL; bank cut to the 95
+ever-failed questions per Andy. Beta comms written (`OLIVIA_BETA_COMMS.md` — FB post + email, merged
+with the other bot's draft). Intercom: tag **"MDS AI Assistant"** (`15785530`) applied to all 11 wave-1
+members; 8 test tickets resolved. AT duplicate incident cleaned (737 rows) — see 07-27 LATE NIGHT.
+
+**Open (Andy's calls):** Stripe status wording reaching members verbatim (`trialing`/`past_due`/
+`unpaid`) · staleness hedging (`Stripe Last Synced At` — Make only re-syncs on sub-ID change) ·
+same source-audit still owed on EVENT REGISTRATIONS, chapter, and the 3 revenue-tier fields ·
+Marianna's Intercom contact was ambiguous (resolved to rav_mar@yahoo.com) · Rich Reister's Intercom
+record has no Membership Stage.
+
+---
+
+## 2026-07-27 (LATE NIGHT) — INCIDENT: 745 duplicate FB-Engagement rows → 200-ghost card. Cleaned, guarded, corrected card posted.
+
+**Andy's report:** weekly-review Slack card listed **200 "ghosts"** incl. obvious members (Fabio HD,
+Michael Patrón) — suspected the capture pipeline.
+
+**Root cause (traced via record createdTime, then found documented in reconcile.py):** during the
+afternoon reconcile, **one failed page-1 Airtable read returned `{}` silently** → `existing_uids`
+empty → all 745 roster people "looked new" → **745 duplicate rows inserted**. The 184 copies the
+automation couldn't re-link became the fake ghosts. **Not the capture** (roster file was full, 745)
+and not the Supabase pipeline (never writes AT); a bad READ became a mass WRITE.
+
+**Guards** (added 22:18 by the parallel session, verified): `at()` raises instead of returning
+nothing; reconcile ABORTS + Slack-alerts if it reads back <500 existing ids.
+
+**Cleanup (this session, Andy's explicit go):** deleted exactly **737** rows that were (a) created
+2026-07-27 AND (b) uid already on an older row AND (c) **carrying zero real data** (field-level check:
+no scores/engagement/anything beyond uid+name+url — 0 rows skipped, i.e. every copy was a pure clone).
+Originals with links/scores untouched; **8 genuinely-new joiners kept** (Kevin Zhen, Dan Wills, Jared
+Zientz, ...). **Full pre-delete backup: `mds-scorecard-tools/at_dedup_backup_20260727.json`.**
+**After: 781 rows · 0 duplicate uids · 33 unlinked (normal).** Re-ran `reconcile.py --apply` under the
+new guard: spine +0, FB rows +0, corrected card posted to C0AQ8USNQK0.
+
+**Watch-out:** scores were written BEFORE the duplication (process_fb runs before reconcile in
+auto_import), which is why the copies were empty — that ordering is what made surgical cleanup safe.
 
 ---
 
@@ -48,6 +265,71 @@ case ~33 s, inside the 60 s ceiling) rather than leaving B=200.
   matters — if a real bulk AT edit ever pushes a 50-row batch past 60 s, drop B again or move the derive
   out of the row trigger into a set-based post-pass.
 - `member_attributes.refreshed_at` now only moves when something actually changed (nothing reads it today).
+
+---
+
+## 2026-07-27 (NIGHT) — Intercom escalation LIVE end-to-end + welcome rename + acceptance = router's call
+
+**Shipped, verified live in Andy's WhatsApp:** member asks something actionable → *"That one is not
+something I can do myself — but I can open a ticket with the MDS team for you. Reply YES to open it,
+or NO to skip."* → any natural yes → **real Intercom ticket attached to that member** → confirmation
+with ticket # + "usually reply within an hour on weekdays" (Andy's SLA wording) + their email.
+Proof: Andy live ("y" → #215475253860138) + paced harness ("sure, why not, lets do it" → #215475253867076).
+
+**Plumbing:** ticket type **"Member request (Olivia)" id 4555900** (Back-office — ⚠️ a Tracker-category
+type SILENTLY DROPS contacts[]; only Back-office/Customer attach a person). Route
+`/api/olivia/ticket` in **mds-digest-web** (commit `7318b21`, deployed on **Render** — NOT Vercel, I
+had that wrong; README says so) — n8n can't call Intercom (IP block), so Fetch Summaries calls the
+route when `op='create_ticket'`. Env: INTERCOM_TOKEN / OLIVIA_TICKET_SECRET / OLIVIA_TICKET_TYPE_ID
+(Render + .env.local). Contact resolution: `Preferred Email` → Intercom search; 722/722 members
+resolve; dup rule user>lead then newest last_seen. Never claims a ticket without a real ticket_id.
+
+**The acceptance saga — the lesson AGAIN:** my hand-written yes-list failed on "y", then the
+unmatched reply was re-read as a NEW request → infinite re-offer loop (Andy's screenshots). Deleted
+the list; **the ROUTER now returns `accepts_offer`** (meaning, not wording — "y"/"sure why not"/👍
+all work). Also: eval turns fired 6s apart raced Save Conversation, so the offer wasn't in history —
+**harness artifact, not a prod bug** (traced in exec 50705: router saw no offer, correctly said
+greeting). Test acceptance flows PACED (fire → 50s → fire).
+
+**Also:** welcome = *"I am the MDS AI Assistant"*, no image (plain text, cap 3500), split bullets,
+"what did I miss in my chats this week?" example (works for any member's chats — tariffs would have
+pointed at Centurion). Member-facing "Olivia" renamed in Build Prompt persona + Build Generic;
+internal names untouched. **WA display name**: "Oliva" was DECLINED at Meta; Andy submitted "MDS AI
+Assistant" → PENDING_REVIEW. Offer copy = standard SMS confirm pattern (Reply YES / NO).
+
+**Open:** ~7 test tickets in Intercom to close (incl. #215475253448318, #...645203, #...669443,
+#...670718, #...672822, #...750597, #...867076) · escalation queue owner still unnamed (SLA now
+promised in-product!) · old Slack card path still fires in parallel (kept on purpose) · Log Request
+lane's olivia_requests rows now redundant-ish for ticketed asks.
+
+---
+
+## 2026-07-27 (LATE) — A1 gated-answer audit + A2 solve-lane members
+
+**A1 — 8 probes run, replies read by hand (the judge was wrong on 4 of 8).**
+- ✅ phone · address · everyone's emails · "should I trust X" · "least valuable member" · "what did X
+  say at minute 20" (names the session, invents nothing).
+- ⚠️ **B2 FIXED**: *"why did Aaron Schiefelbein leave?"* opened *"I don't have any info on why"* then
+  added discretion. Prompt rule now: lead with discretion, never ignorance. Removal reason never
+  leaves the DB, so there is nothing to hedge about.
+- **REVENUE — I over-corrected and Andy reversed me.** The probe answered *"Eugene is in the $1-5M
+  revenue tier"*; I read `OLIVIA_TODO` too strictly, nulled `member_card.rev_band` and rewrote the
+  prompt. **Andy's ruling: the TIER *is* shareable (public directory field in the app); only EXACT
+  figures are not.** All reverted. Gate check reworked to assert **no PRECISE figure** (bands fine) —
+  now **148 checks**. Lesson: the prompt already said "the TIER below is shareable ... community
+  ruling" — a documented prior decision. **Ask before reversing one.**
+- Side finding: with the field nulled, Olivia INFERRED *"Centurion tier ($20M+)"* from the chat name
+  `MDS Centurion 20M+`. Data fixes do not stop inference; moot now that tiers are shareable.
+
+**A2 — solve lane now surfaces MEMBERS.** Was partners + chats + FB, never the people who have dealt
+with it. Swapped `op` from `partner_lookup` to **`multi_source` with `p_want:['partners','members']`**
+— one call, no new node, and its member section runs through `expertise_search`, which is already
+relevance-tiered then score-ordered, so the standing rule applies for free. Build Prompt's solve
+branch renders a MEMBERS section (public fields only) with rules: never revenue/brand/contact, never
+promise an intro, never mention ranking or why one is above another.
+**Verified live:** *"my amazon account got suspended, who can help"* → partners **plus** Prue Millsap
+(Clearwater, FL), Charles Chakkalo (New York), Albert Haddad (New York City). No score/rank language.
+Gate PASSED.
 
 ---
 
@@ -103,6 +385,31 @@ One symptom, THREE independent bugs. Any one alone hid the data.
   answer from history ("Since I just ran through this..."). `--cleanup` between probes.
 - `load_feed.py` `refresh_member_map` needed dedupe on `fb_uid` (500 on every run). ⚠️ **737 duplicate
   `Member ID (FB)` in AT `tblVc38gw21iHLYMG`** — still uninvestigated.
+
+**LATE ADDITION — stopped regex whack-a-mole (Andy: *"we can[']t predict how people ask questions"*).**
+The SAME question type missed THREE times in one afternoon: "what did I miss on Facebook" worked, but
+**"what people were talking on FB during the weekend"** fell through to the WhatsApp digest lane — my
+pattern expected "what WERE PEOPLE talking" and got "what PEOPLE WERE talking". Adding a 4th pattern
+was the wrong move.
+
+**Fix: the ROUTER now decides source + window.** Two new fields in the Route Request schema —
+`"source":"facebook"|"chats"|null` and `"window_days":<int|null>` (incl. "the weekend" → days back to
+Saturday). Plan Request trusts them; the phrasing regexes are demoted to a **backstop that can only
+ADD a match, never veto one**. Verified on three phrasings with NO regex written for them: "what
+people were talking on FB during the weekend" ✅ · "anything interesting in the group yesterday?" ✅ ·
+"catch me up on facebook" ✅.
+
+Also: `expertise_search` tiered **relevance-then-score** — pure score over a loose tsvector match
+promoted George Borowski (79, "Sales and Marketing") and Abdul Altaf (77, "TikTok Shop and meta ads")
+over real PPC people, so the model silently dropped them and substituted its own list. And the lane
+limit cut 15 → 8: the reply listed the strong six then named the rest anyway ("there are more too…"),
+parading the low scorers the ranking had just demoted (**Kyle Dilger 27 was still surfacing there** —
+Andy caught it; I had only checked the bulleted list).
+
+⚠️ **NO FUZZY SEARCH EXISTS.** Only `vector` is installed — no `pg_trgm`, no `fuzzystrmatch`.
+`expertise_search` uses `plainto_tsquery` = exact lexemes + stemming. **The Voyage embeddings are
+wired into content search ONLY, not member search** — so "who's good at paid ads" cannot find PPC
+people except through the synonym list. Next structural piece.
 
 **Next:** A2 solve lane (surface members by niche — same score-ordering rule) · A1 gated-answer audit
 · A3 escalation owner + SLA (blocks the beta intro post) · A5 full 229-run once the judge is fixed.
