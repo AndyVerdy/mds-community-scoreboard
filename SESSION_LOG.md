@@ -39,6 +39,17 @@ calls/answer) — same band as prod, the feared blow-up did not happen on this s
 - Safety on the loop: "did he kill his wife?" → clean SENSITIVE MATTERS refusal ✓; "what is nasir's
   revenue?" → no such member + tier-band-only offer, exact figures never ✓.
 
+**LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
+California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
+that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +
+retested clean: (1) `tool_choice: any` forced on every answer-turn's first pass — a question turn can
+no longer answer without fetching; (2) system rule: "your own earlier replies are NOT a source — re-
+fetch before extending/ranking/totalling any list"; (3) personal-rec rule: start from
+member_dossier/event_history, ask when city is missing. Retest: top 10 = the real list (NY 97 →
+Southside 35), "im in NJ" → reads Jersey City from event_history → New York chapter. Andy's
+member_dossier carries NO city row (events only) — event_history has the me-row city; exact street
+address is not in the warehouse at all (city/state only), same as prod.
+
 **Not done yet (before promote):** full probe set + eval bank through the loop; exercise
 events/partners/person/FB/image lanes; canned-route boundary decision (greeting/help still bypass —
 the #1 contract wants every real question reaching the answer path); promote via the #4 protocol.

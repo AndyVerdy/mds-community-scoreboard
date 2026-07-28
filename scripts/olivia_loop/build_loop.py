@@ -84,7 +84,7 @@ NEW = [
              {"name": "anthropic-version", "value": "2023-06-01"},
              {"name": "content-type", "value": "application/json"}]},
          "sendBody": True, "specifyBody": "json",
-         "jsonBody": "={{ JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 2000, thinking: { type: 'disabled' }, system: $json.system, tools: $json.tools, messages: $json.messages }) }}",
+         "jsonBody": "={{ JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 2000, thinking: { type: 'disabled' }, system: $json.system, tools: $json.tools, tool_choice: ($json.iter === 0 ? { type: 'any' } : undefined), messages: $json.messages }) }}",
          "options": {"timeout": 120000}}},
     {"id": "answer_parse", "name": "Answer Parse", "type": "n8n-nodes-base.code", "typeVersion": 2,
      "position": [2500, 1050], "parameters": {"jsCode": parse}},
