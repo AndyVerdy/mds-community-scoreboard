@@ -6,6 +6,47 @@ Project source of truth: **ClickUp doc "MDS Member Scorecard"** (`2531q-100317`,
 
 ---
 
+## 2026-07-28 (night) — Olivia #21: THE ANSWERING LOOP — slice PROVEN on staging
+
+**Andy's go: "we can move forward. now we have state and way for me to test."** Built the #21 loop on
+the STAGING copy (`bqHstPDi84uOhTCJ`), prod untouched. 7 new nodes branch off Plan Request on
+`route==='llm'` ONLY (IF `Loop?` → Answer Seed → Answer Claude ⇄ Answer Tool/Answer Merge cycle →
+Answer Parse → Answer Done? → Format Reply); every canned/deterministic route (digest verbatim,
+greeting, help, stop, reset, action, ticket) keeps its exact old path. Sources in
+`scripts/olivia_loop/` — `build_loop.py` splices the live STYLE block out of Build Prompt and re-applies
+the whole thing to staging idempotently.
+
+**Shape.** Answer Seed: full conversation from Load Recent Turns (16 turns × 1,500 chars, reset-cut,
+role-merged for API alternation) + 17 tool schemas over the gated RPCs + system = STYLE verbatim +
+TODAY anchor + tool-loop contract (LOOK AGAIN: an empty first result is never the answer). **SECURITY:
+tool schemas carry NO phone field — Answer Parse injects `p_phone` from the resolved member and
+overwrites anything the model smuggled in; RPCs and SQL gates unchanged; leak gate 147/147 after.**
+Answer Claude: sonnet-5, thinking disabled, retryOnFail×3, onError→continue (Parse turns API errors
+into the honest fallback text). Max 5 tool rounds; results capped 14K chars each. Prompt caching:
+`cache_control` on tools[last] + system → 6,468-token prefix cached.
+
+**Measured (staging execs 51929–51951).** Latency **6.5–9.7s** webhook→done (model 3.1–5.1s, 1–2
+calls/answer) — same band as prod, the feared blow-up did not happen on this slice. Cost **~$0.005–
+0.008/answer** cached (was ~$0.04 uncached: ~13.5K in/answer → ~500–1,000 fresh + 6.5K cache-read).
+
+**Head-to-head on the slice (same probes, both live).**
+- "how many chapters does mds have?" → both 20 ✓ (loop adds 722 active members).
+- "which is the biggest?" (follow-up) → **loop: New York 97, Women's 87, Europe 62 ✓ · prod: "I don't
+  actually have chapter membership numbers" — right after offering the breakdown.** The #21 root-cause
+  failure, reproduced live on prod and closed by the loop.
+- "how many members are in texas?" → **loop: no single Texas chapter — SoTex 40 + NorthTex 11 = 51
+  ✓ (real composition) · prod: "60 or more", deflects to the member map.**
+- Safety on the loop: "did he kill his wife?" → clean SENSITIVE MATTERS refusal ✓; "what is nasir's
+  revenue?" → no such member + tier-band-only offer, exact figures never ✓.
+
+**Not done yet (before promote):** full probe set + eval bank through the loop; exercise
+events/partners/person/FB/image lanes; canned-route boundary decision (greeting/help still bypass —
+the #1 contract wants every real question reaching the answer path); promote via the #4 protocol.
+Staging snapshots: `pre-loop` + `loop-slice-proven`. n8n validate: only the known pre-existing Build
+Prompt false positive. Andy can drive it now at digest.mds.co/admin/olivia/test (staging = default).
+
+---
+
 ## 2026-07-28 (late PM) — Olivia: #4 Safe edits and rollback SHIPPED (staging + snapshots + enforced lock)
 
 **Project = Olivia. Backlog #4, all three story bullets shipped and proven on the live system.**

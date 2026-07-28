@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+"""Assemble the #21 answering loop onto the STAGING Olivia workflow.
+
+Adds 7 nodes after Plan Request (route==='llm' branch only), leaves every
+canned/deterministic route on its existing path, edits Format Reply's `to`
+resolution, PUTs the graph back, bounces, and prints a diff summary.
+Prod is untouched.
+"""
+import json, re, subprocess, sys, time
+
+SCRATCH = "/private/tmp/claude-501/-Users-Born-Scorecard/3c099062-fce0-4904-a970-de366e21e940/scratchpad"
+STAGING_ID = "bqHstPDi84uOhTCJ"
+ENV = "/Users/Born/mds-digest-web/.env.local"
+
+def env(k):
+    for l in open(ENV):
+        if l.startswith(k + "="):
+            return l.split("=", 1)[1].strip()
+    sys.exit(f"missing {k}")
+
+BASE = env("N8N_API_URL").rstrip("/")
+KEY = env("N8N_API_KEY")
+
+def api(method, path, payload=None):
+    cmd = ["curl", "-sS", "-X", method, f"{BASE}/api/v1{path}",
+           "-H", f"X-N8N-API-KEY: {KEY}", "-H", "Content-Type: application/json",
+           "--connect-timeout", "20", "--max-time", "180", "-w", "\n%{http_code}"]
+    if payload is not None:
+        cmd += ["--data-binary", "@-"]
+    for attempt in range(3):
+        r = subprocess.run(cmd, input=json.dumps(payload) if payload is not None else None,
+                           capture_output=True, text=True)
+        if r.returncode == 0:
+            break
+        time.sleep(3)
+    body, _, code = r.stdout.rpartition("\n")
+    return int(code), (json.loads(body) if body.strip() else None)
+
+code, wf = api("GET", f"/workflows/{STAGING_ID}")
+assert code == 200, wf
+nodes = {n["name"]: n for n in wf["nodes"]}
+conns = wf["connections"]
+
+# ---- splice the proven STYLE block out of Build Prompt into Answer Seed ----
+bp = nodes["Build Prompt"]["parameters"]["jsCode"]
+m = re.search(r"(const STYLE = \[.*?\]\.join\(NL\);)", bp, re.S)
+assert m, "STYLE block not found in Build Prompt"
+style_src = m.group(1)
+
+seed = open(f"{SCRATCH}/answer_seed.js").read()
+seed = seed.replace(
+    "const STYLE = $('Plan Request').first().json.__style_unused || null; // placeholder, replaced below\n", "")
+assert "'__STYLE_BLOCK__'," in seed
+seed = seed.replace("'__STYLE_BLOCK__',", "STYLE,")
+# inject the STYLE const right before the SYSTEM assembly
+anchor = "const today = new Date()"
+assert anchor in seed
+seed = seed.replace(anchor, style_src + "\n" + anchor)
+
+parse = open(f"{SCRATCH}/answer_parse.js").read()
+merge = open(f"{SCRATCH}/answer_merge.js").read()
+
+SUPA_CRED = {"httpHeaderAuth": {"id": "QHLDE4VHvm8jrVds", "name": "Supabase secret (digest mirror)"}}
+ANTH_CRED = {"httpHeaderAuth": {"id": "p52LoFSxvkMgZ3F5", "name": "Anthropic API"}}
+
+NEW = [
+    {"id": "loop_route_if", "name": "Loop?", "type": "n8n-nodes-base.if", "typeVersion": 2.2,
+     "position": [1900, 900], "parameters": {"conditions": {
+         "options": {"version": 2, "leftValue": "", "caseSensitive": True, "typeValidation": "strict"},
+         "combinator": "and",
+         "conditions": [{"id": "r_llm", "leftValue": "={{ $('Plan Request').first().json.route }}",
+                          "rightValue": "llm", "operator": {"type": "string", "operation": "equals"}}]},
+         "options": {}}},
+    {"id": "answer_seed", "name": "Answer Seed", "type": "n8n-nodes-base.code", "typeVersion": 2,
+     "position": [2100, 1050], "parameters": {"jsCode": seed}},
+    {"id": "answer_claude", "name": "Answer Claude", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
+     "position": [2300, 1050], "retryOnFail": True, "maxTries": 3, "waitBetweenTries": 2000,
+     "onError": "continueRegularOutput", "credentials": ANTH_CRED,
+     "parameters": {
+         "method": "POST", "url": "https://api.anthropic.com/v1/messages",
+         "authentication": "genericCredentialType", "genericAuthType": "httpHeaderAuth",
+         "sendHeaders": True,
+         "headerParameters": {"parameters": [
+             {"name": "anthropic-version", "value": "2023-06-01"},
+             {"name": "content-type", "value": "application/json"}]},
+         "sendBody": True, "specifyBody": "json",
+         "jsonBody": "={{ JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 2000, thinking: { type: 'disabled' }, system: $json.system, tools: $json.tools, messages: $json.messages }) }}",
+         "options": {"timeout": 120000}}},
+    {"id": "answer_parse", "name": "Answer Parse", "type": "n8n-nodes-base.code", "typeVersion": 2,
+     "position": [2500, 1050], "parameters": {"jsCode": parse}},
+    {"id": "answer_done_if", "name": "Answer Done?", "type": "n8n-nodes-base.if", "typeVersion": 2.2,
+     "position": [2700, 1050], "parameters": {"conditions": {
+         "options": {"version": 2, "leftValue": "", "caseSensitive": True, "typeValidation": "loose"},
+         "combinator": "and",
+         "conditions": [{"id": "d1", "leftValue": "={{ $json.done }}", "rightValue": True,
+                          "operator": {"type": "boolean", "operation": "true", "singleValue": True}}]},
+         "options": {}}},
+    {"id": "answer_tool", "name": "Answer Tool", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
+     "position": [2700, 1250], "onError": "continueRegularOutput", "alwaysOutputData": True,
+     "credentials": SUPA_CRED,
+     "parameters": {
+         "method": "POST",
+         "url": "=https://nadtudwuwjhckotrngzn.supabase.co/rest/v1/rpc/{{ $json.tool_name }}",
+         "authentication": "genericCredentialType", "genericAuthType": "httpHeaderAuth",
+         "sendHeaders": True,
+         "headerParameters": {"parameters": [
+             {"name": "Content-Profile", "value": "digest"},
+             {"name": "Accept-Profile", "value": "digest"},
+             {"name": "Content-Type", "value": "application/json"}]},
+         "sendBody": True, "specifyBody": "json",
+         "jsonBody": "={{ $json.tool_args }}",
+         "options": {"timeout": 30000}}},
+    {"id": "answer_merge", "name": "Answer Merge", "type": "n8n-nodes-base.code", "typeVersion": 2,
+     "position": [2500, 1250], "parameters": {"jsCode": merge}},
+]
+
+# drop any previous iteration of these nodes, then add fresh
+new_names = {n["name"] for n in NEW}
+wf["nodes"] = [n for n in wf["nodes"] if n["name"] not in new_names] + NEW
+
+# ---- rewire ----
+# Plan Request now feeds Loop? ; Loop? true -> Answer Seed, false -> Embed Query
+conns["Plan Request"] = {"main": [[{"node": "Loop?", "type": "main", "index": 0}]]}
+conns["Loop?"] = {"main": [
+    [{"node": "Answer Seed", "type": "main", "index": 0}],
+    [{"node": "Embed Query", "type": "main", "index": 0}],
+]}
+conns["Answer Seed"] = {"main": [[{"node": "Answer Claude", "type": "main", "index": 0}]]}
+conns["Answer Claude"] = {"main": [[{"node": "Answer Parse", "type": "main", "index": 0}]]}
+conns["Answer Parse"] = {"main": [[{"node": "Answer Done?", "type": "main", "index": 0}]]}
+conns["Answer Done?"] = {"main": [
+    [{"node": "Format Reply", "type": "main", "index": 0}],
+    [{"node": "Answer Tool", "type": "main", "index": 0}],
+]}
+conns["Answer Tool"] = {"main": [[{"node": "Answer Merge", "type": "main", "index": 0}]]}
+conns["Answer Merge"] = {"main": [[{"node": "Answer Claude", "type": "main", "index": 0}]]}
+
+# ---- Format Reply: `to` comes from the loop when the loop answered ----
+fr = nodes["Format Reply"]["parameters"]["jsCode"]
+old_line = "const to = $('Build Prompt').first().json.to;"
+new_line = ("const to = $('Answer Parse').isExecuted ? $('Answer Parse').first().json.to "
+            ": $('Build Prompt').first().json.to;")
+if old_line in fr:
+    nodes["Format Reply"]["parameters"]["jsCode"] = fr.replace(old_line, new_line)
+elif new_line not in fr:
+    sys.exit("Format Reply `to` line not found — aborting before writing anything")
+
+body = {"name": wf["name"], "nodes": wf["nodes"], "connections": conns,
+        "settings": {k: v for k, v in (wf.get("settings") or {}).items()
+                     if k in ("errorWorkflow", "executionOrder", "executionTimeout",
+                               "saveDataErrorExecution", "saveDataSuccessExecution",
+                               "saveExecutionProgress", "saveManualExecutions", "timezone")}}
+code, res = api("PUT", f"/workflows/{STAGING_ID}", body)
+assert code == 200, (code, str(res)[:400])
+c1, _ = api("POST", f"/workflows/{STAGING_ID}/deactivate")
+c2, _ = api("POST", f"/workflows/{STAGING_ID}/activate")
+print(f"PUT 200 · bounce {c1}/{c2}")
+
+code, after = api("GET", f"/workflows/{STAGING_ID}")
+names = [n["name"] for n in after["nodes"]]
+print(f"staging now {len(names)} nodes; loop nodes present: "
+      f"{[n for n in sorted(new_names) if n in names]}")
+print("Plan Request ->", [x["node"] for x in after["connections"]["Plan Request"]["main"][0]])

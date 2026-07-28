@@ -13,10 +13,13 @@
 **Read `OLIVIA_BACKLOG.md` first.** It is the single prioritised list (S1 highest → S4 lowest, smallest
 first inside each group). `SESSION_LOG.md` 2026-07-28 (PM) has the full detail of what shipped.
 
-## NEXT: #21 · The answering loop · S1
+## NEXT: #21 · The answering loop · S1 — SLICE PROVEN ON STAGING, finish + promote
 *As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
-Build it ON STAGING (see below), prove one slice (chapter/counting/follow-up chain), measure
-accuracy + latency + cost vs today's bot. Latency is the risk — WhatsApp can't stream.
+The loop is LIVE on staging (7 nodes, `route==='llm'` only; sources `scripts/olivia_loop/`,
+`build_loop.py` re-applies). Slice results vs prod + latency/cost in `OLIVIA_BACKLOG.md` #21.
+**Left to do:** full probe set + eval bank through the loop · exercise events/partners/person/FB/image
+lanes · decide the canned-route boundary (greeting/help still bypass) · promote via the #4 protocol.
+Andy tests staging at **digest.mds.co/admin/olivia/test** (staging is the default target there).
 
 ## ✅ #4 Safe edits and rollback — SHIPPED 2026-07-28. THE EDIT PROTOCOL IS NOW:
 ```
