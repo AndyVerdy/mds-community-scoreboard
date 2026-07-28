@@ -13,10 +13,28 @@ const cache_r = (state.cache_r || 0) + (usage.cache_read_input_tokens || 0);
 const content = Array.isArray(resp.content) ? resp.content : [];
 const textOf = () => content.filter(c => c && c.type === 'text' && c.text).map(c => c.text).join('\n').trim();
 
+// evidence = every tool_result body retrieved THIS turn — what the fact-gate
+// checks the final answer against.
+const evidence = state.messages
+  .filter(m => m && m.role === 'user' && Array.isArray(m.content))
+  .flatMap(m => m.content)
+  .filter(c => c && c.type === 'tool_result')
+  .map(c => String(c.content).slice(0, 8000))
+  .join('\n---\n');
+
 const finalize = (text) => [{ json: {
   done: true,
   to: state.to,
   content: [{ type: 'text', text: text }],
+  answer_text: text,
+  evidence: evidence,
+  gate_attempts: state.gate_attempts || 0,
+  system: state.system,
+  tools: state.tools,
+  messages: state.messages,
+  iter: state.iter,
+  max_iter: state.max_iter,
+  in_tok: in_tok, out_tok: out_tok, cache_w: cache_w, cache_r: cache_r, calls: calls, t0: state.t0,
   metrics: { calls: calls, iters: state.iter, ms: Date.now() - state.t0, in_tok: in_tok, out_tok: out_tok, cache_w: cache_w, cache_r: cache_r },
 } }];
 
@@ -44,6 +62,7 @@ if (resp.stop_reason === 'tool_use' && toolUses.length && state.iter < state.max
     cache_r: cache_r,
     calls: calls,
     t0: state.t0,
+    gate_attempts: state.gate_attempts || 0,
     tool_use_id: tu.id,
     tool_name: String(tu.name || ''),
     // SECURITY: p_phone is set HERE from the resolved member — the model's

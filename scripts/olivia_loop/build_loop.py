@@ -58,6 +58,7 @@ assert anchor in seed
 seed = seed.replace(anchor, style_src + "\n" + anchor)
 
 parse = open(f"{SCRATCH}/answer_parse.js").read()
+gatev = open(f"{SCRATCH}/gate_verdict.js").read()
 merge = open(f"{SCRATCH}/answer_merge.js").read()
 
 SUPA_CRED = {"httpHeaderAuth": {"id": "QHLDE4VHvm8jrVds", "name": "Supabase secret (digest mirror)"}}
@@ -112,6 +113,28 @@ NEW = [
          "options": {"timeout": 30000}}},
     {"id": "answer_merge", "name": "Answer Merge", "type": "n8n-nodes-base.code", "typeVersion": 2,
      "position": [2500, 1250], "parameters": {"jsCode": merge}},
+    {"id": "fact_check", "name": "Fact Check", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
+     "position": [2900, 1050], "retryOnFail": True, "maxTries": 2, "waitBetweenTries": 1500,
+     "onError": "continueRegularOutput", "credentials": ANTH_CRED,
+     "parameters": {
+         "method": "POST", "url": "https://api.anthropic.com/v1/messages",
+         "authentication": "genericCredentialType", "genericAuthType": "httpHeaderAuth",
+         "sendHeaders": True,
+         "headerParameters": {"parameters": [
+             {"name": "anthropic-version", "value": "2023-06-01"},
+             {"name": "content-type", "value": "application/json"}]},
+         "sendBody": True, "specifyBody": "json",
+         "jsonBody": "={{ JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 400, thinking: { type: 'disabled' }, system: 'You are a fact gate for an assistant that must never fabricate. Compare the DRAFT ANSWER against the EVIDENCE (raw tool results the assistant retrieved). List every concrete factual claim in the draft — a name, number, count, date, title, place, link or quote — that does not appear in or directly follow from the evidence. Greetings, offers, questions, advice framing and honest statements of not-knowing are not claims. Arithmetic over evidence numbers is supported. Output ONLY minified JSON: {\"unsupported\":[\"claim\",...],\"verdict\":\"pass\"} or {\"unsupported\":[...],\"verdict\":\"fail\"} — fail only when at least one concrete factual claim lacks support.', messages: [{ role: 'user', content: 'EVIDENCE:' + String.fromCharCode(10) + ($json.evidence || '(none)').slice(0, 40000) + String.fromCharCode(10) + String.fromCharCode(10) + 'DRAFT ANSWER:' + String.fromCharCode(10) + ($json.answer_text || '') }] }) }}",
+         "options": {"timeout": 60000}}},
+    {"id": "gate_verdict", "name": "Gate Verdict", "type": "n8n-nodes-base.code", "typeVersion": 2,
+     "position": [3100, 1050], "parameters": {"jsCode": gatev}},
+    {"id": "gate_ok_if", "name": "Gate OK?", "type": "n8n-nodes-base.if", "typeVersion": 2.2,
+     "position": [3300, 1050], "parameters": {"conditions": {
+         "options": {"version": 2, "leftValue": "", "caseSensitive": True, "typeValidation": "loose"},
+         "combinator": "and",
+         "conditions": [{"id": "g1", "leftValue": "={{ $json.done }}", "rightValue": True,
+                          "operator": {"type": "boolean", "operation": "true", "singleValue": True}}]},
+         "options": {}}},
 ]
 
 # drop any previous iteration of these nodes, then add fresh
@@ -129,8 +152,14 @@ conns["Answer Seed"] = {"main": [[{"node": "Answer Claude", "type": "main", "ind
 conns["Answer Claude"] = {"main": [[{"node": "Answer Parse", "type": "main", "index": 0}]]}
 conns["Answer Parse"] = {"main": [[{"node": "Answer Done?", "type": "main", "index": 0}]]}
 conns["Answer Done?"] = {"main": [
-    [{"node": "Format Reply", "type": "main", "index": 0}],
+    [{"node": "Fact Check", "type": "main", "index": 0}],
     [{"node": "Answer Tool", "type": "main", "index": 0}],
+]}
+conns["Fact Check"] = {"main": [[{"node": "Gate Verdict", "type": "main", "index": 0}]]}
+conns["Gate Verdict"] = {"main": [[{"node": "Gate OK?", "type": "main", "index": 0}]]}
+conns["Gate OK?"] = {"main": [
+    [{"node": "Format Reply", "type": "main", "index": 0}],
+    [{"node": "Answer Claude", "type": "main", "index": 0}],
 ]}
 conns["Answer Tool"] = {"main": [[{"node": "Answer Merge", "type": "main", "index": 0}]]}
 conns["Answer Merge"] = {"main": [[{"node": "Answer Claude", "type": "main", "index": 0}]]}
