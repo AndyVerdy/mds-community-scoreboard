@@ -31,6 +31,12 @@ Emergency: `python3 scripts/olivia_wf.py rollback <snapshot-label>` (fast path, 
 `list` shows labels). A PreToolUse hook (`.claude/hooks/olivia_wf_lock.py`) BLOCKS any n8n write to
 the live workflow without the lock — direct prod edits now fail by design, don't fight the hook.
 
+**Andy's manual testing of staging = digest.mds.co/admin/olivia/test** (mds-digest-web `7bf4180`) —
+a messenger window firing simulated inbounds as his number down the SILENT path
+(`wamid.SELFTEST_WEB_*`, nothing delivered to WhatsApp), replies read from `olivia_messages` with the
+answering lane + latency per bubble. Staging/prod toggle. His phone stays on prod; both targets share
+his conversation thread (same phone key), same as the selftest harness.
+
 ## Why the architecture is next
 A small router picks ONE lane before any data is seen, from a transcript trimmed to 8 turns × 240 chars,
 with one shot at retrieval and no chance to look again. That single-pass shape is the root cause behind

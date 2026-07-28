@@ -47,6 +47,23 @@ Project source of truth: **ClickUp doc "MDS Member Scorecard"** (`2531q-100317`,
   call in-session before the lock was taken.
 - Prod ends the session: 51 nodes, active, versionId `93952e3c-…`, answering correctly; gate 147/147.
 
+**Follow-on the same evening — Andy's manual-testing window (mds-digest-web `7bf4180`).** Andy: staging
+is only useful if HE can test it, and he doesn't trust unverified claims. Shipped
+**digest.mds.co/admin/olivia/test** — a messenger window (admin-gated) that fires simulated inbounds as
+his number down the SILENT path (`wamid.SELFTEST_WEB_*` → the Eval (silent)? branch saves but never
+sends via Meta — nothing reaches any phone from either target), polls `olivia_messages` for the reply,
+and shows the answering lane + latency on every Olivia bubble. Staging (default) / prod toggle; his
+phone number stays pointed at prod, untouched. Repointing the Meta callback was rejected — it moves ALL
+member traffic and each flip is a manual Meta-dashboard step; the relay tester-split (route only his
+number to staging) was drafted as the phone-native alternative if he wants it later. Verified: tsc
+clean; anon → API 403 + page 307; authed GET returns the thread; POST fired staging live (reset +
+chapter-lead question → llm-lane reply landed, polled back); SSR full shell via curl; **hydration
+proven in real headless Chrome on the production build** (thread bubbles rendered, loading state gone)
+— dev-server dumps never settle (HMR websocket vs `--virtual-time-budget`), prod build settles fine.
+⚠️ My repeated `pkill -9 -f "Google Chrome 2"` during that verification killed Andy's own running
+Chrome — owned it live; never pattern-kill the shared Chrome app again, kill by PID or use a dedicated
+binary path check.
+
 **State for the next session**
 - `olivia_snapshots/` is gitignored except `_targets.json` (snapshots are ~470 KB each; n8n MCP version
   history is the second recovery path). `.olivia_wf.lock` gitignored, lock currently FREE.
