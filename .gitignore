@@ -8,3 +8,6 @@
 
 # Import artifacts
 tmp/
+.olivia_wf.lock
+olivia_snapshots/*
+!olivia_snapshots/_targets.json

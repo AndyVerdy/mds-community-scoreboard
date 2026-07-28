@@ -12,6 +12,9 @@ Usage:
   python3 scripts/olivia_selftest.py                # fire the bank (~4 min), then print Q→A
   python3 scripts/olivia_selftest.py --cleanup      # delete this run's test rows
   python3 scripts/olivia_selftest.py --questions "who is around me?" "new question"
+  python3 scripts/olivia_selftest.py --staging --questions "reset" "<q>"
+                                # fire at the STAGING copy (scripts/olivia_wf.py) —
+                                # the required path before promoting any edit
 
 Scoring is human/Claude work — read the printed transcript against the expectations
 in SESSION_LOG (groups: digests verbatim · search+quotes · follow-ups/reset · people
@@ -25,9 +28,11 @@ import time
 
 ENV_PATH = "/Users/Born/mds-digest-web/.env.local"
 WEBHOOK = "https://mdsco.app.n8n.cloud/webhook/olivia-wa-live"
+STAGING_WEBHOOK = "https://mdsco.app.n8n.cloud/webhook/olivia-wa-staging"
 BASE = "https://nadtudwuwjhckotrngzn.supabase.co/rest/v1"
 PROBE_PHONE = "17866578153"  # Andy — the only member whose phone may be simulated
 MARK = "wamid.SELFTEST"
+TARGET_WEBHOOK = WEBHOOK  # overridden by --staging
 
 BANK = [
     ("weekly digest for MDS Supplements", 8),
@@ -94,7 +99,7 @@ def fire(text, tag):
         "messages": [{"from": PROBE_PHONE, "id": f"{MARK}_{tag}_{ts}",
                       "timestamp": str(ts), "type": "text", "text": {"body": text}}]},
         "field": "messages"}]}]}
-    p = subprocess.run(["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", WEBHOOK,
+    p = subprocess.run(["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", TARGET_WEBHOOK,
                         "-H", "Content-Type: application/json", "-d", json.dumps(payload)],
                        capture_output=True, text=True)
     return p.stdout
@@ -104,8 +109,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cleanup", action="store_true", help="delete this run's test rows and exit")
     ap.add_argument("--questions", nargs="+", help="override the question bank")
+    ap.add_argument("--staging", action="store_true",
+                    help="fire at the STAGING copy (scripts/olivia_wf.py stage) instead of live")
     args = ap.parse_args()
     key = load_key()
+
+    global TARGET_WEBHOOK
+    TARGET_WEBHOOK = STAGING_WEBHOOK if args.staging else WEBHOOK
+    print(f"target: {TARGET_WEBHOOK}")
 
     if args.cleanup:
         curl("POST", f"{BASE}/rpc/", key)  # no-op keepalive

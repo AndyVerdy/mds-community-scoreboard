@@ -1,5 +1,18 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|mcp__n8n-mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/Born/Scorecard/.claude/hooks/olivia_wf_lock.py",
+            "timeout": 10,
+            "statusMessage": "Checking the Olivia workflow editing lock"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [

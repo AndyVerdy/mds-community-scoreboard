@@ -6,6 +6,58 @@ Project source of truth: **ClickUp doc "MDS Member Scorecard"** (`2531q-100317`,
 
 ---
 
+## 2026-07-28 (late PM) — Olivia: #4 Safe edits and rollback SHIPPED (staging + snapshots + enforced lock)
+
+**Project = Olivia. Backlog #4, all three story bullets shipped and proven on the live system.**
+
+**What shipped**
+- **`scripts/olivia_wf.py`** — the workflow safety tool. `stage` (prod → staging copy), `snapshot
+  --label` / `list` / `diff`, `promote` (staging → prod), `rollback <label>` (snapshot → prod),
+  `lock/unlock/status`, `activate`. Rules baked in: every prod write takes a pre-write snapshot first;
+  the TARGET's webhook path + webhookId always win (a staging graph can never carry `olivia-wa-live`
+  onto the wrong workflow); activation is always edit-then-ONE-bounce; `promote` requires the leak gate
+  GREEN; `rollback` skips the gate on purpose (emergency path stays fast). Writes verify byte-match
+  after the PUT and read settings back — the public API silently rejects UI-only settings keys (prod
+  carries `binaryMode: separate`, which POST/PUT 400 on and the n8n MCP drops silently), so
+  `put_graph()` sends the representable subset and shouts if anything got lost.
+- **Staging copy created: `bqHstPDi84uOhTCJ`**, webhook `olivia-wa-staging`, ACTIVE. Registered in
+  `olivia_snapshots/_targets.json` (committed). `stage` refreshes it from prod any time (snapshots
+  staging first, adopts an orphan by name if a create response was ever lost).
+- **`olivia_selftest.py --staging`** — same harness, same probe member, fired at the staging webhook.
+- **Single-editor lock ENFORCED, not remembered:** `.claude/hooks/olivia_wf_lock.py` (PreToolUse on
+  `Bash|mcp__n8n-mcp__.*` in `.claude/settings.json`). Blocks n8n-MCP writes, version rollbacks,
+  deletes, and raw-curl PUT/POST/DELETE that touch `12wj6h1TWqb0d4Dq` unless `.olivia_wf.lock` is held
+  by THIS session (`lock --reason ...`; TTL 2h; `--force` to steal a dead session's lock). Reads,
+  staging writes, and other workflows are never blocked. `promote`/`rollback` check the same lock
+  themselves.
+
+**Proof (all live)**
+- Staging answers the full pipeline: chapters probe (20 chapters + per-chapter breakdown on "yes" —
+  the #2 offer→yes behaviour intact on the copy), events probe — via `--staging`.
+- Full promote ran end-to-end on a real edit (a staging-protocol note on the `WA Inbound (POST)` node):
+  diff showed exactly that node → gate GREEN (147/147) → pre-promote snapshot → settings preserved incl.
+  `binaryMode` → bounce 200/200 → prod graph byte-matched staging → post-promote snapshot
+  `with-staging-note`.
+- **Rollback proven twice on prod**: back to `known-good-2026-07-28` (verified the note gone, graph
+  byte-matched the snapshot, prod answering live), then forward to `with-staging-note` (verified again,
+  prod answering live — chapters + events probes). Each rollback auto-took its pre-rollback snapshot.
+- Hook: **14/14 decision-table cases pass** (allow: prod reads, staging writes, versions list, unrelated
+  workflows, lock-holder writes; block: prod writes/deletes/version-rollbacks with no lock / another
+  session's lock / expired lock / human-held lock, raw curl PUT at prod) — and it blocked a real Bash
+  call in-session before the lock was taken.
+- Prod ends the session: 51 nodes, active, versionId `93952e3c-…`, answering correctly; gate 147/147.
+
+**State for the next session**
+- `olivia_snapshots/` is gitignored except `_targets.json` (snapshots are ~470 KB each; n8n MCP version
+  history is the second recovery path). `.olivia_wf.lock` gitignored, lock currently FREE.
+- The n8n public API has NO draft/publish or versions endpoint on this plan (`/versions`, `/publish`
+  404) — versioning lives in the snapshot files + the n8n-MCP's own version store.
+- **NEXT = #21 the answering loop, built ON STAGING** — staging is live and answering, so the loop can
+  be developed and probed there without touching members. `OLIVIA_NEXT_SESSION.md` carries the edit
+  protocol; `OLIVIA_BACKLOG.md` #4 marked DONE.
+
+---
+
 ## 2026-07-28 (PM) — Olivia: daily review, backlog rebuilt as stories, S1 #1 partly + #2 DONE
 
 **Daily review (priority 1).** Read all 112 real member questions from the first 36h of beta

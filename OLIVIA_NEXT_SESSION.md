@@ -13,10 +13,23 @@
 **Read `OLIVIA_BACKLOG.md` first.** It is the single prioritised list (S1 highest → S4 lowest, smallest
 first inside each group). `SESSION_LOG.md` 2026-07-28 (PM) has the full detail of what shipped.
 
-## NEXT: #4 · Safe edits and rollback · S1
-*As the team, we can change Olivia without members being the ones who find the breakage.*
+## NEXT: #21 · The answering loop · S1
+*As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
+Build it ON STAGING (see below), prove one slice (chapter/counting/follow-up chain), measure
+accuracy + latency + cost vs today's bot. Latency is the risk — WhatsApp can't stream.
 
-Then **#21 · The answering loop · S1** — do NOT start it on production, it depends on #4.
+## ✅ #4 Safe edits and rollback — SHIPPED 2026-07-28. THE EDIT PROTOCOL IS NOW:
+```
+python3 scripts/olivia_wf.py lock --reason "<what you are changing>"
+python3 scripts/olivia_wf.py stage          # prod -> staging copy (bqHstPDi84uOhTCJ, webhook olivia-wa-staging)
+# ...edit the STAGING workflow (n8n MCP, no lock needed there)...
+python3 scripts/olivia_selftest.py --staging --questions "reset" "<q>"
+python3 scripts/olivia_wf.py promote        # diff -> leak gate -> snapshot -> write -> bounce -> verify
+python3 scripts/olivia_wf.py unlock
+```
+Emergency: `python3 scripts/olivia_wf.py rollback <snapshot-label>` (fast path, skips the gate;
+`list` shows labels). A PreToolUse hook (`.claude/hooks/olivia_wf_lock.py`) BLOCKS any n8n write to
+the live workflow without the lock — direct prod edits now fail by design, don't fight the hook.
 
 ## Why the architecture is next
 A small router picks ONE lane before any data is seen, from a transcript trimmed to 8 turns × 240 chars,
@@ -37,7 +50,9 @@ when something failed.
 2. `olivia_selftest.py --cleanup` **reports success and deletes nothing** (353 rows since 07-21). Andy's
    ruling: don't delete, exclude his number from daily reporting.
 3. **Never rewrite the member's words** into a synthetic instruction — she disowns her own offer.
-4. n8n: edit the ACTIVE workflow, then ONE `[{deactivateWorkflow},{activateWorkflow}]` bounce.
+4. n8n: staging-first via `olivia_wf.py` (see protocol above). Where a direct prod edit is truly
+   needed, hold the lock and keep the old rule: edit the ACTIVE workflow, then ONE
+   `[{deactivateWorkflow},{activateWorkflow}]` bounce.
 5. `scripts/olivia_leak_gate.py` must be **GREEN (147/147)** before anything ships.
 6. The Build Prompt validator error is a **pre-existing false positive** — confirmed by reverting.
 

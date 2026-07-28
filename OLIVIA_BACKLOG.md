@@ -66,22 +66,36 @@ enforcement half needs the judge wired as a gate. **Impact:** every member, ever
 worst failure seen so far (a murder-suicide allegation restated about a named member) and the most
 common one (false denials).
 
-### 4. Safe edits and rollback · S1 · effort M  ← NEXT
+### 4. Safe edits and rollback · ✅ DONE 2026-07-28 · effort M
 *As the team, we can change Olivia without members being the ones who find the breakage.*
 
 Edits go straight into the workflow members are talking to. No test copy, no rollback. Two sessions have
 already overwritten each other; one bad edit killed every inbound for eight minutes.
 
-- A test copy takes the change first
-- A named version to roll back to, and a one-command rollback
-- One editing session at a time, enforced not remembered
+- A test copy takes the change first ✅
+- A named version to roll back to, and a one-command rollback ✅
+- One editing session at a time, enforced not remembered ✅
+
+**Shipped 2026-07-28 as `scripts/olivia_wf.py` + a PreToolUse hook, all three proven live.**
+(a) **Staging copy** `bqHstPDi84uOhTCJ` on webhook `olivia-wa-staging`, active; `stage` refreshes it
+from prod, `olivia_selftest.py --staging` fires the full pipeline at it (chapters + events probes
+answered). The target's webhook path/ids always win on any copy, so a staging graph can never carry the
+live Meta path and vice versa. (b) **Named snapshots + one-command rollback**: `snapshot --label X`,
+`rollback <label>` (auto pre-rollback snapshot, settings preserved incl. the API-invisible `binaryMode`,
+edit-then-ONE-bounce order, byte-match verified after write). Proven on prod twice — rolled back to
+`known-good-2026-07-28`, verified the change gone, rolled forward, verified live. `promote` = diff →
+leak gate GREEN required → pre-promote snapshot → write → bounce → verify (ran end-to-end on a real
+change). (c) **Single-editor lock enforced**: `.claude/hooks/olivia_wf_lock.py` blocks n8n-MCP writes,
+version-rollbacks, deletes and raw curl writes against the live workflow unless THIS session holds
+`.olivia_wf.lock` — 14/14 decision-table cases pass, and it blocked a real call in-session.
+Rollback deliberately skips the gate so the emergency path stays fast.
 
 **Promoted to S1 on 2026-07-28.** Not process for its own sake: Andy was testing on his real number
 while the live workflow was being edited, and a change broke his session for four minutes. The
 architecture rebuild (#21) cannot start without this. **Impact:** caps the blast radius of everything
 else on the list.
 
-### 21. The answering loop · S1 · effort L
+### 21. The answering loop · S1 · effort L  ← NEXT
 *As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
 
 Today a small fast router picks ONE lane before any data has been seen, and that decision is final. She
@@ -95,6 +109,8 @@ counting, #8 every source, #14 follow-ups, and the remaining half of #1 - four t
 - The routing cascade's accumulated special cases are retired, not ported
 - Prove it on ONE slice first (the chapter / counting / follow-up chain) on staging, and measure three
   things against today's bot: accuracy on the probe set, latency, and cost per answer
+- Staging exists now (#4): `scripts/olivia_wf.py stage` + `olivia_selftest.py --staging` — build the
+  loop there, never on production
 - Andy's bar for answer quality: "60-80% of the quality of these replies and I'm happy" - lead with the
   answer, no padding with unasked-for lists, never ask a question when the answer is already in hand,
   cite specifics, say plainly when something failed
@@ -103,7 +119,7 @@ counting, #8 every source, #14 follow-ups, and the remaining half of #1 - four t
 caching - roughly 1.5-2.5x, about $0.03-0.05 per answer. At current volume that is ~$2/day. **Latency is
 the real risk**, not spend: WhatsApp cannot stream, so a slow answer reads as a dead one.
 
-**Depends on #4.** Do not start this on production.
+**#4 is done — this is unblocked.** Do not start this on production.
 ### 2. Deliver what she offers · ✅ DONE 2026-07-28 · effort S
 *As a member, if she offers me something and I say yes, I get it.*
 
