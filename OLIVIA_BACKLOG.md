@@ -66,6 +66,44 @@ enforcement half needs the judge wired as a gate. **Impact:** every member, ever
 worst failure seen so far (a murder-suicide allegation restated about a named member) and the most
 common one (false denials).
 
+### 4. Safe edits and rollback · S1 · effort M  ← NEXT
+*As the team, we can change Olivia without members being the ones who find the breakage.*
+
+Edits go straight into the workflow members are talking to. No test copy, no rollback. Two sessions have
+already overwritten each other; one bad edit killed every inbound for eight minutes.
+
+- A test copy takes the change first
+- A named version to roll back to, and a one-command rollback
+- One editing session at a time, enforced not remembered
+
+**Promoted to S1 on 2026-07-28.** Not process for its own sake: Andy was testing on his real number
+while the live workflow was being edited, and a change broke his session for four minutes. The
+architecture rebuild (#21) cannot start without this. **Impact:** caps the blast radius of everything
+else on the list.
+
+### 21. The answering loop · S1 · effort L
+*As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
+
+Today a small fast router picks ONE lane before any data has been seen, and that decision is final. She
+gets a compressed transcript (8 turns, 240 chars each) and one shot at retrieval. If the lane is wrong,
+or the offer got trimmed out, she cannot recover. That single-pass shape is the root cause behind #5
+counting, #8 every source, #14 follow-ups, and the remaining half of #1 - four tickets, one cause.
+
+- The answering model gets the full conversation and the gated RPCs as TOOLS, and calls them in a loop:
+  fetch, read the result, fetch again if needed, then answer
+- The gated RPCs are unchanged - security stays enforced in SQL and the leak gate still covers it
+- The routing cascade's accumulated special cases are retired, not ported
+- Prove it on ONE slice first (the chapter / counting / follow-up chain) on staging, and measure three
+  things against today's bot: accuracy on the probe set, latency, and cost per answer
+- Andy's bar for answer quality: "60-80% of the quality of these replies and I'm happy" - lead with the
+  answer, no padding with unasked-for lists, never ask a question when the answer is already in hand,
+  cite specifics, say plainly when something failed
+
+**Cost estimate:** 3-5 model calls per message instead of 2, offset by dropping the router and by prompt
+caching - roughly 1.5-2.5x, about $0.03-0.05 per answer. At current volume that is ~$2/day. **Latency is
+the real risk**, not spend: WhatsApp cannot stream, so a slow answer reads as a dead one.
+
+**Depends on #4.** Do not start this on production.
 ### 2. Deliver what she offers · ✅ DONE 2026-07-28 · effort S
 *As a member, if she offers me something and I say yes, I get it.*
 
@@ -87,6 +125,10 @@ it — while having it. Same class: handing over 60 of 88 Singapore names as tho
  not enough: she had all 20 chapters in the prompt and still asked what you wanted.
  Side benefit: the turn log now records which lane and RPC answered, closing the measurement gap.
 
+---
+
+# S2
+
 ### 3. "Restricted", never "doesn't exist" · S2 · effort S
 *As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*
 
@@ -95,21 +137,6 @@ it — while having it. Same class: handing over 60 of 88 Singapore names as tho
 - Never invents content from a title or description
 
 **Effort S** — mostly prompt, but prompt rules have lost here before, so it moves into the data. **Impact:** the video library is 39% restricted.
-
-### 4. Safe edits and rollback · S1 · effort M  ← NEXT
-*As the team, we can change Olivia without members being the ones who find the breakage.*
-
-Edits go straight into the workflow members are talking to. No test copy, no rollback. Two sessions have
-already overwritten each other; one bad edit killed every inbound for eight minutes.
-
-- A test copy takes the change first
-- A named version to roll back to, and a one-command rollback
-- One editing session at a time, enforced not remembered
-
-**Promoted to S1 on 2026-07-28.** Not process for its own sake: Andy was testing on his real number
-while the live workflow was being edited, and a change broke his session for four minutes. The
-architecture rebuild (#21) cannot start without this. **Impact:** caps the blast radius of everything
-else on the list.
 
 ### 5. Counting · S2 · effort M
 *As a member, when I ask a number I get a number.*
@@ -364,30 +391,3 @@ reply — so anything filtering her replies reports **eval traffic as production
 And the turn log records the delivery path, not which sources answered, so cross-source coverage can only
 be estimated. One cheap fix closes both.
 
----
-
-# S1 (added 2026-07-28)
-
-### 21. The answering loop · S1 · effort L
-*As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
-
-Today a small fast router picks ONE lane before any data has been seen, and that decision is final. She
-gets a compressed transcript (8 turns, 240 chars each) and one shot at retrieval. If the lane is wrong,
-or the offer got trimmed out, she cannot recover. That single-pass shape is the root cause behind #5
-counting, #8 every source, #14 follow-ups, and the remaining half of #1 - four tickets, one cause.
-
-- The answering model gets the full conversation and the gated RPCs as TOOLS, and calls them in a loop:
-  fetch, read the result, fetch again if needed, then answer
-- The gated RPCs are unchanged - security stays enforced in SQL and the leak gate still covers it
-- The routing cascade's accumulated special cases are retired, not ported
-- Prove it on ONE slice first (the chapter / counting / follow-up chain) on staging, and measure three
-  things against today's bot: accuracy on the probe set, latency, and cost per answer
-- Andy's bar for answer quality: "60-80% of the quality of these replies and I'm happy" - lead with the
-  answer, no padding with unasked-for lists, never ask a question when the answer is already in hand,
-  cite specifics, say plainly when something failed
-
-**Cost estimate:** 3-5 model calls per message instead of 2, offset by dropping the router and by prompt
-caching - roughly 1.5-2.5x, about $0.03-0.05 per answer. At current volume that is ~$2/day. **Latency is
-the real risk**, not spend: WhatsApp cannot stream, so a slow answer reads as a dead one.
-
-**Depends on #4.** Do not start this on production.
