@@ -14,6 +14,7 @@
 first inside each group). `SESSION_LOG.md` 2026-07-28 (PM) has the full detail of what shipped.
 
 ## Andy's organic-review rulings (2026-07-29) — folded into the bank + fix batch
+**Andy reviewed the full report and AGREES with all remaining judgments and queued fixes as-is** — the 8 points below were his only corrections; everything else stands approved.
 - City-level location lists OK (public maps) · **TO-DO: location-share opt-out flag in Supa profiles
   (default YES) + respect removal requests — check via GroupOS MCP profile details.**
 - Many matches → secondary sort by engagement score (never shown) — bank expects updated.
