@@ -115,6 +115,17 @@ needs "do the thread pull, don't offer it" guidance). Also selftest 20s pacing n
 probe artifact, raise waits. NEXT: offer→do guidance + Sarah exec check + free re-probe, then ONE
 measuring run.
 
+**RUN 5 (single-word terms + do-don't-offer + Andy's bank rulings applied: 9 vcall Qs removed, 3
+expectations corrected, chats CSV loaded to digest.chats + gate green): 103 judged · PASS 55 ·
+PARTIAL 3 · FAIL 45 (43.7%).** Treated classes HOLD: **FORM 0 fail 🟢** (was 100% this morning),
+VIDEO 1, WA_RAW 3; Sarah/IEEPA + Patrón + book probes all pass (book = member's own "Physiology of
+Money" typo, quoted faithfully — bank now accepts verbatim-quote answers). **AT_PROFILE regressed
+5-8→12/22** — next deep-dive target (suspect: preload noise on profile questions or the single-word
+rule degrading expertise queries). Aggregate still in the 41-48% variance plateau: per-class
+treatment works, flap persists. Chats data: 17 rows updated + MDS TikTok +1M TTM added (no chat_id —
+not yet in Whapi capture; name must match when added). Airtable MCP token is DEAD (Unauthorized) —
+needs reconnect. NEXT: free diagnosis of the 45 (stable-vs-flap + AT_PROFILE execs), fix, measure.
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +
