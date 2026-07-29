@@ -52,6 +52,19 @@ video tools + embedding support + retrieval guidance, re-run, get ≤ prod's 13.
 talk. The fact-gate + eval harness are doing exactly their job: fabrication is dead and the recall gap
 is measured, named, and blocking promotion.
 
+**ITERATION 1 ON THE FOCUSED SET (92 fails + 20 pass-coverage = 112 ids, `--ids` mode — Andy's cost
+ruling: never re-fire the full 229 bank while iterating).** Fixes: `video_search` tool added (the
+VIDEO module had NO tool — smoke: real PPC Mogul Call + link), **semantic embeddings restored**
+(Voyage hop before Answer Tool, single-chain so tool_result pairing stays order-safe; content_search +
+video_search get p_embedding, failures degrade to keyword), restricted-video rule (exists-but-
+restricted, never deny). Result: **~30 of the 92 old fails recovered** (videos + several comment
+questions); remaining mass = single-fact comment recall (searches too literally). Search-technique
+guidance ported from the cascade (rare-term-first, 2 phrasings min, comments always in sources,
+author + name-as-term) and applied to staging. **Re-run blocked by the eval's own $15/day spend cap**
+($11.68 spent — the 229 overrun ate it; run ≈ $3.42). Next: tomorrow's cap or OLIVIA_EVAL_FORCE=1 —
+Andy's call. Costs measured: staging ~$0.03-0.04/answer (gate ≈ prod +30%); focused run ≈ half the
+229 run.
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +
