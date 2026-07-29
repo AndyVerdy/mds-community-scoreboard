@@ -368,6 +368,20 @@ through this".
 
 ---
 
+### 22. Cost control · S3 · effort M
+*As the team, we know exactly what Olivia spends per answer and per eval, and we pay the least that
+meets the quality bar.*
+
+- Standing per-answer + per-run cost visibility (usage line in the eval report / health tile)
+- **Evaluate moving off the Anthropic API for some or all calls — candidate: Kimi
+  (platform.kimi.ai), ~3× cheaper per 1M tokens, quality claimed comparable to Opus (Andy,
+  2026-07-29).** Trial order: the cheap high-volume calls first (judge screen, fact-gate, router) —
+  the answering model last.
+- Bar for ANY model swap: same organic bank score or better, leak-gate green, fabrication probes
+  clean, latency in band — measured, never assumed.
+- Note for the privacy line: adds a third AI vendor handling member content (current stance was
+  two: Anthropic + Voyage).
+
 # Daily routine — not a backlog item
 
 **Andy's number is excluded from daily reporting** (2026-07-28). He tests constantly and the
