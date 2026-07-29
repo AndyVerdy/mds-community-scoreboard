@@ -74,6 +74,18 @@ restricted flags), PARTNER 3, FB 3. Next levers, in order: FORM tool or owner-co
 event_lookup past-mode technique · video latest/restricted listing · partner browse mode. Spend today
 ≈ $15.1 (cap raised deliberately once, Andy's "force it").
 
+**ITERATION 3 (module guidance: FORM via application source · EVENT past-mode · VIDEO latest ·
+recommendation breadth): 52 fail (46.4%)** vs run 2's 46 — targeted modules improved (FORM 4→2,
+VIDEO 4→2, PARTNER 3→2) but GEN 10→14, AT_PROFILE 5→8, CROSS 2→5 wobbled back. Read: (1) inside the
+documented run-to-run variance band (same system swings 5-10 pts — taming variance is itself on the
+routine); (2) prompt-guidance iterations have plateaued ~45-50 on the hard set. Hard-set trajectory:
+**92 → 65 → 46 → 52**. Next levers are MECHANICAL, not prompt: `content_lookup` tool into the loop
+(date-window browse — gap Andy himself surfaced: "what were people talking about Jul 20-22"; the loop
+approximates with p_since search today) · chapter on member_match rows (public-in-app, one gated SQL
+change — unlocks "which chapter has people like me" exactly) · per-fail replay via the FREE
+`diagnose_gen_fails.py` before ANY further paid runs · then one clean measured run. Spend today
+≈ $18.5 (2 forced runs on Andy's order).
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +
