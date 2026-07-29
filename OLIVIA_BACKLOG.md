@@ -22,9 +22,13 @@ or has one real unknown. L = needs data or a decision we don't have yet.
 
 ---
 
-# S1 — highest
+**Severity key:** 🔴 S1 highest · 🟡 S2 · 🔵 S3 · ⚪ S4 lowest · ✅ done (bottom).
 
-### 1. Every answer matches the evidence · S1 · effort M
+---
+
+# 🔴 S1 — highest
+
+### 1. 🔴 Every answer matches the evidence · S1 · effort M
 *As a member, what Olivia tells me is exactly what the sources support - she never adds a verdict of
 her own, and she never tells me there is nothing when there is.*
 
@@ -66,36 +70,7 @@ enforcement half needs the judge wired as a gate. **Impact:** every member, ever
 worst failure seen so far (a murder-suicide allegation restated about a named member) and the most
 common one (false denials).
 
-### 4. Safe edits and rollback · ✅ DONE 2026-07-28 · effort M
-*As the team, we can change Olivia without members being the ones who find the breakage.*
-
-Edits go straight into the workflow members are talking to. No test copy, no rollback. Two sessions have
-already overwritten each other; one bad edit killed every inbound for eight minutes.
-
-- A test copy takes the change first ✅
-- A named version to roll back to, and a one-command rollback ✅
-- One editing session at a time, enforced not remembered ✅
-
-**Shipped 2026-07-28 as `scripts/olivia_wf.py` + a PreToolUse hook, all three proven live.**
-(a) **Staging copy** `bqHstPDi84uOhTCJ` on webhook `olivia-wa-staging`, active; `stage` refreshes it
-from prod, `olivia_selftest.py --staging` fires the full pipeline at it (chapters + events probes
-answered). The target's webhook path/ids always win on any copy, so a staging graph can never carry the
-live Meta path and vice versa. (b) **Named snapshots + one-command rollback**: `snapshot --label X`,
-`rollback <label>` (auto pre-rollback snapshot, settings preserved incl. the API-invisible `binaryMode`,
-edit-then-ONE-bounce order, byte-match verified after write). Proven on prod twice — rolled back to
-`known-good-2026-07-28`, verified the change gone, rolled forward, verified live. `promote` = diff →
-leak gate GREEN required → pre-promote snapshot → write → bounce → verify (ran end-to-end on a real
-change). (c) **Single-editor lock enforced**: `.claude/hooks/olivia_wf_lock.py` blocks n8n-MCP writes,
-version-rollbacks, deletes and raw curl writes against the live workflow unless THIS session holds
-`.olivia_wf.lock` — 14/14 decision-table cases pass, and it blocked a real call in-session.
-Rollback deliberately skips the gate so the emergency path stays fast.
-
-**Promoted to S1 on 2026-07-28.** Not process for its own sake: Andy was testing on his real number
-while the live workflow was being edited, and a change broke his session for four minutes. The
-architecture rebuild (#21) cannot start without this. **Impact:** caps the blast radius of everything
-else on the list.
-
-### 21. The answering loop · S1 · effort L  ← NEXT
+### 21. 🔴 The answering loop · S1 · effort L  ← NEXT
 *As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
 
 Today a small fast router picks ONE lane before any data has been seen, and that decision is final. She
@@ -134,7 +109,8 @@ refusal; "nasir's revenue" → tier-band-only offer; gate 147/147. **Latency 6.5
 (6.5K-token tools+system prefix cached; ~500–1,000 fresh tokens/call). Remaining before promote: run
 the full probe set + eval bank through the loop, exercise the other lanes (events, partners, person,
 FB, images), decide the canned-route boundary, then promote via the #4 protocol.
-### 22. Kimi trial · S1 · effort M  ← GOAL (Andy 2026-07-29)
+
+### 22. 🔴 Kimi trial · S1 · effort M  ← GOAL (Andy 2026-07-29)
 *As the team, we know whether a 3×-cheaper model can carry Olivia's work without losing quality —
 measured, not assumed.*
 
@@ -161,7 +137,228 @@ than Haiku's (~$0.10), so swapping the gate/judge is not a saving.
 latency in band. Kill switch = one base-URL revert per call site.
 ⚠️ Adds a third AI vendor handling member content (today: Anthropic + Voyage) — privacy line in #19.
 
-### 2. Deliver what she offers · ✅ DONE 2026-07-28 · effort S
+---
+
+# 🟡 S2
+
+### 3. 🟡 "Restricted", never "doesn't exist" · S2 · effort S
+*As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*
+
+- Restricted videos appear in "what's new", content withheld
+- Asked what was said on a call, she says there are no transcripts rather than guessing from the description
+- Never invents content from a title or description
+
+**Effort S** — mostly prompt, but prompt rules have lost here before, so it moves into the data. **Impact:** the video library is 39% restricted.
+
+### 5. 🟡 Counting · S2 · effort M
+*As a member, when I ask a number I get a number.*
+
+She lists but cannot count, and often says "I don't have that data" when she does. Live: SoCal vs Texas
+totals, members under $1m, chapters with counts, most-active members.
+
+- Counts by city, state, chapter, category and revenue bracket return a real number
+- "Total it up" across a previous answer works
+- Aggregate counts never identify anyone
+- Where a count genuinely doesn't exist, she says so rather than implying she has nothing
+
+**Effort M** — counting RPC plus a router lane; unknown is which counts may be shared. **Impact:** hit repeatedly by two of six testers within an hour.
+
+### 6. 🟡 Chapters, end to end · S2 · effort M
+*As a member, I can ask anything about chapters and get a real answer.*
+
+Verified: **member counts are already live** (all 20 chapters with counts), **chapter leads exist in
+Airtable but are not exposed** (New York → Mari, Morris, Brandon), **"am I in a chapter" is answerable
+but only 14% of members have one on record**, and the four policy questions — change chapters, join
+several, live in two places, how do I change — have **no source anywhere**.
+
+- How many members in each chapter, and who leads it
+- Am I in a chapter; can I be in several (120 members already are)
+- The policy answers get written down once and become answerable
+- **Andy picks the canonical count first:** Airtable rollup says New York 94, live logic 97, raw field 116
+- **Andy rules on chapter leads:** is a lead's name shareable, their email ever
+- Needs a chapter whitelist — the raw field yields 36 "chapters" including Shopify, Amazon and Sponsor
+
+**Impact:** 804 members have a chapter; the policy questions apply to all 722.
+
+### 7. 🟡 People search that understands meaning · S2 · effort M
+*As a member, I find the right person even when I don't know the exact word or spelling.*
+
+"Who's good at paid ads" cannot reach the PPC people. Prudence Tweedie-Millsap took four spellings.
+There is no fuzzy matching installed at all — no `pg_trgm`, no member embeddings; only exact word
+matching plus a hand-written synonym list.
+
+- A misspelled or partial name resolves first try
+- Synonyms work without anyone maintaining a list
+- Member profiles embedded, same approach already used for content
+- Still ranked by engagement score, never shown
+
+**Effort M** — new extension plus an embedding pass over ~5,700 profiles; changes ranking behaviour. **Impact:** every "who knows X" and "tell me about Y" — the most common ask after digests.
+
+### 8. 🟡 Every source on every question · S2 · effort M
+*As a member, one question gets checked against every source that could answer it.*
+
+Verified: Facebook + WhatsApp together is already the norm, but the true fan-out — partners, events,
+members, videos — runs on roughly **1 answer in 12**. The fan-out function has **no Facebook section and
+no videos section at all**, and its lanes sit low in the routing order, so "which member has…" is
+answered from profiles alone and never fans out.
+
+- Facebook and the video library join the fan-out
+- The fan-out lanes are reachable from real phrasings, not four hard-coded ones
+- Which sources answered each turn is recorded, so this stops being an estimate
+- A member never gets "I can't find that" when another source had it
+
+**Effort M** — extends an existing function, but touches routing order, shared with every lane. **Impact:** all members; it's the difference between a search box and something that knows MDS.
+
+### 9. 🟡 Revenue brackets, one rule · S2 · effort L
+*As a member, revenue answers are consistent and never expose anyone's actual number.*
+
+Most-recent revenue can never be exposed; brackets can. Either derive the bracket from most-recent
+revenue or use the bracket field where it fits. Three competing tier fields exist, none confirmed. Same
+audit is owed on **revenue sources** — Amazon, DTC, TikTok — which the application form already calculates.
+
+- One field named authoritative, in writing, with the reason
+- Bracket derived by a single rule everywhere: cards, matching, counting
+- Raw revenue cannot leave the database — gate check
+- "Who sells on TikTok" / "who's DTC" answer consistently from application data
+- **Needs a working session with Andy before building**
+
+**Impact:** every profile card, every match, every "who does X" answer.
+
+---
+
+---
+
+# 🔵 S3
+
+### 10. 🔵 Shareable member facts · S3 · effort S
+*As a member, similar questions get similar answers.*
+
+Job title, years in business, business model, country, product categories, SKU and brand counts. Today
+she refuses unevenly — "who sells on TikTok" works one way and is refused another.
+
+- One approved list of shareable fields, applied everywhere
+- Gate blocks everything off the list
+- The sales-channel inconsistency resolved
+
+**Impact:** every profile and matching answer.
+
+### 11. 🔵 Payment wording · S3 · effort S
+*As a member behind on payment, I'm told clearly and reminded kindly — not shown a system word.*
+
+Stripe's raw statuses reach members verbatim: `trialing`, `past_due`, `unpaid`, `canceled`. "Staff" has
+also leaked as a membership status.
+
+- `past_due` and `unpaid`: state it plainly, say what to do, keep the tone light
+- Every status has approved wording; no raw system words reach anyone
+- Internal statuses like Staff never surface
+
+**Impact:** small but sensitive; 9 active members already carry broken Stripe records.
+
+### 12. 🔵 Public revenue, double-sourced · S3 · effort S
+*As a member, a public figure someone posted is quoted with its source, never as Olivia's claim.*
+
+Andy's rule: publicly-posted figures are fair game, double-sourced — "my data puts him in this bracket;
+he also said in this post that…".
+
+- Any figure carries the post or chat it came from
+- Bracket and public figure presented together, both attributed
+- **Blocked on:** whether a *ranking* of named members by revenue is allowed at all
+
+**Impact:** low frequency, high sensitivity in a room of senior sellers.
+
+### 13. 🔵 Outage alarm · S3 · effort M
+*As the team, we hear about an outage in minutes, from a system that isn't the one that's broken.*
+
+**Verified broken** — see status section. This is why Andy has never seen Olivia down.
+
+- An alert fires the first time a member gets the failure text
+- A warning before the AI account balance runs out; Olivia's own account, not a shared one
+- The monitor doesn't run on the platform it watches, and cannot latch itself off
+- A spend cap so one heavy user can't drain the budget
+
+**Impact:** on 07-26 every member asking anything got a failure message and nobody knew. *(Recommend raising to S2 — same job as #16.)*
+
+### 14. 🔵 Conversational, not robotic · S3 · effort L
+*As a member, it follows what I mean, keeps context, and reads like someone who knows MDS.*
+
+Andy's own read: "it feels like a bot very restricted to me."
+
+- Follow-ups keep the thread — "yes", "what about Austin", "total it up" work without repeating myself
+- One capped answer isn't the end of the conversation
+- She uses what she knows about me without being asked
+- Fewer "I don't have that" walls, more "here's what I do have"
+
+**Effort L** — cuts across routing, retrieval and prompt; hardest to define done. Needs its own session on what good looks like. **Impact:** every member, every conversation — the difference between used and abandoned.
+
+### 15. 🔵 Hands-off data pipeline · S3 · effort L
+*As a member, what happened yesterday is answerable today.*
+
+Facebook still needs a manual scroll twice a week; the member-profile sync sits on a scheduler known to
+skip runs and was dead three days; new Facebook posts aren't searchable until two manual steps run.
+
+- Facebook capture runs without a person
+- The member sync runs on a reliable trigger and alerts when it doesn't
+- New posts searchable the day they land
+
+**Effort L** — the Facebook half fights a platform that keeps changing. **Impact:** every member; the most visible staleness.
+
+---
+
+---
+
+# ⚪ S4 — lowest
+
+### 16. ⚪ Health dashboard audit · S4 · effort M
+*As the team, the health dashboard tells the truth.*
+
+Andy: "I don't think it's working. I haven't seen Olivia down." **Confirmed — it isn't.** Every tile
+audited: does it go red when the thing is actually broken, and does anyone receive it. Overlaps #13.
+
+**Impact:** indirect; it's how we find out about everything else.
+
+### 17. ⚪ Auto-refresh videos and partners · S4 · effort M
+*As a member, new recordings and deals show up without anyone importing them.*
+
+13 videos landed in a week and none surfaced in any catch-up; partner data sits on a frozen snapshot.
+Needs the GroupOS key. Includes sending GroupOS the 13-item requirements doc — one of which is a live
+security exposure: restricted decks are publicly downloadable.
+
+**Effort M** — blocked on a key we don't have. **Impact:** everyone asking what's new; the security item is urgent on its own terms.
+
+### 18. ⚪ How-MDS-works answers · S4 · effort M
+*As a member, I get the real answer about Squads, programs and joining a chat.*
+
+From the team's own documents rather than inferred from chat chatter. Also unblocks the chapter policy
+questions in #9.
+
+**Effort M** — the work is someone writing the answers; loading them is straightforward. **Impact:** all 722; every one of these currently becomes a support request.
+
+### 19. ⚪ Privacy: share, keep, delete · S4 · effort M
+*As a member, I know what's stored about me and can have it removed.*
+
+- A written position on what Olivia may share about a member, with whom
+- How long conversations are kept (Andy's instinct: forever — needs stating, not defaulting)
+- A member can ask for their history to be deleted, and it happens
+- Consistent with what the beta email already promises
+
+**Impact:** all members, low urgency until someone asks.
+
+### 20. ⚪ Census into the warehouse · S4 · effort L
+*As a member, Olivia knows what I actually said about my business.*
+
+The freshest self-reported revenue, channel and SKU data MDS holds, currently not in the warehouse at
+all. Unblocks member personas — what turns matching from tick-box filtering into "who has actually lived
+through this".
+
+**Impact:** all 722; the biggest single quality lever left.
+
+---
+
+---
+
+# ✅ Completed
+
+### 2. ✅ Deliver what she offers · DONE 2026-07-28 · effort S
 *As a member, if she offers me something and I say yes, I get it.*
 
 She offered the full chapter list with member counts, the member said yes, and she said she didn't have
@@ -184,217 +381,36 @@ it — while having it. Same class: handing over 60 of 88 Singapore names as tho
 
 ---
 
-# S2
+### 4. ✅ Safe edits and rollback · DONE 2026-07-28 · effort M
+*As the team, we can change Olivia without members being the ones who find the breakage.*
 
-### 3. "Restricted", never "doesn't exist" · S2 · effort S
-*As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*
+Edits go straight into the workflow members are talking to. No test copy, no rollback. Two sessions have
+already overwritten each other; one bad edit killed every inbound for eight minutes.
 
-- Restricted videos appear in "what's new", content withheld
-- Asked what was said on a call, she says there are no transcripts rather than guessing from the description
-- Never invents content from a title or description
+- A test copy takes the change first ✅
+- A named version to roll back to, and a one-command rollback ✅
+- One editing session at a time, enforced not remembered ✅
 
-**Effort S** — mostly prompt, but prompt rules have lost here before, so it moves into the data. **Impact:** the video library is 39% restricted.
+**Shipped 2026-07-28 as `scripts/olivia_wf.py` + a PreToolUse hook, all three proven live.**
+(a) **Staging copy** `bqHstPDi84uOhTCJ` on webhook `olivia-wa-staging`, active; `stage` refreshes it
+from prod, `olivia_selftest.py --staging` fires the full pipeline at it (chapters + events probes
+answered). The target's webhook path/ids always win on any copy, so a staging graph can never carry the
+live Meta path and vice versa. (b) **Named snapshots + one-command rollback**: `snapshot --label X`,
+`rollback <label>` (auto pre-rollback snapshot, settings preserved incl. the API-invisible `binaryMode`,
+edit-then-ONE-bounce order, byte-match verified after write). Proven on prod twice — rolled back to
+`known-good-2026-07-28`, verified the change gone, rolled forward, verified live. `promote` = diff →
+leak gate GREEN required → pre-promote snapshot → write → bounce → verify (ran end-to-end on a real
+change). (c) **Single-editor lock enforced**: `.claude/hooks/olivia_wf_lock.py` blocks n8n-MCP writes,
+version-rollbacks, deletes and raw curl writes against the live workflow unless THIS session holds
+`.olivia_wf.lock` — 14/14 decision-table cases pass, and it blocked a real call in-session.
+Rollback deliberately skips the gate so the emergency path stays fast.
 
-### 5. Counting · S2 · effort M
-*As a member, when I ask a number I get a number.*
-
-She lists but cannot count, and often says "I don't have that data" when she does. Live: SoCal vs Texas
-totals, members under $1m, chapters with counts, most-active members.
-
-- Counts by city, state, chapter, category and revenue bracket return a real number
-- "Total it up" across a previous answer works
-- Aggregate counts never identify anyone
-- Where a count genuinely doesn't exist, she says so rather than implying she has nothing
-
-**Effort M** — counting RPC plus a router lane; unknown is which counts may be shared. **Impact:** hit repeatedly by two of six testers within an hour.
-
-### 6. Chapters, end to end · S2 · effort M
-*As a member, I can ask anything about chapters and get a real answer.*
-
-Verified: **member counts are already live** (all 20 chapters with counts), **chapter leads exist in
-Airtable but are not exposed** (New York → Mari, Morris, Brandon), **"am I in a chapter" is answerable
-but only 14% of members have one on record**, and the four policy questions — change chapters, join
-several, live in two places, how do I change — have **no source anywhere**.
-
-- How many members in each chapter, and who leads it
-- Am I in a chapter; can I be in several (120 members already are)
-- The policy answers get written down once and become answerable
-- **Andy picks the canonical count first:** Airtable rollup says New York 94, live logic 97, raw field 116
-- **Andy rules on chapter leads:** is a lead's name shareable, their email ever
-- Needs a chapter whitelist — the raw field yields 36 "chapters" including Shopify, Amazon and Sponsor
-
-**Impact:** 804 members have a chapter; the policy questions apply to all 722.
-
-### 7. People search that understands meaning · S2 · effort M
-*As a member, I find the right person even when I don't know the exact word or spelling.*
-
-"Who's good at paid ads" cannot reach the PPC people. Prudence Tweedie-Millsap took four spellings.
-There is no fuzzy matching installed at all — no `pg_trgm`, no member embeddings; only exact word
-matching plus a hand-written synonym list.
-
-- A misspelled or partial name resolves first try
-- Synonyms work without anyone maintaining a list
-- Member profiles embedded, same approach already used for content
-- Still ranked by engagement score, never shown
-
-**Effort M** — new extension plus an embedding pass over ~5,700 profiles; changes ranking behaviour. **Impact:** every "who knows X" and "tell me about Y" — the most common ask after digests.
-
-### 8. Every source on every question · S2 · effort M
-*As a member, one question gets checked against every source that could answer it.*
-
-Verified: Facebook + WhatsApp together is already the norm, but the true fan-out — partners, events,
-members, videos — runs on roughly **1 answer in 12**. The fan-out function has **no Facebook section and
-no videos section at all**, and its lanes sit low in the routing order, so "which member has…" is
-answered from profiles alone and never fans out.
-
-- Facebook and the video library join the fan-out
-- The fan-out lanes are reachable from real phrasings, not four hard-coded ones
-- Which sources answered each turn is recorded, so this stops being an estimate
-- A member never gets "I can't find that" when another source had it
-
-**Effort M** — extends an existing function, but touches routing order, shared with every lane. **Impact:** all members; it's the difference between a search box and something that knows MDS.
-
-### 9. Revenue brackets, one rule · S2 · effort L
-*As a member, revenue answers are consistent and never expose anyone's actual number.*
-
-Most-recent revenue can never be exposed; brackets can. Either derive the bracket from most-recent
-revenue or use the bracket field where it fits. Three competing tier fields exist, none confirmed. Same
-audit is owed on **revenue sources** — Amazon, DTC, TikTok — which the application form already calculates.
-
-- One field named authoritative, in writing, with the reason
-- Bracket derived by a single rule everywhere: cards, matching, counting
-- Raw revenue cannot leave the database — gate check
-- "Who sells on TikTok" / "who's DTC" answer consistently from application data
-- **Needs a working session with Andy before building**
-
-**Impact:** every profile card, every match, every "who does X" answer.
+**Promoted to S1 on 2026-07-28.** Not process for its own sake: Andy was testing on his real number
+while the live workflow was being edited, and a change broke his session for four minutes. The
+architecture rebuild (#21) cannot start without this. **Impact:** caps the blast radius of everything
+else on the list.
 
 ---
-
-# S3
-
-### 10. Shareable member facts · S3 · effort S
-*As a member, similar questions get similar answers.*
-
-Job title, years in business, business model, country, product categories, SKU and brand counts. Today
-she refuses unevenly — "who sells on TikTok" works one way and is refused another.
-
-- One approved list of shareable fields, applied everywhere
-- Gate blocks everything off the list
-- The sales-channel inconsistency resolved
-
-**Impact:** every profile and matching answer.
-
-### 11. Payment wording · S3 · effort S
-*As a member behind on payment, I'm told clearly and reminded kindly — not shown a system word.*
-
-Stripe's raw statuses reach members verbatim: `trialing`, `past_due`, `unpaid`, `canceled`. "Staff" has
-also leaked as a membership status.
-
-- `past_due` and `unpaid`: state it plainly, say what to do, keep the tone light
-- Every status has approved wording; no raw system words reach anyone
-- Internal statuses like Staff never surface
-
-**Impact:** small but sensitive; 9 active members already carry broken Stripe records.
-
-### 12. Public revenue, double-sourced · S3 · effort S
-*As a member, a public figure someone posted is quoted with its source, never as Olivia's claim.*
-
-Andy's rule: publicly-posted figures are fair game, double-sourced — "my data puts him in this bracket;
-he also said in this post that…".
-
-- Any figure carries the post or chat it came from
-- Bracket and public figure presented together, both attributed
-- **Blocked on:** whether a *ranking* of named members by revenue is allowed at all
-
-**Impact:** low frequency, high sensitivity in a room of senior sellers.
-
-### 13. Outage alarm · S3 · effort M
-*As the team, we hear about an outage in minutes, from a system that isn't the one that's broken.*
-
-**Verified broken** — see status section. This is why Andy has never seen Olivia down.
-
-- An alert fires the first time a member gets the failure text
-- A warning before the AI account balance runs out; Olivia's own account, not a shared one
-- The monitor doesn't run on the platform it watches, and cannot latch itself off
-- A spend cap so one heavy user can't drain the budget
-
-**Impact:** on 07-26 every member asking anything got a failure message and nobody knew. *(Recommend raising to S2 — same job as #16.)*
-
-### 14. Conversational, not robotic · S3 · effort L
-*As a member, it follows what I mean, keeps context, and reads like someone who knows MDS.*
-
-Andy's own read: "it feels like a bot very restricted to me."
-
-- Follow-ups keep the thread — "yes", "what about Austin", "total it up" work without repeating myself
-- One capped answer isn't the end of the conversation
-- She uses what she knows about me without being asked
-- Fewer "I don't have that" walls, more "here's what I do have"
-
-**Effort L** — cuts across routing, retrieval and prompt; hardest to define done. Needs its own session on what good looks like. **Impact:** every member, every conversation — the difference between used and abandoned.
-
-### 15. Hands-off data pipeline · S3 · effort L
-*As a member, what happened yesterday is answerable today.*
-
-Facebook still needs a manual scroll twice a week; the member-profile sync sits on a scheduler known to
-skip runs and was dead three days; new Facebook posts aren't searchable until two manual steps run.
-
-- Facebook capture runs without a person
-- The member sync runs on a reliable trigger and alerts when it doesn't
-- New posts searchable the day they land
-
-**Effort L** — the Facebook half fights a platform that keeps changing. **Impact:** every member; the most visible staleness.
-
----
-
-# S4 — lowest
-
-### 16. Health dashboard audit · S4 · effort M
-*As the team, the health dashboard tells the truth.*
-
-Andy: "I don't think it's working. I haven't seen Olivia down." **Confirmed — it isn't.** Every tile
-audited: does it go red when the thing is actually broken, and does anyone receive it. Overlaps #13.
-
-**Impact:** indirect; it's how we find out about everything else.
-
-### 17. Auto-refresh videos and partners · S4 · effort M
-*As a member, new recordings and deals show up without anyone importing them.*
-
-13 videos landed in a week and none surfaced in any catch-up; partner data sits on a frozen snapshot.
-Needs the GroupOS key. Includes sending GroupOS the 13-item requirements doc — one of which is a live
-security exposure: restricted decks are publicly downloadable.
-
-**Effort M** — blocked on a key we don't have. **Impact:** everyone asking what's new; the security item is urgent on its own terms.
-
-### 18. How-MDS-works answers · S4 · effort M
-*As a member, I get the real answer about Squads, programs and joining a chat.*
-
-From the team's own documents rather than inferred from chat chatter. Also unblocks the chapter policy
-questions in #9.
-
-**Effort M** — the work is someone writing the answers; loading them is straightforward. **Impact:** all 722; every one of these currently becomes a support request.
-
-### 19. Privacy: share, keep, delete · S4 · effort M
-*As a member, I know what's stored about me and can have it removed.*
-
-- A written position on what Olivia may share about a member, with whom
-- How long conversations are kept (Andy's instinct: forever — needs stating, not defaulting)
-- A member can ask for their history to be deleted, and it happens
-- Consistent with what the beta email already promises
-
-**Impact:** all members, low urgency until someone asks.
-
-### 20. Census into the warehouse · S4 · effort L
-*As a member, Olivia knows what I actually said about my business.*
-
-The freshest self-reported revenue, channel and SKU data MDS holds, currently not in the warehouse at
-all. Unblocks member personas — what turns matching from tick-box filtering into "who has actually lived
-through this".
-
-**Impact:** all 722; the biggest single quality lever left.
-
----
-
 
 # Daily routine — not a backlog item
 
