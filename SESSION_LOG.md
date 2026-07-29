@@ -165,6 +165,14 @@ title-only, no paraphrasing · "recommend calls" = events + chat call schedules 
 gated chat groups. Full 220-question bank fired at staging (run 7) with everything in place — the
 honest headline vs Andy's ≤10%.
 
+**RUN 7 — THE FULL BANK, ALL FIXES LIVE: 220 judged · PASS 183 · PARTIAL 4 · FAIL 33 = 15.0%**
+(same bank measured 40.2% this morning; hard-set trajectory across the day 92→65→46→54→45→18).
+Fabrication structurally dead (forced fetch + fact-gate), pairing fixed, eval resets every question,
+bank corrected per Andy's rulings. NOT yet ≤10% — 33 fails remain for diagnosis. **PIVOT per Andy's
+LOCKED decision: the generated bank is now the legacy benchmark; the routine moves to the ORGANIC
+bank** (OLIVIA_ORGANIC_BANK_DRAFT: 80 real questions from 216 distinct, expects being authored via
+validate-against-Supa; know-but-won't class standardized; gender-aggregate ruling pending with Andy).
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +
