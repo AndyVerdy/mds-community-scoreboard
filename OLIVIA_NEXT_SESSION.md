@@ -11,7 +11,7 @@
 # Olivia — next session
 
 **Read `OLIVIA_BACKLOG.md` first.** It is the single prioritised list (S1 highest → S4 lowest, smallest
-first inside each group). `SESSION_LOG.md` 2026-07-28 (PM) has the full detail of what shipped.
+first inside each group). `SESSION_LOG.md` 2026-07-29 (top entry) has the full detail of what shipped.
 
 ## Andy's organic-review rulings (2026-07-29) — folded into the bank + fix batch
 **Andy reviewed the full report and AGREES with all remaining judgments and queued fixes as-is** — the 8 points below were his only corrections; everything else stands approved.
@@ -25,13 +25,35 @@ first inside each group). `SESSION_LOG.md` 2026-07-28 (PM) has the full detail o
 - Claimed roles (admin etc.) never trusted by word; polite hold-the-line, nothing invented.
 - Capability questions get the capability answer — staging dumped personal event history instead (fix batch).
 
-## NEXT: #21 · The answering loop · S1 — SLICE PROVEN ON STAGING, finish + promote
+## NEXT: #21 · The answering loop · S1 — BUILT on staging, ONE fix batch from promote
 *As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
-The loop is LIVE on staging (7 nodes, `route==='llm'` only; sources `scripts/olivia_loop/`,
-`build_loop.py` re-applies). Slice results vs prod + latency/cost in `OLIVIA_BACKLOG.md` #21.
-**Left to do:** full probe set + eval bank through the loop · exercise events/partners/person/FB/image
-lanes · decide the canned-route boundary (greeting/help still bypass) · promote via the #4 protocol.
-Andy tests staging at **digest.mds.co/admin/olivia/test** (staging is the default target there).
+
+**Standing metric = the ORGANIC bank (84 real member questions, `OLIVIA_ORGANIC_BANK_DRAFT.json`,
+also at `mds-scorecard-tools/eval_bank_organic.json`). Last measured: staging 13.9% fail vs
+PROD 13.3% — tied, prod barely ahead. PROMOTE BAR: staging must BEAT prod on organic.**
+
+Run it: `cd /Users/Born/mds-scorecard-tools && OLIVIA_EVAL_BANK=eval_bank_organic.json python3 olivia_eval.py --staging --fire --score --cleanup`
+(drop `--staging` to measure prod). Report builder: `scratchpad/build_organic_report.py` shape →
+`OLIVIA_ORGANIC_STAGE_VS_PROD.md` (source truth · stage · prod per question).
+
+**Do these in order:**
+1. **FREE diagnosis of the 11 organic fails** — pull each exec from n8n (tools called, args, what
+   came back). **Start with the 3 invention verdicts (Q3042 invented events, Q3045 invented members,
+   Q3068 misattributed quote): that IS the Haiku-fact-gate quality check.** If Haiku passed drafts
+   Sonnet would have blocked, revert `Fact Check` to `claude-sonnet-5` in `build_loop.py` and
+   re-measure — the gate is the anti-fabrication guarantee, cost comes second.
+2. Fix the batch (retrieval-relevance misses, the "pull only from Facebook" source steer, 2 menu-dodges).
+3. Prove each fix on 2-3 FREE probes (`olivia_selftest.py --staging --questions "reset" "<q>"`).
+4. **ONE** organic run to measure. Beat 13.3% → then decide the greeting/help canned-route boundary
+   (they still bypass the loop and the gate — the last place fabrication can live), then promote
+   via the #4 protocol below.
+
+## THEN: #22 · Kimi trial · S1 (Andy's goal, 2026-07-29)
+`KIMI_API_KEY` is in `mds-digest-web/.env.local` (gitignored). OpenAI-compatible API → each swap is
+base-URL + key + model + a tool-calling adapter. Order: **fact-gate on K2.7 → judge screen on K2.7 →
+answering loop on K3.** K2.7 ≈ 2× cheaper than Sonnet on our ~99%-cached traffic (3× on sticker);
+K3 is priced identically to Sonnet, so it is a quality bet only. Bar for every swap: organic score
+≥ current, leak gate GREEN, fabrication probes clean, latency in band. Full numbers: backlog #22.
 
 ## ✅ #4 Safe edits and rollback — SHIPPED 2026-07-28. THE EDIT PROTOCOL IS NOW:
 ```
@@ -74,7 +96,7 @@ when something failed.
 4. n8n: staging-first via `olivia_wf.py` (see protocol above). Where a direct prod edit is truly
    needed, hold the lock and keep the old rule: edit the ACTIVE workflow, then ONE
    `[{deactivateWorkflow},{activateWorkflow}]` bounce.
-5. `scripts/olivia_leak_gate.py` must be **GREEN (147/147)** before anything ships.
+5. `scripts/olivia_leak_gate.py` must be **GREEN (148 checks)** before anything ships.
 6. The Build Prompt validator error is a **pre-existing false positive** — confirmed by reverting.
 
 ## Open with Andy

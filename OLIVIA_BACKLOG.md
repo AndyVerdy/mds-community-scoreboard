@@ -134,6 +134,33 @@ refusal; "nasir's revenue" → tier-band-only offer; gate 147/147. **Latency 6.5
 (6.5K-token tools+system prefix cached; ~500–1,000 fresh tokens/call). Remaining before promote: run
 the full probe set + eval bank through the loop, exercise the other lanes (events, partners, person,
 FB, images), decide the canned-route boundary, then promote via the #4 protocol.
+### 22. Kimi trial · S1 · effort M  ← GOAL (Andy 2026-07-29)
+*As the team, we know whether a 3×-cheaper model can carry Olivia's work without losing quality —
+measured, not assumed.*
+
+**The goal: run the Kimi test.** `KIMI_API_KEY` is in `mds-digest-web/.env.local` (gitignored).
+Kimi is OpenAI-API-compatible, so each call site is a base-URL + key + model-name swap plus a
+tool-calling adapter.
+
+**Prices (platform.kimi.ai, confirmed 2026-07-29) vs ours**
+| | input | output | cache hit |
+|---|---|---|---|
+| Kimi K2.7 / K2.6 | $0.95 | $4.00 | $0.19 / $0.16 |
+| Kimi K3 (flagship, 1M ctx) | $3.00 | $15.00 | $0.30 |
+| Claude Sonnet 5 (answering loop today) | $3.00 ($2 intro) | $15.00 ($10 intro) | ~$0.30 |
+| Claude Haiku 4.5 (fact-gate + judge screen today) | $1.00 | $5.00 | ~$0.10 |
+
+**Where the money actually is:** K2.7 is ~3× cheaper than Sonnet on sticker and ~1.6× on cache
+hits; our traffic is ~99% cached, so expect ~2× on a real answer (~$0.005 vs $0.007-0.01). K3 is
+priced identically to Sonnet — no cost case, quality case only. K2.7's cache hit ($0.19) is dearer
+than Haiku's (~$0.10), so swapping the gate/judge is not a saving.
+
+**Trial order (cheap and reversible first):** (1) fact-gate on K2.7 · (2) judge screen on K2.7 ·
+(3) the answering loop on K3 — the only swap that touches member-facing quality directly.
+**Bar for any swap:** organic-bank score ≥ current, leak gate GREEN, fabrication probes clean,
+latency in band. Kill switch = one base-URL revert per call site.
+⚠️ Adds a third AI vendor handling member content (today: Anthropic + Voyage) — privacy line in #19.
+
 ### 2. Deliver what she offers · ✅ DONE 2026-07-28 · effort S
 *As a member, if she offers me something and I say yes, I get it.*
 
@@ -368,24 +395,6 @@ through this".
 
 ---
 
-### 22. Cost control · S3 · effort M
-*As the team, we know exactly what Olivia spends per answer and per eval, and we pay the least that
-meets the quality bar.*
-
-- Standing per-answer + per-run cost visibility (usage line in the eval report / health tile)
-- **Kimi evaluation — economics resolved 2026-07-29 (Andy's screenshot of platform.kimi.ai):**
-  K3 (flagship, 1M ctx) = $3/$15/$0.30-cache — IDENTICAL to Sonnet 5's sticker and cache rate
-  (and Sonnet is $2/$10 intro through Aug 31, i.e. currently cheaper). K2.7 Code / K2.6 =
-  $0.95/$4/$0.19 — ≈3× cheaper than Sonnet UNCACHED, but our traffic is ~99% cached: on our shape
-  a K2.7 answer ≈ $0.005 vs our $0.007-0.01 (~1.5-2×, not 3×), and vs Haiku ($1/$5/$0.10-cache,
-  which runs our gate+judge-screen) K2.7 is roughly break-even or slightly WORSE on cached calls.
-  **Verdict: swap only pays if K3 quality beats Sonnet 5 at equal price on the organic bank, or
-  K2.7 beats Haiku for the small calls — a quality trial, not a cost play.** Same bar: organic
-  bank, leak gate, fabrication probes, latency.
-- Bar for ANY model swap: same organic bank score or better, leak-gate green, fabrication probes
-  clean, latency in band — measured, never assumed.
-- Note for the privacy line: adds a third AI vendor handling member content (current stance was
-  two: Anthropic + Voyage).
 
 # Daily routine — not a backlog item
 

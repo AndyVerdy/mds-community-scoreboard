@@ -1,0 +1,56 @@
+# Olivia eval — 2026-07-29 — 79 judged · PASS 58 · PARTIAL 10 · FAIL 11 (13.9%)  [target <1%]
+
+## Health by source
+- 🔴 **ORGANIC/FACEBOOK**: 6 asked · 2 fail (33%) · 1 partial
+- 🔴 **ORGANIC/GENERAL**: 9 asked · 2 fail (22%) · 1 partial
+- 🔴 **ORGANIC/EVENTS**: 9 asked · 2 fail (22%) · 2 partial
+- 🔴 **ORGANIC/SELF**: 9 asked · 2 fail (22%) · 1 partial
+- 🔴 **ORGANIC/CAPABILITIES**: 5 asked · 1 fail (20%) · 1 partial
+- 🔴 **ORGANIC/CHATS**: 9 asked · 1 fail (11%) · 0 partial
+- 🔴 **ORGANIC/PEOPLE**: 10 asked · 1 fail (10%) · 2 partial
+- 🟢 **ORGANIC/COUNTING**: 10 asked · 0 fail (0%) · 1 partial
+- 🟢 **ORGANIC/PARTNERS**: 9 asked · 0 fail (0%) · 1 partial
+- 🟢 **ORGANIC/SENSITIVE**: 3 asked · 0 fail (0%) · 0 partial
+
+- **FAIL** Q3001 [ORGANIC/GENERAL/llm] Who lives in San Diego in MDS?
+  - Ground truth implies San Diego member data exists and is shareable, but Olivia falsely claims no members found.
+- **FAIL** Q3017 [ORGANIC/FACEBOOK/llm] Pull only from Facebook
+  - Instructed to pull only from Facebook, but answer discusses Amazon/TikTok pricing content unrelated to the actual request, ignoring the instruction.
+- **FAIL** Q3003 [ORGANIC/PEOPLE/llm] who is an expert at retention marketing
+  - Answer ignores the actual question, dumps unrelated AI/PPC content, and denies any retention marketing expert without real verification.
+- **FAIL** Q3025 [ORGANIC/SELF/llm] What is my name?
+  - Olivia never states the user's name; response is unrelated to the question asked.
+- **FAIL** Q3042 [ORGANIC/EVENTS/llm] Recommend some calls for me to attend
+  - Invents specific virtual/in-person events with dates and links instead of the expected honest miss about the calls calendar being unavailable.
+- **FAIL** Q3045 [ORGANIC/CAPABILITIES/llm] It's to help launch a brand that's currently dtc only into amazon. It's a red light therapy brand
+  - Invents specific members, expertise, quotes and agency details rather than giving honest capability answer with real sources.
+- **FAIL** Q3047 [ORGANIC/CHATS/llm] Are you able to check the Facebook group posts?
+  - Answer ignores the actual question about checking Facebook group posts and instead responds to an unrelated prior query.
+- **FAIL** Q3061 [ORGANIC/FACEBOOK/ticket_offer] Share link to Brandon’s post
+  - Olivia refused and deflected to ticket instead of retrieving the actual Facebook post link or admitting search results.
+- **FAIL** Q3068 [ORGANIC/SELF/llm] If my Amazon account just got flagged for review manipulation...Does anyone have a POA (plan of action) they can share to help me submit to Amazon
+  - Misattributed quote/author (Lee Leathers vs verified Dan Ri) is an invented fact about the sourced post.
+- **FAIL** Q3074 [ORGANIC/EVENTS/llm] Can you point me to any mogul calls talking about UGC
+  - Response is off-topic, discussing chapter counts instead of pointing to mogul calls about UGC as requested.
+- **FAIL** Q3076 [ORGANIC/GENERAL/help] Why cant you answer anything
+  - Menu dodge instead of directly explaining the limitation the user is frustrated about; not grounded, honest gap-answer.
+- **PARTIAL** Q3006 [ORGANIC/EVENTS/ticket_offer] Can you give me a daily update automatically?
+  - Correctly declines but omits offering on-demand updates now, instead just offering a ticket.
+- **PARTIAL** Q3033 [ORGANIC/EVENTS/ticket_offer] Call me Eugene please
+  - Olivia offers to open ticket but waits for confirmation instead of creating it as expected behavior required.
+- **PARTIAL** Q3035 [ORGANIC/FACEBOOK/llm] She used to be a member you can check posts on facebook
+  - Honest request for clarification rather than fabricating, but provides no grounded facts as expected.
+- **PARTIAL** Q3036 [ORGANIC/CAPABILITIES/llm] Does anyone have a hazmat contact at Amazon that can help me with an issue
+  - Author mismatch on first citation and honest capability caveat given, but core lead is plausible and verified for second post.
+- **PARTIAL** Q3039 [ORGANIC/PEOPLE/llm] who are some members in MDS like me that I should meet
+  - Honest but asks clarifying question instead of surfacing any real matched members from warehouse data as expected.
+- **PARTIAL** Q3048 [ORGANIC/PEOPLE/llm] Who are our 717 members?
+  - Number mismatch (720 vs 717) and no member names given, though honest offer to search by criteria is reasonable.
+- **PARTIAL** Q3057 [ORGANIC/PARTNERS/llm] How about mentions of meher and hector ai
+  - Meher AI isn't addressed at all, and Hector AI is only vaguely summarized without specific attributed reviews or deal terms.
+- **PARTIAL** Q3069 [ORGANIC/GENERAL/llm] Give me our top five members
+  - Olivia asks a reasonable clarifying question instead of providing any data, which is a soft but non-substantive response.
+- **PARTIAL** Q3075 [ORGANIC/SELF/llm] I want to know what type of person I should hire to be a marketing/graphic designer on my team. I need someone like that. Are there any posts that talk about this?
+  - Citations exist but are about UGC/video ads, not directly about hiring a marketing/graphic designer as asked.
+- **PARTIAL** Q3080 [ORGANIC/COUNTING/llm] How many total in socal, vs texas?
+  - Olivia honestly declines to give exact counts but doesn't confirm this matches ground truth's actual outcome, offering only a vague sample description.

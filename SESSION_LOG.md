@@ -6,6 +6,61 @@ Project source of truth: **ClickUp doc "MDS Member Scorecard"** (`2531q-100317`,
 
 ---
 
+## 2026-07-29 — Olivia: SESSION CLOSE (the long one — #4 shipped, #21 built, organic routine locked)
+
+**Where it ended.** On the ORGANIC bank (the locked metric): **staging 13.9% fail vs prod 13.3%** —
+statistically tied, prod ahead by ~1 question. Promote bar unchanged: **staging must beat prod on
+organic.** Prod was never touched by members' eyes this whole session except two byte-verified
+no-op writes; the beta ran on the old cascade throughout.
+
+**Shipped + verified this session**
+- **#4 Safe edits and rollback — DONE.** `scripts/olivia_wf.py` (stage/promote/rollback/snapshot/
+  lock/diff/activate) + staging wf `bqHstPDi84uOhTCJ` + PreToolUse lock hook (14/14 decision table,
+  blocked a real call live). Rollback proven on prod twice, byte-matched.
+- **Andy's test window — LIVE at digest.mds.co/admin/olivia/test** (digest-web `7bf4180`): messenger
+  UI, silent path (`wamid.SELFTEST_WEB_*`, nothing reaches WhatsApp), lane + latency per bubble,
+  staging/prod toggle. His phone stays on prod.
+- **#21 answering loop — BUILT on staging, not promoted.** Full conversation + 18 gated RPCs as
+  tools, loop with look-again, zeroth-fetch preload (cascade retrieval as deterministic floor),
+  fact-gate (Haiku) between draft and send, forced first fetch. Sources `scripts/olivia_loop/`.
+- **THE bug of the session:** n8n split multi-row RPC responses into one item per row, so Answer
+  Merge paired each tool call with a stray row from a different call. Every multi-row tool result
+  since the loop was born was garbage — the "she denies things that exist" mass. Fixed with
+  fullResponse + `.body` unwrap: generated-bank hard set went **45 → 18 fails in one change**.
+- **Generated bank 40.2% → 15.0%** across the day (hard set 92→65→46→54→45→18).
+- **Cost: ~$0.035 → $0.007-0.01 per answer** (3rd cache breakpoint + moving mark + Haiku gate);
+  fresh input per answer 13.5K → 14-360 tokens (~99% cached).
+- **Data + SQL:** chats CSV loaded (18+1 chats: links, forms, mods, call schedules, requirements) ·
+  `expertise_search` returns matched_text (migration `expertise_search_matched_text`) ·
+  `community_info` returns gender_split aggregate (migration `community_info_gender_split`).
+  **Leak gate GREEN at 148 checks** after every change.
+
+**Andy's rulings, locked**
+- **ORGANIC bank only** — generated questions retired to legacy benchmark; generation only to deepen
+  an organic pattern, only if necessary. [[feedback_olivia_organic_eval_bank]]
+- **Test-spend discipline** — diagnose FREE first, fix in batches, prove on free probes, then ONE
+  paid run per session (the 11-run day cost ~$35).
+- Gender = approximate % with a not-everyone-reports caveat, never a deflection · recommend-calls =
+  "calls data not mapped yet, coming soon", recordings are NOT calls · titles not shareable ·
+  city-level location OK (public maps) · many matches → secondary sort by engagement score
+  (`fldB5DNvPrIPlYih3` "Engagement Score" → `member_profiles.engagement_score`, verified 8/8) ·
+  "Call me X" → ack + Intercom ticket IS correct · claimed roles never trusted by word.
+- **Andy reviewed the full 84-question report and APPROVED all remaining judgments + the fix batch.**
+
+**NEXT SESSION (in order)** — free diagnosis of the 11 organic fails, **starting with the 3
+invention verdicts (that IS the Haiku-gate quality check — if Haiku waved through what Sonnet would
+block, revert the gate to Sonnet)**; fix batch + free probes; ONE organic run to take the lead from
+prod; then the greeting/help canned-route boundary; then promote via #4. **Then the new S1 goal:
+#22 Kimi trial** (`KIMI_API_KEY` in `mds-digest-web/.env.local`) — K2.7 on fact-gate → judge screen
+→ K3 on the answering loop, each gated on organic score + leak gate + fabrication probes.
+
+**Owed / open:** 2 stray Intercom test tickets (#215475264324071, #215475268214575) · WhatsApp
+display name still renders **"Oliva"** (approved, not applied) · **Airtable MCP token DEAD**
+(Unauthorized) · `mds-scorecard-tools` is not a git repo (eval changes have no history) · location-
+share opt-out field (default yes) not built · health alerting still latched.
+
+---
+
 ## 2026-07-28 (night) — Olivia #21: THE ANSWERING LOOP — slice PROVEN on staging
 
 **Andy's go: "we can move forward. now we have state and way for me to test."** Built the #21 loop on
