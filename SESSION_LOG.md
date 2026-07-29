@@ -86,6 +86,19 @@ change — unlocks "which chapter has people like me" exactly) · per-fail repla
 `diagnose_gen_fails.py` before ANY further paid runs · then one clean measured run. Spend today
 ≈ $18.5 (2 forced runs on Andy's order).
 
+**RUN 4 (tiered row-trim fix + content_lookup): 54 fail (48.6%) — flat. STABILITY ANALYSIS across
+runs 2/3/4 reframed the problem: of 112 questions only 24 ALWAYS fail · 28 always pass · 60 FLAP
+between runs.** The dominant phenomenon is non-determinism, not fixed defects: capability exists for
+the 60 flappers but isn't reliably exercised (sonnet-5 rejects temperature pinning; judge variance
+also in play). The REAL defect list = 24 ids (`scratchpad/stable_fails.txt`, in-repo copy below): GEN
+7 · EVENT 6 · AT_PROFILE 3 · CROSS 2 · PARTNER 2 · WA_DIGEST 2 · REAL 1 · VIDEO 1. Path to ≤10%:
+(1) per-exec deep-dive the 24 (free, n8n logs), fix per cause; (2) stabilize flappers (deterministic
+technique guidance, judge-side rubric tightening); (3) one measuring run per fix-batch, never
+shotgun. Evidence-truncation fix DID land (VIDEO 1 fail, FORM 1, WA_RAW improved run-over-run) but
+EVENT worsened (14/19) — event questions are the next deep-dive. Spend ≈ $22 today.
+Stable-fail ids: 1003,1010,1015,1022,1026,1040,1046,2005,2009,2012,2024,2028,2032,2035,2038,2041,
+2054,2055,2066,2071,2137,2142,2165,2175.
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +
