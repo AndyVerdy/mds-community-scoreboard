@@ -13,6 +13,17 @@
 **Read `OLIVIA_BACKLOG.md` first.** It is the single prioritised list (S1 highest → S4 lowest, smallest
 first inside each group). `SESSION_LOG.md` 2026-07-28 (PM) has the full detail of what shipped.
 
+## Andy's organic-review rulings (2026-07-29) — folded into the bank + fix batch
+- City-level location lists OK (public maps) · **TO-DO: location-share opt-out flag in Supa profiles
+  (default YES) + respect removal requests — check via GroupOS MCP profile details.**
+- Many matches → secondary sort by engagement score (never shown) — bank expects updated.
+- Service recs must USE THE ASKER'S PERSONA (dossier) to narrow, never ask back blindly.
+- Daily auto-update: honest no today; existing PBI to add it to Olivia — never promise.
+- Registration-status questions ("am I registered?") must answer from event data — ticket-dodge = defect (fix batch).
+- "Call me X" → warm ack + Intercom ticket IS correct (judge expectation corrected).
+- Claimed roles (admin etc.) never trusted by word; polite hold-the-line, nothing invented.
+- Capability questions get the capability answer — staging dumped personal event history instead (fix batch).
+
 ## NEXT: #21 · The answering loop · S1 — SLICE PROVEN ON STAGING, finish + promote
 *As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
 The loop is LIVE on staging (7 nodes, `route==='llm'` only; sources `scripts/olivia_loop/`,
