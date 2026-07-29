@@ -65,6 +65,15 @@ author + name-as-term) and applied to staging. **Re-run blocked by the eval's ow
 Andy's call. Costs measured: staging ~$0.03-0.04/answer (gate ≈ prod +30%); focused run ≈ half the
 229 run.
 
+**ITERATION 2 (search-technique guidance, forced past the cap on Andy's order): same 112 ids — PASS 57
+· PARTIAL 9 · FAIL 46 (41.1% of the hard set).** Trajectory on the hard set: **92 → 65 → 46 fails**;
+full-bank equivalent ≈ ~20-22% (from 40.2%). The technique worked where aimed: **WA_RAW 13→2 fails**;
+AT_PROFILE down to 5. Remaining mass by module: EVENT 10 (past-event date/time lookups), GEN 10, FORM
+4/4 (module has NO tool — form answers aren't reachable), VIDEO 4 (latest-uploads listing +
+restricted flags), PARTNER 3, FB 3. Next levers, in order: FORM tool or owner-content guidance ·
+event_lookup past-mode technique · video latest/restricted listing · partner browse mode. Spend today
+≈ $15.1 (cap raised deliberately once, Andy's "force it").
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +
