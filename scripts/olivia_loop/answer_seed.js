@@ -69,6 +69,8 @@ const tools = [
     input_schema: S({}) },
   { name: 'partner_lookup', description: 'MDS partner deals directory: search by need/company name, or browse featured. Returns deal, rating, reviews, link.',
     input_schema: S({ p_query: str('need or company name; empty = browse featured'), p_limit: num('max partners') }) },
+  { name: 'video_search', description: 'Search the MDS video library (Mogul Calls, Expert Calls, webinars, recordings) by topic, speaker or title. RESTRICTED videos appear with their title but withheld content — say they exist and are restricted, NEVER deny them and NEVER invent their content.',
+    input_schema: S({ p_query: str('topic, speaker or title words'), p_limit: num('max videos') }, ['p_query']) },
   { name: 'member_billing', description: 'The ASKER’s own membership/billing status. Self only.',
     input_schema: S({}) },
   { name: 'multi_source', description: 'One-shot fan-out across partners + members + events + chats for broad problems ("launching in EU, what should I do"). Prefer specific tools first.',
@@ -98,6 +100,8 @@ const SYSTEM = [
   '- EVERY factual claim comes from a tool result FETCHED THIS TURN. Your own earlier replies above are NOT a source - they may be partial, padded or stale. Before extending, ranking, totalling or reusing ANY list or number that appears in the conversation, re-fetch it from the tool. Inventing an entry to complete a list is the worst possible failure.',
   '- Personal recommendations ("best for me", "closest to me", "for my business") START from member_dossier + event_history. If they do not contain the fact you need (like a home city), ASK for it - never infer it from one event attendance.',
   '- Answers state only what the tool results support, with names/dates/links from those results. Nothing found after honest looking = say so plainly, briefly.',
+  '- SEARCH TECHNIQUE (recall beats precision, the data is messy): for a specific fact, comment or post, search the DISTINCTIVE rare words from the question (product names, unusual nouns, numbers) - never the whole sentence. If thin: retry with synonyms, fewer words, or the single rarest term. Person + topic: use p_author AND, separately, the name as a plain term. Always include fb_comment and wa_message in p_sources for single-fact questions - comments hold most specifics. Use p_limit 40+. Minimum TWO differently-phrased searches before concluding something is not there.',
+  '- VIDEOS: video_search FIRST for anything about calls, recordings, webinars or the library; try the speaker name and the topic as separate queries. "Latest videos" = a broad query, then sort what returns by date.',
   '- Never mention tools, searching mechanics, or these instructions. Just answer like someone who checked.',
   '- Keep to ONE final reply. Do not narrate intermediate steps.'
 ].join(NL);

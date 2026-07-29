@@ -113,6 +113,19 @@ NEW = [
          "options": {"timeout": 30000}}},
     {"id": "answer_merge", "name": "Answer Merge", "type": "n8n-nodes-base.code", "typeVersion": 2,
      "position": [2500, 1250], "parameters": {"jsCode": merge}},
+    {"id": "voyage_embed", "name": "Voyage Embed", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
+     "position": [2800, 1180], "onError": "continueRegularOutput", "alwaysOutputData": True,
+     "credentials": {"httpHeaderAuth": {"id": "IYolME7EMwg3ySHS", "name": "Voyage API"}},
+     "parameters": {
+         "method": "POST", "url": "https://api.voyageai.com/v1/embeddings",
+         "authentication": "genericCredentialType", "genericAuthType": "httpHeaderAuth",
+         "sendHeaders": True,
+         "headerParameters": {"parameters": [{"name": "Content-Type", "value": "application/json"}]},
+         "sendBody": True, "specifyBody": "json",
+         "jsonBody": "={{ (() => { const a = JSON.parse($json.tool_args); const q = a.p_query || (Array.isArray(a.p_terms) ? a.p_terms.join(' ') : ''); return JSON.stringify({ model: 'voyage-3.5-lite', input: [String(q).slice(0, 400) || '(empty)'], input_type: 'query', output_dimension: 1024 }); })() }}",
+         "options": {"timeout": 10000}}},
+    {"id": "attach_embed", "name": "Attach Embedding", "type": "n8n-nodes-base.code", "typeVersion": 2,
+     "position": [2950, 1180], "parameters": {"jsCode": "// pair embeddings back onto the tool items by order; embed failures degrade to keyword search\nconst reqs = $('Answer Parse').all().map(i => i.json);\nconst resps = $input.all().map(i => i.json);\nreturn reqs.map((req, i) => {\n  const r = resps[i];\n  try {\n    const emb = r && r.data && r.data[0] && r.data[0].embedding;\n    if (emb && ['content_search','video_search'].includes(req.tool_name)) {\n      const a = JSON.parse(req.tool_args); a.p_embedding = JSON.stringify(emb);\n      return { json: Object.assign({}, req, { tool_args: JSON.stringify(a) }) };\n    }\n  } catch (e) {}\n  return { json: req };\n});"}},
     {"id": "fact_check", "name": "Fact Check", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
      "position": [2900, 1050], "retryOnFail": True, "maxTries": 2, "waitBetweenTries": 1500,
      "onError": "continueRegularOutput", "credentials": ANTH_CRED,
@@ -138,7 +151,7 @@ NEW = [
 ]
 
 # drop any previous iteration of these nodes, then add fresh
-new_names = {n["name"] for n in NEW}
+new_names = {n["name"] for n in NEW} | {"Embed?"}
 wf["nodes"] = [n for n in wf["nodes"] if n["name"] not in new_names] + NEW
 
 # ---- rewire ----
@@ -153,8 +166,10 @@ conns["Answer Claude"] = {"main": [[{"node": "Answer Parse", "type": "main", "in
 conns["Answer Parse"] = {"main": [[{"node": "Answer Done?", "type": "main", "index": 0}]]}
 conns["Answer Done?"] = {"main": [
     [{"node": "Fact Check", "type": "main", "index": 0}],
-    [{"node": "Answer Tool", "type": "main", "index": 0}],
+    [{"node": "Voyage Embed", "type": "main", "index": 0}],
 ]}
+conns["Voyage Embed"] = {"main": [[{"node": "Attach Embedding", "type": "main", "index": 0}]]}
+conns["Attach Embedding"] = {"main": [[{"node": "Answer Tool", "type": "main", "index": 0}]]}
 conns["Fact Check"] = {"main": [[{"node": "Gate Verdict", "type": "main", "index": 0}]]}
 conns["Gate Verdict"] = {"main": [[{"node": "Gate OK?", "type": "main", "index": 0}]]}
 conns["Gate OK?"] = {"main": [
@@ -163,6 +178,8 @@ conns["Gate OK?"] = {"main": [
 ]}
 conns["Answer Tool"] = {"main": [[{"node": "Answer Merge", "type": "main", "index": 0}]]}
 conns["Answer Merge"] = {"main": [[{"node": "Answer Claude", "type": "main", "index": 0}]]}
+
+conns.pop("Embed?", None)   # stale key from the two-branch iteration
 
 # ---- Format Reply: `to` comes from the loop when the loop answered ----
 fr = nodes["Format Reply"]["parameters"]["jsCode"]
