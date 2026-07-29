@@ -173,6 +173,17 @@ LOCKED decision: the generated bank is now the legacy benchmark; the routine mov
 bank** (OLIVIA_ORGANIC_BANK_DRAFT: 80 real questions from 216 distinct, expects being authored via
 validate-against-Supa; know-but-won't class standardized; gender-aggregate ruling pending with Andy).
 
+**ORGANIC BANK — FIRST STAGE-VS-PROD MEASUREMENT (the metric that matters now): PROD 13.3% fail
+(67/5/11 of 83) · STAGING 18.2% (59/4/14 of 77) — prod WINS on real member questions.** 21
+disagreements, 6 both-fail (shared defects). Staging's organic gap concentrates in: ticket-lane
+fabrication (canned lanes bypass loop+gate — invented ticket/name/email under admin pressure; the
+LAST ungated path, top fix), the calls-recommendation rule not landing (invented apply link), Q→A
+pairing slips in the harness (7 unjudged + several off-topic verdicts), judge missing a today-anchor
+("2026 impossible"). Reports: `OLIVIA_ORGANIC_STAGE_VS_PROD.md` (short, 84-row table + disagreements)
+· `OLIVIA_EVAL_ORGANIC_2026-07-29.md` (full per-question). **Promote bar restated: staging must beat
+prod on the ORGANIC bank.** Gender aggregate shipped into community_info (migration
+`community_info_gender_split`, gate green 148).
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +
@@ -324,6 +335,22 @@ not spend (~1.5-2.5x, ~$2/day at current volume).
 
 **Gate 147/147 PASS** after every change. Workflow `12wj6h1TWqb0d4Dq` active, bounced once per edit.
 **Owed:** close Intercom ticket #215475264324071 (regression-test artifact).
+
+---
+
+## 2026-07-29 — Tools-health: **"Member profiles ← Airtable sync" red was REAL — GitHub cron delivers ~half the hourly runs**
+
+**Project = Tools-health dashboard.** Second alert Andy pasted: 🔴 **Member profiles ← Airtable sync — last write 4h ago** (generated 03:15 UTC). **Opposite verdict to yesterday's: this one was a true staleness, and the monitor was right.**
+
+**Which leg fired.** `olivia-at-sync` probes TWO writers and surfaces the worse: `member_profiles` (daily) + `events_catalog` (hourly). Reconstructed the moment of the alert: `member_profiles` newest was 07-28 15:55 UTC (11.3h — inside the healthy daily band), so it was the **events-catalog hourly leg**. Confirmed by GH: `events-catalog-hourly.yml` ran **22:16, then 23:17, then nothing until 03:37** — a **4h20m gap** in an hourly job → `freshnessHourly` >3.5h → DOWN. Exactly the "4h ago" on the card.
+
+**The sync is NOT broken — GitHub's scheduler is.** Over 60 consecutive scheduled runs (07-23 23:12 → 07-29 03:37): **60/60 success, zero failures.** But actual delivery is **median 1.92h · mean 2.11h · max 4.34h** against a declared `cron: "17 * * * *"`. Against the monitor's bands (healthy ≤1.75h · degraded ≤3.5h · down >3.5h): **41% healthy / 47% degraded / 12% DOWN**. Worst gaps all cluster **00:00–08:00 UTC** — GH shared-runner cron congestion. The cron comment even says `# off the top of the hour to dodge GH congestion`; that mitigation is not working. Expect this red ~every other night until the trigger moves.
+
+**Data gotcha found:** `digest.events_catalog.synced_at` is a **full-refresh stamp** — every run rewrites all 1,419 rows, so the table holds NO history of prior runs (a gap query over it returns empty and looks reassuring). Run history must come from `gh run list`, not from the table.
+
+**Current state: healthy, verified.** 03:37 UTC run succeeded; `events_catalog` 0.91h stale, `member_profiles` 12.6h stale (its 07-28 15:53 scheduled run succeeded — the 3-day HNSW/timeout failure fixed on 07-27 is holding). Prod triage `?tool=olivia-at-sync` → **`healthy`, `isReallyDown: false`**.
+
+**NOT fixed, deliberately.** The root cause is GitHub cron unreliability; the fix is to trigger from **n8n via the `workflow_dispatch` API** (n8n's cron is punctual — the WA digest fires at `11:00:00.197Z`), keeping the freshness check as backstop. **Blocked on a GitHub PAT with `actions:write`, which only Andy can create.** Explicitly did NOT widen the freshness bands — that would mask a genuinely 4h-stale events catalog that Olivia answers from. Awaiting Andy's go.
 
 ---
 
