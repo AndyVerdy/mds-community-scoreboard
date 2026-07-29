@@ -145,6 +145,15 @@ hygiene check that it holds only about/fun-fact segments — gate GREEN 148). Ru
 name must match Whapi when capture starts). Airtable MCP token DEAD (Unauthorized) — reconnect
 needed.
 
+**RUN 6 (first run with correctly-paired tool results): 102 judged · PASS 82 · PARTIAL 2 · FAIL 18
+= 17.6%.** From 45 fails to 18 in ONE fix — the pairing bug was the mass, exactly as theorized.
+Hard-set trajectory across the night: **92 → 65 → 46 → 54 → 45 → 18**. Module split: AT_PROFILE 12→3
+· GEN 9→3 · EVENT 6→1 · PARTNER 3→0 🟢 · FORM 0 🟢 · FB 1 · VIDEO 1 · WA_RAW 2 · WA_DIGEST 1 ·
+REAL 1 · **CROSS 5 = the last block** (cross-source composition questions). NEXT: free diagnosis of
+the 18 → CROSS fix-batch → then ONE FULL-bank run (220 Qs) for the true headline number vs Andy's
+≤10% (the hard set over-represents historic fails by construction; the full bank is the honest
+denominator now).
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +
