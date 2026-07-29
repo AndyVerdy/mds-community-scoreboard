@@ -126,6 +126,25 @@ treatment works, flap persists. Chats data: 17 rows updated + MDS TikTok +1M TTM
 not yet in Whapi capture; name must match when added). Airtable MCP token is DEAD (Unauthorized) —
 needs reconnect. NEXT: free diagnosis of the 45 (stable-vs-flap + AT_PROFILE execs), fix, measure.
 
+**THE PAIRING BUG — the biggest defect of the loop, found via Andy's "reach it yourself first"
+method.** Every fact was reachable: raw SQL → exists; her RPCs with sane args → rank 1 (member_card
+'Jon Peck' returned the exact crypto fun fact; 'Ryley' → Ryley Lyon, Rocky Mountain). Yet she denied
+them. The exec dump showed why: **n8n's HTTP node SPLITS a 40-row RPC response into 40 items, and
+Answer Merge zipped requests↔items BY INDEX — so every tool call got ONE row back, usually a stray
+row from a DIFFERENT call's response** (Jon Peck's member_card "result" was Betsy Johnson from the
+prior expertise search). Every multi-row tool call since the loop was born delivered garbage;
+single-row RPCs (community_info) worked — exactly the module pattern of all five runs, and the flap
+mechanism. FIX: Answer Tool → fullResponse mode (whole array = ONE item per call) + Merge unwraps
+`.body`. Probes: **Ryley → Rocky Mountain ✓ · Jon Peck → crypto fun fact verbatim ✓ · Phelps → John
+Miranda quoted ✓** (last one needed a second fix: `expertise_search` matched on fun facts but never
+RETURNED the matched text — she rightly refused to name a bare rank-1 name; migration
+`expertise_search_matched_text` adds the public-card snippet, drop+create with explicit re-grants +
+pgrst reload + REST hammer ×4 200s; gate updated deliberately: matched_text allowlisted + new
+hygiene check that it holds only about/fun-fact segments — gate GREEN 148). Run 6 firing on the
+103-id set. Chats CSV also live in digest.chats (17 updated + TikTok +1M TTM added, no chat_id yet —
+name must match Whapi when capture starts). Airtable MCP token DEAD (Unauthorized) — reconnect
+needed.
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +

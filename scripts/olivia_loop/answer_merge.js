@@ -27,7 +27,11 @@ const compact = (val) => {
 };
 const results = reqs.map((req, i) => {
   let body;
-  const r = resps[i];
+  let r = resps[i];
+  // fullResponse mode: the RPC's whole array arrives as ONE item's body — never
+  // split into per-row items (splitting mispaired requests to stray rows and
+  // silently dropped everything past row 1; the great needle-denial bug).
+  if (r && typeof r === 'object' && 'body' in r && ('statusCode' in r || 'headers' in r)) r = r.body;
   if (r === undefined || r === null) {
     body = JSON.stringify({ error: 'tool returned nothing' });
   } else if (r.error || r.message && r.code) {

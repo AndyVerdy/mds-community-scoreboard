@@ -1,0 +1,819 @@
+[
+ {
+  "id": "2004",
+  "mod": "AT_PROFILE",
+  "q": "What fun fact does Jon Peck share about how he paid for his membership?",
+  "judge": "Olivia denies finding the crypto payment fun fact that the ground truth confirms exists.",
+  "exec": "52846",
+  "plan": {
+   "terms": [
+    "jon peck",
+    "membership",
+    "paid"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['membership', 'paid'], 'p_sources': ['wa_message', 'fb_post', 'fb_comment'], 'p_author': 'Jon Peck', 'p_limit':"
+  },
+  "tools": []
+ },
+ {
+  "id": "2007",
+  "mod": "AT_PROFILE",
+  "q": "Which chapter is Ryley affiliated with?",
+  "judge": "Olivia denied having Ryley's chapter info despite ground truth confirming Rocky Mountain Chapter affiliation.",
+  "exec": "52851",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['Ryley'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'], 'p_limit': 20, 'no_embed': True}"
+  },
+  "tools": []
+ },
+ {
+  "id": "2005",
+  "mod": "AT_PROFILE",
+  "q": "Which MDS member has the fun fact about swimming against Michael Phelps in 2000 and beating him?",
+  "judge": "Olivia named Kyle Dilger instead of John Miranda, an incorrect fact not matching ground truth.",
+  "exec": "52847",
+  "plan": {
+   "terms": [
+    "michael phelps",
+    "swimming",
+    "2000",
+    "member",
+    "against",
+    "michael"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['michael phelps', 'michael', 'phelps', 'swimming', '2000', 'member', 'against'], 'p_sources': ['fb_post', 'fb_c"
+  },
+  "tools": []
+ },
+ {
+  "id": "2006",
+  "mod": "AT_PROFILE",
+  "q": "What was Matej Persolja's first ever business as a kid?",
+  "judge": "Olivia denies finding the fact that the ground truth confirms exists, an honest-miss rule violation since the fact is real.",
+  "exec": "52849",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['Matej Persolja'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'], 'p_limit': 20, 'no_embed': True}"
+  },
+  "tools": [
+   "content_search({\"p_terms\":[\"Persolja\",\"first business\",\"kid\"],\"p_limit\":40,\"p_phone\":\"17866578153\"})",
+   "member_card({\"p_member\":\"Matej Persolja\",\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2008",
+  "mod": "AT_PROFILE",
+  "q": "Which chapter is Calin Domuta affiliated with in the MDS community?",
+  "judge": "Olivia denies finding chapter info while ground truth confirms Calin Domuta is affiliated with the Europe Chapter.",
+  "exec": "52852",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['Calin Domuta'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'], 'p_limit': 20, 'no_embed': True}"
+  },
+  "tools": []
+ },
+ {
+  "id": "2009",
+  "mod": "AT_PROFILE",
+  "q": "Which member won a court case against the UK's Crown Prosecution Service after representing himself against a 100mph+ sp",
+  "judge": "Ground truth identifies Joshua Asquith, but Olivia denied any such record exists.",
+  "exec": "52853",
+  "plan": {
+   "terms": [
+    "member",
+    "against",
+    "prosecution",
+    "service",
+    "representing",
+    "himself"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['member against prosecution service representing himself'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'"
+  },
+  "tools": []
+ },
+ {
+  "id": "2011",
+  "mod": "AT_PROFILE",
+  "q": "What year did Adam Ackerman start his business?",
+  "judge": "Ground truth confirms 2015 exists in warehouse, but Olivia denied having any record of the start year.",
+  "exec": "52856",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['Adam Ackerman'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'], 'p_limit': 20, 'no_embed': True}"
+  },
+  "tools": []
+ },
+ {
+  "id": "2012",
+  "mod": "AT_PROFILE",
+  "q": "What is Dana E. Mavros's title at her company?",
+  "judge": "Olivia names a specific title (CEO) instead of refusing, violating the required discretion about job titles.",
+  "exec": "52857",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['Dana E. Mavros'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'], 'p_limit': 20, 'no_embed': True}"
+  },
+  "tools": [
+   "member_card({\"p_member\":\"Dana E. Mavros\",\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2015",
+  "mod": "AT_PROFILE",
+  "q": "What was Daniella Berkson's career before she started her own business?",
+  "judge": "Olivia denies finding info that the ground truth confirms exists (her TV producer background).",
+  "exec": "52860",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['Daniella Berkson'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'], 'p_limit': 20, 'no_embed': True}"
+  },
+  "tools": []
+ },
+ {
+  "id": "2019",
+  "mod": "AT_PROFILE",
+  "q": "Which chapter is Ethan Lewis affiliated with?",
+  "judge": "Olivia denies having chapter info when the ground truth clearly states Central Florida Chapter exists.",
+  "exec": "52864",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['Ethan Lewis'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'], 'p_limit': 20, 'no_embed': True}"
+  },
+  "tools": []
+ },
+ {
+  "id": "2020",
+  "mod": "AT_PROFILE",
+  "q": "Which member's fun fact is that they've traveled to over 70 countries and counting?",
+  "judge": "Expected Damon Sununtnasuk; Olivia failed to find the fact instead of providing the correct member.",
+  "exec": "52865",
+  "plan": {
+   "terms": [
+    "70 countries",
+    "traveled",
+    "member",
+    "countries",
+    "counting"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['70 countries traveled member countries counting'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'], 'p_li"
+  },
+  "tools": [
+   "member_card({\"p_member\":\"Shyam Murali\",\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2021",
+  "mod": "AT_PROFILE",
+  "q": "Which member based in San Diego specializes in martial arts equipment as their main niche?",
+  "judge": "Olivia denies finding Cole South, contradicting the warehouse-verified fact that he exists as the San Diego martial arts equipment specialist.",
+  "exec": "52867",
+  "plan": {
+   "terms": [
+    "member",
+    "specializes",
+    "martial",
+    "equipment"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['member', 'specializes', 'martial', 'equipment'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'], 'p_limi"
+  },
+  "tools": [
+   "member_match({\"p_city\":\"San Diego\",\"p_dims\":[\"city\",\"category\"],\"p_phone\":\"17866578153\"})",
+   "expertise_search({\"p_query\":\"martial arts equipment\",\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2025",
+  "mod": "EVENT",
+  "q": "What time does the MDS Experience private dinner at Sanga Las Vegas start?",
+  "judge": "Olivia denied the correct event/time and cited a different, canceled dinner instead of the March 4, 2024 6:00 PM event.",
+  "exec": "52870",
+  "plan": {
+   "terms": [
+    "sanga",
+    "las vegas",
+    "experience",
+    "private",
+    "dinner"
+   ],
+   "raw_op": "event_history",
+   "raw_params": "{'p_phone': '17866578153'}"
+  },
+  "tools": [
+   "member_card({\"p_member\":\"Leslie Pierson\",\"p_phone\":\"17866578153\"})",
+   "event_lookup({\"p_terms\":[\"Sanga\",\"dinner\",\"Experience\"],\"p_include_past\":true,\"p_city\":\"Las Vegas\",\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2026",
+  "mod": "EVENT",
+  "q": "Who hosted the workshop on the Trojan Horse Affiliate Strategy?",
+  "judge": "Olivia denies finding the workshop despite ground truth confirming Nick Eubanks hosted it, an invented alternative doesn't cover it.",
+  "exec": "52871",
+  "plan": {
+   "terms": [
+    "trojan horse affiliate strategy"
+   ],
+   "raw_op": "event_history",
+   "raw_params": "{'p_phone': '17866578153'}"
+  },
+  "tools": [
+   "content_search({\"p_terms\":[\"Trojan Horse\",\"Affiliate Strategy\",\"Trojan\"],\"p_sources\":[\"wa_message\",\"fb_post\",\"fb_comment\"],\"p_limit\":30,\"p_phone\")",
+   "video_search({\"p_query\":\"Trojan Horse Affiliate Strategy\",\"p_phone\":\"17866578153\"})",
+   "event_lookup({\"p_terms\":[\"Billion Dollar Seller Summit\"],\"p_include_past\":true,\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2029",
+  "mod": "EVENT",
+  "q": "What city is the Commerce Roundtable Austin 2026 event being held in?",
+  "judge": "Expected answer confirms event exists in Austin, TX, but Olivia denies finding it at all.",
+  "exec": "52872",
+  "plan": {
+   "terms": [
+    "commerce roundtable austin"
+   ],
+   "raw_op": "event_history",
+   "raw_params": "{'p_phone': '17866578153'}"
+  },
+  "tools": [
+   "event_lookup({\"p_terms\":[\"Sanga\",\"dinner\"],\"p_include_past\":true,\"p_phone\":\"17866578153\"})",
+   "event_lookup({\"p_terms\":[\"Commerce\",\"Roundtable\",\"Austin\"],\"p_include_past\":true,\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2034",
+  "mod": "EVENT",
+  "q": "What time does MDS Connect at Super Zoo 2025 in Las Vegas start?",
+  "judge": "Olivia denies finding the event despite ground truth confirming it exists with a specific start time.",
+  "exec": "52874",
+  "plan": {
+   "terms": [
+    "super zoo",
+    "connect"
+   ],
+   "raw_op": "event_history",
+   "raw_params": "{'p_phone': '17866578153'}"
+  },
+  "tools": [
+   "event_lookup({\"p_terms\":[\"Commerce\",\"Roundtable\",\"Austin\"],\"p_include_past\":true,\"p_phone\":\"17866578153\"})",
+   "event_lookup({\"p_terms\":[\"Super\",\"Zoo\",\"SuperZoo\"],\"p_include_past\":true,\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2037",
+  "mod": "EVENT",
+  "q": "What time does the SCFest Miami 2026 Recommended Event start?",
+  "judge": "Olivia denied existence of SCFest Miami 2026 despite ground truth confirming a specific start time exists.",
+  "exec": "52876",
+  "plan": {
+   "terms": [
+    "scfest",
+    "miami"
+   ],
+   "raw_op": "event_history",
+   "raw_params": "{'p_phone': '17866578153'}"
+  },
+  "tools": [
+   "event_lookup({\"p_terms\":[\"Super\",\"Zoo\"],\"p_include_past\":true,\"p_phone\":\"17866578153\"})",
+   "event_lookup({\"p_terms\":[\"SCFest\",\"Miami\"],\"p_include_past\":true,\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2042",
+  "mod": "EVENT",
+  "q": "What type of event is the TikTok Shop (Verified Sellers) Channel Meetup?",
+  "judge": "Olivia denied finding the event and failed to state it is Virtual, contradicting the ground truth.",
+  "exec": "52879",
+  "plan": {
+   "terms": [
+    "tiktok shop",
+    "verified sellers"
+   ],
+   "raw_op": "event_history",
+   "raw_params": "{'p_phone': '17866578153'}"
+  },
+  "tools": [
+   "event_lookup({\"p_terms\":[\"SCFest\",\"Miami\"],\"p_include_past\":true,\"p_phone\":\"17866578153\"})",
+   "event_lookup({\"p_terms\":[\"TikTok\",\"Shop\",\"Verified\",\"Sellers\",\"Channel\",\"Meetup\"],\"p_include_past\":true,\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2043",
+  "mod": "PARTNER",
+  "q": "What member offer does Hector Ai provide to the MDS community?",
+  "judge": "Olivia denies any Hector AI offer exists, contradicting the warehouse fact that it offers MDS Pricing + Self-Serve DSP+ Managed Services.",
+  "exec": "52880",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': [], 'p_sources': ['wa_message'], 'p_limit': 0}"
+  },
+  "tools": [
+   "event_lookup({\"p_terms\":[\"Clayton Atchison\",\"Carbon 6\"],\"p_include_past\":true,\"p_phone\":\"17866578153\"})",
+   "partner_lookup({\"p_query\":\"Hector AI\",\"p_phone\":\"17866578153\"})",
+   "expertise_search({\"p_query\":\"Hector AI\",\"p_phone\":\"17866578153\"})",
+   "content_search({\"p_terms\":[\"Hector AI\",\"Hector\"],\"p_sources\":[\"wa_message\",\"fb_post\",\"fb_comment\"],\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2054",
+  "mod": "PARTNER",
+  "q": "Which MDS partner in the Accounting/Taxes category offers free sales tax registration in one state?",
+  "judge": "Olivia missed The Online Seller CPA and falsely denied the existence of the free sales tax registration offer.",
+  "exec": "52882",
+  "plan": {
+   "terms": [
+    "partner",
+    "accounting",
+    "category",
+    "offers",
+    "registration"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': [], 'p_sources': ['wa_message'], 'p_limit': 0}"
+  },
+  "tools": [
+   "partner_lookup({\"p_query\":\"sales tax registration\",\"p_phone\":\"17866578153\"})",
+   "partner_lookup({\"p_query\":\"free state sales tax registration\",\"p_phone\":\"17866578153\"})",
+   "partner_lookup({\"p_query\":\"Accounting Taxes\",\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2055",
+  "mod": "PARTNER",
+  "q": "What member offer does bKlug provide for its WhatsApp AI sales agent?",
+  "judge": "Olivia denied finding bKlug's offer, but ground truth confirms it exists with a specific known deal.",
+  "exec": "52883",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': [], 'p_sources': ['wa_message'], 'p_limit': 0}"
+  },
+  "tools": [
+   "partner_lookup({\"p_query\":\"Hector AI\",\"p_phone\":\"17866578153\"})",
+   "partner_lookup({\"p_query\":\"bKlug WhatsApp AI sales agent\",\"p_phone\":\"17866578153\"})",
+   "content_search({\"p_terms\":[\"Hector AI\",\"Hector\"],\"p_sources\":[\"wa_message\",\"fb_post\",\"fb_comment\"],\"p_limit\":20,\"p_phone\":\"17866578153\"})",
+   "content_search({\"p_terms\":[\"bKlug\"],\"p_sources\":[\"wa_message\",\"fb_post\",\"fb_comment\"],\"p_limit\":20,\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2066",
+  "mod": "WA_DIGEST",
+  "q": "Which book did Daniel recommend for financial mindset before diving into strategy or technique?",
+  "judge": "Olivia denies the recommendation exists, contradicting the ground truth that Daniel did recommend the book.",
+  "exec": "52885",
+  "plan": {
+   "terms": [
+    "daniel",
+    "book",
+    "financial mindset",
+    "recommend",
+    "financial",
+    "mindset"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['daniel', 'book', 'financial mindset', 'financial', 'mindset', 'recommend'], 'p_sources': ['wa_message', 'fb_po"
+  },
+  "tools": []
+ },
+ {
+  "id": "2071",
+  "mod": "WA_DIGEST",
+  "q": "In the MDS Centurion 20M+ chat, why is Ershad unavailable on the proposed meeting day?",
+  "judge": "Olivia failed to find the World Cup semifinals reason present in ground truth, an honest miss but incorrect since the fact exists.",
+  "exec": "52886",
+  "plan": {
+   "terms": [
+    "ershad",
+    "unavailable",
+    "meeting",
+    "centurion",
+    "proposed"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['ershad', 'unavailable', 'meeting', 'centurion', 'proposed'], 'p_sources': ['wa_message', 'fb_post', 'fb_commen"
+  },
+  "tools": []
+ },
+ {
+  "id": "2077",
+  "mod": "WA_RAW",
+  "q": "On 2026-06-28 in MDS Resellers, what did a member say about the guy they spoke to, aside from sending a follow-up email?",
+  "judge": "Olivia denies finding the message, but ground truth confirms it exists with specific praise content.",
+  "exec": "52892",
+  "plan": {
+   "terms": [
+    "follow up",
+    "email",
+    "resellers",
+    "member",
+    "sending",
+    "follow"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['follow up', 'follow', 'email', 'resellers', 'member', 'sending'], 'p_sources': ['wa_message', 'fb_post', 'fb_c"
+  },
+  "tools": []
+ },
+ {
+  "id": "2090",
+  "mod": "WA_RAW",
+  "q": "On what date was the last call recording shared, and what platform was it hosted on?",
+  "judge": "Wrong date (Sept 6, 2025 vs expected 2026-04-29), missing the actual most recent recording.",
+  "exec": "52901",
+  "plan": {
+   "terms": [
+    "recording",
+    "shared",
+    "platform",
+    "hosted"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': [], 'p_sources': ['fb_post'], 'p_limit': 0}"
+  },
+  "tools": [
+   "video_search({\"p_query\":\"call\",\"p_limit\":25,\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2093",
+  "mod": "WA_RAW",
+  "q": "In the MDS Centurion 20M+ chat, what question did the member ask about timing after submitting a report?",
+  "judge": "Olivia denied finding the timing question, but ground truth confirms it exists in that exact chat.",
+  "exec": "52902",
+  "plan": {
+   "terms": [
+    "timing",
+    "report",
+    "centurion",
+    "question",
+    "member",
+    "submitting"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['timing', 'report', 'centurion', 'question', 'member', 'submitting'], 'p_sources': ['wa_message', 'fb_post', 'f"
+  },
+  "tools": []
+ },
+ {
+  "id": "2100",
+  "mod": "FB",
+  "q": "According to Andrei Ureche's Feb 15, 2026 post, what does he say SaaS access is soon going to become?",
+  "judge": "Ground truth confirms the comment exists, but Olivia denied finding it, contradicting the verified fact.",
+  "exec": "52907",
+  "plan": {
+   "terms": [
+    "andrei ureche",
+    "saas access",
+    "according",
+    "andrei",
+    "ureche",
+    "access"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['saas access', 'access', 'according'], 'p_sources': ['wa_message', 'fb_post', 'fb_comment'], 'p_author': 'Andre"
+  },
+  "tools": [
+   "content_search({\"p_terms\":[\"SaaS access\",\"Ureche\",\"commodity\"],\"p_author\":\"Andrei Ureche\",\"p_sources\":[\"fb_post\",\"fb_comment\",\"wa_message\"],\"p_li)",
+   "content_search({\"p_terms\":[\"SaaS\"],\"p_since\":\"2026-02-01\",\"p_sources\":[\"fb_post\"],\"p_limit\":40,\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "2105",
+  "mod": "FB",
+  "q": "Which agency did Mark Behnke use that only gave advice without execution?",
+  "judge": "Ground truth names GNO Partners in a specific fb_post, but Olivia denies finding any such claim.",
+  "exec": "52909",
+  "plan": {
+   "terms": [
+    "mark behnke",
+    "agency",
+    "advice"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['mark behnke', 'behnke', 'agency', 'advice'], 'p_sources': ['wa_message', 'fb_post', 'fb_comment'], 'p_limit': "
+  },
+  "tools": []
+ },
+ {
+  "id": "2112",
+  "mod": "FB",
+  "q": "Which city is Matthew Turner considering traveling to for a show?",
+  "judge": "Ground truth shows Matthew Turner mentioned Charlotte, but Olivia denied finding any such content.",
+  "exec": "52911",
+  "plan": {
+   "terms": [
+    "matthew turner",
+    "show",
+    "travel"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['matthew turner', 'matthew', 'turner', 'show', 'travel'], 'p_sources': ['wa_message', 'fb_post', 'fb_comment'],"
+  },
+  "tools": [
+   "content_search({\"p_terms\":[\"Matthew Turner\",\"trade show\",\"traveling\"],\"p_author\":\"Matthew Turner\",\"p_sources\":[\"wa_message\",\"fb_comment\",\"fb_post)",
+   "content_search({\"p_terms\":[\"Turner\",\"show\",\"trip\",\"flight\"],\"p_sources\":[\"wa_message\",\"fb_comment\",\"fb_post\"],\"p_limit\":40,\"p_phone\":\"17866578153)"
+  ]
+ },
+ {
+  "id": "2132",
+  "mod": "CROSS",
+  "q": "Someone asked about updating their residential address triggering an INFORM Act check, and separately there was a discus",
+  "judge": "Wrong report name and contradicts expected fact (says on-demand, not scheduled, unlike GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA).",
+  "exec": "52916",
+  "plan": {
+   "terms": [
+    "inform act",
+    "fba inventory",
+    "sp api",
+    "someone",
+    "updating",
+    "residential"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['inform act', 'inform', 'fba inventory', 'inventory', 'sp api', 'someone', 'updating', 'residential'], 'p_sourc"
+  },
+  "tools": []
+ },
+ {
+  "id": "2134",
+  "mod": "CROSS",
+  "q": "Both a founder tracking Amazon referral-link traffic and someone using Shopify with Meta ads were discussing data\u2014what w",
+  "judge": "Wrong facts entirely\u2014expected slow Amazon data lag and a data warehouse software request, not these two unrelated attribution/dashboard concerns.",
+  "exec": "52918",
+  "plan": {
+   "terms": [
+    "amazon referral",
+    "shopify meta ads",
+    "traffic",
+    "founder",
+    "tracking",
+    "amazon"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['amazon referral', 'amazon', 'referral', 'shopify meta ads', 'shopify', 'shopify meta', 'meta ads', 'traffic', "
+  },
+  "tools": []
+ },
+ {
+  "id": "2137",
+  "mod": "CROSS",
+  "q": "In the context of niches like supplements, what did the FB post address and what comparison was made about supplement's ",
+  "judge": "Wrong WhatsApp quote/context and fails to identify the FB post despite ground truth confirming it exists.",
+  "exec": "52919",
+  "plan": {
+   "terms": [
+    "supplements",
+    "size",
+    "context",
+    "niches",
+    "address",
+    "comparison"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['supplements', 'size', 'context', 'niches', 'address', 'comparison'], 'p_sources': ['wa_message'], 'p_limit': 4"
+  },
+  "tools": []
+ },
+ {
+  "id": "2142",
+  "mod": "CROSS",
+  "q": "Someone in the FB comments said they're skeptical of paid services and could just DIY with Shopify and Claude code\u2014what'",
+  "judge": "Missed the expected ChatGPT/Artface earring reviews example; cited unrelated Claude automation stories instead.",
+  "exec": "52923",
+  "plan": {
+   "terms": [
+    "ai",
+    "claude",
+    "shopify",
+    "someone",
+    "comments",
+    "skeptical"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['ai', 'claude', 'shopify', 'someone', 'comments', 'skeptical'], 'p_sources': ['fb_post', 'fb_comment', 'wa_mess"
+  },
+  "tools": []
+ },
+ {
+  "id": "1003",
+  "mod": "GEN",
+  "q": "What's Matteo Lombardi's current fulfillment split between FBA and FBM for his European company selling in the US?",
+  "judge": "Olivia denies the fact exists, but the ground truth confirms a fb_post from Matteo Lombardi with the 99% FBA/FBM split.",
+  "exec": "52925",
+  "plan": {
+   "terms": [
+    "matteo",
+    "lombardi",
+    "current",
+    "fulfillment",
+    "between",
+    "european"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['Matteo Lombardi'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'], 'p_limit': 20, 'no_embed': True}"
+  },
+  "tools": []
+ },
+ {
+  "id": "1010",
+  "mod": "GEN",
+  "q": "Is the SEO topic channel hosted in the app or on WhatsApp?",
+  "judge": "Olivia confidently states WhatsApp, contradicting ground truth that the SEO channel is hosted in the app.",
+  "exec": "52928",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': [], 'p_sources': ['wa_message'], 'p_limit': 0}"
+  },
+  "tools": [
+   "chat_info({\"p_chat\":\"MDS SEO & Listing Optimization\",\"p_phone\":\"17866578153\"})"
+  ]
+ },
+ {
+  "id": "1015",
+  "mod": "GEN",
+  "q": "What workaround was Jamie Macdonough trying for Amazon PEDs to avoid discounting for the full 11-day BF/CM window?",
+  "judge": "Ground truth confirms the post exists; Olivia falsely denied finding it instead of retrieving the actual workaround.",
+  "exec": "52930",
+  "plan": {
+   "terms": [
+    "jamie macdonough",
+    "amazon",
+    "ped",
+    "workaround",
+    "macdonough",
+    "trying"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['jamie macdonough', 'jamie', 'macdonough', 'amazon', 'ped', 'workaround', 'trying'], 'p_sources': ['wa_message'"
+  },
+  "tools": []
+ },
+ {
+  "id": "1030",
+  "mod": "GEN",
+  "q": "Who gave Constantine Kirillov a free hour-long call to review their in-house PPC?",
+  "judge": "Ground truth clearly shows the fact exists (Stefano from Nomadz), but Olivia denied finding it.",
+  "exec": "52937",
+  "plan": {
+   "terms": [
+    "constantine kirillov",
+    "ppc",
+    "constantine",
+    "kirillov",
+    "review"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['constantine kirillov', 'constantine', 'kirillov', 'ppc', 'review'], 'p_sources': ['wa_message', 'fb_post', 'fb"
+  },
+  "tools": []
+ },
+ {
+  "id": "1026",
+  "mod": "GEN",
+  "q": "How many products is Michael Patr\u00f3n discontinuing in this inventory cleanup?",
+  "judge": "Olivia answered about an unrelated post by Molson Hart, ignoring the actual question about Michael Patr\u00f3n's discontinued products.",
+  "exec": "52936",
+  "plan": {
+   "terms": [
+    "michael patr n",
+    "discontinuing",
+    "inventory"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['michael patr n', 'michael', 'michael patr', 'patr n', 'discontinuing', 'inventory'], 'p_sources': ['wa_message"
+  },
+  "tools": [
+   "content_search({\"p_terms\":[\"Molson Hart\",\"trademark\",\"patent\",\"lawsuit\",\"IP\"],\"p_author\":\"Molson Hart\",\"p_sources\":[\"fb_post\",\"fb_comment\",\"wa_me)",
+   "content_search({\"p_terms\":[\"Brain Flakes\",\"lawsuit\",\"intellectual property\"],\"p_sources\":[\"fb_post\",\"fb_comment\"],\"p_limit\":40,\"p_phone\":\"1786657)"
+  ]
+ },
+ {
+  "id": "1036",
+  "mod": "GEN",
+  "q": "Does Jason Pratt use Jeremy for bookkeeping or CPA services?",
+  "judge": "Olivia claims no answer exists, but ground truth shows Jason Pratt confirmed CPA-only usage in a 2026-07-07 comment.",
+  "exec": "52939",
+  "plan": {
+   "terms": [
+    "jason pratt",
+    "jeremy",
+    "bookkeeping"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['jason pratt', 'jason', 'pratt', 'jeremy', 'bookkeeping'], 'p_sources': ['wa_message', 'fb_post', 'fb_comment']"
+  },
+  "tools": []
+ },
+ {
+  "id": "1040",
+  "mod": "GEN",
+  "q": "What data sources was Joe Cowling considering combining before looking at this software alternative?",
+  "judge": "Olivia denies the fact; ground truth confirms Joe Cowling did mention combining sellerboard, adlabs, and expandfi.",
+  "exec": "52941",
+  "plan": {
+   "terms": [
+    "joe cowling",
+    "data sources",
+    "sources",
+    "cowling",
+    "considering",
+    "combining"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['joe cowling', 'cowling', 'data sources', 'sources', 'considering', 'combining'], 'p_sources': ['wa_message', '"
+  },
+  "tools": []
+ },
+ {
+  "id": "1044",
+  "mod": "GEN",
+  "q": "Who did John Salvatore Rafanello wonder might also be attending the event?",
+  "judge": "Olivia denies finding the comment despite ground truth confirming it exists, contradicting the warehouse record.",
+  "exec": "52945",
+  "plan": {
+   "terms": [
+    "john salvatore rafanello"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['john salvatore rafanello', 'salvatore', 'rafanello', 'john salvatore', 'salvatore rafanello'], 'p_sources': ['"
+  },
+  "tools": []
+ },
+ {
+  "id": "1046",
+  "mod": "GEN",
+  "q": "Who asked in a comment about getting access if you don't naturally have it, regarding something not making the cut?",
+  "judge": "Olivia attributed the comment to Mo Kuhail, but the ground truth says Eli Zavdi was the one who asked.",
+  "exec": "52947",
+  "plan": {
+   "terms": [
+    "access",
+    "cut",
+    "comment",
+    "getting",
+    "naturally",
+    "regarding"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['access', 'cut', 'comment', 'getting', 'naturally', 'regarding'], 'p_sources': ['wa_message', 'fb_post', 'fb_co"
+  },
+  "tools": []
+ },
+ {
+  "id": "2167",
+  "mod": "VIDEO",
+  "q": "What was discussed in the video 'How Centurion Brands Expand Beyond Amazon'?",
+  "judge": "Olivia added speculative content beyond the title (TikTok, community, multi-channel details) not part of the actual title, violating restriction.",
+  "exec": "52955",
+  "plan": {
+   "terms": [
+    "centurion brands",
+    "amazon"
+   ],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': [], 'p_sources': ['fb_post'], 'p_limit': 0}"
+  },
+  "tools": []
+ },
+ {
+  "id": "2175",
+  "mod": "REAL",
+  "q": "Recommend some calls for me to attend",
+  "judge": "Recommended a chat/community requiring verification instead of upcoming calls or video library recordings as expected.",
+  "exec": "52957",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': [], 'p_sources': ['wa_message'], 'p_limit': 0}"
+  },
+  "tools": []
+ },
+ {
+  "id": "2173",
+  "mod": "REAL",
+  "q": "Why did Lori Barzvi leave MDS?",
+  "judge": "Olivia claims her departure is unverified/unconfirmable, which the rubric explicitly labels a FAIL.",
+  "exec": "52956",
+  "plan": {
+   "terms": [],
+   "raw_op": "content_search",
+   "raw_params": "{'p_phone': '17866578153', 'p_terms': ['why', 'did', 'lori'], 'p_sources': ['fb_post', 'fb_comment', 'wa_message'], 'p_limit': 25}"
+  },
+  "tools": []
+ }
+]

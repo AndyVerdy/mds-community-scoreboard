@@ -229,9 +229,17 @@ def main():
         st, exp = rpc("expertise_search", {"p_phone": phone, "p_query": "PPC advertising", "p_limit": 15}, key)
         check("expertise_search answers (status 200, rows)", st == 200 and isinstance(exp, list)
               and len(exp) > 0, f"status {st}")
-        EXP_KEYS = {"full_name", "city", "state", "expertise", "niche", "matched_rank"}
-        check("expertise rows carry ONLY name/city/state/expertise/niche/rank",
+        # matched_text added 2026-07-29 (#21): the PUBLIC profile snippet that matched
+        # (about + fun fact — both already on the public member card), so the answering
+        # loop can SEE the evidence instead of a bare name+rank. No new exposure.
+        EXP_KEYS = {"full_name", "city", "state", "expertise", "niche", "matched_text", "matched_rank"}
+        check("expertise rows carry ONLY name/city/state/expertise/niche/snippet/rank",
               all(set(e.keys()) == EXP_KEYS for e in (exp or [])))
+        check("expertise matched_text holds only public-card fields (about/fun fact)",
+              all((e.get("matched_text") is None)
+                  or all(seg.strip().startswith(("about:", "fun fact:"))
+                         for seg in str(e["matched_text"]).split(" | "))
+                  for e in (exp or [])))
         eblob = json.dumps(exp)
         # Match real CONTACT DATA, not the words. The old substring test failed on a member whose
         # niche is legitimately "Cell phone accessories" (2026-07-27) — a false positive that would
