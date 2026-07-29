@@ -173,6 +173,20 @@ LOCKED decision: the generated bank is now the legacy benchmark; the routine mov
 bank** (OLIVIA_ORGANIC_BANK_DRAFT: 80 real questions from 216 distinct, expects being authored via
 validate-against-Supa; know-but-won't class standardized; gender-aggregate ruling pending with Andy).
 
+**FIX BATCH APPLIED (all Andy-approved, diagnosed free first) + ORGANIC RUN 2 FIRED.** Diagnosis
+retracted one alarm: the "invented ticket" was REAL AND CORRECT — the eval's "yeah sure" accepted the
+prior offer and opened Intercom ticket #215475268214575 with Andy's real email (per his Call-me-X
+ruling the ticket IS right; the judge misread; ticket needs closing — eval side-effect; reset-every-Q
+now prevents offer→acceptance chains in runs). REAL defects fixed: (1) Plan Request routing overrides
+— registration-status questions (were dying in ticket_offer) and recommend-calls (hijacked by chats
+lane) now route to the loop (patchNodeField, both return sites, no $ in replacement); (2) seed rules:
+capability questions = source rundown never a personal-history dump · persona-driven recommendations
+start from member_dossier; (3) eval: judge TODAY-anchor (2026 no longer "impossible") + 12s pacing
+(6s overlap misjudged slow answers). FREE PROBES 3/3: "I'm not registered?" → real Singapore reg
+status + links · "Recommend some calls" → Mogul Call every Tuesday (Jamie Graham) + monthly chat
+calls, honest no-catalog, zero gated chats · capability question → proper source rundown. Organic run
+2 firing (~25 min) — target: beat prod's 13.3%.
+
 **ORGANIC BANK — FIRST STAGE-VS-PROD MEASUREMENT (the metric that matters now): PROD 13.3% fail
 (67/5/11 of 83) · STAGING 18.2% (59/4/14 of 77) — prod WINS on real member questions.** 21
 disagreements, 6 both-fail (shared defects). Staging's organic gap concentrates in: ticket-lane
