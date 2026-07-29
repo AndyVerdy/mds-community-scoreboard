@@ -55,10 +55,13 @@ if (preRaw.length || preDig.length) {
 const finalUser = preload
   ? 'PRELOADED EVIDENCE — a deterministic search already ran for this exact message; treat it as your first tool result:' + NL + preload + NL + NL + 'MEMBER MESSAGE:' + NL + current
   : current;
+// third cache breakpoint: the whole prefix (system+tools+history+preload) reuses
+// on every loop iteration instead of re-sending ~5K preload tokens uncached.
 if (msgs.length && msgs[msgs.length - 1].role === 'user') {
-  msgs[msgs.length - 1].content += NL + NL + finalUser;
+  const prev = msgs[msgs.length - 1].content;
+  msgs[msgs.length - 1] = { role: 'user', content: [{ type: 'text', text: prev + NL + NL + finalUser, cache_control: { type: 'ephemeral' } }] };
 } else {
-  msgs.push({ role: 'user', content: finalUser });
+  msgs.push({ role: 'user', content: [{ type: 'text', text: finalUser, cache_control: { type: 'ephemeral' } }] });
 }
 
 // ---- tools: the gated RPCs, phone-less schemas ----

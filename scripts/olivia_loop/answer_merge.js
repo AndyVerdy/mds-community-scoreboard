@@ -43,7 +43,18 @@ const results = reqs.map((req, i) => {
   return { type: 'tool_result', tool_use_id: req.tool_use_id, content: body };
 });
 
-const messages = state.messages.concat(
+// move the message-level cache breakpoint to the NEWEST tool_result message so
+// each iteration reuses everything before it (4-breakpoint budget: tools, system,
+// one moving message mark).
+const stripped = state.messages.map(msg => {
+  if (!Array.isArray(msg.content)) return msg;
+  return { role: msg.role, content: msg.content.map(c => {
+    if (c && c.cache_control) { const d = Object.assign({}, c); delete d.cache_control; return d; }
+    return c;
+  }) };
+});
+if (results.length) results[results.length - 1] = Object.assign({}, results[results.length - 1], { cache_control: { type: 'ephemeral' } });
+const messages = stripped.concat(
   [{ role: 'assistant', content: state.assistant_content }],
   [{ role: 'user', content: results }],
 );

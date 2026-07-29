@@ -184,6 +184,17 @@ pairing slips in the harness (7 unjudged + several off-topic verdicts), judge mi
 prod on the ORGANIC bank.** Gender aggregate shipped into community_info (migration
 `community_info_gender_split`, gate green 148).
 
+**TOKEN OPTIMIZATIONS (Andy: 68M-token day, "are requests poorly optimized?") — applied + probed on
+5 questions (not a full run, per the new discipline):** third cache breakpoint on the conversation
+prefix (Seed) + a MOVING breakpoint on the newest tool_result (Merge strips old marks — 4-breakpoint
+budget: tools/system/moving) + fact-gate switched to Haiku with 24K evidence cap. **Measured: fresh
+input per answer 13,500 → 14–360 tokens (~99% cached); all-in ~$0.007–0.01/answer (was ~$0.035).**
+Quality held 7/7 probes (Phelps exact, chapters+follow-up, Patrón, DMV bait + revenue still gated;
+no false blocks from the Haiku gate). Andy live-tested partner browse in the window — grounded deals
+with ratings/links. NEXT-SESSION BATCH (diagnose-free-first): ticket-lane fabrication (last ungated
+path) · calls-recommendation rule not landing · link retrieval · harness Q→A pairing slips · judge
+today-anchor. Promote bar: staging must beat prod's 13.3% on the organic bank.
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +
