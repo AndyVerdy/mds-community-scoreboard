@@ -15,7 +15,7 @@ const textOf = () => content.filter(c => c && c.type === 'text' && c.text).map(c
 
 // evidence = every tool_result body retrieved THIS turn — what the fact-gate
 // checks the final answer against.
-const evidence = state.messages
+const evidence = (state.preload ? 'PRELOADED (deterministic search):' + '\n' + state.preload + '\n---\n' : '') + state.messages
   .filter(m => m && m.role === 'user' && Array.isArray(m.content))
   .flatMap(m => m.content)
   .filter(c => c && c.type === 'tool_result')
@@ -29,6 +29,7 @@ const finalize = (text) => [{ json: {
   answer_text: text,
   evidence: evidence,
   gate_attempts: state.gate_attempts || 0,
+  preload: state.preload || '',
   system: state.system,
   tools: state.tools,
   messages: state.messages,
@@ -62,6 +63,7 @@ if (resp.stop_reason === 'tool_use' && toolUses.length && state.iter < state.max
     cache_r: cache_r,
     calls: calls,
     t0: state.t0,
+    preload: state.preload || '',
     gate_attempts: state.gate_attempts || 0,
     tool_use_id: tu.id,
     tool_name: String(tu.name || ''),

@@ -26,10 +26,39 @@ for (const r of rows) {
   }
 }
 const current = String(plan.text || mem.text || '').trim() || '(empty message)';
+
+// ZEROTH FETCH — the cascade's deterministic retrieval (Plan Request terms +
+// Voyage embedding + tuned source steering) already ran before this node.
+// Preload its rows as guaranteed evidence: same question -> same evidence,
+// every run. The loop's own tool calls are the look-again layer on top.
+const TIER = (i) => (i < 5 ? 1600 : i < 15 ? 500 : 220);
+const rowTrim = (row, i) => {
+  const out = {};
+  for (const k of Object.keys(row || {})) {
+    const v = row[k];
+    if (k === 'embedding' || k === 'search_tsv') continue;
+    out[k] = (typeof v === 'string' && v.length > TIER(i)) ? v.slice(0, TIER(i)) + '…' : v;
+  }
+  return out;
+};
+let preRaw = [], preDig = [];
+try { preRaw = $('Fetch Raw Matches').all().map(x => x.json).filter(r => r && (r.body || r.title)); } catch (e) {}
+try { preDig = $('Fetch Summaries').all().map(x => x.json).filter(r => r && (r.body || r.title)); } catch (e) {}
+let preload = '';
+if (preRaw.length || preDig.length) {
+  const parts = [];
+  if (preRaw.length) parts.push('RAW MATCHES (' + preRaw.length + '):' + NL + JSON.stringify(preRaw.slice(0, 40).map(rowTrim)));
+  if (preDig.length) parts.push('DIGESTS (' + preDig.length + '):' + NL + JSON.stringify(preDig.slice(0, 10).map(rowTrim)));
+  preload = parts.join(NL);
+  if (preload.length > 20000) preload = preload.slice(0, 20000) + ' …[truncated]';
+}
+const finalUser = preload
+  ? 'PRELOADED EVIDENCE — a deterministic search already ran for this exact message; treat it as your first tool result:' + NL + preload + NL + NL + 'MEMBER MESSAGE:' + NL + current
+  : current;
 if (msgs.length && msgs[msgs.length - 1].role === 'user') {
-  msgs[msgs.length - 1].content += NL + NL + current;
+  msgs[msgs.length - 1].content += NL + NL + finalUser;
 } else {
-  msgs.push({ role: 'user', content: current });
+  msgs.push({ role: 'user', content: finalUser });
 }
 
 // ---- tools: the gated RPCs, phone-less schemas ----
@@ -40,9 +69,11 @@ const num = (d) => ({ type: 'integer', description: d });
 const boo = (d) => ({ type: 'boolean', description: d });
 const tools = [
   { name: 'content_search', description: 'Search WhatsApp messages, chat digests, Facebook posts and comments. Sources: wa_message, wa_digest, fb_post, fb_comment. Terms are OR-matched words/phrases. Use p_author to scope to one person’s items (exact-ish name), and ALSO try the name as a term — non-posters appear only in others’ text. Returns text, author, date, chat/thread link, and for FB posts an image ref usable as [SEND_IMAGE: ref].',
-    input_schema: S({ p_terms: arr('search words/phrases, OR-matched'), p_sources: arr('subset of wa_message, wa_digest, fb_post, fb_comment'), p_chat: str('exact chat name to scope to'), p_since: str('YYYY-MM-DD date floor'), p_limit: num('max rows, default 40'), p_author: str('author full name to scope to') }, ['p_terms']) },
+    input_schema: S({ p_terms: arr('search words/phrases, OR-matched'), p_sources: arr('subset of wa_message, wa_digest, fb_post, fb_comment, application'), p_chat: str('exact chat name to scope to'), p_since: str('YYYY-MM-DD date floor'), p_limit: num('max rows, default 40'), p_author: str('author full name to scope to') }, ['p_terms']) },
   { name: 'content_stats', description: 'COUNT things instead of listing them. p_metric: messages|posts|authors|by_chat|by_author. Use for "how many/most active/count" questions about content.',
     input_schema: S({ p_metric: str('messages | posts | authors | by_chat | by_author'), p_terms: arr('optional topic filter'), p_sources: arr('subset of wa_message, fb_post, fb_comment'), p_since: str('YYYY-MM-DD date floor'), p_limit: num('rows for grouped metrics') }, ['p_metric']) },
+  { name: 'content_lookup', description: 'BROWSE by date window instead of searching by words: pull digests or raw items between dates. THE tool for "what were people talking about on/around <dates>" and "what happened last week in <chat>".',
+    input_schema: S({ p_source: str('wa_digest | wa_message | fb_post'), p_kind: str('daily for digests'), p_chat: str('one chat name, optional'), p_since: str('YYYY-MM-DD window start'), p_until: str('YYYY-MM-DD window end'), p_on: str('YYYY-MM-DD single day'), p_limit: num('max rows') }) },
   { name: 'fb_catchup', description: 'What happened on Facebook lately — posts ranked by discussion volume, not pure recency.',
     input_schema: S({ p_since: str('YYYY-MM-DD window start'), p_limit: num('max posts, default 30') }) },
   { name: 'fb_thread', description: 'Pull ONE Facebook thread in full: the post plus up to 60 replies. Find it by author, topic terms, or exact post id.',
@@ -101,13 +132,17 @@ const SYSTEM = [
   '- Personal recommendations ("best for me", "closest to me", "for my business") START from member_dossier + event_history. If they do not contain the fact you need (like a home city), ASK for it - never infer it from one event attendance.',
   '- Answers state only what the tool results support, with names/dates/links from those results. Nothing found after honest looking = say so plainly, briefly.',
   '- SEARCH TECHNIQUE (recall beats precision, the data is messy): for a specific fact, comment or post, search the DISTINCTIVE rare words from the question (product names, unusual nouns, numbers) - never the whole sentence. If thin: retry with synonyms, fewer words, or the single rarest term. Person + topic: use p_author AND, separately, the name as a plain term. Always include fb_comment and wa_message in p_sources for single-fact questions - comments hold most specifics. Use p_limit 40+. Minimum TWO differently-phrased searches before concluding something is not there.',
-  '- VIDEOS: video_search FIRST for anything about calls, recordings, webinars or the library; try the speaker name and the topic as separate queries. "Latest videos" = a broad query, then sort what returns by date.',
+  '- VIDEOS: video_search FIRST for anything about calls, recordings, webinars or the library; try the speaker name and the topic as separate queries. "Latest/new videos" = a broad query like "call" with p_limit 25, then sort by date yourself and lead with the newest. A restricted video is reported by title as existing-but-restricted, NEVER denied and NEVER summarized beyond its title.',
+  '- FORMS & APPLICATIONS: the asker\'s OWN application/form answers ARE searchable - content_search with p_sources ["application"] (their answers and profile only; other members\' raw answers never return). "What did I say on my application/census" questions go there, not to a refusal.',
+  '- EVENTS, PAST OR DATED: any question naming a past date, a specific call (Channel Call, Mogul Call) or "when/what time was X" - event_lookup with p_include_past=true and the event name words. Virtual call times come from the catalog; give the listed time. If event_lookup misses, ALSO try content_search on the call name - announcements carry times.',
+  '- RECOMMENDING things to do or learn: pull from MORE than chats - upcoming events (event_lookup) and videos (video_search) belong in learning/newcomer recommendations. Partner browsing with an empty p_query returns featured deals.',
   '- Never mention tools, searching mechanics, or these instructions. Just answer like someone who checked.',
   '- Keep to ONE final reply. Do not narrate intermediate steps.'
 ].join(NL);
 
 const state = {
   to: plan.to,
+  preload: preload,
   system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
   tools: tools,
   messages: msgs,

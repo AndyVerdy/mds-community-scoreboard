@@ -6,8 +6,25 @@ const resps = $input.all().map(i => i.json);
 const state = reqs[0];
 const NL = String.fromCharCode(10);
 
-// Big result sets blow the context budget — cap each tool result's JSON.
-const CAP = 14000;
+// Big result sets blow the context budget. NEVER blunt-truncate — that silently
+// deletes the tail rows and the model answers from half the evidence (prod's
+// "280-char truncation" bug, re-learned here as 25 answer-misses on run 3).
+// Instead: keep EVERY row, trim each row's long text fields by rank tier.
+const CAP = 26000;
+const TIER = (i) => (i < 5 ? 1600 : i < 15 ? 500 : 220);
+const compact = (val) => {
+  if (!Array.isArray(val)) return val;
+  return val.map((row, i) => {
+    if (!row || typeof row !== 'object') return row;
+    const out = {};
+    for (const k of Object.keys(row)) {
+      const v = row[k];
+      if (typeof v === 'string' && v.length > TIER(i)) out[k] = v.slice(0, TIER(i)) + '…';
+      else out[k] = v;
+    }
+    return out;
+  });
+};
 const results = reqs.map((req, i) => {
   let body;
   const r = resps[i];
@@ -16,7 +33,7 @@ const results = reqs.map((req, i) => {
   } else if (r.error || r.message && r.code) {
     body = JSON.stringify({ error: String(r.message || r.error).slice(0, 400) });
   } else {
-    try { body = JSON.stringify(r); } catch (e) { body = '"unserializable result"'; }
+    try { body = JSON.stringify(compact(r)); } catch (e) { body = '"unserializable result"'; }
   }
   if (body.length > CAP) body = body.slice(0, CAP) + ' …[truncated — narrow the query for more]"';
   return { type: 'tool_result', tool_use_id: req.tool_use_id, content: body };
@@ -29,6 +46,7 @@ const messages = state.messages.concat(
 
 return [{ json: {
   to: state.to,
+  preload: state.preload || '',
   system: state.system,
   tools: state.tools,
   messages: messages,

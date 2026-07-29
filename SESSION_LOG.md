@@ -99,6 +99,22 @@ EVENT worsened (14/19) — event questions are the next deep-dive. Spend ≈ $22
 Stable-fail ids: 1003,1010,1015,1022,1026,1040,1046,2005,2009,2012,2024,2028,2032,2035,2038,2041,
 2054,2055,2066,2071,2137,2142,2165,2175.
 
+**ZEROTH FETCH BUILT (Andy: "fix 54 not 16") — the cascade's deterministic retrieval is now the
+loop's constant floor.** Rewire: ALL routes flow Plan Request → Embed Query → Fetch Summaries → Fetch
+Raw Matches (the tuned cascade fetch: expandTerms, author extraction, source steering, embedding
+always attached) → Verbatim?[1] (route llm) → Answer Seed, which PRELOADS those rows into the first
+model message as guaranteed evidence (tier-trimmed, 20K cap; counts as gate evidence). tool_choice
+un-forced — her calls are the look-again layer. Same question → same evidence, every run = the
+flap-class fix. Reachability probes WITH embeddings first proved the tools reach everything (Patrón
+rank 1, Sarah CBP rank 1, Jamie rank 9, Joe rank 11 — earlier "tool-defect" verdicts were false
+pessimism from embedding-less probes). FREE PROBES through the rebuilt loop: **Patrón NAILED** (41
+products, $259K, Aug 6 2025 — permanent fail in all 4 runs, now rich-specific) · video PPC still ✓ ·
+**Sarah/IEEPA still denied** (cascade terms ≠ my probe terms — needs her exec) · **Daniel book still
+missed but CLOSE** (found the thanked-but-unnamed rec thread, offered to dig instead of digging —
+needs "do the thread pull, don't offer it" guidance). Also selftest 20s pacing now overlaps answers —
+probe artifact, raise waits. NEXT: offer→do guidance + Sarah exec check + free re-probe, then ONE
+measuring run.
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +

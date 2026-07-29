@@ -32,7 +32,7 @@ const messages = prev.messages.concat(
   [{ role: 'user', content: 'FACT-GATE: these claims in your draft are NOT supported by the tool results you retrieved: ' + JSON.stringify(verdict.unsupported) + '. Rewrite your answer now. Every name and number must come from your retrieved tool results — re-fetch if you need more data. Anything you cannot support, drop or say plainly you do not have it. Do not mention this check.' }],
 );
 return [{ json: {
-  done: false, to: prev.to, system: prev.system, tools: prev.tools, messages: messages,
+  done: false, to: prev.to, preload: prev.preload || '', system: prev.system, tools: prev.tools, messages: messages,
   iter: Math.max(prev.iter, 1), max_iter: prev.max_iter + 2,
   in_tok: prev.in_tok, out_tok: prev.out_tok, cache_w: prev.cache_w, cache_r: prev.cache_r,
   calls: prev.calls, t0: prev.t0, gate_attempts: 1, regen: true,

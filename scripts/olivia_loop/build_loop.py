@@ -65,13 +65,6 @@ SUPA_CRED = {"httpHeaderAuth": {"id": "QHLDE4VHvm8jrVds", "name": "Supabase secr
 ANTH_CRED = {"httpHeaderAuth": {"id": "p52LoFSxvkMgZ3F5", "name": "Anthropic API"}}
 
 NEW = [
-    {"id": "loop_route_if", "name": "Loop?", "type": "n8n-nodes-base.if", "typeVersion": 2.2,
-     "position": [1900, 900], "parameters": {"conditions": {
-         "options": {"version": 2, "leftValue": "", "caseSensitive": True, "typeValidation": "strict"},
-         "combinator": "and",
-         "conditions": [{"id": "r_llm", "leftValue": "={{ $('Plan Request').first().json.route }}",
-                          "rightValue": "llm", "operator": {"type": "string", "operation": "equals"}}]},
-         "options": {}}},
     {"id": "answer_seed", "name": "Answer Seed", "type": "n8n-nodes-base.code", "typeVersion": 2,
      "position": [2100, 1050], "parameters": {"jsCode": seed}},
     {"id": "answer_claude", "name": "Answer Claude", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
@@ -85,7 +78,7 @@ NEW = [
              {"name": "anthropic-version", "value": "2023-06-01"},
              {"name": "content-type", "value": "application/json"}]},
          "sendBody": True, "specifyBody": "json",
-         "jsonBody": "={{ JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 2000, thinking: { type: 'disabled' }, system: $json.system, tools: $json.tools, tool_choice: ($json.iter === 0 ? { type: 'any' } : undefined), messages: $json.messages }) }}",
+         "jsonBody": "={{ JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 2000, thinking: { type: 'disabled' }, system: $json.system, tools: $json.tools, messages: $json.messages }) }}",
          "options": {"timeout": 120000}}},
     {"id": "answer_parse", "name": "Answer Parse", "type": "n8n-nodes-base.code", "typeVersion": 2,
      "position": [2500, 1050], "parameters": {"jsCode": parse}},
@@ -151,15 +144,19 @@ NEW = [
 ]
 
 # drop any previous iteration of these nodes, then add fresh
-new_names = {n["name"] for n in NEW} | {"Embed?"}
+new_names = {n["name"] for n in NEW} | {"Embed?", "Loop?"}
 wf["nodes"] = [n for n in wf["nodes"] if n["name"] not in new_names] + NEW
 
 # ---- rewire ----
-# Plan Request now feeds Loop? ; Loop? true -> Answer Seed, false -> Embed Query
-conns["Plan Request"] = {"main": [[{"node": "Loop?", "type": "main", "index": 0}]]}
-conns["Loop?"] = {"main": [
+# ZEROTH FETCH: every route flows through the cascade's deterministic retrieval
+# (Embed Query -> Fetch Summaries -> Fetch Raw Matches), THEN llm routes enter
+# the loop with that evidence preloaded. Verbatim?[1] (route==='llm') feeds the
+# loop instead of the legacy Build Prompt.
+conns["Plan Request"] = {"main": [[{"node": "Embed Query", "type": "main", "index": 0}]]}
+conns.pop("Loop?", None)
+conns["Verbatim?"] = {"main": [
+    [{"node": "Build Verbatim Digest", "type": "main", "index": 0}],
     [{"node": "Answer Seed", "type": "main", "index": 0}],
-    [{"node": "Embed Query", "type": "main", "index": 0}],
 ]}
 conns["Answer Seed"] = {"main": [[{"node": "Answer Claude", "type": "main", "index": 0}]]}
 conns["Answer Claude"] = {"main": [[{"node": "Answer Parse", "type": "main", "index": 0}]]}
