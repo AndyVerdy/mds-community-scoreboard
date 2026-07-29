@@ -173,6 +173,15 @@ LOCKED decision: the generated bank is now the legacy benchmark; the routine mov
 bank** (OLIVIA_ORGANIC_BANK_DRAFT: 80 real questions from 216 distinct, expects being authored via
 validate-against-Supa; know-but-won't class standardized; gender-aggregate ruling pending with Andy).
 
+**ORGANIC RUN 2 (post-batch): 79 judged · PASS 58 · PARTIAL 10 · FAIL 11 = 13.9%** — from 18.2%;
+prod = 13.3%. **Staging is now statistically TIED with prod on real member questions** (0.6pp ≈ one
+question). The 11 remaining fails split visually into: possible retrieval-relevance misses (retention
+marketing → AI/PPC people), 3 invention-verdict cases the gate should have caught (invented
+events/members Q3042/Q3045, misattributed quote Q3068 — Haiku-gate quality check is now due), an FB
+source-steer miss (Q3017 "pull only from Facebook"), and 2 menu-dodges. NEXT SESSION: free per-fail
+diagnosis of the 11 (exec+tool-level), Haiku-vs-Sonnet gate check on the 3 invention cases, fix,
+probe, ONE run — the pass that should take staging past prod.
+
 **FIX BATCH APPLIED (all Andy-approved, diagnosed free first) + ORGANIC RUN 2 FIRED.** Diagnosis
 retracted one alarm: the "invented ticket" was REAL AND CORRECT — the eval's "yeah sure" accepted the
 prior offer and opened Intercom ticket #215475268214575 with Andy's real email (per his Call-me-X
