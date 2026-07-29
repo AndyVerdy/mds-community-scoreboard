@@ -154,6 +154,17 @@ the 18 → CROSS fix-batch → then ONE FULL-bank run (220 Qs) for the true head
 ≤10% (the hard set over-represents historic fails by construction; the full bank is the honest
 denominator now).
 
+**RUN-6 FAIL DIAGNOSIS → TWO EVAL-HARNESS BUGS (both mine) + rules batch, then THE FULL-BANK RUN.**
+The five "completely off-topic" CROSS fails were the loop's own conversation memory: the eval reset
+her only every 10 questions (calibrated for the stateless cascade), so unrelated questions inside a
+block read as follow-ups (SpaceX answer on a Windows-vuln question). Eval now resets before EVERY
+question. Second: the scorer overlaid stale `eval_gen_*` files OVER the corrected bank — Q1010's
+fixed expectation never reached the judge; gen files now setdefault-only, curated bank wins. Seed
+rules added: job titles never shareable (Mavros said CEO — behavioral) · restricted videos =
+title-only, no paraphrasing · "recommend calls" = events + chat call schedules + recordings, never
+gated chat groups. Full 220-question bank fired at staging (run 7) with everything in place — the
+honest headline vs Andy's ≤10%.
+
 **LIVE CATCH BY ANDY (same night, window testing): "list top 10" FABRICATED chapters** (Southern
 California 46 / DMV 41 / Texas 40 — none exist) and later turns cited the fake DMV back. Run data:
 that turn made **zero tool calls** — it padded its own earlier top-5 reply. Fix shipped to staging +
