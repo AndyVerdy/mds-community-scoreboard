@@ -373,10 +373,15 @@ through this".
 meets the quality bar.*
 
 - Standing per-answer + per-run cost visibility (usage line in the eval report / health tile)
-- **Evaluate moving off the Anthropic API for some or all calls — candidate: Kimi
-  (platform.kimi.ai), ~3× cheaper per 1M tokens, quality claimed comparable to Opus (Andy,
-  2026-07-29).** Trial order: the cheap high-volume calls first (judge screen, fact-gate, router) —
-  the answering model last.
+- **Kimi evaluation — economics resolved 2026-07-29 (Andy's screenshot of platform.kimi.ai):**
+  K3 (flagship, 1M ctx) = $3/$15/$0.30-cache — IDENTICAL to Sonnet 5's sticker and cache rate
+  (and Sonnet is $2/$10 intro through Aug 31, i.e. currently cheaper). K2.7 Code / K2.6 =
+  $0.95/$4/$0.19 — ≈3× cheaper than Sonnet UNCACHED, but our traffic is ~99% cached: on our shape
+  a K2.7 answer ≈ $0.005 vs our $0.007-0.01 (~1.5-2×, not 3×), and vs Haiku ($1/$5/$0.10-cache,
+  which runs our gate+judge-screen) K2.7 is roughly break-even or slightly WORSE on cached calls.
+  **Verdict: swap only pays if K3 quality beats Sonnet 5 at equal price on the organic bank, or
+  K2.7 beats Haiku for the small calls — a quality trial, not a cost play.** Same bar: organic
+  bank, leak gate, fabrication probes, latency.
 - Bar for ANY model swap: same organic bank score or better, leak-gate green, fabrication probes
   clean, latency in band — measured, never assumed.
 - Note for the privacy line: adds a third AI vendor handling member content (current stance was
