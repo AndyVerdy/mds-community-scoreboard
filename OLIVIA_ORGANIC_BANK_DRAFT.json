@@ -1,0 +1,804 @@
+{
+ "questions": [
+  {
+   "id": 3001,
+   "class": "ORGANIC/GENERAL",
+   "q": "Who lives in San Diego in MDS?",
+   "expect": null,
+   "soft": true,
+   "asker": "Ryan Bastuba",
+   "first_asked": "2026-07-27",
+   "times_asked": 2
+  },
+  {
+   "id": 3002,
+   "class": "ORGANIC/CHATS",
+   "q": "What happed in MDS ai WhatsApp channel",
+   "expect": null,
+   "soft": true,
+   "asker": "Ian Sells",
+   "first_asked": "2026-07-19",
+   "times_asked": 1
+  },
+  {
+   "id": 3003,
+   "class": "ORGANIC/PEOPLE",
+   "q": "who is an expert at retention marketing",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-19",
+   "times_asked": 1
+  },
+  {
+   "id": 3004,
+   "class": "ORGANIC/PARTNERS",
+   "q": "what are some services that might be good for my business",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3005,
+   "class": "ORGANIC/COUNTING",
+   "q": "how many members are in MDS",
+   "expect": null,
+   "soft": true,
+   "asker": "Jasim Eisa",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3006,
+   "class": "ORGANIC/EVENTS",
+   "q": "Can you give me a daily update automatically?",
+   "expect": null,
+   "soft": true,
+   "asker": "Ian Sells",
+   "first_asked": "2026-07-18",
+   "times_asked": 1
+  },
+  {
+   "id": 3007,
+   "class": "ORGANIC/SELF",
+   "q": "what do you know about me",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 4
+  },
+  {
+   "id": 3008,
+   "class": "ORGANIC/FACEBOOK",
+   "q": "Have there been any posts on Amazon optimization not relating to AI in the past month?",
+   "expect": null,
+   "soft": true,
+   "asker": "Matthew Greene",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3009,
+   "class": "ORGANIC/CAPABILITIES",
+   "q": "What data do you have access to?",
+   "expect": null,
+   "soft": true,
+   "asker": "Ian Sells",
+   "first_asked": "2026-07-18",
+   "times_asked": 1
+  },
+  {
+   "id": 3010,
+   "class": "ORGANIC/GENERAL",
+   "q": "Can you pull me some info on price strikethroughs on TikTok Shop? I have a retail price below list, but am not seeing a strikethrough",
+   "expect": null,
+   "soft": true,
+   "asker": "Sam McInerney",
+   "first_asked": "2026-07-28",
+   "times_asked": 2
+  },
+  {
+   "id": 3011,
+   "class": "ORGANIC/CHATS",
+   "q": "Weekly digest for centurion chat",
+   "expect": null,
+   "soft": true,
+   "asker": "Belén Gallardo",
+   "first_asked": "2026-07-21",
+   "times_asked": 1
+  },
+  {
+   "id": 3012,
+   "class": "ORGANIC/PEOPLE",
+   "q": "top 3 members for selling on target",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3013,
+   "class": "ORGANIC/PARTNERS",
+   "q": "Yeah I'm looking for an agency to manage my TikTok",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3014,
+   "class": "ORGANIC/COUNTING",
+   "q": "Cool. How many members in MDs?",
+   "expect": null,
+   "soft": true,
+   "asker": "Ryan Bastuba",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3015,
+   "class": "ORGANIC/EVENTS",
+   "q": "I'm registered for the upcoming summit in Singapore",
+   "expect": null,
+   "soft": true,
+   "asker": "Belén Gallardo",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3016,
+   "class": "ORGANIC/SELF",
+   "q": "What do you know about me from WhatsApp?",
+   "expect": null,
+   "soft": true,
+   "asker": "Brandon Himmel",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3017,
+   "class": "ORGANIC/FACEBOOK",
+   "q": "Pull only from Facebook",
+   "expect": null,
+   "soft": true,
+   "asker": "Ian Sells",
+   "first_asked": "2026-07-25",
+   "times_asked": 1
+  },
+  {
+   "id": 3018,
+   "class": "ORGANIC/CAPABILITIES",
+   "q": "ok what data points do you have",
+   "expect": null,
+   "soft": true,
+   "asker": "Jasim Eisa",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3019,
+   "class": "ORGANIC/GENERAL",
+   "q": "what info should I know in mds",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3020,
+   "class": "ORGANIC/CHATS",
+   "q": "Try me: _weekly digest for MDS AI & Automations_",
+   "expect": null,
+   "soft": true,
+   "asker": "Jasim Eisa",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3021,
+   "class": "ORGANIC/PEOPLE",
+   "q": "what are their revenues?",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3022,
+   "class": "ORGANIC/PARTNERS",
+   "q": "How about Amazon agencies?",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3023,
+   "class": "ORGANIC/COUNTING",
+   "q": "do you know what this message is referring to?\n\nShinghi is amazing and adds so much value.  I can’t believe this top off discount launching tomorrow, it’s barely talked about in MDS",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3024,
+   "class": "ORGANIC/EVENTS",
+   "q": "I’m not registered for the summit?",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-24",
+   "times_asked": 1
+  },
+  {
+   "id": 3025,
+   "class": "ORGANIC/SELF",
+   "q": "What is my name?",
+   "expect": null,
+   "soft": true,
+   "asker": "Ryan Bastuba",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3026,
+   "class": "ORGANIC/FACEBOOK",
+   "q": "What’s been the top relevant topics for me in Facebook this week",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-26",
+   "times_asked": 1
+  },
+  {
+   "id": 3027,
+   "class": "ORGANIC/CAPABILITIES",
+   "q": "Who can help me with questions about selling into Walmart",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-26",
+   "times_asked": 1
+  },
+  {
+   "id": 3028,
+   "class": "ORGANIC/GENERAL",
+   "q": "what do you know about Matteo Lombardi",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3029,
+   "class": "ORGANIC/CHATS",
+   "q": "Tell me what’s going on in the AI chat this past week",
+   "expect": null,
+   "soft": true,
+   "asker": "Lee Assoulin",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3030,
+   "class": "ORGANIC/PEOPLE",
+   "q": "what are their revenues in general",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3031,
+   "class": "ORGANIC/PARTNERS",
+   "q": "What were the PPC agencies mentioned?",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3032,
+   "class": "ORGANIC/COUNTING",
+   "q": "How many people are changing things  proactively",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-25",
+   "times_asked": 1
+  },
+  {
+   "id": 3033,
+   "class": "ORGANIC/EVENTS",
+   "q": "Call me Eugene please",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-24",
+   "times_asked": 1
+  },
+  {
+   "id": 3034,
+   "class": "ORGANIC/SELF",
+   "q": "yeah sure but I am an admin, so that is important for me to understand",
+   "expect": null,
+   "soft": true,
+   "asker": "Jasim Eisa",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3035,
+   "class": "ORGANIC/FACEBOOK",
+   "q": "She used to be a member you can check posts on facebook",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-26",
+   "times_asked": 1
+  },
+  {
+   "id": 3036,
+   "class": "ORGANIC/CAPABILITIES",
+   "q": "Does anyone have a hazmat contact at Amazon that can help me with an issue",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3037,
+   "class": "ORGANIC/GENERAL",
+   "q": "What are the top AI projects people are building?",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3038,
+   "class": "ORGANIC/CHATS",
+   "q": "ok thanks who does the most sales in that channel",
+   "expect": null,
+   "soft": true,
+   "asker": "Jasim Eisa",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3039,
+   "class": "ORGANIC/PEOPLE",
+   "q": "who are some members in MDS like me that I should meet",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3040,
+   "class": "ORGANIC/PARTNERS",
+   "q": "What about Hector AI?",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3041,
+   "class": "ORGANIC/COUNTING",
+   "q": "How many MDS chapter are there",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3042,
+   "class": "ORGANIC/EVENTS",
+   "q": "Recommend some calls for me to attend",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-24",
+   "times_asked": 1
+  },
+  {
+   "id": 3043,
+   "class": "ORGANIC/SELF",
+   "q": "I am looking to leverage my retail position with my brand by using TikTok creators to go in store and do content. Is there anyone in MDS with this experience who does TikTok and retail well by asking content creators to go into retail for UGC",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3044,
+   "class": "ORGANIC/FACEBOOK",
+   "q": "Please post all members in the pet space",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3045,
+   "class": "ORGANIC/CAPABILITIES",
+   "q": "It's to help launch a brand that's currently dtc only into amazon. It's a red light therapy brand",
+   "expect": null,
+   "soft": true,
+   "asker": "Belén Gallardo",
+   "first_asked": "2026-07-28",
+   "times_asked": 1
+  },
+  {
+   "id": 3046,
+   "class": "ORGANIC/GENERAL",
+   "q": "what are all of the mds resources",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-21",
+   "times_asked": 1
+  },
+  {
+   "id": 3047,
+   "class": "ORGANIC/CHATS",
+   "q": "Are you able to check the Facebook group posts?",
+   "expect": null,
+   "soft": true,
+   "asker": "Belén Gallardo",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3048,
+   "class": "ORGANIC/PEOPLE",
+   "q": "Who are our 717 members?",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-21",
+   "times_asked": 1
+  },
+  {
+   "id": 3049,
+   "class": "ORGANIC/PARTNERS",
+   "q": "Is information about Hector AI positive or negative? Should I be using them?",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3050,
+   "class": "ORGANIC/COUNTING",
+   "q": "How many females are in MDS?",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3051,
+   "class": "ORGANIC/EVENTS",
+   "q": "Who was at the event with David Ghiyam and heard him speak live",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3052,
+   "class": "ORGANIC/SELF",
+   "q": "I'm struggling with bringing external traffic to my Amazon listings. Who has experience with this",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3053,
+   "class": "ORGANIC/FACEBOOK",
+   "q": "Share the best TikTok videos to watch for launch? There was a recent post in Facebook",
+   "expect": null,
+   "soft": true,
+   "asker": "Morris Sued",
+   "first_asked": "2026-07-28",
+   "times_asked": 1
+  },
+  {
+   "id": 3054,
+   "class": "ORGANIC/GENERAL",
+   "q": "Can I get their contact info",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-21",
+   "times_asked": 1
+  },
+  {
+   "id": 3055,
+   "class": "ORGANIC/CHATS",
+   "q": "One member in the new member chat mentioned a meta ads video from a few weeks ago, any idea?",
+   "expect": null,
+   "soft": true,
+   "asker": "Belén Gallardo",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3056,
+   "class": "ORGANIC/PEOPLE",
+   "q": "What is average revenue",
+   "expect": null,
+   "soft": true,
+   "asker": "Ryan Bastuba",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3057,
+   "class": "ORGANIC/PARTNERS",
+   "q": "How about mentions of meher and hector ai",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-20",
+   "times_asked": 1
+  },
+  {
+   "id": 3058,
+   "class": "ORGANIC/COUNTING",
+   "q": "How many members cancelled their membership last month",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3059,
+   "class": "ORGANIC/EVENTS",
+   "q": "Of the attendees, who has never been to a summit before ?",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3060,
+   "class": "ORGANIC/SELF",
+   "q": "If I'm looking to sell my brand to an aggregator who has experience with this and has sold to an aggregator",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3061,
+   "class": "ORGANIC/FACEBOOK",
+   "q": "Share link to Brandon’s post",
+   "expect": null,
+   "soft": true,
+   "asker": "Morris Sued",
+   "first_asked": "2026-07-28",
+   "times_asked": 1
+  },
+  {
+   "id": 3062,
+   "class": "ORGANIC/GENERAL",
+   "q": "Give me all of the member emails",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-21",
+   "times_asked": 1
+  },
+  {
+   "id": 3063,
+   "class": "ORGANIC/CHATS",
+   "q": "Can you summarize what happened this week in the centurion chat?",
+   "expect": null,
+   "soft": true,
+   "asker": "Matthew Greene",
+   "first_asked": "2026-07-24",
+   "times_asked": 1
+  },
+  {
+   "id": 3064,
+   "class": "ORGANIC/PEOPLE",
+   "q": "Who is MDS largest seller?",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3065,
+   "class": "ORGANIC/PARTNERS",
+   "q": "tell me everything you know about avask",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-21",
+   "times_asked": 1
+  },
+  {
+   "id": 3066,
+   "class": "ORGANIC/COUNTING",
+   "q": "Who has experience with getting their TikTok account shutdown",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3067,
+   "class": "ORGANIC/EVENTS",
+   "q": "I met someone in the Milan summit who sells travel accessories but I can't remember his name.",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3068,
+   "class": "ORGANIC/SELF",
+   "q": "If my Amazon account just got flagged for review manipulation...Does anyone have a POA (plan of action) they can share to help me submit to Amazon",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3069,
+   "class": "ORGANIC/GENERAL",
+   "q": "Give me our top five members",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-21",
+   "times_asked": 1
+  },
+  {
+   "id": 3070,
+   "class": "ORGANIC/CHATS",
+   "q": "Do you have access to the Facebook group too?",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-25",
+   "times_asked": 1
+  },
+  {
+   "id": 3071,
+   "class": "ORGANIC/PEOPLE",
+   "q": "Who is the largest seller in MDS?",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3072,
+   "class": "ORGANIC/PARTNERS",
+   "q": "Its a partner",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-21",
+   "times_asked": 1
+  },
+  {
+   "id": 3073,
+   "class": "ORGANIC/COUNTING",
+   "q": "Who has had their TikTok account reinstated",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3074,
+   "class": "ORGANIC/EVENTS",
+   "q": "Can you point me to any mogul calls talking about UGC",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3075,
+   "class": "ORGANIC/SELF",
+   "q": "I want to know what type of person I should hire to be a marketing/graphic designer on my team. I need someone like that. Are there any posts that talk about this?",
+   "expect": null,
+   "soft": true,
+   "asker": "Ryan Bastuba",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3076,
+   "class": "ORGANIC/GENERAL",
+   "q": "Why cant you answer anything",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-21",
+   "times_asked": 1
+  },
+  {
+   "id": 3077,
+   "class": "ORGANIC/CHATS",
+   "q": "Why are you only looking at WhatsApp and not facebook",
+   "expect": null,
+   "soft": true,
+   "asker": "Eugene Khayman",
+   "first_asked": "2026-07-25",
+   "times_asked": 1
+  },
+  {
+   "id": 3078,
+   "class": "ORGANIC/PEOPLE",
+   "q": "I am crossing over 8 figures and only have two employees. Who has experience in this expanding their team once they go passed 8 figures and what are the key hires they usually make at that level to be able to take them to the next tranche of sales like getting to $20m or $50m+ in revenue",
+   "expect": null,
+   "soft": true,
+   "asker": "Franky Farina",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  },
+  {
+   "id": 3079,
+   "class": "ORGANIC/PARTNERS",
+   "q": "Can you send me the top partners in MDS right now",
+   "expect": null,
+   "soft": true,
+   "asker": "Anita Petrov",
+   "first_asked": "2026-07-23",
+   "times_asked": 1
+  },
+  {
+   "id": 3080,
+   "class": "ORGANIC/COUNTING",
+   "q": "How many total in socal, vs texas?",
+   "expect": null,
+   "soft": true,
+   "asker": "Ryan Bastuba",
+   "first_asked": "2026-07-27",
+   "times_asked": 1
+  }
+ ]
+}
