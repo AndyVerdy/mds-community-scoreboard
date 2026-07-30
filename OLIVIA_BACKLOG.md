@@ -83,6 +83,38 @@ record (everyone would see his feed).
 **Impact:** all 722 members — the difference between an app and THEIR app; unblocks the For-You feed
 build immediately.
 
+### 28. 🔴 The persona learns · S1 · effort M
+*As a member, the more I use MDS — questions I ask, events I attend, what I post, what I claim —
+the better MDS knows me: my persona updates itself with preferences, what to focus on, and what to
+avoid. (Andy 2026-07-30: "the more people are using MDS, the more data we are collecting, and it
+must update the persona constantly… minimum once per month.")*
+
+**Today's honest state:** every Olivia turn is logged (route + plan + weekly topic clustering) and
+event attendance sits in `event_registrations` — but **nothing updates the persona**. Persona cards
+regenerate only when application data is re-ingested; searches and attendance never feed back;
+there is no scheduled refresh at all.
+
+**Accept when**
+- **Every active member's persona is rebuilt at minimum monthly** — scheduled, not remembered — and
+  0 active members carry a persona older than 35 days (`persona_updated_at` measured, alert on
+  staleness).
+- **The rebuild reads the accumulated signals:** application/census answers · Olivia questions +
+  search history · event attendance · WA/FB activity · offer claims and video views where the data
+  exists. Output includes **preferences / focus on / avoid**, versioned.
+- **Every persona line is traceable to a signal** — the same evidence contract as #1: no invented
+  traits; "tell me if I got that wrong" correction loop stays.
+- **Strong signals refresh sooner than the monthly floor** (new application/census, an event
+  attended, a sustained new topic in their questions).
+- **Consumers read the current persona:** #27's feed, member_match, dossier — verified live that a
+  fresh signal (e.g. attending an event, three questions on one topic) visibly changes what the
+  member is shown within a cycle.
+- **Gating unchanged:** persona stays owner-only; match-don't-quote holds; leak gate GREEN.
+- **Cost bounded and stated** (~722 actives × monthly regen on a small model ≈ dollars, not
+  hundreds).
+
+**Impact:** all 722 — this is the compounding loop: usage → data → better persona → better answers
+and feed → more usage. Without it, KYC decays the day the application form is submitted.
+
 ---
 
 # 🟡 S2
