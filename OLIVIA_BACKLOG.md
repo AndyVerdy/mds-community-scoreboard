@@ -63,20 +63,6 @@ phone-less actives; fixed same day.)
 
 # 🟡 S2
 
-### 3. 🟡 "Restricted", never "doesn't exist" · S2 · effort S
-*As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*
-
-**Accept when**
-- **Restricted content is never denied: 0%** answered as not existing. It exists, and it is withheld.
-- **Under 10% of answers state content nobody read** — nothing inferred from a title or a
-  description (Andy 2026-07-30: relaxed from 0%; the standard ladder 10% → 5% → 1% applies).
-- **The same ask worded differently gets the same answer.**
-- Restricted videos appear in "what's new", content withheld
-- Asked what was said on a call, she says there are no transcripts rather than guessing from the description
-- Never invents content from a title or description
-
-**Effort S** — mostly prompt, but prompt rules have lost here before, so it moves into the data. **Impact:** the video library is 39% restricted.
-
 ### 30. 🟡 Member resolution by at_member_id everywhere — phone is a channel, not the key · S2 · effort M
 *As any of the 203 phone-less active members, the app works for me too: my feed, my entitlements,
 my persona — resolved from who I am, not from whether I'm on WhatsApp.*
@@ -483,6 +469,32 @@ through this".
 ---
 
 # ✅ Completed
+
+### 3. ✅ "Restricted", never "doesn't exist" · CLOSED 2026-07-30 · effort S
+*As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*
+
+**Shipped: the restriction moved into the data** (migration
+`video_search_explicit_restriction_markers`). A restricted row's description field now carries a
+fixed in-band contract marker — `[RESTRICTED VIDEO - it exists in the library but the content is
+not shareable... never describe, summarize or guess its content]` — instead of the ambiguous NULL
+that read as "no description" and invited both failure modes (denial, and inventing from the
+title). Public rows with no description get their own `[no description on file... do not guess]`
+marker. Cliff notes + attachments stay withheld on restricted rows. Seed additions: NO video has a
+transcript (what-was-SAID asks → plain "transcripts are not available yet" + title/link) · a video
+is described only from its description/cliff-notes TEXT, attributed — a title alone is never a
+source. Row-data change → **live for prod's cascade immediately**; the seed rides the queued push.
+
+**Proof (5/5 staging probes):** "Product Launch — Brandon Young" (restricted, a title begging to be
+guessed) → exists with title/duration/date/link, content withheld, steered to his unrestricted
+talks · "what was covered in the Retail Channel Call July 2025?" → exists + restricted + link ·
+paraphrase "logistics deep dives" → identical treatment (same-ask consistency) · "what's new" →
+restricted rows present, marked *(restricted)* inline · public C-suite video → described from its
+actual description text. Population: 395/1,009 videos restricted (39%). All #3 gate checks PASS,
+including the evolved marker-aware check (only the fixed marker allowed, canary content never).
+Class rates confirm at the coming eval runs (10% rung). The one RED check on the board is the app
+session's thumbnail persistence — external to this ticket, decision with Andy.
+
+---
 
 ### 28. ✅ The persona learns · CLOSED 2026-07-30 (Andy's call; quality redesign → #29) · effort M
 *As a member, the more I use MDS, the better it knows me — my persona updates itself with

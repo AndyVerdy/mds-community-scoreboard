@@ -51,15 +51,17 @@ python3 scripts/olivia_wf.py promote        # diff -> leak gate -> snapshot -> w
 python3 scripts/olivia_wf.py unlock
 ```
 Rollback: `python3 scripts/olivia_wf.py rollback <label>`. Andy's manual window:
-digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT build work: Andy's pick — S1 empty
-again** (#21/#1/#26/#27/#28 all closed 2026-07-30). Closed today besides the wf work:
-**#27 `digest.app_member_feed`** (the app's identity door — email-keyed, fail-closed, gates travel;
-⚠️ app must send the LINKED member email) and **#28 the living persona** (member_personas +
-versioned history + daily 4:15am refresh `com.mds.persona.refresh`; deep v2 schema signal-cited;
-~345 remaining actives auto-build on the nightly runs; quality redesign + like-minded matching →
-**#29 S3 recsys research PBI**, Andy: "matchmaking will be the key"). S2 queue: #23 latency ·
-#25 portal · #3 · #5 · #6 · #7 · #8 · #9. The full-bank standing number re-baselines at the next
-FULL run (the 13.0% ran with the fact-gate dead). Gate = 153.
+digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT: #30 at_member_id resolution**
+(S2 top). Closed 2026-07-30, seven tickets: #21 loop · #1 evidence (10% rung) · #26 partners+events
+embeddings · #27 app identity door (⚠️ app must send the LINKED member email) · #28 living persona
+(daily 4:15am `com.mds.persona.refresh`, EVERY-MEMBER rule = all 748 by at_member_id, remainder
+auto-builds nightly) · #3 restricted-never-denied (in-band [RESTRICTED VIDEO] markers, live for
+prod) · #22 earlier. #29 (S3) = recsys/matchmaking research PBI. S2 queue after #30: #23 latency ·
+#25 portal · #5 · #6 · #7 · #8 · #9. Full-bank number re-baselines at the next FULL run (13.0% ran
+gate-dead). **⚠️ GATE RED on ONE check: the app session persisted raw S3 storage paths**
+(videos_catalog.thumbnail_url 613 rows incl. 1 restricted + partners logo_url — the structural
+never-persist rule; recommendation: NULL restricted thumbnails + never-emit checks; ANDY'S CALL,
+coordinate with the app session). All #3/#26/#27/#28 checks PASS (152/153).
 
 ## The daily routine
 - **Run tiers (Andy 2026-07-30): FULL vs TEST.** A FULL run (all 100) produces the standing number —

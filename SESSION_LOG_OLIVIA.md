@@ -28,6 +28,25 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   (two-stage candidate-gen→ranking, collaborative+content+behavioral, Amazon/eBay patterns) mapped
   to MDS signals; v1 like-minded members; persona-quality redesign lands there ("cards too
   generic"). Andy: "matchmaking will be the key."
+- **EVERY MEMBER, ALWAYS (Andy ruling → DoD + memory):** population = ALL 748 actives by
+  at_member_id; phone/WA = channel, never the population. Persona signals v3 shipped (phone-less
+  get public-FB authored + events + profile; verified live); 203 previously-cut actives now in.
+  #30 filed S2: at_member_id resolution across the gated RPC layer (app feed for phone-less).
+  Backlog re-sorted smallest-first within severities (Andy).
+- **#3 restricted-never-denied — SHIPPED + CLOSED** (7a7d01b): restriction moved INTO the data —
+  `[RESTRICTED VIDEO ...]` in-band marker replaces the ambiguous NULL (which produced both denial
+  and title-guessing); `[no description on file]` marker on sparse public rows; seed: no
+  transcripts exist + describe only from description text. Probes 5/5 (Brandon Young guessy-title
+  case = exists/withheld/zero speculation + steer to his unrestricted talks). Row data → prod
+  benefits immediately. Marker-aware gate check evolved, teeth kept. AC at the 10% rung (Andy
+  relaxed inference AC from 0%).
+- **🚨 GATE CATCH (external): the parallel app session persisted raw S3 storage paths** —
+  migrations `feed_thumbnails_events_videos` + `partners_catalog_logo_url` added
+  videos_catalog.thumbnail_url (613 rows, 1 restricted) + partners logo_url with
+  `mds-community.s3.amazonaws.com/uploads/content-archive/...` values — the exact class the
+  structural never-persist check bans (restricted-decks-downloadable bucket family). Gate honestly
+  RED on that one check (152/153 PASS). Recommendation to Andy: NULL restricted thumbnails +
+  never-emit gate checks + conscious rule rewrite; his call, coordinate with the app session.
 
 - **#1 CLOSED at the 10% rung (Andy: 0% too harsh; ladder 10→5→1 stands).** Proof: the 34Q gate-on
   test run below. Residuals Q3091/Q3094 → #7/#8.
