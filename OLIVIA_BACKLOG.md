@@ -97,6 +97,28 @@ enforcement half needs the judge wired as a gate. **Impact:** every member, ever
 worst failure seen so far (a murder-suicide allegation restated about a named member) and the most
 common one (false denials).
 
+### 24. 🔴 First contact answers the question · S1 · effort S
+*As a new member, my first message gets a real answer — even though it is also the moment Olivia
+introduces herself.*
+
+The welcome gate fires on "first-time user" before anything reads the message, so a first contact
+that IS a question gets the intro menu and no answer. Verified across all 22 organic users
+(2026-07-30): 9 opened with a real question; since Jul 23 every one of them was swallowed by the
+welcome — members immediately re-send their question to get an answer. The trend is against us:
+recent invitees arrive from the beta email already knowing what she is, and lead with the question.
+
+**Accept when**
+- **A first message that asks something gets the answer: 0% swallowed by the intro.** The beta
+  introduction rides along briefly (before or after the answer), it never replaces it.
+- **A first message that is only a greeting still gets the welcome** — the intro itself does not
+  regress.
+- **Content is read before any first-contact gate fires, on every entry lane.**
+- **Measured from the turn log:** first-contact questions answered vs menued, checked on the real
+  organic users each week.
+
+This is a concrete slice of #1's structural half (canned routes bypassing content) with live
+member-facing evidence, pulled forward as its own item. Ships with the same night promote as #21.
+
 ### 21. 🔴 The answering loop · S1 · effort L  ← NEXT
 *As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
 
