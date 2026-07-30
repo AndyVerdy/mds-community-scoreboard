@@ -106,7 +106,8 @@ common one (false denials).
   target rung.
 - **The classes this shape causes all improve** — counting (#5), every source (#8), follow-ups (#14),
   the structural half of #1 — and none of them regresses.
-- **Latency and cost per answer stay inside the band the single-pass bot set.**
+- **Cost per answer stays inside the band the single-pass bot set.** (Latency split out to #23
+  at S2, 2026-07-30 — the loop answers correctly but at 24s median vs the ~5s band.)
 - **Every lane runs through it**, or the lanes that deliberately do not are named and justified.
 
 Today a small fast router picks ONE lane before any data has been seen, and that decision is final. She
@@ -149,6 +150,28 @@ FB, images), decide the canned-route boundary, then promote via the #4 protocol.
 ---
 
 # 🟡 S2
+
+### 23. 🟡 Answer latency · S2 · effort M
+*As a member, an answer arrives while the question is still on my mind — WhatsApp shows no typing
+indicator, so a slow answer reads as a dead one.*
+
+Split out of #21 (2026-07-30, Andy): the loop answers correctly but slowly — **24s median vs the
+~5s band the single-pass cascade set**; worst healthy-path case 54s. The tail is already fixed
+(the unbounded gate-retry loop: 41 model calls / 417s on one question, now capped at one retry).
+
+Where the healthy-path time goes (measured, exec 55263): answer model ~6s · fact-gate ~3s ·
+router ~2s · retrieval ~3s. The three cuts, in order of value:
+- **Drop the router call on loop turns** — the loop chooses its own tools; the router is pure
+  latency there (~2s + one model call per answer)
+- **Run the zeroth-fetch retrieval alongside the router** instead of after it (~2-3s)
+- **Skip the fact-gate when the draft makes no citable claim** (greetings, refusals, honest
+  misses) (~3s on those turns)
+
+**Accept when**
+- **Median end-to-end at or under 10s** on a full organic run, worst case under 60s.
+- **The class rates do not get worse** — speed is never bought with quality.
+- Measured on the same instrument as everything else (per-question timings in the eval run).
+
 
 ### 3. 🟡 "Restricted", never "doesn't exist" · S2 · effort S
 *As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*
