@@ -48,42 +48,7 @@ Written once, true for everything that ships. Per-item conditions live under eac
 
 # 🔴 S1 — highest
 
-### 27. 🔴 The app knows who I am — identity-keyed personalization · S1 · effort M  ← NEXT
-*As a member using the MDS mobile app, everything I see — feed, suggestions, events, offers,
-videos, threads — is picked for ME, resolved from my real login. Every member sees something
-different. (Andy 2026-07-30: "KYC. We need to know everything about you, we need to be very
-personalized — I can't stress it enough.")*
-
-**The block is identity keying, not missing data.** The person exists and is gated: `member_dossier`,
-5,706 owner-gated persona cards, `member_attributes` (band/categories/channels/flags), engagement
-score, chapter + city, event history, embeddings over every source (#26). But every gated RPC
-resolves the member from the **WhatsApp phone**, fail-closed — an app that authenticates by **email**
-has no legitimate door, which is why the app build found its feed endpoint hardcoded to Andy's
-record (everyone would see his feed).
-
-**Accept when**
-- **One gated, service-role-only RPC** (e.g. `digest.app_member_feed`) resolves the member from a
-  **server-verified login email** → `at_member_id` (unknown/ambiguous → empty, the same fail-closed
-  rule as everything else). Never a client-supplied member id, never a spoofable key.
-- **It serves the personalization bundle from the existing gated sources, rules unchanged:**
-  dossier/persona · upcoming events (chapter/city/banded gates exactly as `event_lookup`) · new
-  videos (restricted = title-only) · partner offers (category/semantic match) · WA/FB threads
-  (entitlement rules as `content_search`). The gates travel with the data — the app door can never
-  show more than WhatsApp Olivia would.
-- **Two different members verified live get different, correct feeds**; Andy's record hardcoded
-  nowhere.
-- **Leak gate extended to the new RPC** (anon denied · cross-member probe refuses · owner-only holds)
-  and GREEN.
-- **Behavioural signals (search/activity history) are optional ranking inputs the app passes in —
-  never identity.**
-- **The seam is written down:** the app build (parallel session, its "#3 Real identity") owns login
-  verification and calls this RPC server-side with the verified email; this ticket owns the
-  warehouse door only.
-
-**Impact:** all 722 members — the difference between an app and THEIR app; unblocks the For-You feed
-build immediately.
-
-### 28. 🔴 The persona learns · S1 · effort M
+### 28. 🔴 The persona learns · S1 · effort M  ← NEXT
 *As a member, the more I use MDS — questions I ask, events I attend, what I post, what I claim —
 the better MDS knows me: my persona updates itself with preferences, what to focus on, and what to
 avoid. (Andy 2026-07-30: "the more people are using MDS, the more data we are collecting, and it
@@ -489,6 +454,36 @@ through this".
 ---
 
 # ✅ Completed
+
+### 27. ✅ The app knows who I am — identity-keyed personalization · CLOSED 2026-07-30 · effort M
+*As a member using the MDS mobile app, everything I see is picked for ME, resolved from my real
+login. Every member sees something different. (Andy: "KYC — I can't stress it enough.")*
+
+**Shipped: `digest.app_member_feed(p_email, p_recent_queries, p_interest_embedding, p_limit_each)`**
+(migration `app_member_feed_identity_door`) — service-role-only, SECURITY DEFINER, fail-closed:
+server-verified login email → exactly ONE linked member (unknown / ambiguous / unlinked-stub →
+`{}`; linked-but-phone-less → `feed_available:false`). Composes the feed by CALLING the existing
+gated functions verbatim — `event_lookup` (incl. an events_near section on the member's city/state,
+upcoming-only), `video_search`, `partner_lookup`, `content_search` (FB+WA, last 14 days) — plus a
+persona block from the member's OWN attributes and interest terms derived from
+niche/expertise/categories. **The gates travel with the data: this door can never show more than
+WhatsApp Olivia would.** Behavioural inputs (`p_recent_queries`, `p_interest_embedding`) are
+ranking fuel only, never identity.
+
+**Proof:** two members live, different correct feeds — Andy Verdy (Jersey City: AI-agents Mogul
+Call top video, MarketLeap, 5/5/5/8 sections) vs Matthew Greene (Costa Mesa, Orange Co chapter,
+his niche, Archer Affiliates) · unknown email → `{}` · **the `andy@mds.co` portal stub (no linked
+member record) correctly fails closed** · leak gate extended +4 (known-email resolves to exactly
+that member · no sender_phone/rev_band/stripe in the blob · unknown email empty · anon denied) —
+**GREEN at 152 checks**. Email coverage: 583/585 email-holding members also carry a phone; 0 dup
+emails.
+
+**⚠️ Hand-off to the app build (its "#3 Real identity"):** call this RPC server-side with the
+VERIFIED login email — and note the login email must be the member's **linked** email
+(`digest.members.email` with `at_member_id`); `andy@mds.co` is an unlinked stub and returns `{}` by
+design. If app logins can differ from the linked email, the app side owns that mapping.
+
+---
 
 ### 26. ✅ Partners + events semantically searchable · CLOSED 2026-07-30 · effort S
 *As a member, a paraphrased ask ("3PL in Europe", "fulfillment help") finds the right partner or

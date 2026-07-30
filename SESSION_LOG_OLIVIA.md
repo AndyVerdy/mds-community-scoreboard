@@ -6,7 +6,18 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
-## 2026-07-30 (PM) — Olivia: #21 + #1 + #26 CLOSED · #25 filed · fact-gate was DEAD, restored · partners+events embedded
+## 2026-07-30 (PM) — Olivia: #21 + #1 + #26 + #27 CLOSED · #25 + #28 filed · fact-gate was DEAD, restored · app identity door live
+
+- **#27 the app's identity door — SHIPPED + CLOSED** (Andy's KYC push; mobile-app session runs in
+  parallel on this repo building the UI + /api/olivia/feed): `digest.app_member_feed(p_email, …)`
+  service-role-only, fail-closed (unknown/ambiguous/unlinked → {}), composes events_near + events +
+  videos + partners + threads by calling the EXISTING gated fns verbatim + own-attributes persona
+  block; behavioural params = ranking only. Proof: Andy Verdy vs Matthew Greene live feeds differ
+  correctly; andy@mds.co stub fails closed (⚠️ app must send the LINKED member email); gate
+  extended +4 → **GREEN 152**. Coverage 583/585 email+phone, 0 dup emails.
+- **#28 filed S1 (Andy): the persona learns** — turns are logged and attendance stored but NOTHING
+  updates personas today (regen only on application re-ingest, no schedule). Monthly floor +
+  signal-driven refresh + preferences/focus/avoid + evidence-traceable lines. ← NEXT.
 
 - **#1 CLOSED at the 10% rung (Andy: 0% too harsh; ladder 10→5→1 stands).** Proof: the 34Q gate-on
   test run below. Residuals Q3091/Q3094 → #7/#8.

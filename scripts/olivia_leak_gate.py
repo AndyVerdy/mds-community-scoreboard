@@ -817,6 +817,29 @@ def main():
                                       "p_terms": ["logistics"]}, ANON_KEY)
         check("anon denied on multi_source", st in (401, 403, 404), f"status {st}")
 
+        print("— app_member_feed (the mobile app's identity door, #27) —")
+        # a known linked member (email + at_member_id + phone) fetched live, not hardcoded
+        st, mrow = curl("GET", f"{BASE}/members?select=email,full_name&email=not.is.null"
+                               f"&at_member_id=not.is.null&phone=not.is.null&limit=1", key,
+                        profile_hdr=["Accept-Profile: digest"])
+        if st == 200 and mrow:
+            f_email, f_name = mrow[0]["email"], mrow[0].get("full_name") or ""
+            st, feed = rpc("app_member_feed", {"p_email": f_email}, key)
+            check("app_member_feed resolves a known email to exactly that member",
+                  st == 200 and isinstance(feed, dict)
+                  and ((feed.get("member") or {}).get("name") or "") == f_name, f"status {st}")
+            fblob = json.dumps(feed)
+            check("app_member_feed emits no sender_phone/rev_band/stripe anywhere",
+                  "sender_phone" not in fblob and "rev_band" not in fblob
+                  and "stripe" not in fblob.lower())
+        else:
+            check("app_member_feed known-member fetch", False, f"status {st}")
+        st, feed2 = rpc("app_member_feed", {"p_email": "nobody+gate@example.com"}, key)
+        check("app_member_feed unknown email = empty object",
+              st == 200 and isinstance(feed2, dict) and len(feed2) == 0, f"got {feed2}")
+        st, _b = rpc("app_member_feed", {"p_email": "nobody+gate@example.com"}, ANON_KEY)
+        check("anon denied on app_member_feed", st in (401, 403, 404), f"status {st}")
+
         print("— attributes table itself unreachable —")
         st, body = curl("GET", f"{BASE}/member_attributes?select=rev_band&limit=1", ANON_KEY,
                         profile_hdr=["Accept-Profile: digest"])
