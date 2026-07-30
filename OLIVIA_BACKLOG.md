@@ -329,6 +329,31 @@ audit is owed on **revenue sources** — Amazon, DTC, TikTok — which the appli
 
 # 🔵 S3
 
+### 26. 🔵 Partners + events semantically searchable · S3 · effort S
+*As a member, a paraphrased ask ("3PL in Europe", "fulfillment help") finds the right partner or
+event even when my words don't match the catalog's.*
+
+**Finding (FB capture session, 2026-07-30, verified live):** `digest.partners_catalog` (486) and
+`digest.events_catalog` (1,419) have **no embedding column** — `partner_lookup` / `event_lookup`
+match field values + FTS only, so paraphrase misses unless wording lines up. Everything else is
+embedded (content_items 37,980/37,980 · videos_catalog 1,009/1,009).
+
+**Why S3, not higher:** both are small curated sets asked mostly by name/city/category;
+`expertise_query()` synonyms + category-name FTS cover the common partner phrasings; the solve/multi
+lanes cross-check the chats where paraphrase actually lives; and the #21 loop retries with different
+wording. The miss class is real but narrow.
+
+**Accept when**
+- Embeddings on both catalogs, same Voyage pattern as `videos_catalog`, refreshed on ingest.
+- **Retrieval diffed top-3 with and without the vector before trusting it** — a silent no-op is not
+  an improvement, and ranking merges use RRF, never blended scores ([[reference_hybrid_search_use_rrf]]).
+- Leak gate GREEN (both RPCs are gated).
+- Paraphrase probes ("3PL in Europe", "help with fulfillment", "events for TikTok sellers") hit the
+  right rows; named lookups unchanged.
+
+One-time embed cost ≈ pennies (~1,900 rows). Slots alongside #7 (member profiles), which stays its
+own ticket.
+
 ### 10. 🔵 Shareable member facts · S3 · effort S
 *As a member, similar questions get similar answers.*
 
