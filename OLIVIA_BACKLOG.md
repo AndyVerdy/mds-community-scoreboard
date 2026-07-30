@@ -705,6 +705,10 @@ accumulated on his number since 2026-07-21. Not worth deleting; just filter the 
 **Read every real conversation, feed the failures back in, measure.** Daily, built on real member
 questions. Targets: **under 10%, then under 5%, then under 1% wrong.**
 
+**Run tiers (Andy 2026-07-30): FULL runs (all 100) produce the standing number and are rare; TEST
+runs confirm fixes — 50 questions max, ideally ~25-35 (targeted fails + thread predecessors + a
+pass spread for over-refusal), via `--ids`. Cost discipline: never a 10×100Q day.**
+
 Today the number can't be trusted: it swings 5–10 points between runs of the same system because the
 question set changes, some expected answers are themselves wrong, and she doesn't answer identically
 twice. Fixing that is part of the routine. Held until the 11 betas are active.

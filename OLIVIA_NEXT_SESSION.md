@@ -53,7 +53,11 @@ digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT build work: #1 con
 remaining inside #1: rates to the rung (**next organic run re-baselines — the 13.0% ran with the
 fact-gate dead**), per-lane coverage measured.
 
-## The daily routine (unchanged rules)
+## The daily routine
+- **Run tiers (Andy 2026-07-30): FULL vs TEST.** A FULL run (all 100) produces the standing number —
+  rare, never for fix confirmation. A TEST run confirms a change: **50 max, ideally ~25-35** — the
+  fails/partials the fix targets + their thread predecessors + a pass spread across sources (the
+  over-refusal check). `olivia_eval.py --fire --score --staging --ids <list>`. Never 10×100Q days.
 - ONE paid organic run per session, AFTER free diagnosis + fix batch + free probes. Bank =
   `eval_bank_organic.json` (**100 questions, LOCKED to real member turns**). Expectations name the
   SQL that proves them — 3 fixed-answer expects went stale in ONE day; never write frozen answers.
