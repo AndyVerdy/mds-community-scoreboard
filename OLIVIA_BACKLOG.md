@@ -65,8 +65,9 @@ phone-less actives; fixed same day.)
 
 ### 30. 🟡 Member resolution by at_member_id everywhere — phone is a channel, not the key · S2 · effort M
 *As a member who is not on WhatsApp, the app still fully works for me — my identity is my
-membership, not my phone number.* (203 of the 748 actives have no phone on record; today the
-serving layer cannot even establish who they are, so the app door returns them nothing.)
+membership, not my phone number.* (Measured 2026-07-30: 203 of 748 actives had no phone on record —
+the counts move daily with the sync; the class, not the number, is the point. Today the serving
+layer cannot even establish who those members are, so the app door returns them nothing.)
 
 The gated RPC layer (`event_lookup`, `content_search`, `partner_lookup`, `video_search`, …)
 resolves the asker from `digest.members.phone` — a WhatsApp-era artifact. Consequence: the #27 app
