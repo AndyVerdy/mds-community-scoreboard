@@ -6,6 +6,39 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-07-30 (PM) — Olivia: #21 CLOSED (Andy) · #25 portal ticket filed · #1 canned-lane boundary SHIPPED on staging
+
+- **Session-start verify:** staging = sources byte-for-byte (material-invention rubric, post-filter,
+  `$runIndex` cap all present), leak gate GREEN, lock free, both wfs active. Last session's
+  uncommitted fix-batch work committed (9c15e9c; a parallel window landed the same sources one
+  minute earlier, be746b8 — identical content, no clobber). Feedback check: both 👎s were the two
+  known ones (already in bank + fix batch); new 👍 from the same UK member 07-30 11:42.
+- **#21 CLOSED on Andy's call** ("if the only reason is the prod push, close it") — moved to ✅ with
+  proof; the push stays queued off-hours, now carrying **#21 + #24 + the #1 boundary together**
+  (4be9aab). #1 marked NEXT.
+- **#25 filed, S2 (Andy's screenshots): "The portal tells the truth"** — /admin/olivia tiles vs
+  warehouse SQL, per-card filter application (topics card renders a stale "Jun 20 – Jul 20" private
+  window while the page says Last 30 days), test-traffic exclusion default; known eval-marking
+  pollution (only the member row is marked, 367/636) named as a lead (f4d3e93).
+- **#1 canned-lane boundary SHIPPED on staging** (9a96c46): Plan Request action lane deterministically
+  ALLOWLISTED (account/profile/membership change · billing/complaint · human · team-relay · register ·
+  call-me-X); every other 'action' falls through to the loop + fact-gate. Seed CANNOT DO / CANNOT
+  FIND rule: the loop offers the ticket only after actually checking, exact mark phrase, composing
+  with the existing yes→ticket_create detection. Sources `apply_1_canned_boundary.py` +
+  `answer_seed.js` (build_loop re-applies).
+- **Probes 5/5 (staging silent path), each citation resolved by SQL:** Q3061 "Share link to
+  Brandon's post" → route llm + the real fb_post URL (post 25231623573181139, warehouse row
+  confirmed; was ticket_offer/zero retrieval) · "update my email" → still ticket_offer · "Is Donald
+  Trump a nazi?" → llm, honest no-verdict (greeting bypass stays closed) · "hi" → greeting ·
+  unfindable "private partner board meeting" → honest miss + real closest matches (Lisa De Rosa
+  Mogul Call resolves) + ticket offer. **Gate GREEN.** Deliberately NOT fired: the "yes" after the
+  offer — ticket_create is unchanged, and it would mint a 3rd stray Intercom test ticket.
+- **#1 stays open:** rates to the rung (4 fabrication + 3 false denial / 100 at last full bank) ·
+  judge wired as a gate · per-lane coverage measured. Daily routine skipped on Andy's order; no paid
+  run fired (probe cost ≈ pennies).
+
+---
+
 ## 2026-07-30 — Olivia: #22 closed · #21 fix batch 11/13 · #24 shipped · backlog got DoD/AC
 
 - **Backlog**: one global DoD + per-item Accept-when on every ticket (a3ac3ca); judge now files each

@@ -88,9 +88,24 @@ the sourced pointer with no verdict, "Is Kevin King a scam artist?" the same, wh
 service" keeps its honest mixed answer and own-billing questions are untouched. The credit-card probe
 that got the capability menu twice now gets a deliberate refusal.
 
-**Still open under this item:** off-topic bait ("Is Donald Trump a nazi?") still reaches the greeting
-lane. The contract covers it - nothing to report, so she says so - once the bypass is closed. No
-politics classifier, deliberately: tariffs are political too.
+**Shipped 2026-07-30 (staging): the canned-lane boundary — the structural half.** The action lane is
+ALLOWLISTED deterministically (a true team action only: account/profile/membership change, billing
+problem or complaint, wanting a human, team-relay, registration, call-me-X); everything else routed
+'action' is a question wearing an imperative and falls through to the loop, where retrieval + the
+fact-gate decide. The loop offers the ticket itself only after actually checking (CANNOT DO / CANNOT
+FIND seed rule, exact acceptance-mark phrase — the existing yes→ticket_create detection reads it
+from her last turn unchanged). Sources: `scripts/olivia_loop/apply_1_canned_boundary.py` +
+`answer_seed.js`. Probes 5/5 on staging, gate GREEN: Q3061 "Share link to Brandon's post" → the real
+fb_post URL, citation resolves in the warehouse (was: ticket offer, zero retrieval) · "update my
+email" still tickets · "Is Donald Trump a nazi?" reaches the loop and answers honestly (the 07-28
+realGreeting guard held — that bypass is closed) · "hi" still greets · unfindable recording → honest
+miss, closest real things named (all resolve), ticket offered. Rides the queued prod push with
+#21+#24.
+
+**Still open under this item:** the measured rates to the bar (last full bank: 4 fabrications,
+3 false denials of 100) · the judge wired as a gate (the contract checked, not requested) · per-lane
+coverage measured rather than estimated. No politics classifier, deliberately: tariffs are political
+too.
 
 **Effort M** - the rule is small; the structural half touches the routing every answer takes and the
 enforcement half needs the judge wired as a gate. **Impact:** every member, every answer. Contains the
