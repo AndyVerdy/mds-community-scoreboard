@@ -8,7 +8,7 @@
 prepend the full entry to its STREAM log + ONE line here.** Old references like "read SESSION_LOG
 2026-07-27" resolve through this index: find the date line, open the named stream file.
 
-- 2026-07-30 · **Olivia** · (PM) #21 + #1 + #26 + #27 (app identity door) CLOSED · #25 + #28 filed · fact-gate found DEAD + restored · 34Q test 2.9% · gate 152 → `SESSION_LOG_OLIVIA.md`
+- 2026-07-30 · **Olivia** · (PM) SEVEN closed: #21 · #1 (10% rung) · #26 embeddings · #27 app door · #28 living persona · #3 restricted-markers (+#22) · #25/#29/#30 filed · fact-gate found DEAD+restored · EVERY-MEMBER rule (748) · 🚨 gate catch: app session persisted raw S3 paths (Andy's call) → `SESSION_LOG_OLIVIA.md`
 - 2026-07-30 · **Olivia** · Olivia: #22 closed · #21 fix batch 11/13 · #24 shipped · backlog got DoD/AC → `SESSION_LOG_OLIVIA.md`
 - 2026-07-29 · **Olivia** · Olivia: SESSION CLOSE (the long one — #4 shipped, #21 built, organic routine locked → `SESSION_LOG_OLIVIA.md`
 - 2026-07-28 · **Olivia** · night) — Olivia #21: THE ANSWERING LOOP — slice PROVEN on staging → `SESSION_LOG_OLIVIA.md`
