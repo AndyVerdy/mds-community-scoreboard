@@ -354,6 +354,10 @@ Andy's own read: "it feels like a bot very restricted to me."
 
 Facebook still needs a manual scroll twice a week; the member-profile sync sits on a scheduler known to
 skip runs and was dead three days; new Facebook posts aren't searchable until two manual steps run.
+**Also (verified 2026-07-30): Voyage embedding of new content is a MANUAL step** — `embed_backfill.py`
+(nulls-only, resumable) runs by hand in the capture SOP; skip it and new posts silently lose the
+semantic layer (keyword FTS still works) until the next run. Today: 958 new rows / 0 unembedded, so
+the SOP held — but "searchable the day it lands" must include the embedding, scheduled not remembered.
 
 - Facebook capture runs without a person
 - The member sync runs on a reliable trigger and alerts when it doesn't
