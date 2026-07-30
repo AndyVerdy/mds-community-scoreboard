@@ -44,6 +44,13 @@ Written once, true for everything that ships. Per-item conditions live under eac
 
 **Target ladder for every rate below:** under 10%, then under 5%, then under 1% wrong.
 
+**EVERY MEMBER, ALWAYS (Andy 2026-07-30):** a data job's population is ALL active members, keyed by
+`at_member_id` from `member_attributes` (748 today incl. Staff) — never "members with a
+phone/WhatsApp". Phone, email, WA are channels and resolution keys, not the population; members not
+on WA today may join tomorrow and their data must already be there. A job that genuinely must cover
+a subset names the subset and the reason in writing. (Caught 2026-07-30: personas silently cut 203
+phone-less actives; fixed same day.)
+
 ---
 
 # 🔴 S1 — highest
@@ -55,6 +62,27 @@ Written once, true for everything that ships. Per-item conditions live under eac
 ---
 
 # 🟡 S2
+
+### 30. 🟡 Member resolution by at_member_id everywhere — phone is a channel, not the key · S2 · effort M
+*As any of the 203 phone-less active members, the app works for me too: my feed, my entitlements,
+my persona — resolved from who I am, not from whether I'm on WhatsApp.*
+
+The gated RPC layer (`event_lookup`, `content_search`, `partner_lookup`, `video_search`, …)
+resolves the asker from `digest.members.phone` — a WhatsApp-era artifact. Consequence: the #27 app
+door returns `feed_available: false` for the 203 phone-less actives, even though their
+entitlements (chapter, tier, membership) are all derivable from `at_member_id`. Personas already
+cover them (#28 v3); the serving layer doesn't.
+
+**Accept when**
+- Asker resolution accepts `at_member_id` as the primary key across the gated layer (phone remains
+  a resolution PATH into it, entitlement semantics unchanged — chats-based entitlements are simply
+  empty for members in no chats).
+- `app_member_feed` serves a phone-less active member a real feed, verified live.
+- A member joining WA later gains the WA-dependent sections with zero migration.
+- Leak gate GREEN, extended for the at_member_id path (unknown/ambiguous id → empty).
+
+**Impact:** 203 active members today; every future member who installs the app before joining
+WhatsApp.
 
 ### 23. 🟡 Answer latency · S2 · effort M
 *As a member, an answer arrives while the question is still on my mind — WhatsApp shows no typing
@@ -478,11 +506,12 @@ preferences, focus, and what to avoid, minimum monthly.*
   remain the fallback). Gate GREEN at 153.
 
 **State at close:** 4 deep-v2 personas proven (Eugene / Ian / Mo / Etienne — weighted focus,
-gives/challenges/emerging all signal-cited); 200 members carry v1 personas; the remaining ~345
-build automatically at the next nightly runs (v2 prompt), v1s refresh at their floor/signal
-change. Coverage = 549 phone-linked actives; the ~170 phone-less actives + the depth/quality
-redesign are #29's scope (Andy: cards still too generic — research how the platforms build
-recommendation DBs).
+gives/challenges/emerging all signal-cited); 200 members carry v1 personas; the remainder build
+automatically at the nightly runs (v2 prompt), v1s refresh at their floor/signal change.
+**Coverage corrected same day to EVERY active member — 748 keyed by at_member_id** (v3 signals:
+phone-less members get authored-FB + events + profile; WA/Olivia sections empty by nature; verified
+on a phone-less member live). The depth/quality redesign is #29's scope (Andy: cards still too
+generic — research how the platforms build recommendation DBs).
 
 ---
 
