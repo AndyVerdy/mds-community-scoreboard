@@ -6,59 +6,25 @@ Project source of truth: **ClickUp doc "MDS Member Scorecard"** (`2531q-100317`,
 
 ---
 
-## 2026-07-30 — Olivia: #22 closed (no swap) · #21 fix batch 11/13 · #24 shipped · DoD/AC on the whole backlog
+## 2026-07-30 — Olivia: #22 closed · #21 fix batch 11/13 · #24 shipped · backlog got DoD/AC
 
-**Backlog got its measuring stick.** One global Definition of Done + per-item **Accept when** on all
-open items (commit a3ac3ca; rungs = better-than-baseline per Andy — absolute <10% unreachable for
-beta). Judge now files every non-PASS answer under ONE of 8 failure classes mapped to tickets
-(fabrication / false_denial / over_refusal / dodge / thread_lost / no_count / wrong_fact / no_answer);
-`classify_fails.py` backfills old runs. A ticket is now accepted on a rate for ITS class.
-
-**#22 Kimi trial — CLOSED, measured, no swap** (dfa269e). Harness `kimi_harvest.py` + `kimi_bench.py`
-replays the exact staging prompt/tools/RPCs/judge against any vendor, no workflow touched. Equal
-conditions (warm cache both, forced fetch off both — every Kimi model on our key forces thinking on
-and refuses tool_choice=required): K2.6 22.2% fail vs Sonnet 5 15.3%, $0.026 vs $0.013/answer
-(blended $/M a wash — K2.6 emits 4x output), 57.5s vs 7.5s median. First Kimi number (38.9%) was MY
-bug — max_tokens=2000 sized for thinking-off truncated Kimi mid-thought; corrected in 217afbd.
-
-**#21 answering loop — the big day.** Root-caused the 11 organic fails: 6 were ONE missing sort
-tiebreaker (Save Conversation writes the turn pair with identical created_at; Load Recent Turns
-ordered created_at only → reply-before-question → model answered the PREVIOUS message). Fixed
-(created_at.desc,id.desc + dangling-turn closure in answer_seed). Gate retry loop was UNBOUNDED
-(41 model calls/417s on one question — gate_attempts dropped every lap; now $runIndex-capped at 1).
-Gate over-blocking fixed structurally: self-capability exemption, member question in gate input,
-post-filter greps UNTRIMMED evidence (single-name entities too). Behavior rules: calls calendar not
-connected (Andy x2 — data-level: future phase-less virtual rows OUT of event_lookup everywhere),
-event-roster check before naming attendees, own-activity = author search, claimed roles never
-referenced. event_lookup browse also un-hid 23 upcoming Confirmed in-person events. **Fix batch
-re-run: 11 of 13 fails → PASS.** Remaining: Q3061 (ticket lane = #1's boundary), Q3100 partial.
-Full-bank standing number 13.0% on the NEW 100-question bank (organic 84 was 6.0% same morning).
-Eval harness: fire() now waits per-reply (no more overlap-scrambled runs), verify_citations names
-post-author vs commenter. **#21 stays OPEN: promote is night-batched (Andy), latency split to #23.**
-
-**Bank grown 84 → 100** (real member turns only, incl. both thumbs-downs, the API-key social-
-engineering probe, Ian's certification question). Expectations now name the SQL that proves them —
-3 of my fixed-answer expects went stale/identity-wrong in one day (Q3042 calls ruling, Q3091 name
-list, Q3086 graded Andy against Etienne's data). Retirement policy: 3 consecutive passes + class
-still covered, replaced same day, bank stays 100.
-
-**#24 First contact answers the question — SHIPPED on staging** (823dcef; Andy applied
-`apply_24_first_contact.py`, harness classifier blocked my write). 9 of 22 organic users opened with
-a question; all swallowed by the welcome gate since Jul 23. Now: content read first, true greeting →
-welcome unchanged, question → answered + one-line intro appended + welcomed marked. Proven E2E both
-directions (msgs 15110/15112), gate GREEN.
-
-**Feedback reactions checked** (Andy's ask): 4 in 36h — 2 👍 (catch-up digests), 2 👎 both REAL
-false denials (Etienne's own 46 items denied; Kayleigh's "MDS Life"/wellness — 92 FB + 192 WA items
-exist). Both now in the bank; both covered by the fix batch. **Nobody is alerted on 👎** — flagged.
-
-**New tickets:** #23 Answer latency S2 (24s median vs ~5s band; three measured cuts named) ·
-#24 (closed same day). **Spend:** ~$9.5 Anthropic + ~$0.6 Kimi across all runs/benches.
-
-**NEXT SESSION:** night promote of #21+#24 via olivia_wf.py protocol (Andy's go required, off-hours)
-→ then #1 (canned-route boundary: ticket/greeting lanes into the loop; Q3061 is the standing proof).
-Open with Andy: does an "MDS Life" chat exist (data gap vs wrong name)? · 👎-alert wiring · member_match
-'Apparel' misses the real 'Clothing & Accessories' category value (#7/#10).
+- **Backlog**: one global DoD + per-item Accept-when on every ticket (a3ac3ca); judge now files each
+  non-PASS answer into one of 8 failure classes mapped to tickets. Rungs = better-than-baseline.
+- **#22 Kimi — CLOSED, no swap** (dfa269e, corrected 217afbd): equal-conditions bench, K2.6 22.2% vs
+  Sonnet 5 15.3% fail, 2× cost/answer, 8× latency, forced first fetch impossible on Kimi. Harness
+  reusable: `mds-scorecard-tools/kimi_bench.py`.
+- **#21 — fix batch 11/13 proven on staging.** Root causes: missing sort tiebreaker scrambled history
+  (6 fails); gate retry unbounded (41 calls/417s, now capped); gate checked trimmed evidence + failed
+  self-descriptions (4 good answers blocked). Full-bank standing: 13.0% on the new 100-bank (old 84:
+  6.0%). Latency split to **#23** (S2). **Open: night promote only** (Andy: off-hours, his go).
+- **Bank 84 → 100**, real member turns only; expects now name the SQL that proves them (3 frozen
+  expects went stale in one day). Retirement: 3 straight passes, replaced same day.
+- **#24 first-contact — SHIPPED staging + closed** (823dcef): question answered + intro appended +
+  welcomed marked; greeting welcome unchanged; proven E2E (msgs 15110/15112), gate GREEN.
+- **👎 check (Andy's ask):** both real false denials (Etienne's 46 items; Kayleigh wellness/MDS Life);
+  both in the bank + fix batch. Nobody is alerted on 👎 — open question.
+- Details + next: `OLIVIA_BACKLOG.md` (proof per closed item) · `OLIVIA_NEXT_SESSION.md` (promote
+  protocol, open questions). Spend ~$10.
 
 ---
 
