@@ -97,28 +97,6 @@ enforcement half needs the judge wired as a gate. **Impact:** every member, ever
 worst failure seen so far (a murder-suicide allegation restated about a named member) and the most
 common one (false denials).
 
-### 24. 🔴 First contact answers the question · S1 · effort S
-*As a new member, my first message gets a real answer — even though it is also the moment Olivia
-introduces herself.*
-
-The welcome gate fires on "first-time user" before anything reads the message, so a first contact
-that IS a question gets the intro menu and no answer. Verified across all 22 organic users
-(2026-07-30): 9 opened with a real question; since Jul 23 every one of them was swallowed by the
-welcome — members immediately re-send their question to get an answer. The trend is against us:
-recent invitees arrive from the beta email already knowing what she is, and lead with the question.
-
-**Accept when**
-- **A first message that asks something gets the answer: 0% swallowed by the intro.** The beta
-  introduction rides along briefly (before or after the answer), it never replaces it.
-- **A first message that is only a greeting still gets the welcome** — the intro itself does not
-  regress.
-- **Content is read before any first-contact gate fires, on every entry lane.**
-- **Measured from the turn log:** first-contact questions answered vs menued, checked on the real
-  organic users each week.
-
-This is a concrete slice of #1's structural half (canned routes bypassing content) with live
-member-facing evidence, pulled forward as its own item. Ships with the same night promote as #21.
-
 ### 21. 🔴 The answering loop · S1 · effort L  ← NEXT
 *As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
 
@@ -597,6 +575,41 @@ persona-driven recommendations (#14) and a privacy over-refusal instead of groun
 Evidence: `OLIVIA_MODEL_COMPARE.md` (every question, both answers), `OLIVIA_MODEL_BENCH_*.md`,
 commit `8729cc3`. Harness: `mds-scorecard-tools/{kimi_harvest,kimi_bench,bench_compare}.py` — reusable
 for any future vendor, and it touches no workflow. Cost of the trial: ~$5.50.
+
+---
+
+### 24. ✅ First contact answers the question · DONE 2026-07-30 (staging) · effort S
+*As a new member, my first message gets a real answer — even though it is also the moment Olivia
+introduces herself.*
+
+The welcome gate fires on "first-time user" before anything reads the message, so a first contact
+that IS a question gets the intro menu and no answer. Verified across all 22 organic users
+(2026-07-30): 9 opened with a real question; since Jul 23 every one of them was swallowed by the
+welcome — members immediately re-send their question to get an answer. The trend is against us:
+recent invitees arrive from the beta email already knowing what she is, and lead with the question.
+
+**Accept when**
+- **A first message that asks something gets the answer: 0% swallowed by the intro.** The beta
+  introduction rides along briefly (before or after the answer), it never replaces it.
+- **A first message that is only a greeting still gets the welcome** — the intro itself does not
+  regress.
+- **Content is read before any first-contact gate fires, on every entry lane.**
+- **Measured from the turn log:** first-contact questions answered vs menued, checked on the real
+  organic users each week.
+
+This is a concrete slice of #1's structural half (canned routes bypassing content) with live
+member-facing evidence, pulled forward as its own item. Ships with the same night promote as #21.
+
+**Shipped 2026-07-30 on staging, proven E2E same day** (`scripts/olivia_loop/apply_24_first_contact.py`,
+applied by Andy — the harness blocked the write). Plan Request reads content before the first-contact
+gate: only a true greeting (deterministic `realGreeting` test — short, no question words, greeting
+opener) takes the welcome; anything else keeps its real route with `first_contact` threaded through.
+Format Reply appends a one-line beta intro AFTER the answer and marks the member welcomed.
+Proof, silent path with the welcomed flag flipped off: first-contact "Who is the biggest chapter in
+MDS?" → real answer (New York 97, Women's 86, Europe 61) + intro appended + `olivia_welcomed_at` set
+by the turn (msg 15110); flag off again, first-contact "Hi" → the full welcome, unchanged (msg 15112).
+Leak gate GREEN. Reaches prod with the #21 night promote. The mis-routed help lane (`what do you do`
+first contact) stays as-is by design — the help menu IS that question's answer.
 
 ---
 
