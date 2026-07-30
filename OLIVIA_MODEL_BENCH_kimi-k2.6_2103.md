@@ -1,0 +1,73 @@
+# Model bench — kimi-k2.6 — 72 questions
+
+- **Answer quality:** 72 judged · PASS 41 · PARTIAL 3 · **FAIL 28 (38.9%)**
+- **Cost:** $1.9446 total · $0.02701 per answer cold · **$0.02701 per answer steady-state** (warm prefix, cache-write excluded — the number production actually pays; list prices, no intro discount)
+- **Latency:** median 60.7s · max 141.4s
+- **Tokens:** fresh in 1,140,247 · cached in 1,855,259 (62% cached) · out 141,139 · 185 model calls (2.6 per answer)
+- **Blended rate:** $0.62 per 1M tokens (all tokens, cache discounts included — comparable to the console's own number)
+- **Model time vs tool time:** model 58.7s per answer, rest is Supabase/Voyage (identical infrastructure for both vendors)
+- **Forced first fetch:** DISABLED for parity
+- **Loop errors:** 7
+
+- **FAIL** Q3042 [ORGANIC/EVENTS] Recommend some calls for me to attend
+  - No answer was given at all, failing to deliver even the honest-miss response expected.
+- **FAIL** Q3009 [ORGANIC/CAPABILITIES] What data do you have access to?
+  - Olivia's answer is empty/missing, providing no capability overview as expected.
+- **PARTIAL** Q3003 [ORGANIC/PEOPLE] who is an expert at retention marketing
+  - Names offered lack confirmed retention-marketing expertise; leads with irrelevant AI chatter, hedges core claim as 'nobody lists it as specialty.'
+- **FAIL** Q3007 [ORGANIC/SELF] what do you know about me
+  - Ignores the actual 'what do you know about me' question, instead dumping unrelated partner deals with no personal profile info.
+- **FAIL** Q3008 [ORGANIC/FACEBOOK] Have there been any posts on Amazon optimization not relating to AI in the past month?
+  - Olivia provided no answer at all, which is a refusal/empty response when a real answer was expected.
+- **FAIL** Q3014 [ORGANIC/COUNTING] Cool. How many members in MDs?
+  - Olivia gave no answer at all, failing to provide the required member count.
+- **FAIL** Q3015 [ORGANIC/EVENTS] I'm registered for the upcoming summit in Singapore
+  - Answer is completely unrelated to the Singapore summit registration question; it lists TikTok agency partners instead.
+- **FAIL** Q3026 [ORGANIC/FACEBOOK] What’s been the top relevant topics for me in Facebook this week
+  - Olivia provided no answer at all, offering no grounded facts, posts, or attribution as required.
+- **FAIL** Q3027 [ORGANIC/CAPABILITIES] Who can help me with questions about selling into Walmart
+  - Olivia provided no answer at all, failing to give the expected honest capability response with sources.
+- **FAIL** Q3030 [ORGANIC/PEOPLE] what are their revenues in general
+  - Olivia's answer is blank, providing no substantive response to the query.
+- **FAIL** Q3032 [ORGANIC/COUNTING] How many people are changing things  proactively
+  - Olivia gave no answer at all, providing no count or honest explanation as expected.
+- **FAIL** Q3035 [ORGANIC/FACEBOOK] She used to be a member you can check posts on facebook
+  - Olivia produced no final answer at all, failing to provide any grounded response.
+- **FAIL** Q3036 [ORGANIC/CAPABILITIES] Does anyone have a hazmat contact at Amazon that can help me with an issue
+  - Olivia gave no answer at all, failing to provide the expected honest capability response.
+- **FAIL** Q3037 [ORGANIC/GENERAL] What are the top AI projects people are building?
+  - Olivia provided no answer at all, failing to meet the grounding and lead-with-answer requirements.
+- **FAIL** Q3039 [ORGANIC/PEOPLE] who are some members in MDS like me that I should meet
+  - Olivia's answer is empty, offering no member names or grounded details as required.
+- **FAIL** Q3044 [ORGANIC/FACEBOOK] Please post all members in the pet space
+  - Olivia provided no answer at all, failing to deliver the expected grounded list of members in the pet space.
+- **FAIL** Q3045 [ORGANIC/CAPABILITIES] It's to help launch a brand that's currently dtc only into amazon. It's a red light therapy brand
+  - Answer invents Walmart-focused people/resources for an Amazon-launch question; expected only an honest capability response.
+- **FAIL** Q3046 [ORGANIC/GENERAL] what are all of the mds resources
+  - No answer was provided at all, so there is no grounded response to evaluate.
+- **PARTIAL** Q3048 [ORGANIC/PEOPLE] Who are our 717 members?
+  - Gives aggregate stats but no actual named members, offering to look up instead of grounding the requested list.
+- **FAIL** Q3052 [ORGANIC/SELF] I'm struggling with bringing external traffic to my Amazon listings. Who has experience with this
+  - Answer is completely off-topic, discussing gender demographics instead of members with external Amazon traffic experience.
+- **FAIL** Q3057 [ORGANIC/PARTNERS] How about mentions of meher and hector ai
+  - Olivia's answer is blank/empty, providing no content addressing the question about Meher and Hector AI mentions.
+- **FAIL** Q3058 [ORGANIC/COUNTING] How many members cancelled their membership last month
+  - Answer addresses average revenue, an unrelated topic, and never addresses cancellations last month at all.
+- **FAIL** Q3064 [ORGANIC/PEOPLE] Who is MDS largest seller?
+  - Olivia gave an unrelated weekly digest and never identified MDS's largest seller as asked.
+- **FAIL** Q3067 [ORGANIC/EVENTS] I met someone in the Milan summit who sells travel accessories but I can't remember his name.
+  - No answer was provided at all, failing to address the question.
+- **PARTIAL** Q3068 [ORGANIC/SELF] If my Amazon account just got flagged for review manipulation...Does anyone have a POA (plan of action) they can share to help me submit to Amazon
+  - Second citation misattributed to Dan Ri instead of actual poster Zaid Al-Husseini, a factual error despite otherwise on-topic answer.
+- **FAIL** Q3069 [ORGANIC/GENERAL] Give me our top five members
+  - Olivia produced no answer at all, failing to provide any grounded response to the question.
+- **FAIL** Q3071 [ORGANIC/PEOPLE] Who is the largest seller in MDS?
+  - Question asks who is the largest seller in MDS, but answer discusses Avask, a VAT/compliance partner, not a seller at all.
+- **FAIL** Q3072 [ORGANIC/PARTNERS] Its a partner
+  - Olivia produced no final answer at all, so no grounded partner information was delivered.
+- **FAIL** Q3074 [ORGANIC/EVENTS] Can you point me to any mogul calls talking about UGC
+  - Olivia provided no answer at all, so the required grounded response about UGC mogul calls is missing.
+- **FAIL** Q3077 [ORGANIC/CHATS] Why are you only looking at WhatsApp and not facebook
+  - Answer is completely off-topic, ignoring the question about source coverage and instead discussing designers.
+- **FAIL** Q3082 [ORGANIC/SENSITIVE] Is Donald Trump a nazi?
+  - Olivia provided no answer at all, failing to give the expected honest brief non-engagement response.

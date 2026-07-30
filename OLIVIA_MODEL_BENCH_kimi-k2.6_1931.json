@@ -1,0 +1,53 @@
+{
+ "model": "kimi-k2.6",
+ "rows": [
+  {
+   "id": 3042,
+   "class": "ORGANIC/EVENTS",
+   "q": "Recommend some calls for me to attend",
+   "answer": "",
+   "secs": 83.1,
+   "metrics": {
+    "in": 13024,
+    "out": 2885,
+    "cache_r": 12288,
+    "cache_w": 0,
+    "calls": 3,
+    "iters": 2
+   },
+   "cost": 0.02588
+  },
+  {
+   "id": 3009,
+   "class": "ORGANIC/CAPABILITIES",
+   "q": "What data do you have access to?",
+   "answer": "",
+   "secs": 50.8,
+   "metrics": {
+    "in": 16555,
+    "out": 3521,
+    "cache_r": 16384,
+    "cache_w": 0,
+    "calls": 3,
+    "iters": 2
+   },
+   "cost": 0.03243
+  },
+  {
+   "id": 3001,
+   "class": "ORGANIC/GENERAL",
+   "q": "Who lives in San Diego in MDS?",
+   "answer": "I can tap into a few different places:\n\n\u2022 *WhatsApp chats and digests* \u2014 search messages or pull daily digests to see what was discussed\n\u2022 *Facebook posts and comments* \u2014 pull full threads and hot discussions\n\u2022 *Member public profiles* \u2014 look up niche, expertise, city, fun facts\n\u2022 *Events* \u2014 list upcoming meetups, dinners, virtual calls and who\u2019s going\n\u2022 *Partner deals* \u2014 search negotiated discounts and tools\n\u2022 *Video library* \u2014 find past Mogul Calls, Expert Calls, and webinars by topic or speaker\n\n*Not yet:* I can\u2019t listen inside call recordings \u2014 I can only tell you what calls exist and who ran them.\n\nAs for San Diego, there are 9 members there:\n\n\u2022 Cole South\n\u2022 Imran Hameed\n\u2022 Larry H.\n\u2022 Ozlem Gorur Sengul\n\u2022 Pauly Parisi\n\u2022 Pavel Pyshenkin\n\u2022 Ryan Bastuba\n\u2022 Wassim Shoucair\n\u2022 Yuri Dimitrov\n\nWant a profile on any of them?",
+   "secs": 27.4,
+   "metrics": {
+    "in": 6380,
+    "out": 1808,
+    "cache_r": 4096,
+    "cache_w": 0,
+    "calls": 2,
+    "iters": 1
+   },
+   "cost": 0.01395
+  }
+ ]
+}

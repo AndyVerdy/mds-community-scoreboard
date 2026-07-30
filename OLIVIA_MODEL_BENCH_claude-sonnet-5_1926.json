@@ -1,0 +1,53 @@
+{
+ "model": "claude-sonnet-5",
+ "rows": [
+  {
+   "id": 3042,
+   "class": "ORGANIC/EVENTS",
+   "q": "Recommend some calls for me to attend",
+   "answer": "You're right \u2014 I don't see you registered for MDS Summit Singapore (Aug 22-23) yet. It's open for registration:\nhttps://go.mdsonly.co/MDSSummitSingapore\n\nThere's also a pre-event dinner the night before:\nhttps://app.mds.co/s/events/u/6a2074b9c09499479a4a6e9b\n\nAs for calls/events worth your time right now, since you're in Jersey City:\n\n\u2022 *Dallas Ecom Founder Social* \u2013 Aug 5, 7pm local, just 3 spots left\nhttps://luma.com/DallasEcomFounderSocialAug2026\n\n\u2022 *Mastermind Deal, NJ* \u2013 Aug 13, right in your home state\nhttps://events.milliondollarsellers.com/events-details?recordId=recM5NVENbQBDf3Fc\n\n\u2022 *MDS Inspire 2027* \u2013 Las Vegas, Mar 2027, registration's already open if you want to lock it in early\nhttps://app.mds.co/s/events/u/6999d19ee1e4872c9bef6ae8\n\nWant me to check monthly call schedules for any of your specific chats (like Supplements, TikTok, or M&A) too?",
+   "secs": 8.2,
+   "metrics": {
+    "in": 14,
+    "out": 449,
+    "cache_r": 8523,
+    "cache_w": 11231,
+    "calls": 2,
+    "iters": 1
+   },
+   "cost": 0.05145
+  },
+  {
+   "id": 3009,
+   "class": "ORGANIC/CAPABILITIES",
+   "q": "What data do you have access to?",
+   "answer": "Here's what I'd point you toward, Andy:\n\n*Live/upcoming*\n\u2022 *Mogul Call \u2014 Guido Reyes' Q4 Playbook* is the one to catch live tomorrow, 9am PST/12pm EST. He's sharing the deal + PPC strategy that reportedly drove $2M+ in 30 days for a 9-figure brand. Zoom link was posted in MDS AI & Automations and MDS Mogul Call announcements \u2014 worth checking those chats for the live link.\n\u2022 If you're near Dallas, the *Dallas Ecom Founder Social* is Aug 5 (only 3 spots left) \u2014 more networking than \"call\" but a good in-person touchpoint.\n\u2022 *MDS Summit Singapore* (Aug 22\u201323) is the big one if you can travel \u2014 pre-event dinner, main summit, and a women's lunch are all open for registration.\n\n*Recent recordings worth watching* (since you're active in AI & Automations and could use these):\n\u2022 *Mogul Call: Is Your AI an Assistant or an Operator?* with Steven Zhou (StoreClaw) \u2014 real ROI numbers on AI ops (July 27)\nhttps://app.mds.co/videos/6a5872018a427b89447f7d25\n\u2022 *Mogul Call: Hire a C-Suite to Duplicate You* with Lisa De Rosa \u2014 great if you're thinking about delegation/leadership structure as you scale\nhttps://app.mds.co/videos/6a586bf38a427b89447f74c7\n\nWant me to check what's scheduled specifically for AI & Automations or Retail next, since those seem closest to what you're working on?",
+   "secs": 14.9,
+   "metrics": {
+    "in": 16,
+    "out": 803,
+    "cache_r": 23777,
+    "cache_w": 35178,
+    "calls": 3,
+    "iters": 2
+   },
+   "cost": 0.15114
+  },
+  {
+   "id": 3001,
+   "class": "ORGANIC/GENERAL",
+   "q": "Who lives in San Diego in MDS?",
+   "answer": "Happy to break down what I can pull from! Here's the toolkit:\n\n\u2022 *WhatsApp chats & digests* - across all the MDS groups you're in, so I can search past discussions or summarize what happened on a given day\n\u2022 *Facebook group* - posts and comments, so I can find threads on a topic or pull up what people are saying\n\u2022 *Member profiles* - public info like niche, expertise, city/state, revenue tier, hobbies (never exact revenue or private details)\n\u2022 *Events* - upcoming registrations, past event history, who's attending\n\u2022 *Partner deals* - the vetted partner directory for things like freight, software, accounting, etc.\n\u2022 *Video library* - Mogul Calls, Expert Calls, webinars by topic or speaker (though I can't search inside the actual recording content yet - that's coming)\n\nJust ask things like \"what were people saying about tariffs last month\" or \"any partner deals for 3PLs.\"\n\nAs for San Diego - there's a solid crew there:\n\u2022 Cole South\n\u2022 Imran Hameed\n\u2022 Larry H.\n\u2022 Ozlem Gorur Sengul\n\u2022 Pauly Parisi\n\u2022 Pavel Pyshenkin\n\u2022 Ryan Bastuba\n\u2022 Wassim Shoucair\n\u2022 Yuri Dimitrov\n\nWant details on any of them?",
+   "secs": 7.6,
+   "metrics": {
+    "in": 14,
+    "out": 486,
+    "cache_r": 8523,
+    "cache_w": 9343,
+    "calls": 2,
+    "iters": 1
+   },
+   "cost": 0.04493
+  }
+ ]
+}

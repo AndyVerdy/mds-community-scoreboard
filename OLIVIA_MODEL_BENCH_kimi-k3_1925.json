@@ -1,0 +1,53 @@
+{
+ "model": "kimi-k3",
+ "rows": [
+  {
+   "id": 3042,
+   "class": "ORGANIC/EVENTS",
+   "q": "Recommend some calls for me to attend",
+   "answer": "Right, you're not registered for *MDS Summit Singapore* yet (Aug 23). Registration is still open and 168 members are already signed up:\nhttps://go.mdsonly.co/MDSSummitSingapore\n\nThere's also a pre-event dinner on Aug 22 with 28 spots left if you want in on that too.\n\nAs for calls - based on the chats you're in, here's what's coming up:\n\n\u2022 *Accelerator July Channel Call* - this Friday, Jul 31 (time as listed: 12:00 UTC)\n\u2022 *Expert Call with Hector* - Tue Aug 4 (09:00 UTC)\n\u2022 *AI & Automations call* - second Friday of every month, Zoom link since you're in the chat:\nhttps://us02web.zoom.us/j/86149697298\n\u2022 *SEO & Listing Optimization call* - first Wednesday of every month:\nhttps://us02web.zoom.us/j/82096537663\n\nWant me to check for calls on a specific topic?",
+   "secs": 66.8,
+   "metrics": {
+    "in": 12906,
+    "out": 1827,
+    "cache_r": 21760,
+    "cache_w": 0,
+    "calls": 4,
+    "iters": 3
+   },
+   "cost": 0.07265
+  },
+  {
+   "id": 3009,
+   "class": "ORGANIC/CAPABILITIES",
+   "q": "What data do you have access to?",
+   "answer": "Great question! Right now I'm sitting on top of the whole MDS community \u2014 720 active members, 18 WhatsApp chats, 20 chapters and 33 upcoming events. Here's what I can actually tap into:\n\n\u2022 *WhatsApp chats* \u2014 daily digests and message history across the groups. Try: \"what were people saying about freight forwarders this week?\"\n\n\u2022 *The Facebook group* \u2014 posts and comments, plus full threads. Try: \"what's the latest discussion on Q4 strategy?\"\n\n\u2022 *Member profiles* \u2014 public info like niche, expertise, city, fun facts. Try: \"who should I talk to about TikTok Shop?\"\n\n\u2022 *Events* \u2014 upcoming and past, plus who's attending. Try: \"any dinners coming up near me?\"\n\n\u2022 *Partner deals* \u2014 vetted discounts and service providers. Try: \"any deals on bookkeeping or 3PLs?\"\n\n\u2022 *Video library* \u2014 Mogul Calls, Expert Calls and webinars by topic or speaker. Try: \"any recordings about AI automation?\"\n\n\u2022 *Your own stuff* \u2014 your profile, chats, event registrations, even what you wrote on your application.\n\nOne honest limit: I can't search _inside_ call recordings yet \u2014 I know what a call was about and who ran it, but not what was said minute to minute. That one's coming.\n\nWant to try one out?",
+   "secs": 39.3,
+   "metrics": {
+    "in": 9090,
+    "out": 1051,
+    "cache_r": 7936,
+    "cache_w": 0,
+    "calls": 2,
+    "iters": 1
+   },
+   "cost": 0.04542
+  },
+  {
+   "id": 3001,
+   "class": "ORGANIC/GENERAL",
+   "q": "Who lives in San Diego in MDS?",
+   "answer": "Happy to share! Here's what I've got:\n\n*My data*\n\u2022 *WhatsApp chats + daily digests* \u2014 e.g. \"what are people saying about TikTok Shop fees?\"\n\u2022 *The Facebook group* \u2014 \"any threads on tariff refunds?\"\n\u2022 *Member profiles* \u2014 \"who knows about Shopify CRO?\" or \"who's near Austin?\"\n\u2022 *Events* \u2014 \"what MDS events are coming up?\"\n\u2022 *Partner deals* \u2014 \"any deals on freight forwarders?\"\n\u2022 *Video library* \u2014 \"any recordings on PPC?\"\n\nNot yet: I can't search *inside* call recordings (coming soon), and I have no vetting or trust data on members.\n\n*San Diego members* \ud83c\udf0a\n\u2022 *Ozlem Gorur Sengul* \u2014 SD-based, sells home & office on Amazon, big on PPC and branding\n\u2022 *Pauly Parisi* \u2014 in SD 21 years, grooming & bathroom products\n\u2022 *Ryan Bastuba* \u2014 SD-based, Industrial & Scientific, ~70/30 Amazon/TikTok Shop\n\u2022 *Pavel Pyshenkin* \u2014 currently in SD (says he's moving abroad soon), supplement brand\n\u2022 *James Thompson* \u2014 just up the coast in Carlsbad, ecommerce veteran\n\nWant more detail on any of them?",
+   "secs": 68.6,
+   "metrics": {
+    "in": 16857,
+    "out": 1560,
+    "cache_r": 16896,
+    "cache_w": 0,
+    "calls": 4,
+    "iters": 3
+   },
+   "cost": 0.07904
+  }
+ ]
+}

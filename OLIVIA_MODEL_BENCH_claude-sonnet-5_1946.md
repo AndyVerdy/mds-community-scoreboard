@@ -1,0 +1,39 @@
+# Model bench — claude-sonnet-5 — 72 questions
+
+- **Answer quality:** 72 judged · PASS 58 · PARTIAL 3 · **FAIL 11 (15.3%)**
+- **Cost:** $2.3318 total · $0.03239 per answer cold · **$0.01349 per answer steady-state** (warm prefix, cache-write excluded — the number production actually pays; list prices, no intro discount)
+- **Latency:** median 7.5s · max 24.8s
+- **Tokens:** fresh in 230 · cached in 1,518,771 (100% cached) · out 34,320 · 115 model calls (1.6 per answer)
+- **Blended rate:** $0.63 per 1M tokens (all tokens, cache discounts included — comparable to the console's own number)
+- **Model time vs tool time:** model 7.6s per answer, rest is Supabase/Voyage (identical infrastructure for both vendors)
+- **Forced first fetch:** DISABLED for parity
+- **Loop errors:** 0
+
+- **FAIL** Q3042 [ORGANIC/EVENTS] Recommend some calls for me to attend
+  - Instead of an honest miss about live calls, Olivia invents specific event listings and registration data not in the expected answer.
+- **PARTIAL** Q3003 [ORGANIC/PEOPLE] who is an expert at retention marketing
+  - Fails to confidently name a real retention marketing expert, hedges with tangential matches instead of a clear answer.
+- **FAIL** Q3004 [ORGANIC/PARTNERS] what are some services that might be good for my business
+  - Olivia asked back instead of using the asker's own persona/profile data to give specific narrowed recommendations as required.
+- **FAIL** Q3008 [ORGANIC/FACEBOOK] Have there been any posts on Amazon optimization not relating to AI in the past month?
+  - Olivia ignored the actual question about Amazon optimization posts and dumped unrelated profile/membership data instead.
+- **FAIL** Q3015 [ORGANIC/EVENTS] I'm registered for the upcoming summit in Singapore
+  - Answer is completely off-topic, discussing TikTok Shop agencies instead of the Singapore summit registration question.
+- **PARTIAL** Q3032 [ORGANIC/COUNTING] How many people are changing things  proactively
+  - Gives named examples but no grounded numeric count, contrary to rubric requiring a real counted number.
+- **FAIL** Q3044 [ORGANIC/FACEBOOK] Please post all members in the pet space
+  - Answer never lists pet-space members or cites any FB posts; it's a generic event dump, not the requested member list.
+- **FAIL** Q3045 [ORGANIC/CAPABILITIES] It's to help launch a brand that's currently dtc only into amazon. It's a red light therapy brand
+  - Confidently invents specific named leads/expertise instead of the expected honest capability disclosure, unverifiable and off from ground truth.
+- **FAIL** Q3046 [ORGANIC/GENERAL] what are all of the mds resources
+  - Question asks about MDS resources generally, but answer addresses unrelated TikTok-in-store creator query, a total mismatch.
+- **FAIL** Q3055 [ORGANIC/CHATS] One member in the new member chat mentioned a meta ads video from a few weeks ago, any idea?
+  - Olivia dodges with an irrelevant privacy refusal and offers an unverified guess instead of grounding in actual chat content.
+- **FAIL** Q3069 [ORGANIC/GENERAL] Give me our top five members
+  - Answer is entirely unrelated to the question asked; no top five members provided.
+- **FAIL** Q3072 [ORGANIC/PARTNERS] Its a partner
+  - Question fragment 'Its a partner' unclear, but Olivia gave a menu dodge instead of grounded partner info as expected.
+- **FAIL** Q3075 [ORGANIC/SELF] I want to know what type of person I should hire to be a marketing/graphic designer on my team. I need someone like that. Are there any posts that talk about this?
+  - Answer discusses UGC/influencer content, not hiring criteria for a marketing/graphic designer role as asked.
+- **PARTIAL** Q3080 [ORGANIC/COUNTING] How many total in socal, vs texas?
+  - Gives Texas count but admits SoCal-specific number wasn't isolated, leaving core comparison incomplete.

@@ -1,0 +1,53 @@
+{
+ "model": "kimi-k2.6",
+ "rows": [
+  {
+   "id": 3042,
+   "class": "ORGANIC/EVENTS",
+   "q": "Recommend some calls for me to attend",
+   "answer": "[API ERROR] {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}",
+   "secs": 0.3,
+   "metrics": {
+    "in": 0,
+    "out": 0,
+    "cache_r": 0,
+    "cache_w": 0,
+    "calls": 1,
+    "iters": 0
+   },
+   "cost": 0.0
+  },
+  {
+   "id": 3009,
+   "class": "ORGANIC/CAPABILITIES",
+   "q": "What data do you have access to?",
+   "answer": "[API ERROR] {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}",
+   "secs": 0.3,
+   "metrics": {
+    "in": 0,
+    "out": 0,
+    "cache_r": 0,
+    "cache_w": 0,
+    "calls": 1,
+    "iters": 0
+   },
+   "cost": 0.0
+  },
+  {
+   "id": 3001,
+   "class": "ORGANIC/GENERAL",
+   "q": "Who lives in San Diego in MDS?",
+   "answer": "[API ERROR] {'error': {'message': \"tool_choice 'required' is incompatible with thinking enabled\", 'type': 'invalid_request_error'}}",
+   "secs": 0.3,
+   "metrics": {
+    "in": 0,
+    "out": 0,
+    "cache_r": 0,
+    "cache_w": 0,
+    "calls": 1,
+    "iters": 0
+   },
+   "cost": 0.0
+  }
+ ]
+}
