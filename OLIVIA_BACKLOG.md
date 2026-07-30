@@ -123,6 +123,39 @@ router ~2s · retrieval ~3s. The three cuts, in order of value:
 - Measured on the same instrument as everything else (per-question timings in the eval run).
 
 
+### 25. 🟡 The portal tells the truth · S2 · effort M
+*As the team, every number on the Olivia portal (digest.mds.co/admin/olivia) is right: all the data
+is there, it is displayed correctly, and the filters actually filter.*
+
+**Reported by Andy 2026-07-30 with screenshots — the page is wrong today.** What the screenshots
+already show, before any diagnosis:
+- **Cards disagree on the window.** The page filter says "Last 30 days" and the tiles say 250
+  questions / 20 members — while the Top-question-topics card renders its own stale span,
+  "Jun 20 – Jul 20 · 26 questions". At least one card ignores the selected filter (the topics table
+  only refreshes when the weekly report script runs — a card fed by a stale table reads as a broken
+  filter).
+- **Numbers unproven against the warehouse.** Top members claims Franky Farina 85 / Eugene 69
+  questions in-period; none of the tiles has been reproduced by SQL.
+- **A known pollution source is already on file** (status corrections below, 2026-07-28): the eval
+  harness marks only the member's message as a test, never Olivia's reply — anything counting her
+  replies reports eval traffic as production (367 of 636 recent rows at the time it was measured).
+
+**Accept when**
+- **Every tile and card reproduces from a warehouse query**, checked number by number on a fixed
+  day: questions asked, members using, requests created/open, top members, question topics.
+- **The page filter applies to every card.** Switching the window changes all of them consistently;
+  0 cards on a private window.
+- **Test traffic is excluded by default on every card the same way** — Andy's number, SELFTEST
+  wamids, eval replies — and "Include my tests" brings it back deliberately.
+- **Proven live after the fix**, the SQL cited beside what the page shows.
+
+Lives in mds-digest-web (the read layer), not the workflow. Closing the eval-marking gap (mark her
+replies too) is the same one-cheap-fix named in the status corrections — it also closes the
+cross-source measurement trap noted for #8.
+
+**Impact:** the team's only window into whether Olivia is used and useful; wrong numbers here mean
+wrong calls on everything else.
+
 ### 3. 🟡 "Restricted", never "doesn't exist" · S2 · effort S
 *As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*
 
