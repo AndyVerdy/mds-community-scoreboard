@@ -68,7 +68,8 @@ phone-less actives; fixed same day.)
 
 **Accept when**
 - **Restricted content is never denied: 0%** answered as not existing. It exists, and it is withheld.
-- **0% of answers state content nobody read** — nothing inferred from a title or a description.
+- **Under 10% of answers state content nobody read** — nothing inferred from a title or a
+  description (Andy 2026-07-30: relaxed from 0%; the standard ladder 10% → 5% → 1% applies).
 - **The same ask worded differently gets the same answer.**
 - Restricted videos appear in "what's new", content withheld
 - Asked what was said on a call, she says there are no transcripts rather than guessing from the description
