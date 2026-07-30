@@ -14,13 +14,28 @@ const content = Array.isArray(resp.content) ? resp.content : [];
 const textOf = () => content.filter(c => c && c.type === 'text' && c.text).map(c => c.text).join('\n').trim();
 
 // evidence = every tool_result body retrieved THIS turn — what the fact-gate
-// checks the final answer against.
-const evidence = (state.preload ? 'PRELOADED (deterministic search):' + '\n' + state.preload + '\n---\n' : '') + state.messages
-  .filter(m => m && m.role === 'user' && Array.isArray(m.content))
-  .flatMap(m => m.content)
-  .filter(c => c && c.type === 'tool_result')
-  .map(c => String(c.content).slice(0, 8000))
+// checks the final answer against. NEVER cut the tail off: the gate used to see
+// evidence sliced to 24K while the draft was written from 36K, so every true claim
+// sourced from the truncated tail graded as invention and the gate blocked real
+// answers (Xander/TikTok, Meher/Hector — 2026-07-30). Same lesson as Answer Merge:
+// keep EVERY block, trim each proportionally to fit the budget.
+const EV_BUDGET = 60000;
+const evParts = [(state.preload ? 'PRELOADED (deterministic search):' + '\n' + state.preload : '')]
+  .filter(Boolean)
+  .concat(state.messages
+    .filter(m => m && m.role === 'user' && Array.isArray(m.content))
+    .flatMap(m => m.content)
+    .filter(c => c && c.type === 'tool_result')
+    .map(c => String(typeof c.content === 'string' ? c.content : JSON.stringify(c.content))));
+let evTotal = evParts.reduce((a, s) => a + s.length, 0);
+const evidence = (evTotal <= EV_BUDGET ? evParts
+  : evParts.map(s => s.slice(0, Math.max(2000, Math.floor(EV_BUDGET * (s.length / evTotal))))))
   .join('\n---\n');
+// UNTRIMMED copy for the deterministic post-filter in Gate Verdict. The trimmed copy is a
+// TOKEN budget for Haiku; the post-filter is a STRING check and costs nothing, so it must
+// look at everything the model actually saw — a claim sourced from trimmed-away text graded
+// as invention and blocked 4 real answers on 2026-07-30 (capability, topics, resources).
+const evidence_full = evParts.join('\n---\n');
 
 const finalize = (text) => [{ json: {
   done: true,
@@ -28,6 +43,7 @@ const finalize = (text) => [{ json: {
   content: [{ type: 'text', text: text }],
   answer_text: text,
   evidence: evidence,
+  evidence_full: evidence_full,
   gate_attempts: state.gate_attempts || 0,
   preload: state.preload || '',
   system: state.system,
