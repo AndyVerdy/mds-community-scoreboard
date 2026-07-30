@@ -24,15 +24,16 @@ the full detail.
   full-bank number: **13.0% on the NEW 100-question bank** (the old 84 scored 6.0% the same morning —
   the 16 new real-member questions are deliberately hard). The prod push is its own queued action below.
 - **#24 first-contact: SHIPPED on staging, closed.** Rides the same promote.
-- **#1 boundary half: SHIPPED on staging 2026-07-30 PM** (action lane allowlisted, loop offers the
-  ticket only after checking; probes 5/5, Q3061 closed, gate GREEN). Rides the same push.
-- **#1 judge-as-gate: SHIPPED on staging 2026-07-30 eve** — deterministic LINK GATE (citations
-  verbatim-in-evidence, id-rewrites auto-repaired, runs even on gate_error) + **the fact-gate was
-  found DEAD since the morning apply (bare apostrophe → invalid syntax → gate_error pass-through on
-  every answer, 13.0% ran gate-OFF) and restored** + self-descriptions unblockable (RULE ONE +
-  deterministic backstop + data-access→helpAsk). Execs 56115/56123/56133. Rides the same push.
-  #1 stays open on: rates to the rung (re-baseline needed — gate was off for the 13.0%) · per-lane
-  coverage measured.
+- **#1 CLOSED 2026-07-30 eve at the 10% rung (Andy).** Boundary (action-lane allowlist, Q3061) +
+  judge-as-gate (deterministic LINK GATE; **fact-gate found DEAD — bare apostrophe, invalid syntax,
+  gate_error pass-through, the 13.0% ran gate-OFF — and restored**; self-descriptions unblockable)
+  all shipped on staging, execs 56115/56123/56133. **Proof: 34Q gate-on TEST run = 2.9%** (12 of the
+  13 previous fails PASS; no new over-blocking). Residuals Q3091/Q3094 → #7/#8. Rides the same push.
+- **#26 raised to S1 (Andy): partners + events never Voyage-processed** — no embedding column on
+  `partners_catalog` (486) / `events_catalog` (1,419); videos + content fully embedded. Embed both
+  like videos; RRF + top-3 diff rules in the ticket. ← NEXT build work.
+- **Run tiers (Andy): FULL (100Q, standing number, rare) vs TEST (≤50, targeted, `--ids` +
+  `OLIVIA_EVAL_BANK=eval_bank_organic.json` — silently fires 0 without it).**
 - **#25 filed (S2): the /admin/olivia portal tells the truth** (Andy's screenshots 2026-07-30 —
   stale topics-card window, unproven tiles, eval-marking pollution).
 - **#22 Kimi: CLOSED, no swap** (22.2% vs 15.3% fail, 2x cost/answer, 8x latency, forced fetch
@@ -48,10 +49,9 @@ python3 scripts/olivia_wf.py promote        # diff -> leak gate -> snapshot -> w
 python3 scripts/olivia_wf.py unlock
 ```
 Rollback: `python3 scripts/olivia_wf.py rollback <label>`. Andy's manual window:
-digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT build work: #1 continues** — boundary
-+ judge-as-gate both shipped 2026-07-30 (Q3061 closed, link gate live, fact-gate restored);
-remaining inside #1: rates to the rung (**next organic run re-baselines — the 13.0% ran with the
-fact-gate dead**), per-lane coverage measured.
+digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT build work: #26** — partners + events
+embeddings (raised to S1 by Andy 2026-07-30; the two catalogs were never Voyage-processed). The
+full-bank standing number re-baselines at the next FULL run (the 13.0% ran with the fact-gate dead).
 
 ## The daily routine
 - **Run tiers (Andy 2026-07-30): FULL vs TEST.** A FULL run (all 100) produces the standing number —
