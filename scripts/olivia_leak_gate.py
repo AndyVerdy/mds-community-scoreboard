@@ -675,8 +675,15 @@ def main():
         rv = next((v for v in (vids or []) if v["title"] == f"REDTEAM Restricted Video {MARKER}"), None)
         check("restricted video IS returned, flagged is_restricted (Andy 2026-07-26)",
               bool(rv) and rv.get("is_restricted") is True, f"got {rv}")
-        check("restricted video emits NO description / cliff notes / attachments",
-              bool(rv) and rv.get("description_snippet") is None
+        # #3 (2026-07-30): a restricted row now carries an explicit in-band [RESTRICTED VIDEO ...]
+        # marker instead of an ambiguous NULL (a null read as "no description" and invited the
+        # model to guess from the title). The check keeps its teeth: the ONLY allowed non-null
+        # value is the fixed marker, and the canary's planted content must never appear.
+        _rdesc = rv.get("description_snippet") if rv else None
+        check("restricted video emits NO content (fixed marker allowed, canary text never)",
+              bool(rv)
+              and (_rdesc is None
+                   or (str(_rdesc).startswith("[RESTRICTED VIDEO") and MARKER not in str(_rdesc)))
               and rv.get("cliff_notes_snippet") is None and rv.get("attachments") is None,
               f"got {rv}")
         check("soft-deleted video invisible",
