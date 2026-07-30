@@ -845,6 +845,12 @@ def main():
                         profile_hdr=["Accept-Profile: digest"])
         check("anon cannot read member_attributes",
               st in (401, 403, 404) or (isinstance(body, list) and not body), f"status {st}")
+        # #28: personas are owner-only — they reach a member ONLY through their own
+        # identity-resolved feed; the table itself is never readable
+        st, body = curl("GET", f"{BASE}/member_personas?select=persona&limit=1", ANON_KEY,
+                        profile_hdr=["Accept-Profile: digest"])
+        check("anon cannot read member_personas",
+              st in (401, 403, 404) or (isinstance(body, list) and not body), f"status {st}")
 
         print("— anon key locked out —")
         st, body = rpc("content_search", {"p_phone": phone, "p_terms": [MARKER]}, ANON_KEY)
