@@ -10,6 +10,13 @@
 
 # Olivia — next session
 
+> ⛔ **THIS DOC IS THE STANDING ROUTINE, NOT THIS SESSION'S GO.** Everything below is the SOP —
+> what the work *is* and how it's run. At session start: read it, verify against live, do the FREE
+> read-only diagnosis, then **propose the plan to Andy and WAIT.** Never fire a paid eval run, promote
+> to prod, or touch a live system on this doc's authority. (Andy, 2026-07-29: *"we just started
+> session and you did something w/o the confirming? … this looks like SOP in general, not for the new
+> session."*)
+
 **Read `OLIVIA_BACKLOG.md` first.** It is the single prioritised list (S1 highest → S4 lowest, smallest
 first inside each group). `SESSION_LOG.md` 2026-07-29 (top entry) has the full detail of what shipped.
 

@@ -26,11 +26,38 @@ or has one real unknown. L = needs data or a decision we don't have yet.
 
 ---
 
+## Definition of Done — one list, applies to EVERY item
+
+Written once, true for everything that ships. Per-item conditions live under each story as
+**Accept when**.
+
+- **The failure class is counted, before and after.** A rate on the class, not a hand-picked question
+  that passed. The bank is the instrument for the class rate — the headline score stays the daily
+  routine, never a release gate.
+- **No class is traded for another.** The rates it was not aiming at do not get worse.
+- **The safety gate is GREEN** wherever retrieval or data access changed.
+- **Proven on the live system**, with the evidence cited — execution id, SQL result or gate output.
+  Never "should work".
+- **Every lane it touches, or the exceptions are named in writing.** A route that skips the change is
+  a hole, not a detail.
+- **Written down the same session:** what shipped, what was measured, what is still open.
+
+**Target ladder for every rate below:** under 10%, then under 5%, then under 1% wrong.
+
+---
+
 # 🔴 S1 — highest
 
 ### 1. 🔴 Every answer matches the evidence · S1 · effort M
 *As a member, what Olivia tells me is exactly what the sources support - she never adds a verdict of
 her own, and she never tells me there is nothing when there is.*
+
+**Accept when**
+- **Unsupported assertions: 0%.** Nothing asserted in her own voice that no source holds, and every
+  citation resolves to a real record.
+- **False denials at or under the current target rung** on questions the sources can answer.
+- **Over-refusal does not rise** — answerable questions are still answered at or above today's rate.
+- **Measured across every lane.** A route that never reaches the check counts as a failure of this item.
 
 One rule replaces four. Topic lists do not work: tax is legitimate member content, tariffs are
 political, and "is X a scam" is the same question as "did he kill his wife". The discriminator is never
@@ -73,6 +100,15 @@ common one (false denials).
 ### 21. 🔴 The answering loop · S1 · effort L  ← NEXT
 *As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
 
+**Accept when**
+- **Every turn answers its own message: 0% misalignment** between what was asked and what came back.
+- **A thin first result is looked at again before any denial** — false denials at or under the current
+  target rung.
+- **The classes this shape causes all improve** — counting (#5), every source (#8), follow-ups (#14),
+  the structural half of #1 — and none of them regresses.
+- **Latency and cost per answer stay inside the band the single-pass bot set.**
+- **Every lane runs through it**, or the lanes that deliberately do not are named and justified.
+
 Today a small fast router picks ONE lane before any data has been seen, and that decision is final. She
 gets a compressed transcript (8 turns, 240 chars each) and one shot at retrieval. If the lane is wrong,
 or the offer got trimmed out, she cannot recover. That single-pass shape is the root cause behind #5
@@ -114,6 +150,14 @@ FB, images), decide the canned-route boundary, then promote via the #4 protocol.
 *As the team, we know whether a 3×-cheaper model can carry Olivia's work without losing quality —
 measured, not assumed.*
 
+**Accept when**
+- **Every swap is decided on numbers:** the class rates at or better than the model it replaces, and
+  the safety classes unchanged.
+- **Cost measured on real cached traffic**, not sticker price.
+- **Latency inside the current band.**
+- **The revert is exercised once per call site** — a kill switch nobody has pulled is not a kill switch.
+- **The keep-or-revert decision is written down with the numbers behind it.**
+
 **The goal: run the Kimi test.** `KIMI_API_KEY` is in `mds-digest-web/.env.local` (gitignored).
 Kimi is OpenAI-API-compatible, so each call site is a base-URL + key + model-name swap plus a
 tool-calling adapter.
@@ -144,6 +188,10 @@ latency in band. Kill switch = one base-URL revert per call site.
 ### 3. 🟡 "Restricted", never "doesn't exist" · S2 · effort S
 *As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*
 
+**Accept when**
+- **Restricted content is never denied: 0%** answered as not existing. It exists, and it is withheld.
+- **0% of answers state content nobody read** — nothing inferred from a title or a description.
+- **The same ask worded differently gets the same answer.**
 - Restricted videos appear in "what's new", content withheld
 - Asked what was said on a call, she says there are no transcripts rather than guessing from the description
 - Never invents content from a title or description
@@ -152,6 +200,13 @@ latency in band. Kill switch = one base-URL revert per call site.
 
 ### 5. 🟡 Counting · S2 · effort M
 *As a member, when I ask a number I get a number.*
+
+**Accept when**
+- **A count that exists is never refused: 0%** "I don't have that data" where the number is derivable.
+- **Every number matches the warehouse** it was derived from.
+- **Totalling or extending the previous answer works** without the member asking twice.
+- **0% of aggregate answers identify anyone.**
+- **A count that genuinely does not exist is said plainly** — an honest miss, not a failure.
 
 She lists but cannot count, and often says "I don't have that data" when she does. Live: SoCal vs Texas
 totals, members under $1m, chapters with counts, most-active members.
@@ -165,6 +220,14 @@ totals, members under $1m, chapters with counts, most-active members.
 
 ### 6. 🟡 Chapters, end to end · S2 · effort M
 *As a member, I can ask anything about chapters and get a real answer.*
+
+**Accept when**
+- **Your rulings land first:** the canonical count, and whether a lead's name — or email — is shareable.
+  Nothing below is measurable until then.
+- **One number everywhere.** Chapter counts agree with the canonical source in every answer that shows them.
+- **Membership questions answer correctly for members with a chapter and for members without one.**
+- **The policy questions have a written source and answers cite it: 0% inferred from chat chatter.**
+- **The chapter list contains only real chapters.**
 
 Verified: **member counts are already live** (all 20 chapters with counts), **chapter leads exist in
 Airtable but are not exposed** (New York → Mari, Morris, Brandon), **"am I in a chapter" is answerable
@@ -183,6 +246,13 @@ several, live in two places, how do I change — have **no source anywhere**.
 ### 7. 🟡 People search that understands meaning · S2 · effort M
 *As a member, I find the right person even when I don't know the exact word or spelling.*
 
+**Accept when**
+- **A misspelled or partial name resolves first try**, at or above the current target rung.
+- **Meaning-based searches reach the right people** without a hand-maintained synonym list.
+- **Ranking stays by engagement score and the score is never shown.**
+- **Retrieval is compared with and without the semantic layer before it is trusted** — a silent no-op
+  is not an improvement.
+
 "Who's good at paid ads" cannot reach the PPC people. Prudence Tweedie-Millsap took four spellings.
 There is no fuzzy matching installed at all — no `pg_trgm`, no member embeddings; only exact word
 matching plus a hand-written synonym list.
@@ -196,6 +266,12 @@ matching plus a hand-written synonym list.
 
 ### 8. 🟡 Every source on every question · S2 · effort M
 *As a member, one question gets checked against every source that could answer it.*
+
+**Accept when**
+- **0% "I can't find that" where another source held the answer.**
+- **Which sources answered is recorded per turn**, so coverage is a measured number rather than an estimate.
+- **Fan-out is reached from ordinary member phrasing**, measured across the class — not from a fixed
+  list of wordings.
 
 Verified: Facebook + WhatsApp together is already the norm, but the true fan-out — partners, events,
 members, videos — runs on roughly **1 answer in 12**. The fan-out function has **no Facebook section and
@@ -211,6 +287,12 @@ answered from profiles alone and never fans out.
 
 ### 9. 🟡 Revenue brackets, one rule · S2 · effort L
 *As a member, revenue answers are consistent and never expose anyone's actual number.*
+
+**Accept when**
+- **Your working session lands first:** one field named authoritative, in writing, with the reason.
+- **A member's bracket is identical everywhere it appears** — card, match, count.
+- **Raw revenue cannot leave the database**, enforced by the gate rather than by wording.
+- **Channel questions answer consistently across phrasings.**
 
 Most-recent revenue can never be exposed; brackets can. Either derive the bracket from most-recent
 revenue or use the bracket field where it fits. Three competing tier fields exist, none confirmed. Same
@@ -233,6 +315,10 @@ audit is owed on **revenue sources** — Amazon, DTC, TikTok — which the appli
 ### 10. 🔵 Shareable member facts · S3 · effort S
 *As a member, similar questions get similar answers.*
 
+**Accept when**
+- **One written list of shareable fields exists, and the gate blocks everything off it.**
+- **The same field asked about different members is answered or refused identically: 0% inconsistency.**
+
 Job title, years in business, business model, country, product categories, SKU and brand counts. Today
 she refuses unevenly — "who sells on TikTok" works one way and is refused another.
 
@@ -244,6 +330,10 @@ she refuses unevenly — "who sells on TikTok" works one way and is refused anot
 
 ### 11. 🔵 Payment wording · S3 · effort S
 *As a member behind on payment, I'm told clearly and reminded kindly — not shown a system word.*
+
+**Accept when**
+- **0% of replies carry a raw system status or an internal one.**
+- **Every status has approved wording**, and a member behind on payment is told plainly what to do.
 
 Stripe's raw statuses reach members verbatim: `trialing`, `past_due`, `unpaid`, `canceled`. "Staff" has
 also leaked as a membership status.
@@ -257,6 +347,11 @@ also leaked as a membership status.
 ### 12. 🔵 Public revenue, double-sourced · S3 · effort S
 *As a member, a public figure someone posted is quoted with its source, never as Olivia's claim.*
 
+**Accept when**
+- **Your ruling lands first:** may named members be ranked by revenue at all, or bands only.
+- **Every figure carries the source it came from: 0% in her own voice.**
+- **A member with no public figure gets the bracket only.**
+
 Andy's rule: publicly-posted figures are fair game, double-sourced — "my data puts him in this bracket;
 he also said in this post that…".
 
@@ -268,6 +363,12 @@ he also said in this post that…".
 
 ### 13. 🔵 Outage alarm · S3 · effort M
 *As the team, we hear about an outage in minutes, from a system that isn't the one that's broken.*
+
+**Accept when**
+- **A real failure alerts within minutes**, from a system that is not the one being watched.
+- **The alarm cannot latch** — repeated failures keep alerting.
+- **A balance running low warns before members feel it**, and a spend cap exists.
+- **Proven by forcing a failure**, never by reading configuration.
 
 **Verified broken** — see status section. This is why Andy has never seen Olivia down.
 
@@ -281,6 +382,13 @@ he also said in this post that…".
 ### 14. 🔵 Conversational, not robotic · S3 · effort L
 *As a member, it follows what I mean, keeps context, and reads like someone who knows MDS.*
 
+**Accept when**
+- **Follow-ups carry the thread** — at or under the current target rung for the class, with the member
+  never repeating themselves.
+- **A capped answer continues on request.**
+- **She uses what she already knows about the asker without being asked for it.**
+- **"I don't have that" appears only where nothing exists.**
+
 Andy's own read: "it feels like a bot very restricted to me."
 
 - Follow-ups keep the thread — "yes", "what about Austin", "total it up" work without repeating myself
@@ -292,6 +400,12 @@ Andy's own read: "it feels like a bot very restricted to me."
 
 ### 15. 🔵 Hands-off data pipeline · S3 · effort L
 *As a member, what happened yesterday is answerable today.*
+
+**Accept when**
+- **A full capture cycle runs with nobody touching it.**
+- **Content is searchable the day it lands.**
+- **A skipped sync alerts** — proven by forcing a skip.
+- **Manual steps per week: 0.**
 
 Facebook still needs a manual scroll twice a week; the member-profile sync sits on a scheduler known to
 skip runs and was dead three days; new Facebook posts aren't searchable until two manual steps run.
@@ -311,6 +425,11 @@ skip runs and was dead three days; new Facebook posts aren't searchable until tw
 ### 16. ⚪ Health dashboard audit · S4 · effort M
 *As the team, the health dashboard tells the truth.*
 
+**Accept when**
+- **Every tile: break the thing, the tile goes red, and a person receives it.** A tile that cannot go
+  red is the defect.
+- **A failure inside a step never passes as a healthy run.**
+
 Andy: "I don't think it's working. I haven't seen Olivia down." **Confirmed — it isn't.** Every tile
 audited: does it go red when the thing is actually broken, and does anyone receive it. Overlaps #13.
 
@@ -318,6 +437,11 @@ audited: does it go red when the thing is actually broken, and does anyone recei
 
 ### 17. ⚪ Auto-refresh videos and partners · S4 · effort M
 *As a member, new recordings and deals show up without anyone importing them.*
+
+**Accept when**
+- **Blocked until the GroupOS key exists.**
+- **New videos and deals appear without an import**, and data older than a day alerts.
+- **The requirements are handed over, the security exposure included**, and it is fixed or owned in writing.
 
 13 videos landed in a week and none surfaced in any catch-up; partner data sits on a frozen snapshot.
 Needs the GroupOS key. Includes sending GroupOS the 13-item requirements doc — one of which is a live
@@ -328,6 +452,11 @@ security exposure: restricted decks are publicly downloadable.
 ### 18. ⚪ How-MDS-works answers · S4 · effort M
 *As a member, I get the real answer about Squads, programs and joining a chat.*
 
+**Accept when**
+- **Every recurring how-MDS-works question has a written answer from the team.**
+- **Each answers consistently across phrasings and cites that source.**
+- **They stop arriving as support requests.**
+
 From the team's own documents rather than inferred from chat chatter. Also unblocks the chapter policy
 questions in #9.
 
@@ -336,6 +465,11 @@ questions in #9.
 ### 19. ⚪ Privacy: share, keep, delete · S4 · effort M
 *As a member, I know what's stored about me and can have it removed.*
 
+**Accept when**
+- **A written position exists:** what may be shared, with whom, and how long conversations are kept.
+- **A deletion request is honoured and verifiable.**
+- **Opt-outs are respected everywhere the data appears.**
+- **Nothing promised to members contradicts it.**
 - A written position on what Olivia may share about a member, with whom
 - How long conversations are kept (Andy's instinct: forever — needs stating, not defaulting)
 - A member can ask for their history to be deleted, and it happens
@@ -345,6 +479,11 @@ questions in #9.
 
 ### 20. ⚪ Census into the warehouse · S4 · effort L
 *As a member, Olivia knows what I actually said about my business.*
+
+**Accept when**
+- **A member's own census answers are answerable to them.**
+- **0% of anyone else's raw answers ever return**, enforced by the gate.
+- **Persona questions draw on census data** rather than tick-box filtering.
 
 The freshest self-reported revenue, channel and SKU data MDS holds, currently not in the warehouse at
 all. Unblocks member personas — what turns matching from tick-box filtering into "who has actually lived

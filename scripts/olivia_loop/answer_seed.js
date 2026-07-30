@@ -55,14 +55,18 @@ if (preRaw.length || preDig.length) {
 const finalUser = preload
   ? 'PRELOADED EVIDENCE — a deterministic search already ran for this exact message; treat it as your first tool result:' + NL + preload + NL + NL + 'MEMBER MESSAGE:' + NL + current
   : current;
+// A history ending on a USER message means that turn's reply is not logged yet.
+// Merging the current message into that block made the model answer THE PREVIOUS
+// QUESTION (verified 2026-07-30 on staging exec 54900: inbound "why are you only
+// looking at WhatsApp" came back as the marketing-designer answer). Close the
+// dangling turn explicitly instead, so the current message is ALWAYS the last
+// user turn and can never be confused with an older one.
+if (msgs.length && msgs[msgs.length - 1].role === 'user') {
+  msgs.push({ role: 'assistant', content: '(no reply is on record for the message above — it is context only, not the question to answer)' });
+}
 // third cache breakpoint: the whole prefix (system+tools+history+preload) reuses
 // on every loop iteration instead of re-sending ~5K preload tokens uncached.
-if (msgs.length && msgs[msgs.length - 1].role === 'user') {
-  const prev = msgs[msgs.length - 1].content;
-  msgs[msgs.length - 1] = { role: 'user', content: [{ type: 'text', text: prev + NL + NL + finalUser, cache_control: { type: 'ephemeral' } }] };
-} else {
-  msgs.push({ role: 'user', content: [{ type: 'text', text: finalUser, cache_control: { type: 'ephemeral' } }] });
-}
+msgs.push({ role: 'user', content: [{ type: 'text', text: finalUser, cache_control: { type: 'ephemeral' } }] });
 
 // ---- tools: the gated RPCs, phone-less schemas ----
 const S = (props, req) => ({ type: 'object', properties: props, required: req || [] });

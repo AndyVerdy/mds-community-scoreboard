@@ -8,7 +8,10 @@ Prod is untouched.
 """
 import json, re, subprocess, sys, time
 
-SCRATCH = "/private/tmp/claude-501/-Users-Born-Scorecard/3c099062-fce0-4904-a970-de366e21e940/scratchpad"
+import os
+# the sources live NEXT TO this file in the repo (they used to live in a session
+# scratchpad, which disappears between sessions)
+SCRATCH = os.path.dirname(os.path.abspath(__file__))
 STAGING_ID = "bqHstPDi84uOhTCJ"
 ENV = "/Users/Born/mds-digest-web/.env.local"
 
@@ -178,6 +181,20 @@ conns["Answer Tool"] = {"main": [[{"node": "Answer Merge", "type": "main", "inde
 conns["Answer Merge"] = {"main": [[{"node": "Answer Claude", "type": "main", "index": 0}]]}
 
 conns.pop("Embed?", None)   # stale key from the two-branch iteration
+
+# ---- Load Recent Turns: DETERMINISTIC ordering (the scrambled-history bug) ----
+# Save Conversation inserts the member row and the olivia row in ONE POST, so both
+# carry the SAME created_at. Ordering on created_at alone left the pair order to
+# Postgres, so the conversation handed to the model could read reply-before-question
+# and end on a dangling user turn — the model then answered the PREVIOUS question
+# (staging exec 54900, 2026-07-30). `id.desc` is the tiebreaker: within a pair the
+# member row is always inserted first, so id order IS turn order.
+lt = nodes["Load Recent Turns"]["parameters"]
+if "order=created_at.desc&limit=16" in lt["url"]:
+    lt["url"] = lt["url"].replace("order=created_at.desc&limit=16",
+                                  "order=created_at.desc,id.desc&limit=16")
+elif "order=created_at.desc,id.desc" not in lt["url"]:
+    sys.exit("Load Recent Turns order clause not recognised — aborting before writing anything")
 
 # ---- Format Reply: `to` comes from the loop when the loop answered ----
 fr = nodes["Format Reply"]["parameters"]["jsCode"]
