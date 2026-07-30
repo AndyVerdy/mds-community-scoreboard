@@ -102,10 +102,34 @@ realGreeting guard held — that bypass is closed) · "hi" still greets · unfin
 miss, closest real things named (all resolve), ticket offered. Rides the queued prod push with
 #21+#24.
 
+**Shipped 2026-07-30 evening (staging): the judge wired as a gate — the contract checked, not
+requested.** Three pieces, all proven live:
+- **The LINK GATE** — deterministic citation resolution in the send path (the eval judge's
+  machine-checkable half, `verify_citations`, moved into Gate Verdict). Every URL in the outgoing
+  answer must appear verbatim in the retrieved evidence; an id-preserving rewrite is auto-repaired
+  to the retrieved URL (the model had swapped the numeric FB group id for the vanity slug — and the
+  Haiku gate passed it); a link whose id is nowhere in evidence blocks/regenerates like any other
+  invention. No model call, no latency, runs on every path **including gate_error**. Sim 10/10 on
+  the live node body.
+- **The fact-gate was DEAD and is restored.** The 07-30 morning rubric apply carried a bare
+  apostrophe (`ASSISTANT'S`) inside the single-quoted n8n expression → Fact Check returned
+  `{"error":"invalid syntax"}` on every execution since, and every answer shipped on the gate_error
+  pass-through — **including the entire 13.0% full-bank run (gate OFF; the standing number carries
+  that caveat)**. Caught via exec 56115; fixed with an apostrophe-free reword + a NO-BARE-APOSTROPHES
+  warning in `build_loop.py`; verdicts verified flowing again (exec 56123, `gate: pass` with
+  reasoned link verification).
+- **Self-descriptions can no longer be blocked as inventions** (the Q3009 over-refusal class, hit
+  live at exec 56121): RULE ONE first in the rubric (self-descriptions always pass, with the
+  data-access example) + a deterministic backstop in Gate Verdict (a claim headed by a source name
+  with no URL and no number is a description, dropped) + "what data do you have access to"-family →
+  deterministic `helpAsk` (`apply_1b_helpask_access.py`) — the canned capability list IS that
+  answer. Proven: capability question → help lane; loop-path "are you able to read what was said
+  inside the video recordings?" → honest no, `gate: pass` (exec 56133).
+
 **Still open under this item:** the measured rates to the bar (last full bank: 4 fabrications,
-3 false denials of 100) · the judge wired as a gate (the contract checked, not requested) · per-lane
-coverage measured rather than estimated. No politics classifier, deliberately: tariffs are political
-too.
+3 false denials of 100 — measured with the gate off, so the next organic run re-baselines it) ·
+per-lane coverage measured rather than estimated. No politics classifier, deliberately: tariffs are
+political too.
 
 **Effort M** - the rule is small; the structural half touches the routing every answer takes and the
 enforcement half needs the judge wired as a gate. **Impact:** every member, every answer. Contains the

@@ -6,7 +6,27 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
-## 2026-07-30 (PM) — Olivia: #21 CLOSED (Andy) · #25 portal ticket filed · #1 canned-lane boundary SHIPPED on staging
+## 2026-07-30 (PM) — Olivia: #21 CLOSED (Andy) · #25 filed · #1 boundary + judge-as-gate SHIPPED · fact-gate was DEAD, restored
+
+- **JUDGE-AS-GATE (#1 eve, 617b1aa):** deterministic **LINK GATE** in Gate Verdict — every URL in an
+  outgoing answer must be verbatim in retrieved evidence (= resolves in the warehouse); id-preserving
+  rewrites auto-repaired (the model swapped the FB numeric group id for the vanity slug and Haiku
+  passed it — caught by this); id-nowhere links regen/block. No model, no latency, runs even on
+  gate_error. Sim 10/10 on the live node body.
+- **THE FIND: Fact Check was DEAD** — `{"error":"invalid syntax"}` on every exec since the 07-30
+  morning rubric apply (bare apostrophe `ASSISTANT'S` terminated the single-quoted n8n expression) →
+  every answer shipped on gate_error pass-through, **the 13.0% full bank ran with the fact-gate
+  OFF** (number carries that caveat; next organic run re-baselines). Caught in exec 56115; reworded
+  apostrophe-free + NO-BARE-APOSTROPHES warning in build_loop.py; verdicts verified flowing (exec
+  56123 `gate: pass`, reasoned link verification).
+- **Self-descriptions unblockable** (Q3009 class, reproduced live at exec 56121 — Haiku listed the
+  answer's own source bullets as inventions and blocked the honest capability answer): RULE ONE
+  first in the rubric + deterministic source-headed-claim backstop in Gate Verdict + data-access
+  phrasings → canned `helpAsk` (apply_1b). Proven: "What data do you have access to?" → help lane ·
+  loop-path recordings question → honest no, `gate: pass` (exec 56133) · Brandon re-probe → both
+  canonical URLs, `gate: pass`. Leak gate GREEN.
+
+## (earlier same day) #21 CLOSED (Andy) · #25 portal ticket filed · #1 canned-lane boundary SHIPPED on staging
 
 - **Session-start verify:** staging = sources byte-for-byte (material-invention rubric, post-filter,
   `$runIndex` cap all present), leak gate GREEN, lock free, both wfs active. Last session's

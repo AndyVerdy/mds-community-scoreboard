@@ -25,8 +25,14 @@ the full detail.
   the 16 new real-member questions are deliberately hard). The prod push is its own queued action below.
 - **#24 first-contact: SHIPPED on staging, closed.** Rides the same promote.
 - **#1 boundary half: SHIPPED on staging 2026-07-30 PM** (action lane allowlisted, loop offers the
-  ticket only after checking; probes 5/5, Q3061 closed, gate GREEN). Rides the same push. #1 stays
-  open on: rates to the rung · judge wired as a gate · per-lane coverage measured.
+  ticket only after checking; probes 5/5, Q3061 closed, gate GREEN). Rides the same push.
+- **#1 judge-as-gate: SHIPPED on staging 2026-07-30 eve** — deterministic LINK GATE (citations
+  verbatim-in-evidence, id-rewrites auto-repaired, runs even on gate_error) + **the fact-gate was
+  found DEAD since the morning apply (bare apostrophe → invalid syntax → gate_error pass-through on
+  every answer, 13.0% ran gate-OFF) and restored** + self-descriptions unblockable (RULE ONE +
+  deterministic backstop + data-access→helpAsk). Execs 56115/56123/56133. Rides the same push.
+  #1 stays open on: rates to the rung (re-baseline needed — gate was off for the 13.0%) · per-lane
+  coverage measured.
 - **#25 filed (S2): the /admin/olivia portal tells the truth** (Andy's screenshots 2026-07-30 —
   stale topics-card window, unproven tiles, eval-marking pollution).
 - **#22 Kimi: CLOSED, no swap** (22.2% vs 15.3% fail, 2x cost/answer, 8x latency, forced fetch
@@ -42,9 +48,10 @@ python3 scripts/olivia_wf.py promote        # diff -> leak gate -> snapshot -> w
 python3 scripts/olivia_wf.py unlock
 ```
 Rollback: `python3 scripts/olivia_wf.py rollback <label>`. Andy's manual window:
-digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT build work: #1 continues** — the
-canned-lane boundary shipped 2026-07-30 PM (Q3061 closed on staging); remaining inside #1: rates to
-the rung, the judge wired as a gate, per-lane coverage measured.
+digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT build work: #1 continues** — boundary
++ judge-as-gate both shipped 2026-07-30 (Q3061 closed, link gate live, fact-gate restored);
+remaining inside #1: rates to the rung (**next organic run re-baselines — the 13.0% ran with the
+fact-gate dead**), per-lane coverage measured.
 
 ## The daily routine (unchanged rules)
 - ONE paid organic run per session, AFTER free diagnosis + fix batch + free probes. Bank =
