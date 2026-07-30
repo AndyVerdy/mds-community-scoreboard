@@ -55,7 +55,33 @@ phone-less actives; fixed same day.)
 
 # 🔴 S1 — highest
 
-*(no open S1 items — #21, #1, #26, #27, #28 all closed 2026-07-30.)*
+### 31. 🔴 Canceled means gone — membership status gates every door · S1 · effort M  ← NEXT
+*As MDS, a member who cancels loses access the day the status flips — matching a phone or an email
+is identity, never entitlement; the Airtable membership status is the authority on who is active.
+(Andy 2026-07-30: "Number matching is not enough… only AT database status can tell us if he is an
+active member.")*
+
+**Verified live 2026-07-30 — the gap exists at ALL THREE layers today, not hypothetically:**
+a "Removed - Canceled Membership" member with a linked phone was served 3 partner rows, 5 events,
+and a full app feed. (1) The WhatsApp front door (`Resolve Member`) fetches `membership_status` and
+never checks it. (2) Every gated RPC resolves "exactly one member with this phone" with no status
+test. (3) `app_member_feed` (#27) resolves email → member with no status test. The WA-digest
+product enforces live AT-status; Olivia never inherited the rule. Personas already filter actives.
+
+**Accept when**
+- **A non-active member is refused at every door**, verified live with a Removed member's phone and
+  email: WhatsApp → a kind not-active message (wording can ride #11), zero data; every gated RPC →
+  empty (defense in depth — security stays in SQL, not workflow politeness); app feed → `{}`.
+- **The active set is written once and shared** (Current Member · New Member · Current Member- Not
+  Renewing · Staff — one definition, every door imports it; no per-function drift).
+- **The authority is the AT status** as synced (`membership_status`, staleness ≤ the sync cadence,
+  ≤1 day); if Andy wants the digest-style LIVE AT lookup instead of the synced copy, that is a
+  named upgrade with its latency cost stated.
+- **Leak gate extended**: canceled-phone and canceled-email probes on every door, GREEN.
+- **No active member's behavior changes** — proven by the standing probes.
+
+**Impact:** every cancellation from now on; 23 Removed members carry linked phones today (count
+moves daily).
 
 ---
 
