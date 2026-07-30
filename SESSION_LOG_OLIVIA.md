@@ -15,9 +15,19 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   block; behavioural params = ranking only. Proof: Andy Verdy vs Matthew Greene live feeds differ
   correctly; andy@mds.co stub fails closed (⚠️ app must send the LINKED member email); gate
   extended +4 → **GREEN 152**. Coverage 583/585 email+phone, 0 dup emails.
-- **#28 filed S1 (Andy): the persona learns** — turns are logged and attendance stored but NOTHING
-  updates personas today (regen only on application re-ingest, no schedule). Monthly floor +
-  signal-driven refresh + preferences/focus/avoid + evidence-traceable lines. ← NEXT.
+- **#28 the persona learns — SHIPPED + CLOSED (Andy's call):** `member_personas` + versioned
+  history (owner-only, gate 153) · `persona_signals`/`persona_signal_fingerprints` RPCs · builder
+  `persona_refresh.py` (Haiku ~$0.02/member) with deep v2 schema (weighted+recency focus ·
+  challenges_now · gives · asks · emerging · engagement — every item signal-cited) · daily 4:15am
+  launchd `com.mds.persona.refresh` (monthly floor + rebuild-on-signal-change in one job) · #27
+  feed consumes persona focus minus avoid. Proven deep on Eugene/Ian/Mo/Etienne (v2, version 2 rows;
+  first max_tokens truncation caught via stop_reason and fixed at 3500). 200 v1 + 4 v2 built; ~345
+  remaining auto-build nightly. Coverage = 549 phone-linked actives of 644 mirror rows (722 AT
+  actives — phone-less ~170 → #29).
+- **#29 filed S3 (Andy): matchmaking & recommendations like the platforms** — research memo first
+  (two-stage candidate-gen→ranking, collaborative+content+behavioral, Amazon/eBay patterns) mapped
+  to MDS signals; v1 like-minded members; persona-quality redesign lands there ("cards too
+  generic"). Andy: "matchmaking will be the key."
 
 - **#1 CLOSED at the 10% rung (Andy: 0% too harsh; ladder 10→5→1 stands).** Proof: the 34Q gate-on
   test run below. Residuals Q3091/Q3094 → #7/#8.

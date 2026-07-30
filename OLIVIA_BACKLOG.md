@@ -48,37 +48,9 @@ Written once, true for everything that ships. Per-item conditions live under eac
 
 # 🔴 S1 — highest
 
-### 28. 🔴 The persona learns · S1 · effort M  ← NEXT
-*As a member, the more I use MDS — questions I ask, events I attend, what I post, what I claim —
-the better MDS knows me: my persona updates itself with preferences, what to focus on, and what to
-avoid. (Andy 2026-07-30: "the more people are using MDS, the more data we are collecting, and it
-must update the persona constantly… minimum once per month.")*
+*(no open S1 items — #21, #1, #26, #27, #28 all closed 2026-07-30.)*
 
-**Today's honest state:** every Olivia turn is logged (route + plan + weekly topic clustering) and
-event attendance sits in `event_registrations` — but **nothing updates the persona**. Persona cards
-regenerate only when application data is re-ingested; searches and attendance never feed back;
-there is no scheduled refresh at all.
-
-**Accept when**
-- **Every active member's persona is rebuilt at minimum monthly** — scheduled, not remembered — and
-  0 active members carry a persona older than 35 days (`persona_updated_at` measured, alert on
-  staleness).
-- **The rebuild reads the accumulated signals:** application/census answers · Olivia questions +
-  search history · event attendance · WA/FB activity · offer claims and video views where the data
-  exists. Output includes **preferences / focus on / avoid**, versioned.
-- **Every persona line is traceable to a signal** — the same evidence contract as #1: no invented
-  traits; "tell me if I got that wrong" correction loop stays.
-- **Strong signals refresh sooner than the monthly floor** (new application/census, an event
-  attended, a sustained new topic in their questions).
-- **Consumers read the current persona:** #27's feed, member_match, dossier — verified live that a
-  fresh signal (e.g. attending an event, three questions on one topic) visibly changes what the
-  member is shown within a cycle.
-- **Gating unchanged:** persona stays owner-only; match-don't-quote holds; leak gate GREEN.
-- **Cost bounded and stated** (~722 actives × monthly regen on a small model ≈ dollars, not
-  hundreds).
-
-**Impact:** all 722 — this is the compounding loop: usage → data → better persona → better answers
-and feed → more usage. Without it, KYC decays the day the application form is submitted.
+---
 
 ---
 
@@ -265,6 +237,34 @@ audit is owed on **revenue sources** — Amazon, DTC, TikTok — which the appli
 ---
 
 # 🔵 S3
+
+### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L
+*As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
+platform would — from everything it knows about me, and it gets the like-minded question right:
+"people like Mo" returns the other multi-market logistics-givers, not everyone in Canada.
+(Andy 2026-07-30: "matchmaking will be the key… we have tons of info we can use for matching…
+you need to research how such DBs are built.")*
+
+**Research FIRST, then build.** Deliverable 1 is a reviewed research memo: how production
+recommender systems actually work (two-stage candidate-generation → ranking · content-based +
+collaborative + behavioral/implicit-feedback signals · embedding feature stores · cold-start
+handling — the Amazon/eBay/Netflix patterns), mapped onto MDS's real signal inventory: personas
+(#28), Olivia question history, event attendance, WA/FB activity + chat memberships, offer claims
+(needs GROUPOS_PAT), video views + app search/activity (once the app logs them), census (#20).
+
+**Accept when**
+- **The research memo exists and Andy has reviewed it**: named patterns, what maps to MDS data,
+  chosen architecture, per-surface candidate pools (people-to-meet · deals · events · videos ·
+  threads), ranking approach, offline + online evaluation plan.
+- **v1 like-minded members works end-to-end** (persona/behavior similarity, gated, reasons =
+  shared topics only — match-don't-quote; secondary sort engagement score, score never shown) and
+  **measurably beats** the tick-box `member_match` on a judged set.
+- **Feed ranking (#27) uses it** and the improvement is measured, not asserted.
+- **Phone-less actives covered** (~170 members: FB + events + profile signals only).
+- Leak gate GREEN; personas/behavioral data never quoted across members.
+
+**Impact:** all members — Andy's call: matchmaking is the key product surface. The persona-quality
+critique (2026-07-30: cards too generic) lands here as the redesign.
 
 ### 10. 🔵 Shareable member facts · S3 · effort S
 *As a member, similar questions get similar answers.*
@@ -454,6 +454,37 @@ through this".
 ---
 
 # ✅ Completed
+
+### 28. ✅ The persona learns · CLOSED 2026-07-30 (Andy's call; quality redesign → #29) · effort M
+*As a member, the more I use MDS, the better it knows me — my persona updates itself with
+preferences, focus, and what to avoid, minimum monthly.*
+
+**What shipped (all live):**
+- **`digest.member_personas` + `member_personas_history`** — one current row per member, every
+  change archived with a version bump (trigger). Owner-only: anon unreadable (gate check), reaches
+  a member only through their own identity-resolved feed.
+- **Signal plumbing:** `persona_signal_fingerprints()` (one scan; fingerprint change = rebuild
+  before the floor) + `persona_signals()` (attributes minus rev_band · 180d Olivia questions ×60,
+  SELFTEST/eval excluded · confirmed event attendance · 30 authored WA/FB items · WA chat
+  memberships).
+- **Builder `persona_refresh.py`** (mds-scorecard-tools; Haiku, ~$0.02/member, ~$7/mo): deep v2
+  schema — summary · business snapshot · weighted+recency-tagged focus · challenges_now · GIVES
+  (what they help others with) · asks · emerging (newest-signals-only) · avoid (explicit signals
+  only) · preferences · engagement pattern — **every item carries a verbatim signal pointer** (the
+  #1 evidence contract). `--stats` = staleness report, exit-1 on stale.
+- **Daily launchd job** `com.mds.persona.refresh` (4:15am, Slack summary via PERSONA_SLACK=1) —
+  one run enforces both the monthly floor and rebuild-on-signal-change.
+- **The #27 feed consumes the persona** (focus terms drive interests minus avoid; attributes
+  remain the fallback). Gate GREEN at 153.
+
+**State at close:** 4 deep-v2 personas proven (Eugene / Ian / Mo / Etienne — weighted focus,
+gives/challenges/emerging all signal-cited); 200 members carry v1 personas; the remaining ~345
+build automatically at the next nightly runs (v2 prompt), v1s refresh at their floor/signal
+change. Coverage = 549 phone-linked actives; the ~170 phone-less actives + the depth/quality
+redesign are #29's scope (Andy: cards still too generic — research how the platforms build
+recommendation DBs).
+
+---
 
 ### 27. ✅ The app knows who I am — identity-keyed personalization · CLOSED 2026-07-30 · effort M
 *As a member using the MDS mobile app, everything I see is picked for ME, resolved from my real

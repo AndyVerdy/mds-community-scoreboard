@@ -51,12 +51,15 @@ python3 scripts/olivia_wf.py promote        # diff -> leak gate -> snapshot -> w
 python3 scripts/olivia_wf.py unlock
 ```
 Rollback: `python3 scripts/olivia_wf.py rollback <label>`. Andy's manual window:
-digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT build work: #28 The persona learns**
-(monthly rebuild floor + signal-driven refresh — Andy's KYC push). Closed today besides the wf work:
-**#27 `digest.app_member_feed`** — the app's identity door (email-keyed, fail-closed, gates travel;
-2-member live proof; gate 152 GREEN; ⚠️ app must send the LINKED member email — andy@mds.co is an
-unlinked stub and returns {}). #25 portal + S2 queue unchanged. The full-bank standing number
-re-baselines at the next FULL run (the 13.0% ran with the fact-gate dead).
+digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT build work: Andy's pick — S1 empty
+again** (#21/#1/#26/#27/#28 all closed 2026-07-30). Closed today besides the wf work:
+**#27 `digest.app_member_feed`** (the app's identity door — email-keyed, fail-closed, gates travel;
+⚠️ app must send the LINKED member email) and **#28 the living persona** (member_personas +
+versioned history + daily 4:15am refresh `com.mds.persona.refresh`; deep v2 schema signal-cited;
+~345 remaining actives auto-build on the nightly runs; quality redesign + like-minded matching →
+**#29 S3 recsys research PBI**, Andy: "matchmaking will be the key"). S2 queue: #23 latency ·
+#25 portal · #3 · #5 · #6 · #7 · #8 · #9. The full-bank standing number re-baselines at the next
+FULL run (the 13.0% ran with the fact-gate dead). Gate = 153.
 
 ## The daily routine
 - **Run tiers (Andy 2026-07-30): FULL vs TEST.** A FULL run (all 100) produces the standing number —
