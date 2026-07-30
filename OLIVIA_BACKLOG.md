@@ -48,28 +48,7 @@ Written once, true for everything that ships. Per-item conditions live under eac
 
 # 🔴 S1 — highest
 
-### 26. 🔴 Partners + events semantically searchable · S1 · effort S  ← NEXT
-*As a member, a paraphrased ask ("3PL in Europe", "fulfillment help") finds the right partner or
-event even when my words don't match the catalog's.*
-
-**Raised to S1 (Andy 2026-07-30): connected sources must be semantically searchable — these two
-never were.** Verified live: `digest.partners_catalog` (486 rows) and `digest.events_catalog`
-(1,419) have **no embedding column at all** — Voyage never processed them; `partner_lookup` /
-`event_lookup` match field values + FTS only, so paraphrase misses unless wording lines up.
-Everything else IS processed: content_items **37,980/37,980** embedded, videos_catalog
-**1,009/1,009**.
-
-**Accept when**
-- Embeddings on both catalogs, same Voyage pattern as `videos_catalog`, refreshed on ingest.
-- **Retrieval diffed top-3 with and without the vector before trusting it** — a silent no-op is not
-  an improvement, and ranking merges use RRF, never blended scores ([[reference_hybrid_search_use_rrf]]).
-- Leak gate GREEN (both RPCs are gated).
-- Paraphrase probes ("3PL in Europe", "help with fulfillment", "events for TikTok sellers") hit the
-  right rows; named lookups unchanged.
-
-One-time embed cost ≈ pennies (~1,900 rows). Slots alongside #7 (member profiles), which stays its
-own ticket. Q3091 (EZ Outlet, the one remaining eval fail) and Q3094 (missed PPC threads) are
-retrieval-depth cases this and #7/#8 share.
+*(no open S1 items — #21, #1 and #26 all closed 2026-07-30.)*
 
 ---
 
@@ -445,6 +424,40 @@ through this".
 ---
 
 # ✅ Completed
+
+### 26. ✅ Partners + events semantically searchable · CLOSED 2026-07-30 · effort S
+*As a member, a paraphrased ask ("3PL in Europe", "fulfillment help") finds the right partner or
+event even when my words don't match the catalog's.*
+
+**The finding (Andy, verified live):** `partners_catalog` (486) and `events_catalog` (1,419) had
+**no embedding column** — Voyage never processed them, while content (37,980/37,980) and videos
+(1,009/1,009) were fully embedded. Raised to S1 and shipped same day.
+
+**What shipped:**
+- `vector(1024)` columns + BEFORE-UPDATE invalidation triggers (migration
+  `partners_events_embedding_columns`) — a text change nulls the embedding so the nulls-only embed
+  pass re-covers it. **No HNSW index on purpose**: ~1,900 rows seq-scan in microseconds, and HNSW on
+  a trigger-written table is the exact trap that froze the member sync.
+- `embed_partners_events.py` (mds-scorecard-tools, mirrors embed_videos.py; nulls-only resumable;
+  `--query` prints a probe vector). **486/486 partners + 1,419/1,419 events embedded** (~pennies).
+  Public-in-app fields only.
+- `partner_lookup` / `event_lookup` + `p_embedding text DEFAULT NULL` (migrations
+  `partner_lookup_semantic_rrf` / `event_lookup_semantic_rrf`; drop+create → re-grant → pgrst
+  reload, the known footguns). **RRF rank-merge, never blended scores; the vector admits and ranks
+  only inside the already-gated pool** — chapter gate, banded browse gate, phase filters untouched;
+  a malformed vector degrades to keyword.
+- Workflow wiring: Fetch Summaries inject list + the loop's Attach Embedding list gain both ops
+  (staging; **reaches prod with the queued push** — the DB side is live for prod already, and prod
+  sends no p_embedding, so it runs the proven-identical legacy path until then).
+
+**Proof:** null-path regression **byte-identical** on 5 snapshot calls (tiktok/3PL/browse/singapore/
+events-browse) · top-3 diff with vs without the vector CHANGED — "3PL in Europe": keyword
+[Tactical, Eco, Texas] → hybrid [Linktrans, Eco, **Worldwide Logistics Group UK**] — not a silent
+no-op · REST path hammered clean after reload · **E2E on staging: "any 3PL partners that can help
+me in europe?" → Blue30 (UK fulfillment, 5% off, real link) with an honest the-rest-are-US caveat**
+· events browse + "tell me about GETIDA" unchanged · leak gate GREEN.
+
+---
 
 ### 1. ✅ Every answer matches the evidence · CLOSED 2026-07-30 at the 10% rung · effort M
 *As a member, what Olivia tells me is exactly what the sources support - she never adds a verdict of

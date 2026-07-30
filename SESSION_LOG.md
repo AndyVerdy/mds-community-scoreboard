@@ -8,7 +8,7 @@
 prepend the full entry to its STREAM log + ONE line here.** Old references like "read SESSION_LOG
 2026-07-27" resolve through this index: find the date line, open the named stream file.
 
-- 2026-07-30 · **Olivia** · (PM) #21 CLOSED on Andy's call · #25 portal ticket filed (S2) · #1 boundary + judge-as-gate SHIPPED on staging · fact-gate found DEAD (apostrophe) + restored — 13.0% ran gate-OFF → `SESSION_LOG_OLIVIA.md`
+- 2026-07-30 · **Olivia** · (PM) #21 + #1 (10% rung) + #26 (partners+events embeddings, same-day S1) CLOSED · #25 filed · fact-gate found DEAD + restored (13.0% ran gate-OFF) · 34Q test run 2.9% → `SESSION_LOG_OLIVIA.md`
 - 2026-07-30 · **Olivia** · Olivia: #22 closed · #21 fix batch 11/13 · #24 shipped · backlog got DoD/AC → `SESSION_LOG_OLIVIA.md`
 - 2026-07-29 · **Olivia** · Olivia: SESSION CLOSE (the long one — #4 shipped, #21 built, organic routine locked → `SESSION_LOG_OLIVIA.md`
 - 2026-07-28 · **Olivia** · night) — Olivia #21: THE ANSWERING LOOP — slice PROVEN on staging → `SESSION_LOG_OLIVIA.md`

@@ -29,9 +29,11 @@ the full detail.
   gate_error pass-through, the 13.0% ran gate-OFF — and restored**; self-descriptions unblockable)
   all shipped on staging, execs 56115/56123/56133. **Proof: 34Q gate-on TEST run = 2.9%** (12 of the
   13 previous fails PASS; no new over-blocking). Residuals Q3091/Q3094 → #7/#8. Rides the same push.
-- **#26 raised to S1 (Andy): partners + events never Voyage-processed** — no embedding column on
-  `partners_catalog` (486) / `events_catalog` (1,419); videos + content fully embedded. Embed both
-  like videos; RRF + top-3 diff rules in the ticket. ← NEXT build work.
+- **#26 CLOSED same day (raised to S1 by Andy, shipped + proven in hours):** both catalogs embedded
+  486/486 + 1,419/1,419, invalidation triggers, `partner_lookup`/`event_lookup` + p_embedding with
+  RRF inside the gated pool (null path byte-identical — prod safe until the push), wf wiring on
+  staging. E2E: "3PL in europe" → Blue30 (UK) with link; GETIDA + browse unchanged; gate GREEN.
+  DB migrations are LIVE for both wfs; the wiring rides the push.
 - **Run tiers (Andy): FULL (100Q, standing number, rare) vs TEST (≤50, targeted, `--ids` +
   `OLIVIA_EVAL_BANK=eval_bank_organic.json` — silently fires 0 without it).**
 - **#25 filed (S2): the /admin/olivia portal tells the truth** (Andy's screenshots 2026-07-30 —
@@ -49,9 +51,10 @@ python3 scripts/olivia_wf.py promote        # diff -> leak gate -> snapshot -> w
 python3 scripts/olivia_wf.py unlock
 ```
 Rollback: `python3 scripts/olivia_wf.py rollback <label>`. Andy's manual window:
-digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT build work: #26** — partners + events
-embeddings (raised to S1 by Andy 2026-07-30; the two catalogs were never Voyage-processed). The
-full-bank standing number re-baselines at the next FULL run (the 13.0% ran with the fact-gate dead).
+digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT build work: Andy's pick — S1 is
+empty** (#21/#1/#26 all closed 2026-07-30); S2 queue: #23 latency · #25 portal · #3 restricted ·
+#5 counting · #6 chapters · #7 people search · #8 every-source · #9 revenue. The full-bank standing
+number re-baselines at the next FULL run (the 13.0% ran with the fact-gate dead).
 
 ## The daily routine
 - **Run tiers (Andy 2026-07-30): FULL vs TEST.** A FULL run (all 100) produces the standing number —

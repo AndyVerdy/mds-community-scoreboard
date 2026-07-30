@@ -6,7 +6,29 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
-## 2026-07-30 (PM) — Olivia: #21 CLOSED (Andy) · #25 filed · #1 boundary + judge-as-gate SHIPPED · fact-gate was DEAD, restored
+## 2026-07-30 (PM) — Olivia: #21 + #1 + #26 CLOSED · #25 filed · fact-gate was DEAD, restored · partners+events embedded
+
+- **#1 CLOSED at the 10% rung (Andy: 0% too harsh; ladder 10→5→1 stands).** Proof: the 34Q gate-on
+  test run below. Residuals Q3091/Q3094 → #7/#8.
+- **#26 raised to S1 (Andy: connected sources must be semantic) and CLOSED same day.** Verified:
+  partners_catalog 486 + events_catalog 1,419 had NO embedding column (videos 1,009/1,009 + content
+  37,980/37,980 fine). Shipped: vector(1024) columns + invalidation triggers (no HNSW on purpose —
+  the member-sync trap) · `embed_partners_events.py` (mds-scorecard-tools) → 486/486 + 1,419/1,419 ·
+  `partner_lookup`/`event_lookup` + p_embedding (drop+create → re-grant → pgrst reload), **RRF
+  rank-merge inside the gated pool only** — chapter/banded gates untouched, malformed vector →
+  keyword · wf wiring (Fetch Summaries inject + loop Attach list) on staging, rides the push; DB
+  side live for prod on the proven-identical null path. **Proof: 5-call null-path regression
+  byte-identical · top-3 diff changed ("3PL in Europe" keyword [Tactical/Eco/Texas] → hybrid
+  [Linktrans/Eco/Worldwide Logistics UK]) · E2E "any 3PL partners that can help me in europe?" →
+  Blue30 (UK, 5% off, link) + honest US-caveat · GETIDA + events browse unchanged · gate GREEN.**
+- **Voyage coverage question (Andy):** new WA/FB data IS embedded — but only because the capture SOP
+  runs `embed_backfill.py` by hand (958 new rows/48h, 0 unembedded, verified). Automation gap filed
+  under #15.
+- **Run-tier mis-fire lesson:** `--ids` silently fires 0 without `OLIVIA_EVAL_BANK=eval_bank_organic.json`
+  (harness defaults to the v2 bank); it also judged 1 stray answer and overwrote the day's report —
+  cleanup-first + env var now in the routine doc.
+
+## (same day, earlier) #21 CLOSED (Andy) · #25 filed · #1 boundary + judge-as-gate SHIPPED · fact-gate was DEAD, restored
 
 - **JUDGE-AS-GATE (#1 eve, 617b1aa):** deterministic **LINK GATE** in Gate Verdict — every URL in an
   outgoing answer must be verbatim in retrieved evidence (= resolves in the warehouse); id-preserving
