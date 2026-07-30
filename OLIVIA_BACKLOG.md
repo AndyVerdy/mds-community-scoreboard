@@ -63,6 +63,19 @@ phone-less actives; fixed same day.)
 
 # 🟡 S2
 
+### 3. 🟡 "Restricted", never "doesn't exist" · S2 · effort S
+*As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*
+
+**Accept when**
+- **Restricted content is never denied: 0%** answered as not existing. It exists, and it is withheld.
+- **0% of answers state content nobody read** — nothing inferred from a title or a description.
+- **The same ask worded differently gets the same answer.**
+- Restricted videos appear in "what's new", content withheld
+- Asked what was said on a call, she says there are no transcripts rather than guessing from the description
+- Never invents content from a title or description
+
+**Effort S** — mostly prompt, but prompt rules have lost here before, so it moves into the data. **Impact:** the video library is 39% restricted.
+
 ### 30. 🟡 Member resolution by at_member_id everywhere — phone is a channel, not the key · S2 · effort M
 *As any of the 203 phone-less active members, the app works for me too: my feed, my entitlements,
 my persona — resolved from who I am, not from whether I'm on WhatsApp.*
@@ -138,19 +151,6 @@ cross-source measurement trap noted for #8.
 
 **Impact:** the team's only window into whether Olivia is used and useful; wrong numbers here mean
 wrong calls on everything else.
-
-### 3. 🟡 "Restricted", never "doesn't exist" · S2 · effort S
-*As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*
-
-**Accept when**
-- **Restricted content is never denied: 0%** answered as not existing. It exists, and it is withheld.
-- **0% of answers state content nobody read** — nothing inferred from a title or a description.
-- **The same ask worded differently gets the same answer.**
-- Restricted videos appear in "what's new", content withheld
-- Asked what was said on a call, she says there are no transcripts rather than guessing from the description
-- Never invents content from a title or description
-
-**Effort S** — mostly prompt, but prompt rules have lost here before, so it moves into the data. **Impact:** the video library is 39% restricted.
 
 ### 5. 🟡 Counting · S2 · effort M
 *As a member, when I ask a number I get a number.*
@@ -266,34 +266,6 @@ audit is owed on **revenue sources** — Amazon, DTC, TikTok — which the appli
 
 # 🔵 S3
 
-### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L
-*As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
-platform would — from everything it knows about me, and it gets the like-minded question right:
-"people like Mo" returns the other multi-market logistics-givers, not everyone in Canada.
-(Andy 2026-07-30: "matchmaking will be the key… we have tons of info we can use for matching…
-you need to research how such DBs are built.")*
-
-**Research FIRST, then build.** Deliverable 1 is a reviewed research memo: how production
-recommender systems actually work (two-stage candidate-generation → ranking · content-based +
-collaborative + behavioral/implicit-feedback signals · embedding feature stores · cold-start
-handling — the Amazon/eBay/Netflix patterns), mapped onto MDS's real signal inventory: personas
-(#28), Olivia question history, event attendance, WA/FB activity + chat memberships, offer claims
-(needs GROUPOS_PAT), video views + app search/activity (once the app logs them), census (#20).
-
-**Accept when**
-- **The research memo exists and Andy has reviewed it**: named patterns, what maps to MDS data,
-  chosen architecture, per-surface candidate pools (people-to-meet · deals · events · videos ·
-  threads), ranking approach, offline + online evaluation plan.
-- **v1 like-minded members works end-to-end** (persona/behavior similarity, gated, reasons =
-  shared topics only — match-don't-quote; secondary sort engagement score, score never shown) and
-  **measurably beats** the tick-box `member_match` on a judged set.
-- **Feed ranking (#27) uses it** and the improvement is measured, not asserted.
-- **Phone-less actives covered** (~170 members: FB + events + profile signals only).
-- Leak gate GREEN; personas/behavioral data never quoted across members.
-
-**Impact:** all members — Andy's call: matchmaking is the key product surface. The persona-quality
-critique (2026-07-30: cards too generic) lands here as the redesign.
-
 ### 10. 🔵 Shareable member facts · S3 · effort S
 *As a member, similar questions get similar answers.*
 
@@ -360,6 +332,34 @@ he also said in this post that…".
 - A spend cap so one heavy user can't drain the budget
 
 **Impact:** on 07-26 every member asking anything got a failure message and nobody knew. *(Recommend raising to S2 — same job as #16.)*
+
+### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L
+*As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
+platform would — from everything it knows about me, and it gets the like-minded question right:
+"people like Mo" returns the other multi-market logistics-givers, not everyone in Canada.
+(Andy 2026-07-30: "matchmaking will be the key… we have tons of info we can use for matching…
+you need to research how such DBs are built.")*
+
+**Research FIRST, then build.** Deliverable 1 is a reviewed research memo: how production
+recommender systems actually work (two-stage candidate-generation → ranking · content-based +
+collaborative + behavioral/implicit-feedback signals · embedding feature stores · cold-start
+handling — the Amazon/eBay/Netflix patterns), mapped onto MDS's real signal inventory: personas
+(#28), Olivia question history, event attendance, WA/FB activity + chat memberships, offer claims
+(needs GROUPOS_PAT), video views + app search/activity (once the app logs them), census (#20).
+
+**Accept when**
+- **The research memo exists and Andy has reviewed it**: named patterns, what maps to MDS data,
+  chosen architecture, per-surface candidate pools (people-to-meet · deals · events · videos ·
+  threads), ranking approach, offline + online evaluation plan.
+- **v1 like-minded members works end-to-end** (persona/behavior similarity, gated, reasons =
+  shared topics only — match-don't-quote; secondary sort engagement score, score never shown) and
+  **measurably beats** the tick-box `member_match` on a judged set.
+- **Feed ranking (#27) uses it** and the improvement is measured, not asserted.
+- **Phone-less actives covered** (~170 members: FB + events + profile signals only).
+- Leak gate GREEN; personas/behavioral data never quoted across members.
+
+**Impact:** all members — Andy's call: matchmaking is the key product surface. The persona-quality
+critique (2026-07-30: cards too generic) lands here as the redesign.
 
 ### 14. 🔵 Conversational, not robotic · S3 · effort L
 *As a member, it follows what I mean, keeps context, and reads like someone who knows MDS.*
