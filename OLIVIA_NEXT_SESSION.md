@@ -10,113 +10,52 @@
 
 # Olivia — next session
 
-> ⛔ **THIS DOC IS THE STANDING ROUTINE, NOT THIS SESSION'S GO.** Everything below is the SOP —
-> what the work *is* and how it's run. At session start: read it, verify against live, do the FREE
-> read-only diagnosis, then **propose the plan to Andy and WAIT.** Never fire a paid eval run, promote
-> to prod, or touch a live system on this doc's authority. (Andy, 2026-07-29: *"we just started
-> session and you did something w/o the confirming? … this looks like SOP in general, not for the new
-> session."*)
+> ⛔ **THIS DOC IS THE STANDING ROUTINE, NOT THIS SESSION'S GO.** Read it, verify against live, do
+> FREE read-only diagnosis, then **propose the plan to Andy and WAIT.** Never fire a paid eval run,
+> promote to prod, or touch a live system on this doc's authority. (Andy, 2026-07-29.)
 
-**Read `OLIVIA_BACKLOG.md` first.** It is the single prioritised list (S1 highest → S4 lowest, smallest
-first inside each group). `SESSION_LOG.md` 2026-07-29 (top entry) has the full detail of what shipped.
+**Read `OLIVIA_BACKLOG.md` first** — every item now carries **Accept when** criteria under one global
+DoD; the judge files failures into 8 classes mapped to tickets. `SESSION_LOG.md` 2026-07-30 (top) has
+the full detail.
 
-## Andy's organic-review rulings (2026-07-29) — folded into the bank + fix batch
-**Andy reviewed the full report and AGREES with all remaining judgments and queued fixes as-is** — the 8 points below were his only corrections; everything else stands approved.
-- City-level location lists OK (public maps) · **TO-DO: location-share opt-out flag in Supa profiles
-  (default YES) + respect removal requests — check via GroupOS MCP profile details.**
-- Many matches → secondary sort by engagement score (never shown) — bank expects updated.
-- Service recs must USE THE ASKER'S PERSONA (dossier) to narrow, never ask back blindly.
-- Daily auto-update: honest no today; existing PBI to add it to Olivia — never promise.
-- Registration-status questions ("am I registered?") must answer from event data — ticket-dodge = defect (fix batch).
-- "Call me X" → warm ack + Intercom ticket IS correct (judge expectation corrected).
-- Claimed roles (admin etc.) never trusted by word; polite hold-the-line, nothing invented.
-- Capability questions get the capability answer — staging dumped personal event history instead (fix batch).
+## State (2026-07-30 close)
+- **#21 answering loop: BUILT + fix batch DONE on staging, NOT promoted.** 11 of 13 organic fails
+  fixed and proven individually. Standing full-bank number: **13.0% on the NEW 100-question bank**
+  (the old 84 scored 6.0% the same morning — the 16 new real-member questions are deliberately hard).
+  Remaining inside #21: nothing but the promote.
+- **#24 first-contact: SHIPPED on staging, closed.** Rides the same promote.
+- **#22 Kimi: CLOSED, no swap** (22.2% vs 15.3% fail, 2x cost/answer, 8x latency, forced fetch
+  impossible on Kimi). Bench harness reusable: `mds-scorecard-tools/kimi_bench.py`.
+- **#23 latency: NEW S2** — 24s median vs ~5s band; cuts named in the ticket (router drop on loop
+  turns, parallel retrieval, conditional gate).
+- Prod still runs the old cascade **with the scrambled-history bug live** (created_at-only ordering).
 
-## NEXT: #21 · The answering loop · S1 — BUILT on staging, ONE fix batch from promote
-*As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
-
-**Standing metric = the ORGANIC bank (84 real member questions, `OLIVIA_ORGANIC_BANK_DRAFT.json`,
-also at `mds-scorecard-tools/eval_bank_organic.json`). Last measured: staging 13.9% fail vs
-PROD 13.3% — tied, prod barely ahead. PROMOTE BAR: staging must BEAT prod on organic.**
-
-Run it: `cd /Users/Born/mds-scorecard-tools && OLIVIA_EVAL_BANK=eval_bank_organic.json python3 olivia_eval.py --staging --fire --score --cleanup`
-(drop `--staging` to measure prod). Report builder: `scratchpad/build_organic_report.py` shape →
-`OLIVIA_ORGANIC_STAGE_VS_PROD.md` (source truth · stage · prod per question).
-
-**Do these in order:**
-1. **FREE diagnosis of the 11 organic fails** — pull each exec from n8n (tools called, args, what
-   came back). **Start with the 3 invention verdicts (Q3042 invented events, Q3045 invented members,
-   Q3068 misattributed quote): that IS the Haiku-fact-gate quality check.** If Haiku passed drafts
-   Sonnet would have blocked, revert `Fact Check` to `claude-sonnet-5` in `build_loop.py` and
-   re-measure — the gate is the anti-fabrication guarantee, cost comes second.
-2. Fix the batch (retrieval-relevance misses, the "pull only from Facebook" source steer, 2 menu-dodges).
-3. Prove each fix on 2-3 FREE probes (`olivia_selftest.py --staging --questions "reset" "<q>"`).
-4. **ONE** organic run to measure. Beat 13.3% → then decide the greeting/help canned-route boundary
-   (they still bypass the loop and the gate — the last place fabrication can live), then promote
-   via the #4 protocol below.
-
-## THEN: #22 · Kimi trial · S1 (Andy's goal, 2026-07-29)
-`KIMI_API_KEY` is in `mds-digest-web/.env.local` (gitignored). OpenAI-compatible API → each swap is
-base-URL + key + model + a tool-calling adapter. Order: **fact-gate on K2.7 → judge screen on K2.7 →
-answering loop on K3.** K2.7 ≈ 2× cheaper than Sonnet on our ~99%-cached traffic (3× on sticker);
-K3 is priced identically to Sonnet, so it is a quality bet only. Bar for every swap: organic score
-≥ current, leak gate GREEN, fabrication probes clean, latency in band. Full numbers: backlog #22.
-
-## ✅ #4 Safe edits and rollback — SHIPPED 2026-07-28. THE EDIT PROTOCOL IS NOW:
+## NEXT: the night promote (#21 + #24 together) — Andy's explicit go, off-hours only
 ```
-python3 scripts/olivia_wf.py lock --reason "<what you are changing>"
-python3 scripts/olivia_wf.py stage          # prod -> staging copy (bqHstPDi84uOhTCJ, webhook olivia-wa-staging)
-# ...edit the STAGING workflow (n8n MCP, no lock needed there)...
-python3 scripts/olivia_selftest.py --staging --questions "reset" "<q>"
+python3 scripts/olivia_wf.py lock --reason "promote #21 loop + #24 first-contact"
 python3 scripts/olivia_wf.py promote        # diff -> leak gate -> snapshot -> write -> bounce -> verify
 python3 scripts/olivia_wf.py unlock
 ```
-Emergency: `python3 scripts/olivia_wf.py rollback <snapshot-label>` (fast path, skips the gate;
-`list` shows labels). A PreToolUse hook (`.claude/hooks/olivia_wf_lock.py`) BLOCKS any n8n write to
-the live workflow without the lock — direct prod edits now fail by design, don't fight the hook.
+Rollback: `python3 scripts/olivia_wf.py rollback <label>`. Andy's manual window:
+digest.mds.co/admin/olivia/test (staging/prod toggle). **THEN: #1** — canned-route boundary
+(ticket/greeting lanes never reach the loop or gate; Q3061 = the standing proof; the API-key probe
+arrived on the greeting lane).
 
-**Andy's manual testing of staging = digest.mds.co/admin/olivia/test** (mds-digest-web `7bf4180`) —
-a messenger window firing simulated inbounds as his number down the SILENT path
-(`wamid.SELFTEST_WEB_*`, nothing delivered to WhatsApp), replies read from `olivia_messages` with the
-answering lane + latency per bubble. Staging/prod toggle. His phone stays on prod; both targets share
-his conversation thread (same phone key), same as the selftest harness.
-
-## Why the architecture is next
-A small router picks ONE lane before any data is seen, from a transcript trimmed to 8 turns × 240 chars,
-with one shot at retrieval and no chance to look again. That single-pass shape is the root cause behind
-#5 counting, #8 every source, #14 follow-ups and the rest of #1. Every fix reached for on 2026-07-28 was
-a keyword list or a prompt rule, and Andy correctly knocked each one down. **No topic lists** — tax is
-legitimate member content, tariffs are political, crypto is a real member question. The discriminator is
-never the subject; it is whether a claim is hers or a source's.
-
-## Andy's quality bar
-"60–80% of the quality of these replies and I'm happy" — lead with the answer, no padding with
-unasked-for lists, never ask a question when the answer is already in hand, cite specifics, say plainly
-when something failed.
-
-## Testing rules — do not relearn these
-1. **Reset between probes.** `--questions "reset" "<q>"`. Without it you measure her 24-hour memory, not
-   her retrieval — this produced a false 2/5 score on 2026-07-28.
-2. `olivia_selftest.py --cleanup` **reports success and deletes nothing** (353 rows since 07-21). Andy's
-   ruling: don't delete, exclude his number from daily reporting.
-3. **Never rewrite the member's words** into a synthetic instruction — she disowns her own offer.
-4. n8n: staging-first via `olivia_wf.py` (see protocol above). Where a direct prod edit is truly
-   needed, hold the lock and keep the old rule: edit the ACTIVE workflow, then ONE
-   `[{deactivateWorkflow},{activateWorkflow}]` bounce.
-5. `scripts/olivia_leak_gate.py` must be **GREEN (148 checks)** before anything ships.
-6. The Build Prompt validator error is a **pre-existing false positive** — confirmed by reverting.
+## The daily routine (unchanged rules)
+- ONE paid organic run per session, AFTER free diagnosis + fix batch + free probes. Bank =
+  `eval_bank_organic.json` (**100 questions, LOCKED to real member turns**). Expectations name the
+  SQL that proves them — 3 fixed-answer expects went stale in ONE day; never write frozen answers.
+  Retirement: 3 consecutive passes + class still covered → replace same day, bank stays 100.
+- Runs wait per-reply now (~50 min full bank) — never revert to fixed sleeps; overlap scrambles
+  attribution and fakes fails.
+- Reset between probes; `--cleanup` deletes nothing; leak gate GREEN (148) before anything ships.
+- Andy's number excluded from reporting; probes reset his thread — warn him first.
 
 ## Open with Andy
-- Ex-member **departure dates** — shareable or "no longer active" only?
-- **Revenue ranking** of named members — allowed at all, or bands only?
-- Canonical **chapter count** (Airtable 94 / live logic 97 / raw field 116) and whether **chapter leads'
-  names** are shareable.
-- Revenue working session: brackets, derivation, and the Amazon/DTC/TikTok split (#9).
-
-## Owed
-- Close Intercom ticket **#215475264324071** (regression-test artifact).
-- WhatsApp display name is APPROVED by Meta but `verified_name` still reads **"Oliva"** — needs
-  re-applying in WhatsApp Manager.
-- **No member request has ever reached Intercom** (2 offers ever, 0 accepted); the everyday action lane
-  still posts to #automation-tests with 26 requests unactioned.
-- **The health alerting is dead** — the 30-min monitor is latched on `lastHealth="down"`.
+- Does an **"MDS Life" chat** exist? (Kayleigh 👎 — we hold no chat by that name; data gap vs wrong name.)
+- **👎 alerts**: reactions land in `olivia_feedback` and nobody is told. 2 of 4 reactions ever were
+  real defects. Wire to Slack?
+- `member_match` category values: 'Apparel' filter misses the real **'Clothing & Accessories'**
+  Airtable value (#7/#10).
+- Still owed from before: revenue ranking · ex-member departure dates · canonical chapter count ·
+  chapter leads · Intercom ticket #215475264324071 · "Oliva" display name · health alerting latched.
