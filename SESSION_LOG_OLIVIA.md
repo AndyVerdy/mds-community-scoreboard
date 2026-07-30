@@ -40,6 +40,15 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   case = exists/withheld/zero speculation + steer to his unrestricted talks). Row data → prod
   benefits immediately. Marker-aware gate check evolved, teeth kept. AC at the 10% rung (Andy
   relaxed inference AC from 0%).
+- **#31 canceled-means-gone — SHIPPED + CLOSED (incl. a PROD front-door patch under the lock):**
+  Andy's question → verified LIVE at all 3 layers (Removed member served partners/events/app feed;
+  +7 applicants with linked phones served too). Shipped: `is_active_member_status()` (active set
+  written once, fail-closed) · DO-block sweep rewrote all 20 phone-resolving gated fns in place +
+  app_member_feed email resolution, hard-asserted zero unguarded · front door patched staging AND
+  prod (lock → patch → single bounce → unlock; reason='inactive' + honest message). Proof: canceled
+  phone/email → 0 rows/{} everywhere · applicant → 0 · front-door sim 4/4 · actives regression
+  byte-identical · prod + staging answering post-bounce · gate +3 = 155 PASS. Authority = synced AT
+  status (≤1d); live-AT lookup = named upgrade, not taken.
 - **🚨 GATE CATCH (external): the parallel app session persisted raw S3 storage paths** —
   migrations `feed_thumbnails_events_videos` + `partners_catalog_logo_url` added
   videos_catalog.thumbnail_url (613 rows, 1 restricted) + partners logo_url with

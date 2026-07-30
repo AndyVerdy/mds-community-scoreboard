@@ -55,33 +55,7 @@ phone-less actives; fixed same day.)
 
 # 🔴 S1 — highest
 
-### 31. 🔴 Canceled means gone — membership status gates every door · S1 · effort M  ← NEXT
-*As MDS, a member who cancels loses access the day the status flips — matching a phone or an email
-is identity, never entitlement; the Airtable membership status is the authority on who is active.
-(Andy 2026-07-30: "Number matching is not enough… only AT database status can tell us if he is an
-active member.")*
-
-**Verified live 2026-07-30 — the gap exists at ALL THREE layers today, not hypothetically:**
-a "Removed - Canceled Membership" member with a linked phone was served 3 partner rows, 5 events,
-and a full app feed. (1) The WhatsApp front door (`Resolve Member`) fetches `membership_status` and
-never checks it. (2) Every gated RPC resolves "exactly one member with this phone" with no status
-test. (3) `app_member_feed` (#27) resolves email → member with no status test. The WA-digest
-product enforces live AT-status; Olivia never inherited the rule. Personas already filter actives.
-
-**Accept when**
-- **A non-active member is refused at every door**, verified live with a Removed member's phone and
-  email: WhatsApp → a kind not-active message (wording can ride #11), zero data; every gated RPC →
-  empty (defense in depth — security stays in SQL, not workflow politeness); app feed → `{}`.
-- **The active set is written once and shared** (Current Member · New Member · Current Member- Not
-  Renewing · Staff — one definition, every door imports it; no per-function drift).
-- **The authority is the AT status** as synced (`membership_status`, staleness ≤ the sync cadence,
-  ≤1 day); if Andy wants the digest-style LIVE AT lookup instead of the synced copy, that is a
-  named upgrade with its latency cost stated.
-- **Leak gate extended**: canceled-phone and canceled-email probes on every door, GREEN.
-- **No active member's behavior changes** — proven by the standing probes.
-
-**Impact:** every cancellation from now on; 23 Removed members carry linked phones today (count
-moves daily).
+*(no open S1 items — #21, #1, #26, #27, #28, #31 all closed 2026-07-30.)*
 
 ---
 
@@ -497,6 +471,40 @@ through this".
 ---
 
 # ✅ Completed
+
+### 31. ✅ Canceled means gone — membership status gates every door · CLOSED 2026-07-30 · effort M
+*As MDS, a member who cancels loses access the day the status flips — matching a phone or an email
+is identity, never entitlement; the Airtable membership status is the authority on who is active.*
+
+**The find (Andy's question, verified live):** a "Removed - Canceled Membership" member with a
+linked phone was being served — 3 partner rows, 5 events, a full app feed — because all three
+layers checked identity, never status. Bonus hole closed: 7 APPLICANTS with linked phones (NULL
+status, no attributes row) were served too.
+
+**Shipped:**
+- **`digest.is_active_member_status(text)`** — the active set written once (Current Member · New
+  Member · Current Member- Not Renewing · Staff; NULL/anything else → false, fail-closed).
+- **The mechanical sweep** (migration `membership_status_gates_every_door`): a DO-block rewrote all
+  **20 phone-resolving gated functions in place** (each def fetched, predicate injected into the
+  resolution clause, re-executed — same signatures, grants preserved) + `app_member_feed`'s email
+  resolution, with a hard assertion that zero resolvers remain unguarded (the migration aborts
+  otherwise, and re-runs are no-ops).
+- **The WhatsApp front door** (`apply_31_front_door.py`): Resolve Member routes any non-active
+  status to reason `inactive`; Build Generic gained the honest message ("…linked to an MDS
+  membership that is not currently active…"). Applied to STAGING and — under the wf lock, single
+  bounce — to **PROD**, both verified, prod answering after the bounce. Named exception: the JS
+  door carries a commented copy of the 4-status list (n8n can't import SQL) — but enforcement
+  lives in SQL; JS drift could only mis-phrase the message, never leak data.
+- **Authority = the AT status as synced** (≤1-day staleness); the digest-style live-AT lookup
+  remains a named upgrade, not taken.
+
+**Proof:** canceled phone → partners 3→**0**, events 5→**0**, content 0 · canceled email → app feed
+`{}` · applicant phone → 0 rows · front-door sim 4/4 (active passes; canceled/null → inactive;
+unknown → no_match) · actives regression **byte-identical** (the #26 snapshot) + staging and prod
+happy-path probes answering · **leak gate +3 status checks, all PASS (155)**. The board's one red
+stays the app session's thumbnail persistence — external, Andy's ruling pending.
+
+---
 
 ### 3. ✅ "Restricted", never "doesn't exist" · CLOSED 2026-07-30 · effort S
 *As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*

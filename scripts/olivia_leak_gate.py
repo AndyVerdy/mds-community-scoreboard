@@ -859,6 +859,29 @@ def main():
         check("anon cannot read member_personas",
               st in (401, 403, 404) or (isinstance(body, list) and not body), f"status {st}")
 
+        print("— membership status gates every door (#31) —")
+        # dynamic fixture: a real Removed member with a linked phone (never hardcoded)
+        st, rem = curl("GET", f"{BASE}/members?select=phone,at_member_id,email"
+                              f"&phone=not.is.null&membership_status=like.Removed*&limit=1", key,
+                       profile_hdr=["Accept-Profile: digest"])
+        if st == 200 and rem:
+            rphone = rem[0]["phone"]
+            st, rows = rpc("content_search", {"p_phone": rphone, "p_terms": ["amazon"], "p_limit": 5}, key)
+            check("canceled member phone gets ZERO content rows",
+                  isinstance(rows, list) and not rows, f"got {len(rows or [])}")
+            st, rows = rpc("partner_lookup", {"p_phone": rphone, "p_query": "tiktok"}, key)
+            check("canceled member phone gets ZERO partner rows",
+                  isinstance(rows, list) and not rows, f"got {len(rows or [])}")
+            remail = rem[0].get("email")
+            if remail:
+                st, feed = rpc("app_member_feed", {"p_email": remail}, key)
+                check("canceled member email gets an EMPTY app feed",
+                      isinstance(feed, dict) and len(feed) == 0, f"got keys {list((feed or {}).keys())}")
+            else:
+                check("canceled member email gets an EMPTY app feed", True, "(fixture has no email)")
+        else:
+            check("canceled-member fixture found", False, f"status {st}")
+
         print("— anon key locked out —")
         st, body = rpc("content_search", {"p_phone": phone, "p_terms": [MARKER]}, ANON_KEY)
         check("anon key denied on content_search", st in (401, 403, 404), f"status {st}")
