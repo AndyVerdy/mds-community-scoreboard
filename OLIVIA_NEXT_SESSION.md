@@ -19,10 +19,10 @@ DoD; the judge files failures into 8 classes mapped to tickets. `SESSION_LOG.md`
 the full detail.
 
 ## State (2026-07-30 close)
-- **#21 answering loop: BUILT + fix batch DONE on staging, NOT promoted.** 11 of 13 organic fails
-  fixed and proven individually. Standing full-bank number: **13.0% on the NEW 100-question bank**
-  (the old 84 scored 6.0% the same morning — the 16 new real-member questions are deliberately hard).
-  Remaining inside #21: nothing but the promote.
+- **#21 answering loop: CLOSED 2026-07-30 (Andy's call — built + proven on staging; the ticket does
+  not wait on the prod push).** 11 of 13 organic fails fixed and proven individually. Standing
+  full-bank number: **13.0% on the NEW 100-question bank** (the old 84 scored 6.0% the same morning —
+  the 16 new real-member questions are deliberately hard). The prod push is its own queued action below.
 - **#24 first-contact: SHIPPED on staging, closed.** Rides the same promote.
 - **#22 Kimi: CLOSED, no swap** (22.2% vs 15.3% fail, 2x cost/answer, 8x latency, forced fetch
   impossible on Kimi). Bench harness reusable: `mds-scorecard-tools/kimi_bench.py`.
@@ -30,14 +30,14 @@ the full detail.
   turns, parallel retrieval, conditional gate).
 - Prod still runs the old cascade **with the scrambled-history bug live** (created_at-only ordering).
 
-## NEXT: the night promote (#21 + #24 together) — Andy's explicit go, off-hours only
+## QUEUED: the prod push (#21 + #24 together) — Andy's explicit go, off-hours ("we will do prod push later", 2026-07-30)
 ```
 python3 scripts/olivia_wf.py lock --reason "promote #21 loop + #24 first-contact"
 python3 scripts/olivia_wf.py promote        # diff -> leak gate -> snapshot -> write -> bounce -> verify
 python3 scripts/olivia_wf.py unlock
 ```
 Rollback: `python3 scripts/olivia_wf.py rollback <label>`. Andy's manual window:
-digest.mds.co/admin/olivia/test (staging/prod toggle). **THEN: #1** — canned-route boundary
+digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT build work: #1** — canned-route boundary
 (ticket/greeting lanes never reach the loop or gate; Q3061 = the standing proof; the API-key probe
 arrived on the greeting lane).
 

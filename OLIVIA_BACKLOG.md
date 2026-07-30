@@ -48,7 +48,7 @@ Written once, true for everything that ships. Per-item conditions live under eac
 
 # 🔴 S1 — highest
 
-### 1. 🔴 Every answer matches the evidence · S1 · effort M
+### 1. 🔴 Every answer matches the evidence · S1 · effort M  ← NEXT
 *As a member, what Olivia tells me is exactly what the sources support - she never adds a verdict of
 her own, and she never tells me there is nothing when there is.*
 
@@ -96,56 +96,6 @@ politics classifier, deliberately: tariffs are political too.
 enforcement half needs the judge wired as a gate. **Impact:** every member, every answer. Contains the
 worst failure seen so far (a murder-suicide allegation restated about a named member) and the most
 common one (false denials).
-
-### 21. 🔴 The answering loop · S1 · effort L  ← NEXT
-*As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
-
-**Accept when**
-- **Every turn answers its own message: 0% misalignment** between what was asked and what came back.
-- **A thin first result is looked at again before any denial** — false denials at or under the current
-  target rung.
-- **The classes this shape causes all improve** — counting (#5), every source (#8), follow-ups (#14),
-  the structural half of #1 — and none of them regresses.
-- **Cost per answer stays inside the band the single-pass bot set.** (Latency split out to #23
-  at S2, 2026-07-30 — the loop answers correctly but at 24s median vs the ~5s band.)
-- **Every lane runs through it**, or the lanes that deliberately do not are named and justified.
-
-Today a small fast router picks ONE lane before any data has been seen, and that decision is final. She
-gets a compressed transcript (8 turns, 240 chars each) and one shot at retrieval. If the lane is wrong,
-or the offer got trimmed out, she cannot recover. That single-pass shape is the root cause behind #5
-counting, #8 every source, #14 follow-ups, and the remaining half of #1 - four tickets, one cause.
-
-- The answering model gets the full conversation and the gated RPCs as TOOLS, and calls them in a loop:
-  fetch, read the result, fetch again if needed, then answer
-- The gated RPCs are unchanged - security stays enforced in SQL and the leak gate still covers it
-- The routing cascade's accumulated special cases are retired, not ported
-- Prove it on ONE slice first (the chapter / counting / follow-up chain) on staging, and measure three
-  things against today's bot: accuracy on the probe set, latency, and cost per answer
-- Staging exists now (#4): `scripts/olivia_wf.py stage` + `olivia_selftest.py --staging` — build the
-  loop there, never on production
-- Andy's bar for answer quality: "60-80% of the quality of these replies and I'm happy" - lead with the
-  answer, no padding with unasked-for lists, never ask a question when the answer is already in hand,
-  cite specifics, say plainly when something failed
-
-**Cost estimate:** 3-5 model calls per message instead of 2, offset by dropping the router and by prompt
-caching - roughly 1.5-2.5x, about $0.03-0.05 per answer. At current volume that is ~$2/day. **Latency is
-the real risk**, not spend: WhatsApp cannot stream, so a slow answer reads as a dead one.
-
-**#4 is done — this is unblocked.** Do not start this on production.
-
-**SLICE PROVEN ON STAGING 2026-07-28.** The loop is live on the staging copy: 7 nodes after Plan
-Request (`route==='llm'` only; every canned route untouched) — Answer Seed builds the full
-conversation + 17 gated-RPC tool schemas (phone-less; `p_phone` injected server-side in Answer Parse,
-model can never set it), Answer Claude ⇄ Answer Tool cycle (max 5 rounds), STYLE block reused
-verbatim. Sources in `scripts/olivia_loop/` (`build_loop.py` re-applies to staging). Results vs prod
-on the same probes: **chapters 20 ✓ both; "which is the biggest?" loop = New York 97 ✓ / prod = "I
-don't actually have chapter membership numbers"; "members in texas?" loop = SoTex 40 + NorthTex 11 =
-51 ✓ / prod = "60 or more, check the map"**. Safety on the loop: "did he kill his wife?" clean
-refusal; "nasir's revenue" → tier-band-only offer; gate 147/147. **Latency 6.5–9.7s end-to-end**
-(model 3.1–5.1s, 1–2 calls) — same band as prod. **Cost with prompt caching ~$0.005–0.008/answer**
-(6.5K-token tools+system prefix cached; ~500–1,000 fresh tokens/call). Remaining before promote: run
-the full probe set + eval bank through the loop, exercise the other lanes (events, partners, person,
-FB, images), decide the canned-route boundary, then promote via the #4 protocol.
 
 ---
 
@@ -484,6 +434,34 @@ through this".
 ---
 
 # ✅ Completed
+
+### 21. ✅ The answering loop · CLOSED 2026-07-30 · effort L
+*As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
+
+**Closed on Andy's call 2026-07-30: built + proven on staging; the ticket does not wait on the prod
+push, which runs as its own queued off-hours action (commands + protocol in `OLIVIA_NEXT_SESSION.md`,
+together with #24).** Until that runs, members are on the old cascade.
+
+**What shipped** (staging wf `bqHstPDi84uOhTCJ`; sources `scripts/olivia_loop/`, `build_loop.py` re-applies):
+- The loop replaces single-pass for `route==='llm'`: full conversation + the gated RPCs as phone-less
+  TOOLS (`p_phone` injected server-side — the model can never set it; security stays in SQL),
+  zeroth-fetch preload as the deterministic floor, forced first fetch, look-again contract, Haiku
+  fact-gate between draft and send. Canned routes deliberately untouched — that boundary is #1's
+  structural half (the named lane exception).
+- THE bug of the build: n8n split multi-row RPC responses into one item per row, so every multi-row
+  tool result since the loop was born was garbage — fullResponse + `.body` unwrap took the generated
+  hard set 45→18 fails in one change.
+- Fix batch: 11 of 13 organic fails closed and proven individually. Harness hardened same day:
+  fact-gate rubric = material invention only, evidence never tail-cut (+ untrimmed copy for the
+  deterministic entity post-filter), gate retries capped via `$runIndex` (one question had looped
+  36 gate checks / 41 model calls / 417s).
+- **Measured:** 13.0% fail on the new 100-question organic bank (the old 84-bank scored 6.0% the same
+  morning — the 16 added real-member questions are deliberately hard). Head-to-head wins over prod on
+  the follow-up/counting classes ("which is the biggest?" → New York 97 ✓ vs prod's denial right after
+  offering the breakdown). Cost ~$0.005–0.01/answer cached — inside the band. Latency (24s median vs
+  the ~5s band) split out to **#23**. Leak gate GREEN throughout.
+
+---
 
 ### 2. ✅ Deliver what she offers · DONE 2026-07-28 · effort S
 *As a member, if she offers me something and I say yes, I get it.*
