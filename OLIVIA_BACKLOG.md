@@ -127,10 +127,16 @@ requested.** Three pieces, all proven live:
   answer. Proven: capability question → help lane; loop-path "are you able to read what was said
   inside the video recordings?" → honest no, `gate: pass` (exec 56133).
 
-**Still open under this item:** confirm the rates under the 10% rung with the gate ON (last full
-bank already measured fabrication 4.0% and false denials 3.0% — under the rung, but with the
-fact-gate dead, so the next organic run re-baselines and confirms) · per-lane coverage measured
-rather than estimated. No politics classifier, deliberately: tariffs are political too.
+**Confirmed under the rung with the gate ON (34Q TEST run, 2026-07-30 eve): 2.9% fail.** The subset
+carried all 13 fails + 4 partials of the last full run: 12 of 13 now PASS (Q3061 link, Q3009
+capability, Q3034 admin claim, Q3086/87 own activity, Q3088 MDS Life, Q3092/93 denials, Q3098
+resources, Q3100 NY clothing, Q3042 calls, Q3059/67 honest limits); the 14-question pass spread
+held — no new over-blocking from the restored gate. Remaining: Q3091 (EZ Outlet — unverified names;
+#7/#8 retrieval depth) and Q3094 partial (missed two PPC threads; #7/#8). Report
+`OLIVIA_EVAL_2026-07-30.md` (937f51f). Full-bank standing number re-baselines at the next FULL run.
+**At the 10% rung this item's accept-when is met — closable on Andy's call**; the residuals are
+ticketed retrieval classes, not #1 structure. No politics classifier, deliberately: tariffs are
+political too.
 
 **Effort M** - the rule is small; the structural half touches the routing every answer takes and the
 enforcement half needs the judge wired as a gate. **Impact:** every member, every answer. Contains the

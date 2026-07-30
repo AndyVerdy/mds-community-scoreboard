@@ -25,6 +25,15 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   phrasings → canned `helpAsk` (apply_1b). Proven: "What data do you have access to?" → help lane ·
   loop-path recordings question → honest no, `gate: pass` (exec 56133) · Brandon re-probe → both
   canonical URLs, `gate: pass`. Leak gate GREEN.
+- **Andy's rulings:** #1 bar relaxed to the 10% rung (0% too harsh; ladder 10→5→1 stands) · **run
+  tiers: FULL (100Q, standing number, rare) vs TEST (≤50, ideally ~25-35 targeted, `--ids` +
+  `OLIVIA_EVAL_BANK=eval_bank_organic.json`)** — never 10×100Q days. Both in backlog + handoff.
+- **34Q gate-on TEST run vs staging: 2.9% (1 fail).** All 13 previous fails + 4 partials included:
+  12 of 13 now PASS; 14-question pass spread held (no new over-blocking). Left: Q3091 EZ Outlet
+  (unverified names, #7/#8) + Q3094 partial (missed PPC threads). ~$3.50. Report committed
+  (937f51f). **#1 accept-when met at the 10% rung — closable, Andy's call pending.** Earlier
+  mis-fire lesson: `--ids` silently fires 0 without `OLIVIA_EVAL_BANK=eval_bank_organic.json` (the
+  harness defaults to the v2 bank) — now in the routine doc.
 
 ## (earlier same day) #21 CLOSED (Andy) · #25 portal ticket filed · #1 canned-lane boundary SHIPPED on staging
 
