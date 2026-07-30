@@ -23,9 +23,10 @@
 **This folder is a MULTI-PROJECT MDS working directory** — it holds docs/scripts for many separate
 initiatives: **Census · GroupOS · Application v3 · Olivia · MRR · TikTok · Singapore · Member360 · WA
 digest · Tools-health · the Scorecard leaderboard** (`index.html`), and more. **Do not assume any one
-project.** Each project has its **own handoff + working docs**; they **share** `SESSION_LOG.md` (one
-append-only log for the whole folder) and the auto-memory index (`MEMORY.md`, loaded every session — it
-lists each project and points to its handoff). **Canonical = this repo; if the repo and ClickUp disagree, the repo wins.**
+project.** Each project has its **own handoff + working docs**. Session logs are SPLIT (2026-07-30):
+full entries go to the **stream log** (`SESSION_LOG_OLIVIA.md` · `SESSION_LOG_SCORECARD.md` ·
+`SESSION_LOG_MISC.md`) and **one index line** goes to `SESSION_LOG.md` (chronological cross-project
+index on top; frozen archive below). Auto-memory index: `MEMORY.md`, loaded every session. **Canonical = this repo; if the repo and ClickUp disagree, the repo wins.**
 
 ## OPEN — at the start of every session
 1. The `SessionStart` hook injects the recent `SESSION_LOG.md` tail; the memory index is already loaded.
@@ -38,7 +39,9 @@ lists each project and points to its handoff). **Canonical = this repo; if the r
 
 ## CLOSE — before ending (the `Stop` hook reminds once)
 Update the docs for **whatever project(s) you worked on** — do NOT claim "done" until the repo reflects what shipped + was verified:
-1. **`SESSION_LOG.md`** — prepend a dated entry: which project, what shipped (commit hashes / migration names / IDs), what was verified (exec id / gate green / SQL result), what's next.
+1. **Stream log + index** — prepend the full dated entry (which project, what shipped — commit hashes /
+   migration names / IDs, what was verified — exec id / gate green / SQL result, what's next) to the
+   project's `SESSION_LOG_<STREAM>.md`, and ONE line to the `SESSION_LOG.md` index.
 2. **That project's handoff + working docs** — refresh state + next actions.
 3. **Auto-memory** — only durable cross-session facts.
 4. **ClickUp** (that project's doc) — decisions + high-level state only.

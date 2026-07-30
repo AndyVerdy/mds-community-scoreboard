@@ -6,4 +6,4 @@ SID=$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null)
 SENT="/tmp/claude-handoff-${SID}"
 [ -f "$SENT" ] && exit 0
 touch "$SENT"
-jq -n '{systemMessage:"WRAP-UP REMINDER: before ending, update the docs for whatever project you worked on this session — prepend a dated entry to SESSION_LOG.md, refresh that project handoff doc, update memory, and (decisions only) its ClickUp doc. See the SESSION PROTOCOL at the top of CLAUDE.md."}'
+jq -n '{systemMessage:"WRAP-UP REMINDER: before ending, update the docs for whatever project you worked on this session — prepend the full dated entry to its STREAM log (SESSION_LOG_OLIVIA.md / SESSION_LOG_SCORECARD.md / SESSION_LOG_MISC.md) plus ONE index line to SESSION_LOG.md, refresh that project handoff doc, update memory, and (decisions only) its ClickUp doc. See the SESSION PROTOCOL at the top of CLAUDE.md."}'
