@@ -48,7 +48,40 @@ Written once, true for everything that ships. Per-item conditions live under eac
 
 # 🔴 S1 — highest
 
-*(no open S1 items — #21, #1 and #26 all closed 2026-07-30.)*
+### 27. 🔴 The app knows who I am — identity-keyed personalization · S1 · effort M  ← NEXT
+*As a member using the MDS mobile app, everything I see — feed, suggestions, events, offers,
+videos, threads — is picked for ME, resolved from my real login. Every member sees something
+different. (Andy 2026-07-30: "KYC. We need to know everything about you, we need to be very
+personalized — I can't stress it enough.")*
+
+**The block is identity keying, not missing data.** The person exists and is gated: `member_dossier`,
+5,706 owner-gated persona cards, `member_attributes` (band/categories/channels/flags), engagement
+score, chapter + city, event history, embeddings over every source (#26). But every gated RPC
+resolves the member from the **WhatsApp phone**, fail-closed — an app that authenticates by **email**
+has no legitimate door, which is why the app build found its feed endpoint hardcoded to Andy's
+record (everyone would see his feed).
+
+**Accept when**
+- **One gated, service-role-only RPC** (e.g. `digest.app_member_feed`) resolves the member from a
+  **server-verified login email** → `at_member_id` (unknown/ambiguous → empty, the same fail-closed
+  rule as everything else). Never a client-supplied member id, never a spoofable key.
+- **It serves the personalization bundle from the existing gated sources, rules unchanged:**
+  dossier/persona · upcoming events (chapter/city/banded gates exactly as `event_lookup`) · new
+  videos (restricted = title-only) · partner offers (category/semantic match) · WA/FB threads
+  (entitlement rules as `content_search`). The gates travel with the data — the app door can never
+  show more than WhatsApp Olivia would.
+- **Two different members verified live get different, correct feeds**; Andy's record hardcoded
+  nowhere.
+- **Leak gate extended to the new RPC** (anon denied · cross-member probe refuses · owner-only holds)
+  and GREEN.
+- **Behavioural signals (search/activity history) are optional ranking inputs the app passes in —
+  never identity.**
+- **The seam is written down:** the app build (parallel session, its "#3 Real identity") owns login
+  verification and calls this RPC server-side with the verified email; this ticket owns the
+  warehouse door only.
+
+**Impact:** all 722 members — the difference between an app and THEIR app; unblocks the For-You feed
+build immediately.
 
 ---
 
