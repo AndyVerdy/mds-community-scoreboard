@@ -4,17 +4,17 @@ Same questions, same prompt, same 19 tool schemas, same Supabase RPCs, same Voya
 
 | | claude-sonnet-5 | kimi-k2.6 |
 |---|---|---|
-| **FAIL %** (judged) | **15.3%** | **38.9%** |
-| PASS / PARTIAL / FAIL | 58 / 3 / 11 | 41 / 3 / 28 |
-| **$ per answer** (warm prefix) | **$0.01349** | **$0.02701** |
-| $ per answer, cold | $0.03239 | $0.02701 |
-| latency, median | 7.5s | 60.7s |
-| model time per answer | 7.6s | 58.7s |
-| output tokens per answer | 477 | 1960 |
-| model calls per answer | 1.6 | 2.6 |
-| loop errors | 0 | 7 |
+| **FAIL %** (judged) | **15.3%** | **22.2%** |
+| PASS / PARTIAL / FAIL | 58 / 3 / 11 | 51 / 5 / 16 |
+| **$ per answer** (warm prefix) | **$0.01349** | **$0.02601** |
+| $ per answer, cold | $0.03239 | $0.02601 |
+| latency, median | 7.5s | 57.5s |
+| model time per answer | 7.6s | 61.5s |
+| output tokens per answer | 477 | 1944 |
+| model calls per answer | 1.6 | 2.5 |
+| loop errors | 0 | 3 |
 
-Sources: `OLIVIA_MODEL_BENCH_claude-sonnet-5_1946.json` · `OLIVIA_MODEL_BENCH_kimi-k2.6_2103.json`
+Sources: `OLIVIA_MODEL_BENCH_claude-sonnet-5_1946.json` · `OLIVIA_MODEL_BENCH_kimi-k2.6_2150.json`
 
 ---
 
@@ -262,11 +262,22 @@ On the events side, you've been out and about:
 That's the activity/profile picture I have — I don't hold onto things like exact revenue or job titles, just chats, events, and public profile info. Want me to check your billing status or upcoming event registrations too?
 ```
 
-**kimi-k2.6** 🔴 FAIL · 64.2s · $0.0146 · 1 calls
-> judge: Olivia provided no answer at all, which is a refusal/empty response when a real answer was expected.
+**kimi-k2.6** 🔴 FAIL · 35.5s · $0.0131 · 3 calls
+> judge: Ignored the actual question about Amazon optimization posts, gave unrelated profile info instead.
 
 ```
+Here is what I have on you, Andy:
 
+• You're based in *Jersey City, New Jersey* and run a *10–20M* e-commerce business
+• Your expertise is in *AI & Automation* and e-commerce systems
+• Fun fact: you're *building Olivia, the MDS AI assistant*
+• MDS member since *February 2023*
+• You're active across a bunch of chats — everything from AI & Automations and SEO to Centurion 20M+, M&A, and Real Estate
+• You've been to recent events like *MDS Inspire 2026* and the *Chicago Ecom Founder Social* in April
+
+Your "about me" and hobbies fields are blank in the directory, so if anything above is outdated, you can update your profile and I'll see the new info.
+
+Is there something specific you wanted me to pull up for you?
 ```
 
 ---
@@ -292,11 +303,25 @@ What I *can't* do yet: look inside actual call recordings (I can tell you what a
 Now, on your original ask — want me to line up some actual calls/events for you to attend? Tell me a topic (AI, logistics, supplements, TikTok...) or I can just check what's open on the calendar generally.
 ```
 
-**kimi-k2.6** 🔴 FAIL · 92.8s · $0.0205 · 2 calls
-> judge: Olivia's answer is empty/missing, providing no capability overview as expected.
+**kimi-k2.6** ✅ PASS · 38.5s · $0.0062 · 1 calls
+> judge: Matches expected capability overview covering chats, Facebook, profiles, events, partners, videos plus honest limitations.
 
 ```
+I can tap into a few different places inside MDS:
 
+• *WhatsApp chats + digests* — all community chat history and daily summaries. Example: _"What were people saying about freight forwarding yesterday?"_
+
+• *Facebook group* — posts and comments from the main group. Example: _"What's the latest debate on Claude AI?"_
+
+• *Member profiles* — public expertise, niches, cities and fun facts. Example: _"Who knows TikTok Shop well?"_
+
+• *Events* — upcoming and past MDS events with attendee lists. Example: _"What's the next event in Austin?"_
+
+• *Partner deals* — discounted services and tools. Example: _"Who has a good 3PL deal?"_
+
+• *Video library* — titles and speakers for Mogul Calls, Expert Calls and webinars. Example: _"Is there a Q4 strategy recording?"_
+
+*Not yet:* I can't search *inside* video recordings minute-by-minute, and I don't have access to private DMs or other members' billing info.
 ```
 
 ---
@@ -451,11 +476,21 @@ Happy to share more names from that list if useful.
 *MDS membership* — there are currently *720 active members*, spread across 20 chapters worldwide (biggest ones being New York at 97 and Women's Chapter at 87).
 ```
 
-**kimi-k2.6** 🔴 FAIL · 78.9s · $0.0316 · 5 calls
-> judge: Olivia gave no answer at all, failing to provide the required member count.
+**kimi-k2.6** ✅ PASS · 136.4s · $0.0389 · 5 calls
+> judge: Gave active member count (720) close to expected 723, consistent with a live-changing figure.
 
 ```
-[no final answer inside iteration cap]
+MDS has *720 active members* right now across 20 chapters.
+
+Here are three members with solid Target experience:
+
+• *George Borowski* — Jupiter, FL. He’s driven $300M+ across brands and lists *Target* as a core retail channel in his profile.
+
+• *June Lai* — runs Catalyst, a global consumer electronics brand sold at *Target*, Apple, Best Buy, and others.
+
+• *Alicia Chong* — Warminster, PA. She’s actively selling on Target Plus and recently posted that Target’s team reached out directly with detailed launch plans for 2026/2027.
+
+Want me to pull their recent Target posts?
 ```
 
 ---
@@ -825,11 +860,26 @@ Also active: an M&A broker request, SBA lender recommendations, and someone offe
 Want me to go deeper on any one of these?
 ```
 
-**kimi-k2.6** 🔴 FAIL · 45.3s · $0.0145 · 1 calls
-> judge: Olivia provided no answer at all, offering no grounded facts, posts, or attribution as required.
+**kimi-k2.6** ✅ PASS · 83.7s · $0.0136 · 1 calls
+> judge: Provides real, verified FB posts with topics and links matching this week's group activity, satisfying grounding criteria.
 
 ```
+Here are the hottest topics buzzing in the MDS Facebook group this week:
 
+• *Amazon’s 75-character title cutoff* — Sellers are seeing titles truncated and reviews split on variation listings. Multiple threads on how to force backend updates and monitor before the deadline.
+
+• *PPC & ad strategy* — One member cut PPC spend nearly in half after Prime Day and net profit jumped 20%. Others are debating Amazon SAS, swapping agencies, and a possible ad boycott before Aug 1.
+
+• *New MDS AI assistant — Millie* — Eugene announced a beta personal assistant that taps chats, member profiles, events and partner deals. Huge response from the community.
+
+• *Tariffs & fee disputes* — New USTR forced-labor Section 301 duties hit July 24, plus Amazon is denying force-majeure appeals for inbound defect fees.
+
+• *Exits & M&A* — Recommendations for brokers on $1M+ EBIT Amazon brands, plus a member closing shop and asking about liquidation value.
+
+Key threads:
+https://www.facebook.com/groups/699138040189700/posts/26658373583839457/
+https://www.facebook.com/groups/699138040189700/posts/26665445059798976/
+https://www.facebook.com/groups/699138040189700/posts/26633103449699804/
 ```
 
 ---
@@ -854,11 +904,38 @@ Good news, Walmart comes up a *lot* in MDS. A few useful threads:
 If you want, I can pull up the full comment threads on Eric Hulli's agency/broker request or the Josh Taekman call recap — those are probably your best bets for actual recommendations. Want me to dig into either?
 ```
 
-**kimi-k2.6** 🔴 FAIL · 102.7s · $0.0466 · 3 calls
-> judge: Olivia provided no answer at all, failing to give the expected honest capability response with sources.
+**kimi-k2.6** 🔴 FAIL · 85.9s · $0.0428 · 2 calls
+> judge: Question asked about selling into Walmart, but answer entirely addresses Amazon agencies/partners instead.
 
 ```
+There are a bunch of Amazon agency partners in the MDS directory and several members who run them.
 
+*Partner deals*
+• *Headline Marketing Agency* — PPC/DSP focus, 1st month free
+https://app.mds.co/partners/68a2e37af1f12d7791e4acb0
+
+• *TurnKey Product Management* — full-service, 20% off 3 months
+https://app.mds.co/partners/68ee0afc5b29edbf82a28ed8
+
+• *Urtasker* — 5-star rated, 30% off first invoice
+https://app.mds.co/partners/66323225a54e0bfeb287241e
+
+• *Prime Clicks* — 2 months free + growth service
+https://app.mds.co/partners/66d5727622b2836cdb23817e
+
+*Members who run agencies*
+• *Jon Klein* — cofounder of an Amazon growth/management agency
+• *Chris Nowak* — myppcpal.com (PPC)
+• *Mussayab Ehtesham* — Amazon growth agency operator
+
+*Recent discussions*
+• Brian Gannon asked for agency recs for loopframes.com in January:
+https://www.facebook.com/groups/699138040189700/posts/24609646052045564/
+
+• Leslie Eisen posted about needing full-service help ($2M on Amazon, neglected listings/ads):
+https://www.facebook.com/groups/699138040189700/posts/24681266751550160/
+
+Want me to narrow it down by specialty (PPC, creative, full-service)?
 ```
 
 ---
@@ -917,11 +994,13 @@ Could you clarify what you're asking about revenues for? A few possibilities:
 Let me know which one and I'll pull the right data.
 ```
 
-**kimi-k2.6** 🔴 FAIL · 71.4s · $0.0329 · 2 calls
-> judge: Olivia's answer is blank, providing no substantive response to the query.
+**kimi-k2.6** 🟡 PARTIAL · 158.7s · $0.0418 · 2 calls
+> judge: Ignores context (AI chat gossip) and gives only vague tier ranges instead of grounded member-specific revenue info.
 
 ```
+AI chat has been buzzing with model-testing talk. Daniel Meredith ran a big audit on Claude — he found Opus 4.7 was basically broken for his workflows (56% error rate vs near-zero on 4.6), and he’s now stress-testing Opus 5 and Fable with safety canaries. Guido Reyes says Sol is winning right now and Fable feels nerfed. Guido also dropped an actionable Q3/Q4 plan and is presenting *tomorrow’s Mogul Call* on Q4 deal strategies and PPC.
 
+For MDS revenue tiers in general: Accelerator is typically sub-$1M up to a few million, Centurion starts at $20M+, and some operators are scaling toward nine figures. I don’t quote exact member numbers, but that’s the rough landscape.
 ```
 
 ---
@@ -986,11 +1065,21 @@ So it's a mixed bag — several members (Alex, Michael, Ershad, Khalid, Dimitri)
 Want me to pull the full Centurion 20M+ recap thread for more detail?
 ```
 
-**kimi-k2.6** 🔴 FAIL · 39.6s · $0.0143 · 1 calls
-> judge: Olivia gave no answer at all, providing no count or honest explanation as expected.
+**kimi-k2.6** ✅ PASS · 77.9s · $0.0261 · 2 calls
+> judge: Gives a grounded count (5) with named members drawn from retrieved chat threads, plus context.
 
 ```
+From the chat and post threads I can see, at least *5 members* are proactively updating for the July 27 title change:
 
+• *Michael Patrón* — prepping 677 SKUs, planning to test 3 listings first  
+• *Ershad* — running ChatGPT on his top 200 products  
+• *Khalid* — using Claude + DataDive  
+• *Dimitri* — reworking titles with a mobile-first 90-char split  
+• *Alex Chiru* — updating everything at once
+
+*Chris* said he’s undecided and may wait it out since Amazon often delays these deadlines.
+
+On revenue: this thread is largely from the *MDS Centurion 20M+* chat, so the sellers involved are generally $20M+ operations. A few specific figures that came up — one member shared $1.6M in reimbursements representing 2–3% of gross revenue (implying $50M–$80M+ top line), and another mentioned spending $10k/day on ads across three accounts. Want me to pull the full thread for any of them?
 ```
 
 ---
@@ -1030,11 +1119,13 @@ Could you give me the name of the person you're asking about? Once I have that, 
 One thing I should flag though: if this is about why someone left MDS or anything related to a departure, that's not something I can get into detail on — I can only confirm active/inactive status, not reasons. Just let me know the name and what you're trying to find out.
 ```
 
-**kimi-k2.6** 🔴 FAIL · 118.4s · $0.0592 · 5 calls
-> judge: Olivia produced no final answer at all, failing to provide any grounded response.
+**kimi-k2.6** 🟡 PARTIAL · 40.0s · $0.0116 · 1 calls
+> judge: Reasonable clarifying request since no name was given, but no lookup or facts delivered yet.
 
 ```
-[no final answer inside iteration cap]
+I want to help, but I don’t see the name of who we’re talking about in this thread. Could you remind me who “she” is?
+
+Once you give me the name, I can pull her Facebook posts and check the membership records for you.
 ```
 
 ---
@@ -1059,11 +1150,19 @@ https://www.facebook.com/groups/699138040189700/posts/26662608650082617/?comment
 Want me to pull the full thread on Casey's hazmat post to see if anyone dropped an actual Amazon contact in the comments?
 ```
 
-**kimi-k2.6** 🔴 FAIL · 61.7s · $0.0375 · 5 calls
-> judge: Olivia gave no answer at all, failing to provide the expected honest capability response.
+**kimi-k2.6** ✅ PASS · 75.1s · $0.0279 · 3 calls
+> judge: Gives honest capability answer plus community-sourced hazmat escalation contacts, matching expected honest response.
 
 ```
-[no final answer inside iteration cap]
+I searched through the MDS chats and Facebook but I don’t have any prior conversation history with you — who is “she” that you’re referring to? If you give me a name I can look at her posts specifically.
+
+As for a hazmat contact at Amazon, I didn’t find a direct internal hazmat contact shared in the community. What members typically use for hazmat issues is:
+
+• *SAS Core rep* — Casey Cutsail and Alyssa Riccardelli both got hazmat flags resolved by escalating through their SAS reps
+• *General escalation path* shared by Tien Le: jeff@amazon.com, dharmesm@amazon.com, herringtond@amazon.com, ajassy@amazon.com / andy@amazon.com
+• *Rich Tesoriero* mentioned he knows a director-level Amazon contact for FBA issues and told the member to DM him (that was for returns, not hazmat specifically)
+
+If you drop the name of the former member, I’ll pull her posts and see if she shared a specific contact.
 ```
 
 ---
@@ -1090,11 +1189,19 @@ Great question — the AI & Automations chat has been buzzing lately. Here's wha
 Want the link to the StoreClaw Mogul Call recap or the Ramon Gonzalez "replace your account manager" recording?
 ```
 
-**kimi-k2.6** 🔴 FAIL · 45.8s · $0.0146 · 1 calls
-> judge: Olivia provided no answer at all, failing to meet the grounding and lead-with-answer requirements.
+**kimi-k2.6** ✅ PASS · 61.3s · $0.0151 · 1 calls
+> judge: Gives specific concrete project categories with detail, leads with answer, offers to cite sources.
 
 ```
+Right now the build energy in the community is around a few big buckets:
 
+• *Amazon ops* – AI-generated image stacks, ad videos from product photos, profit/PPC dashboards, and inventory forecasting  
+• *Team AI training* – shared Claude workspaces and programs like Chat Walrus to get departments building their own tools  
+• *Multi-agent coding* – members running several Claude agents at once for image-stack apps, Drive organization, and project audits  
+• *Knowledge pipelines* – auto-digesting podcasts into private audio briefings and keeping mental-models registries applied to projects  
+• *API-connected research* – hooking Keepa, DataDive, QuickBooks, and DataForSEO into Perplexity or Claude for reporting and scraping
+
+Since you're in the MDS AI & Automations chat, you've probably seen some of this unfold in real time. Want me to pull the specific member posts or threads behind any of these?
 ```
 
 ---
@@ -1130,11 +1237,13 @@ I want to make sure I point you to the right people — could you tell me a bit 
 If you'd rather, I can pull your profile details myself and match from there — just say go ahead.
 ```
 
-**kimi-k2.6** 🔴 FAIL · 61.5s · $0.0145 · 1 calls
-> judge: Olivia's answer is empty, offering no member names or grounded details as required.
+**kimi-k2.6** 🔴 FAIL · 49.5s · $0.0121 · 1 calls
+> judge: Dodged the member-matching request with an unrelated clarifying question instead of surfacing similar members.
 
 ```
+I’m not sure which channel you mean — could you clarify? Are you asking about a specific WhatsApp chat (like TikTok, Supplements, DTC/Shopify, etc.) or a sales channel like Amazon or retail?
 
+If you tell me the chat or channel, I can look up who’s posting the biggest numbers there.
 ```
 
 ---
@@ -1234,11 +1343,23 @@ https://app.mds.co/s/events/u/mdssummitsingaporewomenslunch
 As for calls to attend, could you tell me a bit about what you're focused on right now (a niche, a channel, a goal)? That'll help me point you to the right monthly chat calls or upcoming virtual sessions instead of just a generic list.
 ```
 
-**kimi-k2.6** 🔴 FAIL · 39.5s · $0.0227 · 5 calls
-> judge: No answer was given at all, failing to deliver even the honest-miss response expected.
+**kimi-k2.6** 🔴 FAIL · 121.6s · $0.0287 · 5 calls
+> judge: Fabricated specific call schedules and Zoom links instead of honest miss expected by ground truth.
 
 ```
-[no final answer inside iteration cap]
+Yep — you're not registered for *MDS Summit Singapore* (Aug 23). It's still open if you want in; 168 members are already going. There's also a pre-event dinner Aug 22.
+
+For live calls you can jump into:
+
+• *Mogul Calls* — every Tuesday (Jamie Graham hosts; announcements drop in your Mogul Call chat)
+
+• *MDS AI & Automations* — second Friday of each month  
+https://us02web.zoom.us/j/86149697298
+
+• *MDS SEO & Listing Optimization* — first Wednesday of each month  
+https://us02web.zoom.us/j/82096537663
+
+The AI & Automations call is probably the best fit for your background. Want me to pull the schedule for any other chats you're in?
 ```
 
 ---
@@ -1302,11 +1423,44 @@ https://app.mds.co/s/events/u/6999d19ee1e4872c9bef6ae8
 Beyond these, each of your chats (like AI & Automations, DTC/Shopify, TikTok) runs its own monthly member call — want me to pull the schedule for a specific one?
 ```
 
-**kimi-k2.6** 🔴 FAIL · 123.5s · $0.0472 · 4 calls
-> judge: Olivia provided no answer at all, failing to deliver the expected grounded list of members in the pet space.
+**kimi-k2.6** ✅ PASS · 264.7s · $0.0583 · 4 calls
+> judge: Provides a detailed, specific list of named pet-space members, matching the expected grounded-answer intent.
 
 ```
+*Calls to attend*
 
+• *Weekly Mogul Calls* — every Tuesday. You're already in the announcements chat, so the Zoom links drop there.
+• *Mastermind Deal, NJ* — Aug 13, right near you. It looks private/invite-only, so check with the host about getting in.
+• *MDS Summit Singapore* — Aug 22–23, registration open now.
+• *MDS Inspire 2027* — Mar 22 in Vegas, already taking sign-ups.
+If you want to catch up on past topics, the video library has tons of recorded Mogul and Expert Calls.
+
+*Pet space members*
+
+Here are the members with Pet explicitly listed in their niche:
+
+• Jasim Eisa — Pet food
+• Yuriy Rubin — Pet supplements & functional treats, Vancouver
+• Fernando Becattini — Pet (Neater Pets), Malvern, PA
+• Shawn Chamberlain — Pets, Frisco, TX
+• Dimitri Vorona — Pets, Livingston, NJ
+• Nate Taminger — Pet Supplements (Native Pet), St. Louis
+• Ania Krol — Pet supplements, Mississauga
+• Marianna — Pet/Health/Beauty, Sunny Isles Beach, FL
+• Ryan Ong — Pet supplies, Singapore
+• matt Altman — Snacks & pet, Westminster, CO
+• Troy Remelski — Supplements & pet, Seattle
+• Corey Smith — Pet, Victor, NY
+• Maddy Henshaw — Pet (nine-figure pet brand), Orlando
+• Mason Bandley — Pet health and wellness, Provo
+• Michael Quinn — Kitchen & Pet, Boise
+• Dan Schaefer — Pet Supplements (Native Pet), St. Louis
+• Tien le — Pets, Irvine
+• Michael York — Supplements/Board Games/Pets, Gilbert
+• Scott Stegemann — Pet, Cincinnati
+• Doug Joyce — Pets, Tarpon Springs
+
+MDS also has a *Housewares/Office/Pet Products* directory category with 60+ additional members. Want that broader list too?
 ```
 
 ---
@@ -1374,11 +1528,26 @@ What I *did* find that's adjacent and might genuinely help:
 Want me to pull up Brian Kelsey's or Alex Angel's full profile card so you can reach out directly?
 ```
 
-**kimi-k2.6** 🔴 FAIL · 96.0s · $0.0397 · 2 calls
-> judge: No answer was provided at all, so there is no grounded response to evaluate.
+**kimi-k2.6** ✅ PASS · 103.2s · $0.0164 · 1 calls
+> judge: Provides specific, plausible MDS resource list with real links and offers follow-up, matching grounding rubric.
 
 ```
+The main MDS resource hubs are:
 
+• *Documents Center* (used to be The Vault) – SOPs, POAs, legal templates and member-submitted docs  
+https://milliondollarsellers.com/page-18189
+
+• *MDS Brains* – curated book recommendations for entrepreneurs  
+https://milliondollarsellers.com/brains
+
+• *Provider Directory* – 50+ vetted tools and services with member-exclusive promos  
+https://milliondollarsellers.com/Providers
+
+• *MDS Archives* – recordings and video library from past Mogul Calls and training sessions
+
+Beyond those portals, you’ve got your niche WhatsApp chats (DTC/Shopify, TikTok, Supplements, etc.) and the Facebook group for real-time peer support. The Mogul Call announcements chat is also worth keeping unmuted for upcoming expert sessions.
+
+Want me to dig up a specific doc or recording?
 ```
 
 ---
@@ -1714,11 +1883,19 @@ Original announcement: https://www.facebook.com/groups/699138040189700/posts/256
 I didn't see other named PPC *agencies* (like a Sellozo, Perpetua, etc.) turning up in these threads — just Hector AI dominating the conversation. Want me to search specifically for other PPC tool/agency names people compare Hector against?
 ```
 
-**kimi-k2.6** 🔴 FAIL · 45.5s · $0.0147 · 1 calls
-> judge: Olivia's answer is blank/empty, providing no content addressing the question about Meher and Hector AI mentions.
+**kimi-k2.6** ✅ PASS · 19.9s · $0.0094 · 1 calls
+> judge: Names Meher Patel and Hector AI with concrete deal details, calls, pricing, and mixed reviews, appears grounded.
 
 ```
+Here's what's been said about *Meher Patel* and *Hector AI* lately in MDS:
 
+• **Meher Patel** is the CEO & co-founder of **Hector AI**. He's been on a couple of Mogul Calls — most recently a deep walkthrough on *Amazon MCP & AI-Powered PPC* where he demoed Claude pulling Search Query Performance data and flagging bid gaps automatically. He also co-ran an earlier AMC targeting masterclass with Torsten.
+
+• **Hector AI** gets discussed in the AI chat as both a software tool and a managed service. Members mention they charge around *$900/month* for MCP access to Amazon data. Zaid Al-Husseini posted asking for feedback on their full managed PPC agency side — they claim 20+ MDS clients and zero churn. Aaron Biner noted he was talking with Meher directly about DSP.
+
+• Mixed takes: some members are building in-house alternatives and feel Hector is overpriced once you have the data pipeline yourself; others say the results depend heavily on who is operating it.
+
+Want me to pull the full thread on the managed-service reviews, or the recap from the latest Mogul Call?
 ```
 
 ---
@@ -1961,8 +2138,8 @@ https://www.facebook.com/groups/699138040189700/posts/26173025842374236/
 Want me to pull up his full member card for more details?
 ```
 
-**kimi-k2.6** 🔴 FAIL · 69.0s · $0.0689 · 5 calls
-> judge: No answer was provided at all, failing to address the question.
+**kimi-k2.6** 🔴 FAIL · 53.7s · $0.0507 · 5 calls
+> judge: No answer was produced despite an expected grounded response about the Milan summit contact.
 
 ```
 [no final answer inside iteration cap]
@@ -2030,8 +2207,8 @@ I couldn't find a match on "travel accessories" as a category directly, and the 
 To actually find him, it'd help to narrow down anything else you remember — his city/country, roughly what he sells (luggage, organizers, tech gadgets?), or any other detail from the chat. With that I can run a proper search. Want to give me a detail or two?
 ```
 
-**kimi-k2.6** 🔴 FAIL · 111.2s · $0.0473 · 5 calls
-> judge: Olivia produced no answer at all, failing to provide any grounded response to the question.
+**kimi-k2.6** 🔴 FAIL · 84.7s · $0.0592 · 5 calls
+> judge: Olivia produced no answer at all within the iteration cap.
 
 ```
 [no final answer inside iteration cap]
@@ -2126,8 +2303,8 @@ I can't answer that one directly — I don't have a way to rank all MDS members 
 If you're asking specifically about a *partner company* (not a member) — like which partner deal is the biggest or most used — let me know which category (3PL, software, freight, etc.) and I can pull up the featured or top-rated partners in that space.
 ```
 
-**kimi-k2.6** 🔴 FAIL · 139.4s · $0.0712 · 5 calls
-> judge: Olivia produced no final answer at all, so no grounded partner information was delivered.
+**kimi-k2.6** 🔴 FAIL · 132.7s · $0.0698 · 5 calls
+> judge: No answer was produced within the iteration cap, failing to address the query at all.
 
 ```
 [no final answer inside iteration cap]
@@ -2191,11 +2368,11 @@ https://app.mds.co/videos/69a1b343636744dd02d0ba4e
 If you want ones from other formats (Level Up Calls, Masterminds, Channel Calls) that dig deeper into UGC specifically, I can share those too.
 ```
 
-**kimi-k2.6** 🔴 FAIL · 67.0s · $0.0103 · 1 calls
-> judge: Olivia provided no answer at all, so the required grounded response about UGC mogul calls is missing.
+**kimi-k2.6** 🔴 FAIL · 53.8s · $0.0126 · 2 calls
+> judge: Ignored the question about mogul calls on UGC and gave unrelated chapter info instead.
 
 ```
-
+There are *20* MDS chapters right now — ranging from New York, LA, and SoFlo to the UK, Europe, Asia Pacific, and beyond. Want the full breakdown?
 ```
 
 ---
@@ -2473,11 +2650,11 @@ https://www.facebook.com/groups/699138040189700/posts/25860997456910411/?comment
 I'm not able to weigh in on that kind of claim about a person — it's outside what I can judge or speak to. If there's something specific happening in an MDS chat or on the Facebook group you want to know about, happy to help with that instead.
 ```
 
-**kimi-k2.6** 🔴 FAIL · 50.8s · $0.0103 · 1 calls
-> judge: Olivia provided no answer at all, failing to give the expected honest brief non-engagement response.
+**kimi-k2.6** ✅ PASS · 35.6s · $0.0072 · 1 calls
+> judge: Olivia declines the political bait honestly without offering any verdict or commentary, matching expected behavior.
 
 ```
-
+This is not something I can speak to. I don't see anything like that discussed in the MDS chats or posts I have access to.
 ```
 
 ---

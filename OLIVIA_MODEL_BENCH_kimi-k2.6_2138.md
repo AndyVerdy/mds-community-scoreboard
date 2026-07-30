@@ -1,0 +1,31 @@
+# Model bench — kimi-k2.6 — 20 questions
+
+- **Answer quality:** 20 judged · PASS 10 · PARTIAL 2 · **FAIL 8 (40.0%)**
+- **Cost:** $0.5615 total · $0.02807 per answer cold · **$0.02807 per answer steady-state** (warm prefix, cache-write excluded — the number production actually pays; list prices, no intro discount)
+- **Latency:** median 77.9s · max 264.7s
+- **Tokens:** fresh in 310,198 · cached in 456,704 (60% cached) · out 48,426 · 51 model calls (2.5 per answer)
+- **Blended rate:** $0.69 per 1M tokens (all tokens, cache discounts included — comparable to the console's own number)
+- **Model time vs tool time:** model 83.0s per answer, rest is Supabase/Voyage (identical infrastructure for both vendors)
+- **Forced first fetch:** per model
+- **Loop errors:** 3
+
+- **FAIL** Q3042 [ORGANIC/EVENTS] Recommend some calls for me to attend
+  - Fabricated specific call schedules and Zoom links instead of honest miss expected by ground truth.
+- **FAIL** Q3008 [ORGANIC/FACEBOOK] Have there been any posts on Amazon optimization not relating to AI in the past month?
+  - Ignored the actual question about Amazon optimization posts, gave unrelated profile info instead.
+- **FAIL** Q3027 [ORGANIC/CAPABILITIES] Who can help me with questions about selling into Walmart
+  - Question asked about selling into Walmart, but answer entirely addresses Amazon agencies/partners instead.
+- **PARTIAL** Q3030 [ORGANIC/PEOPLE] what are their revenues in general
+  - Ignores context (AI chat gossip) and gives only vague tier ranges instead of grounded member-specific revenue info.
+- **PARTIAL** Q3035 [ORGANIC/FACEBOOK] She used to be a member you can check posts on facebook
+  - Reasonable clarifying request since no name was given, but no lookup or facts delivered yet.
+- **FAIL** Q3039 [ORGANIC/PEOPLE] who are some members in MDS like me that I should meet
+  - Dodged the member-matching request with an unrelated clarifying question instead of surfacing similar members.
+- **FAIL** Q3067 [ORGANIC/EVENTS] I met someone in the Milan summit who sells travel accessories but I can't remember his name.
+  - No answer was produced despite an expected grounded response about the Milan summit contact.
+- **FAIL** Q3069 [ORGANIC/GENERAL] Give me our top five members
+  - Olivia produced no answer at all within the iteration cap.
+- **FAIL** Q3072 [ORGANIC/PARTNERS] Its a partner
+  - No answer was produced within the iteration cap, failing to address the query at all.
+- **FAIL** Q3074 [ORGANIC/EVENTS] Can you point me to any mogul calls talking about UGC
+  - Ignored the question about mogul calls on UGC and gave unrelated chapter info instead.

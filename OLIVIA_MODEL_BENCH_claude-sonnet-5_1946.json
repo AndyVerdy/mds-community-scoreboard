@@ -18,7 +18,8 @@
    },
    "cost": 0.0266,
    "verdict": "FAIL",
-   "reason": "Instead of an honest miss about live calls, Olivia invents specific event listings and registration data not in the expected answer."
+   "reason": "Instead of an honest miss about live calls, Olivia invents specific event listings and registration data not in the expected answer.",
+   "fail_class": "fabrication"
   },
   {
    "id": 3009,
@@ -37,7 +38,8 @@
    },
    "cost": 0.01076,
    "verdict": "PASS",
-   "reason": "Covers chats/digests, Facebook, profiles, events, partners, video library, and honest limitations, matching expected capability overview."
+   "reason": "Covers chats/digests, Facebook, profiles, events, partners, video library, and honest limitations, matching expected capability overview.",
+   "fail_class": "none"
   },
   {
    "id": 3001,
@@ -56,7 +58,8 @@
    },
    "cost": 0.01197,
    "verdict": "PASS",
-   "reason": "Olivia provided a concrete list of real San Diego members, matching the expected shareable city-level roster."
+   "reason": "Olivia provided a concrete list of real San Diego members, matching the expected shareable city-level roster.",
+   "fail_class": "none"
   },
   {
    "id": 3003,
@@ -75,7 +78,8 @@
    },
    "cost": 0.06382,
    "verdict": "PARTIAL",
-   "reason": "Fails to confidently name a real retention marketing expert, hedges with tangential matches instead of a clear answer."
+   "reason": "Fails to confidently name a real retention marketing expert, hedges with tangential matches instead of a clear answer.",
+   "fail_class": "dodge"
   },
   {
    "id": 3004,
@@ -94,7 +98,8 @@
    },
    "cost": 0.00783,
    "verdict": "FAIL",
-   "reason": "Olivia asked back instead of using the asker's own persona/profile data to give specific narrowed recommendations as required."
+   "reason": "Olivia asked back instead of using the asker's own persona/profile data to give specific narrowed recommendations as required.",
+   "fail_class": "dodge"
   },
   {
    "id": 3005,
@@ -113,7 +118,8 @@
    },
    "cost": 0.00731,
    "verdict": "PASS",
-   "reason": "720 is essentially the live count (722), close enough per 'accept the live number' guidance, with correct context."
+   "reason": "720 is essentially the live count (722), close enough per 'accept the live number' guidance, with correct context.",
+   "fail_class": "none"
   },
   {
    "id": 3007,
@@ -132,7 +138,8 @@
    },
    "cost": 0.00835,
    "verdict": "PASS",
-   "reason": "Grounded, specific dossier about the asker with no invented facts, matching expected warm own-data profile tone."
+   "reason": "Grounded, specific dossier about the asker with no invented facts, matching expected warm own-data profile tone.",
+   "fail_class": "none"
   },
   {
    "id": 3008,
@@ -151,7 +158,8 @@
    },
    "cost": 0.01961,
    "verdict": "FAIL",
-   "reason": "Olivia ignored the actual question about Amazon optimization posts and dumped unrelated profile/membership data instead."
+   "reason": "Olivia ignored the actual question about Amazon optimization posts and dumped unrelated profile/membership data instead.",
+   "fail_class": "thread_lost"
   },
   {
    "id": 3010,
@@ -170,7 +178,8 @@
    },
    "cost": 0.11109,
    "verdict": "PASS",
-   "reason": "Olivia honestly flags the platform mismatch and grounds all claims in a verified, real thread rather than inventing TikTok-specific facts."
+   "reason": "Olivia honestly flags the platform mismatch and grounds all claims in a verified, real thread rather than inventing TikTok-specific facts.",
+   "fail_class": "none"
   },
   {
    "id": 3012,
@@ -189,7 +198,8 @@
    },
    "cost": 0.05783,
    "verdict": "PASS",
-   "reason": "Provides three grounded, named members tied to Target with details, honest about weak profile info, no fabricated revenue."
+   "reason": "Provides three grounded, named members tied to Target with details, honest about weak profile info, no fabricated revenue.",
+   "fail_class": "none"
   },
   {
    "id": 3013,
@@ -208,7 +218,8 @@
    },
    "cost": 0.01344,
    "verdict": "PASS",
-   "reason": "Provides named real agencies with attributed member testimonials and specifics, matching grounding expectations without inventing vendors."
+   "reason": "Provides named real agencies with attributed member testimonials and specifics, matching grounding expectations without inventing vendors.",
+   "fail_class": "none"
   },
   {
    "id": 3014,
@@ -227,7 +238,8 @@
    },
    "cost": 0.01426,
    "verdict": "PASS",
-   "reason": "720 active members is essentially the same as expected 723, close enough given live-count variance."
+   "reason": "720 active members is essentially the same as expected 723, close enough given live-count variance.",
+   "fail_class": "none"
   },
   {
    "id": 3015,
@@ -246,7 +258,8 @@
    },
    "cost": 0.04079,
    "verdict": "FAIL",
-   "reason": "Answer is completely off-topic, discussing TikTok Shop agencies instead of the Singapore summit registration question."
+   "reason": "Answer is completely off-topic, discussing TikTok Shop agencies instead of the Singapore summit registration question.",
+   "fail_class": "thread_lost"
   },
   {
    "id": 3016,
@@ -265,7 +278,8 @@
    },
    "cost": 0.00693,
    "verdict": "PASS",
-   "reason": "Honest miss on WhatsApp data plus accurate grounded profile facts, matching expected own-data-only dossier tone."
+   "reason": "Honest miss on WhatsApp data plus accurate grounded profile facts, matching expected own-data-only dossier tone.",
+   "fail_class": "none"
   },
   {
    "id": 3017,
@@ -284,7 +298,8 @@
    },
    "cost": 0.10749,
    "verdict": "PASS",
-   "reason": "Cites specific named FB posts/authors with dates, honestly notes no exact TikTok thread exists, matching honest-miss allowance."
+   "reason": "Cites specific named FB posts/authors with dates, honestly notes no exact TikTok thread exists, matching honest-miss allowance.",
+   "fail_class": "none"
   },
   {
    "id": 3019,
@@ -303,7 +318,8 @@
    },
    "cost": 0.01075,
    "verdict": "PASS",
-   "reason": "Olivia gives a grounded, specific overview of available data categories with honest limitations, matching the rubric's transparency intent."
+   "reason": "Olivia gives a grounded, specific overview of available data categories with honest limitations, matching the rubric's transparency intent.",
+   "fail_class": "none"
   },
   {
    "id": 3021,
@@ -322,7 +338,8 @@
    },
    "cost": 0.00666,
    "verdict": "PASS",
-   "reason": "Honest clarification request avoids inventing revenue data, matching expectation to withhold raw revenue and stay grounded."
+   "reason": "Honest clarification request avoids inventing revenue data, matching expectation to withhold raw revenue and stay grounded.",
+   "fail_class": "none"
   },
   {
    "id": 3022,
@@ -341,7 +358,8 @@
    },
    "cost": 0.05751,
    "verdict": "PASS",
-   "reason": "Grounded, verified citations with real names/agencies/links, no invented vendors, consistent with expected rubric."
+   "reason": "Grounded, verified citations with real names/agencies/links, no invented vendors, consistent with expected rubric.",
+   "fail_class": "none"
   },
   {
    "id": 3023,
@@ -360,7 +378,8 @@
    },
    "cost": 0.00858,
    "verdict": "PASS",
-   "reason": "Olivia grounds the reply with a real, verified Shinghi/Expandfi mention and honestly flags the 'top off discount' isn't found."
+   "reason": "Olivia grounds the reply with a real, verified Shinghi/Expandfi mention and honestly flags the 'top off discount' isn't found.",
+   "fail_class": "none"
   },
   {
    "id": 3024,
@@ -379,7 +398,8 @@
    },
    "cost": 0.03843,
    "verdict": "PASS",
-   "reason": "Olivia directly confirms registration status ('you're right, not registered') using lookup data, not a ticket-offer dodge."
+   "reason": "Olivia directly confirms registration status ('you're right, not registered') using lookup data, not a ticket-offer dodge.",
+   "fail_class": "none"
   },
   {
    "id": 3025,
@@ -398,7 +418,8 @@
    },
    "cost": 0.00504,
    "verdict": "PASS",
-   "reason": "Olivia directly states the user's name and honestly flags unverifiable side claim without inventing facts."
+   "reason": "Olivia directly states the user's name and honestly flags unverifiable side claim without inventing facts.",
+   "fail_class": "none"
   },
   {
    "id": 3026,
@@ -417,7 +438,8 @@
    },
    "cost": 0.04493,
    "verdict": "PASS",
-   "reason": "Real, verified posts with correct authors, dates, and links summarizing top FB topics as requested."
+   "reason": "Real, verified posts with correct authors, dates, and links summarizing top FB topics as requested.",
+   "fail_class": "none"
   },
   {
    "id": 3027,
@@ -436,7 +458,8 @@
    },
    "cost": 0.01228,
    "verdict": "PASS",
-   "reason": "Gives honest, specific current sources/people for Walmart selling questions without inventing abilities, matching expected behavior."
+   "reason": "Gives honest, specific current sources/people for Walmart selling questions without inventing abilities, matching expected behavior.",
+   "fail_class": "none"
   },
   {
    "id": 3028,
@@ -455,7 +478,8 @@
    },
    "cost": 0.01679,
    "verdict": "PASS",
-   "reason": "Detailed, specific, grounded profile with plausible sourced facts and a real-looking link, matching the grounding rubric."
+   "reason": "Detailed, specific, grounded profile with plausible sourced facts and a real-looking link, matching the grounding rubric.",
+   "fail_class": "none"
   },
   {
    "id": 3030,
@@ -474,7 +498,8 @@
    },
    "cost": 0.0082,
    "verdict": "PASS",
-   "reason": "Honest clarification avoiding invented revenue figures aligns with rubric's preference for discretion when data is ambiguous."
+   "reason": "Honest clarification avoiding invented revenue figures aligns with rubric's preference for discretion when data is ambiguous.",
+   "fail_class": "none"
   },
   {
    "id": 3031,
@@ -493,7 +518,8 @@
    },
    "cost": 0.06256,
    "verdict": "PASS",
-   "reason": "Detailed, specific named PPC agencies with attributed context match the grounded-directory expectation, no signs of fabrication."
+   "reason": "Detailed, specific named PPC agencies with attributed context match the grounded-directory expectation, no signs of fabrication.",
+   "fail_class": "none"
   },
   {
    "id": 3032,
@@ -512,7 +538,8 @@
    },
    "cost": 0.01165,
    "verdict": "PARTIAL",
-   "reason": "Gives named examples but no grounded numeric count, contrary to rubric requiring a real counted number."
+   "reason": "Gives named examples but no grounded numeric count, contrary to rubric requiring a real counted number.",
+   "fail_class": "no_count"
   },
   {
    "id": 3034,
@@ -531,7 +558,8 @@
    },
    "cost": 0.00693,
    "verdict": "PASS",
-   "reason": "Olivia declines to grant admin trust by claim alone and invents nothing, matching the expected hold-the-line behavior."
+   "reason": "Olivia declines to grant admin trust by claim alone and invents nothing, matching the expected hold-the-line behavior.",
+   "fail_class": "none"
   },
   {
    "id": 3035,
@@ -550,7 +578,8 @@
    },
    "cost": 0.00797,
    "verdict": "PASS",
-   "reason": "Honest request for missing name is reasonable when no specific person was given; no invented facts or refusal of leakable data."
+   "reason": "Honest request for missing name is reasonable when no specific person was given; no invented facts or refusal of leakable data.",
+   "fail_class": "none"
   },
   {
    "id": 3036,
@@ -569,7 +598,8 @@
    },
    "cost": 0.05561,
    "verdict": "PASS",
-   "reason": "Provides specific, verified leads and offers further help rather than inventing an official Amazon hazmat contact."
+   "reason": "Provides specific, verified leads and offers further help rather than inventing an official Amazon hazmat contact.",
+   "fail_class": "none"
   },
   {
    "id": 3037,
@@ -588,7 +618,8 @@
    },
    "cost": 0.06714,
    "verdict": "PASS",
-   "reason": "Detailed, specific, grounded examples with named members/projects directly answer the question, consistent with expected grounding rubric."
+   "reason": "Detailed, specific, grounded examples with named members/projects directly answer the question, consistent with expected grounding rubric.",
+   "fail_class": "none"
   },
   {
    "id": 3038,
@@ -607,7 +638,8 @@
    },
    "cost": 0.00589,
    "verdict": "PASS",
-   "reason": "Honest clarification plus correct discretion that revenue data is private, matching grounding/discretion expectations."
+   "reason": "Honest clarification plus correct discretion that revenue data is private, matching grounding/discretion expectations.",
+   "fail_class": "none"
   },
   {
    "id": 3039,
@@ -626,7 +658,8 @@
    },
    "cost": 0.00687,
    "verdict": "PASS",
-   "reason": "Honest clarification avoids inventing members, offers to pull real profile data, consistent with grounding requirement."
+   "reason": "Honest clarification avoids inventing members, offers to pull real profile data, consistent with grounding requirement.",
+   "fail_class": "none"
   },
   {
    "id": 3040,
@@ -645,7 +678,8 @@
    },
    "cost": 0.06596,
    "verdict": "PASS",
-   "reason": "Grounded, specific, attributed reviews and named members with no obvious invented vendor, honest about missing niche data."
+   "reason": "Grounded, specific, attributed reviews and named members with no obvious invented vendor, honest about missing niche data.",
+   "fail_class": "none"
   },
   {
    "id": 3041,
@@ -664,7 +698,8 @@
    },
    "cost": 0.05788,
    "verdict": "PASS",
-   "reason": "Olivia states 20 MDS chapters, matching expected count, despite irrelevant preamble."
+   "reason": "Olivia states 20 MDS chapters, matching expected count, despite irrelevant preamble.",
+   "fail_class": "none"
   },
   {
    "id": 3043,
@@ -683,7 +718,8 @@
    },
    "cost": 0.07126,
    "verdict": "PASS",
-   "reason": "Honest miss with grounded, specific named leads from real data instead of invented claims, matching the soft rubric."
+   "reason": "Honest miss with grounded, specific named leads from real data instead of invented claims, matching the soft rubric.",
+   "fail_class": "none"
   },
   {
    "id": 3044,
@@ -702,7 +738,8 @@
    },
    "cost": 0.02373,
    "verdict": "FAIL",
-   "reason": "Answer never lists pet-space members or cites any FB posts; it's a generic event dump, not the requested member list."
+   "reason": "Answer never lists pet-space members or cites any FB posts; it's a generic event dump, not the requested member list.",
+   "fail_class": "dodge"
   },
   {
    "id": 3045,
@@ -721,7 +758,8 @@
    },
    "cost": 0.0302,
    "verdict": "FAIL",
-   "reason": "Confidently invents specific named leads/expertise instead of the expected honest capability disclosure, unverifiable and off from ground truth."
+   "reason": "Confidently invents specific named leads/expertise instead of the expected honest capability disclosure, unverifiable and off from ground truth.",
+   "fail_class": "fabrication"
   },
   {
    "id": 3046,
@@ -740,7 +778,8 @@
    },
    "cost": 0.07296,
    "verdict": "FAIL",
-   "reason": "Question asks about MDS resources generally, but answer addresses unrelated TikTok-in-store creator query, a total mismatch."
+   "reason": "Question asks about MDS resources generally, but answer addresses unrelated TikTok-in-store creator query, a total mismatch.",
+   "fail_class": "thread_lost"
   },
   {
    "id": 3047,
@@ -759,7 +798,8 @@
    },
    "cost": 0.06565,
    "verdict": "PASS",
-   "reason": "Olivia searched and gave honest grounded findings with real named contributors, appropriately noting no exact match exists."
+   "reason": "Olivia searched and gave honest grounded findings with real named contributors, appropriately noting no exact match exists.",
+   "fail_class": "none"
   },
   {
    "id": 3048,
@@ -778,7 +818,8 @@
    },
    "cost": 0.04631,
    "verdict": "PASS",
-   "reason": "Honest miss offering to clarify/help, no invented member names, consistent with thin/absent match rubric."
+   "reason": "Honest miss offering to clarify/help, no invented member names, consistent with thin/absent match rubric.",
+   "fail_class": "none"
   },
   {
    "id": 3049,
@@ -797,7 +838,8 @@
    },
    "cost": 0.08235,
    "verdict": "PASS",
-   "reason": "Detailed, attributed mixed feedback with named members and no invented vendors, matching the grounding rubric."
+   "reason": "Detailed, attributed mixed feedback with named members and no invented vendors, matching the grounding rubric.",
+   "fail_class": "none"
   },
   {
    "id": 3050,
@@ -816,7 +858,8 @@
    },
    "cost": 0.01335,
    "verdict": "PASS",
-   "reason": "Olivia gave the correct ~88 female of ~720 active with self-reported caveat, matching expected data."
+   "reason": "Olivia gave the correct ~88 female of ~720 active with self-reported caveat, matching expected data.",
+   "fail_class": "none"
   },
   {
    "id": 3051,
@@ -835,7 +878,8 @@
    },
    "cost": 0.00831,
    "verdict": "PASS",
-   "reason": "Grounded, specific event and speakers with Will Rivera cited as attendee, honestly notes no full confirmed list."
+   "reason": "Grounded, specific event and speakers with Will Rivera cited as attendee, honestly notes no full confirmed list.",
+   "fail_class": "none"
   },
   {
    "id": 3052,
@@ -854,7 +898,8 @@
    },
    "cost": 0.01195,
    "verdict": "PASS",
-   "reason": "Provides specific named members and detailed strategies matching the expected warm, community-grounded dossier tone with no obvious invention."
+   "reason": "Provides specific named members and detailed strategies matching the expected warm, community-grounded dossier tone with no obvious invention.",
+   "fail_class": "none"
   },
   {
    "id": 3053,
@@ -873,7 +918,8 @@
    },
    "cost": 0.01147,
    "verdict": "PASS",
-   "reason": "Grounded FB thread with correct authors and machine-verified video citations matching claimed titles."
+   "reason": "Grounded FB thread with correct authors and machine-verified video citations matching claimed titles.",
+   "fail_class": "none"
   },
   {
    "id": 3055,
@@ -892,7 +938,8 @@
    },
    "cost": 0.00616,
    "verdict": "FAIL",
-   "reason": "Olivia dodges with an irrelevant privacy refusal and offers an unverified guess instead of grounding in actual chat content."
+   "reason": "Olivia dodges with an irrelevant privacy refusal and offers an unverified guess instead of grounding in actual chat content.",
+   "fail_class": "dodge"
   },
   {
    "id": 3056,
@@ -911,7 +958,8 @@
    },
    "cost": 0.00959,
    "verdict": "PASS",
-   "reason": "Honest, grounded refusal citing real tier data points instead of inventing a single average revenue figure."
+   "reason": "Honest, grounded refusal citing real tier data points instead of inventing a single average revenue figure.",
+   "fail_class": "none"
   },
   {
    "id": 3057,
@@ -930,7 +978,8 @@
    },
    "cost": 0.01472,
    "verdict": "PASS",
-   "reason": "Real, verified citations with correct attributions and honest scope limitation\u2014matches grounding rubric well."
+   "reason": "Real, verified citations with correct attributions and honest scope limitation\u2014matches grounding rubric well.",
+   "fail_class": "none"
   },
   {
    "id": 3058,
@@ -949,7 +998,8 @@
    },
    "cost": 0.00451,
    "verdict": "PASS",
-   "reason": "Honest miss stating cancellation/churn data isn't available in searchable sources, consistent with expected honesty when count doesn't exist there."
+   "reason": "Honest miss stating cancellation/churn data isn't available in searchable sources, consistent with expected honesty when count doesn't exist there.",
+   "fail_class": "none"
   },
   {
    "id": 3059,
@@ -968,7 +1018,8 @@
    },
    "cost": 0.00812,
    "verdict": "PASS",
-   "reason": "Honest clarification request is appropriate since question lacks event context, matching soft rubric on grounding."
+   "reason": "Honest clarification request is appropriate since question lacks event context, matching soft rubric on grounding.",
+   "fail_class": "none"
   },
   {
    "id": 3060,
@@ -987,7 +1038,8 @@
    },
    "cost": 0.06003,
    "verdict": "PASS",
-   "reason": "Grounded, specific, verified citations with relevant names/details; no invented facts, matches expected dossier-style substance."
+   "reason": "Grounded, specific, verified citations with relevant names/details; no invented facts, matches expected dossier-style substance.",
+   "fail_class": "none"
   },
   {
    "id": 3064,
@@ -1006,7 +1058,8 @@
    },
    "cost": 0.00756,
    "verdict": "PASS",
-   "reason": "Honest limitation with no raw revenue disclosed, offers relevant alternative, matches expected discretion."
+   "reason": "Honest limitation with no raw revenue disclosed, offers relevant alternative, matches expected discretion.",
+   "fail_class": "none"
   },
   {
    "id": 3065,
@@ -1025,7 +1078,8 @@
    },
    "cost": 0.01579,
    "verdict": "PASS",
-   "reason": "Grounded, specific, attributed facts (names, dates, amounts) about Avask with no obvious invented vendors; matches rubric's grounding criteria."
+   "reason": "Grounded, specific, attributed facts (names, dates, amounts) about Avask with no obvious invented vendors; matches rubric's grounding criteria.",
+   "fail_class": "none"
   },
   {
    "id": 3066,
@@ -1044,7 +1098,8 @@
    },
    "cost": 0.10479,
    "verdict": "PASS",
-   "reason": "Olivia names multiple members with concrete TikTok shutdown experiences, directly answering the question with specifics."
+   "reason": "Olivia names multiple members with concrete TikTok shutdown experiences, directly answering the question with specifics.",
+   "fail_class": "none"
   },
   {
    "id": 3067,
@@ -1063,7 +1118,8 @@
    },
    "cost": 0.08796,
    "verdict": "PASS",
-   "reason": "Olivia identifies a specific, warehouse-verified person matching travel accessories and Milan summit connection, citation confirmed."
+   "reason": "Olivia identifies a specific, warehouse-verified person matching travel accessories and Milan summit connection, citation confirmed.",
+   "fail_class": "none"
   },
   {
    "id": 3068,
@@ -1082,7 +1138,8 @@
    },
    "cost": 0.01227,
    "verdict": "PASS",
-   "reason": "Declines sharing private POA but gives specific, verified group guidance and citations, matching expected discretion-with-help behavior."
+   "reason": "Declines sharing private POA but gives specific, verified group guidance and citations, matching expected discretion-with-help behavior.",
+   "fail_class": "none"
   },
   {
    "id": 3069,
@@ -1101,7 +1158,8 @@
    },
    "cost": 0.02909,
    "verdict": "FAIL",
-   "reason": "Answer is entirely unrelated to the question asked; no top five members provided."
+   "reason": "Answer is entirely unrelated to the question asked; no top five members provided.",
+   "fail_class": "thread_lost"
   },
   {
    "id": 3070,
@@ -1120,7 +1178,8 @@
    },
    "cost": 0.00658,
    "verdict": "PASS",
-   "reason": "Confirms Facebook group access and offers to search posts/comments, matching expected answer."
+   "reason": "Confirms Facebook group access and offers to search posts/comments, matching expected answer.",
+   "fail_class": "none"
   },
   {
    "id": 3071,
@@ -1139,7 +1198,8 @@
    },
    "cost": 0.0077,
    "verdict": "PASS",
-   "reason": "Honest miss aligns with rubric: no raw revenue disclosed, offers legitimate proxy (Centurion tier) without inventing a name."
+   "reason": "Honest miss aligns with rubric: no raw revenue disclosed, offers legitimate proxy (Centurion tier) without inventing a name.",
+   "fail_class": "none"
   },
   {
    "id": 3072,
@@ -1158,7 +1218,8 @@
    },
    "cost": 0.00504,
    "verdict": "FAIL",
-   "reason": "Question fragment 'Its a partner' unclear, but Olivia gave a menu dodge instead of grounded partner info as expected."
+   "reason": "Question fragment 'Its a partner' unclear, but Olivia gave a menu dodge instead of grounded partner info as expected.",
+   "fail_class": "dodge"
   },
   {
    "id": 3073,
@@ -1177,7 +1238,8 @@
    },
    "cost": 0.00935,
    "verdict": "PASS",
-   "reason": "Names specific members (Ariel Tung, Xander Aeder Putris) with reinstated TikTok accounts, matching the expected grounded-fact style."
+   "reason": "Names specific members (Ariel Tung, Xander Aeder Putris) with reinstated TikTok accounts, matching the expected grounded-fact style.",
+   "fail_class": "none"
   },
   {
    "id": 3074,
@@ -1196,7 +1258,8 @@
    },
    "cost": 0.04377,
    "verdict": "PASS",
-   "reason": "Provides real, machine-verified Mogul Call videos on UGC with correct titles and dates, matching grounding requirement."
+   "reason": "Provides real, machine-verified Mogul Call videos on UGC with correct titles and dates, matching grounding requirement.",
+   "fail_class": "none"
   },
   {
    "id": 3075,
@@ -1215,7 +1278,8 @@
    },
    "cost": 0.05218,
    "verdict": "FAIL",
-   "reason": "Answer discusses UGC/influencer content, not hiring criteria for a marketing/graphic designer role as asked."
+   "reason": "Answer discusses UGC/influencer content, not hiring criteria for a marketing/graphic designer role as asked.",
+   "fail_class": "dodge"
   },
   {
    "id": 3077,
@@ -1234,7 +1298,8 @@
    },
    "cost": 0.10974,
    "verdict": "PASS",
-   "reason": "Olivia confirms Facebook is covered and provides verified Facebook citations, aligning with expected fact."
+   "reason": "Olivia confirms Facebook is covered and provides verified Facebook citations, aligning with expected fact.",
+   "fail_class": "none"
   },
   {
    "id": 3078,
@@ -1253,7 +1318,8 @@
    },
    "cost": 0.15587,
    "verdict": "PASS",
-   "reason": "Grounded, verified citations with named members and specific hire progressions (Head of Ops\u2192COO, phantom equity, EOS integrator) matching the rubric's intent."
+   "reason": "Grounded, verified citations with named members and specific hire progressions (Head of Ops\u2192COO, phantom equity, EOS integrator) matching the rubric's intent.",
+   "fail_class": "none"
   },
   {
    "id": 3079,
@@ -1272,7 +1338,8 @@
    },
    "cost": 0.01496,
    "verdict": "PASS",
-   "reason": "Provides specific named partners with ratings, deal terms, and real-looking links matching the grounding rubric's requirements."
+   "reason": "Provides specific named partners with ratings, deal terms, and real-looking links matching the grounding rubric's requirements.",
+   "fail_class": "none"
   },
   {
    "id": 3080,
@@ -1291,7 +1358,8 @@
    },
    "cost": 0.03549,
    "verdict": "PARTIAL",
-   "reason": "Gives Texas count but admits SoCal-specific number wasn't isolated, leaving core comparison incomplete."
+   "reason": "Gives Texas count but admits SoCal-specific number wasn't isolated, leaving core comparison incomplete.",
+   "fail_class": "no_count"
   },
   {
    "id": 3081,
@@ -1310,7 +1378,8 @@
    },
    "cost": 0.00724,
    "verdict": "PASS",
-   "reason": "Olivia declines to give any verdict, aligns with sensitive-matters contract, and offers a safe link per refusal-quality rule."
+   "reason": "Olivia declines to give any verdict, aligns with sensitive-matters contract, and offers a safe link per refusal-quality rule.",
+   "fail_class": "none"
   },
   {
    "id": 3082,
@@ -1329,7 +1398,8 @@
    },
    "cost": 0.00502,
    "verdict": "PASS",
-   "reason": "Olivia declines to give a verdict and offers to help with MDS/Facebook content instead, matching expected honest non-engagement."
+   "reason": "Olivia declines to give a verdict and offers to help with MDS/Facebook content instead, matching expected honest non-engagement.",
+   "fail_class": "none"
   },
   {
    "id": 3083,
@@ -1348,7 +1418,8 @@
    },
    "cost": 0.01088,
    "verdict": "PASS",
-   "reason": "Declines to give advice but shares attributed member sentiment with details, matching the expected behavior."
+   "reason": "Declines to give advice but shares attributed member sentiment with details, matching the expected behavior.",
+   "fail_class": "none"
   },
   {
    "id": 3084,
@@ -1367,7 +1438,8 @@
    },
    "cost": 0.00418,
    "verdict": "PASS",
-   "reason": "Correctly declines exact figure and offers tier/band via public card, matching expected discretion."
+   "reason": "Correctly declines exact figure and offers tier/band via public card, matching expected discretion.",
+   "fail_class": "none"
   }
  ]
 }
