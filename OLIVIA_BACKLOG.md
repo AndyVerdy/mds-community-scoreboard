@@ -146,41 +146,6 @@ refusal; "nasir's revenue" → tier-band-only offer; gate 147/147. **Latency 6.5
 the full probe set + eval bank through the loop, exercise the other lanes (events, partners, person,
 FB, images), decide the canned-route boundary, then promote via the #4 protocol.
 
-### 22. 🔴 Kimi trial · S1 · effort M  ← GOAL (Andy 2026-07-29)
-*As the team, we know whether a 3×-cheaper model can carry Olivia's work without losing quality —
-measured, not assumed.*
-
-**Accept when**
-- **Every swap is decided on numbers:** the class rates at or better than the model it replaces, and
-  the safety classes unchanged.
-- **Cost measured on real cached traffic**, not sticker price.
-- **Latency inside the current band.**
-- **The revert is exercised once per call site** — a kill switch nobody has pulled is not a kill switch.
-- **The keep-or-revert decision is written down with the numbers behind it.**
-
-**The goal: run the Kimi test.** `KIMI_API_KEY` is in `mds-digest-web/.env.local` (gitignored).
-Kimi is OpenAI-API-compatible, so each call site is a base-URL + key + model-name swap plus a
-tool-calling adapter.
-
-**Prices (platform.kimi.ai, confirmed 2026-07-29) vs ours**
-| | input | output | cache hit |
-|---|---|---|---|
-| Kimi K2.7 / K2.6 | $0.95 | $4.00 | $0.19 / $0.16 |
-| Kimi K3 (flagship, 1M ctx) | $3.00 | $15.00 | $0.30 |
-| Claude Sonnet 5 (answering loop today) | $3.00 ($2 intro) | $15.00 ($10 intro) | ~$0.30 |
-| Claude Haiku 4.5 (fact-gate + judge screen today) | $1.00 | $5.00 | ~$0.10 |
-
-**Where the money actually is:** K2.7 is ~3× cheaper than Sonnet on sticker and ~1.6× on cache
-hits; our traffic is ~99% cached, so expect ~2× on a real answer (~$0.005 vs $0.007-0.01). K3 is
-priced identically to Sonnet — no cost case, quality case only. K2.7's cache hit ($0.19) is dearer
-than Haiku's (~$0.10), so swapping the gate/judge is not a saving.
-
-**Trial order (cheap and reversible first):** (1) fact-gate on K2.7 · (2) judge screen on K2.7 ·
-(3) the answering loop on K3 — the only swap that touches member-facing quality directly.
-**Bar for any swap:** organic-bank score ≥ current, leak gate GREEN, fabrication probes clean,
-latency in band. Kill switch = one base-URL revert per call site.
-⚠️ Adds a third AI vendor handling member content (today: Anthropic + Voyage) — privacy line in #19.
-
 ---
 
 # 🟡 S2
@@ -517,6 +482,76 @@ it — while having it. Same class: handing over 60 of 88 Singapore names as tho
  STYLE - an acceptance is delivered in full, never answered with a question. The routing half alone was
  not enough: she had all 20 chapters in the prompt and still asked what you wanted.
  Side benefit: the turn log now records which lane and RPC answered, closing the measurement gap.
+
+---
+
+### 22. ✅ Kimi trial · CLOSED 2026-07-29 · effort M
+*As the team, we know whether a 3×-cheaper model can carry Olivia's work without losing quality —
+measured, not assumed.*
+
+**Accept when**
+- **Every swap is decided on numbers:** the class rates at or better than the model it replaces, and
+  the safety classes unchanged.
+- **Cost measured on real cached traffic**, not sticker price.
+- **Latency inside the current band.**
+- **The revert is exercised once per call site** — a kill switch nobody has pulled is not a kill switch.
+- **The keep-or-revert decision is written down with the numbers behind it.**
+
+**The goal: run the Kimi test.** `KIMI_API_KEY` is in `mds-digest-web/.env.local` (gitignored).
+Kimi is OpenAI-API-compatible, so each call site is a base-URL + key + model-name swap plus a
+tool-calling adapter.
+
+**Prices (platform.kimi.ai, confirmed 2026-07-29) vs ours**
+| | input | output | cache hit |
+|---|---|---|---|
+| Kimi K2.7 / K2.6 | $0.95 | $4.00 | $0.19 / $0.16 |
+| Kimi K3 (flagship, 1M ctx) | $3.00 | $15.00 | $0.30 |
+| Claude Sonnet 5 (answering loop today) | $3.00 ($2 intro) | $15.00 ($10 intro) | ~$0.30 |
+| Claude Haiku 4.5 (fact-gate + judge screen today) | $1.00 | $5.00 | ~$0.10 |
+
+**Where the money actually is:** K2.7 is ~3× cheaper than Sonnet on sticker and ~1.6× on cache
+hits; our traffic is ~99% cached, so expect ~2× on a real answer (~$0.005 vs $0.007-0.01). K3 is
+priced identically to Sonnet — no cost case, quality case only. K2.7's cache hit ($0.19) is dearer
+than Haiku's (~$0.10), so swapping the gate/judge is not a saving.
+
+**Trial order (cheap and reversible first):** (1) fact-gate on K2.7 · (2) judge screen on K2.7 ·
+(3) the answering loop on K3 — the only swap that touches member-facing quality directly.
+**Bar for any swap:** organic-bank score ≥ current, leak gate GREEN, fabrication probes clean,
+latency in band. Kill switch = one base-URL revert per call site.
+⚠️ Adds a third AI vendor handling member content (today: Anthropic + Voyage) — privacy line in #19.
+
+**MEASURED AND CLOSED — the answer is no swap.** Full head-to-head on the 72 organic questions
+that reach a model, equal conditions (same prompt + 19 tool schemas harvested out of staging, same
+gated RPCs, same Voyage embeddings, same judge, same expected answers, both on a warm cache, forced
+first fetch off for both because Kimi's API refuses it):
+
+| | Sonnet 5 | Kimi K2.6 |
+|---|---|---|
+| FAIL % | **15.3%** | 38.9% |
+| $ / answer | **$0.0135** | $0.0270 |
+| blended $/M | $0.63 | $0.62 |
+| latency, median | **7.5s** | 60.7s |
+| output tokens / answer | 477 | 1,960 |
+| loop errors | 0 | 7 |
+
+**The cost case does not exist on our shape.** The blended per-token rate is a wash; Kimi is cheaper
+per token and still costs 2× per answer because it writes 4× the output and makes 1.6× the tool calls
+to reach the same place. Quality is 2.5× worse (29.2% even after discarding all 7 tool-cap
+exhaustions as a config artifact), and 60s median on a channel that cannot stream fails the latency
+bar on its own. K3 is Opus-class — wrong comparison for a Sonnet-class loop — and measured 66.8s
+median at 2-3× the cost on a smoke.
+
+**One structural finding worth keeping:** every Kimi model enabled on our key forces thinking on, and
+their API refuses `tool_choice: required` alongside it. Our forced first fetch — the rule that stops
+her answering before she looks at data — cannot be enforced on Kimi at all. Adopting Kimi would mean
+trading a mechanical anti-fabrication guarantee for prompt wording.
+
+**Kimi did win 3 questions Claude lost**, both on known Claude weaknesses already ticketed:
+persona-driven recommendations (#14) and a privacy over-refusal instead of grounding (#1).
+
+Evidence: `OLIVIA_MODEL_COMPARE.md` (every question, both answers), `OLIVIA_MODEL_BENCH_*.md`,
+commit `8729cc3`. Harness: `mds-scorecard-tools/{kimi_harvest,kimi_bench,bench_compare}.py` — reusable
+for any future vendor, and it touches no workflow. Cost of the trial: ~$5.50.
 
 ---
 
