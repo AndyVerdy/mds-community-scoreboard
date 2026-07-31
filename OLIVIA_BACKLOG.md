@@ -119,10 +119,21 @@ phrasing, content counts, totalling, and the TEST run.**
   NorthTex 12)"** — every number = the warehouse. "how many in the supplements niche" → **73 of
   722**. First SoCal probe said "Los Angeles: 0" (chapter is literally named "LA Chapter") →
   fixed with a short-names hint: group-by-chapter first, never guess long forms.
-- **Open before close:** rev-band counts ("under $1m") need the band vocabulary in the tool hint ·
-  content counts (#5's FB-engagement % case) still go through content_stats — verify · "total it
-  up" follow-up probe · schedule `olivia_derive_niches.py` + `olivia_label_questions.py` nightly ·
-  TEST-tier eval on the counting class · commit the two scripts.
+- **PROBED 2026-07-31 EVE (bands + content + totalling):**
+  · "under $1m" → **"None — no band under $1M exists"** + the full band table 252/132/90/164/84,
+    every figure warehouse-exact (bands vocabulary now in the tool hint). Honest-miss AC ✓
+  · "at 20M+" → **164 of 722** ✓ exact
+  · FB-posting-% → honest refusal (content_stats returns no FB author counts) — ACCEPTABLE per the
+    honest-miss AC, but the number IS derivable in SQL, so this stays a residual: extend
+    content_stats with distinct-authors-by-source, then this question must get a real %.
+  · **"Total it up" STILL FAILS — the one open defect.** Chapter counts sum to **773** (members
+    hold several chapters); she said 722 twice (echoed the population), then got gate-blocked,
+    then said 722 again after re-fetching. Two prompt rules did not fix it: **the model cannot
+    reliably add 20 numbers. Deterministic fix, not another rule: add `breakdown_sum` (and
+    distinct-member count) to `member_count`'s output so the sum is READ, never computed.** Small
+    CREATE OR REPLACE; next session.
+  **Also open:** schedule `olivia_derive_niches.py` + `olivia_label_questions.py` nightly · TEST run
+  on the counting class (runs resume after PBIs close — Andy).
 
 - Counts by city, state, chapter, category and revenue bracket return a real number
 - "Total it up" across a previous answer works
