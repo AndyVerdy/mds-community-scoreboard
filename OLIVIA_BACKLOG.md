@@ -116,6 +116,15 @@ Lives in mds-digest-web (the read layer), not the workflow. Closing the eval-mar
 replies too) is the same one-cheap-fix named in the status corrections — it also closes the
 cross-source measurement trap noted for #8.
 
+**Scope extended to Member 360 (Andy 2026-07-30, the Kostiantyn Kyrylov case):** ONE member
+(rec9ZsJqlzK2bRmX2 — legal name Kostiantyn Kyrylov, display name Constantine Kirillov, same
+phone/email/Stripe) renders as TWO portal entries — the Members-DB-side page shows the legal name
+with "not on WhatsApp yet"/no phone even though the row HAS the linked phone, while the WA-side
+page shows the display name, matched, 59 messages. And **search only indexes the display name**,
+so the legal name finds nothing while a page with that exact headline exists. Accept-when adds:
+one person = one entry (merged by at_member_id across both source lists), and search matches
+legal AND display names.
+
 **Impact:** the team's only window into whether Olivia is used and useful; wrong numbers here mean
 wrong calls on everything else.
 
