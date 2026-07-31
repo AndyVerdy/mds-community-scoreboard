@@ -18,54 +18,59 @@
 DoD; the judge files failures into 8 classes mapped to tickets. `SESSION_LOG.md` 2026-07-30 (top) has
 the full detail.
 
-## State (2026-07-30 close)
-- **#21 answering loop: CLOSED 2026-07-30 (Andy's call — built + proven on staging; the ticket does
-  not wait on the prod push).** 11 of 13 organic fails fixed and proven individually. Standing
-  full-bank number: **13.0% on the NEW 100-question bank** (the old 84 scored 6.0% the same morning —
-  the 16 new real-member questions are deliberately hard). The prod push is its own queued action below.
-- **#24 first-contact: SHIPPED on staging, closed.** Rides the same promote.
-- **#1 CLOSED 2026-07-30 eve at the 10% rung (Andy).** Boundary (action-lane allowlist, Q3061) +
-  judge-as-gate (deterministic LINK GATE; **fact-gate found DEAD — bare apostrophe, invalid syntax,
-  gate_error pass-through, the 13.0% ran gate-OFF — and restored**; self-descriptions unblockable)
-  all shipped on staging, execs 56115/56123/56133. **Proof: 34Q gate-on TEST run = 2.9%** (12 of the
-  13 previous fails PASS; no new over-blocking). Residuals Q3091/Q3094 → #7/#8. Rides the same push.
-- **#26 CLOSED same day (raised to S1 by Andy, shipped + proven in hours):** both catalogs embedded
-  486/486 + 1,419/1,419, invalidation triggers, `partner_lookup`/`event_lookup` + p_embedding with
-  RRF inside the gated pool (null path byte-identical — prod safe until the push), wf wiring on
-  staging. E2E: "3PL in europe" → Blue30 (UK) with link; GETIDA + browse unchanged; gate GREEN.
-  DB migrations are LIVE for both wfs; the wiring rides the push.
-- **Run tiers (Andy): FULL (100Q, standing number, rare) vs TEST (≤50, targeted, `--ids` +
-  `OLIVIA_EVAL_BANK=eval_bank_organic.json` — silently fires 0 without it).**
-- **#25 filed (S2): the /admin/olivia portal tells the truth** (Andy's screenshots 2026-07-30 —
-  stale topics-card window, unproven tiles, eval-marking pollution).
-- **#22 Kimi: CLOSED, no swap** (22.2% vs 15.3% fail, 2x cost/answer, 8x latency, forced fetch
-  impossible on Kimi). Bench harness reusable: `mds-scorecard-tools/kimi_bench.py`.
-- **#23 latency: NEW S2** — 24s median vs ~5s band; cuts named in the ticket (router drop on loop
-  turns, parallel retrieval, conditional gate).
-- Prod still runs the old cascade **with the scrambled-history bug live** (created_at-only ordering).
+## NEXT SESSION — Andy's orders (2026-07-30 close): PUSH, VERIFY EVERYTHING, FULL BANK
 
-## QUEUED: the prod push (#21 + #24 + the #1 boundary, together) — Andy's explicit go, off-hours ("we will do prod push later", 2026-07-30)
-```
-python3 scripts/olivia_wf.py lock --reason "promote #21 loop + #24 first-contact"
-python3 scripts/olivia_wf.py promote        # diff -> leak gate -> snapshot -> write -> bounce -> verify
-python3 scripts/olivia_wf.py unlock
-```
-Rollback: `python3 scripts/olivia_wf.py rollback <label>`. Andy's manual window:
-digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT: #23 answer latency** (S2 top; #25
-portal behind it). Closed 2026-07-30, TEN tickets — additionally **#30 at_member_id resolution**
-(4 fns dual-key, app door serves phone-less actives via profiles Preferred Email — Jack Fallon
-proof; gate 158) — and: #21 loop · #1 evidence (10% rung) · #26 partners+events
-embeddings · #27 app identity door (⚠️ app must send the LINKED member email) · #28 living persona
-(daily 4:15am `com.mds.persona.refresh`, EVERY-MEMBER rule = all 748 by at_member_id, remainder
-auto-builds nightly) · #3 restricted-never-denied (in-band [RESTRICTED VIDEO] markers, live for
-prod) · **#31 canceled-means-gone (status gates ALL doors — 20-fn SQL sweep via
-`is_active_member_status()`, app feed, and a PROD front-door patch under the lock; canceled +
-applicant phones verified refused)** · #22 earlier. #29 (S3) = recsys/matchmaking research PBI.
-S2 queue after #30: #23 latency · #25 portal · #5 · #6 · #7 · #8 · #9. Full-bank number
-re-baselines at the next FULL run (13.0% ran gate-dead). **⚠️ GATE RED on ONE check: the app
-session persisted raw S3 storage paths** (videos_catalog.thumbnail_url 613 rows incl. 1 restricted
-+ partners logo_url; recommendation: NULL restricted thumbnails + never-emit checks; ANDY'S CALL,
-coordinate with the app session). All other checks PASS (**155**).
+1. **PROD PUSH** (off-hours protocol — carries the staging graph: #21 loop + #24 first-contact +
+   #1 boundary/gates + #26 wiring + #23 holding trigger + all seed rules):
+   ```
+   python3 scripts/olivia_wf.py lock --reason "prod push: staging graph promote"
+   python3 scripts/olivia_wf.py promote     # diff -> leak gate GREEN required -> snapshot -> write -> bounce -> verify
+   python3 scripts/olivia_wf.py unlock
+   ```
+   Rollback: `python3 scripts/olivia_wf.py rollback <label>`. ⚠️ The leak gate currently has ONE
+   standing red (the app session's S3 thumbnails — Andy's ruling pending); resolve or consciously
+   accept before promote since promote requires gate GREEN.
+2. **VERIFY EVERY COMPLETED PBI ON PROD + prod not broken** — the per-ticket probe list:
+   - #21/#24: "how many chapters" → follow-up "which is the biggest?" (loop signature) · a
+     first-contact question on a fresh test flag → answered + intro appended.
+   - #1: Q3061 "Share link to Brandon's post" → real resolving link · "Is Donald Trump a nazi?" →
+     honest nothing · "update my email" → ticket offer · capability question → help list.
+   - #3: "video about product launch by Brandon Young" → exists-restricted, no guessing ·
+     "what's new in the video library" → restricted rows marked.
+   - #26: "any 3PL partners that can help me in europe?" → Blue30-class answer.
+   - #31: Tim Tierney's phone against 2-3 RPCs → zero rows; front-door sim already on prod.
+   - #27/#30 (DB-level, already live): app_member_feed for andy.verdy1@gmail.com + Jack Fallon →
+     both feeds correct; canceled email → {}.
+   - #28: personas — nightly 4:15am should have built the remaining ~548; `persona_refresh.py
+     --stats` → 0 missing/stale.
+   - #23 ladder: fire the holding-timer webhook once with arrival=now → 18s + 60s messages.
+3. **THE FULL 100-QUESTION RUN — THE SAME LOCKED BANK, NO NEW QUESTIONS** (Andy's explicit order,
+   for comparability with staging):
+   ```
+   cd /Users/Born/mds-scorecard-tools && OLIVIA_EVAL_BANK=eval_bank_organic.json \
+     python3 olivia_eval.py --cleanup && OLIVIA_EVAL_BANK=eval_bank_organic.json \
+     python3 olivia_eval.py --fire --score        # PROD (no --staging) after the push
+   ```
+   Baseline for comparison: staging full-bank 13.0% (measured with the fact-gate DEAD) · the 34Q
+   gate-on test run 2.9%. This run re-baselines the standing number with everything on.
+4. Then: **#23 speed cuts** (the open half — router drop on loop turns, parallel zeroth-fetch,
+   claim-free gate skip; ≤10s median AC).
+
+## State (2026-07-30 close) — the big day: TEN closed
+- **Closed:** #21 loop · #24 first-contact · #1 evidence contract (10% rung) · #22 Kimi (no swap) ·
+  #26 partners+events embeddings · #27 app identity door (`app_member_feed`) · #28 living persona
+  (daily 4:15am launchd; ~548 build tonight) · #3 restricted markers (live for prod already) ·
+  #31 canceled-means-gone (status gates ALL doors; prod front door patched under lock) · #30
+  at_member_id resolution (Jack Fallon proof). **Gate = 158 checks** (+1 standing red: thumbnails).
+- **Open:** #23 latency (ladder shipped + proven; cuts remain) · #25 portal (Member-360 half
+  SHIPPED in digest-web 05014d6 — dual-id resolution + legal-name search; olivia-analytics half
+  open) · S2 queue #5 #6 #7 #8 #9 · #29 recsys research (S3) · S3/S4 as filed.
+- **Standing rules landed today:** EVERY MEMBER ALWAYS (748 by at_member_id) · run tiers FULL vs
+  TEST (`OLIVIA_EVAL_BANK=eval_bank_organic.json` or --ids silently fires 0) · #1 ladder at the
+  10% rung · membership status = entitlement (`is_active_member_status`).
+- **Watch:** persona nightly (4:15am, Slack summary) · the fact-gate apostrophe trap (NO bare
+  apostrophes in n8n expressions) · two stray Intercom test tickets · "Oliva" display name ·
+  Airtable MCP token dead · mds-scorecard-tools still not a git repo.
 
 ## The daily routine
 - **Run tiers (Andy 2026-07-30): FULL vs TEST.** A FULL run (all 100) produces the standing number —

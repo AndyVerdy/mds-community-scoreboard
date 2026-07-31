@@ -85,6 +85,15 @@ router ~2s · retrieval ~3s. The three cuts, in order of value:
 - **The class rates do not get worse** — speed is never bought with quality.
 - Measured on the same instrument as everything else (per-question timings in the eval run).
 
+**Shipped 2026-07-30 — the WAITING LADDER (half one):** typing fires within ~2s (pre-existing,
+verified; Meta expires it ~25s — why slow answers read dead) → **18s holding message** → **60s
+delay notice**, via standalone wf `X1vzrW9Avqff3qRa` (answered-checks against `olivia_messages`
+before each send — silent when answered; holding texts never enter conversation history; SELFTEST
+traffic never triggers it). Trigger wired on staging after Mark Read + Typing, rides the push.
+**Proven live**: full 67s ladder to Andy's phone (both Meta wamids), no-op path silent at 20s.
+**Remaining: the speed cuts** (drop router on loop turns · zeroth-fetch in parallel · skip
+fact-gate on claim-free drafts) toward the ≤10s median.
+
 
 ### 25. 🟡 The portal tells the truth · S2 · effort M
 *As the team, every number on the Olivia portal (digest.mds.co/admin/olivia) is right: all the data

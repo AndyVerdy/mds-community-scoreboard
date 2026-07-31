@@ -6,7 +6,20 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
-## 2026-07-30 (PM) — Olivia: #21 + #1 + #26 + #27 CLOSED · #25 + #28 filed · fact-gate was DEAD, restored · app identity door live
+## 2026-07-30 (PM) — TEN CLOSED (#21 #24 #1 #22 #26 #27 #28 #3 #31 #30) · fact-gate resurrected · gate 158 · Member-360 fix shipped
+
+**SESSION CLOSE (Andy): next session = PROD PUSH → verify every completed PBI on prod → the FULL
+100-question run on the SAME LOCKED bank (no new questions, comparability with staging) → then the
+#23 speed cuts.** Full orders + per-PBI probe list in `OLIVIA_NEXT_SESSION.md`.
+
+- **#23 waiting ladder SHIPPED + PROVEN (a9fa950):** typing (pre-existing, expires ~25s) → 18s
+  holding → 60s delay notice via standalone wf `X1vzrW9Avqff3qRa` (answered-checks; never in
+  history; SELFTEST never fires it); staging trigger after Mark Read + Typing rides the push.
+  Live proof: full 67s ladder to Andy's phone (2 Meta wamids), no-op silent at 20s. Cuts remain.
+- **#25 Member-360 half SHIPPED (digest-web 05014d6, deployed):** the Kostiantyn Kyrylov case —
+  ONE record, two portal doors; `getMember360` now resolves by at_member_id too (every
+  Olivia-dashboard → 360 jump was falsely "not on WhatsApp yet"), search matches legal AND display
+  names. Root cause read from source; data-layer proof + build green; olivia-analytics half open.
 
 - **#27 the app's identity door — SHIPPED + CLOSED** (Andy's KYC push; mobile-app session runs in
   parallel on this repo building the UI + /api/olivia/feed): `digest.app_member_feed(p_email, …)`
