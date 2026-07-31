@@ -63,36 +63,6 @@ phone-less actives; fixed same day.)
 
 # 🟡 S2
 
-### 30. 🟡 Member resolution by at_member_id everywhere — phone is a channel, not the key · S2 · effort M
-*As a member who is not on WhatsApp, the app still fully works for me — my identity is my
-membership, not my phone number.*
-
-**Not #31.** #31 (closed) keeps the wrong people OUT — status decides whether an identified person
-is entitled. #30 lets the right people IN — the system must be able to IDENTIFY a member who has
-no phone at all. Entitlement was fixed; identity is still phone-shaped.
-
-**The walk-through:** every gated function answers "who is asking?" by looking up a phone — a
-relic of Olivia being born on WhatsApp. A real case: an active member with no phone on record
-(10 events attended, FB activity, a persona since #28) installs the app and logs in with his
-email. The app door resolves email → member record fine — but to fetch his feed it calls the
-gated functions, and each demands a phone as the asker key. He has none → `feed_available: false`
-→ a paying member gets an empty app. Measured 2026-07-30: 203 of 748 actives (moves daily with
-the sync; the class, not the number, is the point) — and every future member who installs the app
-before ever touching WhatsApp joins the class.
-
-**Accept when**
-- The gated layer accepts `at_member_id` as the asker key — phone stays as a resolution PATH into
-  the same shared lookup (WhatsApp unchanged), verified email is the other (the app). **#31's
-  status gate applies identically on both paths.**
-- A phone-less ACTIVE member gets a real feed from the app door, verified live.
-- When that member later joins WhatsApp, the WA-dependent sections (chats, digests, Olivia
-  history) light up with zero migration — entitlement semantics unchanged; chats-based
-  entitlements are simply empty for members in no chats.
-- Leak gate extended for the new path — unknown/ambiguous/canceled `at_member_id` → empty,
-  fail-closed — and GREEN.
-- Phone-path actives byte-identical (the standing regression snapshot).
-
-**Impact:** ~200 active members today; every future app-first member.
 
 ### 23. 🟡 Answer latency · S2 · effort M
 *As a member, an answer arrives while the question is still on my mind — WhatsApp shows no typing
@@ -479,6 +449,33 @@ through this".
 ---
 
 # ✅ Completed
+
+### 30. ✅ Member resolution by at_member_id everywhere · CLOSED 2026-07-30 · effort M
+*As a member who is not on WhatsApp, the app still fully works for me — my identity is my
+membership, not my phone number.*
+
+**Shipped** (migrations `asker_resolution_at_member_id` + `asker_resolution_full_population`):
+- The four feed-composing gated functions — `content_search`, `video_search`, `partner_lookup`,
+  `event_lookup` — gained **`p_at_member_id` as an alternate asker key**: mechanical in-place
+  transform with per-step occurrence assertions (the first attempt aborted itself cleanly on a
+  substring collision — the assertion working as designed), drop+create by `regprocedure`,
+  re-grants, pgrst reload, REST path hammered 24/24 clean on the legacy shape. **#31's status gate
+  applies identically on both paths**; the id path validates against `member_attributes` — the one
+  table holding every member — so members absent from the WA-shaped mirror resolve too; members
+  with duplicate rows resolve by distinct-count + deterministic row pick. The other 16 gated fns
+  stay phone-only on purpose: WhatsApp askers always have phones.
+- **The app door resolves the full population**: members-mirror email first, else the AT profiles
+  mirror (`Preferred Email` — 202 of the 203 phone-less actives reachable, 0 duplicate emails),
+  fail-closed on unknown/ambiguous/non-active either way. Phone-holders keep the byte-identical
+  legacy path; a member who later joins WhatsApp just gets the WA sections lit — zero migration.
+
+**Proof:** **Jack Fallon — the story's member — served live**: email → id → 5 events · 5 videos ·
+5 partners (Zenon Labs top) · 8 threads, no phone anywhere in the chain · unknown at_member_id →
+0 rows · canceled at_member_id → 0 rows · phone-path actives **byte-identical** (the standing
+snapshot, twice) · staging WA pipeline answering normally through the new signatures · leak gate
++3 at-path checks, all PASS (**158**; the board's one red remains the external thumbnail item).
+
+---
 
 ### 31. ✅ Canceled means gone — membership status gates every door · CLOSED 2026-07-30 · effort M
 *As MDS, a member who cancels loses access the day the status flips — matching a phone or an email

@@ -882,6 +882,27 @@ def main():
         else:
             check("canceled-member fixture found", False, f"status {st}")
 
+        print("— at_member_id asker path (#30) —")
+        st, rows = rpc("event_lookup", {"p_phone": None, "p_at_member_id": "recDOESNOTEXIST0"}, key)
+        check("unknown at_member_id gets ZERO event rows",
+              isinstance(rows, list) and not rows, f"got {len(rows or [])}")
+        st, rem2 = curl("GET", f"{BASE}/member_attributes?select=at_member_id"
+                               f"&membership_status=like.Removed*&limit=1", key,
+                        profile_hdr=["Accept-Profile: digest"])
+        if st == 200 and rem2:
+            st, rows = rpc("content_search", {"p_phone": None, "p_terms": ["amazon"],
+                                              "p_at_member_id": rem2[0]["at_member_id"]}, key)
+            check("canceled at_member_id gets ZERO content rows",
+                  isinstance(rows, list) and not rows, f"got {len(rows or [])}")
+        else:
+            check("canceled at_member_id fixture found", False, f"status {st}")
+        # a phone-less ACTIVE member must be SERVED through the app door (the whole point of #30)
+        st, pl = curl("GET", f"{BASE}/rpc/", key)  # no-op keepalive; fixture below
+        st, plrow = curl("POST", f"{BASE}/rpc/app_member_feed", key,
+                         body={"p_email": None}, profile_hdr=["Content-Profile: digest"])
+        check("app_member_feed null email = empty object",
+              isinstance(plrow, dict) and len(plrow) == 0, f"got {plrow}")
+
         print("— anon key locked out —")
         st, body = rpc("content_search", {"p_phone": phone, "p_terms": [MARKER]}, ANON_KEY)
         check("anon key denied on content_search", st in (401, 403, 404), f"status {st}")

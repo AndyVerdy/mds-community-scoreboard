@@ -51,8 +51,10 @@ python3 scripts/olivia_wf.py promote        # diff -> leak gate -> snapshot -> w
 python3 scripts/olivia_wf.py unlock
 ```
 Rollback: `python3 scripts/olivia_wf.py rollback <label>`. Andy's manual window:
-digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT: #30 at_member_id resolution**
-(S2 top). Closed 2026-07-30, EIGHT tickets: #21 loop · #1 evidence (10% rung) · #26 partners+events
+digest.mds.co/admin/olivia/test (staging/prod toggle). **NEXT: #23 answer latency** (S2 top; #25
+portal behind it). Closed 2026-07-30, TEN tickets — additionally **#30 at_member_id resolution**
+(4 fns dual-key, app door serves phone-less actives via profiles Preferred Email — Jack Fallon
+proof; gate 158) — and: #21 loop · #1 evidence (10% rung) · #26 partners+events
 embeddings · #27 app identity door (⚠️ app must send the LINKED member email) · #28 living persona
 (daily 4:15am `com.mds.persona.refresh`, EVERY-MEMBER rule = all 748 by at_member_id, remainder
 auto-builds nightly) · #3 restricted-never-denied (in-band [RESTRICTED VIDEO] markers, live for

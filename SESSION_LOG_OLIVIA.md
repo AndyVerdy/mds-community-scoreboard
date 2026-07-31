@@ -49,6 +49,16 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   phone/email → 0 rows/{} everywhere · applicant → 0 · front-door sim 4/4 · actives regression
   byte-identical · prod + staging answering post-bounce · gate +3 = 155 PASS. Authority = synced AT
   status (≤1d); live-AT lookup = named upgrade, not taken.
+- **#30 at_member_id resolution — SHIPPED + CLOSED:** the 4 feed-composing gated fns
+  (content_search/video_search/partner_lookup/event_lookup) gained `p_at_member_id` as an alternate
+  asker key (mechanical in-place transform w/ occurrence assertions — attempt 1 aborted itself on a
+  substring collision, the assertion working; drop+create by regprocedure, re-grants, pgrst reload,
+  REST hammered 24/24). Id path validates vs member_attributes (full population; mirror-absent
+  members resolve); #31 status gate on both paths; other 16 fns stay phone-only on purpose. App
+  door resolves members-email → else profiles `Preferred Email` (202/203 phone-less actives, 0
+  dups). **Proof: Jack Fallon (the story's member) served live — 5 events/5 videos/5 partners/8
+  threads, no phone in the chain** · unknown/canceled id → 0 · phone path byte-identical ×2 ·
+  staging WA probe normal · gate +3 = **158 PASS**.
 - **🚨 GATE CATCH (external): the parallel app session persisted raw S3 storage paths** —
   migrations `feed_thumbnails_events_videos` + `partners_catalog_logo_url` added
   videos_catalog.thumbnail_url (613 rows, 1 restricted) + partners logo_url with
