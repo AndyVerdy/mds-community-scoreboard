@@ -26,6 +26,30 @@ or has one real unknown. L = needs data or a decision we don't have yet.
 
 ---
 
+## RELEASE 2 — what we are working on <!-- keep current; the promote moment IS the release ship -->
+
+**In progress on STAGING, ship date TBD.** Nothing here is on prod; it ALL rides the next
+`promote`, which Andy runs. *(Release 1 = shipped Jul 30, ticket list at the bottom under
+✅ Completed.)*
+- ✅ on staging, proven: **eval fix batch 2026-07-31** — fact-gate member-question clamp 500→2000 +
+  RULE TWO + URL-id post-filter + keep-supported regen (Q3091) · `content_search` `post_author` on
+  comment rows + ATTRIBUTION rule (Q3078/Q3036) · `member_dossier` leads with persona (Q3004) —
+  TEST 27Q = 0 FAIL, gate 161. *(SQL migrations are already live in the shared DB — the n8n graph
+  half is what waits for promote.)*
+- ✅ on staging, proven: **holding-trigger fix** (arrival = message timestamp; kills Meta-replay
+  ghost ladders).
+- ✅ **#23 answer latency — CLOSED 2026-07-31 on the story.** Router prompt caching (6,225
+  tokens/turn now cache-read, proven exec 57677) + claim-free fact-gate skip (`Claims?`).
+  ≤10s median NOT met and deliberately not bought — re-file a latency target after #7/#8.
+- 🔨 NEXT: **#25 the portal tells the truth**, then whatever S2 closes before the promote. Bank 3101-3112 swap is
+  release-independent (eval instrument, not shipped code); FULL run on the new bank comes after
+  these PBIs close.
+
+**Rule:** every ✅ at the bottom is filed under its release; anything shipped after Jul 30 is
+Release 2 = staging-only until the next promote.
+
+---
+
 ## Definition of Done — one list, applies to EVERY item
 
 Written once, true for everything that ships. Per-item conditions live under each story as
@@ -64,89 +88,6 @@ phone-less actives; fixed same day.)
 # 🟡 S2
 
 
-### 23. 🟡 Answer latency · S2 · effort M
-*As a member, an answer arrives while the question is still on my mind — WhatsApp shows no typing
-indicator, so a slow answer reads as a dead one.*
-
-Split out of #21 (2026-07-30, Andy): the loop answers correctly but slowly — **24s median vs the
-~5s band the single-pass cascade set**; worst healthy-path case 54s. The tail is already fixed
-(the unbounded gate-retry loop: 41 model calls / 417s on one question, now capped at one retry).
-
-Where the healthy-path time goes (measured, exec 55263): answer model ~6s · fact-gate ~3s ·
-router ~2s · retrieval ~3s. The three cuts, in order of value:
-- **Drop the router call on loop turns** — the loop chooses its own tools; the router is pure
-  latency there (~2s + one model call per answer)
-- **Run the zeroth-fetch retrieval alongside the router** instead of after it (~2-3s)
-- **Skip the fact-gate when the draft makes no citable claim** (greetings, refusals, honest
-  misses) (~3s on those turns)
-
-**Accept when**
-- **Median end-to-end at or under 10s** on a full organic run, worst case under 60s.
-- **The class rates do not get worse** — speed is never bought with quality.
-- Measured on the same instrument as everything else (per-question timings in the eval run).
-
-**Shipped 2026-07-30 — the WAITING LADDER (half one):** typing fires within ~2s (pre-existing,
-verified; Meta expires it ~25s — why slow answers read dead) → **18s holding message** → **60s
-delay notice**, via standalone wf `X1vzrW9Avqff3qRa` (answered-checks against `olivia_messages`
-before each send — silent when answered; holding texts never enter conversation history; SELFTEST
-traffic never triggers it). Trigger wired on staging after Mark Read + Typing, rides the push.
-**Proven live**: full 67s ladder to Andy's phone (both Meta wamids), no-op path silent at 20s.
-**Remaining: the speed cuts** (drop router on loop turns · zeroth-fetch in parallel · skip
-fact-gate on claim-free drafts) toward the ≤10s median.
-
-
-### 25. 🟡 The portal tells the truth · S2 · effort M
-*As the team, every number on the Olivia portal (digest.mds.co/admin/olivia) is right: all the data
-is there, it is displayed correctly, and the filters actually filter.*
-
-**Reported by Andy 2026-07-30 with screenshots — the page is wrong today.** What the screenshots
-already show, before any diagnosis:
-- **Cards disagree on the window.** The page filter says "Last 30 days" and the tiles say 250
-  questions / 20 members — while the Top-question-topics card renders its own stale span,
-  "Jun 20 – Jul 20 · 26 questions". At least one card ignores the selected filter (the topics table
-  only refreshes when the weekly report script runs — a card fed by a stale table reads as a broken
-  filter).
-- **Numbers unproven against the warehouse.** Top members claims Franky Farina 85 / Eugene 69
-  questions in-period; none of the tiles has been reproduced by SQL.
-- **A known pollution source is already on file** (status corrections below, 2026-07-28): the eval
-  harness marks only the member's message as a test, never Olivia's reply — anything counting her
-  replies reports eval traffic as production (367 of 636 recent rows at the time it was measured).
-
-**Accept when**
-- **Every tile and card reproduces from a warehouse query**, checked number by number on a fixed
-  day: questions asked, members using, requests created/open, top members, question topics.
-- **The page filter applies to every card.** Switching the window changes all of them consistently;
-  0 cards on a private window.
-- **Test traffic is excluded by default on every card the same way** — Andy's number, SELFTEST
-  wamids, eval replies — and "Include my tests" brings it back deliberately.
-- **Proven live after the fix**, the SQL cited beside what the page shows.
-
-Lives in mds-digest-web (the read layer), not the workflow. Closing the eval-marking gap (mark her
-replies too) is the same one-cheap-fix named in the status corrections — it also closes the
-cross-source measurement trap noted for #8.
-
-**Scope extended to Member 360 (Andy 2026-07-30, the Kostiantyn Kyrylov case):** ONE member
-(rec9ZsJqlzK2bRmX2 — legal name Kostiantyn Kyrylov, display name Constantine Kirillov, same
-phone/email/Stripe) renders as TWO portal entries — the Members-DB-side page shows the legal name
-with "not on WhatsApp yet"/no phone even though the row HAS the linked phone, while the WA-side
-page shows the display name, matched, 59 messages. And **search only indexes the display name**,
-so the legal name finds nothing while a page with that exact headline exists. Accept-when adds:
-one person = one entry (merged by at_member_id across both source lists), and search matches
-legal AND display names.
-
-**Member-360 half SHIPPED 2026-07-30 (mds-digest-web `05014d6`, deployed via Vercel):**
-`getMember360()` now falls back to `members?at_member_id=eq.<id>` (phone-bearing row first) when
-the `airtable_id` lookup misses — every Olivia-dashboard → Member 360 jump and shared Members-DB-id
-URL now renders the real matched page instead of "not on WhatsApp yet" (root cause was that the WA
-layer resolved by only one of the two id kinds). Search now matches the **AT legal name alongside
-the display name** (`altName` on WA rows + the search-fields array). Repro case verified at the
-data layer: the Members-DB id resolves straight to the WA row (Constantine Kirillov, phone,
-`recjaFLHC…`); tsc + build green. **The /admin/olivia analytics half of this ticket (tiles vs
-warehouse, per-card filters, test-traffic exclusion) remains open.**
-
-**Impact:** the team's only window into whether Olivia is used and useful; wrong numbers here mean
-wrong calls on everything else.
-
 ### 5. 🟡 Counting · S2 · effort M
 *As a member, when I ask a number I get a number.*
 
@@ -159,6 +100,29 @@ wrong calls on everything else.
 
 She lists but cannot count, and often says "I don't have that data" when she does. Live: SoCal vs Texas
 totals, members under $1m, chapters with counts, most-active members.
+
+**IN PROGRESS 2026-07-31 — the counting layer is BUILT + LIVE ON STAGING; remaining = revenue-band
+phrasing, content counts, totalling, and the TEST run.**
+- **`digest.member_niches` SHIPPED** (warehouse): one canonical countable niche set per member —
+  14-value vocabulary (MDS's own Niche Top Selection + 2 gaps), multi-valued, from all 8 AT
+  niche/category fields via `scripts/olivia_derive_niches.py`. **Main Niche has precedence
+  (Andy), and several stated niches rank EQUALLY** — "Supplements, Board Games, Pets" counts in
+  all three (`is_main_niche`, renamed from `is_primary` after Andy's ruling; 104 of 477 = 21.8%
+  list more than one). 1,925 rows / 722 actives. NOT yet scheduled (same gap as the labeller).
+- **`digest.member_count` RPC SHIPPED**: counts by niche/city/state/chapter/band, AND-combined,
+  optional `p_group_by` breakdown, population identical to `community_info` (722) so totals
+  reconcile. Fail-closed dual-key gating, counts only, never names. **Gate 161→167 GREEN** (+6
+  member_count checks). **Application v3 gap FILED** in `APPLICATION_V3_MAPPING_DECISIONS.md`
+  (v3 writes NO controlled category — only free-text Main Niche; recommend classify-on-submission).
+- **Loop tool + COUNT rule live on staging**, probed: "How many total in socal, vs texas?" (the
+  Q3080 fail) → **"SoCal = 92 (LA 44 + Orange Co 32 + San Diego 16) vs Texas 53 (SoTex 41 +
+  NorthTex 12)"** — every number = the warehouse. "how many in the supplements niche" → **73 of
+  722**. First SoCal probe said "Los Angeles: 0" (chapter is literally named "LA Chapter") →
+  fixed with a short-names hint: group-by-chapter first, never guess long forms.
+- **Open before close:** rev-band counts ("under $1m") need the band vocabulary in the tool hint ·
+  content counts (#5's FB-engagement % case) still go through content_stats — verify · "total it
+  up" follow-up probe · schedule `olivia_derive_niches.py` + `olivia_label_questions.py` nightly ·
+  TEST-tier eval on the counting class · commit the two scripts.
 
 - Counts by city, state, chapter, category and revenue bracket return a real number
 - "Total it up" across a previous answer works
@@ -328,6 +292,73 @@ he also said in this post that…".
 
 **Impact:** on 07-26 every member asking anything got a failure message and nobody knew. *(Recommend raising to S2 — same job as #16.)*
 
+### 32. 🔵 What Olivia costs, measured and controlled · S3 · effort M
+*As the team, we know what Olivia costs to run per answer and per month, we get told before a bill
+surprises us, and we can prove a cost change actually landed.*
+
+Nothing in the backlog has ever owned running cost. What exists is scattered and none of it
+measures PRODUCTION: the eval runner has a daily spend cap + ledger (`.eval_spend.json`, built
+after the $161 incident), #22 priced Kimi against Claude on a bench, and per-answer figures were
+estimated inside #21 and #23. **We have never measured a real month of member traffic**, and the
+2026-07-31 router-caching win is arithmetic off published prices, not a number anyone verified.
+
+**What we used to spend (measured, sources named)**
+| when | figure | source |
+|---|---|---|
+| pre-2026-07-29 loop | **$0.035 / answer** | #21 before its 3 cache breakpoints + Haiku fact-gate |
+| after cache breakpoints (2026-07-29) | **$0.007-0.010 / answer**, ~99% cached | #21 close |
+| head-to-head bench (2026-07-29) | **$0.0135 / answer** Sonnet 5 · $0.0270 Kimi K2.6 | #22, equal conditions |
+| one FULL 100-Q eval run | **~$3.05** | 2026-07-30 full-bank run |
+| a bad day of eval iteration | **~$35** (11 runs) · worst logged day **$40.60** (07-28) | `.eval_spend.json` |
+| the incident that forced the cap | **$161 in one day** | 2026-07-26 |
+| eval spend, last 6 logged days | 11.22 · 9.46 · 40.60 · 11.69 · 9.52 · 6.71 | `.eval_spend.json` |
+
+**What we expect to spend (projection — the first job of this ticket is to replace it with a
+measurement)**
+- Real member traffic today: **275 questions / 30 days from 24 members = ~9.2 questions a day**
+  (SELFTEST and Andy's number excluded).
+- At the bench's $0.0135/answer that is **~$0.12/day, ~$3.70/month** of member-facing spend.
+  Olivia's production cost is currently *rounding error next to the eval runs* — the eval line
+  (~$10-40 on an active day) is where the money actually goes.
+- **At full membership** (748 actives) at the same ~11 questions/member/month: ~8,200 answers/month
+  → **~$110/month**. That is the number to design for, and the reason the router caching matters.
+- **Router caching (2026-07-31, #23)**: 6,225 of ~6,450 routing tokens now served from cache
+  (proven live, exec 57677). ~10× cheaper on that block *inside the 5-min cache window*; a lone
+  message after a gap pays a cache WRITE at ~1.25×. Net effect on sparse beta traffic is UNVERIFIED
+  — bursts win, isolated messages lose slightly.
+
+**Accept when**
+- **A real per-answer and per-month cost, measured from production traffic**, not sticker price —
+  the token counters are already in every exec (`in_tok`/`out_tok`/`cache_w`/`cache_r` ride the
+  loop state and land in `metrics`); the job is to persist and total them, split
+  **member traffic vs eval traffic** so one never hides the other.
+- **The router-caching claim is settled with a number** — cached vs uncached cost per routed turn
+  on real traffic, including how often the 5-min window is actually hit. If sparse traffic makes it
+  a net loss, say so and revert it.
+- **A spike alarm exists and has fired once in a test** — a day over a threshold reaches a human.
+  A $161 day must never again be discovered afterwards. (Alarm plumbing overlaps #13.)
+- **RETEST KIMI.** #22 closed as no-swap on 2026-07-29 with real numbers (Kimi 38.9% FAIL vs 15.3%,
+  60.7s median vs 7.5s, 2× the cost per answer despite a cheaper token rate — it wrote 4× the output
+  and made 1.6× the tool calls). That verdict has a shelf life: **re-run the bench when a new Kimi
+  generation ships or at the next quarter, whichever comes first**, and re-run it on the harness
+  that already exists — `mds-scorecard-tools/{kimi_harvest,kimi_bench,bench_compare}.py`, which
+  touches no workflow and cost ~$5.50 last time. Same bar as #22: organic-bank score ≥ current,
+  leak gate GREEN, latency in band, kill switch exercised. **Two blockers to re-check first, they
+  killed it last time regardless of price:** every Kimi model on our key forces thinking on, and
+  their API refuses `tool_choice: required` alongside it — so our forced first fetch, the mechanical
+  rule that stops her answering before she looks at data, cannot be enforced at all. If that is
+  still true, the retest ends there and no price justifies the swap.
+- **Written down with the numbers**, per the global DoD.
+- **REPORTED TO PAVEL.** The finished numbers go to Pavel, not just into this repo — measured
+  per-answer and per-month cost, member vs eval split, the router-caching verdict, the projection
+  at full membership, and the Kimi retest outcome. Andy sends it (drafts get confirmed before
+  anything goes out, per [[feedback_confirm_before_sending_messages]]).
+
+**Impact:** no member sees this, but an unmeasured bill is how a pilot dies. Cheap to do — the
+counters already exist.
+
+---
+
 ### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L
 *As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
 platform would — from everything it knows about me, and it gets the like-minded question right:
@@ -478,7 +509,280 @@ through this".
 
 # ✅ Completed
 
-### 30. ✅ Member resolution by at_member_id everywhere · CLOSED 2026-07-30 · effort M
+## 📦 RELEASE 2 — on STAGING, not yet promoted
+
+Ships to prod at the next `promote` (Andy runs it). Everything below is live on staging and gate
+GREEN 161, and nothing here is on prod yet.
+
+**Tickets closed into Release 2 (1):** #23 answer latency (closed on the story — the ladder half
+shipped in Release 1, the speed cuts in Release 2).
+
+**Shipped to PROD separately (not part of the n8n promote):** #25 the portal tells the truth —
+mds-digest-web `294b094`, live on digest.mds.co 2026-07-31. The portal deploys on push and never
+waits for the workflow promote.
+
+**Also staged, not ticketed as PBIs:** the eval fix batch 2026-07-31 (fact-gate clamp + RULE TWO,
+`content_search` `post_author`, `member_dossier` persona) · the holding-trigger fix (arrival =
+message timestamp).
+
+### 25. ✅ The portal tells the truth · CLOSED 2026-07-31 · effort M · SHIPPED TO PROD (mds-digest-web)
+*As the team, every number on the Olivia portal (digest.mds.co/admin/olivia) is right: all the data
+is there, it is displayed correctly, and the filters actually filter.*
+
+**THE GOAL, plainly.** That page is the team's ONLY window into whether Olivia is being used and
+whether she is useful — how many members ask her things, who, what about, what they ask the team
+for, and what they thumbs-down. Today the numbers on it cannot be trusted, so nobody can make a
+call on them: we cannot answer "is the beta working?", "who should we invite next?" or "what does
+she get asked that she is bad at?" without going to SQL by hand. **Done means every number on the
+page has been reconciled against the warehouse and the filter is real — so the page can be used to
+decide things instead of being second-guessed.** It is a read-layer job in mds-digest-web; it
+changes no member-facing behaviour and touches no workflow.
+
+**What is actually wrong (verified 2026-07-31, first-hand in source + SQL):**
+1. **The topics card is fed by a DEAD JOB and ignores the page filter.** It reads
+   `digest.olivia_question_topics`, a table written by the weekly `olivia_question_report.py` job,
+   and renders THAT TABLE's own `period_start`/`period_end` — not the selected window. The job last
+   ran **2026-07-20**, so the card is pinned to "Jun 20 – Jul 20" no matter what you pick, and is
+   **11 days stale**. This is the whole "filters don't filter" symptom Andy screenshotted, and it
+   is two bugs: a scheduled job nobody noticed had stopped, and a card wired to a report table
+   instead of to the window.
+2. **Test-traffic exclusion is accidental, not designed.** `page.tsx` hardcodes
+   `EXCLUDED_PHONES = {"17866578153"}` — Andy's number — and nothing filters SELFTEST wamids.
+   Eval traffic is excluded today ONLY because the eval harness fires from his number. Verified:
+   counting with and without the SELFTEST filter both give 275, so it holds right now — but any
+   probe or eval run from another number silently lands in the production figures, and the eval
+   harness still marks only the member's message as a test, never Olivia's reply.
+3. **No tile has ever been reconciled against SQL.** The figures may be right; nobody has checked.
+
+**🚨 ROOT CAUSE FOUND AND FIXED 2026-07-31 — the dashboard was silently blind to the most recent
+days.** The member-turn fetch asked for `limit=5000` ordered `created_at.ASC`, but **PostgREST caps
+a response at 1000 rows whatever `limit` says** (Supabase `db-max-rows`). Once the window held more
+than 1000 turns the server returned the OLDEST 1000 and dropped the NEWEST — with no error and no
+sign on the page. Proven on the live query: `content-range: 0-999/1043`, newest visible row
+`2026-07-29T23:33Z`, so **all of Jul 30-31 was invisible to every card**. It degrades further as
+traffic grows. Fixed by paging the fetch (1000 at a time until a short page) — commit `75917fb`.
+
+**FULL VALIDATION, every card, Last 30 days, tests excluded (page vs warehouse):**
+| card | page BEFORE | page AFTER | warehouse | verdict |
+|---|---|---|---|---|
+| Questions asked | 250 | **266** | 266 | ✅ fixed by paging |
+| Members using | 20 | **22** | 22 | ✅ fixed by paging |
+| Requests created | 9 | 9 | 9 | ✅ was always right |
+| Open requests | 5 | 5 | 5 | ✅ was always right |
+| Member feedback | 6 in period | **5 in period · 5 all time** | 6 incl. Andy / 5 excl. | ✅ now honours the test toggle |
+| Member requests card | 25 in period | **9 in period · 5 open all time** | 9 | ✅ contradiction with its own tile fixed |
+| Top members | Eugene 69 · Ian 9 · Kayleigh 5 · Etienne 6 | **72 · 11 · 9 · 8** | 72 · 11 · 9 · 8 | ✅ fixed by paging |
+| Top question topics | Jun 20 – Jul 20 · 26 questions | same, labelled | **25 questions truly in that window** | ✅ the report is ACCURATE — see below |
+
+**Why topics shows 26 against 266 questions (Andy's question).** The report is not undercounting:
+Jun 20 – Jul 20 genuinely held ~25 questions, because the beta had barely started. The job ran
+**once, on 2026-07-20**, and has never run since — so the ~240 questions the beta has produced since
+then have never been clustered at all. The card is honest now (it states its own span, and shows an
+empty state when the selected window has no report), but **the topic data is only as good as the
+last run: schedule `olivia_question_report.py` or drop the card.** That is the one open item left.
+
+**Correction, on the record:** an earlier note here called this a "window-boundary defect where the
+page loses the last day or two". That diagnosis was wrong — the page deliberately excludes greetings
+("hi", "thanks") as non-questions and the first SQL comparison did not, which accounted for most of
+the apparent gap. The real defect was the 1000-row cap above.
+
+**Reference numbers to check the page against (last 30 days, measured 2026-07-31):**
+| what | true value | source |
+|---|---|---|
+| questions asked | **275** (commands excluded, Andy excluded) | `olivia_messages` role=member |
+| members using | **24** | distinct phone, same filter |
+| requests created | **38** | `olivia_requests` |
+| reactions | **7** | `olivia_feedback` (`reacted_at`) |
+| topics card | shows **Jun 20 – Jul 20**, should follow the window | `olivia_question_topics`, last generated 2026-07-20 |
+
+**Accept when**
+- **Every tile and card reproduces from a warehouse query on a fixed day**, checked number by
+  number, SQL cited beside what the page shows: questions asked · members using · requests
+  created/open · top members · question topics · reactions.
+- **The page filter applies to EVERY card**, topics included. Switching the window changes them all
+  consistently; a window with no traffic shows 0, not a stale span.
+- **The topics card is never silently stale** — either it computes from the window like every other
+  card, or it states the age of its data on the card. **And the report job that feeds it is either
+  running on a schedule that is monitored (#13), or removed.** A card fed by a dead job must not
+  look live.
+- **Test traffic is excluded by design on every card, the same way** — SELFTEST wamids AND the
+  excluded numbers, not one standing in for the other — and "Include my tests" (`?self=1`) brings
+  it back deliberately. Adding a second test number must not require a code change to stay honest.
+- **Olivia's replies are marked as test traffic too** when the turn was a test (the eval harness
+  marks only the member's message today) — the same cheap fix named in the status corrections, and
+  it also closes the cross-source measurement trap noted for #8.
+- **Proven live after the fix** on the deployed page, with the SQL beside it, per the global DoD.
+
+**Impact:** the team's only window into whether Olivia is used and useful; wrong numbers here mean
+wrong calls on everything else.
+
+
+**CLOSED + LIVE ON PROD 2026-07-31** — `294b094` on digest.mds.co, verified deployed via
+`/api/version`. Shipped independently of the Olivia workflow: the portal is mds-digest-web and
+deploys on push, so it does NOT wait for the n8n promote.
+
+**Six defects found and fixed, in the order they were found:**
+1. **The eval harness counted as member usage** (`e859196`). It fires the whole bank silently
+   from one number with a `wamid.SELFTEST*` marker; nothing filtered it, and real traffic stayed
+   clean only by accident because that number was already excluded. "Include my tests" turned 167
+   real questions into 484, three quarters machine. Now excluded on every card, always.
+2. **The period picker only drove the tiles** (`562560f`). Feedback and requests rendered their
+   all-time lists under a 7-day filter. Both are period-scoped now; the full worklists keep every
+   period on their own pages, and the footer links name the destination's size, not the window's.
+3. **🚨 The dashboard was silently blind to the most recent days** (`75917fb`) — the root cause of
+   every number that would not reconcile. The fetch asked `limit=5000` ordered `created_at.ASC`,
+   but **PostgREST caps a response at 1000 rows whatever `limit` says**. Proven live:
+   `content-range: 0-999/1043`, newest visible row Jul 29 23:33, so all of Jul 30-31 was invisible.
+   30 days read 266/22 as 250/20; Kayleigh 9 as 5. Fixed by paging. **This cap bit three separate
+   places in one day — treat it as a known trap in this codebase.**
+4. **Topics could not follow the picker** (`4a415bc`). They were a frozen report SNAPSHOT, and that
+   job had run ONCE, on Jul 20 — so "Yesterday" was empty and "30 days" showed 26 questions against
+   266. Now every question carries its own label (`digest.olivia_question_labels`, written by
+   `scripts/olivia_label_questions.py`), so any window is a GROUP BY and the counts reconcile with
+   the tile by construction. Backfilled all 389 questions (~$0.02).
+5. **No way to separate staff from members** (`94c7b1c`). 184 of 266 questions in 30 days are
+   staff, and the two heaviest users are both staff. "Exclude staff" toggle added, default off.
+6. **Staff read from the wrong table** (`294b094`, Andy caught it). It used
+   `digest.members.membership_status` — the WhatsApp layer, 645 rows, 15 Staff — when the truth is
+   `digest.member_attributes.membership_status` (the AT "AT Database Status" field), 5,739 rows and
+   exactly the 29 Staff in Airtable. 14 staff would have counted as members. **Blank status is
+   excluded too** (Andy's rule: most blanks are leads, and blank is what a staff member looks like
+   before someone sets the field).
+
+**Final validation, Last 30 days, page vs warehouse — every card reconciles:**
+| card | staff in | staff out | verified |
+|---|---|---|---|
+| Questions asked | 266 | 82 | ✅ = warehouse |
+| Members using | 22 | 16 | ✅ |
+| Requests created | 9 | 1 | ✅ |
+| Open requests | 5 | 1 | ✅ |
+| Member feedback | 5 in period · 5 all time | ✅ |  |
+| Top members | Franky 85 · Eugene 72 · Ryan 19 | Ryan 19 leads | ✅ |
+| Top question topics | 15 topics · 266 q | 13 topics · 82 q | ✅ = the tile |
+| Yesterday (was empty) | 8 topics · 14 q | | ✅ = the tile |
+
+**⚠️ CARRIED FORWARD, not done:** `scripts/olivia_label_questions.py` is **not on a schedule**.
+It is idempotent and only labels new arrivals, but until it runs nightly the topics card will show
+an "N unlabelled" badge and under-report recent questions. Same shape as the dead report job this
+replaced — **schedule it (and monitor it under #13), or the card decays again.** The old
+`scripts/olivia_question_report.py` and `digest.olivia_question_topics` are now unused and should
+be deleted rather than scheduled.
+
+**Scope extended to Member 360 (Andy 2026-07-30, the Kostiantyn Kyrylov case):** ONE member
+(rec9ZsJqlzK2bRmX2 — legal name Kostiantyn Kyrylov, display name Constantine Kirillov, same
+phone/email/Stripe) renders as TWO portal entries — the Members-DB-side page shows the legal name
+with "not on WhatsApp yet"/no phone even though the row HAS the linked phone, while the WA-side
+page shows the display name, matched, 59 messages. And **search only indexes the display name**,
+so the legal name finds nothing while a page with that exact headline exists. Accept-when adds:
+one person = one entry (merged by at_member_id across both source lists), and search matches
+legal AND display names.
+
+**Member-360 half SHIPPED 2026-07-30 (mds-digest-web `05014d6`, deployed via Vercel):**
+`getMember360()` now falls back to `members?at_member_id=eq.<id>` (phone-bearing row first) when
+the `airtable_id` lookup misses — every Olivia-dashboard → Member 360 jump and shared Members-DB-id
+URL now renders the real matched page instead of "not on WhatsApp yet" (root cause was that the WA
+layer resolved by only one of the two id kinds). Search now matches the **AT legal name alongside
+the display name** (`altName` on WA rows + the search-fields array). Repro case verified at the
+data layer: the Members-DB id resolves straight to the WA row (Constantine Kirillov, phone,
+`recjaFLHC…`); tsc + build green. **The /admin/olivia analytics half of this ticket (tiles vs
+warehouse, per-card filters, test-traffic exclusion) remains open.**
+
+
+---
+
+### 23. ✅ Answer latency · CLOSED 2026-07-31 on the story (Andy's call) · effort M · RELEASE 1 + 2
+*As a member, an answer arrives while the question is still on my mind — WhatsApp shows no typing
+indicator, so a slow answer reads as a dead one.*
+
+Split out of #21 (2026-07-30, Andy): the loop answers correctly but slowly — **24s median vs the
+~5s band the single-pass cascade set**; worst healthy-path case 54s. The tail is already fixed
+(the unbounded gate-retry loop: 41 model calls / 417s on one question, now capped at one retry).
+
+Where the healthy-path time goes (measured, exec 55263): answer model ~6s · fact-gate ~3s ·
+router ~2s · retrieval ~3s. The three cuts, in order of value:
+- **Drop the router call on loop turns** — the loop chooses its own tools; the router is pure
+  latency there (~2s + one model call per answer)
+- **Run the zeroth-fetch retrieval alongside the router** instead of after it (~2-3s)
+- **Skip the fact-gate when the draft makes no citable claim** (greetings, refusals, honest
+  misses) (~3s on those turns)
+
+**Accept when**
+- **Median end-to-end at or under 10s** on a full organic run, worst case under 60s.
+- **The class rates do not get worse** — speed is never bought with quality.
+- Measured on the same instrument as everything else (per-question timings in the eval run).
+
+**Shipped 2026-07-30 — the WAITING LADDER (half one):** typing fires within ~2s (pre-existing,
+verified; Meta expires it ~25s — why slow answers read dead) → **18s holding message** → **60s
+delay notice**, via standalone wf `X1vzrW9Avqff3qRa` (answered-checks against `olivia_messages`
+before each send — silent when answered; holding texts never enter conversation history; SELFTEST
+traffic never triggers it). Trigger wired on staging after Mark Read + Typing, rides the push.
+**Proven live**: full 67s ladder to Andy's phone (both Meta wamids), no-op path silent at 20s.
+**This half is what the STORY asks for** — the member knows she is working, so a slow answer no
+longer reads as dead.
+
+**2026-07-31 — the speed cuts, MEASURED (staging, gate 161 GREEN). Both shipped; neither bought
+time. Two of the three planned cuts turned out to rest on wrong premises.**
+- ✅ **Router prompt caching** (`apply_23_router_cache.py`): the ~6K-token routing rubric was sent
+  uncached every turn. Split into a cached static block + the dynamic CHATS/history tail, byte
+  identical content. **Live proof: `cache_read_input_tokens` 6,225 · `input_tokens` 221.** But
+  latency held at ~1.5s — **the router is OUTPUT-bound** (~125 JSON tokens), not input-bound.
+  **Real win = cost (~10× cheaper per routed turn), not speed.**
+- ✅ **Claim-free fact-gate skip** (`Claims?` node + `has_claims` in `answer_parse.js`): a draft
+  with no link, no digit, no quoted span and no named entity has nothing for the gate to check, so
+  it routes straight to Format Reply and saves the gate's 1.5-3.3s. Detector is deliberately
+  conservative (16/16 unit tests) — a false "claimy" costs only the latency we already pay, a
+  false "claim-free" would skip a real check. **Fires only on true honest-misses, so the median
+  barely moves.**
+- ❌ **"Drop the router on loop turns" — DO NOT DO.** The router feeds the PRELOAD (the guaranteed
+  zeroth-fetch evidence). Removing it makes the model fetch that itself = one extra Claude
+  round-trip (1.4-2.6s), so it is likely NET SLOWER and costs the same-question-same-evidence
+  property. Caching it gets the cost win without the risk.
+- ❌ **"Run the zeroth-fetch alongside the router" — NOT POSSIBLE.** n8n executes nodes serially
+  within one execution; branching gives no concurrency.
+- **Measured before/after, same 8 questions, same instrument** (`before` = the 2026-07-31 TEST
+  run): median **19.6s → 22.8s**, worst **52.0s → 56.1s**. Single sample per question and shared
+  model latency, so this is noise — the honest statement is **no measurable change**.
+- **Why ≤10s is out of reach here:** the answer loop IS the time. Each tool round-trip is a Claude
+  call (1.4-2.6s), and the SEARCH TECHNIQUE rule deliberately requires a **minimum of two
+  differently-phrased searches** before concluding something is absent — that rule is the recall
+  control behind #7/#8. Hitting ≤10s means cutting model calls, i.e. buying speed with quality,
+  which this ticket's own AC forbids.
+- **Open for Andy — the AC number, not the story:** the ≤10s median needs either a re-scope (the
+  ladder already delivers the member-facing story) or an explicit decision to trade recall for
+  speed. Nothing further shipped pending that call.
+
+**CLOSED 2026-07-31 (Andy) — on the STORY, not on the ≤10s number.** The member-facing problem
+("a slow answer reads as a dead one") is solved by the waiting ladder in Release 1: she says she is
+working within 18s and again at 60s, so an answer in flight never reads as a dead one. Both speed
+cuts stay as banked wins — cheaper routing and a gate skipped on claim-free drafts — neither of
+which traded any quality. **The ≤10s median was NOT met and was deliberately not bought**: reaching
+it means cutting model calls, and the SEARCH TECHNIQUE rule that makes her run a second,
+differently-phrased search before concluding something is absent is the recall control behind #7
+and #8. This ticket's own AC forbids buying speed with quality, so the number goes back on the
+shelf: **re-file a latency target after #7/#8 land, when we know what recall actually costs.**
+Standing measurement to beat: median 22.8s, worst 56.1s (8 questions, staging, 2026-07-31).
+
+---
+
+## 📦 RELEASE 1 — shipped to PROD Jul 30, 2026
+
+Promote of 17 nodes · prod versionId `ee3e3cf6` · gate 161 GREEN · every ticket probed green ON
+prod · full-bank standing number **4.0%** (from 13.0%).
+
+**Tickets in Release 1 (12):** #21 the answering loop · #1 every answer matches the evidence ·
+#2 deliver what she offers · #3 "restricted", never "doesn't exist" · #4 safe edits and rollback ·
+#22 Kimi trial · #24 first contact answers the question · #26 partners + events semantically
+searchable · #27 the app knows who I am · #28 the persona learns · #30 member resolution by
+at_member_id · #31 canceled means gone.
+
+**Also in the same release, not ticketed as PBIs:** #23 half one (the waiting ladder wf
+`X1vzrW9Avqff3qRa`) · Intercom escalation · videos = source #5 · Facebook = source #4.
+
+Full per-ticket detail below.
+
+---
+
+### 30. ✅ Member resolution by at_member_id everywhere · CLOSED 2026-07-30 · effort M · RELEASE 1
 *As a member who is not on WhatsApp, the app still fully works for me — my identity is my
 membership, not my phone number.*
 
@@ -505,7 +809,7 @@ snapshot, twice) · staging WA pipeline answering normally through the new signa
 
 ---
 
-### 31. ✅ Canceled means gone — membership status gates every door · CLOSED 2026-07-30 · effort M
+### 31. ✅ Canceled means gone — membership status gates every door · CLOSED 2026-07-30 · effort M · RELEASE 1
 *As MDS, a member who cancels loses access the day the status flips — matching a phone or an email
 is identity, never entitlement; the Airtable membership status is the authority on who is active.*
 
@@ -539,7 +843,7 @@ stays the app session's thumbnail persistence — external, Andy's ruling pendin
 
 ---
 
-### 3. ✅ "Restricted", never "doesn't exist" · CLOSED 2026-07-30 · effort S
+### 3. ✅ "Restricted", never "doesn't exist" · CLOSED 2026-07-30 · effort S · RELEASE 1
 *As a member, I'm told something exists and isn't shareable — never that it doesn't exist.*
 
 **Shipped: the restriction moved into the data** (migration
@@ -565,7 +869,7 @@ session's thumbnail persistence — external to this ticket, decision with Andy.
 
 ---
 
-### 28. ✅ The persona learns · CLOSED 2026-07-30 (Andy's call; quality redesign → #29) · effort M
+### 28. ✅ The persona learns · CLOSED 2026-07-30 (Andy's call; quality redesign → #29) · effort M · RELEASE 1
 *As a member, the more I use MDS, the better it knows me — my persona updates itself with
 preferences, focus, and what to avoid, minimum monthly.*
 
@@ -597,7 +901,7 @@ generic — research how the platforms build recommendation DBs).
 
 ---
 
-### 27. ✅ The app knows who I am — identity-keyed personalization · CLOSED 2026-07-30 · effort M
+### 27. ✅ The app knows who I am — identity-keyed personalization · CLOSED 2026-07-30 · effort M · RELEASE 1
 *As a member using the MDS mobile app, everything I see is picked for ME, resolved from my real
 login. Every member sees something different. (Andy: "KYC — I can't stress it enough.")*
 
@@ -627,7 +931,7 @@ design. If app logins can differ from the linked email, the app side owns that m
 
 ---
 
-### 26. ✅ Partners + events semantically searchable · CLOSED 2026-07-30 · effort S
+### 26. ✅ Partners + events semantically searchable · CLOSED 2026-07-30 · effort S · RELEASE 1
 *As a member, a paraphrased ask ("3PL in Europe", "fulfillment help") finds the right partner or
 event even when my words don't match the catalog's.*
 
@@ -661,7 +965,7 @@ me in europe?" → Blue30 (UK fulfillment, 5% off, real link) with an honest the
 
 ---
 
-### 1. ✅ Every answer matches the evidence · CLOSED 2026-07-30 at the 10% rung · effort M
+### 1. ✅ Every answer matches the evidence · CLOSED 2026-07-30 at the 10% rung · effort M · RELEASE 1
 *As a member, what Olivia tells me is exactly what the sources support - she never adds a verdict of
 her own, and she never tells me there is nothing when there is.*
 
@@ -696,7 +1000,7 @@ staging; rides the queued prod push.
 
 ---
 
-### 21. ✅ The answering loop · CLOSED 2026-07-30 · effort L
+### 21. ✅ The answering loop · CLOSED 2026-07-30 · effort L · RELEASE 1
 *As a member, she holds the thread of a conversation and looks again when the first answer isn't enough.*
 
 **Closed on Andy's call 2026-07-30: built + proven on staging; the ticket does not wait on the prod
@@ -724,7 +1028,7 @@ together with #24).** Until that runs, members are on the old cascade.
 
 ---
 
-### 2. ✅ Deliver what she offers · DONE 2026-07-28 · effort S
+### 2. ✅ Deliver what she offers · DONE 2026-07-28 · effort S · RELEASE 1
 *As a member, if she offers me something and I say yes, I get it.*
 
 She offered the full chapter list with member counts, the member said yes, and she said she didn't have
@@ -747,7 +1051,7 @@ it — while having it. Same class: handing over 60 of 88 Singapore names as tho
 
 ---
 
-### 22. ✅ Kimi trial · CLOSED 2026-07-29 · effort M
+### 22. ✅ Kimi trial · CLOSED 2026-07-29 · effort M · RELEASE 1
 *As the team, we know whether a 3×-cheaper model can carry Olivia's work without losing quality —
 measured, not assumed.*
 
@@ -817,7 +1121,7 @@ for any future vendor, and it touches no workflow. Cost of the trial: ~$5.50.
 
 ---
 
-### 24. ✅ First contact answers the question · DONE 2026-07-30 (staging) · effort S
+### 24. ✅ First contact answers the question · DONE 2026-07-30 (staging) · effort S · RELEASE 1
 *As a new member, my first message gets a real answer — even though it is also the moment Olivia
 introduces herself.*
 
@@ -852,7 +1156,7 @@ first contact) stays as-is by design — the help menu IS that question's answer
 
 ---
 
-### 4. ✅ Safe edits and rollback · DONE 2026-07-28 · effort M
+### 4. ✅ Safe edits and rollback · DONE 2026-07-28 · effort M · RELEASE 1
 *As the team, we can change Olivia without members being the ones who find the breakage.*
 
 Edits go straight into the workflow members are talking to. No test copy, no rollback. Two sessions have

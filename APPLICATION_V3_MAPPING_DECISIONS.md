@@ -70,3 +70,38 @@ Sorted in Typeform order.
 | 9b | Verify Your Sales | Revenue Screenshot | url | ♻️ legacy | ✅ synced | reuse |
 | 9c | Commit to Community Engagement | commit to community engagement | singleLineText | ♻️ legacy | ✅ synced | reuse |
 | 9d | Agree to **[MDS ](https://docs.google. | agree to mds membership agreement | singleLineText | ♻️ legacy | ✅ synced | reuse |
+
+---
+
+## 🔴 OPEN GAP — v3 captures NO controlled product category (found 2026-07-31, via Olivia #5)
+
+**What v3 does today.** The scenario (Make `4784286`) writes exactly ONE niche field:
+`Forms.Main Niche` (`fld2FGgrroHy93dda`, **singleLineText**) from the Typeform answer
+`main_niche_open_text`. It writes **nothing** to `Forms.Category` — the 19-choice multi-select that
+used to be the countable field. Nothing in this mapping doc covers niche or category either, which
+is how the gap got here unnoticed.
+
+**Why it matters.** `Members.Category` and `Members.Main Niche` are both `multipleLookupValues` off
+the Forms record — nobody maintains them on the member, they mirror the application. So since v3
+went live (2026-07-08) every new member arrives with a free-text niche and **no controlled
+category**. The one countable field decays as the membership grows, and free text cannot be
+counted: today it holds **334 distinct values across 466 members** ("advent calendars", "?",
+"All categories", "Mosquito Control").
+
+**Consequence already hit.** "How many members are in the Supplements niche?" had no answer from
+structured data — the controlled taxonomy's bucket is `Health/ Beauty/ & Supplements (Consumables)`,
+which lumps three niches together, and only the member's own free text distinguishes them.
+
+**Worked around downstream, not fixed.** Olivia #5 now derives `digest.member_niches` (canonical
+14-value vocabulary, multi-valued, Main Niche taking precedence) via
+`scripts/olivia_derive_niches.py`. That makes members countable **today** — Supplements = 68 — but
+it is a classifier over free text, not a clean capture, and it must be re-run as members join.
+
+**The fix belongs here, and there are two options:**
+1. **Ask a controlled question in the form** — add the category multi-select to v3 and map it to
+   `Forms.Category`. Cleanest, but costs a question on a form where completion rate matters.
+2. **Classify on submission** — keep the open-text question the members like, and have the
+   submission path write the derived category into `Forms.Category`. No extra question asked.
+
+Recommendation: option 2 — it keeps the form short and puts the structure in at the point of
+capture, so nothing downstream has to guess. **Needs Andy's call; not started.**

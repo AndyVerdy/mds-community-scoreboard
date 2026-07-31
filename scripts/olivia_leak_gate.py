@@ -33,9 +33,11 @@ digest.content_lookup — the only two operations Olivia has):
  12. Videos source (digest.video_search): a restricted video, a soft-deleted video and
      a non-published video are each invisible even when ingested and even on a direct
      topical match (fail closed); output rows carry ONLY the allowlisted catalogue
-     fields; the GroupOS storage path (uploads/content-archive/...) NEVER reaches the
-     member — video_url is always the app.mds.co/videos/<id> shape; unknown phone =
-     zero rows; anon denied on the RPC and on videos_catalog.
+     fields; the GroupOS storage path (uploads/content-archive/...) of the video FILE
+     NEVER reaches the member — video_url is always the app.mds.co/videos/<id> shape;
+     preview images (thumbnail_url / partner logo_url) MAY be stored and shown (Andy
+     2026-07-30) but must be images, never content files; unknown phone = zero rows;
+     anon denied on the RPC and on videos_catalog.
 
 Canary rows are inserted with source='redteam_canary' and always deleted afterwards
 (pre-cleaned on start too, so a crashed run can't poison the index).
@@ -280,6 +282,24 @@ def main():
         check("member_match unknown phone = zero rows", isinstance(hits, list) and not hits)
         st, _b = rpc("member_match", {"p_phone": phone}, ANON_KEY)
         check("anon denied on member_match", st in (401, 403, 404), f"status {st}")
+
+        print("— member_count hygiene (#5, 2026-07-31) —")
+        st, cnt = rpc("member_count", {"p_phone": phone, "p_niche": "Supplements"}, key)
+        check("member_count answers (status 200)", st == 200, f"status {st}")
+        row = (cnt or [{}])[0]
+        check("count rows carry ONLY total/breakdown/population/note",
+              set(row.keys()) <= {"total", "breakdown", "population", "note"}, str(list(row.keys())))
+        st, grp = rpc("member_count", {"p_phone": phone, "p_group_by": "chapter"}, key)
+        g = ((grp or [{}])[0].get("breakdown") or {})
+        # breakdown values are COUNTS keyed by public dimension values — a member name as a key
+        # (or anything but an integer as a value) means the aggregate started identifying people
+        check("breakdown values are integers only", all(isinstance(v, int) for v in g.values()))
+        check("no breakdown key matches the asker's name",
+              not my_name or all(my_name.lower() not in str(k).lower() for k in g.keys()))
+        st, z = rpc("member_count", {"p_phone": "19999999999", "p_niche": "Supplements"}, key)
+        check("member_count unknown phone = zero rows", isinstance(z, list) and not z)
+        st, _b = rpc("member_count", {"p_phone": phone}, ANON_KEY)
+        check("anon denied on member_count", st in (401, 403, 404), f"status {st}")
 
         print("— chat_recommendations hygiene —")
         st, recs = rpc("chat_recommendations", {"p_phone": phone}, key)
@@ -633,8 +653,9 @@ def main():
               st in (401, 403, 404) or (isinstance(body, list) and not body), f"status {st}")
 
         print("— videos source (video_search) —")
-        # videos_catalog deliberately has NO video_url / thumbnail_url column: the GroupOS
+        # videos_catalog deliberately has NO video_url column: the video file's GroupOS
         # storage path is dropped at ingest and can never be selected into an answer.
+        # (thumbnail_url = preview image, allowed since 2026-07-30 — checked below.)
         STORAGE_PATH = "uploads/content-archive/videos/redteam-should-never-leak.mp4"
         # PostgREST bulk insert requires an identical key set on every object.
         def vcanary(vid, name, status, access, deleted_at=None, cliff=None, files_text=None):
@@ -698,13 +719,37 @@ def main():
         vblob = json.dumps(vids)
         check("GroupOS storage path never reaches the member",
               "uploads/content-archive" not in vblob and "redteam-should-never-leak" not in vblob)
-        # structural: the storage path is not even persisted, so no future RPC edit can leak it
+        # structural: the video FILE's storage path is not even persisted, so no future RPC
+        # edit can leak a downloadable. thumbnail_url IS allowed (Andy's ruling 2026-07-30:
+        # restricted content is surfaced-with-a-warning, never hidden, so preview images —
+        # video thumbnails, partner logos — may be stored and shown; the ban stays on
+        # actual content files).
         st, cols = curl("GET", f"{BASE}/videos_catalog?video_id=eq.feedfacefeedfacefeed1004", key,
                         profile_hdr=["Accept-Profile: digest"])
         stored = set(cols[0].keys()) if isinstance(cols, list) and cols else set()
-        check("videos_catalog never stores the raw video/thumbnail storage path",
-              bool(stored) and not ({"video_url", "thumbnail_url"} & stored),
+        check("videos_catalog never stores the raw video-file storage path",
+              bool(stored) and "video_url" not in stored,
               f"columns: {sorted(stored)}")
+        # the preview columns must hold IMAGES — a video/deck file path in there would be
+        # the old leak wearing a new column name
+        _CONTENT_EXT = (".mp4", ".mov", ".m4v", ".webm", ".avi", ".mp3", ".wav",
+                        ".pdf", ".ppt", ".pptx", ".key", ".zip", ".doc", ".docx",
+                        ".xls", ".xlsx")
+        def _content_files(rows, field):
+            vals = [(r.get(field) or "") for r in rows] if isinstance(rows, list) else []
+            return [v for v in vals if v.lower().split("?")[0].endswith(_CONTENT_EXT)]
+        st, thumbs = curl("GET",
+                          f"{BASE}/videos_catalog?select=thumbnail_url&thumbnail_url=not.is.null&limit=2000",
+                          key, profile_hdr=["Accept-Profile: digest"])
+        check("stored video thumbnails are images, never content files",
+              isinstance(thumbs, list) and not _content_files(thumbs, "thumbnail_url"),
+              f"status {st}, offenders: {_content_files(thumbs, 'thumbnail_url')[:3]}")
+        st, logos = curl("GET",
+                         f"{BASE}/partners_catalog?select=logo_url&logo_url=not.is.null&limit=2000",
+                         key, profile_hdr=["Accept-Profile: digest"])
+        check("stored partner logos are images, never content files",
+              isinstance(logos, list) and not _content_files(logos, "logo_url"),
+              f"status {st}, offenders: {_content_files(logos, 'logo_url')[:3]}")
         check("video output carries no internal ids (speaker/event/category ids)",
               "speaker_ids" not in vblob and "event_ids" not in vblob
               and "category_ids" not in vblob and "subcategory_ids" not in vblob)
