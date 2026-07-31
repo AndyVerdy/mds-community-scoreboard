@@ -794,12 +794,18 @@ supa does not have). site_stats stays in chapters_catalog for reference, never e
 Europe probe = 61 members · niches w/ counts · band mix 21/8/9/14 · $742M TTM · $14.3M avg ·
 9.5 avg employees · ~3y tenure — all live, no site figure anywhere.
 
-**V3/census channel fields FOUND, not yet wired (the next natural add):**
-`Amazon US/Canada/EU & % of Revenue` (bands: <5%, 6-15%, 16-25%, 26-50%, 51%+ — with variant
-spellings and multi-submission arrays; 660 actives covered) · `Walmart.com & % of Revenue` ·
-`> 20% Rev Off Amazon - per census/application` (TRUE/FALSE arrays). Needs a normalization pass
-(band canon + latest-submission rule) before per-chapter channel mix is countable — fold into #9's
-revenue session or ship as #6 round 2 on Andy's go.
+**Round 2 SHIPPED same night (Andy: "I like the amazon markets + sales channels suggestion"):**
+`live_stats.channels` = members selling via each channel per chapter, counted from the CANONICAL
+`member_attributes.channel_mix` (the derive job had already normalized the census band fields —
+no re-parse; one truth with member_match) + `tiktok_seller` → "TikTok Shop". Vocabulary: Amazon
+US / Canada / EU / Other Amazon · DTC/Own Website · Walmart · Wayfair/Overstock/Target ·
+Wholesale (Big Box / Independent) · TikTok Shop, with `channel_reporters` as the honest
+denominator (95 actives report no channels). Migration `chapter_info_channels` (jsonb key —
+same return type, grants preserved). Sum-integrity verified: 773 chap rows == 773 distinct
+member-chapter pairs (no double-count). **Probes warehouse-exact:** Europe = Amazon US 48 ·
+CA 31 · EU 29 · DTC 23 · Walmart 17 · TikTok 1 of 53 reporters, quoted against reporters ✓ ·
+"most DTC sellers" → NY 42, Women's 39, SoFlo 25 ✓. The raw `% of Revenue` band fields stay
+un-parsed on purpose (variant spellings, multi-submission arrays) — the derive job owns that.
 
 **Named exceptions / open:**
 - **The 4 policy questions (change chapters · join several · live in two places · how to change)

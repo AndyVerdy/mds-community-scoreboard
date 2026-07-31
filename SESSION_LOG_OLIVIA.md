@@ -62,6 +62,16 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   deploy verified via /api/version. His live tests during the session: per-chapter supplements
   concentration (PacNW 10 · APAC 9 · SoTex 8) answered from live_stats.top_niches — the layer
   working on his own probes.
+- **ROUND 2 — CHANNELS SHIPPED (Andy's go: "I like the amazon markets + sales channels
+  suggestion"):** `live_stats.channels` counts members per channel from the CANONICAL
+  `member_attributes.channel_mix` (already normalized by the derive job — no re-parse of the
+  messy band fields; one truth with member_match) + `tiktok_seller` → "TikTok Shop", with
+  `channel_reporters` as the honest denominator. Migration `chapter_info_channels` (jsonb key =
+  same return type, CREATE OR REPLACE, grants preserved). Integrity: 773 chap rows == 773
+  distinct pairs (sums can't double-count). **Probes warehouse-exact:** Europe channel table
+  (Amazon US 48 · CA 31 · EU 29 · DTC 23 · Walmart 17 · Wayfair 8 · Wholesale 10+10 · TikTok 1,
+  of 53 reporters — quoted against reporters, not members ✓) · "which chapter has the most DTC
+  sellers?" → NY 42 / Women's 39 / SoFlo 25 (SQL-verified). Gate re-run after (result below).
 
 ## 2026-07-31 (LATE-3) — #33 CLOSED: the 2:40 stall was BRANCH ORDER (typing+ladder ran AFTER the answer, every prod turn) · duplicate pair = the known ghost window, already fixed · LINKS WHEN YOU SOLVE shipped · smoke checklist written · gate 167
 
