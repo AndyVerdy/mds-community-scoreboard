@@ -62,6 +62,7 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   deploy verified via /api/version. His live tests during the session: per-chapter supplements
   concentration (PacNW 10 · APAC 9 · SoTex 8) answered from live_stats.top_niches — the layer
   working on his own probes.
+- **COVERAGE AUDIT (Andy: min 50% of members per field):** ALL PASS over the 722 actives — Years-in-MDS + Employee Count 100% · city 98.2% · country 97.6% · **chapter on record 95.6%** (690/722, 773 memberships — the old "only 14% have a chapter" note was a stale-field measurement, corrected) · sku 95.2% · niches 94.2% · brands 93.4% · age_band 92.9% · channels 90.4% · business_model 90.2% · rev_band 88.4% · Most Recent Revenue 87.4% · started_year 62.0% (lowest, above bar — avg_years_in_business averages 448 members).
 - **ROUND 3 — V3 PROFILE STATS SHIPPED (Andy: "do you want to add more data from v3?" → yes):**
   live_stats gains `business_models` (clean multi-select: Private Label / OEM / Agency /
   Wholesale) · `countries` (ISO-2 + full-name DUAL CODING folded via a cmap — Europe had
