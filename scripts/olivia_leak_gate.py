@@ -302,6 +302,31 @@ def main():
         st, _b = rpc("member_count", {"p_phone": phone}, ANON_KEY)
         check("anon denied on member_count", st in (401, 403, 404), f"status {st}")
 
+        print("— chapter_info hygiene (#6, 2026-07-31) —")
+        st, chs = rpc("chapter_info", {"p_phone": phone}, key)
+        check("chapter_info answers (status 200)", st == 200, f"status {st}")
+        ch_names = [r.get("chapter") for r in (chs or [])]
+        check("chapter list = the 20-row catalog whitelist, no junk pseudo-chapters",
+              len(ch_names) == 20 and not any(j in n for n in ch_names
+                                              for j in ("Shopify", "Amazon", "Sponsor")),
+              f"{len(ch_names)} rows")
+        # one number everywhere: chapter_info live counts == member_count's chapter breakdown
+        st, grp2 = rpc("member_count", {"p_phone": phone, "p_group_by": "chapter"}, key)
+        g2 = ((grp2 or [{}])[0].get("breakdown") or {})
+        mismatch = [r["chapter"] for r in (chs or []) if g2.get(r["chapter"]) != r.get("member_count")]
+        check("chapter_info counts == member_count breakdown (one number everywhere)",
+              bool(chs) and not mismatch, str(mismatch)[:150])
+        blob = json.dumps(chs or [])
+        check("no email and no email/phone KEYS in chapter output",
+              "@" not in blob and '"email"' not in blob and '"phone"' not in blob)
+        check("lead objects carry ONLY name/role/photo_url",
+              all(set(l.keys()) <= {"name", "role", "photo_url"}
+                  for r in (chs or []) for l in (r.get("leads") or [])))
+        st, z = rpc("chapter_info", {"p_phone": "19999999999"}, key)
+        check("chapter_info unknown phone = zero rows (fail closed)", isinstance(z, list) and not z)
+        st, _b = rpc("chapter_info", {"p_phone": phone}, ANON_KEY)
+        check("anon denied on chapter_info", st in (401, 403, 404), f"status {st}")
+
         print("— chat_recommendations hygiene —")
         st, recs = rpc("chat_recommendations", {"p_phone": phone}, key)
         check("chat_recommendations answers (status 200)", st == 200, f"status {st}")
@@ -917,6 +942,9 @@ def main():
                   isinstance(rows, list) and not rows, f"got {len(rows or [])}")
             st, rows = rpc("partner_lookup", {"p_phone": rphone, "p_query": "tiktok"}, key)
             check("canceled member phone gets ZERO partner rows",
+                  isinstance(rows, list) and not rows, f"got {len(rows or [])}")
+            st, rows = rpc("chapter_info", {"p_phone": rphone}, key)
+            check("canceled member phone gets ZERO chapter rows",
                   isinstance(rows, list) and not rows, f"got {len(rows or [])}")
             remail = rem[0].get("email")
             if remail:

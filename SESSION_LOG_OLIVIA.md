@@ -6,6 +6,46 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-07-31 (LATE-4) — #6 CHAPTERS CLOSED (Release 2): 20/20 public pages scraped into chapters_catalog · chapter_info = live counts (== member_count by construction) + leads/photos + live_stats + asker_city · Andy's chain zero re-asks · gate 175
+
+- **Andy's rulings in session:** counts = **RAW DATA** (live member records rule; the public
+  chapter pages are the disclosure precedent and DO lag: Europe 61 live vs site 50, NY 97 vs 82,
+  NorthTex 12 vs 15) · **leads PUBLIC** (names + roles + photos are published on mds.co chapter
+  pages; emails/phones never — not published, not stored) · "wire other data we have — it costs
+  us nothing… something from application v3?" → live_stats below.
+- **`digest.chapters_catalog`** + **`scripts/sync_chapter_pages.py`** (re-runnable, hard-verifies
+  every page): **20/20 GREEN** — leads w/ roles + photo URLs, 6/6 site stats incl. TTM,
+  categories. Scrape traps fixed: the chapters INDEX links MDS Women to a dead
+  milliondollarsellers.com URL (live = mds.co/chapters/mds-women) · "Chapter Lead" singular on
+  Rockies/Las Vegas · "Members" label on the Women's page. Site pricing inconsistency spotted in
+  passing (index $1,995/q vs APAC page $1,795/q) — site team's, flagged here only.
+- **`digest.chapter_info` RPC** (fail-closed dual-key): live member_count computed by the SAME
+  CTEs as member_count (one number everywhere BY CONSTRUCTION — gate-checked equal) · leads ·
+  about · categories · site_stats "as published" · **live_stats** = top_niches (member_niches) +
+  band_mix + **TTM sum/avg from `Most Recent Revenue`** (lookup shape `[1450000]` unwrapped) +
+  employees (`Total Employee Count`) + avg tenure (`# of Years for Member`) · **asker_city/state**
+  (first probe asked Andy for his city while Jersey City sat in member_attributes — now the tool
+  carries it; ask only when empty). **Field-names-lie catches:** `Most Recent Revenue Source` =
+  Airtable record URL, NOT a channel · `Actual Birthday v2` = NEXT birthday (future dates) → no
+  channel mix (→ census #20), no avg-age.
+- **Loop tool + CHAPTERS rule** on staging (build_loop). **Gate 167 → 175 GREEN** (+8: whitelist
+  20-only · counts==member_count · no email/phone keys · lead objects name/role/photo_url only ·
+  unknown-phone zero · canceled zero · anon denied · answers-200), exit 0 full run ×2.
+- **Proof — Andy's exact follow-up chain on staging, ZERO re-asks** (execs ~21:46-23:0xZ):
+  "How many chapters?" → 20 · "Whats the closest to me?" → "Since you're in *Jersey City, New
+  Jersey* → New York Chapter, 97 members" + leads + link + not-a-member-yet · "how many members?"
+  → 97 live, page-shows-82 called out · "who is the chapter lead?" → Morris Sued / Brandon
+  Furhmann / Mari Ashley + link · "tell me about the Europe chapter" → 61 live vs 50, Beauty 26 /
+  H&PC 27, ~$742M TTM + $14.3M avg + ~3y tenure, leads, link.
+- **🐋 NEEDS ANDY (filed 4b):** live TTM sums can out a whale — NorthTex sum $930M with ONE member
+  at $806M. Site precedent publishes chapter sums → shipped ON; band_mix is the fallback if ruled
+  off. **Policy questions** (change/join-several/two-places) still sourceless → delegated to #18.
+  **Not scheduled:** sync_chapter_pages.py joins the niches+labels jobs in the nightly-scheduling
+  residual. Andy also floated sending lead PHOTOS — photo_url is in the tool + linkable; a real
+  image-send path for non-FB images stays future.
+- Supabase MCP died mid-session (`select 1` failing) — switched to the cloud Supabase MCP
+  (project-scoped) for the rest; n8n MCP unaffected.
+
 ## 2026-07-31 (LATE-3) — #33 CLOSED: the 2:40 stall was BRANCH ORDER (typing+ladder ran AFTER the answer, every prod turn) · duplicate pair = the known ghost window, already fixed · LINKS WHEN YOU SOLVE shipped · smoke checklist written · gate 167
 
 - **Forensics first (all free, read-only). Andy's clock is CDT** — "2:40PM" = exec 57816

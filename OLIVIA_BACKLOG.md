@@ -46,11 +46,13 @@ or has one real unknown. L = needs data or a decision we don't have yet.
   ≤10s median NOT met and deliberately not bought — re-file a latency target after #7/#8.
 - ✅ on staging, proven: **#5 counting** (`member_niches` + `member_count` w/ breakdown_sum + loop
   tool) · **#33 prod smoke** (early-feedback branch reorder + links-when-solving rule +
-  `OLIVIA_SMOKE_CHECKLIST.md`).
-- 🔨 NEXT: **#6 chapters (blocked on Andy's rulings: canonical count + leads shareability)**, then
-  promote on Andy's go — **run `OLIVIA_SMOKE_CHECKLIST.md` on staging first, paste the result
-  block in the session log.** Bank 3101-3112 swap is release-independent (eval instrument, not
-  shipped code); FULL run on the new bank comes after these PBIs close.
+  `OLIVIA_SMOKE_CHECKLIST.md`) · **#6 chapters** (chapters_catalog 20/20 scraped + chapter_info
+  w/ live counts == member_count + live_stats + asker_city; Andy's chain probe zero re-asks;
+  gate 175).
+- 🔨 NEXT: **promote on Andy's go** — **run `OLIVIA_SMOKE_CHECKLIST.md` on staging first, paste
+  the result block in the session log.** Then #7 people search. Bank 3101-3112 swap is
+  release-independent (eval instrument, not shipped code); FULL run on the new bank comes after
+  these PBIs close.
 
 **Rule:** every ✅ at the bottom is filed under its release; anything shipped after Jul 30 is
 Release 2 = staging-only until the next promote.
@@ -94,31 +96,6 @@ phone-less actives; fixed same day.)
 
 # 🟡 S2
 
-
-### 6. 🟡 Chapters, end to end · S2 · effort M
-*As a member, I can ask anything about chapters and get a real answer.*
-
-**Accept when**
-- **Your rulings land first:** the canonical count, and whether a lead's name — or email — is shareable.
-  Nothing below is measurable until then.
-- **One number everywhere.** Chapter counts agree with the canonical source in every answer that shows them.
-- **Membership questions answer correctly for members with a chapter and for members without one.**
-- **The policy questions have a written source and answers cite it: 0% inferred from chat chatter.**
-- **The chapter list contains only real chapters.**
-
-Verified: **member counts are already live** (all 20 chapters with counts), **chapter leads exist in
-Airtable but are not exposed** (New York → Mari, Morris, Brandon), **"am I in a chapter" is answerable
-but only 14% of members have one on record**, and the four policy questions — change chapters, join
-several, live in two places, how do I change — have **no source anywhere**.
-
-- How many members in each chapter, and who leads it
-- Am I in a chapter; can I be in several (120 members already are)
-- The policy answers get written down once and become answerable
-- **Andy picks the canonical count first:** Airtable rollup says New York 94, live logic 97, raw field 116
-- **Andy rules on chapter leads:** is a lead's name shareable, their email ever
-- Needs a chapter whitelist — the raw field yields 36 "chapters" including Shopify, Amazon and Sponsor
-
-**Impact:** 804 members have a chapter; the policy questions apply to all 722.
 
 ### 7. 🟡 People search that understands meaning · S2 · effort M
 *As a member, I find the right person even when I don't know the exact word or spelling.*
@@ -766,6 +743,63 @@ future promote.
 
 ---
 
+### 6. ✅ Chapters, end to end · CLOSED 2026-07-31 · effort M · RELEASE 2
+*As a member, I can ask anything about chapters and get a real answer.*
+
+**Andy's rulings (2026-07-31, in session):** (1) **canonical numbers = our RAW DATA** — live counts
+from member records; the mds.co chapter pages are the DISCLOSURE PRECEDENT but may be stale
+("we need to rely on raw data"; live: Europe 61 vs site 50, NY 97 vs 82, NorthTex 12 vs 15).
+(2) **Chapter leads are PUBLIC** — names, roles AND photos are published on the chapter pages, so
+Olivia shares them; emails/phones are not published and stay unavailable (they are not even stored).
+
+**What shipped:**
+- **`digest.chapters_catalog`** (warehouse): all 20 chapters scraped from the public pages by
+  **`scripts/sync_chapter_pages.py`** (re-runnable; hard-verifies every page: leads 1-3 w/ roles +
+  photo URLs, 6/6 site stats incl. TTM, categories; **20/20 GREEN**). The catalog IS the chapter
+  whitelist — junk pseudo-chapters structurally impossible. Fixes found scraping: the chapters
+  index links MDS Women to a DEAD milliondollarsellers.com URL (live page =
+  mds.co/chapters/mds-women); two pages title the section "Chapter Lead" singular; the Women's
+  page labels the stat "Members".
+- **`digest.chapter_info` gated RPC** (fail-closed dual-key, same asker gate as member_count):
+  per chapter — **LIVE member_count computed by the SAME CTEs as member_count** (one number
+  everywhere BY CONSTRUCTION, gate-checked) · leads · about · categories · site_stats (as
+  published) · **`live_stats`** (Andy: "wire other data we have — it costs us nothing"):
+  top_niches (member_niches counts) · revenue **band_mix** · **TTM sum/avg from `Most Recent
+  Revenue`** (v3 Option-B field; lookup shape `[1450000]` unwrapped) · employees sum/avg (`Total
+  Employee Count`) · avg tenure (`# of Years for Member`) · **asker_city/asker_state** so
+  closest-to-me NEVER asks when the city is on file (the first probe asked Andy for his city
+  while Jersey City sat in member_attributes — fixed deterministically). Rejected on inspection
+  (field names lie): `Most Recent Revenue Source` = an Airtable record URL, not a channel;
+  `Actual Birthday v2` = NEXT birthday (future dates) — no avg-age, no channel mix (channel mix
+  lands with census #20).
+- **Loop tool + CHAPTERS rule** (answer_seed.js, staging): leads shareable with page link +
+  photo_url linkable · live rules over site stats · aggregates never imply a single member's
+  figure · asker_city drives closest-to-me · asker_is_member drives "am I in a chapter".
+- **Gate +8 checks (167→175 GREEN):** whitelist-only (20 rows, no junk) · chapter_info counts ==
+  member_count breakdown · no email/phone keys · lead objects carry ONLY name/role/photo_url ·
+  unknown phone zero · canceled phone zero · anon denied · answers-200.
+
+**Proof — Andy's exact follow-up chain on staging, zero re-asks:** "How many chapters?" → 20 ·
+"Whats the closest to me?" → "Since you're in *Jersey City, New Jersey* → New York Chapter, 97
+members" + leads + link + not-a-member-yet · "how many members?" → 97 live ("page shows 82,
+live rules") · "who is the chapter lead?" → Morris Sued / Brandon Furhmann / Mari Ashley ·
+"tell me about the Europe chapter" → 61 live vs site 50, top niches WITH counts, ~$742M chapter
+TTM + $14.3M avg + tenure, leads, link.
+
+**Named exceptions / open:**
+- **The 4 policy questions (change chapters · join several · live in two places · how to change)
+  still have NO written source** — that AC is delegated to **#18** (its own scope says it unblocks
+  exactly this). The factual half ("can I be in several") answers from data today (120 members are).
+- **NEEDS ANDY: the whale ruling** — live TTM sums can out one member's scale in a small chapter
+  (NorthTex sum $930M, one member = $806M of it). Site precedent publishes chapter sums, so they
+  ship ON; band_mix is the fallback if he rules them off.
+- `sync_chapter_pages.py` not scheduled — same gap as `olivia_derive_niches.py` +
+  `olivia_label_questions.py`; schedule all three together (#13/#15 residual).
+
+**Impact:** 804 chapter memberships / all 722 actives; the most-asked community-structure class.
+
+---
+
 ### 23. ✅ Answer latency · CLOSED 2026-07-31 on the story (Andy's call) · effort M · RELEASE 1 + 2
 *As a member, an answer arrives while the question is still on my mind — WhatsApp shows no typing
 indicator, so a slow answer reads as a dead one.*
@@ -1287,8 +1321,13 @@ twice. Fixing that is part of the routine. Held until the 11 betas are active.
 
 1. **Revenue ranking** — may she rank named members by revenue at all, or bands only? (#3 Public revenue, double-sourced)
 2. **Ex-member departure dates** — "no longer active" only, or is the date fine? (#1 Sensitive-topic gate)
-3. **Canonical chapter count** — Airtable rollup, current-members logic, or raw field? They differ by 22 on New York. (#3 Chapters, end to end)
-4. **Chapter leads** — is a lead's name shareable? Their email? (#3 Chapters, end to end)
+3. ~~Canonical chapter count~~ — **ANSWERED 2026-07-31: raw data (live member records) is
+   canonical; the site is the disclosure precedent, may lag.** (#6, closed)
+4. ~~Chapter leads~~ — **ANSWERED 2026-07-31: names, roles and photos are public on the chapter
+   pages → shareable; emails/phones never (not published, not stored).** (#6, closed)
+4b. **Chapter TTM sums — the whale question (NEW, from #6):** a live chapter revenue sum can out
+   one member's scale in a small chapter (NorthTex: sum $930M, one member $806M of it). The site
+   publishes chapter sums, so they ship ON — rule them off (band_mix only) if that's too exposed.
 5. **Revenue working session** — brackets, derivation, and the Amazon/DTC/TikTok split. (#3 Revenue brackets, one rule)
 6. **The pre-ship test script** — *not* the multi-source member feature (that's #11). One command run before shipping: asks a real question of every source, runs the ticket flow, runs the safety gate, prints pass/fail. Build it, and at what priority?
 

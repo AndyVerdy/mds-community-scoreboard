@@ -26,18 +26,36 @@
 **Read `OLIVIA_BACKLOG.md` first** — every item carries **Accept when** criteria under one global
 DoD; the judge files failures into 8 classes mapped to tickets.
 
-## NEXT SESSION — orders (2026-07-31 late close)
+**Session open (Andy 2026-07-31): after reading the docs + verifying live, SUGGEST which
+ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pick before diving in.**
 
-1. **#6 Chapters — blocked on Andy's rulings first:** canonical count (AT rollup 94 vs live 97 vs
-   raw 116) · are chapter-lead names/emails shareable. Then whitelist + policy sources.
-2. **Promote when Andy says go** (Release 2 bundle: eval fix batch · #23 cuts · #5 counting ·
-   #33 early-feedback reorder + links rule). **Before it: run `OLIVIA_SMOKE_CHECKLIST.md` on
-   staging and paste the result block into the session log** — that is now standing process.
-3. Standing: MDS-Life ruling (Q3088 expect) · schedule `olivia_derive_niches.py` +
-   `olivia_label_questions.py` nightly · extend content_stats (distinct-authors-by-source) ·
+## NEXT SESSION — orders (2026-07-31 final close)
+
+1. **Promote when Andy says go** (Release 2 bundle: eval fix batch · #23 cuts · #5 counting ·
+   #33 early-feedback reorder + links rule · **#6 chapters tool + rule**). **Before it: run
+   `OLIVIA_SMOKE_CHECKLIST.md` on staging and paste the result block into the session log** —
+   standing process.
+2. **Suggest next ticket(s):** #7 people search that understands meaning (S2) is the top open item.
+3. Standing: MDS-Life ruling (Q3088 expect) · **whale ruling** (live chapter TTM sums can out one
+   member's scale — NorthTex $930M sum / $806M one member; ON today per site precedent) ·
+   **schedule the THREE derivation jobs nightly** (`olivia_derive_niches.py` ·
+   `olivia_label_questions.py` · `sync_chapter_pages.py`) · chapter POLICY answers need the team's
+   written source (delegated to #18) · extend content_stats (distinct-authors-by-source) ·
    FULL run on the new bank (3101-3112) when Andy calls runs back on.
 
-## State (2026-07-31 late close)
+## State (2026-07-31 final close)
+- **#6 CHAPTERS CLOSED (staging, Release 2).** Andy's rulings in session: counts = RAW DATA (live
+  member records; the public mds.co chapter pages are the disclosure precedent, may lag) · leads
+  PUBLIC (names/roles/photos are on the pages; emails never — not stored). Shipped:
+  `digest.chapters_catalog` (20/20 pages scraped + hard-verified by `scripts/sync_chapter_pages.py`;
+  the catalog IS the whitelist) + `digest.chapter_info` (live counts by the SAME CTEs as
+  member_count — one number everywhere by construction — + leads + site_stats + `live_stats`:
+  top_niches, band_mix, TTM sum/avg from `Most Recent Revenue`, employees, tenure + asker_city so
+  closest-to-me never asks when the city is on file) + loop tool + CHAPTERS rule. **Gate 175/175
+  GREEN.** Proof = Andy's exact chain, zero re-asks (chapters 20 → closest = NY from Jersey City →
+  97 live → leads Morris/Brandon/Mari → Europe deep-dive w/ live aggregates). Field traps
+  documented: `Most Recent Revenue Source` = record URL (not channel) · `Actual Birthday v2` =
+  NEXT birthday. Open: whale ruling · policy source (#18) · scrape not scheduled.
 - **#33 CLOSED (staging, Release 2).** The 2:40PM stall root-caused: n8n v1 ran the
   Mark Read + Typing → ladder branch AFTER the whole answer (exec 57816, 70.5s, ladder exec
   started as the main exec stopped) — read tick/typing/ladder were structurally dead on every
