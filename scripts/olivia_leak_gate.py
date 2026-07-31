@@ -287,8 +287,9 @@ def main():
         st, cnt = rpc("member_count", {"p_phone": phone, "p_niche": "Supplements"}, key)
         check("member_count answers (status 200)", st == 200, f"status {st}")
         row = (cnt or [{}])[0]
-        check("count rows carry ONLY total/breakdown/population/note",
-              set(row.keys()) <= {"total", "breakdown", "population", "note"}, str(list(row.keys())))
+        check("count rows carry ONLY total/breakdown/breakdown_sum/population/note",
+              set(row.keys()) <= {"total", "breakdown", "breakdown_sum", "population", "note"},
+              str(list(row.keys())))
         st, grp = rpc("member_count", {"p_phone": phone, "p_group_by": "chapter"}, key)
         g = ((grp or [{}])[0].get("breakdown") or {})
         # breakdown values are COUNTS keyed by public dimension values — a member name as a key

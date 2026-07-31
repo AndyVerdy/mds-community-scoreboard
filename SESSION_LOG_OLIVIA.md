@@ -13,7 +13,9 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   → 42804 sum(bigint)=numeric vs bigint column, caught by the REST hammer-test (the gate fallback
   had disguised it as a content miss) → cast → 6× REST 200, breakdown_sum 773.
 - Final probe: chapter list exact + "= 773 chapter memberships … higher than the 722 distinct
-  members because members belong to more than one chapter." ✓ Gate 167 GREEN. Lock released.
+  members because members belong to more than one chapter." ✓ Gate first went RED — my own member_count shape-check pinned the old column set and
+  didn't know breakdown_sum; the check now includes it → **gate 167 GREEN (verified after the
+  fix, not before)**. Lock released.
 - #5 CLOSED into Release 2. Residuals filed (content_stats distinct-authors · schedule the two
   derivation jobs · counting TEST run when runs resume).
 
