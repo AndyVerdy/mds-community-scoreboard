@@ -762,8 +762,8 @@ Olivia shares them; emails/phones are not published and stay unavailable (they a
   page labels the stat "Members".
 - **`digest.chapter_info` gated RPC** (fail-closed dual-key, same asker gate as member_count):
   per chapter — **LIVE member_count computed by the SAME CTEs as member_count** (one number
-  everywhere BY CONSTRUCTION, gate-checked) · leads · about · categories · site_stats (as
-  published) · **`live_stats`** (Andy: "wire other data we have — it costs us nothing"):
+  everywhere BY CONSTRUCTION, gate-checked) · leads · about · categories · **`live_stats`**
+  (Andy: "wire other data we have — it costs us nothing"):
   top_niches (member_niches counts) · revenue **band_mix** · **TTM sum/avg from `Most Recent
   Revenue`** (v3 Option-B field; lookup shape `[1450000]` unwrapped) · employees sum/avg (`Total
   Employee Count`) · avg tenure (`# of Years for Member`) · **asker_city/asker_state** so
@@ -785,6 +785,21 @@ members" + leads + link + not-a-member-yet · "how many members?" → 97 live ("
 live rules") · "who is the chapter lead?" → Morris Sued / Brandon Furhmann / Mari Ashley ·
 "tell me about the Europe chapter" → 61 live vs site 50, top niches WITH counts, ~$742M chapter
 TTM + $14.3M avg + tenure, leads, link.
+
+**Correction same night (Andy: "this data is outdated… take it from supa"):** the site's six
+numbers were initially returned alongside as a labeled "as published" reference — **REMOVED from
+the RPC output entirely** (migration `chapter_info_supa_numbers_only`): the model can now only
+ever see warehouse-computed numbers; the site contributes ONLY leads/photos/about/link (the data
+supa does not have). site_stats stays in chapters_catalog for reference, never emitted. Re-proven:
+Europe probe = 61 members · niches w/ counts · band mix 21/8/9/14 · $742M TTM · $14.3M avg ·
+9.5 avg employees · ~3y tenure — all live, no site figure anywhere.
+
+**V3/census channel fields FOUND, not yet wired (the next natural add):**
+`Amazon US/Canada/EU & % of Revenue` (bands: <5%, 6-15%, 16-25%, 26-50%, 51%+ — with variant
+spellings and multi-submission arrays; 660 actives covered) · `Walmart.com & % of Revenue` ·
+`> 20% Rev Off Amazon - per census/application` (TRUE/FALSE arrays). Needs a normalization pass
+(band canon + latest-submission rule) before per-chapter channel mix is countable — fold into #9's
+revenue session or ship as #6 round 2 on Andy's go.
 
 **Named exceptions / open:**
 - **The 4 policy questions (change chapters · join several · live in two places · how to change)

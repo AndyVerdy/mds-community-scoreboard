@@ -44,7 +44,24 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   residual. Andy also floated sending lead PHOTOS — photo_url is in the tool + linkable; a real
   image-send path for non-FB images stays future.
 - Supabase MCP died mid-session (`select 1` failing) — switched to the cloud Supabase MCP
-  (project-scoped) for the rest; n8n MCP unaffected.
+  (project-scoped) for the rest; n8n MCP unaffected (both flaked at different moments — each
+  worked as the other's fallback).
+- **CORRECTION same night (Andy: "this data is outdated… take it from supa"):** the site's six
+  numbers, initially returned as a labeled "as published" reference, are now **REMOVED from
+  chapter_info's output entirely** (`chapter_info_supa_numbers_only`) — the model can only ever
+  see warehouse-computed numbers; the site contributes ONLY leads/photos/about/link. Re-proven on
+  the Europe probe (61 · niches w/ counts · band mix · $742M/$14.3M · 9.5 emp · ~3y — zero site
+  figures). Validated to Andy: ALL numbers are calculations over supa, nothing numeric from the
+  website.
+- **V3/census channel fields FOUND for the next add:** `Amazon US/CA/EU & % of Revenue` (bands
+  <5%…51%+, variant spellings, multi-submission arrays; 660 actives), `Walmart.com & % of
+  Revenue`, `> 20% Rev Off Amazon` (TRUE/FALSE arrays) — need band-canon + latest-submission
+  normalization before per-chapter channel mix ships (→ #9 session or #6 round 2).
+- **Test-window UX (Andy mid-test):** chat box was 448px fixed — now fills the viewport
+  (`h-[calc(100vh-370px)]`, min 28rem) + page widened to max-w-5xl. mds-digest-web `ff3a08d`,
+  deploy verified via /api/version. His live tests during the session: per-chapter supplements
+  concentration (PacNW 10 · APAC 9 · SoTex 8) answered from live_stats.top_niches — the layer
+  working on his own probes.
 
 ## 2026-07-31 (LATE-3) — #33 CLOSED: the 2:40 stall was BRANCH ORDER (typing+ladder ran AFTER the answer, every prod turn) · duplicate pair = the known ghost window, already fixed · LINKS WHEN YOU SOLVE shipped · smoke checklist written · gate 167
 
