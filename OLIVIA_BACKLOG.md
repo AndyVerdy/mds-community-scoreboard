@@ -307,6 +307,25 @@ platform would — from everything it knows about me, and it gets the like-minde
 (Andy 2026-07-30: "matchmaking will be the key… we have tons of info we can use for matching…
 you need to research how such DBs are built.")*
 
+**ANDY'S VISION (2026-07-31, verbatim direction — this IS the ticket's north star):** the current
+personas are "useless how it's done now." What he wants is a **DYNAMIC DOSSIER — "like a police
+file"** — roughly ALL the info per member: habits, patterns, likes, dislikes, how often online,
+what they watched, events visited, who they talk to, "your every step, every breath." And **not
+just personas per person: a file for almost EVERY ENTITY and piece of content** (member, video,
+event, partner, thread) — so "his file says he likes C, this video's file is about C → recommend"
+is the *childish base case*, with pattern-learning from behavior on top. This is the
+feature-store + interaction-event-stream architecture the research memo must map onto MDS.
+Consequences filed:
+- #28's persona cards = the first draft of the member file, judged NOT the end state.
+- **Research round 1 must include the SIGNAL INVENTORY + capture gaps**: app video-views/searches
+  not logged yet, `member_events` empty, WA online-presence not captured — name what to START
+  CAPTURING NOW so history accumulates while research runs.
+- "Every step, every breath" requires the written privacy position (#19) before the product
+  promises anything.
+- **`OLIVIA_SIGNAL_INVENTORY.md` WRITTEN 2026-07-31** (Andy: "write all the missing bits and
+  pieces, and we will get it") — HAVE / DERIVABLE / MISSING tables with owners; rows 1-2 (app
+  event logging + GROUPOS_PAT) are the action-this-week items so history accumulates.
+
 **Research FIRST, then build.** Deliverable 1 is a reviewed research memo: how production
 recommender systems actually work (two-stage candidate-generation → ranking · content-based +
 collaborative + behavioral/implicit-feedback signals · embedding feature stores · cold-start
