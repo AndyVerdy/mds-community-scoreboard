@@ -6,6 +6,17 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-07-31 (LATE) — #5 CLOSED: breakdown_sum ships the total-it-up fix · gate 167 · final probe exact (773 vs 722, with the why)
+
+- `member_count` returns `breakdown_sum` — the sum is READ, never computed (model failed 20-number
+  addition 3×). Bug chain: DROP+CREATE (return type change, grants re-issued per the footgun rule)
+  → 42804 sum(bigint)=numeric vs bigint column, caught by the REST hammer-test (the gate fallback
+  had disguised it as a content miss) → cast → 6× REST 200, breakdown_sum 773.
+- Final probe: chapter list exact + "= 773 chapter memberships … higher than the 722 distinct
+  members because members belong to more than one chapter." ✓ Gate 167 GREEN. Lock released.
+- #5 CLOSED into Release 2. Residuals filed (content_stats distinct-authors · schedule the two
+  derivation jobs · counting TEST run when runs resume).
+
 ## 2026-07-31 (NIGHT) — #5 probes: bands + content honest-miss GREEN · "total it up" = the one open defect (model can't add 20 numbers — fix is breakdown_sum in the RPC)
 
 - Bands vocab added to the tool hint → "under $1m" = **"no band under $1M exists"** + full table

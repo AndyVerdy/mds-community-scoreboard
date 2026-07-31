@@ -8,6 +8,7 @@
 prepend the full entry to its STREAM log + ONE line here.** Old references like "read SESSION_LOG
 2026-07-27" resolve through this index: find the date line, open the named stream file.
 
+- 2026-07-31 · **Olivia** · (LATE) **#5 COUNTING CLOSED** (Release 2): breakdown_sum = deterministic total-it-up (773/722 probe exact w/ the why) · 42804 numeric-vs-bigint caught by REST hammer-test · gate 167 → `SESSION_LOG_OLIVIA.md`
 - 2026-07-31 · **Olivia** · (NIGHT) #5 probes: under-$1m honest-miss + bands table exact · 20M+=164 ✓ · total-it-up FAILS (true sum 773, she echoes 722 — fix = breakdown_sum in member_count, not another prompt rule) → `SESSION_LOG_OLIVIA.md`
 - 2026-07-31 · **Olivia** · (EVE) #5 counting layer BUILT: `member_niches` (14-value canon, multi, stated-niches-equal) + `member_count` RPC (gate 167) + loop tool · SoCal-vs-Texas probe = warehouse-exact · v3 no-category gap filed → `SESSION_LOG_OLIVIA.md`
 - 2026-07-31 · **Olivia** · (PM#2) **#25 CLOSED + LIVE ON PROD** (mds-digest-web `294b094`): eval traffic never counts · picker filters every card · 🚨 PostgREST 1000-row cap was hiding recent days (266 read as 250) · topics rebuilt as per-question labels (any window works) · Exclude-staff toggle (184/266 = staff) · staff source corrected to the AT mirror (29 not 15, blanks excluded) → `SESSION_LOG_OLIVIA.md`

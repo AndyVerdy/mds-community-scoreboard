@@ -88,60 +88,6 @@ phone-less actives; fixed same day.)
 # 🟡 S2
 
 
-### 5. 🟡 Counting · S2 · effort M
-*As a member, when I ask a number I get a number.*
-
-**Accept when**
-- **A count that exists is never refused: 0%** "I don't have that data" where the number is derivable.
-- **Every number matches the warehouse** it was derived from.
-- **Totalling or extending the previous answer works** without the member asking twice.
-- **0% of aggregate answers identify anyone.**
-- **A count that genuinely does not exist is said plainly** — an honest miss, not a failure.
-
-She lists but cannot count, and often says "I don't have that data" when she does. Live: SoCal vs Texas
-totals, members under $1m, chapters with counts, most-active members.
-
-**IN PROGRESS 2026-07-31 — the counting layer is BUILT + LIVE ON STAGING; remaining = revenue-band
-phrasing, content counts, totalling, and the TEST run.**
-- **`digest.member_niches` SHIPPED** (warehouse): one canonical countable niche set per member —
-  14-value vocabulary (MDS's own Niche Top Selection + 2 gaps), multi-valued, from all 8 AT
-  niche/category fields via `scripts/olivia_derive_niches.py`. **Main Niche has precedence
-  (Andy), and several stated niches rank EQUALLY** — "Supplements, Board Games, Pets" counts in
-  all three (`is_main_niche`, renamed from `is_primary` after Andy's ruling; 104 of 477 = 21.8%
-  list more than one). 1,925 rows / 722 actives. NOT yet scheduled (same gap as the labeller).
-- **`digest.member_count` RPC SHIPPED**: counts by niche/city/state/chapter/band, AND-combined,
-  optional `p_group_by` breakdown, population identical to `community_info` (722) so totals
-  reconcile. Fail-closed dual-key gating, counts only, never names. **Gate 161→167 GREEN** (+6
-  member_count checks). **Application v3 gap FILED** in `APPLICATION_V3_MAPPING_DECISIONS.md`
-  (v3 writes NO controlled category — only free-text Main Niche; recommend classify-on-submission).
-- **Loop tool + COUNT rule live on staging**, probed: "How many total in socal, vs texas?" (the
-  Q3080 fail) → **"SoCal = 92 (LA 44 + Orange Co 32 + San Diego 16) vs Texas 53 (SoTex 41 +
-  NorthTex 12)"** — every number = the warehouse. "how many in the supplements niche" → **73 of
-  722**. First SoCal probe said "Los Angeles: 0" (chapter is literally named "LA Chapter") →
-  fixed with a short-names hint: group-by-chapter first, never guess long forms.
-- **PROBED 2026-07-31 EVE (bands + content + totalling):**
-  · "under $1m" → **"None — no band under $1M exists"** + the full band table 252/132/90/164/84,
-    every figure warehouse-exact (bands vocabulary now in the tool hint). Honest-miss AC ✓
-  · "at 20M+" → **164 of 722** ✓ exact
-  · FB-posting-% → honest refusal (content_stats returns no FB author counts) — ACCEPTABLE per the
-    honest-miss AC, but the number IS derivable in SQL, so this stays a residual: extend
-    content_stats with distinct-authors-by-source, then this question must get a real %.
-  · **"Total it up" STILL FAILS — the one open defect.** Chapter counts sum to **773** (members
-    hold several chapters); she said 722 twice (echoed the population), then got gate-blocked,
-    then said 722 again after re-fetching. Two prompt rules did not fix it: **the model cannot
-    reliably add 20 numbers. Deterministic fix, not another rule: add `breakdown_sum` (and
-    distinct-member count) to `member_count`'s output so the sum is READ, never computed.** Small
-    CREATE OR REPLACE; next session.
-  **Also open:** schedule `olivia_derive_niches.py` + `olivia_label_questions.py` nightly · TEST run
-  on the counting class (runs resume after PBIs close — Andy).
-
-- Counts by city, state, chapter, category and revenue bracket return a real number
-- "Total it up" across a previous answer works
-- Aggregate counts never identify anyone
-- Where a count genuinely doesn't exist, she says so rather than implying she has nothing
-
-**Effort M** — counting RPC plus a router lane; unknown is which counts may be shared. **Impact:** hit repeatedly by two of six testers within an hour.
-
 ### 6. 🟡 Chapters, end to end · S2 · effort M
 *As a member, I can ask anything about chapters and get a real answer.*
 
@@ -528,6 +474,9 @@ GREEN 161, and nothing here is on prod yet.
 **Tickets closed into Release 2 (1):** #23 answer latency (closed on the story — the ladder half
 shipped in Release 1, the speed cuts in Release 2).
 
+**Tickets closed into Release 2:** #23 answer latency · **#5 counting** (member_niches + member_count
+RPC + loop tool; breakdown_sum closes total-it-up deterministically).
+
 **Shipped to PROD separately (not part of the n8n promote):** #25 the portal tells the truth —
 mds-digest-web `294b094`, live on digest.mds.co 2026-07-31. The portal deploys on push and never
 waits for the workflow promote.
@@ -698,6 +647,75 @@ data layer: the Members-DB id resolves straight to the WA row (Constantine Kiril
 `recjaFLHC…`); tsc + build green. **The /admin/olivia analytics half of this ticket (tiles vs
 warehouse, per-card filters, test-traffic exclusion) remains open.**
 
+
+---
+
+### 5. ✅ Counting · CLOSED 2026-07-31 · effort M · RELEASE 2
+*As a member, when I ask a number I get a number.*
+
+**Accept when**
+- **A count that exists is never refused: 0%** "I don't have that data" where the number is derivable.
+- **Every number matches the warehouse** it was derived from.
+- **Totalling or extending the previous answer works** without the member asking twice.
+- **0% of aggregate answers identify anyone.**
+- **A count that genuinely does not exist is said plainly** — an honest miss, not a failure.
+
+She lists but cannot count, and often says "I don't have that data" when she does. Live: SoCal vs Texas
+totals, members under $1m, chapters with counts, most-active members.
+
+**IN PROGRESS 2026-07-31 — the counting layer is BUILT + LIVE ON STAGING; remaining = revenue-band
+phrasing, content counts, totalling, and the TEST run.**
+- **`digest.member_niches` SHIPPED** (warehouse): one canonical countable niche set per member —
+  14-value vocabulary (MDS's own Niche Top Selection + 2 gaps), multi-valued, from all 8 AT
+  niche/category fields via `scripts/olivia_derive_niches.py`. **Main Niche has precedence
+  (Andy), and several stated niches rank EQUALLY** — "Supplements, Board Games, Pets" counts in
+  all three (`is_main_niche`, renamed from `is_primary` after Andy's ruling; 104 of 477 = 21.8%
+  list more than one). 1,925 rows / 722 actives. NOT yet scheduled (same gap as the labeller).
+- **`digest.member_count` RPC SHIPPED**: counts by niche/city/state/chapter/band, AND-combined,
+  optional `p_group_by` breakdown, population identical to `community_info` (722) so totals
+  reconcile. Fail-closed dual-key gating, counts only, never names. **Gate 161→167 GREEN** (+6
+  member_count checks). **Application v3 gap FILED** in `APPLICATION_V3_MAPPING_DECISIONS.md`
+  (v3 writes NO controlled category — only free-text Main Niche; recommend classify-on-submission).
+- **Loop tool + COUNT rule live on staging**, probed: "How many total in socal, vs texas?" (the
+  Q3080 fail) → **"SoCal = 92 (LA 44 + Orange Co 32 + San Diego 16) vs Texas 53 (SoTex 41 +
+  NorthTex 12)"** — every number = the warehouse. "how many in the supplements niche" → **73 of
+  722**. First SoCal probe said "Los Angeles: 0" (chapter is literally named "LA Chapter") →
+  fixed with a short-names hint: group-by-chapter first, never guess long forms.
+- **PROBED 2026-07-31 EVE (bands + content + totalling):**
+  · "under $1m" → **"None — no band under $1M exists"** + the full band table 252/132/90/164/84,
+    every figure warehouse-exact (bands vocabulary now in the tool hint). Honest-miss AC ✓
+  · "at 20M+" → **164 of 722** ✓ exact
+  · FB-posting-% → honest refusal (content_stats returns no FB author counts) — ACCEPTABLE per the
+    honest-miss AC, but the number IS derivable in SQL, so this stays a residual: extend
+    content_stats with distinct-authors-by-source, then this question must get a real %.
+  · **"Total it up" STILL FAILS — the one open defect.** Chapter counts sum to **773** (members
+    hold several chapters); she said 722 twice (echoed the population), then got gate-blocked,
+    then said 722 again after re-fetching. Two prompt rules did not fix it: **the model cannot
+    reliably add 20 numbers. Deterministic fix, not another rule: add `breakdown_sum` (and
+    distinct-member count) to `member_count`'s output so the sum is READ, never computed.** Small
+    CREATE OR REPLACE; next session.
+  **Also open:** schedule `olivia_derive_niches.py` + `olivia_label_questions.py` nightly · TEST run
+  on the counting class (runs resume after PBIs close — Andy).
+
+- Counts by city, state, chapter, category and revenue bracket return a real number
+- "Total it up" across a previous answer works
+- Aggregate counts never identify anyone
+- Where a count genuinely doesn't exist, she says so rather than implying she has nothing
+
+**Effort M** — counting RPC plus a router lane; unknown is which counts may be shared. **Impact:** hit repeatedly by two of six testers within an hour.
+
+**CLOSED 2026-07-31 (staging, rides the next promote).** The final defect — "total it up" — closed
+DETERMINISTICALLY: `member_count` now returns `breakdown_sum` (773 vs total 722, sum READ never
+computed; the model proved 3× it cannot add 20 numbers). Final probe: "Adding up every chapter …
+= 773 chapter memberships — higher than the 722 distinct members because members belong to more
+than one chapter." Exactly right, with the why. Fix chain worth remembering: sum(bigint) returns
+NUMERIC → 42804 vs the declared bigint column (the REST hammer-test caught it; the gate fallback
+had masked it as a content problem). Gate GREEN 167. AC status: counts-exist-never-refused ✓ (niche/
+city/state/chapter/band + breakdowns) · numbers=warehouse ✓ (every probe exact) · totalling ✓ ·
+aggregates-never-identify ✓ (gate checks) · honest-miss ✓ (under-$1m: "no band under $1M exists" +
+full band table; FB-%: refused, residual filed to extend content_stats with distinct-authors-by-
+source). Residuals filed, not blockers: content_stats extension · schedule `olivia_derive_niches.py`
++ `olivia_label_questions.py` nightly · TEST run on the counting class when runs resume.
 
 ---
 
