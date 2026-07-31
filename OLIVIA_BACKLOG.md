@@ -125,13 +125,15 @@ so the legal name finds nothing while a page with that exact headline exists. Ac
 one person = one entry (merged by at_member_id across both source lists), and search matches
 legal AND display names.
 
-**Root cause found (read from source):** `getMember360()` resolves the WA layer with
-`members?airtable_id=eq.<id>` only — the WA row is found solely when the page is entered via the
-WA row's own id. Entering via the Members-DB id (which lives in `members.at_member_id`) misses,
-`member` = null, and the page falsely renders "not on WhatsApp yet"/no phone for a fully linked
-member. Fix: fall back to `members?at_member_id=eq.<id>` when the first lookup misses (and the
-search-fields array in `Member360Table.tsx` adds the AT legal name). Lives in mds-digest-web —
-coordinate with the app session working that repo.
+**Member-360 half SHIPPED 2026-07-30 (mds-digest-web `05014d6`, deployed via Vercel):**
+`getMember360()` now falls back to `members?at_member_id=eq.<id>` (phone-bearing row first) when
+the `airtable_id` lookup misses — every Olivia-dashboard → Member 360 jump and shared Members-DB-id
+URL now renders the real matched page instead of "not on WhatsApp yet" (root cause was that the WA
+layer resolved by only one of the two id kinds). Search now matches the **AT legal name alongside
+the display name** (`altName` on WA rows + the search-fields array). Repro case verified at the
+data layer: the Members-DB id resolves straight to the WA row (Constantine Kirillov, phone,
+`recjaFLHC…`); tsc + build green. **The /admin/olivia analytics half of this ticket (tiles vs
+warehouse, per-card filters, test-traffic exclusion) remains open.**
 
 **Impact:** the team's only window into whether Olivia is used and useful; wrong numbers here mean
 wrong calls on everything else.
