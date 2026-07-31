@@ -29,21 +29,35 @@ DoD; the judge files failures into 8 classes mapped to tickets.
 **Session open (Andy 2026-07-31): after reading the docs + verifying live, SUGGEST which
 ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pick before diving in.**
 
-## NEXT SESSION — orders (2026-07-31 final close)
+## NEXT SESSION — orders (2026-08-01 early close)
 
-1. **Promote when Andy says go** (Release 2 bundle: eval fix batch · #23 cuts · #5 counting ·
-   #33 early-feedback reorder + links rule · **#6 chapters tool + rule**). **Before it: run
-   `OLIVIA_SMOKE_CHECKLIST.md` on staging and paste the result block into the session log** —
-   standing process.
-2. **Suggest next ticket(s):** #7 people search that understands meaning (S2) is the top open item.
+1. **Andy's plan: complete several more tickets, then ONE BIG PUSH + BIG SMOKE TEST** — no
+   promote until he says "we are done". Release 2 so far: eval fix batch · #23 cuts · #5
+   counting · #33 early-feedback + links · #6 chapters · #7 people search. **At the push: run
+   `OLIVIA_SMOKE_CHECKLIST.md` on staging and paste the result block into the session log.**
+2. **Suggest next ticket(s):** #8 every source on every question (S2) is the top open item;
+   then #9 revenue brackets (needs Andy's working session first).
 3. Standing: MDS-Life ruling (Q3088 expect) · **whale ruling** (live chapter TTM sums can out one
    member's scale — NorthTex $930M sum / $806M one member; ON today per site precedent) ·
-   **schedule the THREE derivation jobs nightly** (`olivia_derive_niches.py` ·
-   `olivia_label_questions.py` · `sync_chapter_pages.py`) · chapter POLICY answers need the team's
-   written source (delegated to #18) · extend content_stats (distinct-authors-by-source) ·
-   FULL run on the new bank (3101-3112) when Andy calls runs back on.
+   **schedule the FOUR derivation jobs nightly** (`olivia_derive_niches.py` ·
+   `olivia_label_questions.py` · `sync_chapter_pages.py` · `embed_member_profiles.py`) ·
+   chapter POLICY answers need the team's written source (#18) · extend content_stats
+   (distinct-authors-by-source) · FULL run on the new bank (3101-3112) when Andy calls runs
+   back on · #29 signal inventory rows 1-2 (app event logging + GROUPOS_PAT) = Andy's
+   action-this-week list.
 
-## State (2026-07-31 final close)
+## State (2026-08-01 early close)
+- **#7 PEOPLE SEARCH CLOSED (staging, Release 2).** Fuzzy names via pg_trgm on `member_card`
+  (word_similarity > 0.62 fallback — thresholds MEASURED: typos 0.75-0.80 pass, "Jon Snow"
+  0.556 + junk 0.26-0.32 miss; the gate caught my first 0.25 version surfacing wrong people —
+  fixed, full matrix green). Meaning via `member_profile_embeddings` (DEDICATED table, 722/722
+  embedded by `scripts/embed_member_profiles.py`, idempotent) + `expertise_search` p_embedding
+  RRF (with/without diff proven). Place aliases via `digest.place_city` in member_match +
+  member_count (NYC = New York = 19). **🚨 Pre-existing member_match defect found + fixed:
+  city/state-targeted searches were ANDing the asker's own category/band as filters — "members
+  in NYC" = 0 for Andy while 19 were there; likeness is now a ranking boost in target mode.**
+  E2E probes: misspelled Prudence resolves w/ card · "paid ads" → the PPC bench · NYC → the
+  New York members. Gate GREEN (result in the session log).
 - **#6 CHAPTERS CLOSED (staging, Release 2).** Andy's rulings in session: counts = RAW DATA (live
   member records; the public mds.co chapter pages are the disclosure precedent, may lag) · leads
   PUBLIC (names/roles/photos are on the pages; emails never — not stored). Shipped:

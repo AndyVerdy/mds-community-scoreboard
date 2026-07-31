@@ -97,27 +97,6 @@ phone-less actives; fixed same day.)
 # 🟡 S2
 
 
-### 7. 🟡 People search that understands meaning · S2 · effort M
-*As a member, I find the right person even when I don't know the exact word or spelling.*
-
-**Accept when**
-- **A misspelled or partial name resolves first try**, at or above the current target rung.
-- **Meaning-based searches reach the right people** without a hand-maintained synonym list.
-- **Ranking stays by engagement score and the score is never shown.**
-- **Retrieval is compared with and without the semantic layer before it is trusted** — a silent no-op
-  is not an improvement.
-
-"Who's good at paid ads" cannot reach the PPC people. Prudence Tweedie-Millsap took four spellings.
-There is no fuzzy matching installed at all — no `pg_trgm`, no member embeddings; only exact word
-matching plus a hand-written synonym list.
-
-- A misspelled or partial name resolves first try
-- Synonyms work without anyone maintaining a list
-- Member profiles embedded, same approach already used for content
-- Still ranked by engagement score, never shown
-
-**Effort M** — new extension plus an embedding pass over ~5,700 profiles; changes ranking behaviour. **Impact:** every "who knows X" and "tell me about Y" — the most common ask after digests.
-
 ### 8. 🟡 Every source on every question · S2 · effort M
 *As a member, one question gets checked against every source that could answer it.*
 
@@ -474,11 +453,13 @@ through this".
 Ships to prod at the next `promote` (Andy runs it). Everything below is live on staging and gate
 GREEN 161, and nothing here is on prod yet.
 
-**Tickets closed into Release 2 (3):** #23 answer latency (closed on the story — the ladder half
+**Tickets closed into Release 2 (5):** #23 answer latency (closed on the story — the ladder half
 shipped in Release 1, the speed cuts in Release 2) · **#5 counting** (member_niches + member_count
 RPC + loop tool; breakdown_sum closes total-it-up deterministically) · **#33 prod smoke**
 (early-feedback branch reorder + links-when-solving rule + the standing pre-promote smoke
-checklist `OLIVIA_SMOKE_CHECKLIST.md`).
+checklist `OLIVIA_SMOKE_CHECKLIST.md`) · **#6 chapters, end to end** · **#7 people search that
+understands meaning** (pg_trgm names + profile embeddings w/ RRF + place aliases + the
+member_match target-mode fix).
 
 **Shipped to PROD separately (not part of the n8n promote):** #25 the portal tells the truth —
 mds-digest-web `294b094`, live on digest.mds.co 2026-07-31. The portal deploys on push and never
@@ -846,6 +827,49 @@ business_model (derive-job cleanup candidate, not #6's).
   `olivia_label_questions.py`; schedule all three together (#13/#15 residual).
 
 **Impact:** 804 chapter memberships / all 722 actives; the most-asked community-structure class.
+
+---
+
+### 7. ✅ People search that understands meaning · CLOSED 2026-07-31 late (staging) · effort M · RELEASE 2
+*As a member, I find the right person even when I don't know the exact word or spelling.*
+
+**What shipped (migrations `people_search_semantic_layer` · `member_count_city_aliases` ·
+`member_match_target_mode_no_likeness_filters` · `expertise_search_semantic_rrf`):**
+- **Fuzzy names (pg_trgm):** `member_card` gains a trigram-similarity fallback over every name a
+  person is known by, fired only when the strict word-AND misses. Proven: "Prudence Tweedy
+  Milsap" → Prudence Tweedie-Millsap first try (E2E she even notes the spelling variation);
+  "Guido Rejes" → Guido Reyes.
+- **Meaning (embeddings):** `digest.member_profile_embeddings` — a DEDICATED table (the hot
+  synced member_profiles is never touched — the HNSW/trigger lesson), filled by
+  `scripts/embed_member_profiles.py` from `profile_texts_for_embedding()` (ONE definition of the
+  embeddable text: public card fields + niches + categories, NAME EXCLUDED). **722/722 actives
+  embedded, idempotence proven (re-run = 0 pending).** `expertise_search` + `p_embedding` with
+  RRF rank-merge inside the already-gated pool (#26 pattern); null/malformed vector = exact
+  legacy keyword path; output columns unchanged. Loop's Attach Embedding list gains
+  expertise_search.
+- **Location aliases:** `digest.place_city()` (NYC/Manhattan/Brooklyn→New York, SF/Bay Area,
+  LA, Vegas, Philly, DC…) applied in `member_match` + `member_count` city filters; states
+  already normalized via `attr_state`. Proven: member_count NYC = New York = 19.
+- **🚨 PRE-EXISTING DEFECT found by the NYC probe and FIXED:** in city/state-TARGETED searches,
+  `member_match` kept applying the ASKER's own category/band/model/channel as HARD filters —
+  "members in NYC" returned NYC ∩ asker-category ∩ asker-band = **0** for Andy while 19 were
+  there. Target mode now disables ALL likeness dims as filters and keeps likeness as a RANKING
+  boost (everyone in the place returns, most-like-you first). NYC 0→19, Texas 52.
+
+**AC status:** misspelled/partial first try ✓ (E2E) · meaning without synonym lists ✓ ("paid
+ads" → the PPC/ads bench E2E: Dilger/Nowak/Heckmann/Biner/Hameed/Aserraf/McGonigle) · ranking =
+engagement score, never shown ✓ (unchanged ordering inputs) · **with/without-vector top-5 diff
+measured on the REST path** — rankings change, vector surfaces "Amazon Advertisement"/"Ppc"
+profiles keyword missed; not a silent no-op ✓ · location aliases ✓. Gate GREEN after (expertise
+checks pass on the new signature).
+
+**Residuals, named:** pure LIKENESS mode (no location) still ANDs the dims and returns 0 for
+thin-profile askers — unchanged behavior, superseded by #29's real matchmaking · profile data
+itself is thin on some topics (exit/M&A) — search finds what profiles state, census (#20)
+deepens it · `embed_member_profiles.py` joins the nightly-jobs scheduling residual (now FOUR
+jobs).
+
+**Impact:** every "who knows X" and "tell me about Y" — the most common ask after digests.
 
 ---
 

@@ -6,6 +6,45 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY) — #7 PEOPLE SEARCH CLOSED (Release 2): pg_trgm fuzzy names (thresholds MEASURED, gate caught the loose first cut) · 722/722 profiles embedded + RRF · place aliases · pre-existing member_match target-mode defect FIXED · #29 signal inventory + Andy's dossier vision filed
+
+- **Andy's plan set: several more tickets → ONE BIG PUSH + BIG SMOKE TEST.** No promote until his
+  "we are done". Session-start tiers clarified earlier now include ticket suggestions at open.
+- **#29 reshaped by Andy's vision (verbatim in the backlog):** personas as built = "useless";
+  he wants a DYNAMIC DOSSIER ("police file") per member AND per entity (video/event/partner/
+  thread), fed by every behavioral signal. **`OLIVIA_SIGNAL_INVENTORY.md` written** (HAVE /
+  DERIVABLE / MISSING with owners); rows 1-2 = app event logging (`member_events` is EMPTY,
+  every day unlogged is history lost) + GROUPOS_PAT — his action-this-week list.
+- **#7 shipped (migrations `people_search_semantic_layer` · `member_count_city_aliases` ·
+  `member_match_target_mode_no_likeness_filters` · `expertise_search_semantic_rrf` ·
+  `member_card_fuzzy_word_similarity_062`):**
+  · **Fuzzy names**: member_card trgm fallback fires only when strict word-AND misses.
+    **The GATE went RED on my first cut (similarity 0.25 surfaced the closest-sounding member
+    for lead/applicant names) — thresholds then MEASURED on the live pool**: typos 0.750-0.800 ·
+    "Jon Snow" 0.556 (would wrongly return Jon Spektor) · junk 0.261-0.318 → **word_similarity
+    > 0.62**. Matrix: Prudence Tweedy Milsap ✓ · Guido Rejes ✓ · junk 0 · fiction 0 · exact
+    path byte-identical.
+  · **Meaning**: `member_profile_embeddings` dedicated table (hot member_profiles never touched
+    — the HNSW lesson) + `profile_texts_for_embedding()` (ONE definition, public fields, name
+    excluded) + `scripts/embed_member_profiles.py` — **722/722 embedded, re-run = 0 pending**.
+    expertise_search p_embedding + RRF inside the gated pool; **with/without top-5 diff proven
+    on the REST path** ("paid ads": vector surfaces "Amazon Advertisement"/"Ppc" profiles).
+    Attach Embedding list += expertise_search.
+  · **Places**: `digest.place_city()` (NYC/Manhattan/Brooklyn→New York, SF, LA, Vegas, Philly,
+    DC, …) in member_match + member_count; states already had `attr_state`. NYC = New York = 19.
+  · **🚨 PRE-EXISTING DEFECT (found by the NYC probe): member_match in city/state-target mode
+    ANDed the ASKER's own category/band/model/channel as hard filters — "members in NYC" = 0
+    for Andy (19 truly there), silently under-returning for everyone.** Target mode now
+    disables likeness FILTERS and keeps likeness as a RANKING boost. NYC 0→19 · Texas 52.
+    (Pure likeness mode unchanged — still ANDs, returns 0 for thin profiles; superseded by #29.)
+  · **E2E staging probes**: "tell me about Prudence Tweedy Milsap" → her card, typo noted ·
+    "who should I talk to about paid ads?" → Dilger/Nowak/Heckmann/Biner/Hameed/Aserraf/
+    McGonigle w/ specialties · "which members are in NYC?" → the New York list.
+  · Gate: RED once (the real catch above), then **GREEN full run** (result below). FOUR nightly
+    jobs now await scheduling (niches · labels · chapter pages · profile embeddings).
+- Earlier same session: #6 chapters (3 rounds + coverage audit ≥50% every field) · #33 · smoke
+  checklist · tiers — see the 2026-07-31 entries.
+
 ## 2026-07-31 (LATE-4) — #6 CHAPTERS CLOSED (Release 2): 20/20 public pages scraped into chapters_catalog · chapter_info = live counts (== member_count by construction) + leads/photos + live_stats + asker_city · Andy's chain zero re-asks · gate 175
 
 - **Andy's rulings in session:** counts = **RAW DATA** (live member records rule; the public
