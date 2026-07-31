@@ -62,6 +62,17 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   deploy verified via /api/version. His live tests during the session: per-chapter supplements
   concentration (PacNW 10 · APAC 9 · SoTex 8) answered from live_stats.top_niches — the layer
   working on his own probes.
+- **ROUND 3 — V3 PROFILE STATS SHIPPED (Andy: "do you want to add more data from v3?" → yes):**
+  live_stats gains `business_models` (clean multi-select: Private Label / OEM / Agency /
+  Wholesale) · `countries` (ISO-2 + full-name DUAL CODING folded via a cmap — Europe had
+  "DE" 4 + "Germany" 2 as separate keys; now Germany 6) · `age_mix` (banded) ·
+  `avg_years_in_business` (started_year — distinct from MDS tenure, note says so) ·
+  `median_sku_count` (median, not avg — reseller tails) · `avg_brands`. Migrations
+  `chapter_info_v3_profile_stats` + `chapter_info_country_canon` (jsonb keys — same return
+  type, grants preserved). **Probes:** Europe countries spread (Germany 6 · Israel 6 · Spain 5 ·
+  Cyprus 5 · France 5 · Sweden 5, honest passthrough for odd codes) · NY business models
+  (PL 73 · OEM 18 · Agency 12 · Wholesale 10). Data wart noted: one member carries a combined
+  "OEM, Wholesale" as a single business_model token.
 - **ROUND 2 — CHANNELS SHIPPED (Andy's go: "I like the amazon markets + sales channels
   suggestion"):** `live_stats.channels` counts members per channel from the CANONICAL
   `member_attributes.channel_mix` (already normalized by the derive job — no re-parse of the

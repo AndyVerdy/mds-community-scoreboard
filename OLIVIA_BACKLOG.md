@@ -807,6 +807,15 @@ CA 31 · EU 29 · DTC 23 · Walmart 17 · TikTok 1 of 53 reporters, quoted again
 "most DTC sellers" → NY 42, Women's 39, SoFlo 25 ✓. The raw `% of Revenue` band fields stay
 un-parsed on purpose (variant spellings, multi-submission arrays) — the derive job owns that.
 
+**Round 3 SHIPPED same night (Andy: "more data from v3?" → yes):** `business_models`
+(Private Label / OEM / Agency / Wholesale mix) · `countries` (ISO-2 + full-name dual coding
+FOLDED via cmap — Europe's "DE" 4 + "Germany" 2 became Germany 6) · `age_mix` (banded) ·
+`avg_years_in_business` (started_year; the note distinguishes it from MDS tenure) ·
+`median_sku_count` · `avg_brands`. Migrations `chapter_info_v3_profile_stats` +
+`chapter_info_country_canon`. Probes: Europe country spread + NY business models, both
+warehouse-shaped. Wart filed: one member carries a combined "OEM, Wholesale" single token in
+business_model (derive-job cleanup candidate, not #6's).
+
 **Named exceptions / open:**
 - **The 4 policy questions (change chapters · join several · live in two places · how to change)
   still have NO written source** — that AC is delegated to **#18** (its own scope says it unblocks
