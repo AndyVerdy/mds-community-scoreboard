@@ -125,6 +125,14 @@ so the legal name finds nothing while a page with that exact headline exists. Ac
 one person = one entry (merged by at_member_id across both source lists), and search matches
 legal AND display names.
 
+**Root cause found (read from source):** `getMember360()` resolves the WA layer with
+`members?airtable_id=eq.<id>` only — the WA row is found solely when the page is entered via the
+WA row's own id. Entering via the Members-DB id (which lives in `members.at_member_id`) misses,
+`member` = null, and the page falsely renders "not on WhatsApp yet"/no phone for a fully linked
+member. Fix: fall back to `members?at_member_id=eq.<id>` when the first lookup misses (and the
+search-fields array in `Member360Table.tsx` adds the AT legal name). Lives in mds-digest-web —
+coordinate with the app session working that repo.
+
 **Impact:** the team's only window into whether Olivia is used and useful; wrong numbers here mean
 wrong calls on everything else.
 
