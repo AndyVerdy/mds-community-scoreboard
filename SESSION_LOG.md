@@ -8,6 +8,7 @@
 prepend the full entry to its STREAM log + ONE line here.** Old references like "read SESSION_LOG
 2026-07-27" resolve through this index: find the date line, open the named stream file.
 
+- 2026-07-31 · **Olivia** · (LATE-3) **#33 CLOSED** (Release 2): 2:40 stall = n8n v1 BRANCH ORDER (typing+ladder ran after the answer, every prod turn — reorder proven exec 57926) · dup pair = known ghost window, already fixed (trigger fix was ALREADY ON PROD via the 03:24Z promote — drift corrected) · LINKS WHEN YOU SOLVE shipped · `OLIVIA_SMOKE_CHECKLIST.md` · gate 167 → `SESSION_LOG_OLIVIA.md`
 - 2026-07-31 · **Olivia** · (LATE-2) #33 filed from Andy's prod tests: dup holding copy (ghost-ladder suspect) · 2:40 stall w/ zero feedback · solve answers must cite links · pre-promote SMOKE CHECKLIST → `SESSION_LOG_OLIVIA.md`
 - 2026-07-31 · **Olivia** · (LATE) **#5 COUNTING CLOSED** (Release 2): breakdown_sum = deterministic total-it-up (773/722 probe exact w/ the why) · 42804 numeric-vs-bigint caught by REST hammer-test · gate 167 → `SESSION_LOG_OLIVIA.md`
 - 2026-07-31 · **Olivia** · (NIGHT) #5 probes: under-$1m honest-miss + bands table exact · 20M+=164 ✓ · total-it-up FAILS (true sum 773, she echoes 722 — fix = breakdown_sum in member_count, not another prompt rule) → `SESSION_LOG_OLIVIA.md`

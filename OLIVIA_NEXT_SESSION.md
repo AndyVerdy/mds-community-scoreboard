@@ -10,36 +10,54 @@
 
 # Olivia — next session
 
-> ⛔ **THIS DOC IS THE STANDING ROUTINE, NOT THIS SESSION'S GO.** Read it, verify against live, do
-> FREE read-only diagnosis, then **propose the plan to Andy and WAIT.** Never fire a paid eval run,
-> promote to prod, or touch a live system on this doc's authority. (Andy, 2026-07-29.)
+> ⛔ **THIS DOC IS THE STANDING ROUTINE, NOT THIS SESSION'S GO** (Andy 2026-07-29, tiers clarified
+> by him 2026-07-31). Read it, verify against live, then work within these tiers:
+> - **Fine without asking:** read-only diagnosis (execs / SQL / graphs) · the LEAK GATE
+>   (`olivia_leak_gate.py` — free SQL safety checks, zero questions, zero model calls) · staging
+>   edits under the `olivia_wf.py` lock protocol · single-question STAGING PROBES (selftest,
+>   ~a cent each, a handful per session).
+> - **Propose to Andy and WAIT:** any eval RUN — TEST (≤50 Qs) or FULL (100 Qs) — or anything
+>   else paid at scale.
+> - **Andy runs it himself:** `promote` · prod edits (emergency rollback protocol excepted).
+>
+> **Vocabulary — status lines must never blur these: "gate 167" = 167 safety CHECKS (free), never
+> 167 questions · a "RUN" = firing the eval bank · a "PROBE" = one question at staging.**
 
 **Read `OLIVIA_BACKLOG.md` first** — every item carries **Accept when** criteria under one global
 DoD; the judge files failures into 8 classes mapped to tickets.
 
-## NEXT SESSION — orders (2026-07-31 close)
+## NEXT SESSION — orders (2026-07-31 late close)
 
-1. **#33 FIRST (S2, filed from Andy's prod tests):** pull the 2:40PM exec (2026-07-31) — ~2min
-   stall with NO read tick / typing / holding message · check the 9:54+9:55PM duplicate holding
-   pair against the KNOWN Meta-replay ghost (trigger fix is STAGED, unpromoted) · distinct copy
-   for the two ladder rungs · links-when-solving rule · WRITE the pre-promote smoke checklist
-   (its run result gets pasted into the session log every promote).
-2. **#6 Chapters — blocked on Andy's rulings first:** canonical count (AT rollup 94 vs live 97 vs
+1. **#6 Chapters — blocked on Andy's rulings first:** canonical count (AT rollup 94 vs live 97 vs
    raw 116) · are chapter-lead names/emails shareable. Then whitelist + policy sources.
+2. **Promote when Andy says go** (Release 2 bundle: eval fix batch · #23 cuts · #5 counting ·
+   #33 early-feedback reorder + links rule). **Before it: run `OLIVIA_SMOKE_CHECKLIST.md` on
+   staging and paste the result block into the session log** — that is now standing process.
 3. Standing: MDS-Life ruling (Q3088 expect) · schedule `olivia_derive_niches.py` +
    `olivia_label_questions.py` nightly · extend content_stats (distinct-authors-by-source) ·
-   FULL run on the new bank (3101-3112) when Andy calls runs back on · promote when he says go
-   (Release 2 bundle: fix batch · holding trigger · #23 cuts · #5 counting · #33 fixes).
+   FULL run on the new bank (3101-3112) when Andy calls runs back on.
 
-## State (2026-07-31 session close)
-- **CLOSED TODAY: #23 (on the story) · #25 (LIVE ON PROD, mds-digest-web `294b094`) · #5 counting
-  (staging, Release 2).** #32 cost-control + #33 prod-smoke FILED. Bank swapped (3101-3112 in,
-  backup `.bak-preswap-0731`), NO run fired.
+## State (2026-07-31 late close)
+- **#33 CLOSED (staging, Release 2).** The 2:40PM stall root-caused: n8n v1 ran the
+  Mark Read + Typing → ladder branch AFTER the whole answer (exec 57816, 70.5s, ladder exec
+  started as the main exec stopped) — read tick/typing/ladder were structurally dead on every
+  prod turn. Fixed by branch order (`apply_33_early_feedback.py`), proven exec 57926 (MRT +3.68s,
+  before Route Request). The 9:54/9:55PM duplicate = ghost rung-2s from the KNOWN fail-open
+  window (14 sends in 3.5min, exec 56699), fixed that same night — rung copies were always
+  distinct. `LINKS WHEN YOU SOLVE` rule shipped in the loop contract, proven exec 57926 (FB
+  thread URLs attached) with clean counting control (57927). `OLIVIA_SMOKE_CHECKLIST.md` written,
+  first run PASSED, gate **167/167 GREEN**.
+- **⚠️ DRIFT CORRECTED: the holding-trigger fix (arrival = message timestamp) is LIVE ON PROD** —
+  it rode the SECOND promote that night (03:24Z; prod `updatedAt` 03:24:30, untouched since;
+  verified in the prod node + today's ladder execs all silent no-ops). Prod version = the 03:24Z
+  promote, NOT `ee3e3cf6` (that was the 01:54Z first promote; same 4.0% bank state).
 - **STAGING carries Release 2, all proven:** eval fix batch (fact-gate clamp+RULE TWO ·
-  content_search post_author · dossier persona) · holding-trigger fix · #23 cuts (router caching =
-  cost not speed · claim-free gate skip) · #5 counting (`member_niches` 14-canon multi-valued,
-  stated niches EQUAL · `member_count` RPC w/ breakdown_sum — sums READ, never computed).
-  **Gate 167 GREEN.** Prod untouched since `ee3e3cf6` (4.0%).
+  content_search post_author · dossier persona) · #23 cuts (router caching = cost not speed ·
+  claim-free gate skip) · #5 counting (`member_niches` 14-canon multi-valued, stated niches
+  EQUAL · `member_count` RPC w/ breakdown_sum — sums READ, never computed) · #33 (feedback-first
+  branch order + links rule). **Gate 167 GREEN.**
+- **Earlier same day: #23 + #25 + #5 closed; #25 LIVE ON PROD** (mds-digest-web `294b094`) ·
+  #32 cost-control filed · bank swapped (3101-3112 in, backup `.bak-preswap-0731`), NO run fired.
 - **Warehouse adds (shared DB, additive):** `member_niches` · `olivia_question_labels` ·
   `member_count` · portal fixes live on prod (eval-traffic exclusion, pagination — PostgREST caps
   at 1000 rows ALWAYS, page everything — topics per-question labels, Exclude-staff toggle; staff =

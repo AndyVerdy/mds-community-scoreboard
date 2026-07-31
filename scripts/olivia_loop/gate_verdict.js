@@ -72,12 +72,25 @@ const entitiesOf = (s) => {
   const nums = String(s).match(/\b\d{4,}\b/g) || [];
   return out.concat(names, singles, urls, quotes.map(q => q.slice(1, -1)), nums);
 };
+// A URL entity is checked by its LOAD-BEARING ID, not the exact string — the same rule the
+// link gate uses. Haiku listed two REAL retrieved links as inventions (staging exec 56839,
+// Q3091 probe): the evidence held them with ?comment_id= / formatting differences, so the
+// full-string includes() missed and the true-link claims survived to block the answer.
+const idInEv = (u) => {
+  const segs = String(u).replace(/^https?:\/\//, '').split(/[\/?#&=]/).filter(Boolean);
+  for (let i = segs.length - 1; i >= 0; i--) {
+    if (/^[A-Za-z0-9_-]{8,}$/.test(segs[i]) && /\d/.test(segs[i])) { return ev.includes(segs[i].toLowerCase()); }
+  }
+  return ev.includes(String(u).toLowerCase().trim());
+};
 let hClaims = [];
 if (verdict && verdict.verdict === 'fail' && (verdict.unsupported || []).length) {
   hClaims = (verdict.unsupported || []).filter(c => {
     const ents = entitiesOf(c);
     if (!ents.length) return true;                       // nothing checkable — trust the gate
-    return !ents.every(e => ev.includes(String(e).toLowerCase().trim()));
+    return !ents.every(e => /^https?:\/\//.test(String(e))
+      ? idInEv(e)
+      : ev.includes(String(e).toLowerCase().trim()));
   });
 }
 // SELF-DESCRIPTION BACKSTOP (2026-07-30, exec 56121). Asked "what data do you have access
@@ -118,7 +131,7 @@ if (attempts >= 1) {
 // one regeneration with the unsupported claims named
 const messages = prev.messages.concat(
   [{ role: 'assistant', content: prev.answer_text }],
-  [{ role: 'user', content: 'FACT-GATE: these claims in your draft are NOT supported by the tool results you retrieved: ' + JSON.stringify(claims) + '. Rewrite your answer now. Every name, number and LINK must come from your retrieved tool results, links copied EXACTLY as retrieved — re-fetch if you need more data. Anything you cannot support, drop or say plainly you do not have it. Do not mention this check.' }],
+  [{ role: 'user', content: 'FACT-GATE: these claims in your draft are NOT supported by the tool results you retrieved: ' + JSON.stringify(claims) + '. Rewrite your answer now, KEEPING everything your tool results DO support — fix or drop ONLY the flagged claims (re-fetch if you need more data). Every name, number and LINK must come from your retrieved tool results, links copied EXACTLY as retrieved. Never replace a mostly-supported answer with a blanket cannot-verify: deliver the supported parts. Anything you cannot support, drop or say plainly you do not have it. Write the reply as a fresh standalone message - the member never saw your draft, so never open with a correction of it. Do not mention this check.' }],
 );
 return [{ json: {
   done: false, to: prev.to, preload: prev.preload || '', system: prev.system, tools: prev.tools, messages: messages,

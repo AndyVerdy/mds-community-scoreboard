@@ -36,14 +36,21 @@ or has one real unknown. L = needs data or a decision we don't have yet.
   comment rows + ATTRIBUTION rule (Q3078/Q3036) · `member_dossier` leads with persona (Q3004) —
   TEST 27Q = 0 FAIL, gate 161. *(SQL migrations are already live in the shared DB — the n8n graph
   half is what waits for promote.)*
-- ✅ on staging, proven: **holding-trigger fix** (arrival = message timestamp; kills Meta-replay
-  ghost ladders).
+- ⚠️ DRIFT CORRECTED 2026-07-31 (late): the **holding-trigger fix (arrival = message timestamp) is
+  ALREADY LIVE ON PROD** — it rode the SECOND promote that night (03:24Z; prod `updatedAt`
+  03:24:30, untouched since; fixed code read directly from the prod `Holding Trigger?` node, and
+  every prod ladder exec today is a clean silent no-op). Earlier notes calling it staging-only were
+  stale.
 - ✅ **#23 answer latency — CLOSED 2026-07-31 on the story.** Router prompt caching (6,225
   tokens/turn now cache-read, proven exec 57677) + claim-free fact-gate skip (`Claims?`).
   ≤10s median NOT met and deliberately not bought — re-file a latency target after #7/#8.
-- 🔨 NEXT: **#25 the portal tells the truth**, then whatever S2 closes before the promote. Bank 3101-3112 swap is
-  release-independent (eval instrument, not shipped code); FULL run on the new bank comes after
-  these PBIs close.
+- ✅ on staging, proven: **#5 counting** (`member_niches` + `member_count` w/ breakdown_sum + loop
+  tool) · **#33 prod smoke** (early-feedback branch reorder + links-when-solving rule +
+  `OLIVIA_SMOKE_CHECKLIST.md`).
+- 🔨 NEXT: **#6 chapters (blocked on Andy's rulings: canonical count + leads shareability)**, then
+  promote on Andy's go — **run `OLIVIA_SMOKE_CHECKLIST.md` on staging first, paste the result
+  block in the session log.** Bank 3101-3112 swap is release-independent (eval instrument, not
+  shipped code); FULL run on the new bank comes after these PBIs close.
 
 **Rule:** every ✅ at the bottom is filed under its release; anything shipped after Jul 30 is
 Release 2 = staging-only until the next promote.
@@ -112,36 +119,6 @@ several, live in two places, how do I change — have **no source anywhere**.
 - Needs a chapter whitelist — the raw field yields 36 "chapters" including Shopify, Amazon and Sponsor
 
 **Impact:** 804 members have a chapter; the policy questions apply to all 722.
-
-### 33. 🟡 Prod smoke: the answer feels alive and cites its sources · S2 · effort S
-*As a member, while she works I can see she is working, and when she solves my problem she shows me
-where the solution lives.*
-
-**Filed from Andy's PROD testing (2026-07-31, ~10PM + next morning) — three findings:**
-1. **Duplicate holding copy.** 9:54PM + 9:55PM: the 18s holding text and the 60s delay notice sent
-   the SAME sentence twice ("Still working on this one…🙏"). The two rungs must carry DIFFERENT
-   copy (e.g. rung 2: "Almost there — this one needed real digging."). ⚠️ Check first whether this
-   was actually the KNOWN Meta-replay ghost ladder: the trigger fix (arrival = message timestamp)
-   is LIVE ON STAGING ONLY and rides the next promote — if prod ghost-laddered, this is evidence,
-   not a new bug.
-2. **The 2:40PM stall (real defect, investigate execs first):** "Im having issues with 3pl, who
-   should i talk to" → ~2 min with NO read ticks, NO typing, NO holding message, then the answer.
-   The whole #23 story existed to prevent exactly this. Find the exec: did Mark Read + Typing fail,
-   did the holding trigger not fire, or did prod queue?
-3. **Links when the answer solves.** The 3PL answer named members/threads/partners with ZERO links;
-   the follow-up ("any partners offers") linked everything. Rule to add (STYLE/loop): when the
-   answer recommends a person, thread, partner or resource, attach its link — content questions
-   like "how many chapters" need none. Andy: "I had a problem and we had a solution" = cite it.
-
-**Accept when**
-- **A written PRE-PROMOTE SMOKE CHECKLIST exists and is run on staging before EVERY promote** (and
-  its result is pasted in the session log): ladder fires ONCE with distinct rung copies · read tick
-  + typing appear within seconds · a solve-lane answer carries links · one counting probe ·
-  gate GREEN. This is Andy's instinct filed as process: cheap standing checks, not a new eval.
-- The three findings above are each fixed or explained from execs, on staging, riding the promote.
-
-**Impact:** every slow answer and every solve-lane answer on prod; the checklist protects every
-future promote.
 
 ### 7. 🟡 People search that understands meaning · S2 · effort M
 *As a member, I find the right person even when I don't know the exact word or spelling.*
@@ -501,11 +478,11 @@ through this".
 Ships to prod at the next `promote` (Andy runs it). Everything below is live on staging and gate
 GREEN 161, and nothing here is on prod yet.
 
-**Tickets closed into Release 2 (1):** #23 answer latency (closed on the story — the ladder half
-shipped in Release 1, the speed cuts in Release 2).
-
-**Tickets closed into Release 2:** #23 answer latency · **#5 counting** (member_niches + member_count
-RPC + loop tool; breakdown_sum closes total-it-up deterministically).
+**Tickets closed into Release 2 (3):** #23 answer latency (closed on the story — the ladder half
+shipped in Release 1, the speed cuts in Release 2) · **#5 counting** (member_niches + member_count
+RPC + loop tool; breakdown_sum closes total-it-up deterministically) · **#33 prod smoke**
+(early-feedback branch reorder + links-when-solving rule + the standing pre-promote smoke
+checklist `OLIVIA_SMOKE_CHECKLIST.md`).
 
 **Shipped to PROD separately (not part of the n8n promote):** #25 the portal tells the truth —
 mds-digest-web `294b094`, live on digest.mds.co 2026-07-31. The portal deploys on push and never
@@ -746,6 +723,46 @@ aggregates-never-identify ✓ (gate checks) · honest-miss ✓ (under-$1m: "no b
 full band table; FB-%: refused, residual filed to extend content_stats with distinct-authors-by-
 source). Residuals filed, not blockers: content_stats extension · schedule `olivia_derive_niches.py`
 + `olivia_label_questions.py` nightly · TEST run on the counting class when runs resume.
+
+---
+
+### 33. ✅ Prod smoke: the answer feels alive and cites its sources · CLOSED 2026-07-31 · effort S · RELEASE 2
+*As a member, while she works I can see she is working, and when she solves my problem she shows me
+where the solution lives.*
+
+**Filed from Andy's PROD testing — three findings, each resolved from execs (all times CDT — his
+clock, verified: "2:40PM" = 19:40:56Z exactly):**
+1. **Duplicate holding copy — EXPLAINED, already fixed, nothing new to ship.** The rung copies were
+   ALWAYS distinct ("On it — checking a few sources for you 🔎" vs "Still working on this one …🙏"
+   — verified in the pre-fix snapshot too). Andy's identical 9:54+9:55PM pair = **rung 2 sent by
+   two OVERLAPPING ghost ladder executions** during the fail-open window (02:52–02:56Z: SIX ladder
+   execs, **14 sends hit his phone in 3.5 minutes**; exec 56699 proven sending both rungs with
+   arrival=fire-time). Both causes were fixed THAT NIGHT: fail-closed gates on the ladder wf
+   (03:18Z) + arrival=message-timestamp in the trigger — **which reached PROD in the 03:24Z second
+   promote** (drift: docs said staging-only; corrected).
+2. **The 2:40PM stall — ROOT CAUSE FOUND + FIXED ON STAGING.** Exec 57816 (70.5s, all nodes
+   succeeded): `Prep Context` fans out to [`Route Request`, `Mark Read + Typing`] and n8n v1 runs
+   branches depth-first IN ORDER — so read-tick/typing/ladder ran AFTER the 70s answer on every
+   turn (ladder exec 57817 started the second the main exec stopped; four independent pairs
+   verified). The #23 ladder was a structural silent no-op on prod. **Fix
+   `scripts/olivia_loop/apply_33_early_feedback.py`** (idempotent): feedback branch first — by
+   connection order AND canvas position. **Proven on staging exec 57926: Mark Read + Typing +3.68s
+   · Holding Trigger? +4.00s · Route Request +4.01s.** Cost ~0.34s/turn. Rides the promote.
+3. **Links when the answer solves — RULE SHIPPED (staging).** `LINKS WHEN YOU SOLVE` in the loop
+   contract (`answer_seed.js`, applied via `build_loop.py`): recommendations carry the link their
+   tool row returned, links never built, linkless rows named without one, counting answers stay
+   clean. **Proven exec 57926**: 3PL answer attaches the Casey Cutsail + Eijiro Kaga FB thread
+   URLs, names Jasim Eisa (no link on row) without one; control "how many chapters" (exec 57927)
+   = "20", zero links.
+
+**Accept-when status:** ✅ `OLIVIA_SMOKE_CHECKLIST.md` written — five standing checks (early
+feedback · ladder once/distinct/silent-when-answered · solve links · counting probe · gate GREEN)
+with a result block pasted into the session log at every promote; first run PASSED 2026-07-31 and
+is recorded in the file. ✅ All three findings fixed or explained from execs, on staging, riding
+the promote. Gate GREEN after the edits.
+
+**Impact:** every slow answer and every solve-lane answer on prod; the checklist protects every
+future promote.
 
 ---
 

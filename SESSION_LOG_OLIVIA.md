@@ -6,6 +6,44 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-07-31 (LATE-3) — #33 CLOSED: the 2:40 stall was BRANCH ORDER (typing+ladder ran AFTER the answer, every prod turn) · duplicate pair = the known ghost window, already fixed · LINKS WHEN YOU SOLVE shipped · smoke checklist written · gate 167
+
+- **Forensics first (all free, read-only). Andy's clock is CDT** — "2:40PM" = exec 57816
+  (19:40:56Z→19:42:07Z, **70.5s**, all 40 nodes success), "9:54/9:55PM" = the 02:52–02:56Z burst.
+- **Finding 2 (the stall) — ROOT CAUSE: n8n v1 branch order.** `Prep Context` fans out to
+  [`Route Request`, `Mark Read + Typing`]; v1 runs branches depth-first IN ORDER, so the whole
+  answer path (70s here) finished before read-tick/typing/ladder ever ran. Proof: the ladder exec
+  started the same second the main exec stopped, on four independent pairs (57816/57817 ·
+  57824/57825 · 57780/57781 · 57831/57833). **The #23 ladder never worked on prod for a real slow
+  answer — it always fired post-answer and no-opped.** Fix = feedback branch first (connection
+  order + canvas position, `scripts/olivia_loop/apply_33_early_feedback.py`, idempotent).
+  **Proven staging exec 57926: Mark Read + Typing +3.68s · Holding Trigger? +4.00s · Route Request
+  +4.01s.** Cost ~0.34s/turn. Rides the promote.
+- **Finding 1 (duplicate holding copy) — EXPLAINED, nothing new to ship.** Rung copies were ALWAYS
+  distinct ("On it — checking a few sources 🔎" / "Still working on this one …🙏" — pre-fix
+  snapshot verified). The identical pair = **rung 2 from two OVERLAPPING ghost ladders** in the
+  fail-open window: SIX ladder execs 02:52–02:56Z, **14 sends to Andy's phone in 3.5 minutes**
+  (olivia_sends), exec 56699 proven sending BOTH rungs with arrival=fire-time. Fixed that night:
+  fail-closed gates (03:18Z) + arrival=message-timestamp.
+- **⚠️ DRIFT CORRECTED: the holding-trigger fix is LIVE ON PROD, not staging-only** — it rode the
+  03:24Z SECOND promote (prod `updatedAt` 03:24:30.478Z, untouched since; fixed code read from the
+  prod `Holding Trigger?` node; today's prod ladder execs all ~19s silent no-ops, which is only
+  possible with arrival=message-ts). Handoff/backlog/memory said "rides the next promote" — all
+  corrected. Prod versionId today `6446d44f` (the 03:24Z promote), not `ee3e3cf6` (01:54Z).
+- **Finding 3 (links when solving) — `LINKS WHEN YOU SOLVE` rule** added to the loop contract
+  (`answer_seed.js`, re-applied via `build_loop.py`): recommendations carry the link their tool row
+  returned, links never built, linkless rows named plainly, counting answers stay clean. **Proven
+  exec 57926**: 3PL answer attaches Casey Cutsail + Eijiro Kaga FB thread URLs, points to MDS
+  Logistics chat, names Jasim Eisa (row had no link) without one. Control exec 57927: "20
+  chapters", zero links.
+- **`OLIVIA_SMOKE_CHECKLIST.md` written** (the #33 process half): five standing checks — early
+  feedback · ladder once/distinct/silent-when-answered · solve links · counting probe · gate
+  GREEN — run on staging before EVERY promote, result block pasted into the session log. First run
+  PASSED (recorded in the file). **Gate 167/167 GREEN** after the edits (run twice, exit 0).
+- Edits under lock (`pre-33-early-feedback` staging snapshot taken); lock released at close.
+  **#33 CLOSED into Release 2.** NEXT: #6 chapters (Andy's rulings) · promote on Andy's go with
+  the smoke checklist run first.
+
 ## 2026-07-31 (LATE-2) — Andy's prod findings filed as #33 (S2): duplicate holding copy · the 2:40 stall (no ticks/typing/ladder for ~2min) · links missing on solve answers · + PRE-PROMOTE SMOKE CHECKLIST as process
 
 - Filed from his screenshots; investigation deferred to next session (start at the 2:40PM exec).

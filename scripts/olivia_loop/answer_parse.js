@@ -37,7 +37,35 @@ const evidence = (evTotal <= EV_BUDGET ? evParts
 // as invention and blocked 4 real answers on 2026-07-30 (capability, topics, resources).
 const evidence_full = evParts.join('\n---\n');
 
-const finalize = (text) => [{ json: {
+// #23: does this draft claim anything a fact-gate could check? A link, a number, a quoted
+// span or a named entity. Everything else — greetings, honest misses, refusals, capability
+// answers — has nothing to fabricate, so Claims? routes it past the gate and saves its
+// 1.5-3.3s. DELIBERATELY CONSERVATIVE: a false "claimy" costs only the latency we already
+// pay, a false "claim-free" would skip a real check, so anything uncertain counts as claimy.
+// The allowlist holds function words plus the SOURCE names the gate's RULE ONE passes by
+// definition (her own sources are never in the evidence) — never an event, person or product.
+const CLAIM_SAFE = new Set(['THE','THIS','THAT','THESE','THOSE','THERE','HERE','WHAT','WHEN',
+  'WHERE','WHICH','WHILE','WITH','WITHOUT','WANT','WOULD','WILL','FROM','FOR','YOUR','YOU',
+  'THEIR','THEY','THEM','THEN','THAN','AND','BUT','NOT','NOTHING','NOW','JUST','SURE','SORRY',
+  'THANKS','THANK','HEY','HELLO','HAPPY','HOPE','LET','LETS','ITS','YES','CAN','COULD','SHOULD',
+  'HAVE','HAS','HAD','ARE','ASK','ASKED','GIVE','TELL','TRY','SEND','OPEN','ONCE','ONLY','OUR',
+  'OUT','OVER','ALSO','ABOUT','AFTER','ALL','ANY','ANYTHING','ANYONE','EVERYTHING','EVERYONE',
+  'SOMETHING','SOMEONE','NONE','BOTH','EVEN','STILL','SAY','SAID','SEE','SEEN','SOME','SUCH',
+  'TAKE','RIGHT','REAL','SAME','MAYBE','HOWEVER','OKAY','GOOD','GREAT','MDS','OLIVIA','FACEBOOK',
+  'WHATSAPP','AMAZON','TIKTOK','SHOPIFY','WALMART','GOOGLE','META','CHAT','CHATS','GROUP',
+  'MEMBER','MEMBERS','EVENT','EVENTS','PARTNER','PARTNERS','VIDEO','VIDEOS','LIBRARY','PROFILE',
+  'PROFILES','TEAM']);
+const hasClaims = (s) => {
+  const t = String(s || '');
+  if (/https?:\/\//i.test(t)) return true;                      // a link
+  if (/\d/.test(t)) return true;                                // a number, date, count, figure
+  if (/["'“”‘’][^"'“”‘’]{8,}["'“”‘’]/.test(t)) return true;  // a quoted span
+  return (t.match(/\b[A-Z][A-Za-z'’-]{2,}\b/g) || [])
+    .some((w) => !CLAIM_SAFE.has(w.toUpperCase()));             // a named entity
+};
+
+const finalize = (text) => {
+  const out = {
   done: true,
   to: state.to,
   content: [{ type: 'text', text: text }],
@@ -53,7 +81,11 @@ const finalize = (text) => [{ json: {
   max_iter: state.max_iter,
   in_tok: in_tok, out_tok: out_tok, cache_w: cache_w, cache_r: cache_r, calls: calls, t0: state.t0,
   metrics: { calls: calls, iters: state.iter, ms: Date.now() - state.t0, in_tok: in_tok, out_tok: out_tok, cache_w: cache_w, cache_r: cache_r },
-} }];
+  has_claims: hasClaims(text),
+  };
+  if (!out.has_claims) { out.gate = 'skip-noclaim'; }
+  return [{ json: out }];
+};
 
 // API-level failure surfaced as data (retryOnFail exhausted) — honest fallback.
 if (resp.type === 'error' || (!content.length && !resp.stop_reason)) {

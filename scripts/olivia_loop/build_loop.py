@@ -134,7 +134,11 @@ NEW = [
              {"name": "anthropic-version", "value": "2023-06-01"},
              {"name": "content-type", "value": "application/json"}]},
          "sendBody": True, "specifyBody": "json",
-         # GATE RUBRIC (tightened 2026-07-30). The old wording ("does not appear in or directly
+         # MEMBER QUESTION clamp is 2000 (was 500): Q3091 (~900 chars) got its tail cut, so the
+        # gate read the member's own Intertek/UL/NRTL facts as inventions and failed the draft
+        # (exec 56652) — the member saw the gate-fallback "couldn't verify" false denial. RULE TWO
+        # in the rubric is the same lesson: the question is grounding for its own facts.
+        # GATE RUBRIC (tightened 2026-07-30). The old wording ("does not appear in or directly
          # follow from") was applied at the SPELLING level: it failed "Torsten Willms" against a
          # post credited to "Torstem Willms" (the source's own typo), then failed the regeneration
          # for quoting that credit line verbatim — 36 gate runs on one question. The gate's job is
@@ -147,7 +151,7 @@ NEW = [
          # ("ASSISTANT'S") and the fact-gate was OFF for the whole 13.0% full-bank run until the
          # evening exec check caught it (exec 56115). Verify the gate stamp in a live exec after
          # ANY edit here.
-         "jsonBody": "={{ JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, thinking: { type: 'disabled' }, system: 'You are a fact gate for an assistant that must never fabricate. Compare the DRAFT ANSWER against the EVIDENCE (raw tool results the assistant retrieved). RULE ONE, before anything else: statements where the assistant describes its OWN abilities, data sources or limitations (I can search the Facebook group, I cannot see call transcripts, a list of what data it has access to) are self-descriptions, NEVER unsupported claims - the sources themselves are never in the evidence and do not need to be. An answer that mainly describes what the assistant can or cannot do gets verdict pass with empty unsupported, even when the evidence is empty. After that: list every MATERIAL INVENTION - a person, event, video, post, link, quote, number or date that the evidence does not contain at all. A claim is SUPPORTED — never list it — when it is a reasonable reading of the evidence: spelling or typo variants of a name the evidence holds, a partial name completed by the same item, paraphrase or summary of evidence text, verbatim or near-verbatim quotes of it, and arithmetic over evidence numbers. Only what would mislead the member about WHO, WHAT or HOW MANY counts. Greetings, offers, questions, advice framing and honest statements of not-knowing are not claims. Output ONLY minified JSON: {\"unsupported\":[\"claim\",...],\"verdict\":\"pass\"} or {\"unsupported\":[...],\"verdict\":\"fail\"} — fail only when at least one material invention is present.', messages: [{ role: 'user', content: [ { type: 'text', text: 'MEMBER QUESTION:' + String.fromCharCode(10) + String(($('Plan Request').first().json.text || '')).slice(0, 500) + String.fromCharCode(10) + String.fromCharCode(10) + 'EVIDENCE:' + String.fromCharCode(10) + ($json.evidence || '(none)').slice(0, 64000), cache_control: { type: 'ephemeral' } }, { type: 'text', text: 'DRAFT ANSWER:' + String.fromCharCode(10) + ($json.answer_text || '') } ] }] }) }}",
+         "jsonBody": "={{ JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, thinking: { type: 'disabled' }, system: 'You are a fact gate for an assistant that must never fabricate. Compare the DRAFT ANSWER against the EVIDENCE (raw tool results the assistant retrieved). RULE ONE, before anything else: statements where the assistant describes its OWN abilities, data sources or limitations (I can search the Facebook group, I cannot see call transcripts, a list of what data it has access to) are self-descriptions, NEVER unsupported claims - the sources themselves are never in the evidence and do not need to be. An answer that mainly describes what the assistant can or cannot do gets verdict pass with empty unsupported, even when the evidence is empty. RULE TWO: the MEMBER QUESTION is itself legitimate grounding - statements that restate, quote, summarize or reasonably follow from the member question (their own company, product, numbers, certifications, situation) are SUPPORTED and never listed, even when no evidence mentions them; the member telling the assistant about themselves IS the source for those facts. After that: list every MATERIAL INVENTION - a person, event, video, post, link, quote, number or date that the evidence does not contain at all. A claim is SUPPORTED — never list it — when it is a reasonable reading of the evidence: spelling or typo variants of a name the evidence holds, a partial name completed by the same item, paraphrase or summary of evidence text, verbatim or near-verbatim quotes of it, and arithmetic over evidence numbers. Only what would mislead the member about WHO, WHAT or HOW MANY counts. Greetings, offers, questions, advice framing and honest statements of not-knowing are not claims. Output ONLY minified JSON: {\"unsupported\":[\"claim\",...],\"verdict\":\"pass\"} or {\"unsupported\":[...],\"verdict\":\"fail\"} — fail only when at least one material invention is present.', messages: [{ role: 'user', content: [ { type: 'text', text: 'MEMBER QUESTION:' + String.fromCharCode(10) + String(($('Plan Request').first().json.text || '')).slice(0, 2000) + String.fromCharCode(10) + String.fromCharCode(10) + 'EVIDENCE:' + String.fromCharCode(10) + ($json.evidence || '(none)').slice(0, 64000), cache_control: { type: 'ephemeral' } }, { type: 'text', text: 'DRAFT ANSWER:' + String.fromCharCode(10) + ($json.answer_text || '') } ] }] }) }}",
          "options": {"timeout": 60000}}},
     {"id": "gate_verdict", "name": "Gate Verdict", "type": "n8n-nodes-base.code", "typeVersion": 2,
      "position": [3100, 1050], "parameters": {"jsCode": gatev}},
@@ -156,6 +160,19 @@ NEW = [
          "options": {"version": 2, "leftValue": "", "caseSensitive": True, "typeValidation": "loose"},
          "combinator": "and",
          "conditions": [{"id": "g1", "leftValue": "={{ $json.done }}", "rightValue": True,
+                          "operator": {"type": "boolean", "operation": "true", "singleValue": True}}]},
+         "options": {}}},
+    # #23 speed cut 2: the fact-gate costs 1.5-3.3s (execs 56874/56894) on EVERY finished draft,
+    # including ones with nothing to check — greetings, honest misses, refusals, capability
+    # answers. Answer Parse marks a draft claim-free only when it holds no link, no digit, no
+    # quoted span and no capitalised entity beyond function words plus the source names the
+    # gate's own RULE ONE passes by definition; those turns skip straight to Format Reply.
+    # The deterministic link gate is not lost: claim-free means there is no link to check.
+    {"id": "claims_if", "name": "Claims?", "type": "n8n-nodes-base.if", "typeVersion": 2.2,
+     "position": [2860, 1050], "parameters": {"conditions": {
+         "options": {"version": 2, "leftValue": "", "caseSensitive": True, "typeValidation": "loose"},
+         "combinator": "and",
+         "conditions": [{"id": "c1", "leftValue": "={{ $json.has_claims }}", "rightValue": True,
                           "operator": {"type": "boolean", "operation": "true", "singleValue": True}}]},
          "options": {}}},
 ]
@@ -179,8 +196,12 @@ conns["Answer Seed"] = {"main": [[{"node": "Answer Claude", "type": "main", "ind
 conns["Answer Claude"] = {"main": [[{"node": "Answer Parse", "type": "main", "index": 0}]]}
 conns["Answer Parse"] = {"main": [[{"node": "Answer Done?", "type": "main", "index": 0}]]}
 conns["Answer Done?"] = {"main": [
-    [{"node": "Fact Check", "type": "main", "index": 0}],
+    [{"node": "Claims?", "type": "main", "index": 0}],
     [{"node": "Voyage Embed", "type": "main", "index": 0}],
+]}
+conns["Claims?"] = {"main": [
+    [{"node": "Fact Check", "type": "main", "index": 0}],
+    [{"node": "Format Reply", "type": "main", "index": 0}],
 ]}
 conns["Voyage Embed"] = {"main": [[{"node": "Attach Embedding", "type": "main", "index": 0}]]}
 conns["Attach Embedding"] = {"main": [[{"node": "Answer Tool", "type": "main", "index": 0}]]}

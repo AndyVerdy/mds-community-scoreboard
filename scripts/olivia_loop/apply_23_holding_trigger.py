@@ -52,7 +52,13 @@ wf["nodes"].append({
         "// #23: only REAL member turns get a holding timer - eval/selftest traffic never does.\n"
         "const inbound = $('Log Inbound').first().json;\n"
         "if (String(inbound.wamid || '').includes('SELFTEST')) { return []; }\n"
-        "return [{ json: { to: inbound.from, arrival: new Date().toISOString() } }];\n")},
+        "// arrival = the MESSAGE's own timestamp, never now: Meta redelivers messages, and a\n"
+        "// replay stamped with now opened a fresh holding window AFTER the answer had landed\n"
+        "// (ghost On-it/Still-working texts, 2026-07-31). Anchored on the message time, the\n"
+        "// answered-check sees the original answer and the replay ladder stays silent.\n"
+        "const ts = Number(inbound.timestamp);\n"
+        "const arrival = ts > 0 ? new Date(ts * 1000).toISOString() : new Date().toISOString();\n"
+        "return [{ json: { to: inbound.from, arrival: arrival } }];\n")},
 })
 wf["nodes"].append({
     "id": "hold_fire", "name": "Fire Holding Timer", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2,
