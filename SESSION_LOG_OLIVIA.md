@@ -6,6 +6,13 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-07-31 (LATE-2) — Andy's prod findings filed as #33 (S2): duplicate holding copy · the 2:40 stall (no ticks/typing/ladder for ~2min) · links missing on solve answers · + PRE-PROMOTE SMOKE CHECKLIST as process
+
+- Filed from his screenshots; investigation deferred to next session (start at the 2:40PM exec).
+- ⚠️ The duplicate holding text may be the KNOWN Meta-replay ghost (trigger fix staged, unpromoted).
+- NEXT SESSION: #33 first (exec forensics + distinct rung copy + links rule + write the smoke
+  checklist), then #6 chapters (needs Andy's canonical-count + leads rulings).
+
 ## 2026-07-31 (LATE) — #5 CLOSED: breakdown_sum ships the total-it-up fix · gate 167 · final probe exact (773 vs 722, with the why)
 
 - `member_count` returns `breakdown_sum` — the sum is READ, never computed (model failed 20-number

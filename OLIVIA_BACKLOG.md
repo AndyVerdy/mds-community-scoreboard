@@ -113,6 +113,36 @@ several, live in two places, how do I change — have **no source anywhere**.
 
 **Impact:** 804 members have a chapter; the policy questions apply to all 722.
 
+### 33. 🟡 Prod smoke: the answer feels alive and cites its sources · S2 · effort S
+*As a member, while she works I can see she is working, and when she solves my problem she shows me
+where the solution lives.*
+
+**Filed from Andy's PROD testing (2026-07-31, ~10PM + next morning) — three findings:**
+1. **Duplicate holding copy.** 9:54PM + 9:55PM: the 18s holding text and the 60s delay notice sent
+   the SAME sentence twice ("Still working on this one…🙏"). The two rungs must carry DIFFERENT
+   copy (e.g. rung 2: "Almost there — this one needed real digging."). ⚠️ Check first whether this
+   was actually the KNOWN Meta-replay ghost ladder: the trigger fix (arrival = message timestamp)
+   is LIVE ON STAGING ONLY and rides the next promote — if prod ghost-laddered, this is evidence,
+   not a new bug.
+2. **The 2:40PM stall (real defect, investigate execs first):** "Im having issues with 3pl, who
+   should i talk to" → ~2 min with NO read ticks, NO typing, NO holding message, then the answer.
+   The whole #23 story existed to prevent exactly this. Find the exec: did Mark Read + Typing fail,
+   did the holding trigger not fire, or did prod queue?
+3. **Links when the answer solves.** The 3PL answer named members/threads/partners with ZERO links;
+   the follow-up ("any partners offers") linked everything. Rule to add (STYLE/loop): when the
+   answer recommends a person, thread, partner or resource, attach its link — content questions
+   like "how many chapters" need none. Andy: "I had a problem and we had a solution" = cite it.
+
+**Accept when**
+- **A written PRE-PROMOTE SMOKE CHECKLIST exists and is run on staging before EVERY promote** (and
+  its result is pasted in the session log): ladder fires ONCE with distinct rung copies · read tick
+  + typing appear within seconds · a solve-lane answer carries links · one counting probe ·
+  gate GREEN. This is Andy's instinct filed as process: cheap standing checks, not a new eval.
+- The three findings above are each fixed or explained from execs, on staging, riding the promote.
+
+**Impact:** every slow answer and every solve-lane answer on prod; the checklist protects every
+future promote.
+
 ### 7. 🟡 People search that understands meaning · S2 · effort M
 *As a member, I find the right person even when I don't know the exact word or spelling.*
 
