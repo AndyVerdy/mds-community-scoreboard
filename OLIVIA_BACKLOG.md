@@ -65,26 +65,34 @@ phone-less actives; fixed same day.)
 
 ### 30. 🟡 Member resolution by at_member_id everywhere — phone is a channel, not the key · S2 · effort M
 *As a member who is not on WhatsApp, the app still fully works for me — my identity is my
-membership, not my phone number.* (Measured 2026-07-30: 203 of 748 actives had no phone on record —
-the counts move daily with the sync; the class, not the number, is the point. Today the serving
-layer cannot even establish who those members are, so the app door returns them nothing.)
+membership, not my phone number.*
 
-The gated RPC layer (`event_lookup`, `content_search`, `partner_lookup`, `video_search`, …)
-resolves the asker from `digest.members.phone` — a WhatsApp-era artifact. Consequence: the #27 app
-door returns `feed_available: false` for the 203 phone-less actives, even though their
-entitlements (chapter, tier, membership) are all derivable from `at_member_id`. Personas already
-cover them (#28 v3); the serving layer doesn't.
+**Not #31.** #31 (closed) keeps the wrong people OUT — status decides whether an identified person
+is entitled. #30 lets the right people IN — the system must be able to IDENTIFY a member who has
+no phone at all. Entitlement was fixed; identity is still phone-shaped.
+
+**The walk-through:** every gated function answers "who is asking?" by looking up a phone — a
+relic of Olivia being born on WhatsApp. A real case: an active member with no phone on record
+(10 events attended, FB activity, a persona since #28) installs the app and logs in with his
+email. The app door resolves email → member record fine — but to fetch his feed it calls the
+gated functions, and each demands a phone as the asker key. He has none → `feed_available: false`
+→ a paying member gets an empty app. Measured 2026-07-30: 203 of 748 actives (moves daily with
+the sync; the class, not the number, is the point) — and every future member who installs the app
+before ever touching WhatsApp joins the class.
 
 **Accept when**
-- Asker resolution accepts `at_member_id` as the primary key across the gated layer (phone remains
-  a resolution PATH into it, entitlement semantics unchanged — chats-based entitlements are simply
-  empty for members in no chats).
-- `app_member_feed` serves a phone-less active member a real feed, verified live.
-- A member joining WA later gains the WA-dependent sections with zero migration.
-- Leak gate GREEN, extended for the at_member_id path (unknown/ambiguous id → empty).
+- The gated layer accepts `at_member_id` as the asker key — phone stays as a resolution PATH into
+  the same shared lookup (WhatsApp unchanged), verified email is the other (the app). **#31's
+  status gate applies identically on both paths.**
+- A phone-less ACTIVE member gets a real feed from the app door, verified live.
+- When that member later joins WhatsApp, the WA-dependent sections (chats, digests, Olivia
+  history) light up with zero migration — entitlement semantics unchanged; chats-based
+  entitlements are simply empty for members in no chats.
+- Leak gate extended for the new path — unknown/ambiguous/canceled `at_member_id` → empty,
+  fail-closed — and GREEN.
+- Phone-path actives byte-identical (the standing regression snapshot).
 
-**Impact:** 203 active members today; every future member who installs the app before joining
-WhatsApp.
+**Impact:** ~200 active members today; every future app-first member.
 
 ### 23. 🟡 Answer latency · S2 · effort M
 *As a member, an answer arrives while the question is still on my mind — WhatsApp shows no typing
