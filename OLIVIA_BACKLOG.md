@@ -388,6 +388,35 @@ through this".
 
 ---
 
+### 34. 🏁 Finalize the QA doc set — THE LAST TICKET, runs after everything else · effort M
+*As the team, once the whole backlog is done, the three QA docs are true, complete, and
+reconciled — and the Big Smoke has actually run against them.*
+
+**Andy 2026-08-01: "finish the backlog, THEN revise these docs." This is that revision — the
+deliberate last step, not done piecemeal.** The three docs
+(`OLIVIA_QA_CHECKLIST.md` = method · `OLIVIA_BIG_SMOKE_MATRIX.md` = content ·
+`OLIVIA_SMOKE_CHECKLIST.md` = 5-check gate) were built while the backlog was still closing, so
+the METHOD is whole-backlog-shaped already but the MATRIX only enumerates the tickets that were
+closed when it was written (Release 1 + 2). Every ticket that closes AFTER 2026-08-01 must be
+folded in.
+
+**Accept when**
+- **Every closed ticket has ≥5 matrix rows** — including the ones still open today when this was
+  filed: #15 (data pipeline), #12 (public revenue, once ruled), #29 (dossier, once built), and
+  whichever of #16–#20 ship. A closed ticket with no smoke coverage is the defect this catches.
+- **Authored ⚙️ rows replaced by organic 🟢** wherever real traffic now covers the point.
+- **The three docs reconcile:** no claim in one contradicts another; the doc-map header is
+  current; every §A–I item traces to matrix rows or a measured/forced section.
+- **Expected values in the matrix are filled from their proving SQL** (verified, not placeholder).
+- **THE BIG SMOKE has actually run** — one full pass, results pasted into the session log, class
+  rates on the ladder, #14 feel verdict + #32 cost/Kimi done — and the 5-check gate is GREEN.
+- **Anything the smoke surfaces is either fixed or filed** before the promote.
+
+**Impact:** this is the gate between "backlog closed" and "one big release" — it's how we know
+the release is actually safe to ship, not just that the tickets are marked done.
+
+---
+
 ---
 
 # ✅ Completed

@@ -54,8 +54,9 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
 - **QA STRUCTURE BUILT (Andy: "check everything, research how"):** `OLIVIA_QA_CHECKLIST.md`
   (A–I, grounded in OWASP LLM-Top-10 2025 + 2026 eval practice; per-category example→expected
   answer table) + **`OLIVIA_BIG_SMOKE_MATRIX.md` (~85 questions, every backlog update point ≥5,
-  expected + proving SQL, anchor facts verified live).** The Big Smoke = one full pass. Next
-  session can fill expected values from the SQL + fire in class batches on Andy's go.
+  expected + proving SQL, anchor facts verified live).** The Big Smoke = one full pass. **#34 FILED = the LAST ticket:
+  finalize/reconcile the three docs + grow the matrix ≥5 rows per ticket closed after 08-01 +
+  run the Big Smoke — the gate between 'backlog closed' and 'one big release'.**
 - **#13 OUTAGE ALARM CLOSED — LIVE NOW (not promote-gated).** Supabase pg_cron every 5 min (off
   n8n), Slack #automation-tests (C0AQ8USNQK0, one config row to change). 3 signals:
   failure-text-to-members (eval noise excluded) · relay maintenance markers (n8n dead) · active
