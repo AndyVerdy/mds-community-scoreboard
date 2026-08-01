@@ -35,9 +35,11 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
    promote until he says "we are done". Release 2 so far: eval fix batch · #23 cuts · #5
    counting · #33 early-feedback + links · #6 chapters · #7 people search. **At the push: run
    `OLIVIA_SMOKE_CHECKLIST.md` on staging and paste the result block into the session log.**
-2. **Suggest next ticket(s):** #9 revenue brackets is the last open S2 — it NEEDS ANDY'S
-   WORKING SESSION first (authoritative field + bracket rule). Otherwise S3: #10 shareable
-   member facts (S, quick) or #13 outage alarm (recommended raise to S2).
+2. **ANDY'S GOAL: close the WHOLE backlog, one big release, one huge smoke test.** S2 is now
+   EMPTY. Open: S3 #10 shareable facts (S) · #11 payment wording (S) · #12 public revenue
+   (needs his ranking ruling) · #13 outage alarm (M) · #14 conversational (L) · #15 pipeline
+   (L) · #29 dossier research (L) · #32 cost (M) · S4 #16-#20. Suggest smallest-first: #10 →
+   #11 → #13.
 3. Standing: MDS-Life ruling (Q3088 expect) · **whale ruling** (live chapter TTM sums can out one
    member's scale — NorthTex $930M sum / $806M one member; ON today per site precedent) ·
    **schedule the FOUR derivation jobs nightly** (`olivia_derive_niches.py` ·
@@ -48,6 +50,13 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
    action-this-week list.
 
 ## State (2026-08-01 early close)
+- **#9 REVENUE CLOSED (staging, Release 2).** The working session dissolved — Andy pointed at CU
+  page `2531q-67177`: **authoritative = `Most Recent Revenue`** (verified-else-reported), and
+  `derive_member_attributes()` ALREADY derives rev_band from it by one threshold rule (provenance
+  stamped) — single rule everywhere by construction. Shipped the enforcement: **gate +3 (178
+  GREEN)** — card revenue_tier band-only · no raw-revenue field in card blob · count band keys ⊆
+  vocabulary. Probes: tier answered (*20M+*), exact refused with the rule. Residuals: exact
+  channel-% upgrade (Forms raw fields) · #12 ranking ruling · whale ruling.
 - **#8 EVERY SOURCE CLOSED (staging, Release 2).** Three behaviors per Andy's scope: cross-source
   floor before any "can't find" · merge multi-home answers (WA+FB attributed) · wide solve
   fan-out. AC reframe (his call): process floor absolute, outcome = the exists-but-missed class

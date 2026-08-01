@@ -97,31 +97,6 @@ phone-less actives; fixed same day.)
 # 🟡 S2
 
 
-### 9. 🟡 Revenue brackets, one rule · S2 · effort L
-*As a member, revenue answers are consistent and never expose anyone's actual number.*
-
-**Accept when**
-- **Your working session lands first:** one field named authoritative, in writing, with the reason.
-- **A member's bracket is identical everywhere it appears** — card, match, count.
-- **Raw revenue cannot leave the database**, enforced by the gate rather than by wording.
-- **Channel questions answer consistently across phrasings.**
-
-Most-recent revenue can never be exposed; brackets can. Either derive the bracket from most-recent
-revenue or use the bracket field where it fits. Three competing tier fields exist, none confirmed. Same
-audit is owed on **revenue sources** — Amazon, DTC, TikTok — which the application form already calculates.
-
-- One field named authoritative, in writing, with the reason
-- Bracket derived by a single rule everywhere: cards, matching, counting
-- Raw revenue cannot leave the database — gate check
-- "Who sells on TikTok" / "who's DTC" answer consistently from application data
-- **Needs a working session with Andy before building**
-
-**Impact:** every profile card, every match, every "who does X" answer.
-
----
-
----
-
 # 🔵 S3
 
 ### 10. 🔵 Shareable member facts · S3 · effort S
@@ -432,14 +407,16 @@ through this".
 Ships to prod at the next `promote` (Andy runs it). Everything below is live on staging and gate
 GREEN 161, and nothing here is on prod yet.
 
-**Tickets closed into Release 2 (6):** #23 answer latency (closed on the story — the ladder half
+**Tickets closed into Release 2 (7):** #23 answer latency (closed on the story — the ladder half
 shipped in Release 1, the speed cuts in Release 2) · **#5 counting** (member_niches + member_count
 RPC + loop tool; breakdown_sum closes total-it-up deterministically) · **#33 prod smoke**
 (early-feedback branch reorder + links-when-solving rule + the standing pre-promote smoke
 checklist `OLIVIA_SMOKE_CHECKLIST.md`) · **#6 chapters, end to end** · **#7 people search that
 understands meaning** (pg_trgm names + profile embeddings w/ RRF + place aliases + the
 member_match target-mode fix) · **#8 every source on every question** (cross-source floor +
-merge + solve fan-out rules · multi_source all six families · per-turn sources_used telemetry).
+merge + solve fan-out rules · multi_source all six families · per-turn sources_used telemetry) · **#9 revenue brackets, one rule** (ruling = CU page 06: Most Recent
+Revenue authoritative; rev_band already derives from it by one threshold rule; gate now enforces
+band-only outputs).
 
 **Shipped to PROD separately (not part of the n8n promote):** #25 the portal tells the truth —
 mds-digest-web `294b094`, live on digest.mds.co 2026-07-31. The portal deploys on push and never
@@ -720,6 +697,41 @@ the promote. Gate GREEN after the edits.
 
 **Impact:** every slow answer and every solve-lane answer on prod; the checklist protects every
 future promote.
+
+---
+
+### 9. ✅ Revenue brackets, one rule · CLOSED 2026-08-01 (staging) · effort L→S · RELEASE 2
+*As a member, revenue answers are consistent and never expose anyone's actual number.*
+
+**The working session dissolved: Andy pointed at the WRITTEN ruling that already existed** — CU
+doc 2531q-102937 page 06 "Revenue fields & logic" (`2531q-67177`): **the authoritative field is
+`Most Recent Revenue`** (the verified-else-reported chooser; never blank after an application,
+auto-upgrades on human Approve; the page explicitly names it "the field to trust" and documents
+why the Members-side TTM lookups are census-gated quirks).
+
+**And the warehouse already obeyed it:** `derive_member_attributes()` computes `rev_band` FROM
+`Most Recent Revenue` (AT first, application fallback) by ONE threshold rule — ≥20M → 20M+ ·
+≥10M → 10-20M · ≥5M → 5-10M · ≥100k → 1-5M — with provenance stamped. Cards, matching, counting
+and chapter band_mix ALL read that one derived column: **single rule everywhere BY CONSTRUCTION.**
+The "three competing tier fields" fear was moot — the warehouse never reads them.
+
+**What actually shipped to close:** the missing enforcement + proof.
+- **Gate +3 (175→178 GREEN):** `member_card` revenue_tier is a BAND from the vocabulary, never a
+  raw figure · card blob carries no raw-revenue field · `member_count` band breakdown keys ⊆ the
+  band vocabulary. Raw revenue structurally cannot leave the DB.
+- **Probes (staging):** "what revenue tier is Prudence in?" → *20M+* with profile ·
+  "her exact revenue number?" → refusal with the tier-band rule stated, band re-offered.
+- **Channels from application data ✓:** `channel_mix` + `tiktok_seller` (canonical, census/
+  application-derived) already power who-sells-on-X + chapter channel mixes. BONUS from the doc:
+  the Forms table holds EXACT channel %s (Amazon/DTC/TikTok/Retail raw + per-channel $ formulas;
+  the messy buckets are the legacy shape of the same values) — a precision upgrade filed as a
+  residual, not needed for the AC.
+
+**Residuals, named:** raw channel-% precision upgrade (exact %s instead of buckets) · #12's
+ruling (may named members be RANKED by revenue) stays its own ticket · the chapter-TTM whale
+ruling stays open under Needs Andy 4b.
+
+**Impact:** every profile card, match, count and chapter stat — now provably band-only.
 
 ---
 

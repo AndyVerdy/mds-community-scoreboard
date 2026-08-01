@@ -557,6 +557,20 @@ def main():
               isinstance(lead, list) and not lead)
         st, card = rpc("member_card", {"p_phone": phone, "p_member": "Zzz Nonexistent Person"}, key)
         check("member_card unknown target = zero rows", isinstance(card, list) and not card)
+        # #9: revenue leaves the DB as a BAND only — never a raw dollar figure
+        st, mycard = rpc("member_card", {"p_phone": phone, "p_member": my_name}, key)
+        bands_ok = all((r.get("revenue_tier") in (None, "", "1-5M", "5-10M", "10-20M", "20M+"))
+                       for r in (mycard or []))
+        check("member_card revenue_tier is a BAND (never a raw figure)", bool(mycard) and bands_ok,
+              str([(r.get("full_name"), r.get("revenue_tier")) for r in (mycard or [])])[:150])
+        cblob = json.dumps(mycard or [])
+        check("member_card carries no raw revenue field",
+              "Most Recent Revenue" not in cblob and not re.search(r'"revenue[^"]*":\s*[0-9]{5,}', cblob))
+        st, bnd = rpc("member_count", {"p_phone": phone, "p_group_by": "band"}, key)
+        bd_keys = list((((bnd or [{}])[0]).get("breakdown") or {}).keys())
+        check("member_count band breakdown keys are the band vocabulary only",
+              bool(bd_keys) and set(bd_keys) <= {"1-5M", "5-10M", "10-20M", "20M+", "(none on file)"},
+              str(bd_keys))
         st, card = rpc("member_card", {"p_phone": "19999999999", "p_member": my_name}, key)
         check("member_card unknown asker phone = zero rows", isinstance(card, list) and not card)
         st, _b = rpc("member_card", {"p_phone": phone, "p_member": my_name}, ANON_KEY)

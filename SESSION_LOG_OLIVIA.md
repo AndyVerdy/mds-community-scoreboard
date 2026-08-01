@@ -6,6 +6,26 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-3) — #9 REVENUE CLOSED (Release 2): the ruling already existed in writing (CU page 06 — Most Recent Revenue authoritative) · rev_band already derives from it by ONE rule · gate +3 enforces band-only (178) · probes: tier yes, exact refused
+
+- Andy pointed at CU `2531q-102937` page 06 (`2531q-67177`) instead of a working session — and it
+  IS the written ruling: **`Most Recent Revenue`** = verified-else-reported chooser, never blank,
+  upgrades on Approve, "the field to trust" (Members-side TTM lookups = census-gated quirks).
+- **The warehouse already obeyed:** `derive_member_attributes()` → rev_band FROM Most Recent
+  Revenue (AT first, application fallback), thresholds 20M+/10-20M/5-10M/1-5M, provenance
+  stamped. Cards/match/count/chapters all read that one column — single rule BY CONSTRUCTION;
+  the "three competing tier fields" were never read.
+- **Shipped: gate +3 (175→178 GREEN)** — member_card revenue_tier ∈ band vocabulary (never raw) ·
+  card blob has no raw-revenue field · member_count band breakdown keys ⊆ vocabulary.
+- **Probes:** "what tier is Prudence in?" → *20M+* · "her exact revenue number?" → refusal with
+  the tier-band rule stated. Doc bonus: Forms holds EXACT channel %s (Amazon/DTC/TikTok/Retail
+  raw + per-channel $ formulas) — the messy buckets are the legacy shape; precision upgrade
+  filed as residual.
+- **Andy's goal declared: close the WHOLE backlog → one big release → one huge smoke test.**
+  S2 now EMPTY. Also his supplier-probe catch earlier: section labels must name only the family
+  that supplied the items (rule tightened, `22ad78b`) — WA verified to hold ~nothing on
+  supplier QC (1 tangential hit).
+
 ## 2026-08-01 (EARLY-2) — #8 EVERY SOURCE CLOSED (Release 2): cross-source floor + merge + solve fan-out rules · multi_source = all SIX families · per-turn sources_used telemetry · probes telemetry-verified · gate 175
 
 - **Andy's scope note filed as the ticket's three behaviors** (absence guard · merge multi-home ·
