@@ -110,6 +110,14 @@ in front of the team in the Olivia portal.*
 portal page `/admin/olivia/reports` (digest-web `af32d0c`) · gate 190 (3 new checks) ·
 proven live (rows 4-5 + Q3088b/Q3116c probes). Related ruling: event-registration asks = BOTH
 (event card + link + pass-to-team offer) — router worked-example fixed.
+**ANDY'S ACs VALIDATED + PROBE SUITE PASSED 2026-08-01 (16 turns):** AC1 verbatim one-turn ✓ ·
+AC2 bare-report asks fresh mid-conversation ✓ · AC3 3-parter + yes files the ORIGINAL ask
+verbatim ✓ · AC4 no follow-up promises ✓ (the suite caught "they'll follow up" → wording
+pinned) · AC5 boundaries ✓ (complaints filed, no cross-member read, gate fail-closed/anon) ·
+AC6 portal ✓ (main-page bottom section + clear/restore/clear-all soft; unauth PATCH 403;
+soft-clear round-trip proven; dupe row archived not deleted) · AC7 zero regressions ✓
+(chapters/ticket/billing unchanged). The suite also caught a double-file → report_create now
+IDEMPOTENT (15-min window, migration report_create_idempotent). Gate 190.
 
 # ⚪ S4 — lowest
 
