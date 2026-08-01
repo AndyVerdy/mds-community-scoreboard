@@ -197,7 +197,7 @@ security exposure: restricted decks are publicly downloadable.
 
 **Effort M** — blocked on a key we don't have. **Impact:** everyone asking what's new; the security item is urgent on its own terms.
 
-### 18. ⚪ How-MDS-works answers · S4 · effort M
+### 18. ⚪ How-MDS-works answers · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01)**
 *As a member, I get the real answer about Squads, programs and joining a chat.*
 
 **Accept when**
@@ -210,7 +210,7 @@ questions in #9.
 
 **Effort M** — the work is someone writing the answers; loading them is straightforward. **Impact:** all 722; every one of these currently becomes a support request.
 
-### 19. ⚪ Privacy: share, keep, delete · S4 · effort M
+### 19. ⚪ Privacy: share, keep, delete · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01)**
 *As a member, I know what's stored about me and can have it removed.*
 
 **Accept when**
@@ -225,7 +225,7 @@ questions in #9.
 
 **Impact:** all members, low urgency until someone asks.
 
-### 20. ⚪ Census into the warehouse · S4 · effort L
+### 20. ⚪ Census into the warehouse · S4 · effort L · **→ RELEASE 3 (Andy 2026-08-01)**
 *As a member, Olivia knows what I actually said about my business.*
 
 **Accept when**
@@ -306,6 +306,27 @@ bullets. At the Big Smoke it is checked as: follow-up class rate on the FULL run
 capped-answer-continues probes · uses-what-she-knows probes · **Andy's own feel verdict**
 ("it feels like a bot" was his original complaint — he judges whether that's gone). Anything
 still robotic becomes a NAMED FIX before the promote.
+
+---
+
+# 🚀 RELEASE 3 — queued (filed 2026-08-01)
+
+**The next release's opening set (Andy's calls tonight):** #29 matchmaking/dossier (the big one —
+research memo first) · #17 auto-refresh videos+partners (blocked on GROUPOS_PAT; weekly temp
+refresh running meanwhile) · #18 how-MDS-works answers (team-written content) · #19 privacy
+position · #20 census into the warehouse · plus:
+
+### 35. 🚀 Connect new data source — DOCUMENTS (GroupOS) · S3 · Release 3
+*As a member, MDS documents are searchable like everything else.*
+Extract via the GroupOS MCP document endpoints (documents_list/get, collections, categories —
+already exposed on the connection). Same pattern as videos/partners: catalog + gated retrieval +
+restriction handling + embeddings + gate checks. Filed by Andy 2026-08-01.
+
+### 36. 🚀 Connect new data source — CIRCLEBACK · S3 · effort L · Release 3
+*As a member, what was said in recorded meetings becomes part of what Olivia knows.*
+Circleback (meeting notes/transcripts). **BLOCKED: needs details from Andy** — which workspace,
+what API/export access, which meetings are in scope, and the sensitivity rules (who may see
+what). Filed by Andy 2026-08-01.
 
 ---
 
