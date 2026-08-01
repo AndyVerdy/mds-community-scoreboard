@@ -7,6 +7,13 @@ const resp = $input.first().json;
 const prev = $('Answer Parse').first().json;
 const NL = String.fromCharCode(10);
 
+// REPORT TURNS SKIP THE FACT GATE (2026-08-01, Andy's live test): a bare "report"
+// draft ("what would you like to report?") got clamped to the canned miss — but a
+// report turn has NOTHING to fact-check: the reply is the member's own words plus a
+// confirmation/question, no retrieved facts. The link gate below still runs.
+const _memberMsg = String(($('Plan Request').first().json || {}).text || '');
+const _isReportTurn = /^\s*report\b/i.test(_memberMsg);
+
 let verdict = null;
 try {
   const txt = (resp.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
@@ -84,7 +91,7 @@ const idInEv = (u) => {
   return ev.includes(String(u).toLowerCase().trim());
 };
 let hClaims = [];
-if (verdict && verdict.verdict === 'fail' && (verdict.unsupported || []).length) {
+if (!_isReportTurn && verdict && verdict.verdict === 'fail' && (verdict.unsupported || []).length) {
   hClaims = (verdict.unsupported || []).filter(c => {
     const ents = entitiesOf(c);
     if (!ents.length) return true;                       // nothing checkable — trust the gate

@@ -207,6 +207,9 @@ Format Reply emits type=interactive for offer-shaped replies; inbound parser map
 payloads to their text so taps ride the existing YES flow; eval/silent path unchanged. Scope
 NOTE on "buy": native in-chat payment is India/Brazil only — US flow = product/CTA button →
 our Stripe checkout link; money never moves inside WA (matches the no-payment-agency stance).
+**+ Report confirm-step (Andy 2026-08-01, tried it live): after the bare-"report" flow receives
+the member's text, reply with THREE buttons before filing — Send it · Add more · Cancel
+(wording TBD better) — so multi-message reports and typos don't file prematurely.**
 
 ### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L · **→ RELEASE 3 (Andy 2026-08-01: "this is a huge one" — not part of this push; the research memo opens Release 3. His signal asks — app event logging + GROUPOS_PAT — still run THIS week so history accumulates)**
 *As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
