@@ -16,7 +16,7 @@
 Built 2026-08-01 per Andy's spec; the deliverable of `OLIVIA_SMOKE_CHECKLIST.md` step 1, mapped
 to `OLIVIA_QA_CHECKLIST.md` sections A–I. Anchor facts verified live 2026-08-01: **722 actives ·
 20 chapters · 18 WA chats · 34 upcoming events · 492 partners · 1,022 videos · 722/722 member
-embeddings · 20M+ = 164 · Supplements = 73 · Texas = 52 · NY 97 / Women's 86 / Europe 61.**
+embeddings · 20M+ = 164 · Supplements = 74 (drifted from 73) · Texas = 52 · NY 97 / Women's 86 / Europe 61.**
 (partners/videos re-verified at the 2026-08-01 deep refresh)
 
 **How to read:** each row = one question, its expected-answer BAR (what the judge scores), and
@@ -48,7 +48,7 @@ in the auto run.
 | Q-ID | src | question | expected bar | proving SQL | ⬜ |
 |---|---|---|---|---|---|
 | BS001 | 🟢 | how many total in socal, vs texas? | SoCal 92 (LA 44 + OC 32 + SD 16) vs Texas 53 (SoTex 41 + NorthTex 12); every number exact | `member_count p_group_by=chapter` | ⬜ |
-| BS002 | 🟢 | how many members are in the supplements niche? | 73 of 722 | `member_count p_niche=Supplements` | ⬜ |
+| BS002 | 🟢 | how many members are in the supplements niche? | 74 of 722 (live 08-01; 73 at matrix-write — drift) | `member_count p_niche=Supplements` | ⬜ |
 | BS003 | ⚙️ | how many members at 20M+? | 164 | `member_count p_band=20M+` | ▷ covered by BS004 band table |
 | BS004 | 🟢 | how many members under $1m? | honest: "no band under $1M exists" + full band table (252/132/90/164/84) | `member_count p_group_by=band` | ⬜ |
 | BS005 | 🟢 | add up every chapter's members | breakdown_sum 773, and WHY it exceeds 722 (members hold several chapters) — never model-added | `member_count p_group_by=chapter` breakdown_sum | ⬜ |

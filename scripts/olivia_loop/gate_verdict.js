@@ -93,6 +93,23 @@ if (verdict && verdict.verdict === 'fail' && (verdict.unsupported || []).length)
       : ev.includes(String(e).toLowerCase().trim()));
   });
 }
+// DERIVED-AGGREGATE FILTER (Big Smoke 2026-08-01). The gate's worst real-world failure
+// class: counts/sums/shares computed FROM the evidence ("20 chapters", "92 + 53 = 145",
+// "~13% are agencies") appear nowhere verbatim, Haiku flags them, the regen re-derives
+// them, and the second lap clamps a fully-grounded answer to the canned miss (7 of the
+// Big Smoke's 15 findings). An aggregation-shaped claim whose every NON-numeric entity
+// verifies in the evidence is arithmetic over retrieved rows — the rubric already calls
+// that supported; enforce it deterministically. Invented PEOPLE/links/quotes still block:
+// any unverified name keeps the claim.
+const AGG = /\b(total|sum|combined|across|in all|add(s|ed)? up|percent|%|how many|count|breakdown|\d+\s+(members?|chapters?|chats?|partners?|videos?|events?|people|sellers?|posts?|attendees?|registered|confirmed))\b/i;
+hClaims = hClaims.filter(c => {
+  const s = String(c);
+  if (!AGG.test(s)) return true;
+  const nonNum = entitiesOf(s).filter(e => !/^\d+$/.test(String(e)));
+  return !nonNum.every(e => /^https?:\/\//.test(String(e))
+    ? idInEv(e)
+    : ev.includes(String(e).toLowerCase().trim()));
+});
 // SELF-DESCRIPTION BACKSTOP (2026-07-30, exec 56121). Asked "what data do you have access
 // to?", Haiku listed the answer's own source bullets as inventions ("Facebook — posts and
 // comments...", "Video library — past Mogul Calls...") — her sources are never IN the
@@ -125,7 +142,10 @@ if (!claims.length) {
 // this node's own run counter inside the execution — nothing can strip it.
 const attempts = Math.max(prev.gate_attempts || 0,
                           typeof $runIndex === 'number' ? $runIndex : 0);
-if (attempts >= 1) {
+// cap raised 1 -> 2 (Big Smoke 2026-08-01): with the derived-aggregate filter above, a
+// second regeneration converges instead of re-tripping on the same arithmetic; the
+// $runIndex counter still hard-stops runaway loops.
+if (attempts >= 2) {
   return finalize("I looked into that, but I couldn't verify enough of the details against MDS data to give you a solid answer — I'd rather say that than guess. If you can narrow it down, I'll check again.", { gate: 'blocked', gate_claims: claims });
 }
 // one regeneration with the unsupported claims named
@@ -137,5 +157,5 @@ return [{ json: {
   done: false, to: prev.to, preload: prev.preload || '', system: prev.system, tools: prev.tools, messages: messages,
   iter: Math.max(prev.iter, 1), max_iter: prev.max_iter + 2,
   in_tok: prev.in_tok, out_tok: prev.out_tok, cache_w: prev.cache_w, cache_r: prev.cache_r,
-  calls: prev.calls, t0: prev.t0, gate_attempts: 1, regen: true,
+  calls: prev.calls, t0: prev.t0, gate_attempts: attempts + 1, regen: true,
 } }];
