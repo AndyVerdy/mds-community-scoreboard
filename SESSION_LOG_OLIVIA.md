@@ -6,6 +6,33 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-6) — #13 OUTAGE ALARM CLOSED + LIVE: Supabase pg_cron watches n8n every 5 min · 3 signals · unlatchable (30-min repeats + recovery) · forced-failure proof visible in Slack · gate 186
+
+- **LIVE immediately (off the promote path):** the monitor runs IN SUPABASE (pg_cron */5) — not
+  on n8n, the platform it watches. Slack = #automation-tests C0AQ8USNQK0 via the MDS Verifier
+  bot token (config row swaps the channel anytime).
+- **Signals:** members-getting-failure-text (the 07-26 shape; SELFTEST/Andy excluded) ·
+  n8n-workflow-down (relay_maintenance markers = callbacks arriving, n8n silent) · webhook-ping
+  (ACTIVE probe: synthetic status payload at the real prod webhook each tick; `wamid.HEALTHPING`
+  sends-row = standing heartbeat; next tick verifies 200).
+- **Unlatchable by construction:** re-alert every 30 min while firing (the old monitor died of
+  alert-on-transition + corrupted state) · ✅ recovery post on clear · check fn never raises ·
+  stamps its own `last_tick_at` (the monitor is checkable).
+- **Forced-failure proof (AC: never by reading config), in Slack 2026-07-31 ~20:34 CDT:** canary
+  failure text → 🚨 (Slack ok:true) · rerun inside 30 min → paced silent · backdate 40 min → 🚨
+  "(still down — repeating every 30 min)" · canary cleared → ✅ recovery · ping → 200 "Workflow
+  was started" + HEALTHPING row · **autonomous cron tick at 01:35:00.065 UTC (exact boundary)**.
+- ⚠️ Trap caught: **pg_net installs into schema `net`**, not `extensions` — first cut's
+  `extensions.net.http_post` would have silently no-opped inside the never-raise handlers;
+  verified via pg_proc before trusting. Gate +2 (fn anon-denied · config w/ Slack token
+  unreadable) → **186 GREEN**.
+- Residuals: balance PRE-warning + spend cap → #32 (failure-text already catches the member-
+  visible effect) · Supabase-itself blind spot + the old latched n8n monitor → #16.
+- 📣 Incidental from the channel: today's daily review flagged **Eugene's catch — a revenue
+  FIGURE in a people answer ("…doing $14-15M", quoted from content)** — that is EXACTLY #12's
+  subject (publicly-posted figures, double-sourced) and it needs Andy's #12 ruling; noted, not
+  worked tonight.
+
 ## 2026-08-01 (EARLY-5) — #11 PAYMENT WORDING CLOSED, both rounds (Release 2): plain-word map inside member_billing · ride-along reminder once/24h on EVERY route (E2E canary-proven) · Stripe portal link everywhere it helps · gate 184 (Release 2): map inside member_billing = raw words structurally unemittable · drafts posted to Andy · all 6 troubled-Stripe members are phone-less today · gate 181
 
 - Real values (actives): active 605 · trialing 97 · past_due 3 · canceled 2 · unpaid 1;

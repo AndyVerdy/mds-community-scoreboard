@@ -116,23 +116,45 @@ he also said in this post that…".
 
 **Impact:** low frequency, high sensitivity in a room of senior sellers.
 
-### 13. 🔵 Outage alarm · S3 · effort M
+### 13. ✅ Outage alarm · CLOSED 2026-08-01 · effort M · LIVE (not promote-gated)
 *As the team, we hear about an outage in minutes, from a system that isn't the one that's broken.*
 
-**Accept when**
-- **A real failure alerts within minutes**, from a system that is not the one being watched.
-- **The alarm cannot latch** — repeated failures keep alerting.
-- **A balance running low warns before members feel it**, and a spend cap exists.
-- **Proven by forcing a failure**, never by reading configuration.
+**LIVE NOW — this one does not ride the promote: it runs in SUPABASE pg_cron (off n8n, the
+platform being watched), every 5 minutes, posting to Slack `#automation-tests` (C0AQ8USNQK0 —
+one config row to change the channel).** Migrations `olivia_outage_alarm` +
+`_net_schema_fix` (pg_net lives in schema `net`, not `extensions` — the first cut's qualified
+calls would have silently no-opped inside the never-raise handlers; caught by pg_proc check).
 
-**Verified broken** — see status section. This is why Andy has never seen Olivia down.
+**Three signals, every tick:**
+1. **members-getting-failure-text** — any member received "Sorry — I could not generate…" in the
+   last 10 min (SELFTEST + Andy excluded, so eval noise never pages). This is what the 07-26
+   balance outage looked like to members.
+2. **n8n-workflow-down** — the always-on relay's `relay_maintenance` markers flowing = Meta
+   callbacks arriving while n8n is dead.
+3. **webhook-ping** — an ACTIVE probe: each tick POSTs a synthetic delivery-status payload at
+   the real prod webhook (no member traffic; upserts the `wamid.HEALTHPING` sends-row = a
+   visible heartbeat); the next tick verifies 200.
 
-- An alert fires the first time a member gets the failure text
-- A warning before the AI account balance runs out; Olivia's own account, not a shared one
-- The monitor doesn't run on the platform it watches, and cannot latch itself off
-- A spend cap so one heavy user can't drain the budget
+**NO LATCH by construction** (the old monitor's fatal flaw): while a condition persists it
+re-alerts every 30 min; on clear it posts ✅ recovery. The check function never raises and
+stamps `last_tick_at` in config — the monitor itself is checkable.
 
-**Impact:** on 07-26 every member asking anything got a failure message and nobody knew. *(Recommend raising to S2 — same job as #16.)*
+**Proven by forcing failures (AC), all visible in Slack #automation-tests 2026-07-31 ~20:34 CDT:**
+seeded failure-text canary → 🚨 alert (Slack API ok:true) · second run inside 30 min → paced, no
+repost · stamp backdated 40 min → 🚨 re-alert "(still down — repeating every 30 min)" = unlatch
+proof · canary cleared → ✅ recovery · webhook ping → 200 "Workflow was started" + HEALTHPING row ·
+autonomous pg_cron tick verified. **Gate +2 → 186 GREEN** (anon denied on the check fn; alarm
+config — which holds the Slack token — unreadable).
+
+**Named exceptions / residuals:** Supabase itself is the monitor's blind spot (watching n8n from
+Supabase satisfies the AC; a second cheap watcher for Supabase = #16's audit) · the
+balance-runs-low PRE-warning + spend cap land in **#32** (the failure-text signal already catches
+the member-visible effect, which is how 07-26 actually presented) · the old latched n8n monitor
+stays as-is (harmless, on-platform; #16 decides its fate).
+
+**Impact:** the team hears about the next 07-26 in ≤5 minutes instead of never.
+
+---
 
 ### 32. 🔵 What Olivia costs, measured and controlled · S3 · effort M
 *As the team, we know what Olivia costs to run per answer and per month, we get told before a bill

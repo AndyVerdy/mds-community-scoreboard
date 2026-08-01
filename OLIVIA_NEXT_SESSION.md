@@ -38,7 +38,7 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
 2. **ANDY'S GOAL: close the WHOLE backlog, one big release, one huge smoke test.** S2 is now
    EMPTY. Open: S3 #10 shareable facts (S) · #11 payment wording (S) · #12 public revenue
    (needs his ranking ruling) · #13 outage alarm (M) · #14 conversational (L) · #15 pipeline
-   (L) · #29 dossier research (L) · #32 cost (M) · S4 #16-#20. #10 + #11 CLOSED — suggest #13 outage alarm → #32 cost.
+   (L) · #29 dossier research (L) · #32 cost (M) · S4 #16-#20. #10 + #11 + #13 CLOSED — suggest #32 cost (Kimi retest + report to Pavel) → #12 (needs your ranking ruling) → #14.
 3. Standing: MDS-Life ruling (Q3088 expect) · **whale ruling** (live chapter TTM sums can out one
    member's scale — NorthTex $930M sum / $806M one member; ON today per site precedent) ·
    **schedule the FOUR derivation jobs nightly** (`olivia_derive_niches.py` ·
@@ -49,6 +49,15 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
    action-this-week list.
 
 ## State (2026-08-01 early close)
+- **#13 OUTAGE ALARM CLOSED — LIVE NOW (not promote-gated).** Supabase pg_cron every 5 min (off
+  n8n), Slack #automation-tests (C0AQ8USNQK0, one config row to change). 3 signals:
+  failure-text-to-members (eval noise excluded) · relay maintenance markers (n8n dead) · active
+  webhook ping (HEALTHPING heartbeat row). NO LATCH: re-alerts every 30 min while down, ✅
+  recovery on clear; never-raise + self-heartbeat `last_tick_at`. Forced-failure proof ALL
+  visible in Slack (~20:34 CDT): alert → paced → backdated re-alert → recovery; ping 200;
+  autonomous tick on the :35:00 boundary. Gate 186. ⚠️ pg_net lives in schema `net` (not
+  extensions) — silent-no-op trap caught. Residuals: balance PRE-warning + cap → #32; Supabase
+  blind spot + old latched monitor → #16.
 - **#11 PAYMENT WORDING CLOSED (staging, Release 2).** Wording map INSIDE member_billing (raw
   words structurally unemittable; unknown states → generic plain sentence). Drafts posted to
   Andy. Population: past_due 3 / unpaid 1 / canceled 2 — ALL phone-less today (wording waits for
