@@ -198,6 +198,16 @@ research memo first) · #17 auto-refresh videos+partners (blocked on GROUPOS_PAT
 refresh running meanwhile) · #18 how-MDS-works answers (team-written content) · #19 privacy
 position · #20 census into the warehouse · plus:
 
+### 38. 🔵 Interactive buttons (CTAs) for offers + links · effort M · → RELEASE 3 (from Andy's WABA question 2026-08-01)
+*As a member, Olivia's Yes/No offers (ticket, report, nudge) are TAP BUTTONS, not "reply YES" —
+and links (billing portal, event registration) arrive as CTA-URL buttons.*
+The Cloud API we already send through supports interactive session messages: reply buttons (≤3),
+list menus (≤10 rows), CTA-URL buttons — all free-form inside the 24h window (our case). Build:
+Format Reply emits type=interactive for offer-shaped replies; inbound parser maps button_reply
+payloads to their text so taps ride the existing YES flow; eval/silent path unchanged. Scope
+NOTE on "buy": native in-chat payment is India/Brazil only — US flow = product/CTA button →
+our Stripe checkout link; money never moves inside WA (matches the no-payment-agency stance).
+
 ### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L · **→ RELEASE 3 (Andy 2026-08-01: "this is a huge one" — not part of this push; the research memo opens Release 3. His signal asks — app event logging + GROUPOS_PAT — still run THIS week so history accumulates)**
 *As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
 platform would — from everything it knows about me, and it gets the like-minded question right:
