@@ -156,7 +156,7 @@ stays as-is (harmless, on-platform; #16 decides its fate).
 
 ---
 
-### 32. 🔵 What Olivia costs, measured and controlled · S3 · effort M
+### 32. 🔵 What Olivia costs, measured and controlled · S3 · effort M · **DEFERRED TO THE BIG-SMOKE PHASE (Andy 2026-08-01: measure spend there, give Kimi a fair retest chance and try to improve things — not a standalone ticket now)**
 *As the team, we know what Olivia costs to run per answer and per month, we get told before a bill
 surprises us, and we can prove a cost change actually landed.*
 
