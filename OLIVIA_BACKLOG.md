@@ -99,73 +99,6 @@ phone-less actives; fixed same day.)
 
 # 🔵 S3
 
-### 32. 🔵 What Olivia costs, measured and controlled · S3 · effort M · **DEFERRED TO THE BIG-SMOKE PHASE (Andy 2026-08-01: measure spend there, give Kimi a fair retest chance and try to improve things — not a standalone ticket now)**
-*As the team, we know what Olivia costs to run per answer and per month, we get told before a bill
-surprises us, and we can prove a cost change actually landed.*
-
-Nothing in the backlog has ever owned running cost. What exists is scattered and none of it
-measures PRODUCTION: the eval runner has a daily spend cap + ledger (`.eval_spend.json`, built
-after the $161 incident), #22 priced Kimi against Claude on a bench, and per-answer figures were
-estimated inside #21 and #23. **We have never measured a real month of member traffic**, and the
-2026-07-31 router-caching win is arithmetic off published prices, not a number anyone verified.
-
-**What we used to spend (measured, sources named)**
-| when | figure | source |
-|---|---|---|
-| pre-2026-07-29 loop | **$0.035 / answer** | #21 before its 3 cache breakpoints + Haiku fact-gate |
-| after cache breakpoints (2026-07-29) | **$0.007-0.010 / answer**, ~99% cached | #21 close |
-| head-to-head bench (2026-07-29) | **$0.0135 / answer** Sonnet 5 · $0.0270 Kimi K2.6 | #22, equal conditions |
-| one FULL 100-Q eval run | **~$3.05** | 2026-07-30 full-bank run |
-| a bad day of eval iteration | **~$35** (11 runs) · worst logged day **$40.60** (07-28) | `.eval_spend.json` |
-| the incident that forced the cap | **$161 in one day** | 2026-07-26 |
-| eval spend, last 6 logged days | 11.22 · 9.46 · 40.60 · 11.69 · 9.52 · 6.71 | `.eval_spend.json` |
-
-**What we expect to spend (projection — the first job of this ticket is to replace it with a
-measurement)**
-- Real member traffic today: **275 questions / 30 days from 24 members = ~9.2 questions a day**
-  (SELFTEST and Andy's number excluded).
-- At the bench's $0.0135/answer that is **~$0.12/day, ~$3.70/month** of member-facing spend.
-  Olivia's production cost is currently *rounding error next to the eval runs* — the eval line
-  (~$10-40 on an active day) is where the money actually goes.
-- **At full membership** (748 actives) at the same ~11 questions/member/month: ~8,200 answers/month
-  → **~$110/month**. That is the number to design for, and the reason the router caching matters.
-- **Router caching (2026-07-31, #23)**: 6,225 of ~6,450 routing tokens now served from cache
-  (proven live, exec 57677). ~10× cheaper on that block *inside the 5-min cache window*; a lone
-  message after a gap pays a cache WRITE at ~1.25×. Net effect on sparse beta traffic is UNVERIFIED
-  — bursts win, isolated messages lose slightly.
-
-**Accept when**
-- **A real per-answer and per-month cost, measured from production traffic**, not sticker price —
-  the token counters are already in every exec (`in_tok`/`out_tok`/`cache_w`/`cache_r` ride the
-  loop state and land in `metrics`); the job is to persist and total them, split
-  **member traffic vs eval traffic** so one never hides the other.
-- **The router-caching claim is settled with a number** — cached vs uncached cost per routed turn
-  on real traffic, including how often the 5-min window is actually hit. If sparse traffic makes it
-  a net loss, say so and revert it.
-- **A spike alarm exists and has fired once in a test** — a day over a threshold reaches a human.
-  A $161 day must never again be discovered afterwards. (Alarm plumbing overlaps #13.)
-- **RETEST KIMI.** #22 closed as no-swap on 2026-07-29 with real numbers (Kimi 38.9% FAIL vs 15.3%,
-  60.7s median vs 7.5s, 2× the cost per answer despite a cheaper token rate — it wrote 4× the output
-  and made 1.6× the tool calls). That verdict has a shelf life: **re-run the bench when a new Kimi
-  generation ships or at the next quarter, whichever comes first**, and re-run it on the harness
-  that already exists — `mds-scorecard-tools/{kimi_harvest,kimi_bench,bench_compare}.py`, which
-  touches no workflow and cost ~$5.50 last time. Same bar as #22: organic-bank score ≥ current,
-  leak gate GREEN, latency in band, kill switch exercised. **Two blockers to re-check first, they
-  killed it last time regardless of price:** every Kimi model on our key forces thinking on, and
-  their API refuses `tool_choice: required` alongside it — so our forced first fetch, the mechanical
-  rule that stops her answering before she looks at data, cannot be enforced at all. If that is
-  still true, the retest ends there and no price justifies the swap.
-- **Written down with the numbers**, per the global DoD.
-- **REPORTED TO PAVEL.** The finished numbers go to Pavel, not just into this repo — measured
-  per-answer and per-month cost, member vs eval split, the router-caching verdict, the projection
-  at full membership, and the Kimi retest outcome. Andy sends it (drafts get confirmed before
-  anything goes out, per [[feedback_confirm_before_sending_messages]]).
-
-**Impact:** no member sees this, but an unmeasured bill is how a pilot dies. Cheap to do — the
-counters already exist.
-
----
-
 ### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L
 *As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
 platform would — from everything it knows about me, and it gets the like-minded question right:
@@ -212,25 +145,6 @@ handling — the Amazon/eBay/Netflix patterns), mapped onto MDS's real signal in
 
 **Impact:** all members — Andy's call: matchmaking is the key product surface. The persona-quality
 critique (2026-07-30: cards too generic) lands here as the redesign.
-
-### 14. 🔵 Conversational, not robotic · S3 · **→ BIG-SMOKE ACCEPTANCE CRITERIA (Andy 2026-08-01: not a build ticket — its ACs are checked AT the smoke test: follow-up class rate on the FULL run · capped-answer-continues · uses-what-she-knows · Andy's own feel verdict; anything still robotic becomes a named fix then).** Written 2026-07-28 about the pre-loop system; the loop + #2/#5/#6/#7/#8 absorbed the concrete bullets
-*As a member, it follows what I mean, keeps context, and reads like someone who knows MDS.*
-
-**Accept when**
-- **Follow-ups carry the thread** — at or under the current target rung for the class, with the member
-  never repeating themselves.
-- **A capped answer continues on request.**
-- **She uses what she already knows about the asker without being asked for it.**
-- **"I don't have that" appears only where nothing exists.**
-
-Andy's own read: "it feels like a bot very restricted to me."
-
-- Follow-ups keep the thread — "yes", "what about Austin", "total it up" work without repeating myself
-- One capped answer isn't the end of the conversation
-- She uses what she knows about me without being asked
-- Fewer "I don't have that" walls, more "here's what I do have"
-
-**Effort L** — cuts across routing, retrieval and prompt; hardest to define done. Needs its own session on what good looks like. **Impact:** every member, every conversation — the difference between used and abandoned.
 
 # ⚪ S4 — lowest
 
@@ -333,6 +247,43 @@ folded in.
 the release is actually safe to ship, not just that the tickets are marked done.
 
 ---
+
+---
+
+# 🔥 RESOLVED AT THE BIG SMOKE — not closed, but DECIDED (Andy 2026-08-01)
+
+These two are NOT open build tickets and NOT closed: Andy ruled they get their answers AT the
+Big Smoke. They close when the smoke's results are in.
+
+### 32. 🔥 What Olivia costs — measured AT the smoke, INCLUDING a Kimi cost comparison
+**ANDY'S DECISION (2026-08-01): "let's skip #32 and do it with the full smoke test. We will
+measure spend and COMPARE IT TO KIMI AI, and we will give Kimi a fair chance and try to improve
+things."** Concretely, at the Big Smoke (§G of the QA checklist):
+- **Per-answer + per-month spend MEASURED** from the runs' token counters (`in_tok`/`out_tok`/
+  `cache_w`/`cache_r` already ride every exec), split member traffic vs eval traffic.
+- **Kimi COST comparison on the same runs** — not sticker prices: $/answer on our real cached
+  shape, side by side with Claude (last measured: Kimi 2× $/answer despite cheaper tokens,
+  because 4× output + 1.6× tool calls — re-measure fresh).
+- **A fair Kimi retest + improvement attempts**: re-check the two blockers first (forced
+  thinking-on; no `tool_choice: required` → our forced first fetch unenforceable); try to work
+  around them honestly (prompt-level forcing, output caps); same bar as #22 — organic score ≥
+  current, gate GREEN, latency in band, kill switch exercised. Harness exists
+  (`kimi_harvest/kimi_bench/bench_compare.py`, ~$5.50 last time).
+- **Spike alarm** — a day over threshold reaches a human (plumbing = the #13 alarm, one more
+  signal once spend is persisted).
+- **Balance PRE-warning** (from #13's residual) lands here too.
+- **REPORTED TO PAVEL** — measured numbers + the Kimi verdict; Andy sends (drafts confirmed
+  first).
+*(Historical spend table + projections: see the session logs of 2026-07-31 (PM); baseline
+$0.0135/answer Sonnet vs $0.0270 Kimi, ~$3.70/mo today, ~$110/mo at 748 actives.)*
+
+### 14. 🔥 Conversational, not robotic — its ACs are the smoke's acceptance criteria
+**ANDY'S DECISION (2026-08-01): "#14 sounds like AC for the smoke test" — not a build ticket.**
+Written 2026-07-28 about the pre-loop system; the loop + #2/#5/#6/#7/#8 absorbed the concrete
+bullets. At the Big Smoke it is checked as: follow-up class rate on the FULL run ·
+capped-answer-continues probes · uses-what-she-knows probes · **Andy's own feel verdict**
+("it feels like a bot" was his original complaint — he judges whether that's gone). Anything
+still robotic becomes a NAMED FIX before the promote.
 
 ---
 
