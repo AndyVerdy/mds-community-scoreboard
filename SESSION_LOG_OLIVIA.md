@@ -6,6 +6,34 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-12) — "did you check partners as well?" → PARTNERS DEEP PASS: full 494-sweep-diff (0 deleted / 0 missed / 0 review drift) · 6 NEW partners had ZERO category names → fixed via the AUTHORITATIVE `--map-categories` (my SQL co-occurrence guess was wrong on 5 of 6) · 15 re-embedded · 2 API-unfetchable "poison" records = the only gap · gate 187
+
+- **Andy asked "did you check partners as well?" — honest answer was PARTIALLY.** The earlier pass
+  gave partners only the server-side `updated_after` diff (66), the review-drift fix (4), and
+  trigger re-embeds — no deletion sweep, and the 6 partners created since Jul 21 (ScaleHouse,
+  DataDoe, agentcentral, Boundless AI, TikTok for Business, Nova Data Analytics) had EMPTY
+  `category_names` (the update deliberately omitted that column to protect existing rows).
+- **Full sweep-diff (mirrors the video rigor):** app publishes 494 partners (614 incl. 120
+  draft/paused — correctly excluded). Walked all pages via a subagent (28 pages, limit 25→5
+  fallback on SSE truncation); 492 fetchable ids captured with full meta. Two records are
+  **genuinely unfetchable via the API** ("poison": any page containing one truncates mid-stream;
+  3× limit=1 retries fail; bisected to created_at windows 2023-10-04T10:23:29–38Z and
+  2024-08-13T08:18:01–08:21:46Z) — the original ingest skipped the same two, so catalog 492 =
+  exactly the fetchable set. **Diff vs `partners_catalog`: app_not_db=[], db_not_app=[] (ZERO
+  deletions linger), review_count/rating drift = 0 across ALL 492, no app row newer than ours.**
+- **Category fix the RIGHT way:** first filled the 6 via SQL co-occurrence, then ran the canonical
+  `ingest_partners.py --map-categories` (AT "Associated Categories" authoritative + co-occurrence
+  fallback) — it corrected 5 of my 6 guesses (e.g. TikTok for Business = Affiliate Marketing, not
+  Listing Optimization) and touched 14 rows total. Lesson re-learned: use the project's canonical
+  tool, not an ad-hoc reimplementation. 471/492 partners end with names (21 unmapped pre-existing).
+- **Embeddings:** trigger nulled the 14 + my 6 → `mds-scorecard-tools/embed_partners_events.py`
+  (nulls-only) embedded 15; **492/492 partners embedded, 0 nulls.** E2E: gated `partner_lookup`
+  ("TikTok affiliate marketing") returns the NEW TikTok for Business with its authoritative
+  category. Gate 187/187 GREEN.
+- **Standing gap (named):** the 2 poison partners are published in the app but invisible to the
+  API, so Olivia cannot know them; recorded in scratch `poison_gaps.json` windows above — recheck
+  each weekly refresh (they may become fetchable after an app-side edit).
+
 ## 2026-08-01 (EARLY-11) — ANDY'S CHALLENGE → THE DEEP REFRESH: full 1,022-video sweep-diff (0 changed / 0 deleted, proven) · 11 decks downloaded from the REAL S3 + text-extracted + stored · speakers restored · restricted-content findability = BY-DESIGN metadata-only · gate 187
 
 - **Andy: "last time 3h, now 20min? did you check updated content / attachments / transcripts /

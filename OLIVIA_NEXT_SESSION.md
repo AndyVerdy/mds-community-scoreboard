@@ -54,11 +54,16 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
 ## State (2026-08-01 early close)
 - **CATALOG REFRESH RUN + WEEKLY TEMP SOP (Andy).** Via the GroupOS connection in-session:
   **+13 videos** (1,009→1,022, all embedded — incl. the restricted Prue TikTok video, findable
-  with restriction enforced) · **66 partners updated** (ratings/offers/status; trigger re-embeds
-  changed text). Heartbeats `videos_refresh`/`partners_refresh` (max_age 8 days) → the staleness
-  alarm PAGES if a week is missed. **WEEKLY SOP: run the refresh in-session each week** (list
-  since last sync → upsert → embed scripts → heartbeats). Reviews TEXTS not re-pulled (counts
-  updated) — noted temp gap. #17 proper → Release 3 (needs GROUPOS_PAT).
+  with restriction enforced) · **partners FULLY parity-checked 08-01**: full 494-sweep-diff = 0
+  deletions / 0 missed / 0 review drift; 6 new partners' categories filled the AUTHORITATIVE way
+  (`ingest_partners.py --map-categories` — AT join first, co-occurrence only as fallback; it
+  corrected 5 of 6 SQL guesses); 492/492 embedded. Heartbeats `videos_refresh`/`partners_refresh`
+  (max_age 8 days) → the staleness alarm PAGES if a week is missed. **WEEKLY SOP: run the refresh
+  in-session each week** (list since last sync → upsert → `--map-categories` → embed scripts →
+  heartbeats; every ~month do the FULL sweep-diff for deletions). Known gaps: reviews TEXTS not
+  re-pulled (counts verified 0-drift) · **2 API-unfetchable "poison" partners** (created-at windows
+  2023-10-04T10:23:29–38Z, 2024-08-13T08:18:01–08:21:46Z — published in the app, invisible to the
+  API, Olivia can't know them; recheck weekly). #17 proper → Release 3 (needs GROUPOS_PAT).
 - **RELEASE 3 QUEUE FILED:** #29 (the big one) · #17 · #18 · #19 · #20 · **#35 documents source
   (GroupOS MCP endpoints)** · **#36 Circleback source (BLOCKED: details from Andy)**.
 - **REMAINING FOR THIS RELEASE: #34 + THE BIG SMOKE. That's it.**
