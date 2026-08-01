@@ -5,7 +5,9 @@
 ## 🔥 THE BIG SMOKE — Andy's spec (2026-08-01), runs ONCE before the Release-2 promote
 
 Andy: close the whole backlog → one big release → one huge smoke test. The Big Smoke is that
-test. Its parts, in order:
+test. **It runs one full pass of `OLIVIA_QA_CHECKLIST.md` (sections A–I, the researched
+"check everything" structure — functional · retrieval · safety/OWASP · robustness · feel ·
+delivery · cost · freshness · observability).** Its parts, in order:
 
 **0. Fresh data first — grab and analyze new comments.** Run the FB capture SOP (manual scroll +
 comments pass → load_feed → images → vision_decode → upload → linker → embed_backfill) so the
