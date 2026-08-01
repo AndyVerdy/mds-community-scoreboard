@@ -99,22 +99,6 @@ phone-less actives; fixed same day.)
 
 # 🔵 S3
 
-### 11. 🔵 Payment wording · S3 · effort S
-*As a member behind on payment, I'm told clearly and reminded kindly — not shown a system word.*
-
-**Accept when**
-- **0% of replies carry a raw system status or an internal one.**
-- **Every status has approved wording**, and a member behind on payment is told plainly what to do.
-
-Stripe's raw statuses reach members verbatim: `trialing`, `past_due`, `unpaid`, `canceled`. "Staff" has
-also leaked as a membership status.
-
-- `past_due` and `unpaid`: state it plainly, say what to do, keep the tone light
-- Every status has approved wording; no raw system words reach anyone
-- Internal statuses like Staff never surface
-
-**Impact:** small but sensitive; 9 active members already carry broken Stripe records.
-
 ### 12. 🔵 Public revenue, double-sourced · S3 · effort S
 *As a member, a public figure someone posted is quoted with its source, never as Olivia's claim.*
 
@@ -391,7 +375,7 @@ through this".
 Ships to prod at the next `promote` (Andy runs it). Everything below is live on staging and gate
 GREEN 161, and nothing here is on prod yet.
 
-**Tickets closed into Release 2 (8):** #23 answer latency (closed on the story — the ladder half
+**Tickets closed into Release 2 (9):** #23 answer latency (closed on the story — the ladder half
 shipped in Release 1, the speed cuts in Release 2) · **#5 counting** (member_niches + member_count
 RPC + loop tool; breakdown_sum closes total-it-up deterministically) · **#33 prod smoke**
 (early-feedback branch reorder + links-when-solving rule + the standing pre-promote smoke
@@ -401,7 +385,8 @@ member_match target-mode fix) · **#8 every source on every question** (cross-so
 merge + solve fan-out rules · multi_source all six families · per-turn sources_used telemetry) · **#9 revenue brackets, one rule** (ruling = CU page 06: Most Recent
 Revenue authoritative; rev_band already derives from it by one threshold rule; gate now enforces
 band-only outputs) · **#10 shareable member facts** (`OLIVIA_SHAREABLE_FIELDS.md` rulebook ·
-card = the per-member list incl. channels/model/categories/country · gate pins the column set).
+card = the per-member list incl. channels/model/categories/country · gate pins the column set) · **#11 payment wording** (map inside member_billing —
+raw system words structurally unemittable).
 
 **Shipped to PROD separately (not part of the n8n promote):** #25 the portal tells the truth —
 mds-digest-web `294b094`, live on digest.mds.co 2026-07-31. The portal deploys on push and never
@@ -682,6 +667,29 @@ the promote. Gate GREEN after the edits.
 
 **Impact:** every slow answer and every solve-lane answer on prod; the checklist protects every
 future promote.
+
+---
+
+### 11. ✅ Payment wording · CLOSED 2026-08-01 (staging) · effort S · RELEASE 2
+*As a member behind on payment, I'm told clearly and reminded kindly — not shown a system word.*
+
+**Shipped (migration `member_billing_plain_wording`):** the wording map lives INSIDE
+`member_billing` — the one function that emits statuses (self-only) — so raw words are
+**structurally unemittable**. Every Stripe state maps to plain words with what-to-do
+(`past_due` → "A payment did not go through — your membership is still active. Please update
+your card, or reply YES and I will connect you with the team." · `unpaid` → behind + ticket
+offer · `canceled` → if-unexpected-flag-it · unknown states → a generic plain sentence, never
+the raw token). Membership words too: `Staff` → "MDS team" · `Current Member- Not Renewing` →
+"Active through the end of your term (set not to renew)". Wording drafts posted to Andy
+2026-08-01; editing a message later = editing the map.
+
+**Population reality (verified):** active members today = active 605 · trialing 97 · past_due 3 ·
+canceled 2 · unpaid 1 — and **all 6 troubled-Stripe members are phone-less** (can't reach Olivia
+yet; the wording waits for them). **Gate +1 (180→181 GREEN):** member_billing output carries no
+raw system word. **Probe:** Andy's own billing → "Active — all good ✅", plan, renewal date —
+zero system words, `Staff` never surfaced.
+
+**Impact:** small but sensitive; ready before the members who need it arrive.
 
 ---
 

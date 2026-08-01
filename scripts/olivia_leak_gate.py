@@ -585,6 +585,15 @@ def main():
               not any(any(w in k.lower() for w in ("email", "phone", "address", "credit",
                           "stripe", "iban", "ssn", "passport", "ip_address"))
                       for k in card_cols))
+
+        print("— payment wording (#11) —")
+        st, bill = rpc("member_billing", {"p_phone": phone}, key)
+        bblob = json.dumps(bill or [])
+        check("member_billing emits NO raw system status word",
+              bool(bill) and not any(w in bblob for w in
+                  ("past_due", "unpaid", "trialing", "incomplete", '"Staff"',
+                   "Current Member", "Pending Group", "New Member")),
+              bblob[:150])
         st, card = rpc("member_card", {"p_phone": "19999999999", "p_member": my_name}, key)
         check("member_card unknown asker phone = zero rows", isinstance(card, list) and not card)
         st, _b = rpc("member_card", {"p_phone": phone, "p_member": my_name}, ANON_KEY)

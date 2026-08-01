@@ -6,6 +6,18 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-5) — #11 PAYMENT WORDING CLOSED (Release 2): map inside member_billing = raw words structurally unemittable · drafts posted to Andy · all 6 troubled-Stripe members are phone-less today · gate 181
+
+- Real values (actives): active 605 · trialing 97 · past_due 3 · canceled 2 · unpaid 1;
+  membership words incl. Staff 29. ('Subscription Status' field = null everywhere; the live one
+  is **'Stripe Subscription Status'** — field names lie, again.)
+- **Map inside the RPC** (`member_billing_plain_wording`): every branch a plain-word literal
+  with what-to-do; unknown → generic plain sentence; `Staff` → "MDS team". Structural: no raw
+  token can be emitted. Drafts posted for Andy's edit-anytime.
+- Verified: Andy's row (Staff/active) maps · the 6 troubled members have NO WA phone (can't ask
+  Olivia yet — wording ready for when they join). Gate +1 → **181 GREEN**. Probe: own billing →
+  "Active — all good ✅" + plan + renewal, zero system words.
+
 ## 2026-08-01 (EARLY-4) — #10 SHAREABLE FACTS CLOSED (Release 2): OLIVIA_SHAREABLE_FIELDS.md = the rulebook (3 lanes + default-deny) · card gains channels/model/categories/country · gate pins the column set · 180 GREEN
 
 - Andy's concern ("so many fields in supa") answered by architecture: **default-deny** — only the
