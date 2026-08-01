@@ -6,6 +6,21 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-10) — catalogs refreshed (+13 videos, 66 partners) via the GroupOS connection · weekly temp SOP w/ heartbeat paging · Release 3 queue filed (#17/#18/#19/#20 + #35 documents + #36 Circleback) · REMAINING = #34 + THE BIG SMOKE
+
+- Staleness confirmed first: videos synced Jul 27, partners Jul 21 (11 days) — Andy's "1+ week".
+- **Refresh via the GroupOS MCP** (no PAT needed in-session): videos created_after last-sync →
+  **exactly the 13** Andy cited (now 1,022, embedded 1,022/1,022; the new restricted Prue
+  TikTok-turnaround video is FINDABLE with restriction enforced — proven via video_search) ·
+  partners updated_after → 66 upserted (omitted-column upserts keep category_names etc. intact;
+  the #26 trigger re-embedded the 1 changed text). Reviews TEXTS not re-pulled (counts updated
+  from payload) — named temp gap.
+- **Heartbeats** `videos_refresh` + `partners_refresh` (max_age 192h) — the #15 stale signal now
+  PAGES if the weekly refresh is missed. Weekly SOP written into the handoff.
+- **Release 3 queue:** #29 · #17 (PAT) · #18 (team content) · #19 (privacy position) · #20
+  (census) · **#35 documents source via GroupOS** · **#36 Circleback (needs Andy's details:**
+  workspace, access, scope, sensitivity rules).
+
 ## 2026-08-01 (EARLY-9) — #16 HEALTH AUDIT CLOSED + LIVE: the lying agent tile now reads member-visible truth (forced-proof on the live report) · +watchman/derivations tiles · the 30-min monitor UNLATCHED · Mac watchdog covers the Supabase blind spot · gate 187
 
 - **The false-green root:** `olivia-agent` tile read n8n run status while the model node

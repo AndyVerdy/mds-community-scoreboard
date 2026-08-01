@@ -52,6 +52,16 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
    action-this-week list.
 
 ## State (2026-08-01 early close)
+- **CATALOG REFRESH RUN + WEEKLY TEMP SOP (Andy).** Via the GroupOS connection in-session:
+  **+13 videos** (1,009→1,022, all embedded — incl. the restricted Prue TikTok video, findable
+  with restriction enforced) · **66 partners updated** (ratings/offers/status; trigger re-embeds
+  changed text). Heartbeats `videos_refresh`/`partners_refresh` (max_age 8 days) → the staleness
+  alarm PAGES if a week is missed. **WEEKLY SOP: run the refresh in-session each week** (list
+  since last sync → upsert → embed scripts → heartbeats). Reviews TEXTS not re-pulled (counts
+  updated) — noted temp gap. #17 proper → Release 3 (needs GROUPOS_PAT).
+- **RELEASE 3 QUEUE FILED:** #29 (the big one) · #17 · #18 · #19 · #20 · **#35 documents source
+  (GroupOS MCP endpoints)** · **#36 Circleback source (BLOCKED: details from Andy)**.
+- **REMAINING FOR THIS RELEASE: #34 + THE BIG SMOKE. That's it.**
 - **#16 HEALTH AUDIT CLOSED — LIVE.** The lying olivia-agent tile now reads member-visible truth
   (failure texts + alarm state; run status lies via continueOnError) — FORCED-proven on the live
   report (canary → 🟡 flagged → clean). +2 tiles: watchman (pg_cron tick) + derivations
