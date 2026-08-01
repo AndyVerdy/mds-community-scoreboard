@@ -43,14 +43,21 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
    (L) · #29 dossier research (L) · #32 cost (M) · S4 #16-#20. #10 + #11 + #13 CLOSED — suggest #32 cost (Kimi retest + report to Pavel) → #12 (needs your ranking ruling) → #14.
 3. Standing: MDS-Life ruling (Q3088 expect) · **whale ruling** (live chapter TTM sums can out one
    member's scale — NorthTex $930M sum / $806M one member; ON today per site precedent) ·
-   **schedule the FOUR derivation jobs nightly** (`olivia_derive_niches.py` ·
-   `olivia_label_questions.py` · `sync_chapter_pages.py` · `embed_member_profiles.py`) ·
+   ~~schedule the FOUR derivation jobs nightly~~ **DONE (#15): launchd
+   `com.mds.olivia.derivations` 04:30 + staleness alarm** ·
    chapter POLICY answers need the team's written source (#18) · extend content_stats
    (distinct-authors-by-source) · FULL run on the new bank (3101-3112) when Andy calls runs
    back on · #29 signal inventory rows 1-2 (app event logging + GROUPOS_PAT) = Andy's
    action-this-week list.
 
 ## State (2026-08-01 early close)
+- **#15 HANDS-OFF PIPELINE CLOSED — LIVE (not promote-gated).** `nightly_derivations.py` runs the
+  four jobs (niches · labels · chapter-pages · member-embeddings) via launchd
+  `com.mds.olivia.derivations` 04:30, heartbeats to `olivia_job_heartbeats`; the #13 alarm gained
+  a 4th signal — any job stale >26h (or never-run) → Slack, off-platform, unlatchable. Forced-skip
+  proven (backdated label_questions 30h → 🚨 → restore → ✅). Kills the "scheduled not remembered"
+  decay across #6/#7/#25. Gate 187. Named exception: FB scroll stays MANUAL (platform removed
+  anchors); downstream is what's automated.
 - **QA STRUCTURE BUILT (Andy: "check everything, research how"):** `OLIVIA_QA_CHECKLIST.md`
   (A–I, grounded in OWASP LLM-Top-10 2025 + 2026 eval practice; per-category example→expected
   answer table) + **`OLIVIA_BIG_SMOKE_MATRIX.md` (~85 questions, every backlog update point ≥5,

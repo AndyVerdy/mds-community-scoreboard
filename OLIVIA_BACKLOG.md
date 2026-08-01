@@ -289,29 +289,35 @@ Andy's own read: "it feels like a bot very restricted to me."
 
 **Effort L** — cuts across routing, retrieval and prompt; hardest to define done. Needs its own session on what good looks like. **Impact:** every member, every conversation — the difference between used and abandoned.
 
-### 15. 🔵 Hands-off data pipeline · S3 · effort L
+### 15. ✅ Hands-off data pipeline · CLOSED 2026-08-01 · effort L · LIVE (not promote-gated)
 *As a member, what happened yesterday is answerable today.*
 
-**Accept when**
-- **A full capture cycle runs with nobody touching it.**
-- **Content is searchable the day it lands.**
-- **A skipped sync alerts** — proven by forcing a skip.
-- **Manual steps per week: 0.**
+**LIVE NOW (like #13, it's infrastructure — no promote needed).**
+- **The four derivation jobs run nightly, unattended:** `scripts/nightly_derivations.py` runs
+  derive_niches · label_questions · sync_chapter_pages · embed_member_profiles in sequence (one
+  failure never blocks the rest), stamping `digest.olivia_job_heartbeats` after each. launchd
+  **`com.mds.olivia.derivations`** at 04:30 (after persona 04:15), loaded + verified. First run
+  did real work: 5 questions labelled · 15 changed profiles re-embedded · 20 chapters re-synced ·
+  niches rebuilt — all idempotent, so a quiet night is cheap. **This kills the "scheduled not
+  remembered" decay that carried across four tickets** (#6/#7/#25 all left a job unscheduled).
+- **A skipped sync alerts (the AC), proven by FORCING a skip:** the #13 pg_cron alarm gained a
+  4th signal — any job with no success in >26h (or that NEVER ran) Slack-alerts, off-platform,
+  unlatchable. Forced: backdated `label_questions` 30h → 🚨 "stale derivation job(s):
+  label_questions (last ok Jul 30 20:21)" (Slack ok:true) → restored → ✅ recovery. A job that
+  never runs is pre-registered, so its absence is detectable, not silent.
+- **Gate +1 → 187 GREEN** (job heartbeats anon-denied).
 
-Facebook still needs a manual scroll twice a week; the member-profile sync sits on a scheduler known to
-skip runs and was dead three days; new Facebook posts aren't searchable until two manual steps run.
-**Also (verified 2026-07-30): Voyage embedding of new content is a MANUAL step** — `embed_backfill.py`
-(nulls-only, resumable) runs by hand in the capture SOP; skip it and new posts silently lose the
-semantic layer (keyword FTS still works) until the next run. Today: 958 new rows / 0 unembedded, so
-the SOP held — but "searchable the day it lands" must include the embedding, scheduled not remembered.
+**Named exception (platform, not us):** **Facebook capture stays a manual scroll** — FB removed
+the permalink anchors the feed loop needed, so the enumerate step is irreducibly human
+(documented in [[project_mds_fb_digest_scraper]]). Everything DOWNSTREAM of the scroll is what
+these jobs automate. The Mon/Thu FB SOP is unchanged; the ticket automates the parts a platform
+lets us.
 
-- Facebook capture runs without a person
-- The member sync runs on a reliable trigger and alerts when it doesn't
-- New posts searchable the day they land
+**Residual:** launchd runs on Andy's Mac (must be on) — same constraint as persona/eval/digest
+jobs; the staleness alarm is precisely the backstop for a missed run. Moving to an always-on
+runner is a later infra choice, not blocking.
 
-**Effort L** — the Facebook half fights a platform that keeps changing. **Impact:** every member; the most visible staleness.
-
----
+**Impact:** every member; the most visible staleness — now self-healing with an alarm behind it.
 
 ---
 

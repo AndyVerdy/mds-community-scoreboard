@@ -609,6 +609,10 @@ def main():
                         profile_hdr=["Accept-Profile: digest"])
         check("anon cannot read alarm config (holds the Slack token)",
               st in (401, 403, 404) or (isinstance(body, list) and not body), f"status {st}")
+        st, body = curl("GET", f"{BASE}/olivia_job_heartbeats?select=job&limit=1", ANON_KEY,
+                        profile_hdr=["Accept-Profile: digest"])
+        check("anon cannot read job heartbeats (#15)",
+              st in (401, 403, 404) or (isinstance(body, list) and not body), f"status {st}")
         st, card = rpc("member_card", {"p_phone": "19999999999", "p_member": my_name}, key)
         check("member_card unknown asker phone = zero rows", isinstance(card, list) and not card)
         st, _b = rpc("member_card", {"p_phone": phone, "p_member": my_name}, ANON_KEY)

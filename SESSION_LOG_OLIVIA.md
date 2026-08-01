@@ -6,6 +6,23 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-7) — #15 HANDS-OFF PIPELINE CLOSED + LIVE: 4 derivation jobs nightly (launchd) + heartbeats + a 4th #13 alarm signal (skipped-job stale, forced-skip proven) · gate 187
+
+- **`scripts/nightly_derivations.py`** runs derive_niches · label_questions · sync_chapter_pages ·
+  embed_member_profiles in sequence (one fail never blocks the rest), stamps
+  `digest.olivia_job_heartbeats` (job, last_run/last_success, status, detail, max_age_hours).
+  launchd **`com.mds.olivia.derivations`** 04:30 (after persona 04:15), loaded+verified. First
+  run did real work: 5 labelled · 15 re-embedded · 20 chapters · niches rebuilt (all idempotent).
+  **Ends the "scheduled not remembered" decay that carried across #6/#7/#25.**
+- **Skipped-sync alarm (AC), FORCED:** #13 health check gained signal 4 — any heartbeat with no
+  success in >max_age_hours (26h) OR never-run (pre-registered rows) → `olivia_alarm_fire`,
+  off-platform + unlatchable. Backdated label_questions 30h → 🚨 "stale derivation job(s):
+  label_questions (last ok Jul 30 20:21)" (Slack ok:true) → restored → ✅ recovery.
+- Gate +1 (heartbeats anon-denied) → **187 GREEN**. Named exception: **FB capture scroll stays
+  MANUAL** — FB removed the permalink anchors (see [[project_mds_fb_digest_scraper]]); these jobs
+  automate everything downstream. Residual: launchd needs Andy's Mac on (same as persona/eval);
+  the staleness alarm IS the backstop.
+
 ## 2026-08-01 (EARLY-6) — #13 OUTAGE ALARM CLOSED + LIVE: Supabase pg_cron watches n8n every 5 min · 3 signals · unlatchable (30-min repeats + recovery) · forced-failure proof visible in Slack · gate 186
 
 - **LIVE immediately (off the promote path):** the monitor runs IN SUPABASE (pg_cron */5) — not
