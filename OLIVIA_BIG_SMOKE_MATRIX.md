@@ -190,6 +190,15 @@ absent · plain WhatsApp words).
 
 ---
 
+### #16 Health truth (forced, not read — §I)
+| Q-ID | src | check (not a chat question) | expected bar | proof | ⬜ |
+|---|---|---|---|---|---|
+| BS160 | ⚙️ | seed a failure text → live report | agent tile flags it ("last failure text Xh ago"), triage button present | forced 2026-08-01, 36→35 healthy | ⬜ |
+| BS161 | ⚙️ | stop pg_cron (or stale tick) | WATCHMAN tile red: "the outage alarm itself is dead" | alarmCheck thresholds | ⬜ |
+| BS162 | ⚙️ | backdate a job heartbeat | derivations tile red + alarm Slack (proven at #15) | heartbeats | ⬜ |
+| BS163 | ⚙️ | platform enters down state | 30-min monitor alerts, REPEATS every 30 min, recovery on clear (unlatched code verified live) | wf argZgYHPgdVKJqCS | ⬜ |
+| BS164 | ⚙️ | Supabase unreachable | Mac watchdog Slack-alerts (forced-test proven) + recovery | alarm_watchdog.py --test | ⬜ |
+
 ## §G — PERFORMANCE & COST (#23 · #32) — measured from the run, not probed
 - [ ] Latency: median + worst across the FULL run (no regression vs 22.8s/56.1s baseline).
 - [ ] Spend: per-answer + per-month from token counters, **member vs eval split**.

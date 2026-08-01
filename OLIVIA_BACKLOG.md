@@ -148,18 +148,40 @@ critique (2026-07-30: cards too generic) lands here as the redesign.
 
 # ⚪ S4 — lowest
 
-### 16. ⚪ Health dashboard audit · S4 · effort M
+### 16. ✅ Health dashboard audit (Olivia domain + the alert chain) · CLOSED 2026-08-01 · effort M · LIVE
 *As the team, the health dashboard tells the truth.*
 
-**Accept when**
-- **Every tile: break the thing, the tile goes red, and a person receives it.** A tile that cannot go
-  red is the defect.
-- **A failure inside a step never passes as a healthy run.**
+**LIVE (digest-web `b1b1a9f` deployed + the monitor wf fixed in place — no promote involved).**
+- **The lying tile fixed:** `olivia-agent` claimed "Claude answer failures fail the run" — false
+  (the model node continues on error; runs stayed green through 07-26). It now reads
+  **member-visible truth**: failure texts that reached members (24h window) + the off-platform
+  alarm's firing states. **Forced-failure proof on the LIVE report:** canary failure text →
+  "🟡 Olivia — WhatsApp agent — last failure text 3h ago" in the problems block with its triage
+  button → cleanup → healthy again (36/37).
+- **Two missing tiles added:** `olivia-alarm` (the WATCHMAN tile — pg_cron `last_tick_at`
+  freshness; if the alarm dies, THIS goes red) and `olivia-derivations` (#15's four job
+  heartbeats). Tile count 35 → 37, all computing on the live report.
+- **The latched 30-min monitor UNLATCHED** (wf `argZgYHPgdVKJqCS`, in place, bounce, verified):
+  the old code fired ONCE on healthy→down and could never fire again once `lastHealth` stuck —
+  the latch that buried 07-26 (last alert ever: 2026-07-26). Now: re-alerts every 30 min while
+  down + posts the recovery summary once when clear. Degraded still doesn't page (daily summary
+  covers it) — by design.
+- **The Supabase blind spot covered:** `scripts/alarm_watchdog.py` on launchd
+  (`com.mds.olivia.watchdog`, every 15 min, a DIFFERENT failure domain — the Mac): Supabase
+  unreachable OR alarm tick stale >15m → Slack, unlatchable (30-min repeats + recovery).
+  **Forced-test proven** (🚨 test alert + ✅ recovery in Slack).
+- Gate re-run **187/187 GREEN**.
 
-Andy: "I don't think it's working. I haven't seen Olivia down." **Confirmed — it isn't.** Every tile
-audited: does it go red when the thing is actually broken, and does anyone receive it. Overlaps #13.
+**Named scope + residuals:** this audited + fixed the OLIVIA domain and the SHARED alert chain;
+the full 37-tool per-tile audit is the Tools-health PROJECT's backlog, not Olivia's · the
+watchdog runs on Andy's Mac (best-effort — it watches the watcher, not the product) · the known
+flaky `Member profiles ← Airtable sync` yellow stays a Tools-health item (GitHub cron delivers
+~half the runs — already on that project's list).
 
-**Impact:** indirect; it's how we find out about everything else.
+**Impact:** the dashboard can no longer show green through a member-visible outage, and every
+layer of the alert chain (tile → monitor → alarm → watchdog) is now proven to fire.
+
+---
 
 ### 17. ⚪ Auto-refresh videos and partners · S4 · effort M
 *As a member, new recordings and deals show up without anyone importing them.*
