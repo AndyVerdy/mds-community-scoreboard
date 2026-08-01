@@ -99,60 +99,36 @@ phone-less actives; fixed same day.)
 
 # 🔵 S3
 
-### 12. 🔵 Public revenue, double-sourced · S3 · effort S
+### 12. ✅ Public revenue, double-sourced · CLOSED 2026-08-01 · effort S · RELEASE 2
 *As a member, a public figure someone posted is quoted with its source, never as Olivia's claim.*
 
-**Accept when**
-- **Your ruling lands first:** may named members be ranked by revenue at all, or bands only.
-- **Every figure carries the source it came from: 0% in her own voice.**
-- **A member with no public figure gets the bracket only.**
+**ANDY'S RULING (2026-08-01, verbatim spirit):** official (AT) revenue = never disclosed, bands
+only. **A figure the member posted publicly = sayable, and we MUST specify he actually said it.**
+Closed-chat posts follow chat visibility — available only to askers who can actually see that
+chat. **FB is totally open.** Ranking stays bands + engagement order — never by exact revenue.
 
-Andy's rule: publicly-posted figures are fair game, double-sourced — "my data puts him in this bracket;
-he also said in this post that…".
+**Verified + shipped ("this is very sensitive, make sure you did it correctly"):**
+- **The flagged live case traced to its source:** the daily review's "doing $14-15M" catch came
+  from **MDS's own public FB welcome post** ("THE HEAVY HITTERS — Aaron Cordovez… $140M across
+  two brands", post `26687547237588758`) — i.e. the exact class the ruling ALLOWS with
+  attribution; the review bot's rubric was stricter than the ruling.
+- **REVENUE FIGURES rule** in the loop contract: our data → bands only, whoever asks · a figure
+  in retrieved content = an attributed quote WITH link, paired with our band · never her own
+  voice · never ranking fuel · chat figures visibility-scoped automatically (if retrieval
+  returned it, the asker can see it — the leak gate's chat-scope canaries prove non-member
+  chats return ZERO, every run).
+- **Probes (staging):** "how big is Aaron Cordovez business?" → *"Our official data has Aaron in
+  the 20M+ tier — but he himself shared a bigger number in the MDS welcome post: $140M across
+  two Amazon brands"* + link — the double-source shape verbatim · **control:** Prudence's exact
+  number still hard-refused (band + facts, offers to look for a public self-post). The new rule
+  did NOT soften the base refusal.
+- **The daily-review rubric updated live** (wf `xkX7wnIwxJLU7YgY`, verified): flags revenue ONLY
+  when unattributed / non-visible / from our data — so correct attributed quotes stop being
+  filed as violations.
+- Rulebook (`OLIVIA_SHAREABLE_FIELDS.md`) NEVER-lane carries the nuance; matrix +5 rows
+  (BS105-109). Gate re-run GREEN (no DB change — the enforcement was already structural).
 
-- Any figure carries the post or chat it came from
-- Bracket and public figure presented together, both attributed
-- **Blocked on:** whether a *ranking* of named members by revenue is allowed at all
-
-**Impact:** low frequency, high sensitivity in a room of senior sellers.
-
-### 13. ✅ Outage alarm · CLOSED 2026-08-01 · effort M · LIVE (not promote-gated)
-*As the team, we hear about an outage in minutes, from a system that isn't the one that's broken.*
-
-**LIVE NOW — this one does not ride the promote: it runs in SUPABASE pg_cron (off n8n, the
-platform being watched), every 5 minutes, posting to Slack `#automation-tests` (C0AQ8USNQK0 —
-one config row to change the channel).** Migrations `olivia_outage_alarm` +
-`_net_schema_fix` (pg_net lives in schema `net`, not `extensions` — the first cut's qualified
-calls would have silently no-opped inside the never-raise handlers; caught by pg_proc check).
-
-**Three signals, every tick:**
-1. **members-getting-failure-text** — any member received "Sorry — I could not generate…" in the
-   last 10 min (SELFTEST + Andy excluded, so eval noise never pages). This is what the 07-26
-   balance outage looked like to members.
-2. **n8n-workflow-down** — the always-on relay's `relay_maintenance` markers flowing = Meta
-   callbacks arriving while n8n is dead.
-3. **webhook-ping** — an ACTIVE probe: each tick POSTs a synthetic delivery-status payload at
-   the real prod webhook (no member traffic; upserts the `wamid.HEALTHPING` sends-row = a
-   visible heartbeat); the next tick verifies 200.
-
-**NO LATCH by construction** (the old monitor's fatal flaw): while a condition persists it
-re-alerts every 30 min; on clear it posts ✅ recovery. The check function never raises and
-stamps `last_tick_at` in config — the monitor itself is checkable.
-
-**Proven by forcing failures (AC), all visible in Slack #automation-tests 2026-07-31 ~20:34 CDT:**
-seeded failure-text canary → 🚨 alert (Slack API ok:true) · second run inside 30 min → paced, no
-repost · stamp backdated 40 min → 🚨 re-alert "(still down — repeating every 30 min)" = unlatch
-proof · canary cleared → ✅ recovery · webhook ping → 200 "Workflow was started" + HEALTHPING row ·
-autonomous pg_cron tick verified. **Gate +2 → 186 GREEN** (anon denied on the check fn; alarm
-config — which holds the Slack token — unreadable).
-
-**Named exceptions / residuals:** Supabase itself is the monitor's blind spot (watching n8n from
-Supabase satisfies the AC; a second cheap watcher for Supabase = #16's audit) · the
-balance-runs-low PRE-warning + spend cap land in **#32** (the failure-text signal already catches
-the member-visible effect, which is how 07-26 actually presented) · the old latched n8n monitor
-stays as-is (harmless, on-platform; #16 decides its fate).
-
-**Impact:** the team hears about the next 07-26 in ≤5 minutes instead of never.
+**Impact:** low frequency, high sensitivity — now consistent, attributed, and structurally scoped.
 
 ---
 

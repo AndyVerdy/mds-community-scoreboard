@@ -40,7 +40,8 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
 2. **ANDY'S GOAL: close the WHOLE backlog, one big release, one huge smoke test.** S2 is now
    EMPTY. Open: S3 #10 shareable facts (S) · #11 payment wording (S) · #12 public revenue
    (needs his ranking ruling) · #13 outage alarm (M) · #14 conversational (L) · #15 pipeline
-   (L) · #29 dossier research (L) · #32 cost (M) · S4 #16-#20. #10 + #11 + #13 CLOSED — suggest #32 cost (Kimi retest + report to Pavel) → #12 (needs your ranking ruling) → #14.
+   (L) · #29 dossier research (L) · #32 cost (M) · S4 #16-#20. #10-#13 + #15 + #12 ALL CLOSED. Remaining: #29 (research L) · S4 #16-#20 (several
+   externally blocked) · then #34 (finalize docs + THE BIG SMOKE).
 3. Standing: MDS-Life ruling (Q3088 expect) · **whale ruling** (live chapter TTM sums can out one
    member's scale — NorthTex $930M sum / $806M one member; ON today per site precedent) ·
    ~~schedule the FOUR derivation jobs nightly~~ **DONE (#15): launchd
@@ -51,6 +52,13 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
    action-this-week list.
 
 ## State (2026-08-01 early close)
+- **#12 PUBLIC REVENUE CLOSED (Andy's ruling in session).** Official data = bands only, always.
+  A figure the member/page POSTED = quotable WITH attribution + link, paired with our band; FB
+  fully open; chat figures visibility-scoped structurally (retrieval can't return non-member
+  chats — gate canaries prove it). The review-flagged "$14-15M" case traced to MDS's OWN public
+  FB welcome post (the ALLOWED class). REVENUE FIGURES rule in the loop + rulebook nuance +
+  review-bot rubric updated LIVE (wf xkX7wnIwxJLU7YgY). Probes: Aaron = band + attributed $140M
+  quote + link; Prudence exact still hard-refused. Matrix +5 (BS105-109).
 - **#15 HANDS-OFF PIPELINE CLOSED — LIVE (not promote-gated).** `nightly_derivations.py` runs the
   four jobs (niches · labels · chapter-pages · member-embeddings) via launchd
   `com.mds.olivia.derivations` 04:30, heartbeats to `olivia_job_heartbeats`; the #13 alarm gained

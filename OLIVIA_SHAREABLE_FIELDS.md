@@ -28,7 +28,10 @@ live_stats` and `member_count` breakdowns; a small chapter's sum can still out a
 4b ruling stands open.)
 
 ## 🔴 NEVER — not about anyone, not to anyone, no phrasing
-exact revenue figures per member · job titles · email · phone · home/business address · payment,
+exact revenue figures per member **from OUR data** *(#12 nuance, Andy 2026-08-01: a figure the
+member or the MDS page POSTED in content the asker can see — FB is fully open; WA follows chat
+visibility, which retrieval enforces structurally — IS quotable, but ONLY as an attributed
+quote with its link, paired with our band, never in Olivia's own voice, never as ranking fuel)* · job titles · email · phone · home/business address · payment,
 card, bank, Stripe records · IP or device data · government IDs · membership-removal reasons ·
 internal admin fields (event budgets, member LTV, lead scoring) · another member's persona,
 billing, dossier, census/application raw answers · anything from a chat the asker is not in.

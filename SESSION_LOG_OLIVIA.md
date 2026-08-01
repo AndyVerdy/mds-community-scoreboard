@@ -6,6 +6,27 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-8) — #12 PUBLIC REVENUE CLOSED on Andy's ruling: posted figures = attributed quotes only (his words: "he posted it publicly… we must specify he actually said it") · chat figures visibility-scoped structurally · FB fully open · review-bot rubric aligned LIVE
+
+- **The ruling** (Andy, verbatim spirit): AT revenue = never, bands only · member-posted figures
+  = sayable WITH "he actually said it" attribution · closed-chat posts only to askers who can
+  see that chat · FB totally open. Ranking stays bands+engagement (never exact revenue).
+- **"Make sure you did it correctly" — verified before building:** the daily review's flagged
+  "$14-15M" case traced to **MDS's OWN public FB welcome post** ("THE HEAVY HITTERS — Aaron
+  Cordovez… $140M", post 26687547237588758) = the class the ruling ALLOWS; the review bot's
+  rubric was stricter than the ruling, not Olivia wrong. **Chat-scoping needed NO new build —
+  retrieval structurally cannot return a chat the asker isn't in (leak-gate chat-scope canaries
+  prove ZERO rows every run).**
+- **Shipped:** REVENUE FIGURES rule in the loop contract (bands from us · attributed-quote-with-
+  link for posted figures · never her voice · never ranking fuel · if-you-retrieved-it-they-can-
+  see-it) · rulebook NEVER-lane nuance · **review-bot rubric updated live** (wf xkX7wnIwxJLU7YgY,
+  bounce, verified — flags only unattributed/non-visible/our-data figures).
+- **Probes:** "how big is Aaron Cordovez business?" → *"Our official data has Aaron in the 20M+
+  tier — but he himself shared a bigger number in the MDS welcome post: $140M across two Amazon
+  brands"* + link (the double-source shape verbatim) · control: Prudence exact = still hard
+  refusal, band offered. Matrix +5 rows (BS105-109). Gate re-run GREEN (result below).
+- n8n MCP dropped mid-ticket (n8n itself 200-healthy — raw-API fallback used for the rubric edit).
+
 ## 2026-08-01 (EARLY-7) — #15 HANDS-OFF PIPELINE CLOSED + LIVE: 4 derivation jobs nightly (launchd) + heartbeats + a 4th #13 alarm signal (skipped-job stale, forced-skip proven) · gate 187
 
 - **`scripts/nightly_derivations.py`** runs derive_niches · label_questions · sync_chapter_pages ·
