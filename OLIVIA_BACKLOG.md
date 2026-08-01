@@ -270,7 +270,7 @@ handling — the Amazon/eBay/Netflix patterns), mapped onto MDS's real signal in
 **Impact:** all members — Andy's call: matchmaking is the key product surface. The persona-quality
 critique (2026-07-30: cards too generic) lands here as the redesign.
 
-### 14. 🔵 Conversational, not robotic · S3 · effort L
+### 14. 🔵 Conversational, not robotic · S3 · **→ BIG-SMOKE ACCEPTANCE CRITERIA (Andy 2026-08-01: not a build ticket — its ACs are checked AT the smoke test: follow-up class rate on the FULL run · capped-answer-continues · uses-what-she-knows · Andy's own feel verdict; anything still robotic becomes a named fix then).** Written 2026-07-28 about the pre-loop system; the loop + #2/#5/#6/#7/#8 absorbed the concrete bullets
 *As a member, it follows what I mean, keeps context, and reads like someone who knows MDS.*
 
 **Accept when**
