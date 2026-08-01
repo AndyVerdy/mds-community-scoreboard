@@ -183,7 +183,7 @@ layer of the alert chain (tile → monitor → alarm → watchdog) is now proven
 
 ---
 
-### 17. ⚪ Auto-refresh videos and partners · S4 · effort M
+### 17. ⚪ Auto-refresh videos and partners · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01; still blocked on GROUPOS_PAT). TEMP SOLUTION NOW: WEEKLY refresh via the GroupOS connection in-session (videos + partners diff-upsert), heartbeat-backed so the staleness alarm pages if a week is missed; first refresh run 2026-08-01**
 *As a member, new recordings and deals show up without anyone importing them.*
 
 **Accept when**
