@@ -515,9 +515,10 @@ def main():
         # say someone joined, left, and which chapter they used to be in. The REMOVAL REASON stays
         # secret forever: 'Removed - For Cause' and the staff notes never leave the DB — only the
         # coarse 'current'/'past' state is emitted (asserted below).
-        CARD_KEYS = {"full_name", "city", "state", "revenue_tier", "niche", "expertise",
-                     "about_me", "hobbies", "fun_fact", "facebook_link", "chapter", "shared_chats",
-                     "membership_state", "joined", "left_date"}
+        CARD_KEYS = {"full_name", "city", "state", "country", "revenue_tier", "niche",
+             "expertise", "about_me", "hobbies", "fun_fact", "facebook_link", "chapter",
+             "channels", "business_model", "categories", "shared_chats",
+             "membership_state", "joined", "left_date"}
         check("member_card answers for a real member (status 200, rows)", st == 200
               and isinstance(card, list) and len(card) >= 1, f"status {st}")
         check("card rows carry ONLY the public-directory fields",
@@ -571,6 +572,19 @@ def main():
         check("member_count band breakdown keys are the band vocabulary only",
               bool(bd_keys) and set(bd_keys) <= {"1-5M", "5-10M", "10-20M", "20M+", "(none on file)"},
               str(bd_keys))
+
+        print("— shareable-fields rulebook (#10, OLIVIA_SHAREABLE_FIELDS.md) —")
+        # the card's column set IS the per-member shareable list — schema drift goes RED here
+        check("member_card emits EXACTLY the rulebook column set",
+              bool(mycard) and all(set(r.keys()) == CARD_KEYS for r in mycard),
+              str(sorted(set().union(*[set(r.keys()) for r in (mycard or [{}])]) ^ CARD_KEYS))[:150])
+        # structural canary: NEVER-lane words must not appear in any emitted COLUMN NAME
+        # (values are free text - a chat named "MDS Credit Card & Travel Hacks" is legitimate)
+        card_cols = set().union(*[set(r.keys()) for r in (mycard or [{}])])
+        check("no NEVER-lane KEY (email/phone/address/credit/stripe/...) among card columns",
+              not any(any(w in k.lower() for w in ("email", "phone", "address", "credit",
+                          "stripe", "iban", "ssn", "passport", "ip_address"))
+                      for k in card_cols))
         st, card = rpc("member_card", {"p_phone": "19999999999", "p_member": my_name}, key)
         check("member_card unknown asker phone = zero rows", isinstance(card, list) and not card)
         st, _b = rpc("member_card", {"p_phone": phone, "p_member": my_name}, ANON_KEY)

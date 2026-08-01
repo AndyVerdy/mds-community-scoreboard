@@ -38,8 +38,7 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
 2. **ANDY'S GOAL: close the WHOLE backlog, one big release, one huge smoke test.** S2 is now
    EMPTY. Open: S3 #10 shareable facts (S) · #11 payment wording (S) · #12 public revenue
    (needs his ranking ruling) · #13 outage alarm (M) · #14 conversational (L) · #15 pipeline
-   (L) · #29 dossier research (L) · #32 cost (M) · S4 #16-#20. Suggest smallest-first: #10 →
-   #11 → #13.
+   (L) · #29 dossier research (L) · #32 cost (M) · S4 #16-#20. #10 CLOSED — suggest #11 → #13 → #32.
 3. Standing: MDS-Life ruling (Q3088 expect) · **whale ruling** (live chapter TTM sums can out one
    member's scale — NorthTex $930M sum / $806M one member; ON today per site precedent) ·
    **schedule the FOUR derivation jobs nightly** (`olivia_derive_niches.py` ·
@@ -50,6 +49,11 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
    action-this-week list.
 
 ## State (2026-08-01 early close)
+- **#10 SHAREABLE FACTS CLOSED (staging, Release 2).** `OLIVIA_SHAREABLE_FIELDS.md` = THE
+  rulebook (SHARE / GROUP-ONLY / NEVER + default-deny for the ~1,700 unlisted fields).
+  member_card extended with channels/business_model/categories/country (the one inconsistency);
+  gate pins CARD_KEYS to the page + column-name canary — **180/180 GREEN**. Probes: TikTok
+  channels precise · same shape across members · address refused.
 - **#9 REVENUE CLOSED (staging, Release 2).** The working session dissolved — Andy pointed at CU
   page `2531q-67177`: **authoritative = `Most Recent Revenue`** (verified-else-reported), and
   `derive_member_attributes()` ALREADY derives rev_band from it by one threshold rule (provenance

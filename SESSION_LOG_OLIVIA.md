@@ -6,6 +6,23 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-4) — #10 SHAREABLE FACTS CLOSED (Release 2): OLIVIA_SHAREABLE_FIELDS.md = the rulebook (3 lanes + default-deny) · card gains channels/model/categories/country · gate pins the column set · 180 GREEN
+
+- Andy's concern ("so many fields in supa") answered by architecture: **default-deny** — only the
+  ~20 gated fns emit anything, each a fixed column set; the ~1,700 unlisted AT fields (address,
+  cards, IP…) cannot leak because nothing selects them. "Used ≠ shareable" (MRR feeds bands+sums,
+  emitted nowhere per member).
+- Emission inventory across all fns → the de-facto state already matched Andy's labels except
+  ONE inconsistency: match reasons said "sells on TikTok", the card couldn't answer it.
+  **member_card extended** (+channels +business_model +categories +country, DROP+CREATE chain,
+  REST 6×200) — the card IS the per-member shareable list now.
+- **Gate 178→180 GREEN** after two honest stumbles worth remembering: value-scanning canaries
+  false-positive on legitimate text (**"MDS Credit Card & Travel Hacks"** chat name tripped
+  'credit'); and **"ip_" matched membersh-ip_-state**. Canary = column NAMES only.
+- Probes: TikTok question precise from the card (+ the honest she-is-in-the-TikTok-chat nuance) ·
+  Guido same-shape · address+employees → refusal (residual: the GROUP-ONLY half swallowed by the
+  contact lane — cosmetic, #14).
+
 ## 2026-08-01 (EARLY-3) — #9 REVENUE CLOSED (Release 2): the ruling already existed in writing (CU page 06 — Most Recent Revenue authoritative) · rev_band already derives from it by ONE rule · gate +3 enforces band-only (178) · probes: tier yes, exact refused
 
 - Andy pointed at CU `2531q-102937` page 06 (`2531q-67177`) instead of a working session — and it

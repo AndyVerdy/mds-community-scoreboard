@@ -99,22 +99,6 @@ phone-less actives; fixed same day.)
 
 # 🔵 S3
 
-### 10. 🔵 Shareable member facts · S3 · effort S
-*As a member, similar questions get similar answers.*
-
-**Accept when**
-- **One written list of shareable fields exists, and the gate blocks everything off it.**
-- **The same field asked about different members is answered or refused identically: 0% inconsistency.**
-
-Job title, years in business, business model, country, product categories, SKU and brand counts. Today
-she refuses unevenly — "who sells on TikTok" works one way and is refused another.
-
-- One approved list of shareable fields, applied everywhere
-- Gate blocks everything off the list
-- The sales-channel inconsistency resolved
-
-**Impact:** every profile and matching answer.
-
 ### 11. 🔵 Payment wording · S3 · effort S
 *As a member behind on payment, I'm told clearly and reminded kindly — not shown a system word.*
 
@@ -407,7 +391,7 @@ through this".
 Ships to prod at the next `promote` (Andy runs it). Everything below is live on staging and gate
 GREEN 161, and nothing here is on prod yet.
 
-**Tickets closed into Release 2 (7):** #23 answer latency (closed on the story — the ladder half
+**Tickets closed into Release 2 (8):** #23 answer latency (closed on the story — the ladder half
 shipped in Release 1, the speed cuts in Release 2) · **#5 counting** (member_niches + member_count
 RPC + loop tool; breakdown_sum closes total-it-up deterministically) · **#33 prod smoke**
 (early-feedback branch reorder + links-when-solving rule + the standing pre-promote smoke
@@ -416,7 +400,8 @@ understands meaning** (pg_trgm names + profile embeddings w/ RRF + place aliases
 member_match target-mode fix) · **#8 every source on every question** (cross-source floor +
 merge + solve fan-out rules · multi_source all six families · per-turn sources_used telemetry) · **#9 revenue brackets, one rule** (ruling = CU page 06: Most Recent
 Revenue authoritative; rev_band already derives from it by one threshold rule; gate now enforces
-band-only outputs).
+band-only outputs) · **#10 shareable member facts** (`OLIVIA_SHAREABLE_FIELDS.md` rulebook ·
+card = the per-member list incl. channels/model/categories/country · gate pins the column set).
 
 **Shipped to PROD separately (not part of the n8n promote):** #25 the portal tells the truth —
 mds-digest-web `294b094`, live on digest.mds.co 2026-07-31. The portal deploys on push and never
@@ -697,6 +682,40 @@ the promote. Gate GREEN after the edits.
 
 **Impact:** every slow answer and every solve-lane answer on prod; the checklist protects every
 future promote.
+
+---
+
+### 10. ✅ Shareable member facts · CLOSED 2026-08-01 (staging) · effort S · RELEASE 2
+*As a member, similar questions get similar answers.*
+
+**THE RULEBOOK now exists: `OLIVIA_SHAREABLE_FIELDS.md`** (Andy's labels 2026-08-01) — three
+lanes: 🟢 SHARE per member (the card: name/geo/band/niche/expertise/about/hobbies/fun fact/FB
+link/chapter/channels/business model/categories/join date/shared chats) · 🟡 GROUP-ONLY
+(employees, SKUs, brands, years-in-business, age, TTM sums — chapter aggregates fine, never per
+person) · 🔴 NEVER (exact revenue, titles, contacts, address, payment/Stripe, IP, IDs, removal
+reasons, others' personas/billing/raw answers). **Key architecture point: default-deny — the
+~1,700 unlisted supa fields cannot leak because no gated function selects them; "used in
+calculation" ≠ "shareable" (Most Recent Revenue feeds bands + sums, emitted nowhere per member).**
+
+**Shipped:**
+- **Inventory of every gated function's emitted columns** (the de-facto list) — found the state
+  already matched the labels except ONE inconsistency: match reasons said "sells on TikTok"
+  while the card lacked channels → the same fact answered by one path, refused by another.
+- **`member_card` extended** (migration `member_card_shareable_fields`, DROP+CREATE chain):
+  + channels (channel_mix + TikTok Shop) + business_model + categories + country — the card now
+  IS the per-member shareable list, one to one.
+- **Gate 178→180 GREEN:** CARD_KEYS pinned to the rulebook set (schema drift = RED; change
+  process = edit the page + the check in one commit) · structural canary: no NEVER-lane word in
+  any emitted column NAME (learned: value-scanning false-positives on "MDS Credit Card & Travel
+  Hacks"; and "ip_" matched membersh-ip_-state — patterns measured, then set).
+- **Probes:** "does Prudence sell on TikTok?" → precise from the card (not among her channels —
+  and the honest nuance that she IS in the MDS TikTok chat) · Guido's model+channels → same
+  shape, different member · "her home address + employee count?" → refusal.
+
+**Residual:** the address probe was swallowed whole by the contact-refusal lane — the GROUP-ONLY
+half (employees) ideally answers "chapter averages only"; cosmetic, filed under #14 tone work.
+
+**Impact:** every profile and matching answer; the rulebook is the standing reference.
 
 ---
 
