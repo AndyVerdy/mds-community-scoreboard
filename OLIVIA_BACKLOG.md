@@ -99,147 +99,11 @@ phone-less actives; fixed same day.)
 
 # 🔵 S3
 
-### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L · **→ RELEASE 3 (Andy 2026-08-01: "this is a huge one" — not part of this push; the research memo opens Release 3. His signal asks — app event logging + GROUPOS_PAT — still run THIS week so history accumulates)**
-*As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
-platform would — from everything it knows about me, and it gets the like-minded question right:
-"people like Mo" returns the other multi-market logistics-givers, not everyone in Canada.
-(Andy 2026-07-30: "matchmaking will be the key… we have tons of info we can use for matching…
-you need to research how such DBs are built.")*
-
-**ANDY'S VISION (2026-07-31, verbatim direction — this IS the ticket's north star):** the current
-personas are "useless how it's done now." What he wants is a **DYNAMIC DOSSIER — "like a police
-file"** — roughly ALL the info per member: habits, patterns, likes, dislikes, how often online,
-what they watched, events visited, who they talk to, "your every step, every breath." And **not
-just personas per person: a file for almost EVERY ENTITY and piece of content** (member, video,
-event, partner, thread) — so "his file says he likes C, this video's file is about C → recommend"
-is the *childish base case*, with pattern-learning from behavior on top. This is the
-feature-store + interaction-event-stream architecture the research memo must map onto MDS.
-Consequences filed:
-- #28's persona cards = the first draft of the member file, judged NOT the end state.
-- **Research round 1 must include the SIGNAL INVENTORY + capture gaps**: app video-views/searches
-  not logged yet, `member_events` empty, WA online-presence not captured — name what to START
-  CAPTURING NOW so history accumulates while research runs.
-- "Every step, every breath" requires the written privacy position (#19) before the product
-  promises anything.
-- **`OLIVIA_SIGNAL_INVENTORY.md` WRITTEN 2026-07-31** (Andy: "write all the missing bits and
-  pieces, and we will get it") — HAVE / DERIVABLE / MISSING tables with owners; rows 1-2 (app
-  event logging + GROUPOS_PAT) are the action-this-week items so history accumulates.
-
-**Research FIRST, then build.** Deliverable 1 is a reviewed research memo: how production
-recommender systems actually work (two-stage candidate-generation → ranking · content-based +
-collaborative + behavioral/implicit-feedback signals · embedding feature stores · cold-start
-handling — the Amazon/eBay/Netflix patterns), mapped onto MDS's real signal inventory: personas
-(#28), Olivia question history, event attendance, WA/FB activity + chat memberships, offer claims
-(needs GROUPOS_PAT), video views + app search/activity (once the app logs them), census (#20).
-
-**Accept when**
-- **The research memo exists and Andy has reviewed it**: named patterns, what maps to MDS data,
-  chosen architecture, per-surface candidate pools (people-to-meet · deals · events · videos ·
-  threads), ranking approach, offline + online evaluation plan.
-- **v1 like-minded members works end-to-end** (persona/behavior similarity, gated, reasons =
-  shared topics only — match-don't-quote; secondary sort engagement score, score never shown) and
-  **measurably beats** the tick-box `member_match` on a judged set.
-- **Feed ranking (#27) uses it** and the improvement is measured, not asserted.
-- **Phone-less actives covered** (~170 members: FB + events + profile signals only).
-- Leak gate GREEN; personas/behavioral data never quoted across members.
-
-**Impact:** all members — Andy's call: matchmaking is the key product surface. The persona-quality
-critique (2026-07-30: cards too generic) lands here as the redesign.
+*(empty — everything closed, smoke-resolved, or queued for Release 3)*
 
 # ⚪ S4 — lowest
 
-### 16. ✅ Health dashboard audit (Olivia domain + the alert chain) · CLOSED 2026-08-01 · effort M · LIVE
-*As the team, the health dashboard tells the truth.*
-
-**LIVE (digest-web `b1b1a9f` deployed + the monitor wf fixed in place — no promote involved).**
-- **The lying tile fixed:** `olivia-agent` claimed "Claude answer failures fail the run" — false
-  (the model node continues on error; runs stayed green through 07-26). It now reads
-  **member-visible truth**: failure texts that reached members (24h window) + the off-platform
-  alarm's firing states. **Forced-failure proof on the LIVE report:** canary failure text →
-  "🟡 Olivia — WhatsApp agent — last failure text 3h ago" in the problems block with its triage
-  button → cleanup → healthy again (36/37).
-- **Two missing tiles added:** `olivia-alarm` (the WATCHMAN tile — pg_cron `last_tick_at`
-  freshness; if the alarm dies, THIS goes red) and `olivia-derivations` (#15's four job
-  heartbeats). Tile count 35 → 37, all computing on the live report.
-- **The latched 30-min monitor UNLATCHED** (wf `argZgYHPgdVKJqCS`, in place, bounce, verified):
-  the old code fired ONCE on healthy→down and could never fire again once `lastHealth` stuck —
-  the latch that buried 07-26 (last alert ever: 2026-07-26). Now: re-alerts every 30 min while
-  down + posts the recovery summary once when clear. Degraded still doesn't page (daily summary
-  covers it) — by design.
-- **The Supabase blind spot covered:** `scripts/alarm_watchdog.py` on launchd
-  (`com.mds.olivia.watchdog`, every 15 min, a DIFFERENT failure domain — the Mac): Supabase
-  unreachable OR alarm tick stale >15m → Slack, unlatchable (30-min repeats + recovery).
-  **Forced-test proven** (🚨 test alert + ✅ recovery in Slack).
-- Gate re-run **187/187 GREEN**.
-
-**Named scope + residuals:** this audited + fixed the OLIVIA domain and the SHARED alert chain;
-the full 37-tool per-tile audit is the Tools-health PROJECT's backlog, not Olivia's · the
-watchdog runs on Andy's Mac (best-effort — it watches the watcher, not the product) · the known
-flaky `Member profiles ← Airtable sync` yellow stays a Tools-health item (GitHub cron delivers
-~half the runs — already on that project's list).
-
-**Impact:** the dashboard can no longer show green through a member-visible outage, and every
-layer of the alert chain (tile → monitor → alarm → watchdog) is now proven to fire.
-
----
-
-### 17. ⚪ Auto-refresh videos and partners · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01; still blocked on GROUPOS_PAT). TEMP SOLUTION NOW: WEEKLY refresh via the GroupOS connection in-session (videos + partners diff-upsert), heartbeat-backed so the staleness alarm pages if a week is missed; first refresh run 2026-08-01**
-*As a member, new recordings and deals show up without anyone importing them.*
-
-**Accept when**
-- **Blocked until the GroupOS key exists.**
-- **New videos and deals appear without an import**, and data older than a day alerts.
-- **The requirements are handed over, the security exposure included**, and it is fixed or owned in writing.
-
-13 videos landed in a week and none surfaced in any catch-up; partner data sits on a frozen snapshot.
-Needs the GroupOS key. Includes sending GroupOS the 13-item requirements doc — one of which is a live
-security exposure: restricted decks are publicly downloadable.
-
-**Effort M** — blocked on a key we don't have. **Impact:** everyone asking what's new; the security item is urgent on its own terms.
-
-### 18. ⚪ How-MDS-works answers · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01)**
-*As a member, I get the real answer about Squads, programs and joining a chat.*
-
-**Accept when**
-- **Every recurring how-MDS-works question has a written answer from the team.**
-- **Each answers consistently across phrasings and cites that source.**
-- **They stop arriving as support requests.**
-
-From the team's own documents rather than inferred from chat chatter. Also unblocks the chapter policy
-questions in #9.
-
-**Effort M** — the work is someone writing the answers; loading them is straightforward. **Impact:** all 722; every one of these currently becomes a support request.
-
-### 19. ⚪ Privacy: share, keep, delete · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01)**
-*As a member, I know what's stored about me and can have it removed.*
-
-**Accept when**
-- **A written position exists:** what may be shared, with whom, and how long conversations are kept.
-- **A deletion request is honoured and verifiable.**
-- **Opt-outs are respected everywhere the data appears.**
-- **Nothing promised to members contradicts it.**
-- A written position on what Olivia may share about a member, with whom
-- How long conversations are kept (Andy's instinct: forever — needs stating, not defaulting)
-- A member can ask for their history to be deleted, and it happens
-- Consistent with what the beta email already promises
-
-**Impact:** all members, low urgency until someone asks.
-
-### 20. ⚪ Census into the warehouse · S4 · effort L · **→ RELEASE 3 (Andy 2026-08-01)**
-*As a member, Olivia knows what I actually said about my business.*
-
-**Accept when**
-- **A member's own census answers are answerable to them.**
-- **0% of anyone else's raw answers ever return**, enforced by the gate.
-- **Persona questions draw on census data** rather than tick-box filtering.
-
-The freshest self-reported revenue, channel and SKU data MDS holds, currently not in the warehouse at
-all. Unblocks member personas — what turns matching from tick-box filtering into "who has actually lived
-through this".
-
-**Impact:** all 722; the biggest single quality lever left.
-
----
+*(empty — #16 closed; #17-#20 queued for Release 3)*
 
 ### 34. 🏁 Finalize the QA doc set — THE LAST TICKET, runs after everything else · effort M
 *As the team, once the whole backlog is done, the three QA docs are true, complete, and
@@ -315,6 +179,111 @@ still robotic becomes a NAMED FIX before the promote.
 research memo first) · #17 auto-refresh videos+partners (blocked on GROUPOS_PAT; weekly temp
 refresh running meanwhile) · #18 how-MDS-works answers (team-written content) · #19 privacy
 position · #20 census into the warehouse · plus:
+
+### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L · **→ RELEASE 3 (Andy 2026-08-01: "this is a huge one" — not part of this push; the research memo opens Release 3. His signal asks — app event logging + GROUPOS_PAT — still run THIS week so history accumulates)**
+*As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
+platform would — from everything it knows about me, and it gets the like-minded question right:
+"people like Mo" returns the other multi-market logistics-givers, not everyone in Canada.
+(Andy 2026-07-30: "matchmaking will be the key… we have tons of info we can use for matching…
+you need to research how such DBs are built.")*
+
+**ANDY'S VISION (2026-07-31, verbatim direction — this IS the ticket's north star):** the current
+personas are "useless how it's done now." What he wants is a **DYNAMIC DOSSIER — "like a police
+file"** — roughly ALL the info per member: habits, patterns, likes, dislikes, how often online,
+what they watched, events visited, who they talk to, "your every step, every breath." And **not
+just personas per person: a file for almost EVERY ENTITY and piece of content** (member, video,
+event, partner, thread) — so "his file says he likes C, this video's file is about C → recommend"
+is the *childish base case*, with pattern-learning from behavior on top. This is the
+feature-store + interaction-event-stream architecture the research memo must map onto MDS.
+Consequences filed:
+- #28's persona cards = the first draft of the member file, judged NOT the end state.
+- **Research round 1 must include the SIGNAL INVENTORY + capture gaps**: app video-views/searches
+  not logged yet, `member_events` empty, WA online-presence not captured — name what to START
+  CAPTURING NOW so history accumulates while research runs.
+- "Every step, every breath" requires the written privacy position (#19) before the product
+  promises anything.
+- **`OLIVIA_SIGNAL_INVENTORY.md` WRITTEN 2026-07-31** (Andy: "write all the missing bits and
+  pieces, and we will get it") — HAVE / DERIVABLE / MISSING tables with owners; rows 1-2 (app
+  event logging + GROUPOS_PAT) are the action-this-week items so history accumulates.
+
+**Research FIRST, then build.** Deliverable 1 is a reviewed research memo: how production
+recommender systems actually work (two-stage candidate-generation → ranking · content-based +
+collaborative + behavioral/implicit-feedback signals · embedding feature stores · cold-start
+handling — the Amazon/eBay/Netflix patterns), mapped onto MDS's real signal inventory: personas
+(#28), Olivia question history, event attendance, WA/FB activity + chat memberships, offer claims
+(needs GROUPOS_PAT), video views + app search/activity (once the app logs them), census (#20).
+
+**Accept when**
+- **The research memo exists and Andy has reviewed it**: named patterns, what maps to MDS data,
+  chosen architecture, per-surface candidate pools (people-to-meet · deals · events · videos ·
+  threads), ranking approach, offline + online evaluation plan.
+- **v1 like-minded members works end-to-end** (persona/behavior similarity, gated, reasons =
+  shared topics only — match-don't-quote; secondary sort engagement score, score never shown) and
+  **measurably beats** the tick-box `member_match` on a judged set.
+- **Feed ranking (#27) uses it** and the improvement is measured, not asserted.
+- **Phone-less actives covered** (~170 members: FB + events + profile signals only).
+- Leak gate GREEN; personas/behavioral data never quoted across members.
+
+**Impact:** all members — Andy's call: matchmaking is the key product surface. The persona-quality
+critique (2026-07-30: cards too generic) lands here as the redesign.
+
+### 17. ⚪ Auto-refresh videos and partners · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01; still blocked on GROUPOS_PAT). TEMP SOLUTION NOW: WEEKLY refresh via the GroupOS connection in-session (videos + partners diff-upsert), heartbeat-backed so the staleness alarm pages if a week is missed; first refresh run 2026-08-01**
+*As a member, new recordings and deals show up without anyone importing them.*
+
+**Accept when**
+- **Blocked until the GroupOS key exists.**
+- **New videos and deals appear without an import**, and data older than a day alerts.
+- **The requirements are handed over, the security exposure included**, and it is fixed or owned in writing.
+
+13 videos landed in a week and none surfaced in any catch-up; partner data sits on a frozen snapshot.
+Needs the GroupOS key. Includes sending GroupOS the 13-item requirements doc — one of which is a live
+security exposure: restricted decks are publicly downloadable.
+
+**Effort M** — blocked on a key we don't have. **Impact:** everyone asking what's new; the security item is urgent on its own terms.
+
+### 18. ⚪ How-MDS-works answers · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01)**
+*As a member, I get the real answer about Squads, programs and joining a chat.*
+
+**Accept when**
+- **Every recurring how-MDS-works question has a written answer from the team.**
+- **Each answers consistently across phrasings and cites that source.**
+- **They stop arriving as support requests.**
+
+From the team's own documents rather than inferred from chat chatter. Also unblocks the chapter policy
+questions in #9.
+
+**Effort M** — the work is someone writing the answers; loading them is straightforward. **Impact:** all 722; every one of these currently becomes a support request.
+
+### 19. ⚪ Privacy: share, keep, delete · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01)**
+*As a member, I know what's stored about me and can have it removed.*
+
+**Accept when**
+- **A written position exists:** what may be shared, with whom, and how long conversations are kept.
+- **A deletion request is honoured and verifiable.**
+- **Opt-outs are respected everywhere the data appears.**
+- **Nothing promised to members contradicts it.**
+- A written position on what Olivia may share about a member, with whom
+- How long conversations are kept (Andy's instinct: forever — needs stating, not defaulting)
+- A member can ask for their history to be deleted, and it happens
+- Consistent with what the beta email already promises
+
+**Impact:** all members, low urgency until someone asks.
+
+### 20. ⚪ Census into the warehouse · S4 · effort L · **→ RELEASE 3 (Andy 2026-08-01)**
+*As a member, Olivia knows what I actually said about my business.*
+
+**Accept when**
+- **A member's own census answers are answerable to them.**
+- **0% of anyone else's raw answers ever return**, enforced by the gate.
+- **Persona questions draw on census data** rather than tick-box filtering.
+
+The freshest self-reported revenue, channel and SKU data MDS holds, currently not in the warehouse at
+all. Unblocks member personas — what turns matching from tick-box filtering into "who has actually lived
+through this".
+
+**Impact:** all 722; the biggest single quality lever left.
+
+---
 
 ### 35. 🚀 Connect new data source — DOCUMENTS (GroupOS) · S3 · Release 3
 *As a member, MDS documents are searchable like everything else.*
@@ -631,6 +600,41 @@ the promote. Gate GREEN after the edits.
 
 **Impact:** every slow answer and every solve-lane answer on prod; the checklist protects every
 future promote.
+
+---
+
+### 16. ✅ Health dashboard audit (Olivia domain + the alert chain) · CLOSED 2026-08-01 · effort M · LIVE
+*As the team, the health dashboard tells the truth.*
+
+**LIVE (digest-web `b1b1a9f` deployed + the monitor wf fixed in place — no promote involved).**
+- **The lying tile fixed:** `olivia-agent` claimed "Claude answer failures fail the run" — false
+  (the model node continues on error; runs stayed green through 07-26). It now reads
+  **member-visible truth**: failure texts that reached members (24h window) + the off-platform
+  alarm's firing states. **Forced-failure proof on the LIVE report:** canary failure text →
+  "🟡 Olivia — WhatsApp agent — last failure text 3h ago" in the problems block with its triage
+  button → cleanup → healthy again (36/37).
+- **Two missing tiles added:** `olivia-alarm` (the WATCHMAN tile — pg_cron `last_tick_at`
+  freshness; if the alarm dies, THIS goes red) and `olivia-derivations` (#15's four job
+  heartbeats). Tile count 35 → 37, all computing on the live report.
+- **The latched 30-min monitor UNLATCHED** (wf `argZgYHPgdVKJqCS`, in place, bounce, verified):
+  the old code fired ONCE on healthy→down and could never fire again once `lastHealth` stuck —
+  the latch that buried 07-26 (last alert ever: 2026-07-26). Now: re-alerts every 30 min while
+  down + posts the recovery summary once when clear. Degraded still doesn't page (daily summary
+  covers it) — by design.
+- **The Supabase blind spot covered:** `scripts/alarm_watchdog.py` on launchd
+  (`com.mds.olivia.watchdog`, every 15 min, a DIFFERENT failure domain — the Mac): Supabase
+  unreachable OR alarm tick stale >15m → Slack, unlatchable (30-min repeats + recovery).
+  **Forced-test proven** (🚨 test alert + ✅ recovery in Slack).
+- Gate re-run **187/187 GREEN**.
+
+**Named scope + residuals:** this audited + fixed the OLIVIA domain and the SHARED alert chain;
+the full 37-tool per-tile audit is the Tools-health PROJECT's backlog, not Olivia's · the
+watchdog runs on Andy's Mac (best-effort — it watches the watcher, not the product) · the known
+flaky `Member profiles ← Airtable sync` yellow stays a Tools-health item (GitHub cron delivers
+~half the runs — already on that project's list).
+
+**Impact:** the dashboard can no longer show green through a member-visible outage, and every
+layer of the alert chain (tile → monitor → alarm → watchdog) is now proven to fire.
 
 ---
 
