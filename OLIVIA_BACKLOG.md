@@ -101,6 +101,16 @@ phone-less actives; fixed same day.)
 
 *(empty — everything closed, smoke-resolved, or queued for Release 3)*
 
+### 37. ✅ Member reports + not-connected honesty (Andy ruled + shipped 2026-08-01, in Release 2)
+*As a member, when Olivia doesn't have something, she says it's not connected yet (beta) and offers
+to file a report; I can also just type "report <text>" (or bare "report") — my words land verbatim
+in front of the team in the Olivia portal.*
+**Shipped:** `digest.olivia_reports` + gated fail-closed `report_create` RPC · seed rules
+(not-connected 3-parter, verbatim report command) · router force-llm on `^report` ·
+portal page `/admin/olivia/reports` (digest-web `af32d0c`) · gate 190 (3 new checks) ·
+proven live (rows 4-5 + Q3088b/Q3116c probes). Related ruling: event-registration asks = BOTH
+(event card + link + pass-to-team offer) — router worked-example fixed.
+
 # ⚪ S4 — lowest
 
 *(empty — #16 closed; #17-#20 queued for Release 3)*

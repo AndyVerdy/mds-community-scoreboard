@@ -602,6 +602,17 @@ def main():
         st, _b = rpc("billing_nudge", {"p_phone": phone}, ANON_KEY)
         check("anon denied on billing_nudge", st in (401, 403, 404), f"status {st}")
 
+        print("— member reports (#37) —")
+        st, rep = rpc("report_create", {"p_phone": "19999999999", "p_text": "gate probe report"}, key)
+        check("report_create unknown phone = zero rows (fail closed)",
+              isinstance(rep, list) and not rep, f"status {st}")
+        st, _b = rpc("report_create", {"p_phone": phone, "p_text": "gate probe"}, ANON_KEY)
+        check("anon denied on report_create", st in (401, 403, 404), f"status {st}")
+        st, body = curl("GET", f"{BASE}/olivia_reports?select=id&limit=1", ANON_KEY,
+                        profile_hdr=["Accept-Profile: digest"])
+        check("anon cannot read member reports",
+              st in (401, 403, 404) or (isinstance(body, list) and not body), f"status {st}")
+
         print("— outage alarm (#13) —")
         st, _b = rpc("olivia_health_check", {}, ANON_KEY)
         check("anon denied on olivia_health_check", st in (401, 403, 404), f"status {st}")
@@ -621,8 +632,12 @@ def main():
         print("— member_dossier & community_info (own data / stats) —")
         st, dos = rpc("member_dossier", {"p_phone": phone}, key)
         check("member_dossier answers for the asker (status 200)", st == 200, f"status {st}")
+        # 'persona' joined the own-data kinds when persona_refresh started writing rows
+        # for the probe member (2026-08-01 — his first persona came from the Big Smoke's
+        # own probe traffic). The dossier is self-only by construction; a member seeing
+        # his OWN persona is the designed behavior (rulebook self-exception).
         ok_kinds = all(d.get("kind") in ("active_chat", "recent_said", "upcoming_event",
-                                         "past_event") for d in (dos or []))
+                                         "past_event", "persona") for d in (dos or []))
         check("dossier rows carry only own-activity kinds", ok_kinds)
         st, dos = rpc("member_dossier", {"p_phone": "19999999999"}, key)
         check("member_dossier unknown phone = zero rows", isinstance(dos, list) and not dos)

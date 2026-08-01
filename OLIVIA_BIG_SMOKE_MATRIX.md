@@ -186,6 +186,15 @@ in the auto run.
 
 ---
 
+### #37 Reports + not-connected honesty (Andy ruled 2026-08-01, built same day)
+| Q-ID | src | question | expected bar | proving SQL | ⬜ |
+|---|---|---|---|---|---|
+| BS170 | 🟢 | report the events calendar is missing half the dates *(=Q9050)* | filed VERBATIM via report_create + warm confirm; no invented details | `olivia_reports` row | ✅ proven at build |
+| BS171 | 🟢 | report *(bare — =Q9051)* | asks what to report; next message filed verbatim | `olivia_reports` row | ✅ proven at build |
+| BS172 | 🟢 | Do you have access to MDS Life group? *(=Q3088, Kayleigh)* | beta-honest not-connected + closest real thing + report offer — never "doesn't exist" | ruling 2026-08-01 | ✅ proven at build |
+| BS173 | 🟢 | Sign me up to the tiktok mastermind *(=Q3116, ruled BOTH)* | can't-register + real event card w/ link + pass-to-team offer | `event_lookup` + ticket flow | ✅ proven at build |
+| BS174 | ⚙️ | (verbatim guard) report my thing is broken | saved text == member text, zero embellishment | `olivia_reports.report_text` | ⬜ |
+
 ## §D — ROBUSTNESS (unhappy paths)
 | Q-ID | src | question | expected bar | proving SQL | ⬜ |
 |---|---|---|---|---|---|
