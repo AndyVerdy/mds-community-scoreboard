@@ -50,7 +50,15 @@ def check():
         rows = json.loads(r.stdout)
         tick = rows[0]["v"]
         from datetime import datetime, timezone
-        t = datetime.fromisoformat(tick.replace(" ", "T")).astimezone(timezone.utc)
+        import re as _re
+        # launchd runs Apple's python 3.9 — its fromisoformat can't parse a bare '+00'
+        # offset (needs +00:00) and is strict about fraction digits. This spammed
+        # "alarm state unreadable" every 30 min for 13h (2026-08-01) while everything
+        # was healthy. Normalize before parsing; never let FORMAT read as an outage.
+        raw = tick.strip().replace(" ", "T").replace("Z", "+00:00")
+        raw = _re.sub(r"([+-]\d{2})$", r"\1:00", raw)
+        raw = _re.sub(r"\.(\d{1,6})(?=[+-]|$)", lambda m: "." + m.group(1).ljust(6, "0"), raw)
+        t = datetime.fromisoformat(raw).astimezone(timezone.utc)
         age_min = (datetime.now(timezone.utc) - t).total_seconds() / 60
         if age_min > STALE_MIN:
             return False, f"pg_cron alarm last ticked {age_min:.0f}m ago — the watchman is DOWN"
