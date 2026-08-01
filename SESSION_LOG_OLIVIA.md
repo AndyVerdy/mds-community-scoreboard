@@ -6,6 +6,29 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-9) — #16 HEALTH AUDIT CLOSED + LIVE: the lying agent tile now reads member-visible truth (forced-proof on the live report) · +watchman/derivations tiles · the 30-min monitor UNLATCHED · Mac watchdog covers the Supabase blind spot · gate 187
+
+- **The false-green root:** `olivia-agent` tile read n8n run status while the model node
+  continues-on-error — runs stayed green through the 07-26 outage. Now reads failure texts that
+  REACHED MEMBERS (24h) + `olivia_alarm_state` firing. **Forced on the LIVE report:** 3h-old
+  canary failure text → "🟡 Olivia — WhatsApp agent — last failure text 3h ago" + triage button
+  (counts 36→35 healthy) → cleanup → 36/37 again. (3h-old on purpose: trips the tile's 24h
+  window without paging the live alarm's 10-min window — zero Slack noise.)
+- **+2 tiles** (digest-web `b1b1a9f`, deploy verified): `olivia-alarm` = the WATCHMAN
+  (last_tick_at freshness — "if the alarm dies, this goes red") · `olivia-derivations` (#15
+  heartbeats). 35→37 tools, all computing.
+- **The latched monitor** (wf `argZgYHPgdVKJqCS`) — the confirmed 07-26 burial mechanism
+  (alert-once-on-transition + stuck lastHealth; last alert EVER 2026-07-26) — **rewritten in
+  place**: re-alert every 30 min while down + recovery summary on clear; degraded still daily-
+  summary-only by design. Bounce + code verified live.
+- **Supabase blind spot** (the #13 residual): `scripts/alarm_watchdog.py` on launchd
+  `com.mds.olivia.watchdog` (every 15 min, Mac = a different failure domain): Supabase
+  unreachable OR alarm tick stale → Slack, unlatchable. **Forced-test 🚨 + recovery ✅ posted.**
+- Report-API note: it's secret-gated (`?secret=`, matches the deployed HEALTH_REPORT_SECRET);
+  the LOCAL .env.local value is STALE/different — flag for Andy, not self-fixed. Gate 187.
+- Scope: Olivia domain + shared alert chain; the full 37-tool per-tile audit belongs to the
+  Tools-health project (its flaky member-sync yellow stays on that list).
+
 ## 2026-08-01 (EARLY-8) — #12 PUBLIC REVENUE CLOSED on Andy's ruling: posted figures = attributed quotes only (his words: "he posted it publicly… we must specify he actually said it") · chat figures visibility-scoped structurally · FB fully open · review-bot rubric aligned LIVE
 
 - **The ruling** (Andy, verbatim spirit): AT revenue = never, bands only · member-posted figures

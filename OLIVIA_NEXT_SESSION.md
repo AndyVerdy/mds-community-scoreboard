@@ -52,6 +52,13 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
    action-this-week list.
 
 ## State (2026-08-01 early close)
+- **#16 HEALTH AUDIT CLOSED — LIVE.** The lying olivia-agent tile now reads member-visible truth
+  (failure texts + alarm state; run status lies via continueOnError) — FORCED-proven on the live
+  report (canary → 🟡 flagged → clean). +2 tiles: watchman (pg_cron tick) + derivations
+  (heartbeats), 35→37. The latched 30-min monitor UNLATCHED in place (30-min repeats + recovery;
+  the latch that buried 07-26). Supabase blind spot → Mac watchdog every 15 min
+  (`alarm_watchdog.py`, forced-test proven). digest-web `b1b1a9f`. Gate 187. Scope note: full
+  37-tool audit = the Tools-health PROJECT; this fixed the Olivia domain + shared alert chain.
 - **#12 PUBLIC REVENUE CLOSED (Andy's ruling in session).** Official data = bands only, always.
   A figure the member/page POSTED = quotable WITH attribution + link, paired with our band; FB
   fully open; chat figures visibility-scoped structurally (retrieval can't return non-member
