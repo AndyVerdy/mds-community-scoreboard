@@ -99,39 +99,6 @@ phone-less actives; fixed same day.)
 
 # 🔵 S3
 
-### 12. ✅ Public revenue, double-sourced · CLOSED 2026-08-01 · effort S · RELEASE 2
-*As a member, a public figure someone posted is quoted with its source, never as Olivia's claim.*
-
-**ANDY'S RULING (2026-08-01, verbatim spirit):** official (AT) revenue = never disclosed, bands
-only. **A figure the member posted publicly = sayable, and we MUST specify he actually said it.**
-Closed-chat posts follow chat visibility — available only to askers who can actually see that
-chat. **FB is totally open.** Ranking stays bands + engagement order — never by exact revenue.
-
-**Verified + shipped ("this is very sensitive, make sure you did it correctly"):**
-- **The flagged live case traced to its source:** the daily review's "doing $14-15M" catch came
-  from **MDS's own public FB welcome post** ("THE HEAVY HITTERS — Aaron Cordovez… $140M across
-  two brands", post `26687547237588758`) — i.e. the exact class the ruling ALLOWS with
-  attribution; the review bot's rubric was stricter than the ruling.
-- **REVENUE FIGURES rule** in the loop contract: our data → bands only, whoever asks · a figure
-  in retrieved content = an attributed quote WITH link, paired with our band · never her own
-  voice · never ranking fuel · chat figures visibility-scoped automatically (if retrieval
-  returned it, the asker can see it — the leak gate's chat-scope canaries prove non-member
-  chats return ZERO, every run).
-- **Probes (staging):** "how big is Aaron Cordovez business?" → *"Our official data has Aaron in
-  the 20M+ tier — but he himself shared a bigger number in the MDS welcome post: $140M across
-  two Amazon brands"* + link — the double-source shape verbatim · **control:** Prudence's exact
-  number still hard-refused (band + facts, offers to look for a public self-post). The new rule
-  did NOT soften the base refusal.
-- **The daily-review rubric updated live** (wf `xkX7wnIwxJLU7YgY`, verified): flags revenue ONLY
-  when unattributed / non-visible / from our data — so correct attributed quotes stop being
-  filed as violations.
-- Rulebook (`OLIVIA_SHAREABLE_FIELDS.md`) NEVER-lane carries the nuance; matrix +5 rows
-  (BS105-109). Gate re-run GREEN (no DB change — the enforcement was already structural).
-
-**Impact:** low frequency, high sensitivity — now consistent, attributed, and structurally scoped.
-
----
-
 ### 32. 🔵 What Olivia costs, measured and controlled · S3 · effort M · **DEFERRED TO THE BIG-SMOKE PHASE (Andy 2026-08-01: measure spend there, give Kimi a fair retest chance and try to improve things — not a standalone ticket now)**
 *As the team, we know what Olivia costs to run per answer and per month, we get told before a bill
 surprises us, and we can prove a cost change actually landed.*
@@ -265,38 +232,6 @@ Andy's own read: "it feels like a bot very restricted to me."
 
 **Effort L** — cuts across routing, retrieval and prompt; hardest to define done. Needs its own session on what good looks like. **Impact:** every member, every conversation — the difference between used and abandoned.
 
-### 15. ✅ Hands-off data pipeline · CLOSED 2026-08-01 · effort L · LIVE (not promote-gated)
-*As a member, what happened yesterday is answerable today.*
-
-**LIVE NOW (like #13, it's infrastructure — no promote needed).**
-- **The four derivation jobs run nightly, unattended:** `scripts/nightly_derivations.py` runs
-  derive_niches · label_questions · sync_chapter_pages · embed_member_profiles in sequence (one
-  failure never blocks the rest), stamping `digest.olivia_job_heartbeats` after each. launchd
-  **`com.mds.olivia.derivations`** at 04:30 (after persona 04:15), loaded + verified. First run
-  did real work: 5 questions labelled · 15 changed profiles re-embedded · 20 chapters re-synced ·
-  niches rebuilt — all idempotent, so a quiet night is cheap. **This kills the "scheduled not
-  remembered" decay that carried across four tickets** (#6/#7/#25 all left a job unscheduled).
-- **A skipped sync alerts (the AC), proven by FORCING a skip:** the #13 pg_cron alarm gained a
-  4th signal — any job with no success in >26h (or that NEVER ran) Slack-alerts, off-platform,
-  unlatchable. Forced: backdated `label_questions` 30h → 🚨 "stale derivation job(s):
-  label_questions (last ok Jul 30 20:21)" (Slack ok:true) → restored → ✅ recovery. A job that
-  never runs is pre-registered, so its absence is detectable, not silent.
-- **Gate +1 → 187 GREEN** (job heartbeats anon-denied).
-
-**Named exception (platform, not us):** **Facebook capture stays a manual scroll** — FB removed
-the permalink anchors the feed loop needed, so the enumerate step is irreducibly human
-(documented in [[project_mds_fb_digest_scraper]]). Everything DOWNSTREAM of the scroll is what
-these jobs automate. The Mon/Thu FB SOP is unchanged; the ticket automates the parts a platform
-lets us.
-
-**Residual:** launchd runs on Andy's Mac (must be on) — same constraint as persona/eval/digest
-jobs; the staleness alarm is precisely the backstop for a missed run. Moving to an always-on
-runner is a later infra choice, not blocking.
-
-**Impact:** every member; the most visible staleness — now self-healing with an alarm behind it.
-
----
-
 # ⚪ S4 — lowest
 
 ### 16. ⚪ Health dashboard audit · S4 · effort M
@@ -408,7 +343,7 @@ the release is actually safe to ship, not just that the tickets are marked done.
 Ships to prod at the next `promote` (Andy runs it). Everything below is live on staging and gate
 GREEN 161, and nothing here is on prod yet.
 
-**Tickets closed into Release 2 (9):** #23 answer latency (closed on the story — the ladder half
+**Tickets closed into Release 2 (12):** #23 answer latency (closed on the story — the ladder half
 shipped in Release 1, the speed cuts in Release 2) · **#5 counting** (member_niches + member_count
 RPC + loop tool; breakdown_sum closes total-it-up deterministically) · **#33 prod smoke**
 (early-feedback branch reorder + links-when-solving rule + the standing pre-promote smoke
@@ -419,7 +354,9 @@ merge + solve fan-out rules · multi_source all six families · per-turn sources
 Revenue authoritative; rev_band already derives from it by one threshold rule; gate now enforces
 band-only outputs) · **#10 shareable member facts** (`OLIVIA_SHAREABLE_FIELDS.md` rulebook ·
 card = the per-member list incl. channels/model/categories/country · gate pins the column set) · **#11 payment wording** (map inside member_billing —
-raw system words structurally unemittable).
+raw system words structurally unemittable) · **#12 public revenue** (posted figures = attributed
+quotes; ruling encoded) · **#13 outage alarm** (LIVE, off-platform) · **#15 hands-off pipeline**
+(LIVE, 4 jobs nightly + stale alarm).
 
 **Shipped to PROD separately (not part of the n8n promote):** #25 the portal tells the truth —
 mds-digest-web `294b094`, live on digest.mds.co 2026-07-31. The portal deploys on push and never
@@ -700,6 +637,111 @@ the promote. Gate GREEN after the edits.
 
 **Impact:** every slow answer and every solve-lane answer on prod; the checklist protects every
 future promote.
+
+---
+
+### 12. ✅ Public revenue, double-sourced · CLOSED 2026-08-01 · effort S · RELEASE 2
+*As a member, a public figure someone posted is quoted with its source, never as Olivia's claim.*
+
+**ANDY'S RULING (2026-08-01, verbatim spirit):** official (AT) revenue = never disclosed, bands
+only. **A figure the member posted publicly = sayable, and we MUST specify he actually said it.**
+Closed-chat posts follow chat visibility — available only to askers who can actually see that
+chat. **FB is totally open.** Ranking stays bands + engagement order — never by exact revenue.
+
+**Verified + shipped ("this is very sensitive, make sure you did it correctly"):**
+- **The flagged live case traced to its source:** the daily review's "doing $14-15M" catch came
+  from **MDS's own public FB welcome post** ("THE HEAVY HITTERS — Aaron Cordovez… $140M across
+  two brands", post `26687547237588758`) — i.e. the exact class the ruling ALLOWS with
+  attribution; the review bot's rubric was stricter than the ruling.
+- **REVENUE FIGURES rule** in the loop contract: our data → bands only, whoever asks · a figure
+  in retrieved content = an attributed quote WITH link, paired with our band · never her own
+  voice · never ranking fuel · chat figures visibility-scoped automatically (if retrieval
+  returned it, the asker can see it — the leak gate's chat-scope canaries prove non-member
+  chats return ZERO, every run).
+- **Probes (staging):** "how big is Aaron Cordovez business?" → *"Our official data has Aaron in
+  the 20M+ tier — but he himself shared a bigger number in the MDS welcome post: $140M across
+  two Amazon brands"* + link — the double-source shape verbatim · **control:** Prudence's exact
+  number still hard-refused (band + facts, offers to look for a public self-post). The new rule
+  did NOT soften the base refusal.
+- **The daily-review rubric updated live** (wf `xkX7wnIwxJLU7YgY`, verified): flags revenue ONLY
+  when unattributed / non-visible / from our data — so correct attributed quotes stop being
+  filed as violations.
+- Rulebook (`OLIVIA_SHAREABLE_FIELDS.md`) NEVER-lane carries the nuance; matrix +5 rows
+  (BS105-109). Gate re-run GREEN (no DB change — the enforcement was already structural).
+
+**Impact:** low frequency, high sensitivity — now consistent, attributed, and structurally scoped.
+
+---
+
+### 13. ✅ Outage alarm · CLOSED 2026-08-01 · effort M · LIVE (not promote-gated)
+*As the team, we hear about an outage in minutes, from a system that isn't the one that's broken.*
+
+**LIVE NOW — this one does not ride the promote: it runs in SUPABASE pg_cron (off n8n, the
+platform being watched), every 5 minutes, posting to Slack `#automation-tests` (C0AQ8USNQK0 —
+one config row to change the channel).** Migrations `olivia_outage_alarm` +
+`_net_schema_fix` (pg_net lives in schema `net`, not `extensions` — the first cut's qualified
+calls would have silently no-opped inside the never-raise handlers; caught by pg_proc check).
+
+**Four signals, every tick** *(the 4th added by #15)*:
+1. **members-getting-failure-text** — any member received "Sorry — I could not generate…" in the
+   last 10 min (SELFTEST + Andy excluded, so eval noise never pages). The 07-26 outage shape.
+2. **n8n-workflow-down** — the always-on relay's `relay_maintenance` markers flowing = Meta
+   callbacks arriving while n8n is dead.
+3. **webhook-ping** — an ACTIVE probe: each tick POSTs a synthetic delivery-status payload at
+   the real prod webhook (no member traffic; upserts the `wamid.HEALTHPING` sends-row = a
+   visible heartbeat); the next tick verifies 200.
+4. **nightly-job-stale** (#15) — any derivation job with no success in >26h (or never run).
+
+**NO LATCH by construction** (the old monitor's fatal flaw): while a condition persists it
+re-alerts every 30 min; on clear it posts ✅ recovery. The check function never raises and
+stamps `last_tick_at` in config — the monitor itself is checkable.
+
+**Proven by forcing failures (AC), all visible in Slack #automation-tests 2026-07-31 ~20:34 CDT:**
+seeded failure-text canary → 🚨 alert (Slack API ok:true) · second run inside 30 min → paced, no
+repost · stamp backdated 40 min → 🚨 re-alert "(still down — repeating every 30 min)" = unlatch
+proof · canary cleared → ✅ recovery · webhook ping → 200 "Workflow was started" + HEALTHPING row ·
+autonomous pg_cron tick verified (01:35:00 → 01:40:00 on the boundary). **Gate +2 → 186 GREEN**
+(anon denied on the check fn; alarm config — which holds the Slack token — unreadable).
+
+**Named exceptions / residuals:** Supabase itself is the monitor's blind spot (watching n8n from
+Supabase satisfies the AC; a second cheap watcher for Supabase = #16's audit) · the
+balance-runs-low PRE-warning + spend cap land in the Big-Smoke #32 phase (the failure-text
+signal already catches the member-visible effect, which is how 07-26 actually presented) · the
+old latched n8n monitor stays as-is (harmless, on-platform; #16 decides its fate).
+
+**Impact:** the team hears about the next 07-26 in ≤5 minutes instead of never.
+
+---
+
+### 15. ✅ Hands-off data pipeline · CLOSED 2026-08-01 · effort L · LIVE (not promote-gated)
+*As a member, what happened yesterday is answerable today.*
+
+**LIVE NOW (like #13, it's infrastructure — no promote needed).**
+- **The four derivation jobs run nightly, unattended:** `scripts/nightly_derivations.py` runs
+  derive_niches · label_questions · sync_chapter_pages · embed_member_profiles in sequence (one
+  failure never blocks the rest), stamping `digest.olivia_job_heartbeats` after each. launchd
+  **`com.mds.olivia.derivations`** at 04:30 (after persona 04:15), loaded + verified. First run
+  did real work: 5 questions labelled · 15 changed profiles re-embedded · 20 chapters re-synced ·
+  niches rebuilt — all idempotent, so a quiet night is cheap. **This kills the "scheduled not
+  remembered" decay that carried across four tickets** (#6/#7/#25 all left a job unscheduled).
+- **A skipped sync alerts (the AC), proven by FORCING a skip:** the #13 pg_cron alarm gained a
+  4th signal — any job with no success in >26h (or that NEVER ran) Slack-alerts, off-platform,
+  unlatchable. Forced: backdated `label_questions` 30h → 🚨 "stale derivation job(s):
+  label_questions (last ok Jul 30 20:21)" (Slack ok:true) → restored → ✅ recovery. A job that
+  never runs is pre-registered, so its absence is detectable, not silent.
+- **Gate +1 → 187 GREEN** (job heartbeats anon-denied).
+
+**Named exception (platform, not us):** **Facebook capture stays a manual scroll** — FB removed
+the permalink anchors the feed loop needed, so the enumerate step is irreducibly human
+(documented in [[project_mds_fb_digest_scraper]]). Everything DOWNSTREAM of the scroll is what
+these jobs automate. The Mon/Thu FB SOP is unchanged; the ticket automates the parts a platform
+lets us.
+
+**Residual:** launchd runs on Andy's Mac (must be on) — same constraint as persona/eval/digest
+jobs; the staleness alarm is precisely the backstop for a missed run. Moving to an always-on
+runner is a later infra choice, not blocking.
+
+**Impact:** every member; the most visible staleness — now self-healing with an alarm behind it.
 
 ---
 
