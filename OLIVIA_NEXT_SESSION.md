@@ -41,6 +41,16 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
 SMOKE — ON STAGE FIRST (Andy confirmed 2026-08-01)** — prod still runs the old build, so stage
 is where discovery happens; prod only confirms.
 
+> ✅ **STATUS (2026-08-01 overnight): THE SMOKE RAN AND THE BENCHMARK IS MET ON STAGE.**
+> 169 auto + 6 manual sequences · first pass 5.7% → 2 fix batches (`581d0cc`, `4e15ba7`) →
+> all slices green → **full clean confirmation pass = 4.8% FAIL (151/6/8 of 165) < 5%**, zero
+> regressions, gate 187×3. **ANDY'S MORNING DECISIONS:** (1) round 3 on the 7 residual fails
+> (mostly variance-class + Lori removed-member framing — list in `SESSION_LOG_OLIVIA.md` NIGHT
+> entry) or accept 4.8% and move to promote; (2) the Q3088 MDS-Life ruling; (3) Q3116 preference
+> — ticket-offer vs event-card for "sign me up"; (4) **phase 0: his manual FB scroll** (fresh
+> comments — the Josh Hadley post class) before/with the pre-promote 5-check; (5) `promote`
+> (his terminal) → condensed prod re-verify. Steps 1-4 below are DONE except phase 0.
+
 **Benchmark (Andy 2026-08-01): failure rate < 5% on the complete smoke.** That is the release
 gate. (The <1% inaccuracy bar stays the long-term program goal measured by the nightly eval.)
 
