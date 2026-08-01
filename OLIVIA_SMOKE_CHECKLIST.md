@@ -16,7 +16,17 @@
 Andy: close the whole backlog → one big release → one huge smoke test. The Big Smoke is that
 test. **It runs one full pass of `OLIVIA_QA_CHECKLIST.md` (sections A–I, the researched
 "check everything" structure — functional · retrieval · safety/OWASP · robustness · feel ·
-delivery · cost · freshness · observability).** Its parts, in order:
+delivery · cost · freshness · observability).**
+
+> **🎯 BENCHMARK (Andy 2026-08-01): failure rate < 5% on the complete smoke — the release
+> gate.** Order is STAGE FIRST (discovery + fixes on staging; prod runs the old build until
+> promote, so prod only CONFIRMS). **Mindset: WHEN a check fails, not IF** — failures are the
+> smoke's expected output. The loop: run → triage into the 8 judge classes → fix on stage
+> under lock → gate → re-run the failed slice → one full clean pass <5% → Andy promotes →
+> condensed re-verification on prod must hold <5% too (prod-only failure = rollback protocol,
+> fix on stage, next promote). Go around as many times as it takes.
+
+Its parts, in order:
 
 **0. Fresh data first — grab and analyze new comments.** Run the FB capture SOP (manual scroll +
 comments pass → load_feed → images → vision_decode → upload → linker → embed_backfill) so the
@@ -46,7 +56,17 @@ blockers re-checked; give it a real chance + try improvements) · results writte
 Pavel drafted (Andy sends).
 
 **5. The 5-check pre-promote list below** + gate GREEN → Andy runs `promote` → every PBI
-re-verified ON PROD (the Release-1 pattern).
+re-verified ON PROD (the Release-1 pattern) — the prod re-verification must hold the <5%
+benchmark on its condensed set.
+
+**6. POST-RELEASE (only after 5 is green on PROD) — two deliverables, in order (Andy
+2026-08-01):**
+- **Release notes covering PRODUCTION RELEASES 1 + 2** (R1 was never announced publicly).
+  Written for humans; audience = team + beta (more candor than end-users). List ALL updates,
+  grouped by what a member feels vs what runs underneath. **Draft → Andy validates every line →
+  Andy posts.** Never posted by the AI.
+- **Backlog archive:** everything released moves out of `OLIVIA_BACKLOG.md` into an archive;
+  the backlog keeps ONLY open items (Release 3 queue + standing rulings).
 
 ---
 

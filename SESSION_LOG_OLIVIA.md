@@ -6,6 +6,21 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-13 · SESSION CLOSE) — ANDY: "we are done" → NEXT SESSION = THE RELEASE RUN: Big Smoke ON STAGE FIRST (he confirmed) · NEW BENCHMARK failure rate <5% · when-not-IF fix loop · post-release = release notes for PROD RELEASES 1+2 (R1 never announced; draft → Andy validates+posts) + backlog archive · ⛔ session-open: NO daily routine (3 sessions in a row got this wrong)
+
+- Andy closed the marathon: whole pre-smoke backlog done. Next session runs #34 + THE BIG SMOKE.
+- **His orders, filed into the docs:** stage-first order + <5% benchmark + fix loop
+  (`OLIVIA_SMOKE_CHECKLIST.md` 🎯 block + part 6 post-release) · #34 ACs extended
+  (`OLIVIA_BACKLOG.md`) · next-session orders rewritten with the ⛔ SESSION-OPEN OVERRIDE — do
+  NOT launch the daily routine / eval runs / routine probes at open; only ticket is #34
+  (`OLIVIA_NEXT_SESSION.md`).
+- **Release notes spec:** cover PRODUCTION releases 1 AND 2 (R1 got no public note) · for
+  humans · audience = team + beta (more candor than end-users) · list ALL updates · draft only —
+  Andy validates and posts himself.
+- **Backlog after release:** archive released items; keep only open (R3 queue + rulings).
+- His question "smoke on stage first?" answered YES — prod runs the old build until promote;
+  stage discovers, prod confirms (condensed re-verify, also <5%).
+
 ## 2026-08-01 (EARLY-12) — "did you check partners as well?" → PARTNERS DEEP PASS: full 494-sweep-diff (0 deleted / 0 missed / 0 review drift) · 6 NEW partners had ZERO category names → fixed via the AUTHORITATIVE `--map-categories` (my SQL co-occurrence guess was wrong on 5 of 6) · 15 re-embedded · 2 API-unfetchable "poison" records = the only gap · gate 187
 
 - **Andy asked "did you check partners as well?" — honest answer was PARTIALLY.** The earlier pass

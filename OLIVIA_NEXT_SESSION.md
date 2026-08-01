@@ -29,27 +29,48 @@ DoD; the judge files failures into 8 classes mapped to tickets.
 **Session open (Andy 2026-07-31): after reading the docs + verifying live, SUGGEST which
 ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pick before diving in.**
 
-## NEXT SESSION — orders (2026-08-01 early close)
+## NEXT SESSION — THE RELEASE RUN (Andy's orders, 2026-08-01 close)
 
-1. **Andy's plan: complete several more tickets, then ONE BIG PUSH + BIG SMOKE TEST** — no
-   promote until he says "we are done". Release 2 so far: eval fix batch · #23 cuts · #5
-   counting · #33 early-feedback + links · #6 chapters · #7 people search. **At the push: run THE BIG SMOKE
-   (`OLIVIA_SMOKE_CHECKLIST.md` top section — fresh comments capture · coverage matrix ≥5 Qs per
-   update point (`OLIVIA_BIG_SMOKE_MATRIX.md`, build first) · FULL bank + smoke suite · #14 feel
-   ACs · #32 spend + fair Kimi retest · the 5-check list) and paste results into the session log.**
-2. **ANDY'S GOAL: close the WHOLE backlog, one big release, one huge smoke test.** S2 is now
-   EMPTY. Open: S3 #10 shareable facts (S) · #11 payment wording (S) · #12 public revenue
-   (needs his ranking ruling) · #13 outage alarm (M) · #14 conversational (L) · #15 pipeline
-   (L) · #29 dossier research (L) · #32 cost (M) · S4 #16-#20. #10-#13 + #15 + #12 ALL CLOSED. Remaining: #29 (research L) · S4 #16-#20 (several
-   externally blocked) · then #34 (finalize docs + THE BIG SMOKE).
-3. Standing: MDS-Life ruling (Q3088 expect) · **whale ruling** (live chapter TTM sums can out one
-   member's scale — NorthTex $930M sum / $806M one member; ON today per site precedent) ·
-   ~~schedule the FOUR derivation jobs nightly~~ **DONE (#15): launchd
-   `com.mds.olivia.derivations` 04:30 + staleness alarm** ·
-   chapter POLICY answers need the team's written source (#18) · extend content_stats
-   (distinct-authors-by-source) · FULL run on the new bank (3101-3112) when Andy calls runs
-   back on · #29 signal inventory rows 1-2 (app event logging + GROUPOS_PAT) = Andy's
-   action-this-week list.
+> ⛔ **SESSION-OPEN OVERRIDE (Andy, said after 3 sessions in a row got this wrong): do NOT
+> launch the daily routine at session start.** No eval runs, no daily-review kicks, no
+> routine probes "to verify the morning". A major release is in flight — the ONLY ticket is
+> #34, so skip the suggest-tickets step too. Open the docs, verify live is quiet, and go
+> straight to Big Smoke prep.
+
+**The backlog is CLOSED (pre-smoke). This session = #34: finalize the QA docs, then run THE BIG
+SMOKE — ON STAGE FIRST (Andy confirmed 2026-08-01)** — prod still runs the old build, so stage
+is where discovery happens; prod only confirms.
+
+**Benchmark (Andy 2026-08-01): failure rate < 5% on the complete smoke.** That is the release
+gate. (The <1% inaccuracy bar stays the long-term program goal measured by the nightly eval.)
+
+**State of mind: WHEN something fails, not IF.** Failures are the expected output of the smoke;
+the plan below is a loop, and we go around it as many times as it takes — back to stage, fix,
+re-release, whatever it costs — until the benchmark holds.
+
+1. **Prep (free):** reconcile the 3 QA docs (`OLIVIA_QA_CHECKLIST` = method ·
+   `OLIVIA_BIG_SMOKE_MATRIX` = questions, ≥5 per update point, fill expected values ·
+   `OLIVIA_SMOKE_CHECKLIST` = phases/gate) · fresh FB comments capture (Phase 0 — needs Andy's
+   manual scroll) · gate 187 GREEN.
+2. **SMOKE ON STAGE (paid — propose scope + cost, WAIT for Andy's GO):** full matrix + FULL
+   bank + #14 feel ACs, with #32 spend metering + the fair Kimi comparison alongside.
+3. **Triage:** every failure filed into the 8 judge classes; count the failure rate.
+4. **FIX LOOP (stage, under the `olivia_wf.py` lock):** fix → gate → re-run the FAILED slice →
+   when all slices pass, ONE full clean re-run must show **<5%**. Loop until it does.
+5. **Andy promotes** (his terminal, never mine).
+6. **PROD re-verification:** condensed smoke on prod (the 5-check list + a sample of matrix
+   questions per source family) — must hold <5% too. A prod-only failure = emergency rollback
+   protocol, fix on stage, next promote.
+7. **POST-RELEASE (only after 6 is green) — two deliverables, in order:**
+   a. **Release notes for PRODUCTION RELEASES 1 + 2** (R1 was never announced). Written for
+      humans; audience = the team + beta testers (more candor than end-users get). Format:
+      list ALL updates, grouped; **draft → Andy validates → Andy posts** (never post it myself).
+   b. **Backlog archive:** released items move to an archive section/file; `OLIVIA_BACKLOG.md`
+      keeps ONLY open items (Release 3 queue + standing rulings).
+
+Standing (unchanged, none block the smoke): MDS-Life ruling (Q3088) · whale ruling (chapter TTM
+sums) · #18 needs the team's written policy source · #29 rows 1-2 = Andy's action-this-week
+(app event logging + GROUPOS_PAT) · weekly GroupOS refresh SOP (heartbeat-paged).
 
 ## State (2026-08-01 early close)
 - **CATALOG REFRESH RUN + WEEKLY TEMP SOP (Andy).** Via the GroupOS connection in-session:

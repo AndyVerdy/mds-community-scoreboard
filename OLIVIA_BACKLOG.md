@@ -125,9 +125,17 @@ folded in.
 - **The three docs reconcile:** no claim in one contradicts another; the doc-map header is
   current; every §A–I item traces to matrix rows or a measured/forced section.
 - **Expected values in the matrix are filled from their proving SQL** (verified, not placeholder).
-- **THE BIG SMOKE has actually run** — one full pass, results pasted into the session log, class
-  rates on the ladder, #14 feel verdict + #32 cost/Kimi done — and the 5-check gate is GREEN.
+- **THE BIG SMOKE has actually run — ON STAGE FIRST** — one full pass, results pasted into the
+  session log, class rates on the ladder, #14 feel verdict + #32 cost/Kimi done — and the
+  5-check gate is GREEN.
+- **Failure rate < 5% on the complete smoke (Andy's benchmark, 2026-08-01)** — reached via the
+  when-not-if fix loop: triage → fix on stage → gate → re-run failed slice → full clean pass;
+  as many rounds as it takes. Then Andy promotes, and the condensed PROD re-verification holds
+  <5% too.
 - **Anything the smoke surfaces is either fixed or filed** before the promote.
+- **Post-release, in order:** (1) release notes covering PRODUCTION RELEASES 1 + 2 (R1 never
+  announced) — human-written for team + beta, ALL updates listed, drafted for Andy to validate
+  and post himself; (2) backlog archived — released items out, only open items remain.
 
 **Impact:** this is the gate between "backlog closed" and "one big release" — it's how we know
 the release is actually safe to ship, not just that the tickets are marked done.
