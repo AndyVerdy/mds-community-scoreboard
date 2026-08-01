@@ -213,6 +213,8 @@ in the auto run.
 | BS142 | 🟢 | "what about Austin?" (after a location answer) | same shape, Austin substituted | follow-up | 🔧 manual suite |
 | BS143 | 🟢 | "total it up" (after a breakdown) | breakdown_sum, with the why | #5 | 🔧 manual suite |
 | BS144 | 🟢 | Who is going to Singapore summit → "give me the whole list please" *(=Q3128)* | continuation DELIVERS the rest chunked | `event_who` Summit Aug 23 | 🔧 manual suite (turn 1 fires auto as Q3128) |
+| BS145 | 🟢 | (ticket exchange → hours later new topic+offer → "Yes") *(=Q3136, Eugene's live prod failure 08-01)* | yes binds to the LAST message's offer only; no stale-topic resurrection; no ticket-capability denial | seed rules + probe EUG1 | 🔧 manual suite |
+| BS146 | 🟢 | can you open a ticket for me about my chat access *(=Q3137, Eugene)* | ticket flow engages; NEVER "I can't open tickets / no system" | seed NEVER-DENY rule | ⬜ |
 
 ---
 
