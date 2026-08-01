@@ -6,6 +6,34 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-11) — ANDY'S CHALLENGE → THE DEEP REFRESH: full 1,022-video sweep-diff (0 changed / 0 deleted, proven) · 11 decks downloaded from the REAL S3 + text-extracted + stored · speakers restored · restricted-content findability = BY-DESIGN metadata-only · gate 187
+
+- **Andy: "last time 3h, now 20min? did you check updated content / attachments / transcripts /
+  Voyage?" — he was right that the 20-min pass was THIN.** The deep pass, with data:
+- **Updated existing content:** full re-list of ALL 1,022 videos (11 cursor pages; one mistyped
+  cursor caught by a continuity check — pagination silently RESET to page 1, verify first/last
+  dates on every cursor walk) → sweep-diff vs DB: **0 existing videos changed, 0 deleted** since
+  last sync. Partners had updated_after server-side (66 covered).
+- **Attachments:** app.mds.co serves its SPA shell for ANY path (my first 11 "downloads" were
+  identical 7,465-byte HTML — a 200 probe is NOT a file; check magic bytes). Real host =
+  **mds-community.s3.amazonaws.com** (the publicly-open S3 = the #17 security exposure,
+  verbatim). 11/11 decks downloaded (0.5-3.7MB PDFs), **pdftotext-extracted (583-14,404 chars)**,
+  video_files rows w/ page counts, storage copies in the `video-files` bucket (send-file path
+  works for the public ones), files_text on the catalog (612 files with text now, was 601).
+- **Speakers:** video_speakers map + title-parse fallback; my failed first batch (PGRST102:
+  bulk upsert needs UNIFORM keys; partial upserts trip NOT-NULLs — use PATCH per row) had
+  dropped Prue's — restored (map 6 + parsed 13; 1 cosmetic wart: "Accelerator Channel Call"
+  parsed as a name; 9 guest-speaker ids unresolvable without the PAT — residual).
+- **Voyage:** all 17 new-window videos re-embedded AFTER enrichment (speakers in the embed text);
+  1,022/1,022 embedded. **Restricted videos (14 of 17) are content-unfindable BY DESIGN** —
+  video_search uses a metadata-only tsv for restricted rows (confirmed in the fn: `case …
+  search_tsv end as match_tsv`) so a deck's contents can never be oracle-probed; their extracted
+  text serves future use + the 3 public ones search fully. Decks carry "Proprietary and
+  Confidential" footers — the restriction machinery is doing exactly its job.
+- **Transcripts: NO video has ever had one** (standing limitation, not a regression; the Mux/AAI
+  anchor project owns that future). Reviews: drift found on exactly 4 partners → 10 reviews
+  upserted → drift 0. **Gate 187/187 GREEN.** Heartbeat detail updated.
+
 ## 2026-08-01 (EARLY-10) — catalogs refreshed (+13 videos, 66 partners) via the GroupOS connection · weekly temp SOP w/ heartbeat paging · Release 3 queue filed (#17/#18/#19/#20 + #35 documents + #36 Circleback) · REMAINING = #34 + THE BIG SMOKE
 
 - Staleness confirmed first: videos synced Jul 27, partners Jul 21 (11 days) — Andy's "1+ week".
