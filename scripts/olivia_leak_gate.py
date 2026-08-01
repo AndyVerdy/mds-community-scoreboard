@@ -594,6 +594,13 @@ def main():
                   ("past_due", "unpaid", "trialing", "incomplete", '"Staff"',
                    "Current Member", "Pending Group", "New Member")),
               bblob[:150])
+        check("member_billing carries the billing portal link",
+              "checkout.mds.co/p/login/" in bblob)
+        st, nz = rpc("billing_nudge", {"p_phone": "19999999999"}, key)
+        check("billing_nudge unknown phone = no nudge (fail closed)",
+              isinstance(nz, list) and not nz, f"status {st}")
+        st, _b = rpc("billing_nudge", {"p_phone": phone}, ANON_KEY)
+        check("anon denied on billing_nudge", st in (401, 403, 404), f"status {st}")
         st, card = rpc("member_card", {"p_phone": "19999999999", "p_member": my_name}, key)
         check("member_card unknown asker phone = zero rows", isinstance(card, list) and not card)
         st, _b = rpc("member_card", {"p_phone": phone, "p_member": my_name}, ANON_KEY)
@@ -894,7 +901,8 @@ def main():
         BILL_KEYS = {"membership_status", "plan_name", "plan_price", "subscription_status",
                      "billing_interval", "monthly_amount", "annual_payment", "member_since",
                      "year_joined", "next_renewal", "chapter",
-                     "next_invoice_date", "next_invoice_amount", "payment_frequency", "membership_fee"}
+                     "next_invoice_date", "next_invoice_amount", "payment_frequency", "membership_fee",
+                     "billing_portal"}
         check("billing row carries ONLY the allowlisted self fields",
               all(set(b.keys()) == BILL_KEYS for b in (bill or [])))
         bblob = json.dumps(bill)

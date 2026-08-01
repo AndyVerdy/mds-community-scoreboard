@@ -689,6 +689,22 @@ yet; the wording waits for them). **Gate +1 (180→181 GREEN):** member_billing 
 raw system word. **Probe:** Andy's own billing → "Active — all good ✅", plan, renewal date —
 zero system words, `Staff` never surfaced.
 
+**Round 2 (Andy, same session): the ride-along reminder + the portal link.**
+1. **Every message from a past_due/unpaid member gets a payment reminder appended — max once
+   per 24h.** `digest.billing_nudge(p_phone)` owns the dedupe deterministically (stamp table
+   `olivia_billing_nudges`; VOLATILE, fail-closed, service_role only). Wired on staging
+   (`apply_11_billing_nudge.py`): BOTH reply producers (Format Reply = model answers, Build
+   Verbatim = canned routes) flow through Billing Nudge → Apply Nudge before Eval(silent)? —
+   the nudge rides ANY route; the saved conversation keeps the clean answer (holding-text
+   precedent). **E2E-proven with a seeded past-due canary member through the real staging
+   webhook: message 1 = welcome + nudge appended (execs 58031), message 2 seconds later =
+   clean, no nudge (58032). Canary fully cleaned after.**
+2. **The Stripe customer-portal link** (checkout.mds.co/p/login/…) now lives in the past_due/
+   unpaid wordings AND in a new `billing_portal` column — THE answer to any update-my-card /
+   see-my-invoices ask (tool description updated).
+Gate 181→**184 GREEN** (+portal-link present · nudge fail-closed on unknown phone · anon denied;
+billing column allowlist extended per the change process).
+
 **Impact:** small but sensitive; ready before the members who need it arrive.
 
 ---

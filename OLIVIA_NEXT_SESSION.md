@@ -52,7 +52,10 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
 - **#11 PAYMENT WORDING CLOSED (staging, Release 2).** Wording map INSIDE member_billing (raw
   words structurally unemittable; unknown states → generic plain sentence). Drafts posted to
   Andy. Population: past_due 3 / unpaid 1 / canceled 2 — ALL phone-less today (wording waits for
-  them). Gate +1 → **181 GREEN**. Probe: Andy's billing plain, `Staff` → "MDS team".
+  them). Gate 184 GREEN. Probe: Andy's billing plain, `Staff` → "MDS team". **Round 2: ride-along
+  payment reminder (any route, once per 24h — billing_nudge RPC + stamp table, E2E-proven with
+  a canary past-due member, execs 58031/58032) + the Stripe portal link in wordings and as
+  `billing_portal`.**
 - **#10 SHAREABLE FACTS CLOSED (staging, Release 2).** `OLIVIA_SHAREABLE_FIELDS.md` = THE
   rulebook (SHARE / GROUP-ONLY / NEVER + default-deny for the ~1,700 unlisted fields).
   member_card extended with channels/business_model/categories/country (the one inconsistency);

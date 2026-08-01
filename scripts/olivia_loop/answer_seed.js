@@ -113,7 +113,7 @@ const tools = [
     input_schema: S({ p_query: str('need or company name; empty = browse featured'), p_limit: num('max partners') }) },
   { name: 'video_search', description: 'Search the MDS video library (Mogul Calls, Expert Calls, webinars, recordings) by topic, speaker or title. RESTRICTED videos appear with their title but withheld content — say they exist and are restricted, NEVER deny them and NEVER invent their content.',
     input_schema: S({ p_query: str('topic, speaker or title words'), p_limit: num('max videos') }, ['p_query']) },
-  { name: 'member_billing', description: 'The ASKER’s own membership/billing status. Self only.',
+  { name: 'member_billing', description: 'The ASKER’s own membership/billing: status (already in member words), plan, renewal, next invoice — and billing_portal = the Stripe customer-portal link, THE answer to any update-my-card / see-my-invoices / billing-details ask. Self only.',
     input_schema: S({}) },
   { name: 'multi_source', description: 'One-shot fan-out across ALL SIX families — partners + members + events + chats + FACEBOOK + VIDEOS — for broad problems ("launching in EU, what should I do") and for the cross-source floor before any not-found. Prefer specific tools when the family is obvious.',
     input_schema: S({ p_query: str('the problem in a phrase'), p_terms: arr('topic words'), p_city: str('city if relevant'), p_want: arr('subset of partners, members, events, chats, members_nearby') }) },

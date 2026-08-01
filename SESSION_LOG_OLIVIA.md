@@ -6,7 +6,7 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
-## 2026-08-01 (EARLY-5) — #11 PAYMENT WORDING CLOSED (Release 2): map inside member_billing = raw words structurally unemittable · drafts posted to Andy · all 6 troubled-Stripe members are phone-less today · gate 181
+## 2026-08-01 (EARLY-5) — #11 PAYMENT WORDING CLOSED, both rounds (Release 2): plain-word map inside member_billing · ride-along reminder once/24h on EVERY route (E2E canary-proven) · Stripe portal link everywhere it helps · gate 184 (Release 2): map inside member_billing = raw words structurally unemittable · drafts posted to Andy · all 6 troubled-Stripe members are phone-less today · gate 181
 
 - Real values (actives): active 605 · trialing 97 · past_due 3 · canceled 2 · unpaid 1;
   membership words incl. Staff 29. ('Subscription Status' field = null everywhere; the live one
@@ -17,6 +17,14 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 - Verified: Andy's row (Staff/active) maps · the 6 troubled members have NO WA phone (can't ask
   Olivia yet — wording ready for when they join). Gate +1 → **181 GREEN**. Probe: own billing →
   "Active — all good ✅" + plan + renewal, zero system words.
+- **ROUND 2 (Andy):** (1) ride-along reminder — `billing_nudge(p_phone)` returns the nudge for
+  past_due/unpaid actives ONCE per 24h (stamp table, VOLATILE, fail-closed); wired so BOTH reply
+  producers flow through Billing Nudge → Apply Nudge (any route incl. canned; sent text only —
+  saved history stays clean). **E2E: seeded canary past-due member through the real staging
+  webhook — msg 1 = welcome + nudge (exec 58031), msg 2 = clean (58032, dedupe); canary cleaned.**
+  (2) Stripe portal link (checkout.mds.co/p/login/…) in the trouble wordings + `billing_portal`
+  column = the update-my-card answer. Gate → **184 GREEN** (portal present · nudge fail-closed ·
+  anon denied · billing allowlist extended). members canary trap: `members.airtable_id` NOT NULL.
 
 ## 2026-08-01 (EARLY-4) — #10 SHAREABLE FACTS CLOSED (Release 2): OLIVIA_SHAREABLE_FIELDS.md = the rulebook (3 lanes + default-deny) · card gains channels/model/categories/country · gate pins the column set · 180 GREEN
 
