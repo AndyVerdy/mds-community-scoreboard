@@ -2,6 +2,19 @@
 
 # Olivia — the QA checklist (how we "check everything")
 
+<!-- 📁 OLIVIA QA DOCS — three layers, one system (start here) -->
+> **📁 The Olivia QA doc set — three layers, don't duplicate them:**
+> 1. **`OLIVIA_QA_CHECKLIST.md` (this doc)** — the METHOD. *What* to check (§A–I) + the
+>    per-category answer bar. Reusable every release. ← the entry point.
+> 2. **`OLIVIA_BIG_SMOKE_MATRIX.md`** — the CONTENT. The actual ~85 questions + expected + SQL
+>    that fill this method for one Release. (This checklist's §A row "≥5 per update point" = that file.)
+> 3. **`OLIVIA_SMOKE_CHECKLIST.md`** — the FAST GATE. The 5-check pre-promote list run before
+>    EVERY promote (cheap, standing) + the Big-Smoke phase order that ties 1+2 together.
+>
+> Flow: this METHOD → filled by the MATRIX → run as THE BIG SMOKE (order in the smoke doc) →
+> the 5-CHECK gate → Andy promotes. One system, three files by lifespan (method=forever /
+> content=per-release / gate=per-promote).
+
 **Written 2026-08-01 (Andy: "we need to check everything, do you need to do research on how?").**
 Grounded in 2026 LLM-QA practice + the **OWASP Top-10 for LLM Apps (2025)** — see Sources. This
 is the STANDING structure every release is QA'd against; **THE BIG SMOKE = one full pass of this

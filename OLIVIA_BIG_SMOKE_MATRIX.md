@@ -2,6 +2,16 @@
 
 # Olivia — the Big Smoke coverage matrix
 
+<!-- 📁 OLIVIA QA DOCS — three layers, one system -->
+> **📁 The Olivia QA doc set — three layers, don't duplicate them:**
+> 1. **`OLIVIA_QA_CHECKLIST.md`** — the METHOD (§A–I + per-category answer bar). ← start here.
+> 2. **`OLIVIA_BIG_SMOKE_MATRIX.md` (this doc)** — the CONTENT: the ~85 questions that fill the
+>    method for this Release (expected + proving SQL). It IS the checklist's "≥5 per update point".
+> 3. **`OLIVIA_SMOKE_CHECKLIST.md`** — the FAST GATE: the 5-check pre-promote list + the Big-Smoke
+>    phase order that runs this matrix.
+>
+> Flow: METHOD → filled by THIS MATRIX → run as THE BIG SMOKE → the 5-CHECK gate → Andy promotes.
+
 **Every update point in the whole backlog × ≥5 eval questions × expected answer × proving SQL.**
 Built 2026-08-01 per Andy's spec; the deliverable of `OLIVIA_SMOKE_CHECKLIST.md` step 1, mapped
 to `OLIVIA_QA_CHECKLIST.md` sections A–I. Anchor facts verified live 2026-08-01: **722 actives ·

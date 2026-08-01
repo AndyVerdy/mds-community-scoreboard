@@ -2,6 +2,15 @@
 
 # Olivia — smoke tests: the 5-check pre-promote list (#33) + THE BIG SMOKE (Release 2)
 
+<!-- 📁 OLIVIA QA DOCS — three layers, one system -->
+> **📁 The Olivia QA doc set — three layers, don't duplicate them:**
+> 1. **`OLIVIA_QA_CHECKLIST.md`** — the METHOD (§A–I + per-category answer bar). ← start here.
+> 2. **`OLIVIA_BIG_SMOKE_MATRIX.md`** — the CONTENT: the ~85 questions that fill the method.
+> 3. **`OLIVIA_SMOKE_CHECKLIST.md` (this doc)** — the FAST GATE: the 5-check pre-promote list run
+>    before EVERY promote, plus (top section) the Big-Smoke phase order that runs 1+2.
+>
+> Flow: METHOD → filled by the MATRIX → run as THE BIG SMOKE (below) → the 5-CHECK gate → Andy promotes.
+
 ## 🔥 THE BIG SMOKE — Andy's spec (2026-08-01), runs ONCE before the Release-2 promote
 
 Andy: close the whole backlog → one big release → one huge smoke test. The Big Smoke is that
