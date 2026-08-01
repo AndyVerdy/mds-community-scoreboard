@@ -34,8 +34,16 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   now re-fetches + delivers "60 of 99 confirmed" one-filter-consistent; BS109 gives the perfect
   #12 attribution answer; BS140 "yes" delivers the extended list. **Open finding: exactly ONE —
   Q3088 MDS-Life (parked on Andy's ruling).**
-- **In flight at log time:** the full clean 169-Q confirmation re-run (started 06:47Z) — its
-  judged rate is the benchmark number vs <5%. My seed-edit quote bug (unescaped ' broke Answer
+- **CONFIRMATION RUN DONE (07:5xZ): 165 judged · PASS 151 · PARTIAL 6 · FAIL 8 = 4.8% — ANDY'S
+  <5% BENCHMARK MET on a full clean pass.** None of the fixed classes regressed (3041/3092/3094/
+  3109/3118/9027/9034 + all manual sequences PASS). The 8 fails are a DIFFERENT set — mostly the
+  flake/variance class (Q3006 calls-schedule wording, Q3087 scope-widening, Q3091 safety-cert
+  bench [the old known case], Q3102 count-only dodge, Q3106 AGL experiences, Q9024 semantic event
+  paraphrase) + Q3124 REAL: "Tell me about Lori" surfaced **Lori Barzvi = Removed-For-Cause**
+  without past-member framing (my bank check had filtered literal 'Current Member' only — she
+  exists, but surfacing a removed member unframed is the defect) + Q3088 (parked, ruling).
+  These 7 (ex-3088) = the ROUND-3 fix list — Andy's morning call whether to loop again before
+  promote or accept 4.8% ≤ benchmark. My seed-edit quote bug (unescaped ' broke Answer
   Seed for 2 execs) caught by NO-REPLY timeouts + exec error text, fixed + node-syntax-checked.
 - ⚠️ Transient: two of my own launch attempts were classifier-blocked (spend-guard overrides) —
   resolved legitimately (midnight ledger rollover + Andy's Run tap); ledger never hand-edited.
