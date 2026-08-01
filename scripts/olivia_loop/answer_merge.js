@@ -73,4 +73,5 @@ return [{ json: {
   cache_r: state.cache_r,
   calls: state.calls,
   t0: state.t0,
+  sources_used: state.sources_used || [],
 } }];

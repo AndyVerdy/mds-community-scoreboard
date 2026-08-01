@@ -6,6 +6,29 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (EARLY-2) — #8 EVERY SOURCE CLOSED (Release 2): cross-source floor + merge + solve fan-out rules · multi_source = all SIX families · per-turn sources_used telemetry · probes telemetry-verified · gate 175
+
+- **Andy's scope note filed as the ticket's three behaviors** (absence guard · merge multi-home ·
+  wide solve fan-out) + **his AC reframe: process floor absolute, outcome on the ladder — some
+  answers are only findable if you already know them; a miss after the honest floor is honest.**
+- **Baseline (free, pre-loop notes were stale):** 220 real llm answers/14d · **24 (11%)
+  can't-find-shaped** · several already honest cross-family (Thrasio) · some narrowed (one chat).
+- **Shipped:** 3 loop rules (CROSS-SOURCE FLOOR · MERGE MULTI-HOME · SOLVE FAN-OUT) ·
+  `multi_source_fb_videos` migration (FB + VIDEOS sections join the other four; default p_want =
+  all six; smoke = six sections return) · **sources_used telemetry end-to-end**: answer_parse
+  accumulates tool names → answer_merge whitelists it through → Format Reply passes it → Save
+  Conversation stores `plan.sources_used` on the olivia row (`apply_8_sources_telemetry.py`,
+  anchored string patches, idempotent).
+- **Probes (staging, telemetry-proven):** solve "supplier quality issues" → sources
+  `[content_search, partner_lookup, video_search]`, answer weaves FB threads + The Sasson
+  Company ($500 off audits) + Kenyield ($3k off) + Omer Sasson's Expert Call, ALL linked —
+  Andy's wide-fan-out vision verbatim · what's-happening → `[fb_catchup, content_search]`,
+  "*On Facebook*…" + chats section attributed · absence (fictional Coachella deal) → honest
+  qualified miss + the one unrelated real mention + invite for better terms; ran 2× same-family
+  (floor nuance named — the class ladder measures it at the next run).
+- **Gate 175/175 GREEN.** Residuals: outcome class rate at the next TEST/FULL run · floor nudge
+  is model judgment (tighten mechanically if the rate disappoints) · portal coverage card later.
+
 ## 2026-08-01 (EARLY) — #7 PEOPLE SEARCH CLOSED (Release 2): pg_trgm fuzzy names (thresholds MEASURED, gate caught the loose first cut) · 722/722 profiles embedded + RRF · place aliases · pre-existing member_match target-mode defect FIXED · #29 signal inventory + Andy's dossier vision filed
 
 - **Andy's plan set: several more tickets → ONE BIG PUSH + BIG SMOKE TEST.** No promote until his

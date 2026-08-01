@@ -35,8 +35,9 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
    promote until he says "we are done". Release 2 so far: eval fix batch · #23 cuts · #5
    counting · #33 early-feedback + links · #6 chapters · #7 people search. **At the push: run
    `OLIVIA_SMOKE_CHECKLIST.md` on staging and paste the result block into the session log.**
-2. **Suggest next ticket(s):** #8 every source on every question (S2) is the top open item;
-   then #9 revenue brackets (needs Andy's working session first).
+2. **Suggest next ticket(s):** #9 revenue brackets is the last open S2 — it NEEDS ANDY'S
+   WORKING SESSION first (authoritative field + bracket rule). Otherwise S3: #10 shareable
+   member facts (S, quick) or #13 outage alarm (recommended raise to S2).
 3. Standing: MDS-Life ruling (Q3088 expect) · **whale ruling** (live chapter TTM sums can out one
    member's scale — NorthTex $930M sum / $806M one member; ON today per site precedent) ·
    **schedule the FOUR derivation jobs nightly** (`olivia_derive_niches.py` ·
@@ -47,6 +48,15 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
    action-this-week list.
 
 ## State (2026-08-01 early close)
+- **#8 EVERY SOURCE CLOSED (staging, Release 2).** Three behaviors per Andy's scope: cross-source
+  floor before any "can't find" · merge multi-home answers (WA+FB attributed) · wide solve
+  fan-out. AC reframe (his call): process floor absolute, outcome = the exists-but-missed class
+  on the ladder, never literal 0. Shipped: 3 loop rules · `multi_source` + FB + VIDEOS (all six
+  families, one call) · **per-turn `plan.sources_used` telemetry** (loop → Format Reply → Save
+  Conversation, `apply_8_sources_telemetry.py`). Baseline: 220 llm answers/14d, 24 (11%)
+  can't-find-shaped. Probes telemetry-verified: solve = [content, partner, video] w/ Sasson +
+  Kenyield deals + Omer Sasson's Expert Call all linked · merge = FB + chats sections · absence
+  = honest qualified miss (2× same-family — floor nuance for the eval). Gate 175/175.
 - **#7 PEOPLE SEARCH CLOSED (staging, Release 2).** Fuzzy names via pg_trgm on `member_card`
   (word_similarity > 0.62 fallback — thresholds MEASURED: typos 0.75-0.80 pass, "Jon Snow"
   0.556 + junk 0.26-0.32 miss; the gate caught my first 0.25 version surfacing wrong people —

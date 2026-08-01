@@ -80,7 +80,8 @@ const finalize = (text) => {
   iter: state.iter,
   max_iter: state.max_iter,
   in_tok: in_tok, out_tok: out_tok, cache_w: cache_w, cache_r: cache_r, calls: calls, t0: state.t0,
-  metrics: { calls: calls, iters: state.iter, ms: Date.now() - state.t0, in_tok: in_tok, out_tok: out_tok, cache_w: cache_w, cache_r: cache_r },
+  sources_used: state.sources_used || [],
+  metrics: { calls: calls, iters: state.iter, ms: Date.now() - state.t0, in_tok: in_tok, out_tok: out_tok, cache_w: cache_w, cache_r: cache_r, sources_used: state.sources_used || [] },
   has_claims: hasClaims(text),
   };
   if (!out.has_claims) { out.gate = 'skip-noclaim'; }
@@ -113,6 +114,8 @@ if (resp.stop_reason === 'tool_use' && toolUses.length && state.iter < state.max
     t0: state.t0,
     preload: state.preload || '',
     gate_attempts: state.gate_attempts || 0,
+    // #8 telemetry: which source tools this turn consulted (accumulates across rounds)
+    sources_used: (state.sources_used || []).concat(toolUses.map(t => String(t.name || ''))),
     tool_use_id: tu.id,
     tool_name: String(tu.name || ''),
     // SECURITY: p_phone is set HERE from the resolved member — the model's

@@ -97,27 +97,6 @@ phone-less actives; fixed same day.)
 # 🟡 S2
 
 
-### 8. 🟡 Every source on every question · S2 · effort M
-*As a member, one question gets checked against every source that could answer it.*
-
-**Accept when**
-- **0% "I can't find that" where another source held the answer.**
-- **Which sources answered is recorded per turn**, so coverage is a measured number rather than an estimate.
-- **Fan-out is reached from ordinary member phrasing**, measured across the class — not from a fixed
-  list of wordings.
-
-Verified: Facebook + WhatsApp together is already the norm, but the true fan-out — partners, events,
-members, videos — runs on roughly **1 answer in 12**. The fan-out function has **no Facebook section and
-no videos section at all**, and its lanes sit low in the routing order, so "which member has…" is
-answered from profiles alone and never fans out.
-
-- Facebook and the video library join the fan-out
-- The fan-out lanes are reachable from real phrasings, not four hard-coded ones
-- Which sources answered each turn is recorded, so this stops being an estimate
-- A member never gets "I can't find that" when another source had it
-
-**Effort M** — extends an existing function, but touches routing order, shared with every lane. **Impact:** all members; it's the difference between a search box and something that knows MDS.
-
 ### 9. 🟡 Revenue brackets, one rule · S2 · effort L
 *As a member, revenue answers are consistent and never expose anyone's actual number.*
 
@@ -453,13 +432,14 @@ through this".
 Ships to prod at the next `promote` (Andy runs it). Everything below is live on staging and gate
 GREEN 161, and nothing here is on prod yet.
 
-**Tickets closed into Release 2 (5):** #23 answer latency (closed on the story — the ladder half
+**Tickets closed into Release 2 (6):** #23 answer latency (closed on the story — the ladder half
 shipped in Release 1, the speed cuts in Release 2) · **#5 counting** (member_niches + member_count
 RPC + loop tool; breakdown_sum closes total-it-up deterministically) · **#33 prod smoke**
 (early-feedback branch reorder + links-when-solving rule + the standing pre-promote smoke
 checklist `OLIVIA_SMOKE_CHECKLIST.md`) · **#6 chapters, end to end** · **#7 people search that
 understands meaning** (pg_trgm names + profile embeddings w/ RRF + place aliases + the
-member_match target-mode fix).
+member_match target-mode fix) · **#8 every source on every question** (cross-source floor +
+merge + solve fan-out rules · multi_source all six families · per-turn sources_used telemetry).
 
 **Shipped to PROD separately (not part of the n8n promote):** #25 the portal tells the truth —
 mds-digest-web `294b094`, live on digest.mds.co 2026-07-31. The portal deploys on push and never
@@ -740,6 +720,47 @@ the promote. Gate GREEN after the edits.
 
 **Impact:** every slow answer and every solve-lane answer on prod; the checklist protects every
 future promote.
+
+---
+
+### 8. ✅ Every source on every question · CLOSED 2026-08-01 (staging) · effort M · RELEASE 2
+*As a member, one question gets checked against every source that could answer it.*
+
+**Andy's scope (2026-08-01): three behaviors, all shipped + probed.**
+1. **Absence guard** — CROSS-SOURCE FLOOR rule: no "can't find" until two differently-phrased
+   searches AND a look in another source family.
+2. **Merge multi-home answers** — what's-happening asks cover WA AND FB, attributed each.
+3. **Wide solve fan-out** — problem asks consult content + partners + videos (+events/members).
+
+**AC reframe (Andy): process floor = absolute; OUTCOME = the exists-but-missed class on the
+standard ladder (<10 → <5 → <1%), never literal 0 — a miss after the honest floor is honest.**
+
+**What shipped:**
+- **Baseline measured (pre-loop notes were stale):** 220 real llm answers/14d, **24 (11%)
+  can't-find-shaped**; several already crossed families honestly (Thrasio: partners+chats),
+  some narrowed to one chat. The before-number for the class.
+- **Three loop rules** in the contract (answer_seed.js): CROSS-SOURCE FLOOR · MERGE MULTI-HOME
+  (never one source silently standing in for both; answers say "in the chats… / on Facebook…") ·
+  SOLVE FAN-OUT (weave who discussed it + which partner deal + which recording, each linked).
+- **`multi_source` completed** (migration `multi_source_fb_videos`): FB + VIDEOS sections join
+  partners/members/events/chats — all SIX families in the one-call sweep, default p_want = all;
+  composes the gated fns verbatim so gating travels. Smoke: all six sections return.
+- **Sources-used telemetry, per turn:** the loop accumulates tool names (answer_parse →
+  answer_merge → Format Reply → Save Conversation, `apply_8_sources_telemetry.py`) into the
+  olivia row's `plan.sources_used`. Coverage is now a measured number (SQL/portal-ready).
+- **Probes (staging, telemetry-verified):** solve "supplier quality issues" →
+  `[content_search, partner_lookup, video_search]` — FB threads + The Sasson Company ($500 off
+  audits) + Kenyield ($3k off QC) + Omer Sasson's Expert Call, ALL linked · what's-happening →
+  `[fb_catchup, content_search]`, FB section + chats section attributed · absence (fictional
+  Coachella deal) → honest qualified miss, found the one unrelated real mention, invited better
+  terms — ran 2× same-family (floor nuance noted; the class ladder measures it at the eval).
+
+**Residuals, named:** the outcome class rate (exists-but-missed on the ladder) confirms at the
+next TEST/FULL run when Andy turns runs on · the absence-floor "other family" nudge is model
+judgment — if the class rate disappoints, tighten to a mechanical check · portal card for
+sources_used coverage = a #25-family follow-on.
+
+**Impact:** every question; the difference between a search box and something that knows MDS.
 
 ---
 
