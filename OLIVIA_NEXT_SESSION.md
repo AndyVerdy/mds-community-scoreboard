@@ -33,8 +33,10 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
 
 1. **Andy's plan: complete several more tickets, then ONE BIG PUSH + BIG SMOKE TEST** — no
    promote until he says "we are done". Release 2 so far: eval fix batch · #23 cuts · #5
-   counting · #33 early-feedback + links · #6 chapters · #7 people search. **At the push: run
-   `OLIVIA_SMOKE_CHECKLIST.md` on staging and paste the result block into the session log.**
+   counting · #33 early-feedback + links · #6 chapters · #7 people search. **At the push: run THE BIG SMOKE
+   (`OLIVIA_SMOKE_CHECKLIST.md` top section — fresh comments capture · coverage matrix ≥5 Qs per
+   update point (`OLIVIA_BIG_SMOKE_MATRIX.md`, build first) · FULL bank + smoke suite · #14 feel
+   ACs · #32 spend + fair Kimi retest · the 5-check list) and paste results into the session log.**
 2. **ANDY'S GOAL: close the WHOLE backlog, one big release, one huge smoke test.** S2 is now
    EMPTY. Open: S3 #10 shareable facts (S) · #11 payment wording (S) · #12 public revenue
    (needs his ranking ruling) · #13 outage alarm (M) · #14 conversational (L) · #15 pipeline

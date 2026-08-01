@@ -1,6 +1,45 @@
 > 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
 
-# Olivia — pre-promote smoke checklist (#33)
+# Olivia — smoke tests: the 5-check pre-promote list (#33) + THE BIG SMOKE (Release 2)
+
+## 🔥 THE BIG SMOKE — Andy's spec (2026-08-01), runs ONCE before the Release-2 promote
+
+Andy: close the whole backlog → one big release → one huge smoke test. The Big Smoke is that
+test. Its parts, in order:
+
+**0. Fresh data first — grab and analyze new comments.** Run the FB capture SOP (manual scroll +
+comments pass → load_feed → images → vision_decode → upload → linker → embed_backfill) so the
+warehouse holds CURRENT posts/comments before anything is measured. New content must be
+searchable and embedded the day of the smoke.
+
+**1. Coverage matrix — every update point in the WHOLE backlog, ≥5 eval questions each.**
+Enumerate every closed ticket (Release 1 + Release 2 + the non-ticketed ships: FB/videos
+sources, Intercom escalation, portal, nudge, alarm…) into its testable update points; for each,
+≥5 questions with warehouse-derived expected answers + proving SQL. Sourcing order: (a) the
+locked 100-organic bank where it already covers the point, (b) fresh ORGANIC questions from
+recent member traffic, (c) purpose-written questions ONLY where no organic exists (the daily
+bank itself stays locked at 100 organic — the Big Smoke suite is its own, bigger set).
+**Deliverable: `OLIVIA_BIG_SMOKE_MATRIX.md` (update point × questions × expected × SQL) — built
+and reviewed BEFORE the run.**
+
+**2. The runs.** FULL organic bank (the standing number) + the Big Smoke suite, on staging.
+Class rates on the ladder (<10 → <5 → <1%); exists-but-missed and follow-up classes called out.
+
+**3. #14 acceptance (folded in, Andy 2026-08-01):** follow-up class rate from the run ·
+capped-answer-continues probes · uses-what-she-knows probes · **Andy's own feel verdict** —
+anything still robotic becomes a named fix before promote.
+
+**4. #32 acceptance (folded in, Andy 2026-08-01):** per-answer + per-month spend MEASURED from
+the runs' token counters (member vs eval split) · **Kimi fair retest** (same harness, current
+blockers re-checked; give it a real chance + try improvements) · results written; report to
+Pavel drafted (Andy sends).
+
+**5. The 5-check pre-promote list below** + gate GREEN → Andy runs `promote` → every PBI
+re-verified ON PROD (the Release-1 pattern).
+
+---
+
+# The 5-check pre-promote list (#33)
 
 **Run this on STAGING before EVERY `promote`. Paste the filled result block into the
 promote's session-log entry.** This is Andy's instinct filed as process (2026-07-31): five cheap
