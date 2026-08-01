@@ -99,7 +99,7 @@ phone-less actives; fixed same day.)
 
 # 🔵 S3
 
-### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L
+### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L · **→ RELEASE 3 (Andy 2026-08-01: "this is a huge one" — not part of this push; the research memo opens Release 3. His signal asks — app event logging + GROUPOS_PAT — still run THIS week so history accumulates)**
 *As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
 platform would — from everything it knows about me, and it gets the like-minded question right:
 "people like Mo" returns the other multi-market logistics-givers, not everyone in Canada.
