@@ -128,6 +128,19 @@ none-by-that-name + pivots + report offer. Named residual: event embed text = na
 (no description column) — richer semantics wait on a descriptions source (#17/#35). Gate 202
 GREEN ×2. **OPEN ARCHITECTURE now = #44 (graph+ledger, after #29 memo) + #43 (re-audit) only.**
 
+**#44 ADDENDUM (same day, Andy pulled it forward — the #29 memo now TUNES, no longer blocks):**
+LEDGER live — 16 topics as DATA · **5,822 member×topic rows / 738 actives** (10.6s full
+recompute) · documented v1 scoring (posts/comments/videos-spoken/biz/persona-gives × Andy's band
+multiplier) · weaknesses from persona asks · rank+pct per topic · evidence jsonb per row. GRAPH
+live — **159,940 typed weighted edges** (5.2s): co_attended/same_chat/same_chapter at
+1/ln(1+size) with a HARD 150 group cap (no summit blob) + thread_interaction via the #41-stamped
+keys. Nightly `graph_ledger` job + 26h heartbeat; full-recompute = backfill≡update. Probes: AI
+top-5 video-speaking-led w/ evidence; Andy's neighbors = his real small-group circle. Consumers
+(authority-slot upgrade · dossier strengths/weaknesses · expertise_search boost · weight tuning)
+handed to #29 BY NAME. Traps: pg-safeupdate needs `where true` on REST DELETEs ·
+business_model = text[] · percent_rank needs ::numeric. Gate 202. **ARCHITECTURE BOARD = #43
+(re-audit) ONLY.**
+
 **STAGING BATCH NOW COMPLETE (#40+#41+#39) — ready for Andy's promote**; flip checklist: promote
 · wrapper+fb_thread migration · #41 backfill re-run · 5-check · smoke DEFERRED to when #45/#46/
 #42 are done (Andy's call: smoke per batch, not per ticket).
