@@ -102,7 +102,54 @@ our Stripe checkout link; money never moves inside WA (matches the no-payment-ag
 the member's text, reply with THREE buttons before filing — Send it · Add more · Cancel
 (wording TBD better) — so multi-message reports and typos don't file prematurely.**
 
-### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L · **→ RELEASE 3 (Andy 2026-08-01: "this is a huge one" — not part of this push; the research memo opens Release 3. His signal asks — app event logging + GROUPOS_PAT — still run THIS week so history accumulates)**
+### 29. 🔴 THE DOSSIER + PERSONALIZATION LAYER — every answer is personal, not just people-matching · effort L · → NEXT BIG ONE (Andy 2026-08-03 sharpened the scope)
+*As a member, Olivia knows my strengths, my weak spots and what I actually do — so the events
+she recommends, the chats she suggests, the people she points me to and the way she answers my
+problems are all shaped by ME, not generic.*
+
+**ANDY 2026-08-03 (his words, the scope correction):** "the dossier on the member, what his
+strong and weak areas are… we need to get and update this info regularly, so when someone asks
+anything, we are giving the most personalized answers. And this is not just when I'm asking
+questions on some issues, but also like, what events you recommended me to visit, what chat
+should I join. Basically, a deeply personalized system — in some way, it's matchmaking."
+So #29 is NOT only member↔member matchmaking: it is the PERSONALIZATION LAYER over every lane.
+
+**Verified 2026-08-03 — the ingredients now ALL exist, and NOTHING consumes them:**
+`member_dossier` reads member_personas ONLY (not the ledger, not events, not the graph);
+`event_lookup` / `chat_recommendations` / `partner_lookup` / `video_search` / `member_match` /
+`expertise_search` / `multi_source` read NONE of the four. Today every member gets the same
+ranking. Inputs ready: **#28 personas** (nightly: focus · business · gives · asks ·
+challenges_now · emerging · preferences · avoid) · **#44 expertise ledger** (16 topics, score +
+weakness + rank/percentile + evidence, nightly) · **#44 graph** (159,940 typed weighted edges) ·
+**#46 member_events** (append-only behaviour log, live + daily) · **#41/#45 identity** (one key
+joins them all) · Andy's app feed (GROUPOS_PAT) drops into the #46 slot when it lands.
+
+**Build (two halves):**
+① **THE DOSSIER — one assembled read.** `member_dossier` v2 returns ONE object per member:
+identity + business · **STRENGTHS** (top ledger topics with evidence) · **WEAK/LEARNING AREAS**
+(weakness scores + persona asks/challenges — framed as "what they're working on", never a
+judgement) · **BEHAVIOUR** (from member_events: what they actually read/attend/ask about, recent
++ trend) · **CIRCLE** (top graph neighbours, typed) · persona narrative. Refreshed by the jobs
+that already run — the dossier is a VIEW over living data, never a stale snapshot.
+② **PERSONALIZATION — every lane consults it.** Events: rank by the member's topics/weak areas,
+chapter/city, who from their circle is going, what they've attended before (never re-pitch a
+booked event). Chats: recommend by interest + where their circle is, not just eligibility.
+Partners/videos: bias to their gaps and channels. People: the #44 graph + complementary
+strengths (their weak area ↔ someone's strong area) — real matchmaking. Q&A: their persona +
+weak areas shape depth and framing. Retrieval authority: #40's flat engagement slot → the
+topic-matched expertise score (#44's named consumer).
+**Standing rulings that constrain it:** weights/scores/ranks stay INTERNAL sort keys — never
+surfaced, never "you're weak at X" to anyone, never a member ranking · a weak area is only ever
+used to HELP that member, never disclosed to another member · shareable-fields rulebook governs
+what a dossier may say ABOUT someone else · gate GREEN on every new read path.
+**Accept when:** dossier v2 returns strengths + weak areas + behaviour + circle for any active
+member (probe on Andy + 3 others) · at least 4 lanes personalized (events, chats, people,
+Q&A) with before/after probes showing DIFFERENT results for two different members on the SAME
+question · nothing internal leaks (gate + a privacy probe set) · the whole thing rides the
+nightly jobs (no new manual step) · #34/#49 document the model.
+**Research memo (the original #29 framing) is now a SUB-STEP, not a blocker:** it picks the
+scoring/blend model for lane ranking; the data model above is already decided by what shipped.
+
 *As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
 platform would — from everything it knows about me, and it gets the like-minded question right:
 "people like Mo" returns the other multi-market logistics-givers, not everyone in Canada.
