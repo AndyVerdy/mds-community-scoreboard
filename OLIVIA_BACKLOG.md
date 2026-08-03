@@ -295,6 +295,20 @@ what). Filed by Andy 2026-08-01.
 
 ---
 
+### 48. ⚪ AT roster write-back — fix member↔ticket mapping at the SOURCE · effort S-M · → LATER (Andy 2026-08-03: not part of the architecture pool)
+*As the team, Airtable's Event Roster shows the same member↔ticket links the warehouse proved —
+the operative view stops lagging what we know.*
+Filed from #45: Airtable's "Match to Member" was blank on 6,783 roster rows; our second-pass
+matching recovered **2,398 links the AT matcher missed** (different-email buyers + no-email
+orders name-matched). Today those links live ONLY in the warehouse. **Build:** ① write the
+recovered links back to `Event Roster.Match to Member` — fill BLANKS only, never overwrite an
+existing link, batch via AT API (link-record writes are fine; it's lookup FIELD creation the API
+can't do) · ② harden the AT-side matcher so future orders link at capture (match on ANY member
+email incl. Preferred, not just the primary) · ③ leave genuine non-members blank (4,071
+evidenced guests/partners/public buyers). **Accept when:** AT blanks ≤ the non-member set ·
+spot-check 20 written links against the warehouse · no existing link changed · documented in the
+automations registry.
+
 ### 32. 🔥 What Olivia costs — measured AT the smoke, INCLUDING a Kimi cost comparison
 **ANDY'S DECISION (2026-08-01): "let's skip #32 and do it with the full smoke test. We will
 measure spend and COMPARE IT TO KIMI AI, and we will give Kimi a fair chance and try to improve
