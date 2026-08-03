@@ -127,7 +127,7 @@ same-moment migration pointing the 3 SQL wrappers that still call v1 internally 
 ② the flip smoke = the formal ≤3.6% / no-class-regression number · ③ v1 retired after soak.
 Human-friendly report: `OLIVIA_40_REPORT.md`.
 
-### 41. 🔴 Identity stamping — olivia_messages.member + ingest paths · effort S · → RELEASE 3 (audit P4, Andy's worked spec)
+### 41. 🟡 BUILT + STAGED 2026-08-03 — Identity stamping · remaining: rides the #40 promote (re-run backfill one-liner at flip) · → RELEASE 3 (audit P4)
 *As the team, every Olivia conversation is filed against a member record, not just a phone.*
 0/3,102 stamped today. **THE TRAP: the FK expects `members.airtable_id`, NOT `at_member_id`
 (0 of 646 are equal).** Fix = n8n (staging→promote): `Find Member` select += `airtable_id` →
