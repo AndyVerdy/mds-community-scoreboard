@@ -65,46 +65,6 @@ instrument = the 169-question smoke bank (prod baseline 2026-08-03: **3.6%**).
 | Scale 10 · Gate 9 · Layers 8 | — | hold | every ticket: gate GREEN + A9 unchanged |
 
 
-### 44. 🔵 Knowledge graph — weighted member↔entity edges + EXPERTISE LEDGER · effort M-L · → RELEASE 3, LAST (audit P6; opens AFTER #29's research memo)
-*As a member, MDS knows who knows who — intros, "people like Mo", and "who was in the room"
-come from real connections, not just profile fields.*
-
-**EXPERTISE LEDGER (Andy 2026-08-03, his spec — the v2 authority slot's upgrade path):** the
-engagement-score weight in #40's RRF "is good for v1", but engagement ≠ expertise — "it doesn't
-necessarily mean he is an expert in this question." Personas should play a huge role: rank each
-member's expertise from the data we hold — **business details · their posts on specific
-subjects · whether they HOSTED a call · whether they SPOKE on virtual/in-person calls (video
-speaker) · revenue bracket as a credibility multiplier ("people will listen more to a person
-with 50M+ than 1-5M")**. Output = a per-member LIST of expertise — **and maybe weaknesses** —
-**weighted against other members**, so we can say who is strong in AI, DTC, Shopify, specific
-Amazon niches, etc. Data map (today): video_speakers + videos_catalog speakers = HAVE · events
-hosting = events_catalog/calendar (partial — see `OLIVIA_SIGNAL_INVENTORY.md`) · posts-on-subject
-= content_items by author × topic labels/embeddings = DERIVABLE (these ARE member↔topic edges) ·
-business details + niches/channels = member_attributes HAVE · rev_band HAVE · weaknesses ≈
-persona asks/challenges_now vs gives (asking a lot = learning; answering/hosting = strong).
-Consumers: #40's authority rank-list (flat engagement → topic-matched expertise score) ·
-expertise_search · solve/multi lanes · #29 dossier (strengths/weaknesses section). ⚠️ Standing
-ruling holds: revenue/expertise weights are INTERNAL sort keys like engagement — never a
-surfaced ranking, never "X is our strongest in AI because he's 50M+".
-**BACKFILL + REGULAR UPDATES (Andy 2026-08-03):** BOTH halves are the AC. ① One-time BACKFILL
-seeds the ledger from the WHOLE history (all content, videos, rosters, personas — every active
-member per EVERY-MEMBER-ALWAYS, keyed `at_member_id`). ② From day one it recomputes on the
-nightly pipeline (`nightly_derivations.py` job + pre-registered heartbeat, #13-alarmed) so every
-new post, video, event roster and persona row moves the weights — "it's dynamic, the more info
-we gather." Shipping the backfill WITHOUT the scheduled job is the failure mode (the #15 /
-#40-embed lesson: coverage is a process, not an event).
-**Raw material already exists (audit A11):** 10,266 member↔event edges · 1,327 members ·
-707 events, derivable today with zero new capture. Audit's sample test: 20/20 members got a
-relevant 2-hop niche-matched candidate. **Why not naive:** the biggest event has 409 attendees —
-unweighted co-attendance puts up to 424 people "one hop away" and is unusable. Edges must be
-**weighted by event size** (small dinner ≫ summit) and typed (co-attended · same-chapter ·
-same-chat · talked-in-thread once #40 labels authorship).
-**Build:** materialized `nodes`/`edges` tables in `digest`, refresh job on the nightly pipeline
-(+ heartbeat), gated access like every other source; #29's memo picks the scoring model it feeds.
-**Accept when:** edges materialized + weighted + refreshed nightly · a "who should I meet at
-<event>" probe returns small-event/shared-niche people first, never the 409-attendee blob ·
-gate GREEN · the audit's Graph dimension scores >0 at the #43 re-audit.
-
 ### 43. 🏁 RE-AUDIT after Release 3 — prove the architecture moved · effort S · runs WITH #34 at the release close
 *As the team, we don't declare the architecture fixed — the same audit that scored it 6/10
 re-runs and scores it ≥8, with nothing else degraded.*
@@ -370,6 +330,67 @@ the release is actually safe to ship, not just that the tickets are marked done.
 # ✅ CLOSED — shipped and live (kept here for the release record; older history in `OLIVIA_BACKLOG_ARCHIVE.md`)
 
 **R3 architecture batch LIVE ON PROD `89ee3632` (2026-08-03 ~08:23Z, Andy promoted).**
+
+### 44. 🟢 CLOSED 2026-08-03 — Knowledge graph + EXPERTISE LEDGER (Andy pulled it forward; #29's memo TUNES it, no longer blocks it) · → RELEASE 3
+*As a member, MDS knows who knows who — intros, "people like Mo", and "who was in the room"
+come from real connections, not just profile fields.*
+
+**EXPERTISE LEDGER (Andy 2026-08-03, his spec — the v2 authority slot's upgrade path):** the
+engagement-score weight in #40's RRF "is good for v1", but engagement ≠ expertise — "it doesn't
+necessarily mean he is an expert in this question." Personas should play a huge role: rank each
+member's expertise from the data we hold — **business details · their posts on specific
+subjects · whether they HOSTED a call · whether they SPOKE on virtual/in-person calls (video
+speaker) · revenue bracket as a credibility multiplier ("people will listen more to a person
+with 50M+ than 1-5M")**. Output = a per-member LIST of expertise — **and maybe weaknesses** —
+**weighted against other members**, so we can say who is strong in AI, DTC, Shopify, specific
+Amazon niches, etc. Data map (today): video_speakers + videos_catalog speakers = HAVE · events
+hosting = events_catalog/calendar (partial — see `OLIVIA_SIGNAL_INVENTORY.md`) · posts-on-subject
+= content_items by author × topic labels/embeddings = DERIVABLE (these ARE member↔topic edges) ·
+business details + niches/channels = member_attributes HAVE · rev_band HAVE · weaknesses ≈
+persona asks/challenges_now vs gives (asking a lot = learning; answering/hosting = strong).
+Consumers: #40's authority rank-list (flat engagement → topic-matched expertise score) ·
+expertise_search · solve/multi lanes · #29 dossier (strengths/weaknesses section). ⚠️ Standing
+ruling holds: revenue/expertise weights are INTERNAL sort keys like engagement — never a
+surfaced ranking, never "X is our strongest in AI because he's 50M+".
+**BACKFILL + REGULAR UPDATES (Andy 2026-08-03):** BOTH halves are the AC. ① One-time BACKFILL
+seeds the ledger from the WHOLE history (all content, videos, rosters, personas — every active
+member per EVERY-MEMBER-ALWAYS, keyed `at_member_id`). ② From day one it recomputes on the
+nightly pipeline (`nightly_derivations.py` job + pre-registered heartbeat, #13-alarmed) so every
+new post, video, event roster and persona row moves the weights — "it's dynamic, the more info
+we gather." Shipping the backfill WITHOUT the scheduled job is the failure mode (the #15 /
+#40-embed lesson: coverage is a process, not an event).
+**Raw material already exists (audit A11):** 10,266 member↔event edges · 1,327 members ·
+707 events, derivable today with zero new capture. Audit's sample test: 20/20 members got a
+relevant 2-hop niche-matched candidate. **Why not naive:** the biggest event has 409 attendees —
+unweighted co-attendance puts up to 424 people "one hop away" and is unusable. Edges must be
+**weighted by event size** (small dinner ≫ summit) and typed (co-attended · same-chapter ·
+same-chat · talked-in-thread once #40 labels authorship).
+**Build:** materialized `nodes`/`edges` tables in `digest`, refresh job on the nightly pipeline
+(+ heartbeat), gated access like every other source; #29's memo picks the scoring model it feeds.
+**Accept when:** edges materialized + weighted + refreshed nightly · a "who should I meet at
+<event>" probe returns small-event/shared-niche people first, never the 409-attendee blob ·
+gate GREEN · the audit's Graph dimension scores >0 at the #43 re-audit.
+
+**CLOSED 2026-08-03 (cited live):** **LEDGER** — `expertise_topics` table (16 topics, terms as
+DATA: new topic = INSERT) · `member_expertise`: **5,822 member×topic rows across 738 active
+members** (10.6s full recompute), score = documented v1 formula (posts 2.0·ln + comments 0.7·ln
++ videos-spoken 3.0 capped + biz affinity 1.5 + persona-gives 1.0·ln, × band multiplier 1.0/1.15/
+1.3/1.5 per Andy) · weaknesses from persona asks/challenges hits · rank + percentile per topic ·
+EVIDENCE jsonb on every row (explainable, dossier-ready). Probe: AI & Automation top-5 =
+video-speaking-led with readable evidence (rank 2 carries the 20M+ ×1.5). **GRAPH** —
+`member_edges`: **159,940 typed weighted edges** (5.2s recompute): co_attended + same_chat +
+same_chapter (each 1/ln(1+group size), groups CAPPED at 150 — the 409-attendee blob is
+structurally impossible) + thread_interaction (fb commenter↔post author via stamped keys, the
+strongest type). Probe: Andy's top neighbors = small-chat + small-event circle (Ian Sells,
+Eugene, Belén), weights explainable. **Nightly:** `olivia_graph_nightly.py` job `graph_ledger`
++ 26h heartbeat (error-JSON exits 1 — the #46 lesson applied); full-recompute = backfill and
+update are the same code (Andy's both-halves rule, by construction). Speakers resolve by
+email-unique (their app ids are not member keys). Both tables service-role-only → zero new
+member-facing surface; gate GREEN. **Handed to #29 by name:** consumer wiring — the #40
+authority-slot upgrade (flat engagement → topic-matched expertise), the dossier
+strengths/weaknesses section, expertise_search boost, and weight tuning (the memo's job).
+Build traps burned: pg-safeupdate blocks bare DELETE on the REST session (`where true`) ·
+business_model is text[] · percent_rank() needs ::numeric before round().
 
 ### 42. 🟢 CLOSED 2026-08-03 — place_city: alias TABLE + normalize on write · → RELEASE 3 (audit P5)
 *As a member, "who's in Miami" finds Miami however it was spelled.*
