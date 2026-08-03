@@ -110,6 +110,24 @@ alt-member fixture picked a null-status number after table churn → fixture now
 curl gained ONE 5xx/timeout retry (4xx never — denial checks need them raw; closes the
 promote-blip hardening note) → GREEN 202.
 
+**#42+#47 ADDENDUM (same day, Andy: "do them together"):** **#42 CLOSED** — `city_aliases` table
+(23 seeds; new city = INSERT) · place_city v2 (suffix strip + alias + lowercase→initcap, mixed
+case preserved) · derive_member_attributes wraps city writes (dynamic patch) · 146 rows
+backfilled · 908→853 distinct spellings · all four audit examples → one canonical · Miami 20 /
+NY 30 hand counts = member_match by construction. **#47 CLOSED (the honest version):** diagnosis
+beat the ticket text — 1,420 events all embedded, NO vector index exists or is needed at this
+size (idx_scan AC amended out as #40 cargo-cult); the 0.62 hatch was NOT the blocker (targets
+0.53-0.59); real machine-proven defects = term-mode returning 2022-2025 relics (upcoming filter
+short-circuited on not-v_browse) + vec eligibility ranked over ALL history. Shipped: rank-based
+eligibility (≤12) PARTITIONED future/past + upcoming-first ordering for present-tense asks
+(p_include_past keeps relevance-first). Replay: 2 upcoming + 10 relics → **12/12 real upcoming**.
+**Q9024's premise was STALE — no fulfillment conference exists upcoming; third stale bank truth
+this week** (722-members, supplements, this): bank 9024 rewritten to live-verified reality,
+matrix BS053 corrected (its checkbox had NEVER been proven). E2E prod probe: honest
+none-by-that-name + pivots + report offer. Named residual: event embed text = name+place+month
+(no description column) — richer semantics wait on a descriptions source (#17/#35). Gate 202
+GREEN ×2. **OPEN ARCHITECTURE now = #44 (graph+ledger, after #29 memo) + #43 (re-audit) only.**
+
 **STAGING BATCH NOW COMPLETE (#40+#41+#39) — ready for Andy's promote**; flip checklist: promote
 · wrapper+fb_thread migration · #41 backfill re-run · 5-check · smoke DEFERRED to when #45/#46/
 #42 are done (Andy's call: smoke per batch, not per ticket).

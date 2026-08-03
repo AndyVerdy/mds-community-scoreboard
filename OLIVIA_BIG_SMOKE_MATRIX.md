@@ -106,7 +106,7 @@ in the auto run.
 | BS050 | 🟢 | what events are coming up? | Registration-Open only, reg links | `event_lookup` | ▷ covered by bank Q3090 + BS056 |
 | BS051 | 🟢 | any events near me? | events on asker city/state, upcoming, reg link | `event_lookup p_city` | ⬜ |
 | BS052 | ⚙️ | who's going to the TikTok dinner? | names + city/state only; guests excluded | `event_who` | ▷ covered by BS144/Q3128 |
-| BS053 | ⚙️ | fulfillment conference in the city | semantic match reaches it (paraphrase), not keyword-only | `event_lookup +embedding` | ⬜ |
+| BS053 | ⚙️ | fulfillment conference in the city | STALE PREMISE (2026-08-03): none exists upcoming — honest answer = none + closest real events (Accelerate/Shoptalk/Supply Side); #47 fixed the real defects this probe exposed (past-junk in term mode, absolute-distance eligibility) | `event_lookup +embedding` | ✅ |
 | BS054 | ⚙️ | is there a Vegas chapter dinner? | chapter-gated visibility | `event_lookup chapter gate` | ▷ covered by the gate's chapter canaries |
 | BS055 | 🟢 | Sign me up to the tiktok mastermind *(=Q3116, Eugene Khayman)* | honest can't-register + the REAL event (TikTok Mastermind Singapore, Aug 26) + reg link; no fake signup | `events_catalog` 2026-08-26 | ⬜ |
 | BS056 | 🟢 | what events are in the next 30 days *(=Q3129, Ian Sells)* | date-window list, real titles (16 in the Aug window @ 08-01; judge window-correctness not the count) | `events_catalog start_at window` | ⬜ |

@@ -65,29 +65,6 @@ instrument = the 169-question smoke bank (prod baseline 2026-08-03: **3.6%**).
 | Scale 10 · Gate 9 · Layers 8 | — | hold | every ticket: gate GREEN + A9 unchanged |
 
 
-### 42. 🟡 place_city: aliases to a TABLE + normalize on write · effort S · → RELEASE 3 (audit P5)
-*As a member, "who's in Miami" finds Miami however it was spelled.*
-908 distinct city spellings / 1,718 rows; alias layer is a hardcoded ~11-entry CASE — plain
-lowercase "new york" isn't even folded, and "City, ST" suffixes aren't handled. Move aliases to
-a table (data, not DDL), strip state suffixes, normalize on ingest. **Expect:** city-scoped
-people search stops leaking members; adding a city becomes an INSERT. **Accept when:** the four
-audit examples resolve to one canonical each; member_match city counts match hand counts.
-
-**Also NOW, Andy's side:** the APP half of the `member_events` feed (GROUPOS_PAT + app event logging, under #29) — #46 starts our half immediately. Graph layer = **#44**, deliberately LAST — waits for the #29 memo.
-
----
-
-### 47. 🔴 event_lookup semantic recall — the events lane never got what #40 gave content · effort S-M · → RELEASE 3 (filed from the #40 slice, 2026-08-03)
-*As a member, "is there a fulfillment conference happening in the city?" finds the logistics
-summit however the calendar spells it.*
-**Q9024 failed the prod smoke AND the #40 slice identically** — it is an `event_lookup` question,
-outside content_search's lane, so #40 could not move it (exception named per the DoD). The bank
-row claims proof "matrix BS053: event_lookup +embedding" — #26 embedded events with RRF, yet the
-paraphrase still misses: diagnose whether event_lookup's vector half is planner-refused / ordered
-keyword-first exactly like content_search v1 was (check `idx_scan` on the events HNSW — the #40
-lesson: only the plan + the counter are honest), then apply the same two-phase RRF shape.
-**Accept when:** Q9024 shape passes · events index idx_scan counting · gate GREEN · BS053 re-proven.
-
 ### 44. 🔵 Knowledge graph — weighted member↔entity edges + EXPERTISE LEDGER · effort M-L · → RELEASE 3, LAST (audit P6; opens AFTER #29's research memo)
 *As a member, MDS knows who knows who — intros, "people like Mo", and "who was in the room"
 come from real connections, not just profile fields.*
@@ -393,6 +370,54 @@ the release is actually safe to ship, not just that the tickets are marked done.
 # ✅ CLOSED — shipped and live (kept here for the release record; older history in `OLIVIA_BACKLOG_ARCHIVE.md`)
 
 **R3 architecture batch LIVE ON PROD `89ee3632` (2026-08-03 ~08:23Z, Andy promoted).**
+
+### 42. 🟢 CLOSED 2026-08-03 — place_city: alias TABLE + normalize on write · → RELEASE 3 (audit P5)
+*As a member, "who's in Miami" finds Miami however it was spelled.*
+908 distinct city spellings / 1,718 rows; alias layer is a hardcoded ~11-entry CASE — plain
+lowercase "new york" isn't even folded, and "City, ST" suffixes aren't handled. Move aliases to
+a table (data, not DDL), strip state suffixes, normalize on ingest. **Expect:** city-scoped
+people search stops leaking members; adding a city becomes an INSERT. **Accept when:** the four
+audit examples resolve to one canonical each; member_match city counts match hand counts.
+
+**CLOSED 2026-08-03 (cited live):** `digest.city_aliases` table (23 seeds from the old CASE;
+adding a city = an INSERT) · `place_city()` v2: ", ST"-suffix strip + alias lookup + all-lowercase
+inputs title-cased, mixed case preserved ("McAllen" survives) · **normalize ON WRITE**:
+`derive_member_attributes` wraps both city branches in place_city() (dynamic patch) · backfill
+normalized 146 rows. **All four audit examples → one canonical** ('new york' / 'NYC' /
+'New York, NY' → New York · 'Miami Beach' → Miami) · **distinct spellings 908 → 853** · hand
+counts: Miami 20, New York 30 — member_match reads the same column + fn, equal by construction.
+Gate GREEN.
+
+**Also NOW, Andy's side:** the APP half of the `member_events` feed (GROUPOS_PAT + app event logging, under #29) — #46 starts our half immediately. Graph layer = **#44**, deliberately LAST — waits for the #29 memo.
+
+---
+
+### 47. 🟢 CLOSED 2026-08-03 — event_lookup rerank (the honest version: Q9024's premise was STALE — no fulfillment conference exists) · → RELEASE 3
+*As a member, "is there a fulfillment conference happening in the city?" finds the logistics
+summit however the calendar spells it.*
+**Q9024 failed the prod smoke AND the #40 slice identically** — it is an `event_lookup` question,
+outside content_search's lane, so #40 could not move it (exception named per the DoD). The bank
+row claims proof "matrix BS053: event_lookup +embedding" — #26 embedded events with RRF, yet the
+paraphrase still misses: diagnose whether event_lookup's vector half is planner-refused / ordered
+keyword-first exactly like content_search v1 was (check `idx_scan` on the events HNSW — the #40
+lesson: only the plan + the counter are honest), then apply the same two-phase RRF shape.
+**Accept when:** Q9024 shape passes · events index idx_scan counting · gate GREEN · BS053 re-proven.
+
+**CLOSED 2026-08-03 (cited live, ACs amended honestly):** Diagnosis first — 1,420 events, ALL
+embedded, **no vector index exists and none is needed at this size** (the idx_scan AC was #40
+cargo-cult; amended out) · the 0.62 absolute-distance hatch was NOT the blocker (targets scored
+0.53-0.59) · the REAL defects, machine-proven by replay: ① term-mode returned **2022-2025 relics**
+for present-tense asks (the upcoming filter short-circuited on `not v_browse`) ② vec eligibility
+ranked over ALL history so past neighbors consumed the budget ③ **BS053 was never actually proven**
+(empty checkbox) and NO fulfillment conference exists upcoming — Q9024's smoke FAIL = the third
+stale bank truth this week (722-members, supplements, now this). **Shipped:** vec eligibility by
+RANK within future/past partitions (≤12), never an absolute distance · present-tense asks order
+upcoming-first (p_include_past keeps relevance-first for past-tense asks) · replay now returns
+**12/12 real upcoming events** (was 2 upcoming + 10 relics) · E2E prod probe: honest "nothing by
+that name upcoming" + pivots + report offer — no denial-of-data, no invention · bank 9024 truth
+rewritten to the live-verified reality; matrix BS053 row corrected + marked. Gate GREEN.
+Named residual: event embedding text is name+place+month (no description column exists) — richer
+event semantics wait for a descriptions source, noted for #17/#35.
 
 ### 46. 🟢 CLOSED 2026-08-03 — member_events LIVE: append-only, cadence-aware, accumulating from real traffic · → RELEASE 3 (audit P2)
 *As the team, member behaviour starts accumulating today — not after the app integration lands.*
