@@ -65,20 +65,6 @@ instrument = the 169-question smoke bank (prod baseline 2026-08-03: **3.6%**).
 | Scale 10 · Gate 9 · Layers 8 | — | hold | every ticket: gate GREEN + A9 unchanged |
 
 
-### 45. 🟡 Identity resolution — the rest of the dimension · effort M · → RELEASE 3 (audit §2+§5; #43 needs it to score identity ≥8)
-*As the team, one human is one record everywhere — WhatsApp, Facebook, Airtable, events.*
-#41 covers olivia_messages only. Still unowned (verified in the audit):
-- **`event_registrations` 62% keyed** (11,003/17,786 have `member_at_id`) — backfill the join
-  path + stamp on ingest; #44's graph quality depends directly on this.
-- **61/646 `digest.members` rows have NO `at_member_id`** — those members can never reach the
-  canonical key however well everything else joins. Resolve each (match or document why not).
-- **74 members carry >1 Facebook identity** (`fb_member_map` 789 rows → 715 members) — dedupe to
-  a primary uid per member (Ivan Ong's two accounts = the known case). Related standing item:
-  ~737 dup `Member ID (FB)` in AT `tblVc38gw21iHLYMG` — NEVER delete member records; merge/flag.
-- Minor, same pass: 4 dup names / 4 dup emails in `members` — verify real-vs-collision.
-**Accept when:** A2 re-run shows event_registrations ≥95% + members ≥95% keyed · fb_member_map
-1 primary uid per member · the 61 resolved-or-documented · gate GREEN.
-
 ### 46. 🔴 member_events — start writing from surfaces we control · effort S · → RELEASE 3 (audit P2; stops part of the irreversible loss NOW)
 *As the team, member behaviour starts accumulating today — not after the app integration lands.*
 `member_events` = 0 rows since created. The APP feed (video views, app searches) is Andy's
@@ -384,6 +370,44 @@ the release is actually safe to ship, not just that the tickets are marked done.
 # ✅ CLOSED — shipped and live (kept here for the release record; older history in `OLIVIA_BACKLOG_ARCHIVE.md`)
 
 **R3 architecture batch LIVE ON PROD `89ee3632` (2026-08-03 ~08:23Z, Andy promoted).**
+
+### 45. 🟢 CLOSED 2026-08-03 — Identity resolution: the rest · one ruling for Andy's eyes: members.at_member_id is an ENTITLEMENT key, never auto-stamped · → RELEASE 3 (audit §2+§5)
+*As the team, one human is one record everywhere — WhatsApp, Facebook, Airtable, events.*
+#41 covers olivia_messages only. Still unowned (verified in the audit):
+- **`event_registrations` 62% keyed** (11,003/17,786 have `member_at_id`) — backfill the join
+  path + stamp on ingest; #44's graph quality depends directly on this.
+- **61/646 `digest.members` rows have NO `at_member_id`** — those members can never reach the
+  canonical key however well everything else joins. Resolve each (match or document why not).
+- **74 members carry >1 Facebook identity** (`fb_member_map` 789 rows → 715 members) — dedupe to
+  a primary uid per member (Ivan Ong's two accounts = the known case). Related standing item:
+  ~737 dup `Member ID (FB)` in AT `tblVc38gw21iHLYMG` — NEVER delete member records; merge/flag.
+- Minor, same pass: 4 dup names / 4 dup emails in `members` — verify real-vs-collision.
+**Accept when:** A2 re-run shows event_registrations ≥95% + members ≥95% keyed · fb_member_map
+1 primary uid per member · the 61 resolved-or-documented · gate GREEN.
+
+**CLOSED 2026-08-03 (cited live, gate GREEN after):**
+- **event_registrations 61.9% → 75.3% raw · 97.7% of every row carrying member evidence**
+  (13,401/17,786; +1,638 email-unique any class, +760 exact-name-unique member-ish classes).
+  Named non-member remainder per EVERY-MEMBER: 4,071 zero-evidence rows (Significant Others,
+  Friends, vendor Partners, public "E-commerce Entrepreneur" buyers), 295 guest-class name
+  coincidences DELIBERATELY never stamped, 19 ambiguous emails. Raw ≥95% is unreachable because
+  ~24% of the roster is genuinely not members — the honest denominator is member-evidence rows.
+- **Stays fixed:** `digest.stamp_event_registrations()` (service-role-only, idempotent —
+  re-run proof 0/0) called after every roster sync (`sync_events.py`, mds-digest-web `e8c1fab`,
+  pushed).
+- **The 61 unkeyed members = unidentified WhatsApp numbers** (null status, mostly nameless,
+  no email; only 2 carry any member signal). RULING (fail-closed): `members.at_member_id`
+  drives retrieval ENTITLEMENTS — never auto-stamped from name/email heuristics; matching them
+  is the human-gated matcher's job. Documented as that class; reproducible via
+  `select * from digest.members where at_member_id is null`.
+- **Facebook identities:** the audit's "74 dupes" was really 1 true dupe + 73 UNLINKED uids.
+  `fb_member_map.is_primary` added + partial unique index = ONE primary per member ENFORCED
+  (743 mapped members, 0 violations). Andrei Ureche's Neven Eyewear brand page demoted to
+  non-primary. 32 unlinked identities recovered by name-unique-to-ACTIVE match; 41 remain
+  unlinked by design (brand pages, pseudonyms, name variants — matcher class, documented).
+- **Dup names/emails: all four verified benign** — Itamar Eshet, Khalid Abdulla, Leo Limin,
+  Vic Tor each = ONE member key with two phone rows (dual numbers). Zero true duplicates,
+  nothing merged, no records touched.
 
 ### 40. 🟢 LIVE ON PROD 2026-08-03 (`89ee3632`) — Retrieval rewrite (RRF) · remaining: v1 retirement after soak · formal ≤3.6% at the deferred batch smoke · → RELEASE 3 (audit P1+P3)
 *As a member, a question phrased differently from how it was written still finds the answer —

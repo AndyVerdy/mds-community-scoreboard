@@ -82,6 +82,20 @@ into the seed by build_loop) adds marker semantics + VERB PRECISION; 3 machine-v
 green (premise-corrected Rich→Michael; Lee Leathers credited from her own "I can share, just DM
 me"; kickstarter launches stated with explicit no-funding-outcome); matrix +5 attribution rows
 (9052-9056, bank 178). fb_thread shares prod → marker rides the FLIP migration. Gate 202 ×2.
+**#45 ADDENDUM (same day, closed after the flip):** event_registrations **61.9%→75.3% raw ·
+97.7% of member-evidence rows** (+1,638 email-unique, +760 name-unique member-ish; guests never
+name-matched; non-member remainder NAMED: 4,071 zero-evidence + 295 guest-name-coincidence + 19
+ambiguous) · **stays fixed**: `stamp_event_registrations()` RPC (idempotent, re-run 0/0) wired
+into sync_events.py (mds-digest-web `e8c1fab`, pushed) · **61 unkeyed members = unidentified WA
+numbers; RULING: members.at_member_id is an ENTITLEMENT key — never auto-stamped, matcher-owned**
+· FB map: audit's "74 dupes" = 1 real dupe (Andrei Ureche person + Neven Eyewear page → page
+demoted) + 73 UNLINKED uids → `is_primary` column + one-primary-per-member UNIQUE index (743
+mapped, 0 violations), 32 recovered by name-unique-active, 41 documented (pages/pseudonyms/
+variants) · dup names/emails: all four = ONE member with two phones (benign, untouched) · gate
+202 GREEN · ⚠️ data-modifying-CTE counts read the PRE-update snapshot — verify with a fresh query
+(bit twice today). Backlog restructured per Andy same session: OPEN = ARCHITECTURE + THE REST,
+CLOSED visible; ticket-close format rule pinned (story+ACs · results · checklist · before/after).
+
 **STAGING BATCH NOW COMPLETE (#40+#41+#39) — ready for Andy's promote**; flip checklist: promote
 · wrapper+fb_thread migration · #41 backfill re-run · 5-check · smoke DEFERRED to when #45/#46/
 #42 are done (Andy's call: smoke per batch, not per ticket).
