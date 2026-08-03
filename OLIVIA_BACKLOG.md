@@ -56,9 +56,9 @@ instrument = the 169-question smoke bank (prod baseline 2026-08-03: **3.6%**).
 | Dimension | Now | Target | Moved by |
 |---|---|---|---|
 | Retrieval quality | **3** | ≥7 | **#40** |
-| Identity resolution | **6** | ≥8 | **#41** (+61 missing `at_member_id`, reg 62%) |
+| Identity resolution | **6** | ≥8 | **#41 + #45** (reg 62%→95%, 61 unkeyed, FB dupes) |
 | Semantic coverage | 8 | 9 | #40's corpus filter (junk out of the index) |
-| Event log | **0** | feed live | Andy's app-side (GROUPOS_PAT + app logging, under #29) |
+| Event log | **0** | feed live | **#46** (portal+Olivia now) + Andy's app feed (GROUPOS_PAT) |
 | Graph | 0 | starts | **#44** (weighted edges; opens after #29's memo, LAST) |
 | Scale 10 · Gate 9 · Layers 8 | — | hold | every ticket: gate GREEN + A9 unchanged |
 
@@ -81,7 +81,9 @@ reads as "no data found" — time it at size · diff top-3 with/without vector a
 **Expect:** exists-but-missed class shrinks (2 of 5 real smoke fails were this: Q3106, Q9024) ·
 retrieval step 5–11s → sub-second indexed · recency handled · 275MB index finally earns its cost.
 **Accept when:** plan shows `Index Scan using content_items_embedding_hnsw` · smoke re-run ≤
-3.6% baseline with no class regressing · gate GREEN · paraphrase probes (Q3106/Q9024 shapes) pass.
+3.6% baseline with no class regressing · gate GREEN · paraphrase probes (Q3106/Q9024 shapes) pass ·
+**embed step joins the nightly pipeline + heartbeat** (A3 hit 100% on 08-03 only because the
+backfill was run BY HAND after the FB capture — coverage must be a process, not an event).
 
 ### 41. 🔴 Identity stamping — olivia_messages.member + ingest paths · effort S · → RELEASE 3 (audit P4, Andy's worked spec)
 *As the team, every Olivia conversation is filed against a member record, not just a phone.*
@@ -93,6 +95,20 @@ re-verify the phone-joining readers (`persona_signals`, `persona_signal_fingerpr
 `olivia_health_check`). Related, separate: 61/646 members lack `at_member_id`;
 `event_registrations` 62% keyed. **Expect:** portal/persona/dossier joins become key-based and
 survive phone changes. **Accept when:** all rows stamped · new rows arrive stamped · readers verified.
+
+### 45. 🟡 Identity resolution — the rest of the dimension · effort M · → RELEASE 3 (audit §2+§5; #43 needs it to score identity ≥8)
+*As the team, one human is one record everywhere — WhatsApp, Facebook, Airtable, events.*
+#41 covers olivia_messages only. Still unowned (verified in the audit):
+- **`event_registrations` 62% keyed** (11,003/17,786 have `member_at_id`) — backfill the join
+  path + stamp on ingest; #44's graph quality depends directly on this.
+- **61/646 `digest.members` rows have NO `at_member_id`** — those members can never reach the
+  canonical key however well everything else joins. Resolve each (match or document why not).
+- **74 members carry >1 Facebook identity** (`fb_member_map` 789 rows → 715 members) — dedupe to
+  a primary uid per member (Ivan Ong's two accounts = the known case). Related standing item:
+  ~737 dup `Member ID (FB)` in AT `tblVc38gw21iHLYMG` — NEVER delete member records; merge/flag.
+- Minor, same pass: 4 dup names / 4 dup emails in `members` — verify real-vs-collision.
+**Accept when:** A2 re-run shows event_registrations ≥95% + members ≥95% keyed · fb_member_map
+1 primary uid per member · the 61 resolved-or-documented · gate GREEN.
 
 ### 39. 🔴 Attribution: never put words in a member's mouth · effort M · → RELEASE 3 (from the PROD Big Smoke 2026-08-03)
 *As a member, when Olivia quotes or credits somebody, that person actually said it — she never
@@ -119,6 +135,17 @@ the speaker is never inferable-but-wrong. Applies in Build Prompt AND the Answer
 **Accept when:** the four smoke findings re-fire clean; a probe on the Lee Leathers thread
 credits the template REQUEST to Betsy/Dan and never to Lee; matrix +5 rows on attribution.
 
+### 46. 🔴 member_events — start writing from surfaces we control · effort S · → RELEASE 3 (audit P2; stops part of the irreversible loss NOW)
+*As the team, member behaviour starts accumulating today — not after the app integration lands.*
+`member_events` = 0 rows since created. The APP feed (video views, app searches) is Andy's
+GROUPOS_PAT + app-logging ask — but the PORTAL (digest.mds.co) and Olivia are OURS: portal
+logins/page views, Olivia turns (route/lane/sources_used), report filings, nudges can emit
+events immediately. Audit's design rule: **log CHANGES/actions, not states**; one row per event,
+keyed `at_member_id` (fall back `airtable_id` — see #41/#45), typed + timestamped + source.
+**Accept when:** portal + Olivia surfaces emit real events (A1 shows rows growing daily) ·
+schema documented (event_type vocabulary) · nightly heartbeat covers the writer · the app feed
+slot is specified in writing so GroupOS events drop in without rework · gate GREEN.
+
 ### 42. 🟡 place_city: aliases to a TABLE + normalize on write · effort S · → RELEASE 3 (audit P5)
 *As a member, "who's in Miami" finds Miami however it was spelled.*
 908 distinct city spellings / 1,718 rows; alias layer is a hardcoded ~11-entry CASE — plain
@@ -127,7 +154,7 @@ a table (data, not DDL), strip state suffixes, normalize on ingest. **Expect:** 
 people search stops leaking members; adding a city becomes an INSERT. **Accept when:** the four
 audit examples resolve to one canonical each; member_match city counts match hand counts.
 
-**Also NOW, Andy's side (no ticket):** `member_events` = 0 rows — the only *irreversible* daily loss. Our write is ~1 day once the app emits; the feed is the GROUPOS_PAT + app-event-logging ask (under #29). Graph layer = **#44**, deliberately LAST — waits for the #29 memo.
+**Also NOW, Andy's side:** the APP half of the `member_events` feed (GROUPOS_PAT + app event logging, under #29) — #46 starts our half immediately. Graph layer = **#44**, deliberately LAST — waits for the #29 memo.
 
 ---
 

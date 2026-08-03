@@ -471,3 +471,15 @@ select (select count(*) from reg) member_event_edges,
 -- baseline: 10,266 edges · 1,327 members · 707 events · biggest event 409 attendees
 -- The 409-attendee event is why raw co-attendance is unusable: weight edges by event size.
 ```
+
+---
+
+## Addendum 2026-08-03 — §6 Q2 / §8 closed: read-time embedding call site verified
+
+Read directly from the PROD workflow graph (`12wj6h1TWqb0d4Dq`, versionId `90a13237`): both
+read-time call sites — `Embed Query` (cascade path) and `Voyage Embed` (answer-loop path) — call
+Voyage `voyage-3.5-lite` with `output_dimension: 1024`, `input_type: 'query'`. Matches the five
+`vector(1024)` columns and the write-side `embed_backfill.py`/`embed_member_profiles.py`. **One
+model both ends — the "different model at read time" risk is closed.** Remaining §8 items
+(mds-ai-bot ChromaDB stack, the other 14 Airtable bases) are outside the Olivia warehouse and
+stay open as notes.
