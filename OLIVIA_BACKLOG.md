@@ -102,6 +102,43 @@ our Stripe checkout link; money never moves inside WA (matches the no-payment-ag
 the member's text, reply with THREE buttons before filing — Send it · Add more · Cancel
 (wording TBD better) — so multi-message reports and typos don't file prematurely.**
 
+### 50. 🔴 ENTITY DOSSIERS — every event, video, partner, chapter has strong/weak sides too · effort M-L · → WITH #29 (Andy 2026-08-03)
+*As a member, what Olivia recommends is judged, not listed — she knows what an event, video,
+partner or chapter is actually good at, and says the strong parts as judgment, never as a
+score-blast; the weak parts only ever change the ORDER, they are never spoken.*
+
+**ANDY 2026-08-03:** "is it correct to write a dossier per content as well — each event, video,
+partner, program, chapter, whatever comes in the future has its dossier, with strong sides and
+weak sides. We should not expose weaknesses to people, but we need to take this into account;
+we can tell about strong areas, but not as a fact blast, more like judgment." **Yes — it is the
+MIRROR of #44's member ledger, and the same machinery** (`expertise_topics` already exists as
+data; entities get topic profiles + reception evidence the same way members get scores).
+**Recommendation quality = member dossier × entity dossier.**
+
+**What each entity's dossier is made of — verified 2026-08-03:**
+- **Videos (1,022, rich):** description_text + cliff_notes + tags/categories = topic profile ·
+  **view_count / like_count / comment_count = native reception** · SPEAKER's #44 ledger rank =
+  authority (a logistics talk by the #1 logistics member is a strong logistics video).
+- **Partners (492, rich):** description + `rating_avg` + `review_count` + review text = explicit
+  strengths AND weaknesses · plus what members said in chats/FB (partner_lookup already folds
+  criticism in honestly — that behaviour becomes the standard).
+- **Events (1,420, DERIVED — the gap):** ⚠️ **no description column exists** (#47's named
+  residual). Topic profile must be derived from (a) the TOPIC PROFILE OF WHO ATTENDED — attendee
+  ledger rows aggregated, now possible because #45 keyed the roster — and (b) POST-EVENT chatter
+  in content_items. Reception = repeat attendance, fill vs capacity, post-event sentiment.
+  **ASK ANDY: does an event description/agenda field exist in AT or GroupOS that we are not
+  syncing?** If yes, this gets far stronger and #17/#35 carry it.
+- **Chapters (20):** `chapter_info.live_stats` already IS a profile (size, niches, band mix,
+  channels, countries) — strong sides = what it is dense in.
+
+**Rules (Andy's, binding):** weaknesses are INTERNAL ranking signals only — never surfaced, never
+"this event was poorly reviewed" · strengths are said as JUDGMENT WITH ATTRIBUTION ("worth it for
+you — it is heavy on logistics and three people you know are going"), never a stat dump · same
+standing ruling as #44: scores/ranks never leave the system.
+**Accept when:** entity_dossier rows exist for videos/partners/events/chapters, nightly-refreshed
+alongside #44's jobs · a recommendation probe explains WHY in judgment language with no numbers ·
+weakness never appears in any surfaced text (gate + probe set) · #29 consumes both sides.
+
 ### 29. 🔴 THE DOSSIER + PERSONALIZATION LAYER — every answer is personal, not just people-matching · effort L · → NEXT BIG ONE (Andy 2026-08-03 sharpened the scope)
 *As a member, Olivia knows my strengths, my weak spots and what I actually do — so the events
 she recommends, the chats she suggests, the people she points me to and the way she answers my
@@ -147,6 +184,8 @@ member (probe on Andy + 3 others) · at least 4 lanes personalized (events, chat
 Q&A) with before/after probes showing DIFFERENT results for two different members on the SAME
 question · nothing internal leaks (gate + a privacy probe set) · the whole thing rides the
 nightly jobs (no new manual step) · #34/#49 document the model.
+**Pairs with #50 (entity dossiers):** fit = member dossier × entity dossier; #29 owns the member
+side + lane wiring, #50 owns the content side.
 **Research memo (the original #29 framing) is now a SUB-STEP, not a blocker:** it picks the
 scoring/blend model for lane ranking; the data model above is already decided by what shipped.
 
