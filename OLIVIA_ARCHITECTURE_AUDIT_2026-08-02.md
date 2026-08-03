@@ -210,6 +210,50 @@ its list**, so the canonical target itself survives in four spellings. Three str
 
 ---
 
+## 5.1 Integrity constraints — the schema enforces the wrong identity key
+
+Found while preparing this for external review. It is the mechanical explanation for every
+identity gap in §2, and it is a schema-level issue rather than a pipeline one.
+
+| Constraint type | Count across 38 tables |
+|---|---|
+| Primary keys | 38 (complete) |
+| **Foreign keys** | **8** |
+| **Check constraints** | **2** |
+| Unique constraints | 5 |
+
+The canonical member key — `at_member_id` / `member_at_id` — appears in **13 columns across
+the schema and carries zero foreign keys.** Nothing in the database prevents an unkeyed or
+invalid value being written.
+
+Meanwhile the *non*-canonical WhatsApp-layer key, `members.airtable_id`, is the target of
+**4 of the 8 foreign keys** that do exist:
+
+```
+member_events.member    → members(airtable_id)
+member_sessions.member  → members(airtable_id)
+olivia_messages.member  → members(airtable_id)
+wa_messages.sender_member → members(airtable_id)
+```
+
+**So the schema enforces `airtable_id` and merely hopes for `at_member_id`.** That inverts
+the documented rule that `at_member_id` is canonical, and it explains the numbers directly:
+61 of 646 members carry no `at_member_id`, and 6,783 of 17,786 event registrations are
+unkeyed, because no constraint was ever going to stop either.
+
+`content_items` — 38,640 rows, the largest table and the whole semantic layer — has **no
+foreign key at all**. Authorship is carried in a `meta` jsonb blob resolved by string match
+at query time (see the `mm.airtable_id = ci.meta->>'sender_member'` join inside
+`content_search`), which is why author attribution has been a recurring defect class.
+
+**For the reviewing architect, the question worth settling first:** should `at_member_id`
+become a real key with FKs and a not-null constraint on ingest paths, or should
+`airtable_id` be promoted to canonical and `at_member_id` demoted to an attribute? Both are
+defensible. What is not defensible is the current state, where the documented canonical key
+has no enforcement and the enforced key is documented as the wrong one to use.
+
+---
+
 ## 6. Developer questions answered (§12)
 
 | # | Question | Answer |
@@ -483,3 +527,28 @@ Voyage `voyage-3.5-lite` with `output_dimension: 1024`, `input_type: 'query'`. M
 model both ends — the "different model at read time" risk is closed.** Remaining §8 items
 (mds-ai-bot ChromaDB stack, the other 14 Airtable bases) are outside the Olivia warehouse and
 stay open as notes.
+
+---
+
+# RE-AUDIT 2026-08-03 (ticket #43) — after Release 3
+
+Same Appendix-A queries, run cold against production after the R3 batch shipped
+(prod `89ee3632`). **Score: 6/10 → 8/10.**
+
+| Dimension | Baseline 08-02 | Now | Evidence |
+|---|---|---|---|
+| **Retrieval quality** | **3** | **8** | HNSW `idx_scan` **0 → 1,098** (the smoke drove ~1,000 real semantic searches) · tsv idx_scan 2 → **961** · plan shows `Index Scan using content_items_embedding_hnsw` · retrieval step 11.1s → 2.1-2.7s in-workflow, 0.46s at the RPC · exists-but-missed class cleared (Q3106/Q9024/Q9032/Q3107 all pass) |
+| **Identity resolution** | **6** | **8** | olivia_messages stamped **0 → 3,154/3,154 (100%)** · members keyed 90.6% (585/646 — **the 61 unkeyed are the entitlement ruling, never auto-matched**) · event_registrations 62% → **75.5% raw / 97.7% of member-evidence rows** · fb_member_map: one primary per member, structurally enforced |
+| **Semantic coverage** | 8 | **9** | empty/sub-30-char rows still embedded: **4,300 → 1** |
+| **Event log** | **0** | **live** | `member_events` **0 → 15,437 rows / 2,305 members**, append-only, growing daily. *App-side feed still pending Andy's GROUPOS_PAT — named, not hidden.* |
+| **Graph** | **0** | **started** | `member_edges` **0 → 159,940 edges / 1,750 members**, typed + weighted, nightly |
+| Scale | 10 | 10 | hold |
+| Gate | 9 | **10** | 190 → **202 checks**, green all day; + transport-retry hardening and deterministic fixtures |
+| Layers | 8 | 8 | hold |
+
+**Nothing regressed:** gate GREEN · A9 grants unchanged (anon/authenticated on digest functions = **0**) · **smoke re-run 1.7% vs the 3.6% baseline, no class worse.**
+
+**Named honestly, not rounded up:** two literal AC numbers were not met and were not meant to be —
+members keyed 90.6% vs "≥95%" (the 61 are a deliberate fail-closed ruling) and registrations
+75.5% raw vs "≥95%" (~24% of the roster is genuinely not members; 97.7% on the honest
+denominator). Both are documented in the handbook, not carried as silent debt.

@@ -158,6 +158,41 @@ Fetch Raw Matches **2.7s/40 rows** (was 11.1s exec 61208 pre-flip), both convers
 **arrived stamped**. R3 architecture batch #40+#41+#39 is LIVE. NEXT: #45 → #46 → #42 (DB-side,
 no promote) → THE SMOKE (batch exit + formal #40/#39 numbers) → #43 re-audit.
 
+## 2026-08-03 (NIGHT — RELEASE 3 COMPLETE) — THE SMOKE: **3.6% → 1.7%** (173 judged · 164/6/3) · #43 RE-AUDIT: architecture **6/10 → 8/10** · #40 + #39 proven on the bank · #49 handbook shipped + ClickUp doc rebuilt as its copy · #51 filed (the last failure class)
+
+- **THE SMOKE (Andy's go, full bank, PRODUCTION):** 178 questions fired silently in 109 min (~$5),
+  173 judged — **PASS 164 · PARTIAL 6 · FAIL 3 = 1.7%** vs the 3.6% morning baseline. FAIL 6→3,
+  PARTIAL 10→6, PASS 153→164. Comfortably inside the <5% benchmark; the <1% target is now in sight.
+- **#40 PROVEN on the bank:** every exists-but-missed question passes (Q3106, Q9024, Q9032, Q3107,
+  plus Q3110/Q3111 from the gate number-fix). **HNSW idx_scan 0 → 1,098** — the smoke alone drove
+  ~1,000 real semantic searches through an index that had never been read in its lifetime.
+- **#39 PROVEN:** attribution cluster **4 findings → 0**; all five new attribution probes
+  (Q9052-9056) passed first time.
+- **#43 RE-AUDIT (cold, production):** retrieval **3→8** · identity **6→8** · semantic **8→9** ·
+  event log **0→live** (15,437 rows/2,305 members) · graph **0→started** (159,940 edges) · gate
+  **9→10** (202 checks) · scale/layers hold · **grants unchanged (anon/authenticated = 0)**.
+  **Overall 6/10 → 8/10.** Re-run section appended to `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md`.
+  **Two AC numbers deliberately NOT met and named, not rounded up:** members keyed 90.6% (the 61
+  are the entitlement ruling) · registrations 75.5% raw (97.7% of member-evidence rows; ~24% of the
+  roster is genuinely non-member).
+- **#51 FILED — the last failure class:** all 3 remaining fails are members-lane —
+  **Q3124 "Tell me about Lori" invented a plausible non-existent member** (the most serious class
+  we have) · Q3034 treated an "I am an admin" claim as meaningful · Q3102 refused to name people
+  `expertise_search` could see. Structural fix shape written into the ticket.
+- **#49 DEVELOPER HANDBOOK SHIPPED** (`OLIVIA_HANDBOOK.md`, 733 lines) after Andy's "feels
+  incomplete — where is stack, tools": +full stack table, +Appendix A RPC contracts, +Appendix B
+  database reference (schema/indexes/18 triggers/pg_cron), +Appendix C the 67-node workflow.
+  **ClickUp `2531q-103317` REBUILT as the handbook's copy** — TOC + 18 chapter pages + `99 ·
+  ARCHIVE` consolidating all 18 original POC-era pages (Andy: the .md is on his Mac, nobody else
+  can read it). Sprint ritual now requires regenerating that copy.
+- **Docs:** release notes merged into ONE member-facing doc covering R1+R2+R3 (`OLIVIA_RELEASE_NOTES.md`,
+  Andy validates + posts) · #29 rescoped to THE DOSSIER + PERSONALIZATION LAYER in Andy's words ·
+  #50 entity dossiers filed · #48 AT write-back filed · sprint ritual + backlog structure captured
+  as standing rules.
+- **NEXT:** the sprint rollover — archive this board as `OLIVIA_SPRINT_3_ARCHIVE.md`, open
+  `OLIVIA_SPRINT_4.md` with the open tickets (S1 = #29 + #50 + #51). Andy pre-authorised it on
+  #43's close.
+
 ## 2026-08-03 (PRODUCTION DAY — R1+R2 SHIPPED) — FB capture processed (23 posts/288 comments/15 images → content_items, 0 unembedded) · 5-check PASS · **ANDY PROMOTED Release 2 (versionId `90a13237`, 67 nodes, graph==staging, gate 190 in-promote)** · prod re-verify PASS · **prod Big Smoke 169 judged · 3.6% FAIL < 5% benchmark** · #39 attribution filed (the one cluster) · architecture audit verified live → #40/#41/#42 filed · backlog ARCHIVED + rebuilt (open-only, working order) · release notes R1+R2 drafted
 
 - **Phase 0:** Andy's manual scroll (43 posts) + 4c comment pass (30 posts/168 comments after

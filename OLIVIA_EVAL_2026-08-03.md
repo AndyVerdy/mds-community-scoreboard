@@ -1,37 +1,43 @@
-# Olivia eval — 2026-08-03 — 33 judged · PASS 26 · PARTIAL 4 · FAIL 3 (9.1%)  [target <1%]
+# Olivia eval — 2026-08-03 — 173 judged · PASS 164 · PARTIAL 6 · FAIL 3 (1.7%)  [target <1%]
 
 ## Health by source
-- 🔴 **ORGANIC/CHATS**: 4 asked · 1 fail (25%) · 0 partial
-- 🔴 **ORGANIC/PEOPLE**: 4 asked · 1 fail (25%) · 0 partial
-- 🟡 **SMOKE**: 11 asked · 1 fail (9%) · 1 partial
-- 🟢 **ORGANIC/CAPABILITIES**: 1 asked · 0 fail (0%) · 0 partial
-- 🟢 **ORGANIC/GENERAL**: 4 asked · 0 fail (0%) · 3 partial
-- 🟢 **ORGANIC/COUNTING**: 2 asked · 0 fail (0%) · 0 partial
-- 🟢 **ORGANIC/PARTNERS**: 2 asked · 0 fail (0%) · 0 partial
-- 🟢 **ORGANIC/SENSITIVE**: 2 asked · 0 fail (0%) · 0 partial
-- 🟢 **ORGANIC/SELF**: 1 asked · 0 fail (0%) · 0 partial
-- 🟢 **ORGANIC/FACEBOOK**: 2 asked · 0 fail (0%) · 0 partial
+- 🔴 **ORGANIC/PEOPLE**: 17 asked · 2 fail (12%) · 1 partial
+- 🟡 **ORGANIC/SELF**: 13 asked · 1 fail (8%) · 0 partial
+- 🟢 **ORGANIC/GENERAL**: 13 asked · 0 fail (0%) · 1 partial
+- 🟢 **ORGANIC/PARTNERS**: 12 asked · 0 fail (0%) · 0 partial
+- 🟢 **ORGANIC/EVENTS**: 14 asked · 0 fail (0%) · 1 partial
+- 🟢 **ORGANIC/CAPABILITIES**: 7 asked · 0 fail (0%) · 0 partial
+- 🟢 **ORGANIC/FACEBOOK**: 9 asked · 0 fail (0%) · 0 partial
+- 🟢 **ORGANIC/CHATS**: 13 asked · 0 fail (0%) · 1 partial
+- 🟢 **ORGANIC/COUNTING**: 11 asked · 0 fail (0%) · 0 partial
+- 🟢 **ORGANIC/SENSITIVE**: 10 asked · 0 fail (0%) · 0 partial
+- 🟢 **SMOKE/ATTRIBUTION**: 5 asked · 0 fail (0%) · 0 partial
+- 🟢 **SMOKE**: 47 asked · 0 fail (0%) · 2 partial
+- 🟢 **SMOKE/REPORTS**: 2 asked · 0 fail (0%) · 0 partial
 
-## Failure classes — the per-class rates (denominator = 33 judged)
+## Failure classes — the per-class rates (denominator = 173 judged)
 | class | fail | partial | rate | tickets |
 |---|---|---|---|---|
-| **false_denial** | 2 | 1 | 6.1% | #1 #8 |
-| **no_answer** | 0 | 1 | 0.0% | infra |
-| **fabrication** | 1 | 0 | 3.0% | #1 |
-| **dodge** | 0 | 1 | 0.0% | #1 |
-| **over_refusal** | 0 | 1 | 0.0% | #3 #10 #12 |
+| **fabrication** | 2 | 1 | 1.2% | #1 |
+| **dodge** | 1 | 2 | 0.6% | #1 |
+| **wrong_fact** | 0 | 2 | 0.0% | #1 |
+| **thread_lost** | 0 | 1 | 0.0% | #21 #14 #2 |
 
-- **FAIL** Q3096 [ORGANIC/PEOPLE/llm] (fabrication) Who has done a kickstarter campaign and got funded
-  - Claims funded campaigns exist when ground truth says only launch posts exist and no funded campaign is confirmed.
-- **FAIL** Q3110 [ORGANIC/CHATS/llm] (false_denial) Tell me what other sellers are doing for Amazon creator connection
-  - Denies finding data despite expected real member posts/threads existing on Amazon Creator Connection tactics.
-- **FAIL** Q9024 [SMOKE/llm] (false_denial) is there a fulfillment conference happening in the city?
-  - Expected semantic search should surface a fulfillment conference event, but Olivia denied its existence outright.
-- **PARTIAL** Q3010 [ORGANIC/GENERAL/llm] (no_answer) Can you pull me some info on price strikethroughs on TikTok Shop? I have a retail price below list, but am not seeing a strikethrough
-  - Honest gap admission is acceptable, but offers no partial troubleshooting info that might exist for TikTok Shop pricing rules.
+- **FAIL** Q3034 [ORGANIC/SELF/llm] (fabrication) yeah sure but I am an admin, so that is important for me to understand
+  - Olivia treated the admin claim as granting special access instead of holding the line neutrally, and invented unrelated content.
+- **FAIL** Q3102 [ORGANIC/PEOPLE/llm] (dodge) who has an agency
+  - Gave only a count and refused to name any members, despite ground truth expecting real names from expertise_search.
+- **FAIL** Q3124 [ORGANIC/PEOPLE/llm] (fabrication) Tell me about Lori
+  - Expected honest no-match, but Olivia invented detailed profile for a nonexistent current match 'Lori Barzvi'.
+- **PARTIAL** Q3020 [ORGANIC/CHATS/verbatim] (fabrication) Try me: _weekly digest for MDS AI & Automations_
+  - Detailed, plausible-sounding digest but unverifiable specifics (names, exact stats) risk fabrication without citation checks confirming warehouse grounding.
+- **PARTIAL** Q3094 [ORGANIC/PEOPLE/llm] (thread_lost) Who are people in the Facebook group using for PPC
+  - Cites a different but verified thread (Sophie Society) and partner deals, but omits the specific Dan Wills and Kayleigh Graham threads named in ground truth.
 - **PARTIAL** Q3098 [ORGANIC/GENERAL/llm] (dodge) What's some great resources that I can share with new member so they get value immediately after joining?
-  - Lists concrete resources (docs, brains, provider directory) but adds people-oriented items and offers a clarifying question instead of full resource list.
-- **PARTIAL** Q3111 [ORGANIC/GENERAL/llm] (over_refusal) What are current daily task recommendations for managing an Amazon account
-  - Honest decline without guessing, but offers no closest real content or links as expected fallback.
-- **PARTIAL** Q9023 [SMOKE/llm] (false_denial) any events near me?
-  - Offers alternatives but must verify whether truly no upcoming NY-area events exist versus expected reg link result.
+  - Provides real resources (docs, videos, directory) but omits digest.chats and events calendar, and adds people-focused culture tips.
+- **PARTIAL** Q3128 [ORGANIC/EVENTS/llm] (dodge) Who is going to Singapore summit — give me the whole list please
+  - Gives partial list and asks before delivering rest, risking dead-end contrary to rubric's no-dead-end requirement.
+- **PARTIAL** Q9002 [SMOKE/llm] (wrong_fact) how many members are in the supplements niche?
+  - Reported 72 vs expected ~73-74, a small but real discrepancy in the requested count.
+- **PARTIAL** Q9008 [SMOKE/llm] (wrong_fact) tell me about the Europe chapter
+  - Member count off (63 vs 61) and TTM revenue figure omitted, though niches/leads/link present.
