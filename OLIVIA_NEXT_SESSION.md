@@ -19,38 +19,39 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE: R3 ARCHITECTURE BATCH LIVE ON PROD (`89ee3632`, 2026-08-03 ~08:23Z) — #40+#41+#39
+## STATE 2026-08-03 END-OF-DAY: R3 ARCHITECTURE COMPLETE except the re-audit
 
-Prod untouched since Andy's 03:54Z promote (Big Smoke on prod 169 · **3.6%** = the baseline).
-**#40 shipped to STAGING same day:** `content_search_v2` side-by-side — tsv-GIN keyword + pure-ANN
-top-200 (HNSW **plan-proven**, lifetime idx_scan 0 → counting) + recency floor → **RRF by rank**
-(kw 1.0 · vec 1.0 · recency 0.5 · authority/engagement 0.25) · v1 12s → **v2 0.46s** on Q3106's
-shape · 6,486 sub-30-char embeddings nulled (rows stay keyword-reachable) · `embed_content` joined
-the nightly pipeline + 26h heartbeat (#13-alarmed) · staging executes v2 at all 3 call sites
-(model-facing tool name unchanged; active version `e51c9e88`) · **E2E exec 61669** (loop ran v2 ×2,
-Q3106 organic answered with the Michael Patrón thread) · **gate 202 GREEN** (+12 v2 checks).
-Full detail: `OLIVIA_BACKLOG.md` #40 BUILT block + `SESSION_LOG_OLIVIA.md` 2026-08-03 (LATE).
+**Prod `89ee3632`** (Andy promoted ~08:23Z; batch #40 retrieval-RRF + #41 stamping + #39
+attribution; flip companions applied: wrappers→v2, fb_thread marker, hammer 200s, re-backfill).
+**Closed same day, DB-side:** #45 identity-rest (regs 61.9→75.3% raw / 97.7% member-evidence;
+entitlement ruling: members.at_member_id NEVER auto-stamped) · #46 member_events (append-only
+physical, 3 live triggers + daily diff, 0→15,052 events/2,304 members, live-flow watchdog) ·
+#42 place_city (alias TABLE, 908→853 spellings, write-normalized) · #47 event_lookup rerank
+(rank-eligibility partitioned future/past, upcoming-first; Q9024 premise was STALE — third
+stale bank truth fixed) · **#44 pulled forward by Andy and CLOSED**: expertise ledger 5,822
+rows/738 members (16 data-table topics, evidence jsonb, band multiplier) + knowledge graph
+159,940 edges (150-cap, thread_interaction), nightly `graph_ledger` job. Gate 202 GREEN all
+day (+ hardened: transport retry 5xx-only, deterministic active fixture). Nightly now runs
+8 jobs. Tickets #48 (AT write-back) + #49 (developer handbook) filed in THE REST.
 
-## NEXT SESSION — close #40, then #41
+## NEXT SESSION
 
-1. **Propose the smoke/TEST slice to Andy** (eval RUN = his go): target = ≤ 3.6% with no class
-   regressing; slice should hit the exists-but-missed shapes (Q3094/Q3106/Q9024) + a spread of
-   content classes. On green → ask Andy to schedule the prod flip.
-2. **Prod flip (Andy runs promote):** the staging graph carries the swap; **same moment**, apply
-   the wrapper migration — `multi_source`, `app_member_feed`, `persona_signals` still call v1
-   internally — + NOTIFY pgrst + REST hammer. Then re-run audit A1/A3 for the #43 diff.
-3. **Then #41 identity stamping** (FK wants `airtable_id` NOT at_member_id, 0/646 equal; backfill
-   losslessness decays — same week). Working order after: #45 → #39 (v2 already returns
-   author/post_author labels — #39 nearly free) → #46 → #42.
+1. **#43 — the re-audit** (architecture board's last item): re-run
+   `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md` Appendix A, score ≥8/10 vs baseline 6/10 —
+   retrieval 3→? · identity 6→? · events 0→live · graph 0→live. Runs WITH #34 at release close.
+2. **THE SMOKE** (deferred by Andy: once per batch, never per ticket) = the release exit exam +
+   the formal #40 ≤3.6% and #39 attribution-cluster numbers. Propose + WAIT (paid run).
+3. Then THE REST in order: #38 buttons → #29 matchmaking/dossier (best-fed ticket now: events +
+   ledger + graph + stamped identities; consumer wiring of #44 lives HERE by name) → sources.
+4. Andy's side, standing: GROUPOS_PAT + app event logging (the app slot in member_events is
+   specified and waiting).
 
-**Release-3 exit unchanged:** `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md` Appendix A re-scores
-≥8/10 (baseline 6/10) — retrieval 3→≥7 (#40 moves it), identity 6→≥8 (#41+#45), rest hold.
-
-**#40 traps burned (don't re-trip):** function-level `SET hnsw.*` = PG15 placeholder permission
-error → in-body force-load + set_config(local, fail-open) · fused-branch ANN gets planner-refused
-(row misestimate) → two-phase pure-ANN under local enable_seqscan=off · **a fast probe proves
-nothing — first probes were 0.35s warm SEQ scans with idx_scan still 0; only the plan + the
-counter are honest.**
+**Traps burned today (don't re-trip):** PG15 blocks function-level SET hnsw.* → in-body
+set_config(local, fail-open) · planner refuses fused-branch ANN → two-phase pure-ANN ·
+fast probe ≠ proof (only the plan + idx_scan counter) · pg-safeupdate needs `where true` on
+REST DELETEs · chapter_affiliation + business_model are text[] · percent_rank needs ::numeric ·
+data-modifying-CTE counts read the PRE-update snapshot · error-shaped JSON parses fine — check
+keys, never just json.loads · gate fixtures must be ACTIVE + ordered.
 
 ## Watch-outs (standing)
 - **`olivia_selftest.py` paces by sleep(20)** — an answer >20s races Save Conversation and the
