@@ -86,19 +86,31 @@ def load_key():
 
 
 def curl(method, url, key, body=None, profile_hdr=None):
-    cmd = ["curl", "-s", "-w", "\n%{http_code}", "-X", method, url,
+    # ONE retry on transport failure / 5xx / timeout ONLY (2026-08-03: a single-request
+    # community_info blip false-REDDED Andy's promote). 4xx NEVER retries — the anon-denial
+    # and fail-closed checks depend on real 401/403/404s coming through untouched.
+    cmd = ["curl", "-s", "-m", "45", "-w", "\n%{http_code}", "-X", method, url,
            "-H", f"apikey: {key}", "-H", f"Authorization: Bearer {key}",
            "-H", "Content-Type: application/json"]
     for h in (profile_hdr or []):
         cmd += ["-H", h]
     if body is not None:
         cmd += ["-d", json.dumps(body)]
-    p = subprocess.run(cmd, capture_output=True, text=True)
-    raw, _, code = p.stdout.rpartition("\n")
+    for attempt in (1, 2):
+        p = subprocess.run(cmd, capture_output=True, text=True)
+        raw, _, code = p.stdout.rpartition("\n")
+        try:
+            icode = int(code)
+        except ValueError:
+            icode = 0   # transport failure — no HTTP status at all
+        if icode >= 200 and icode < 500:
+            break
+        if attempt == 1:
+            time.sleep(2)
     try:
-        return int(code), json.loads(raw) if raw.strip() else None
+        return icode, json.loads(raw) if raw.strip() else None
     except (ValueError, json.JSONDecodeError):
-        return int(code), raw[:300]
+        return icode, raw[:300]
 
 
 def rpc(fn, params, key):
@@ -366,8 +378,13 @@ def main():
                        for r in (info or []))
         check("gated chats: members get the chat, others only the verification form", gated_ok)
         # probe as a member with few chats — THEY must get typeform links for gated chats
+        # fixture must be an ACTIVE member and deterministic (2026-08-03: an unordered slice
+        # picked a null-status number after table churn -> chat_info's active-door returned
+        # zero rows -> false RED; the check's intent needs a member the door lets through)
         st, few = curl("GET", f"{BASE}/members?select=phone&phone=not.is.null"
                        "&channels_present=not.is.null"
+                       "&membership_status=in.(%22Current%20Member%22,%22New%20Member%22,%22Current%20Member-%20Not%20Renewing%22,%22Staff%22)"
+                       "&order=phone.asc"
                        "&channels_present=not.cs.%7B%22MDS%20Centurion%2020M%2B%22%7D&limit=200", key,
                        profile_hdr=["Accept-Profile: digest"])
         alt_phone = next((m["phone"] for m in (few or []) if m["phone"] != phone), None)

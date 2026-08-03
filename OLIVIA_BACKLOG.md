@@ -65,17 +65,6 @@ instrument = the 169-question smoke bank (prod baseline 2026-08-03: **3.6%**).
 | Scale 10 · Gate 9 · Layers 8 | — | hold | every ticket: gate GREEN + A9 unchanged |
 
 
-### 46. 🔴 member_events — start writing from surfaces we control · effort S · → RELEASE 3 (audit P2; stops part of the irreversible loss NOW)
-*As the team, member behaviour starts accumulating today — not after the app integration lands.*
-`member_events` = 0 rows since created. The APP feed (video views, app searches) is Andy's
-GROUPOS_PAT + app-logging ask — but the PORTAL (digest.mds.co) and Olivia are OURS: portal
-logins/page views, Olivia turns (route/lane/sources_used), report filings, nudges can emit
-events immediately. Audit's design rule: **log CHANGES/actions, not states**; one row per event,
-keyed `at_member_id` (fall back `airtable_id` — see #41/#45), typed + timestamped + source.
-**Accept when:** portal + Olivia surfaces emit real events (A1 shows rows growing daily) ·
-schema documented (event_type vocabulary) · nightly heartbeat covers the writer · the app feed
-slot is specified in writing so GroupOS events drop in without rework · gate GREEN.
-
 ### 42. 🟡 place_city: aliases to a TABLE + normalize on write · effort S · → RELEASE 3 (audit P5)
 *As a member, "who's in Miami" finds Miami however it was spelled.*
 908 distinct city spellings / 1,718 rows; alias layer is a hardcoded ~11-entry CASE — plain
@@ -384,6 +373,45 @@ the release is actually safe to ship, not just that the tickets are marked done.
 # ✅ CLOSED — shipped and live (kept here for the release record; older history in `OLIVIA_BACKLOG_ARCHIVE.md`)
 
 **R3 architecture batch LIVE ON PROD `89ee3632` (2026-08-03 ~08:23Z, Andy promoted).**
+
+### 46. 🟢 CLOSED 2026-08-03 — member_events LIVE: append-only, cadence-aware, accumulating from real traffic · → RELEASE 3 (audit P2)
+*As the team, member behaviour starts accumulating today — not after the app integration lands.*
+`member_events` = 0 rows since created. The APP feed (video views, app searches) is Andy's
+GROUPOS_PAT + app-logging ask — but the PORTAL (digest.mds.co) and Olivia are OURS: portal
+logins/page views, Olivia turns (route/lane/sources_used), report filings, nudges can emit
+events immediately. Audit's design rule: **log CHANGES/actions, not states**; one row per event,
+keyed `at_member_id` (fall back `airtable_id` — see #41/#45), typed + timestamped + source.
+**Andy's two design pins (2026-08-03):** ① **APPEND-ONLY** — an event is saved once, never
+edited, never deleted; corrections are NEW events; state lives in the existing tables, the log
+records transitions. ② **CADENCE-AWARE** — three writer classes: LIVE (Olivia turn, portal
+login, report filed — written in the moment) · DAILY (nightly-derived changes: niche/chapter/
+band diffs, stamped at detection) · WEEKLY (catalog-refresh diffs). Schema carries
+`occurred_at` (when it happened, when knowable) AND `captured_at` (when we saw it) + source +
+cadence class — a batch-detected change never masquerades as a live timestamp.
+**Accept when:** portal + Olivia surfaces emit real events (A1 shows rows growing daily) ·
+schema documented (event_type vocabulary) · append-only enforced (no UPDATE/DELETE grants on
+the log) · nightly heartbeat covers the writer · the app feed slot is specified in writing so
+GroupOS events drop in without rework · gate GREEN.
+
+**CLOSED 2026-08-03 (cited live):** table reshaped (empty → canonical: `at_member_id` +
+`event_type` + `source` + `cadence` live|daily|weekly|backfill + `occurred_at`/`captured_at`) ·
+**append-only is PHYSICAL** (service-layer DELETE 403 / UPDATE 403, proven live) · **3 live
+writers** (fail-open triggers, eval wamids excluded): olivia_turn (rides the #41-stamped insert),
+report_filed, portal_seen (fires only on real change — sync upserts no-op) — all 3
+canary-proven, keyed, canaries owner-cleaned · **daily writer** `derive_member_change_events()`
+(key-field snapshot diff → status_changed/attr_changed; first run seeds silently; ⚠️
+chapter_affiliation is text[] — 42804 masked by the seed-only first run, fixed with ::text both
+sides) · **backfill 14,998 events** (1,582 olivia turns · 15 reports · 13,401 registrations —
+the #45 keying made this possible) · nightly job `member_events_daily` + 26h heartbeat, INCLUDING
+the live-flow watchdog (msgs grew but 0 live events = trigger dead → exit 1 → #13 pages; its
+own day-one lesson: an ERROR JSON parsed fine and printed as success — now exits 1 on
+key-missing) · **app-feed slot specified in the table COMMENT** (source='app', same shape, no
+rework) · vocabulary documented same place · gate GREEN — after diagnosing a false RED to root:
+the alt-member fixture picked a null-status number post-churn → fixture now ACTIVE+ordered, and
+the gate's curl gained ONE transport retry (5xx/timeout only — 4xx never retried, the denial
+checks need them raw; closes the flagged promote-blip hardening). **Numbers: 0 → 15,052 events ·
+2,304 members covered · 54 live events on day one, growing from real traffic during the build
+(16→38 while probing).**
 
 ### 45. 🟢 CLOSED 2026-08-03 — Identity resolution: the rest · one ruling for Andy's eyes: members.at_member_id is an ENTITLEMENT key, never auto-stamped · → RELEASE 3 (audit §2+§5)
 *As the team, one human is one record everywhere — WhatsApp, Facebook, Airtable, events.*

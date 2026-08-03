@@ -96,6 +96,20 @@ variants) · dup names/emails: all four = ONE member with two phones (benign, un
 (bit twice today). Backlog restructured per Andy same session: OPEN = ARCHITECTURE + THE REST,
 CLOSED visible; ticket-close format rule pinned (story+ACs · results · checklist · before/after).
 
+**#46 ADDENDUM (same day, closed):** member_events LIVE — table reshaped (canonical key, typed
+events, occurred_at + captured_at, cadence live|daily|weekly|backfill) · **append-only PHYSICAL**
+(service DELETE/PATCH = 403, proven) · 3 fail-open live triggers (olivia_turn on the #41-stamped
+insert w/ eval excluded · report_filed · portal_seen change-only) all canary-proven then
+owner-cleaned · daily diff fn (⚠️ chapter_affiliation text[] broke VALUES with 42804 — masked by
+the seed-only first run; ::text both sides) · **backfill 14,998 events** (1,582 turns · 15
+reports · 13,401 registrations) · nightly job + 26h heartbeat + LIVE-FLOW WATCHDOG (msgs grew ∧
+0 events → exit 1 → #13; day-one lesson: error-JSON parsed as success — now key-checked) ·
+app slot + vocabulary in the table COMMENT · **0 → 15,052 events · 2,304 members · live events
+growing from real traffic during the build (16→38)** · GATE: one false RED diagnosed to root —
+alt-member fixture picked a null-status number after table churn → fixture now ACTIVE+ordered +
+curl gained ONE 5xx/timeout retry (4xx never — denial checks need them raw; closes the
+promote-blip hardening note) → GREEN 202.
+
 **STAGING BATCH NOW COMPLETE (#40+#41+#39) — ready for Andy's promote**; flip checklist: promote
 · wrapper+fb_thread migration · #41 backfill re-run · 5-check · smoke DEFERRED to when #45/#46/
 #42 are done (Andy's call: smoke per batch, not per ticket).
