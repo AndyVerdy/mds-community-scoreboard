@@ -70,6 +70,22 @@ results · AC checklist · before/after. **#44 gained Andy's EXPERTISE-LEDGER sp
 authority: posts-per-subject, call hosting, video speaking, business details, revenue-band
 multiplier; internal weights only; backfill + nightly recompute BOTH required).
 
+**#41 + #39 ADDENDUM (same day — Andy: batch the staging tickets, ONE promote, smoke deferred
+to batch end):** **#41 BUILT+STAGED** — Find Member/Resolve Member/Save Conversation stamp
+`olivia_messages.member` (= `members.airtable_id`); probe 4/4 fresh rows stamped correctly;
+backfill 2,554/2,554, 0 mismatches, ambiguous-phones excluded (none existed); readers verified
+(persona_signals + fingerprints 752 = full population); at flip: re-run the backfill one-liner.
+**#39 BUILT+STAGED** — `content_search_v2_attribution_marker` migration: comments opening with
+the post author's name get `[→ to X]` head marker at the SQL chokepoint (all consumers, present
++ future); STYLE single-source edit in Build Prompt (`apply_39_style_attribution.py`, harvested
+into the seed by build_loop) adds marker semantics + VERB PRECISION; 3 machine-verified probes
+green (premise-corrected Rich→Michael; Lee Leathers credited from her own "I can share, just DM
+me"; kickstarter launches stated with explicit no-funding-outcome); matrix +5 attribution rows
+(9052-9056, bank 178). fb_thread shares prod → marker rides the FLIP migration. Gate 202 ×2.
+**STAGING BATCH NOW COMPLETE (#40+#41+#39) — ready for Andy's promote**; flip checklist: promote
+· wrapper+fb_thread migration · #41 backfill re-run · 5-check · smoke DEFERRED to when #45/#46/
+#42 are done (Andy's call: smoke per batch, not per ticket).
+
 ## 2026-08-03 (PRODUCTION DAY — R1+R2 SHIPPED) — FB capture processed (23 posts/288 comments/15 images → content_items, 0 unembedded) · 5-check PASS · **ANDY PROMOTED Release 2 (versionId `90a13237`, 67 nodes, graph==staging, gate 190 in-promote)** · prod re-verify PASS · **prod Big Smoke 169 judged · 3.6% FAIL < 5% benchmark** · #39 attribution filed (the one cluster) · architecture audit verified live → #40/#41/#42 filed · backlog ARCHIVED + rebuilt (open-only, working order) · release notes R1+R2 drafted
 
 - **Phase 0:** Andy's manual scroll (43 posts) + 4c comment pass (30 posts/168 comments after

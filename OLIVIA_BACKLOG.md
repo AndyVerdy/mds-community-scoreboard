@@ -162,7 +162,7 @@ the node edits; re-run the backfill one-liner once to stamp prod rows created be
 **Accept when:** A2 re-run shows event_registrations ≥95% + members ≥95% keyed · fb_member_map
 1 primary uid per member · the 61 resolved-or-documented · gate GREEN.
 
-### 39. 🔴 Attribution: never put words in a member's mouth · effort M · → RELEASE 3 (from the PROD Big Smoke 2026-08-03)
+### 39. 🟡 BUILT + STAGED 2026-08-03 — Attribution · remaining: fb_thread marker rides the flip migration; formal cluster rate at the batch smoke · → RELEASE 3
 *As a member, when Olivia quotes or credits somebody, that person actually said it — she never
 credits me with something I only received, asked for, or was tagged in.*
 **The dominant class in the prod smoke: 4 of 16 findings (Q3107 FAIL + Q3010/Q3065/Q3068 PARTIAL)
@@ -193,6 +193,24 @@ Kickstarter campaigns" (staging 07:18:18). Same family: claim strength exceeding
 verbs (launched→funded, offered→shared, asked→confirmed). The fact-gate cannot catch it — every
 ENTITY verifies; the VERB is the invention. Fix belongs with the row-labeling build here (and a
 seed VERB-PRECISION line); add Q3096's shape to the AC re-fire list.
+
+**BUILT 2026-08-03 (cited live):** Layer 1 = migration `content_search_v2_attribution_marker`:
+a comment OPENING with the post author's name gets its head marked `[→ to <post author>]`
+(exact char-prefix compare, no LIKE; punctuation-stripped remainder; meta.post_author computed
+once and reused) — the chokepoint every present AND future consumer inherits (Andy: "what we
+have and what we will have"). REST-proven on real rows: Rich Tesoriero → `[→ to Michael Patrón]`.
+Layer 2 = STYLE (single-sourced in Build Prompt, harvested into the seed by build_loop):
+ATTRIBUTION rule teaches the marker + never echo it; NEW VERB PRECISION rule (launched≠funded,
+offered≠sent, asked≠confirmed) — apostrophe-free inserts via `apply_39_style_attribution.py`;
+loop-contract rule sharpened in `answer_seed.js`; deployed, bounce 200/200. **Probes (all
+machine-verified vs warehouse):** ① "did Michael Patrón ask about Meta credit cards?" → premise
+CORRECTED: "asked *to* Michael, by Rich Tesoriero" + link ② POA template → credited to Lee
+Leathers from HER OWN comment ("I have the template I used, I can share, just DM me" — verbatim
+in warehouse; Betsy/Dan were askers) ③ kickstarter → launches named + "no funding outcome on
+record" stated plainly. **Matrix +5** (9052-9056, each anchored to a warehouse-verified truth;
+bank 178). Gate GREEN (202). **Remaining:** fb_thread shares prod → its marker goes in the FLIP
+migration (never in-place) · the four smoke findings' formal re-fire = the batch smoke (Q3107
+already re-passed in the #40 slice; Q3068 shape probed green today).
 
 ### 46. 🔴 member_events — start writing from surfaces we control · effort S · → RELEASE 3 (audit P2; stops part of the irreversible loss NOW)
 *As the team, member behaviour starts accumulating today — not after the app integration lands.*
