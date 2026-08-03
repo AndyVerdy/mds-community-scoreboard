@@ -6,6 +6,20 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-01 (DAY · SESSION CLOSE) — #37 REPORTS shipped+CLOSED on Andy's ACs (16-turn suite caught 3 defects: double-file→RPC idempotency, her-words filing→original-ask pin, "they'll follow up"→no-promise pin) · EUGENE'S LIVE PROD FAILURES fixed as a CLASS (yes-binding to last message · never-deny-tickets · long-gap freshness; EUG1 replay passes) · rulings: Q3088 beta+report, Q3116 BOTH · portal reports page + main-page section w/ soft clear · watchdog 3.9-parse fix (13h Slack spam; 27 msgs cleaned via bot chat.delete) · #38 CTAs filed R3 (+3-button report confirm) · gate 190 · NEXT SESSION = PRODUCTION DAY
+
+- **Production-day runbook (next session):** (1) Andy's manual FB scroll (phase 0) → I process
+  (load_feed → images → vision_decode → upload → linker → embed) · (2) the 5-check pre-promote
+  list on staging · (3) **Andy runs `promote`** · (4) condensed prod re-verify (<5% must hold;
+  5-check + per-family samples; prod-only failure = rollback protocol) · (5) release notes
+  PROD R1+R2 draft → Andy validates+posts · (6) backlog archive (open items only).
+- Everything else this release is DONE and staged: smoke 4.8% accepted · all rulings closed ·
+  #37 + Eugene class fixes probe-proven · gate 190 ×4 today. Standing after release: R3 queue
+  (#29/#17/#18/#19/#20/#35/#36/#38) · whale ruling · Andy's GROUPOS_PAT + app-event-logging.
+- Watch-outs recorded: seed edits get a node syntax check BEFORE build_loop (apostrophes broke
+  the loop twice) · probe wamids SELFTEST_MANU are NOT cleaned by olivia_eval --cleanup (Andy's
+  thread carries test turns — his own portal-test thread, accepted).
+
 ## 2026-08-01 (NIGHT — THE BIG SMOKE RAN) — bank 100→122 organics + smoke suite 47 = 169 auto Qs fired on STAGE (Andy's tap launched it; spend guard tripped on a phantom $5.15 from a dead first attempt — classifier blocked my overrides, midnight rollover + Andy's Run button resolved it) · FIRST PASS 4.8% auto (150/7/8 of 165) + manual suite 2 FAIL 1 PARTIAL ≈ 5.7% → WHEN-NOT-IF LOOP: 2 fix batches → slice 14/14 PASS + manual all-green → full clean re-run FIRING · gate 187 ×3
 
 - **The run:** `eval_bank_smoke.json` (canonical organic 100 + 22 new organics 3113-3135 + 47 matrix

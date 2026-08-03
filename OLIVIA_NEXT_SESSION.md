@@ -41,6 +41,16 @@ ticket(s) this session should take — ticket NUMBER + STORY — and let Andy pi
 SMOKE — ON STAGE FIRST (Andy confirmed 2026-08-01)** — prod still runs the old build, so stage
 is where discovery happens; prod only confirms.
 
+> 🚀 **NEXT SESSION = PRODUCTION DAY — the runbook, in order:** (1) ⏰ **Andy's manual FB
+> scroll first** (phase 0; remind him if he says "promote" before it) → process the capture
+> (load_feed → images → vision_decode → upload → linker → embed) · (2) the 5-check pre-promote
+> list on staging · (3) **Andy runs `promote` in his terminal** · (4) condensed prod re-verify —
+> <5% must hold (5-check + per-family matrix samples; prod-only fail = rollback → fix on stage) ·
+> (5) release notes for PROD R1+R2 — draft → Andy validates → HE posts · (6) backlog archive.
+> Release content = the smoke fixes + #37 reports + the Eugene yes-binding class + all rulings.
+> ⚠️ Seed edits ALWAYS get the node syntax check before build_loop (apostrophes killed the loop
+> twice on 08-01).
+>
 > ✅ **STATUS (2026-08-01 overnight): THE SMOKE RAN AND THE BENCHMARK IS MET ON STAGE.**
 > 169 auto + 6 manual sequences · first pass 5.7% → 2 fix batches (`581d0cc`, `4e15ba7`) →
 > all slices green → **full clean confirmation pass = 4.8% FAIL (151/6/8 of 165) < 5%**, zero
