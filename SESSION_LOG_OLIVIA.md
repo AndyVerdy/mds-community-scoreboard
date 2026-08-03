@@ -47,6 +47,11 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
   27 closed → `OLIVIA_BACKLOG_ARCHIVE.md`, 9 old eval reports → archive/eval_reports/ ·
   `OLIVIA_RELEASE_NOTES_R1_R2.md` DRAFTED (Andy validates + posts — includes honest 3.6% + known
   issues incl. attribution) · lock expires 05:50Z on its own.
+- **Backlog second pass (Andy pushed on audit coverage):** +#43 re-audit-owns-the-exit ·
+  +#44 knowledge graph (weighted edges, after #29 memo) · +#45 identity-rest (reg 62%→95%,
+  61 unkeyed, 74 FB dupes) · +#46 member_events from OUR surfaces now · #40 +embed-in-nightly AC ·
+  audit addendum: read-time model verified voyage-3.5-lite/1024 both call sites. 19 tickets.
+  NOT filed (Andy's call): AT hygiene (3 dead bases, 136 graveyard fields) · mds-ai-bot ChromaDB check.
 - **NEXT SESSION = #40** (content_search_v2 side-by-side → staging wf points at it → probes +
   smoke slice → flip prod RPC). Then #41 same week (backfill losslessness decays).
 

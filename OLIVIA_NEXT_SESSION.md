@@ -27,8 +27,9 @@ promote snapshots in `olivia_snapshots/`; rollback = `olivia_wf.py rollback <sna
 
 ## NEXT SESSION = #40 — Retrieval rewrite (Release 3 = ARCHITECTURE)
 
-**Read `OLIVIA_BACKLOG.md` first** — it is open-items-only now, in working order, with the
-audit scorecard on top. **Release-3 exit = `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md` Appendix A
+**Read `OLIVIA_BACKLOG.md` first** — open-items-only, 19 tickets in working order, audit
+scorecard on top (audit swept twice — #43/#44/#45/#46 filed from the gaps; audit doc has a
+2026-08-03 addendum closing its read-time-model check). **Release-3 exit = `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md` Appendix A
 re-scores ≥8/10 (baseline 6/10)** — retrieval 3→≥7 (#40), identity 6→≥8 (#41), the rest hold.
 
 **#40 story:** *a question phrased differently from how it was written still finds the answer —
@@ -42,8 +43,9 @@ Point the STAGING workflow at v2 → probes → TEST slice (propose to Andy firs
 FB comments are sometimes THE answer — never delete rows, only unembed. **Then #41 same week**
 (identity stamping — the FK wants `airtable_id` NOT `at_member_id`; backfill losslessness decays).
 
-Working order after: #39 attribution (v2 should return author/post_author labels — makes #39
-nearly free) → #42 place_city → R3 features (#38 buttons, #29 …) → close-out #32/#14/#34.
+Working order after: #45 identity-rest → #39 attribution (v2 returns author/post_author labels —
+makes #39 nearly free) → #46 member_events (our surfaces) → #42 place_city → R3 features
+(#38, #29, #44 graph after #29's memo …) → close-out #32/#14/**#43 RE-AUDIT ≥8/10**/#34.
 **Andy's side this week:** `member_events` feed (GROUPOS_PAT + app event logging) — the only
 irreversible daily loss. **Release notes `OLIVIA_RELEASE_NOTES_R1_R2.md` = DRAFTED, waiting on
 Andy to validate + post** (never posted by me).
