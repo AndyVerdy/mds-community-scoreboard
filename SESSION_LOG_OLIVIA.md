@@ -49,6 +49,27 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 - **NEXT:** propose the smoke/TEST slice to Andy (the ≤3.6% no-class-regression AC) → then #41
   identity stamping (backfill losslessness decays). Lock released at close.
 
+**SLICE ADDENDUM (same day, Andy's "fire the slice"):** 33 Qs (all 6 prod FAILs + 5 retrieval-
+adjacent PARTIALs + 22-PASS class spread) fired at staging via `olivia_eval.py --fire --staging
+--ids …`, judged: **26 PASS · 4 PARTIAL · 3 FAIL** (report `OLIVIA_EVAL_2026-08-03.md`; the
+enriched-slice 9.1% is deliberately not comparable to the 3.6% full-bank baseline). Shared-33
+before→after: FAIL 6→3 · PARTIAL 5→4 · PASS 22→26; v2 fixed Q3094/Q3106/Q3107/Q9016/Q9032 +
+flipped Q3048/Q3065/Q3086 to PASS. Triage of the 3: **Q3110+Q3111 = fact-gate FALSE CLAMP** —
+Haiku flagged real figures and the post-filter's `\b\d{4,}\b` cannot read comma-formatted numbers
+("$12,464.38", "2,808"); every flagged figure sat VERBATIM in evidence (execs 61719/61721; the
+65s/63s turns = 2 regen laps each — also the answer to "why 60s"). **Fixed same session:**
+comma/$-insensitive number matching in Gate Verdict (`gate_verdict.js` + staging via
+`build_loop.py`, node-checked + unit-tested; v2 URL mappers survived the PUT, verified). Free
+re-probes: both deliver full grounded answers, **65s→26.6s and 63s→37.9s**. **Q3096** = verb
+upgrade (launch→"funded") on real rows → mechanism filed into #39 (gate can't catch it: entities
+verify, the VERB is the invention). **Q9024** = event_lookup lane → **#47 filed** (events never
+got the #40 treatment; BS053 claimed proof but smoke disagrees). Bank truth Q9032 corrected
+(722 stale → live-count def; live = 752 active incl. 29 Staff = 723 member-facing, Olivia had
+been right). Andy's new standing rule pinned everywhere: story+ACs always; ticket close = short
+results · AC checklist · before/after. **#44 gained Andy's EXPERTISE-LEDGER spec** (topic-scoped
+authority: posts-per-subject, call hosting, video speaking, business details, revenue-band
+multiplier; internal weights only; backfill + nightly recompute BOTH required).
+
 ## 2026-08-03 (PRODUCTION DAY — R1+R2 SHIPPED) — FB capture processed (23 posts/288 comments/15 images → content_items, 0 unembedded) · 5-check PASS · **ANDY PROMOTED Release 2 (versionId `90a13237`, 67 nodes, graph==staging, gate 190 in-promote)** · prod re-verify PASS · **prod Big Smoke 169 judged · 3.6% FAIL < 5% benchmark** · #39 attribution filed (the one cluster) · architecture audit verified live → #40/#41/#42 filed · backlog ARCHIVED + rebuilt (open-only, working order) · release notes R1+R2 drafted
 
 - **Phase 0:** Andy's manual scroll (43 posts) + 4c comment pass (30 posts/168 comments after

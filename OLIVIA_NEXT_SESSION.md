@@ -7,6 +7,7 @@
 - **When asked what is next, give task NUMBER, NAME and STORY.** Nothing else unless asked.
 - **Work the story, ship the product, prove it end-to-end.** The story is the bar - not perfection, not a full eval run. The eval is the daily routine, never a release gate.
 - **Issues found alongside are not the job.** Check the backlog for an existing ticket, then flag for priority evaluation. Never let them become the work.
+- **Always show a ticket's STORY + ACs. Closing needs: short results · short AC checklist (met/not) · before/after numbers.** (Andy 2026-08-03)
 
 # Olivia — next session
 

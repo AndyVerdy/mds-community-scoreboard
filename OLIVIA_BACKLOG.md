@@ -7,6 +7,7 @@
 - **When asked what is next, give task NUMBER, NAME and STORY.** Nothing else unless asked.
 - **Work the story, ship the product, prove it end-to-end.** The story is the bar - not perfection, not a full eval run. The eval is the daily routine, never a release gate.
 - **Issues found alongside are not the job.** Check the backlog for an existing ticket, then flag for priority evaluation. Never let them become the work.
+- **Always show a ticket's STORY + ACs. Closing needs: short results · short AC checklist (met/not) · before/after numbers.** (Andy 2026-08-03)
 
 # Olivia — backlog (open items only)
 
@@ -106,11 +107,24 @@ organic answered with the Michael Patrón savings thread + 5 named members. **Ga
 (+12 v2 checks: full canary mirror ± consent flag, unknown phone, canceled phone + at_member_id,
 anon lockout). ⚠️ A fast probe is NOT proof — first probes ran 0.35s on warm SEQ scans; only the
 idx_scan counter and the plan are honest.
-**Remaining to close:** ① smoke/TEST slice ≤ 3.6% with no class regressing (eval RUN = propose
-+ Andy's go) · ② prod flip = promote (the staging graph carries the swap) **+ same-moment
-migration pointing the 3 SQL wrappers that still call v1 internally — `multi_source`,
-`app_member_feed`, `persona_signals` — at v2, + NOTIFY pgrst + REST hammer** · ③ v1 retired
-after soak.
+**SLICE RAN 2026-08-03 (Andy's go; 33 Qs = all 6 prod FAILs + 5 retrieval-adjacent PARTIALs +
+22-PASS spread; report `OLIVIA_EVAL_2026-08-03.md`):** 26 PASS · 4 PARTIAL · 3 FAIL. On the
+shared 33 vs the prod smoke: FAIL 6→3, PARTIAL 5→4, PASS 22→26. **Fixed by v2:** Q3094 (PPC
+people — was fabrication), Q3106 (AGL — was denial), Q3107 (AGL savings), Q9016 (this-week
+browse), Q9032 (member count; bank truth was stale 722, corrected to live-count def) + PARTIAL→
+PASS on Q3048/Q3065/Q3086. **The 3 fails triaged, none a retrieval miss:** ① Q3110+Q3111 =
+fact-gate FALSE CLAMP — Haiku flagged real figures, the deterministic post-filter's `\b\d{4,}\b`
+cannot see comma-formatted numbers ("$12,464.38", "2,808"), every flagged figure was VERBATIM in
+evidence (execs 61719/61721, 65s/63s regen-loop turns) → **FIXED same session: comma/$-normalized
+number matching in Gate Verdict (source + staging via build_loop, node-checked, unit-tested);
+free re-probes deliver full answers, 65s→26.6s / 63s→37.9s** · ② Q3096 = verb-upgrade
+(launch→"funded") on real rows — #39's family, mechanism filed there · ③ Q9024 = event_lookup
+lane (not content_search) — filed as #47. Slice fabrication count flat vs prod (1↔1).
+**Remaining to close:** ① the formal ≤ 3.6% number — full 169-Q staging re-run (propose + Andy's
+go; the enriched slice's 9.1% is not comparable by design) OR measure at the prod-flip smoke ·
+② prod flip = promote (staging graph carries the swap + gate fix) **+ same-moment migration
+pointing the 3 SQL wrappers that still call v1 internally — `multi_source`, `app_member_feed`,
+`persona_signals` — at v2, + NOTIFY pgrst + REST hammer** · ③ v1 retired after soak.
 
 ### 41. 🔴 Identity stamping — olivia_messages.member + ingest paths · effort S · → RELEASE 3 (audit P4, Andy's worked spec)
 *As the team, every Olivia conversation is filed against a member record, not just a phone.*
@@ -161,6 +175,13 @@ addressee name stripped (or marked `→to Z`) from comment bodies before they re
 the speaker is never inferable-but-wrong. Applies in Build Prompt AND the Answer Seed preload.
 **Accept when:** the four smoke findings re-fire clean; a probe on the Lee Leathers thread
 credits the template REQUEST to Betsy/Dan and never to Lee; matrix +5 rows on attribution.
+**+ VERB-UPGRADE MECHANISM (from the #40 slice, 2026-08-03):** Q3096 "who has done a kickstarter
+and got funded" — the evidence held LAUNCH posts only (Michael York's Zionix launch, Slava
+"gearing up to launch"); the answer upgraded them to "members have actually run and FUNDED
+Kickstarter campaigns" (staging 07:18:18). Same family: claim strength exceeding the evidence's
+verbs (launched→funded, offered→shared, asked→confirmed). The fact-gate cannot catch it — every
+ENTITY verifies; the VERB is the invention. Fix belongs with the row-labeling build here (and a
+seed VERB-PRECISION line); add Q3096's shape to the AC re-fire list.
 
 ### 46. 🔴 member_events — start writing from surfaces we control · effort S · → RELEASE 3 (audit P2; stops part of the irreversible loss NOW)
 *As the team, member behaviour starts accumulating today — not after the app integration lands.*
@@ -188,6 +209,17 @@ audit examples resolve to one canonical each; member_match city counts match han
 ---
 
 # 🔵 NEXT — Release 3 features
+
+### 47. 🔴 event_lookup semantic recall — the events lane never got what #40 gave content · effort S-M · → RELEASE 3 (filed from the #40 slice, 2026-08-03)
+*As a member, "is there a fulfillment conference happening in the city?" finds the logistics
+summit however the calendar spells it.*
+**Q9024 failed the prod smoke AND the #40 slice identically** — it is an `event_lookup` question,
+outside content_search's lane, so #40 could not move it (exception named per the DoD). The bank
+row claims proof "matrix BS053: event_lookup +embedding" — #26 embedded events with RRF, yet the
+paraphrase still misses: diagnose whether event_lookup's vector half is planner-refused / ordered
+keyword-first exactly like content_search v1 was (check `idx_scan` on the events HNSW — the #40
+lesson: only the plan + the counter are honest), then apply the same two-phase RRF shape.
+**Accept when:** Q9024 shape passes · events index idx_scan counting · gate GREEN · BS053 re-proven.
 
 ### 38. 🔵 Interactive buttons (CTAs) for offers + links · effort M · → RELEASE 3 (from Andy's WABA question 2026-08-01)
 *As a member, Olivia's Yes/No offers (ticket, report, nudge) are TAP BUTTONS, not "reply YES" —
@@ -249,9 +281,34 @@ handling — the Amazon/eBay/Netflix patterns), mapped onto MDS's real signal in
 **Impact:** all members — Andy's call: matchmaking is the key product surface. The persona-quality
 critique (2026-07-30: cards too generic) lands here as the redesign.
 
-### 44. 🔵 Knowledge graph — weighted member↔entity edges · effort M-L · → RELEASE 3, LAST (audit P6; opens AFTER #29's research memo)
+### 44. 🔵 Knowledge graph — weighted member↔entity edges + EXPERTISE LEDGER · effort M-L · → RELEASE 3, LAST (audit P6; opens AFTER #29's research memo)
 *As a member, MDS knows who knows who — intros, "people like Mo", and "who was in the room"
 come from real connections, not just profile fields.*
+
+**EXPERTISE LEDGER (Andy 2026-08-03, his spec — the v2 authority slot's upgrade path):** the
+engagement-score weight in #40's RRF "is good for v1", but engagement ≠ expertise — "it doesn't
+necessarily mean he is an expert in this question." Personas should play a huge role: rank each
+member's expertise from the data we hold — **business details · their posts on specific
+subjects · whether they HOSTED a call · whether they SPOKE on virtual/in-person calls (video
+speaker) · revenue bracket as a credibility multiplier ("people will listen more to a person
+with 50M+ than 1-5M")**. Output = a per-member LIST of expertise — **and maybe weaknesses** —
+**weighted against other members**, so we can say who is strong in AI, DTC, Shopify, specific
+Amazon niches, etc. Data map (today): video_speakers + videos_catalog speakers = HAVE · events
+hosting = events_catalog/calendar (partial — see `OLIVIA_SIGNAL_INVENTORY.md`) · posts-on-subject
+= content_items by author × topic labels/embeddings = DERIVABLE (these ARE member↔topic edges) ·
+business details + niches/channels = member_attributes HAVE · rev_band HAVE · weaknesses ≈
+persona asks/challenges_now vs gives (asking a lot = learning; answering/hosting = strong).
+Consumers: #40's authority rank-list (flat engagement → topic-matched expertise score) ·
+expertise_search · solve/multi lanes · #29 dossier (strengths/weaknesses section). ⚠️ Standing
+ruling holds: revenue/expertise weights are INTERNAL sort keys like engagement — never a
+surfaced ranking, never "X is our strongest in AI because he's 50M+".
+**BACKFILL + REGULAR UPDATES (Andy 2026-08-03):** BOTH halves are the AC. ① One-time BACKFILL
+seeds the ledger from the WHOLE history (all content, videos, rosters, personas — every active
+member per EVERY-MEMBER-ALWAYS, keyed `at_member_id`). ② From day one it recomputes on the
+nightly pipeline (`nightly_derivations.py` job + pre-registered heartbeat, #13-alarmed) so every
+new post, video, event roster and persona row moves the weights — "it's dynamic, the more info
+we gather." Shipping the backfill WITHOUT the scheduled job is the failure mode (the #15 /
+#40-embed lesson: coverage is a process, not an event).
 **Raw material already exists (audit A11):** 10,266 member↔event edges · 1,327 members ·
 707 events, derivable today with zero new capture. Audit's sample test: 20/20 members got a
 relevant 2-hop niche-matched candidate. **Why not naive:** the biggest event has 409 attendees —

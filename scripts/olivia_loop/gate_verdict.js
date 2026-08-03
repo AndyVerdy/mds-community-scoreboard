@@ -67,6 +67,13 @@ urlsIn(answerText).forEach(function (u) {
 // dropped. A claim naming an entity the evidence truly lacks survives — the
 // catastrophic class (invented people/links/quotes/figures) still blocks.
 const ev = evRaw.toLowerCase();
+// NUMBER MATCHING IS COMMA/FORMAT-INSENSITIVE (2026-08-03, #40 slice regression): real figures
+// like "$12,464.38" / "2,808 orders" / "$21,532.19" were unmatchable by \b\d{4,}\b — the commas
+// break the digit run — so when Haiku false-flagged a fully-grounded figure-dense answer, the
+// figure entities could never verify and the claims survived to block it (Q3110/Q3111, execs
+// 61719/61721: every flagged figure sat VERBATIM in the evidence). Strip commas/$ on BOTH sides;
+// invented figures still block (they are in no evidence however formatted).
+const evNum = ev.replace(/[,$]/g, '');
 const entitiesOf = (s) => {
   const out = [];
   const names = String(s).match(/[A-Z][a-z][\w'’-]*(?:\s+[A-Z][\w'’-]+)+/g) || [];
@@ -76,7 +83,7 @@ const entitiesOf = (s) => {
     .filter(w => !/^(The|This|That|These|Those|Here|There|What|When|Where|Want|With|From|Your|About|Also|Amazon|Facebook|WhatsApp|Olivia)$/.test(w));
   const urls = String(s).match(/https?:\/\/\S+/g) || [];
   const quotes = String(s).match(/["'“”‘’]([^"'“”‘’]{8,})["'“”‘’]/g) || [];
-  const nums = String(s).match(/\b\d{4,}\b/g) || [];
+  const nums = (String(s).replace(/[,$]/g, '').match(/\b\d{4,}(?:\.\d+)?\b/g) || []);
   return out.concat(names, singles, urls, quotes.map(q => q.slice(1, -1)), nums);
 };
 // A URL entity is checked by its LOAD-BEARING ID, not the exact string — the same rule the
@@ -97,7 +104,9 @@ if (!_isReportTurn && verdict && verdict.verdict === 'fail' && (verdict.unsuppor
     if (!ents.length) return true;                       // nothing checkable — trust the gate
     return !ents.every(e => /^https?:\/\//.test(String(e))
       ? idInEv(e)
-      : ev.includes(String(e).toLowerCase().trim()));
+      : (/^[\d.]+$/.test(String(e))
+          ? evNum.includes(String(e))
+          : ev.includes(String(e).toLowerCase().trim())));
   });
 }
 // DERIVED-AGGREGATE FILTER (Big Smoke 2026-08-01). The gate's worst real-world failure
@@ -112,7 +121,7 @@ const AGG = /\b(total|sum|combined|across|in all|add(s|ed)? up|percent|%|how man
 hClaims = hClaims.filter(c => {
   const s = String(c);
   if (!AGG.test(s)) return true;
-  const nonNum = entitiesOf(s).filter(e => !/^\d+$/.test(String(e)));
+  const nonNum = entitiesOf(s).filter(e => !/^[\d.]+$/.test(String(e)));
   return !nonNum.every(e => /^https?:\/\//.test(String(e))
     ? idInEv(e)
     : ev.includes(String(e).toLowerCase().trim()));
