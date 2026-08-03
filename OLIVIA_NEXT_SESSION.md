@@ -19,7 +19,7 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE: R1+R2 LIVE ON PROD (`90a13237`) · #40 BUILT + STAGED 2026-08-03 (LATE)
+## STATE: R3 ARCHITECTURE BATCH LIVE ON PROD (`89ee3632`, 2026-08-03 ~08:23Z) — #40+#41+#39
 
 Prod untouched since Andy's 03:54Z promote (Big Smoke on prod 169 · **3.6%** = the baseline).
 **#40 shipped to STAGING same day:** `content_search_v2` side-by-side — tsv-GIN keyword + pure-ANN

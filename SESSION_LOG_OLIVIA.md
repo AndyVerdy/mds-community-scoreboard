@@ -86,6 +86,19 @@ me"; kickstarter launches stated with explicit no-funding-outcome); matrix +5 at
 · wrapper+fb_thread migration · #41 backfill re-run · 5-check · smoke DEFERRED to when #45/#46/
 #42 are done (Andy's call: smoke per batch, not per ticket).
 
+**FLIP ADDENDUM (same day, ~08:23Z):** Andy's first promote went GATE RED on
+`community_info answers` — **transient** (4/4 immediate re-probes: HTTP 200, one row, 0.5-0.7s;
+full gate re-ran 202 GREEN twice; the gate's single-request checks need a retry — hardening
+flagged, do post-flip). Second promote LANDED: **prod `89ee3632`, 9 changed nodes, graph==staging,
+gate GREEN inside, pre/post snapshots** (`prod_2026-08-03T082321Z_pre-promote.json`). Companions
+applied within minutes: **wrapper migration** (`flip_40_wrappers_and_fb_thread_marker`) — all
+internal calls now v2 (multi_source ×2, app_member_feed, persona_signals; 0 v1 refs left) +
+**fb_thread addressee marker** · hammer 3 RPCs ×8 = all 200 · **#41 backfill re-run: 0 rows
+needed** · **prod re-verify exec 61801**: AGL question answered with the Michael Patrón thread,
+Fetch Raw Matches **2.7s/40 rows** (was 11.1s exec 61208 pre-flip), both conversation rows
+**arrived stamped**. R3 architecture batch #40+#41+#39 is LIVE. NEXT: #45 → #46 → #42 (DB-side,
+no promote) → THE SMOKE (batch exit + formal #40/#39 numbers) → #43 re-audit.
+
 ## 2026-08-03 (PRODUCTION DAY — R1+R2 SHIPPED) — FB capture processed (23 posts/288 comments/15 images → content_items, 0 unembedded) · 5-check PASS · **ANDY PROMOTED Release 2 (versionId `90a13237`, 67 nodes, graph==staging, gate 190 in-promote)** · prod re-verify PASS · **prod Big Smoke 169 judged · 3.6% FAIL < 5% benchmark** · #39 attribution filed (the one cluster) · architecture audit verified live → #40/#41/#42 filed · backlog ARCHIVED + rebuilt (open-only, working order) · release notes R1+R2 drafted
 
 - **Phase 0:** Andy's manual scroll (43 posts) + 4c comment pass (30 posts/168 comments after

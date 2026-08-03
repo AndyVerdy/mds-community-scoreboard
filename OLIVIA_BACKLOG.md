@@ -64,7 +64,7 @@ instrument = the 169-question smoke bank (prod baseline 2026-08-03: **3.6%**).
 | Scale 10 · Gate 9 · Layers 8 | — | hold | every ticket: gate GREEN + A9 unchanged |
 
 
-### 40. 🟡 BUILT + STAGED 2026-08-03 — Retrieval rewrite (RRF) · remaining: smoke slice (Andy's go) + prod flip · → RELEASE 3 (audit P1+P3)
+### 40. 🟢 LIVE ON PROD 2026-08-03 (`89ee3632`) — Retrieval rewrite (RRF) · remaining: v1 retirement after soak · formal ≤3.6% at the deferred batch smoke · → RELEASE 3 (audit P1+P3)
 *As a member, a question phrased differently from how it was written still finds the answer —
 and answers prefer recent, credible content.*
 **Now (verified live):** `content_search` sorts `_k_terms desc, _k_vec asc` and its WHERE
@@ -127,7 +127,7 @@ same-moment migration pointing the 3 SQL wrappers that still call v1 internally 
 ② the flip smoke = the formal ≤3.6% / no-class-regression number · ③ v1 retired after soak.
 Human-friendly report: `OLIVIA_40_REPORT.md`.
 
-### 41. 🟡 BUILT + STAGED 2026-08-03 — Identity stamping · remaining: rides the #40 promote (re-run backfill one-liner at flip) · → RELEASE 3 (audit P4)
+### 41. 🟢 LIVE ON PROD 2026-08-03 — Identity stamping · ALL ACs MET (flip backfill re-run: 0 rows needed; prod probe rows arrive stamped) · → RELEASE 3 (audit P4)
 *As the team, every Olivia conversation is filed against a member record, not just a phone.*
 0/3,102 stamped today. **THE TRAP: the FK expects `members.airtable_id`, NOT `at_member_id`
 (0 of 646 are equal).** Fix = n8n (staging→promote): `Find Member` select += `airtable_id` →
@@ -162,7 +162,7 @@ the node edits; re-run the backfill one-liner once to stamp prod rows created be
 **Accept when:** A2 re-run shows event_registrations ≥95% + members ≥95% keyed · fb_member_map
 1 primary uid per member · the 61 resolved-or-documented · gate GREEN.
 
-### 39. 🟡 BUILT + STAGED 2026-08-03 — Attribution · remaining: fb_thread marker rides the flip migration; formal cluster rate at the batch smoke · → RELEASE 3
+### 39. 🟢 LIVE ON PROD 2026-08-03 — Attribution · fb_thread marker SHIPPED at flip · remaining: formal cluster rate at the deferred batch smoke · → RELEASE 3
 *As a member, when Olivia quotes or credits somebody, that person actually said it — she never
 credits me with something I only received, asked for, or was tagged in.*
 **The dominant class in the prod smoke: 4 of 16 findings (Q3107 FAIL + Q3010/Q3065/Q3068 PARTIAL)
