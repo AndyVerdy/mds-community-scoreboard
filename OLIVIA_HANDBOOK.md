@@ -6,7 +6,9 @@
 > was the POC-era design record (July 2026). Everything durable from it lives here, re-organised
 > by topic instead of by date. The ClickUp doc stays as a historical archive; **this file is the
 > source of truth.** Day-by-day history lives in `SESSION_LOG_OLIVIA.md`; open work lives in the
-> current sprint doc.
+> current sprint doc. The ClickUp doc now carries a pointer page (`00 · READ FIRST`, page id
+> `2531q-67397`) with the current state for non-technical readers; its POC pages are marked
+> ARCHIVE. **It is deliberately not a copy of this file — two copies would drift.**
 >
 > **Written for a developer with no prior context and no AI assistant.** If something here is not
 > enough to act on, that is a bug in this document — fix it in the same commit as your change.
