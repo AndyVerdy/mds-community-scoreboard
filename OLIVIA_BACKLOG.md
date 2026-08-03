@@ -120,11 +120,12 @@ number matching in Gate Verdict (source + staging via build_loop, node-checked, 
 free re-probes deliver full answers, 65s→26.6s / 63s→37.9s** · ② Q3096 = verb-upgrade
 (launch→"funded") on real rows — #39's family, mechanism filed there · ③ Q9024 = event_lookup
 lane (not content_search) — filed as #47. Slice fabrication count flat vs prod (1↔1).
-**Remaining to close:** ① the formal ≤ 3.6% number — full 169-Q staging re-run (propose + Andy's
-go; the enriched slice's 9.1% is not comparable by design) OR measure at the prod-flip smoke ·
-② prod flip = promote (staging graph carries the swap + gate fix) **+ same-moment migration
-pointing the 3 SQL wrappers that still call v1 internally — `multi_source`, `app_member_feed`,
-`persona_signals` — at v2, + NOTIFY pgrst + REST hammer** · ③ v1 retired after soak.
+**Remaining to close (Andy 2026-08-03: full run SKIPPED — the ≤3.6% measurement happens at the
+prod-flip smoke):** ① prod flip = promote (staging graph carries the swap + gate fix) **+
+same-moment migration pointing the 3 SQL wrappers that still call v1 internally —
+`multi_source`, `app_member_feed`, `persona_signals` — at v2, + NOTIFY pgrst + REST hammer** ·
+② the flip smoke = the formal ≤3.6% / no-class-regression number · ③ v1 retired after soak.
+Human-friendly report: `OLIVIA_40_REPORT.md`.
 
 ### 41. 🔴 Identity stamping — olivia_messages.member + ingest paths · effort S · → RELEASE 3 (audit P4, Andy's worked spec)
 *As the team, every Olivia conversation is filed against a member record, not just a phone.*
