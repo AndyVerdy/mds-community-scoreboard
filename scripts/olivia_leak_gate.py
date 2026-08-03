@@ -178,6 +178,22 @@ def main():
         check("restricted returned ONLY with explicit consent flag", f"restricted_entitled_{ts}" in ids)
         check("never_surface stays hidden even with consent flag", f"never_entitled_{ts}" not in ids)
 
+        print("— sensitivity & access rules (content_search_v2, #40 RRF) —")
+        st, hits = rpc("content_search_v2", {"p_phone": phone, "p_terms": [MARKER], "p_limit": 100}, key)
+        ids = {h["source_id"] for h in hits} if isinstance(hits, list) else set()
+        check("v2 returns positive control (normal + entitled)", f"normal_entitled_{ts}" in ids, f"status {st}, ids {ids}")
+        check("v2 never_surface never returned", f"never_entitled_{ts}" not in ids)
+        check("v2 restricted excluded by default", f"restricted_entitled_{ts}" not in ids)
+        check("v2 unentitled chat never returned", f"normal_unentitled_{ts}" not in ids)
+        check("v2 unknown access_rule type denied (fail closed)", f"unknown_rule_type_{ts}" not in ids)
+        check("v2 malformed access_rule denied", f"malformed_rule_{ts}" not in ids)
+
+        st, hits = rpc("content_search_v2", {"p_phone": phone, "p_terms": [MARKER],
+                                             "p_include_restricted": True, "p_limit": 100}, key)
+        ids = {h["source_id"] for h in hits} if isinstance(hits, list) else set()
+        check("v2 restricted returned ONLY with explicit consent flag", f"restricted_entitled_{ts}" in ids)
+        check("v2 never_surface stays hidden even with consent flag", f"never_entitled_{ts}" not in ids)
+
         print("— sensitivity & access rules (lookup) —")
         st, hits = rpc("content_lookup", {"p_phone": phone, "p_source": CANARY_SOURCE, "p_limit": 100}, key)
         ids = {h["source_id"] for h in hits} if isinstance(hits, list) else set()
@@ -190,6 +206,8 @@ def main():
         print("— identity fail-closed —")
         st, hits = rpc("content_search", {"p_phone": "19999999999", "p_terms": [MARKER], "p_limit": 100}, key)
         check("unknown phone gets zero rows", isinstance(hits, list) and len(hits) == 0, f"status {st}, got {hits}")
+        st, hits = rpc("content_search_v2", {"p_phone": "19999999999", "p_terms": [MARKER], "p_limit": 100}, key)
+        check("v2 unknown phone gets zero rows", isinstance(hits, list) and len(hits) == 0, f"status {st}, got {hits}")
 
         print("— payload hygiene (live wa_message rows) —")
         st, hits = rpc("content_search", {"p_phone": phone, "p_terms": ["amazon"],
@@ -1012,6 +1030,9 @@ def main():
             st, rows = rpc("content_search", {"p_phone": rphone, "p_terms": ["amazon"], "p_limit": 5}, key)
             check("canceled member phone gets ZERO content rows",
                   isinstance(rows, list) and not rows, f"got {len(rows or [])}")
+            st, rows = rpc("content_search_v2", {"p_phone": rphone, "p_terms": ["amazon"], "p_limit": 5}, key)
+            check("canceled member phone gets ZERO content rows (v2)",
+                  isinstance(rows, list) and not rows, f"got {len(rows or [])}")
             st, rows = rpc("partner_lookup", {"p_phone": rphone, "p_query": "tiktok"}, key)
             check("canceled member phone gets ZERO partner rows",
                   isinstance(rows, list) and not rows, f"got {len(rows or [])}")
@@ -1040,6 +1061,10 @@ def main():
                                               "p_at_member_id": rem2[0]["at_member_id"]}, key)
             check("canceled at_member_id gets ZERO content rows",
                   isinstance(rows, list) and not rows, f"got {len(rows or [])}")
+            st, rows = rpc("content_search_v2", {"p_phone": None, "p_terms": ["amazon"],
+                                                 "p_at_member_id": rem2[0]["at_member_id"]}, key)
+            check("canceled at_member_id gets ZERO content rows (v2)",
+                  isinstance(rows, list) and not rows, f"got {len(rows or [])}")
         else:
             check("canceled at_member_id fixture found", False, f"status {st}")
         # a phone-less ACTIVE member must be SERVED through the app door (the whole point of #30)
@@ -1052,6 +1077,8 @@ def main():
         print("— anon key locked out —")
         st, body = rpc("content_search", {"p_phone": phone, "p_terms": [MARKER]}, ANON_KEY)
         check("anon key denied on content_search", st in (401, 403, 404), f"status {st}")
+        st, body = rpc("content_search_v2", {"p_phone": phone, "p_terms": [MARKER]}, ANON_KEY)
+        check("anon key denied on content_search_v2", st in (401, 403, 404), f"status {st}")
         st, body = rpc("content_lookup", {"p_phone": phone, "p_source": "wa_digest"}, ANON_KEY)
         check("anon key denied on content_lookup", st in (401, 403, 404), f"status {st}")
     finally:

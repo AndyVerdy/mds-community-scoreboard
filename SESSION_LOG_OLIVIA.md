@@ -6,6 +6,49 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-03 (LATE — #40 BUILT + STAGED) — `content_search_v2` RRF side-by-side, HNSW finally serving reads (idx_scan 0→live, v1 12s→v2 0.46s) · 6,486 noise embeddings nulled · embed job now nightly+alarmed · staging on v2 at all 3 call sites, E2E exec 61669 · gate 202 GREEN (+12 v2 checks) · NEXT = propose smoke slice to Andy, then #41
+
+- **v2 (migrations `content_search_v2_rrf`, `content_search_v2_two_phase_ann`):** identity gate +
+  access rules copied verbatim; tsv-GIN keyword branch (pool 200 by ts_rank_cd → term-cover rerank
+  → 60) + pure-ANN top-200 (transaction-local `enable_seqscan=off`; access filters applied to the
+  ids in phase 2) + recency floor 60 → **RRF by rank only**: kw 1.0 · vec 1.0 · recency 0.5 ·
+  authority 0.25 (= `engagement_score` via sender_member/member key — the audit's "nothing about
+  who said it" closed). ACL {postgres, service_role}; NOTIFY pgrst; hammer ×15 all-200.
+- **Two traps burned + documented:** function-level `SET hnsw.ef_search` → "permission denied to
+  set parameter" (PG15 placeholder rule; also a per-backend landmine) → in-body force-load +
+  `set_config(..., local)` with fail-open. And the fused-branch ANN was planner-refused (row
+  misestimate 161 vs 17,725 → warm seq scans that LOOKED fast: first probes 0.35s with idx_scan
+  still 0 — the audit's "read the plan, not the wall time" trap, hit live) → two-phase pure-ANN.
+  **Proof standard: `Index Scan using content_items_embedding_hnsw` in the plan + the idx_scan
+  counter rising (0 lifetime → +1 per embedded call).**
+- **Quality probes:** Q3106 verbatim shape v1 11.96s → v2 0.46s with the semantic top-hit first;
+  zero-keyword-overlap paraphrase ("amazon's own freight forwarding") reaches the AGL threads
+  (3/12 rows mention AGL); v2 top-3 with vs without vector DIFFER (the standing RRF proof);
+  empty-terms fb browse returns the fresh Aug-3 posts.
+- **Corpus filter (#40's noise AC):** 6,486 embeddings NULLED where embed-source text
+  (title+tl_dr+body+search_extra, = embed_backfill's row_text) < 30 chars; rows stay
+  keyword/thread-reachable. `embed_backfill.py`: MINCH=30 skip + id-cursor (skipped rows stay
+  NULL forever — without the cursor the loop would refetch them endlessly). **`embed_content`
+  joined `nightly_derivations.py` (5 jobs) + pre-registered heartbeat max_age 26h** — proven
+  under /usr/bin/python3: all 5 OK, embed walked 6,487 nulls / embedded 1 boundary row / left
+  6,486 by design. (Also refreshed the other 4 jobs — the 04:30 launchd run hadn't fired today.)
+- **Staging → v2, model names unchanged:** Fetch Raw Matches + Fetch Summaries URLs map exact
+  `content_search`→`content_search_v2` at the last inch (raw_op/op values untouched, embedding
+  attach conditions untouched); Attach Embedding renames tool_name AFTER the embed-attach check
+  (EXEC_NAME map). `build_loop.py` synced; node --check on the new code; active version
+  `e51c9e88` (updateNode auto-published). Wrappers `multi_source`/`app_member_feed`/
+  `persona_signals` still call v1 internally — **flip them in the same moment as the prod
+  promote** (in #40's remaining list).
+- **E2E on staging (exec 61669):** selftest fired Q3106's organic text; loop executed
+  content_search_v2 ×2 (grep-proven from exec data); Fetch Raw Matches 2.1s/40 rows (prod exec
+  61208 was 11.1s); answer = real member experiences with names (Michael Patrón $50-60K savings
+  thread — the bank-truth row — Ben Koeck, Mo Kuhail, Matt Finsilver, Ivan Ong).
+- **Gate 202 GREEN, 0 FAIL** — +12 content_search_v2 checks: canary mirror (positive control,
+  never_surface, restricted ± consent, unentitled chat, unknown/malformed rule), unknown phone,
+  canceled phone, canceled at_member_id, anon lockout.
+- **NEXT:** propose the smoke/TEST slice to Andy (the ≤3.6% no-class-regression AC) → then #41
+  identity stamping (backfill losslessness decays). Lock released at close.
+
 ## 2026-08-03 (PRODUCTION DAY — R1+R2 SHIPPED) — FB capture processed (23 posts/288 comments/15 images → content_items, 0 unembedded) · 5-check PASS · **ANDY PROMOTED Release 2 (versionId `90a13237`, 67 nodes, graph==staging, gate 190 in-promote)** · prod re-verify PASS · **prod Big Smoke 169 judged · 3.6% FAIL < 5% benchmark** · #39 attribution filed (the one cluster) · architecture audit verified live → #40/#41/#42 filed · backlog ARCHIVED + rebuilt (open-only, working order) · release notes R1+R2 drafted
 
 - **Phase 0:** Andy's manual scroll (43 posts) + 4c comment pass (30 posts/168 comments after

@@ -14,43 +14,44 @@
 > GATE (`scripts/olivia_leak_gate.py`, free) · staging edits under the `olivia_wf.py` lock ·
 > single-question staging probes. **Propose + WAIT** = any eval RUN (TEST ≤50 / FULL). **Andy
 > runs** = `promote` · prod edits (emergency rollback excepted). The session classifier blocks
-> lock/promote for me — Andy runs both in his terminal (proven 2026-08-03).
-> **Vocabulary: "gate 190" = 190 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
+> lock/promote for me — Andy runs both in his terminal (proven 2026-08-03; `lock` worked again
+> later that day — try it, fall back to Andy if blocked).
+> **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE: RELEASES 1+2 ARE LIVE ON PROD (2026-08-03)
+## STATE: R1+R2 LIVE ON PROD (`90a13237`) · #40 BUILT + STAGED 2026-08-03 (LATE)
 
-Andy promoted 03:54Z — versionId `90a13237`, 67 nodes, graph==staging, gate 190 ran inside the
-promote. Prod re-verified: 5-check PASS, Eugene yes-binding + ticket-capability + report feature
-all proven on prod, then the **full Big Smoke ran ON PROD: 169 judged · 3.6% FAIL < the 5%
-benchmark** (1 of 6 fails was stale bank truth — live 723 vs bank 722; fix the bank row). Pre/post
-promote snapshots in `olivia_snapshots/`; rollback = `olivia_wf.py rollback <snapshot>`.
+Prod untouched since Andy's 03:54Z promote (Big Smoke on prod 169 · **3.6%** = the baseline).
+**#40 shipped to STAGING same day:** `content_search_v2` side-by-side — tsv-GIN keyword + pure-ANN
+top-200 (HNSW **plan-proven**, lifetime idx_scan 0 → counting) + recency floor → **RRF by rank**
+(kw 1.0 · vec 1.0 · recency 0.5 · authority/engagement 0.25) · v1 12s → **v2 0.46s** on Q3106's
+shape · 6,486 sub-30-char embeddings nulled (rows stay keyword-reachable) · `embed_content` joined
+the nightly pipeline + 26h heartbeat (#13-alarmed) · staging executes v2 at all 3 call sites
+(model-facing tool name unchanged; active version `e51c9e88`) · **E2E exec 61669** (loop ran v2 ×2,
+Q3106 organic answered with the Michael Patrón thread) · **gate 202 GREEN** (+12 v2 checks).
+Full detail: `OLIVIA_BACKLOG.md` #40 BUILT block + `SESSION_LOG_OLIVIA.md` 2026-08-03 (LATE).
 
-## NEXT SESSION = #40 — Retrieval rewrite (Release 3 = ARCHITECTURE)
+## NEXT SESSION — close #40, then #41
 
-**Read `OLIVIA_BACKLOG.md` first** — open-items-only, 19 tickets in working order, audit
-scorecard on top (audit swept twice — #43/#44/#45/#46 filed from the gaps; audit doc has a
-2026-08-03 addendum closing its read-time-model check). **Release-3 exit = `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md` Appendix A
-re-scores ≥8/10 (baseline 6/10)** — retrieval 3→≥7 (#40), identity 6→≥8 (#41), the rest hold.
+1. **Propose the smoke/TEST slice to Andy** (eval RUN = his go): target = ≤ 3.6% with no class
+   regressing; slice should hit the exists-but-missed shapes (Q3094/Q3106/Q9024) + a spread of
+   content classes. On green → ask Andy to schedule the prod flip.
+2. **Prod flip (Andy runs promote):** the staging graph carries the swap; **same moment**, apply
+   the wrapper migration — `multi_source`, `app_member_feed`, `persona_signals` still call v1
+   internally — + NOTIFY pgrst + REST hammer. Then re-run audit A1/A3 for the #43 diff.
+3. **Then #41 identity stamping** (FK wants `airtable_id` NOT at_member_id, 0/646 equal; backfill
+   losslessness decays — same week). Working order after: #45 → #39 (v2 already returns
+   author/post_author labels — #39 nearly free) → #46 → #42.
 
-**#40 story:** *a question phrased differently from how it was written still finds the answer —
-and answers prefer recent, credible content.* Verified live: `content_search` requires a keyword
-hit when terms are given (semantic-only rows NEVER return), HNSW 275MB / 0 scans, retrieval step
-0.4–11s. **Build:** `content_search_v2` SIDE-BY-SIDE (never in-place) → ANN wide net (vector as
-LEADING sort) + `search_tsv` keyword candidates → **RRF, never blended scores** → recency decay +
-authority boost → stop embedding empty/sub-30-char rows (keep them keyword/thread-reachable).
-Point the STAGING workflow at v2 → probes → TEST slice (propose to Andy first) → Andy flips prod.
-**Traps:** NOTIFY pgrst + hammer-test after DDL · a timeout reads as "no data found" · one-word
-FB comments are sometimes THE answer — never delete rows, only unembed. **Then #41 same week**
-(identity stamping — the FK wants `airtable_id` NOT `at_member_id`; backfill losslessness decays).
+**Release-3 exit unchanged:** `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md` Appendix A re-scores
+≥8/10 (baseline 6/10) — retrieval 3→≥7 (#40 moves it), identity 6→≥8 (#41+#45), rest hold.
 
-Working order after: #45 identity-rest → #39 attribution (v2 returns author/post_author labels —
-makes #39 nearly free) → #46 member_events (our surfaces) → #42 place_city → R3 features
-(#38, #29, #44 graph after #29's memo …) → close-out #32/#14/**#43 RE-AUDIT ≥8/10**/#34.
-**Andy's side this week:** `member_events` feed (GROUPOS_PAT + app event logging) — the only
-irreversible daily loss. **Release notes `OLIVIA_RELEASE_NOTES_R1_R2.md` = DRAFTED, waiting on
-Andy to validate + post** (never posted by me).
+**#40 traps burned (don't re-trip):** function-level `SET hnsw.*` = PG15 placeholder permission
+error → in-body force-load + set_config(local, fail-open) · fused-branch ANN gets planner-refused
+(row misestimate) → two-phase pure-ANN under local enable_seqscan=off · **a fast probe proves
+nothing — first probes were 0.35s warm SEQ scans with idx_scan still 0; only the plan + the
+counter are honest.**
 
-## Watch-outs (new this session)
+## Watch-outs (standing)
 - **`olivia_selftest.py` paces by sleep(20)** — an answer >20s races Save Conversation and the
   next probe reads INCOMPLETE history (manufactured a phantom yes-binding P0 on 2026-08-03). Fix
   it to wait on persistence before multi-turn probes. Real-member echo: two messages <2s apart

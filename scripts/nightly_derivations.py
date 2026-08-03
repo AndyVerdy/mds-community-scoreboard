@@ -23,6 +23,9 @@ JOBS = [
     ("label_questions",      [f"{REPO}/scripts/olivia_label_questions.py"]),
     ("sync_chapter_pages",   [f"{REPO}/scripts/sync_chapter_pages.py"]),
     ("embed_member_profiles", [f"{REPO}/scripts/embed_member_profiles.py"]),
+    # #40: content-corpus embeddings are a PROCESS, not a hand-run event (script skips
+    # sub-30-char noise rows by design; lives in mds-scorecard-tools, reads its own env)
+    ("embed_content",        ["/Users/Born/mds-scorecard-tools/embed_backfill.py"]),
 ]
 
 

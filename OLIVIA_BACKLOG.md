@@ -63,7 +63,7 @@ instrument = the 169-question smoke bank (prod baseline 2026-08-03: **3.6%**).
 | Scale 10 · Gate 9 · Layers 8 | — | hold | every ticket: gate GREEN + A9 unchanged |
 
 
-### 40. 🔴 Retrieval rewrite — retrieve-then-rerank (RRF) · effort M-L · → RELEASE 3 (audit P1+P3, 2026-08-03)
+### 40. 🟡 BUILT + STAGED 2026-08-03 — Retrieval rewrite (RRF) · remaining: smoke slice (Andy's go) + prod flip · → RELEASE 3 (audit P1+P3)
 *As a member, a question phrased differently from how it was written still finds the answer —
 and answers prefer recent, credible content.*
 **Now (verified live):** `content_search` sorts `_k_terms desc, _k_vec asc` and its WHERE
@@ -84,6 +84,33 @@ retrieval step 5–11s → sub-second indexed · recency handled · 275MB index 
 3.6% baseline with no class regressing · gate GREEN · paraphrase probes (Q3106/Q9024 shapes) pass ·
 **embed step joins the nightly pipeline + heartbeat** (A3 hit 100% on 08-03 only because the
 backfill was run BY HAND after the FB capture — coverage must be a process, not an event).
+
+**BUILT 2026-08-03 (all cited live):** `content_search_v2` side-by-side (migrations
+`content_search_v2_rrf` + `content_search_v2_two_phase_ann`) — identity gate + access rules
+verbatim from v1; three INDEXED branches: tsv-GIN keyword (ts_rank pool 200 → term-cover rerank
+→ 60) + **pure-ANN top-200 under transaction-local `enable_seqscan=off`** (phase 2 access-filters
+the ids; in-body library-load + `set_config('hnsw.ef_search','200',local)` — function-level `SET
+hnsw.*` fails PG15 placeholder validation) + recency floor 60 → **RRF by rank only** (kw 1.0 ·
+vec 1.0 · recency 0.5 · authority=engagement_score 0.25 as extra rank lists). **Proof:** plan =
+`Index Scan using content_items_embedding_hnsw`; lifetime idx_scan 0 → increments per call; v1
+11.96s → **v2 0.46s** (Q3106 shape); zero-keyword paraphrase reaches the AGL threads; top-3
+with/without vector differ; empty-terms browse intact; hammer ×15 all-200. **Corpus filter:**
+6,486 sub-30-char embeddings NULLED (embed-source def = title+tl_dr+body+search_extra = the
+script's row_text; rows stay keyword/thread-reachable); `embed_backfill.py` skips sub-30 via
+id-cursor; **`embed_content` job in `nightly_derivations.py` + pre-registered heartbeat (26h,
+#13-alarmed), run proven under /usr/bin/python3.** **Staging → v2 at all 3 call sites** (Fetch
+Raw Matches + Fetch Summaries URL mappers · Attach Embedding EXEC_NAME swap; model-facing tool
+name UNCHANGED; `build_loop.py` synced; active version `e51c9e88`). **E2E exec 61669:** loop
+executed content_search_v2 ×2, Fetch Raw Matches 2.1s/40 rows (11.1s in prod exec 61208), Q3106
+organic answered with the Michael Patrón savings thread + 5 named members. **Gate 202 GREEN**
+(+12 v2 checks: full canary mirror ± consent flag, unknown phone, canceled phone + at_member_id,
+anon lockout). ⚠️ A fast probe is NOT proof — first probes ran 0.35s on warm SEQ scans; only the
+idx_scan counter and the plan are honest.
+**Remaining to close:** ① smoke/TEST slice ≤ 3.6% with no class regressing (eval RUN = propose
++ Andy's go) · ② prod flip = promote (the staging graph carries the swap) **+ same-moment
+migration pointing the 3 SQL wrappers that still call v1 internally — `multi_source`,
+`app_member_feed`, `persona_signals` — at v2, + NOTIFY pgrst + REST hammer** · ③ v1 retired
+after soak.
 
 ### 41. 🔴 Identity stamping — olivia_messages.member + ingest paths · effort S · → RELEASE 3 (audit P4, Andy's worked spec)
 *As the team, every Olivia conversation is filed against a member record, not just a phone.*
