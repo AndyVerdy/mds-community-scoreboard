@@ -27,7 +27,10 @@ history: `OLIVIA_BACKLOG_ARCHIVE.md`). Order within sections = the working order
    carried over with their full story/ACs and a one-line note on why they did not ship.
 3. **Everything in this header travels with it** — Definition of Done, the target ladder,
    EVERY-MEMBER-ALWAYS, Andy's working rules, this ritual.
-4. **THE FINAL STAGE OF EVERY SPRINT IS THE RELEASE NOTES** — one merged member-facing doc
+4. **Regenerate the ClickUp copy of the handbook** (doc `2531q-103317`: TOC + one page per
+   chapter + `99 · ARCHIVE`) whenever the handbook changed materially that sprint — it is the only
+   way anyone without repo access can read any of this.
+5. **THE FINAL STAGE OF EVERY SPRINT IS THE RELEASE NOTES** — one merged member-facing doc
    (`OLIVIA_RELEASE_NOTES.md`), drafted by me, validated and posted by Andy. A sprint is not
    closed until they are written.
 
