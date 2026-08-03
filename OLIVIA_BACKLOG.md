@@ -330,6 +330,26 @@ still robotic becomes a NAMED FIX before the promote.
 
 ---
 
+### 49. ⚪ Developer handbook — the system, documented for a human dev · effort L · → THE REST (Andy 2026-08-03)
+*As a new developer with no AI, I read one handbook and can understand, run, and extend the
+MDS AI Assistant — concept to schema to why.*
+Andy's bar: "really detailed... that if a real dev comes they can read it, understand it and
+continue working without AI." What exists is rich but chronological (session logs, backlog
+evidence, the architecture audit); what is missing is the FRONT DOOR. **Contents:** ① system
+overview — concept, member experience, the answer pipeline end-to-end · ② stack + component map —
+the n8n workflows (prod/staging/ladder/review, node roles), Supabase schema (every digest table
++ every RPC with its CONTRACT: args, gating, return shape), the scripts (gate, eval, loop
+sources, nightly, sync), the external services (Meta WA, Anthropic, Voyage, Airtable, GroupOS,
+Slack, launchd) · ③ environment map — where every key lives, which machine runs what · ④
+runbooks — deploy/promote/rollback, eval tiers, FB capture SOP, incident (alarm → triage) · ⑤
+decision log — the whys reorganized by TOPIC from the session logs (identity model, RRF,
+fail-closed gating, append-only events, privacy rulebook) · ⑥ data dictionary incl. the
+field-names-lie traps. **Sources exist — this is compilation, not archaeology.** Overlaps #34
+(QA doc set) — write together; keep the handbook UPDATED as a close-item on every ticket after.
+**Accept when:** a cold read suffices to run every runbook without the repo's session logs ·
+every RPC documented with contract + gating · every secret's location named · reviewed by Andy
+(and ideally one real dev) · linked from CLAUDE.md as the front door.
+
 ### 34. 🏁 Finalize the QA doc set — THE LAST TICKET, runs after everything else · effort M
 *As the team, once the whole backlog is done, the three QA docs are true, complete, and
 reconciled — and the Big Smoke has actually run against them.*
