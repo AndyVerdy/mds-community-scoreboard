@@ -6,6 +6,50 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-03 (PRODUCTION DAY — R1+R2 SHIPPED) — FB capture processed (23 posts/288 comments/15 images → content_items, 0 unembedded) · 5-check PASS · **ANDY PROMOTED Release 2 (versionId `90a13237`, 67 nodes, graph==staging, gate 190 in-promote)** · prod re-verify PASS · **prod Big Smoke 169 judged · 3.6% FAIL < 5% benchmark** · #39 attribution filed (the one cluster) · architecture audit verified live → #40/#41/#42 filed · backlog ARCHIVED + rebuilt (open-only, working order) · release notes R1+R2 drafted
+
+- **Phase 0:** Andy's manual scroll (43 posts) + 4c comment pass (30 posts/168 comments after
+  seed fix) → load_feed → download_images (8 new, pre-expiry) → vision_decode (8; 1 old straggler
+  content-filtered) → upload → linker SQL → embed_backfill → **fb_post 3,906 / fb_comment 14,265,
+  0 unembedded**. Searchability proven (Fred McKinnon comment top-hit). Coverage vs FB Insights
+  daily truth: 94.9% (only real gap ~3 Jul-28 posts, 3× captures agree = deleted). Scorecard side:
+  insights+roster imported (96 contributors, 750 roster, 38 departed flagged).
+  **⚠️ SOP FIX: `seed_ids.json` must be rewritten from the capture file EVERY run** — 4c silently
+  fell back to a Jul-30 seed (localStorage dies on tab close) and seeded 7 posts instead of 30.
+- **Promote:** classifier blocked lock+promote for me → Andy ran both in his terminal. Delta 16
+  nodes (3 new: Billing Nudge/Apply Nudge/Claims?). Pre/post snapshots in olivia_snapshots/.
+  Independently verified: updatedAt 03:54:42Z, activeVersionId 90a13237, 64→67 nodes.
+- **Prod re-verify (5-check):** MRT +2.71s before Route Request (exec 61223) · ladder 1-exec/inbound
+  silent no-ops · solve links 5 links exec 61227 (single-source variance on 61223 = known class) ·
+  counting 20 chapters exec 61224 · gate 190. Probes silent (Send Reply never fired).
+- **Eugene class on prod: BOTH fixed.** Yes-binding delivered the last-message offer (04:14:01);
+  ticket-capability offered properly. **False alarm en route:** first replay bound wrong — was MY
+  harness (selftest fixed 20s pacing vs 21.6s answer → Save Conversation race, history incomplete).
+  Real residual: two member messages <2s apart hit the same race — filed as note, low frequency.
+  **Fix the selftest to wait on persistence, not sleep(20).**
+- **Report feature on prod:** report #17 filed verbatim, no-promise wording held.
+  **Buttons (#38) NOT built — nothing to test** (no interactive type in graph).
+- **Big Smoke on prod:** eval_bank_smoke 173 fired (169 judged) · PASS 153 · PARTIAL 10 · FAIL 6 =
+  **3.6%** · ~$5.28 · Q9032 fail = STALE BANK TRUTH (722 vs live 723 — Olivia right, bank fixed
+  next). Real cluster = ATTRIBUTION (Q3107 FAIL + 3010/3065/3068 PARTIAL) → **#39 filed with
+  machine-verified mechanism** (addressee-as-speaker: Lee Leathers credited with Betsy/Dan's asks;
+  commenter-as-author: Dan Ri credited with Zaid Al-Husseini's post). Singletons: Q3094/Q3106/Q9024
+  exists-but-missed (→#40 explains mechanically), Q9016 blanket refusal.
+- **Architecture audit (Andy's, `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md`) verified against live:**
+  content_search sort `_k_terms desc, _k_vec asc` + keyword-required WHERE = semantic-only rows
+  NEVER return · HNSW 275MB 0 scans · tsv_idx 2 scans (both mine) · olivia_messages.member 0/3102
+  w/ FK→`airtable_id` (NOT at_member_id, 0/646 equal) · 61/646 no at_member_id. Filed **#40
+  retrieval-RRF (P1+P3), #41 identity stamping, #42 place_city table**; score 6/10 → target ≥8
+  baked into backlog as the R3 exit. Correction to audit P1: fuse by RANK (RRF), never blended
+  scores (standing lesson; expertise_search = precedent). Traps in ticket: NOTIFY pgrst, timeout
+  =fake-no-data, keep sub-30-char rows keyword-reachable (one-word answers).
+- **Docs:** backlog → open-only working order (#40→#41→#39→#42 · R3 features · close-out #32/#14/#34),
+  27 closed → `OLIVIA_BACKLOG_ARCHIVE.md`, 9 old eval reports → archive/eval_reports/ ·
+  `OLIVIA_RELEASE_NOTES_R1_R2.md` DRAFTED (Andy validates + posts — includes honest 3.6% + known
+  issues incl. attribution) · lock expires 05:50Z on its own.
+- **NEXT SESSION = #40** (content_search_v2 side-by-side → staging wf points at it → probes +
+  smoke slice → flip prod RPC). Then #41 same week (backfill losslessness decays).
+
 ## 2026-08-01 (DAY · SESSION CLOSE) — #37 REPORTS shipped+CLOSED on Andy's ACs (16-turn suite caught 3 defects: double-file→RPC idempotency, her-words filing→original-ask pin, "they'll follow up"→no-promise pin) · EUGENE'S LIVE PROD FAILURES fixed as a CLASS (yes-binding to last message · never-deny-tickets · long-gap freshness; EUG1 replay passes) · rulings: Q3088 beta+report, Q3116 BOTH · portal reports page + main-page section w/ soft clear · watchdog 3.9-parse fix (13h Slack spam; 27 msgs cleaned via bot chat.delete) · #38 CTAs filed R3 (+3-button report confirm) · gate 190 · NEXT SESSION = PRODUCTION DAY
 
 - **Production-day runbook (next session):** (1) Andy's manual FB scroll (phase 0) → I process
