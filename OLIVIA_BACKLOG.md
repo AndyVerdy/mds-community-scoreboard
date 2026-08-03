@@ -382,26 +382,6 @@ still robotic becomes a NAMED FIX before the promote.
 
 ---
 
-### 49. ⚪ Developer handbook — the system, documented for a human dev · effort L · → THE REST (Andy 2026-08-03)
-*As a new developer with no AI, I read one handbook and can understand, run, and extend the
-MDS AI Assistant — concept to schema to why.*
-Andy's bar: "really detailed... that if a real dev comes they can read it, understand it and
-continue working without AI." What exists is rich but chronological (session logs, backlog
-evidence, the architecture audit); what is missing is the FRONT DOOR. **Contents:** ① system
-overview — concept, member experience, the answer pipeline end-to-end · ② stack + component map —
-the n8n workflows (prod/staging/ladder/review, node roles), Supabase schema (every digest table
-+ every RPC with its CONTRACT: args, gating, return shape), the scripts (gate, eval, loop
-sources, nightly, sync), the external services (Meta WA, Anthropic, Voyage, Airtable, GroupOS,
-Slack, launchd) · ③ environment map — where every key lives, which machine runs what · ④
-runbooks — deploy/promote/rollback, eval tiers, FB capture SOP, incident (alarm → triage) · ⑤
-decision log — the whys reorganized by TOPIC from the session logs (identity model, RRF,
-fail-closed gating, append-only events, privacy rulebook) · ⑥ data dictionary incl. the
-field-names-lie traps. **Sources exist — this is compilation, not archaeology.** Overlaps #34
-(QA doc set) — write together; keep the handbook UPDATED as a close-item on every ticket after.
-**Accept when:** a cold read suffices to run every runbook without the repo's session logs ·
-every RPC documented with contract + gating · every secret's location named · reviewed by Andy
-(and ideally one real dev) · linked from CLAUDE.md as the front door.
-
 ### 34. 🏁 Finalize the QA doc set — THE LAST TICKET, runs after everything else · effort M
 *As the team, once the whole backlog is done, the three QA docs are true, complete, and
 reconciled — and the Big Smoke has actually run against them.*
@@ -445,6 +425,38 @@ the release is actually safe to ship, not just that the tickets are marked done.
 # ✅ CLOSED — shipped and live (kept here for the release record; older history in `OLIVIA_BACKLOG_ARCHIVE.md`)
 
 **R3 architecture batch LIVE ON PROD `89ee3632` (2026-08-03 ~08:23Z, Andy promoted).**
+
+### 49. 🟢 CLOSED 2026-08-03 — Developer handbook · `OLIVIA_HANDBOOK.md` REPLACES ClickUp `2531q-103317`
+*As a new developer with no AI, I read one handbook and can understand, run, and extend the
+MDS AI Assistant — concept to schema to why.*
+Andy's bar: "really detailed... that if a real dev comes they can read it, understand it and
+continue working without AI." What exists is rich but chronological (session logs, backlog
+evidence, the architecture audit); what is missing is the FRONT DOOR. **Contents:** ① system
+overview — concept, member experience, the answer pipeline end-to-end · ② stack + component map —
+the n8n workflows (prod/staging/ladder/review, node roles), Supabase schema (every digest table
++ every RPC with its CONTRACT: args, gating, return shape), the scripts (gate, eval, loop
+sources, nightly, sync), the external services (Meta WA, Anthropic, Voyage, Airtable, GroupOS,
+Slack, launchd) · ③ environment map — where every key lives, which machine runs what · ④
+runbooks — deploy/promote/rollback, eval tiers, FB capture SOP, incident (alarm → triage) · ⑤
+decision log — the whys reorganized by TOPIC from the session logs (identity model, RRF,
+fail-closed gating, append-only events, privacy rulebook) · ⑥ data dictionary incl. the
+field-names-lie traps. **Sources exist — this is compilation, not archaeology.** Overlaps #34
+(QA doc set) — write together; keep the handbook UPDATED as a close-item on every ticket after.
+**Accept when:** a cold read suffices to run every runbook without the repo's session logs ·
+every RPC documented with contract + gating · every secret's location named · reviewed by Andy
+(and ideally one real dev) · linked from CLAUDE.md as the front door.
+
+**CLOSED 2026-08-03:** `OLIVIA_HANDBOOK.md` written — 15 sections: the five incident-prevention
+rules · what Olivia is + the two sides · the channel and the 24h window (both numbers, and why
+786 never moves to Meta) · the full answer pipeline node-by-node · the data layer (Airtable=truth /
+Supabase=serving, the three access dimensions, every core table with live row counts) · identity
+(canonical key + the airtable_id vs at_member_id trap) · retrieval (RRF design, the two HNSW traps,
+the full gated-RPC surface + grant discipline) · the personalization layer (ledger formula, graph
+weighting, append-only event log) · runbooks (deploy/rollback, gate, eval, nightly jobs, FB capture,
+incident) · env + secrets map · repo map · the privacy model + standing rulings · decisions-and-why
+· 9 documented field traps · known limits · glossary. All 18 ClickUp pages read first; durable
+decisions carried over by topic. **Source ClickUp doc `2531q-103317` is now historical archive.**
+**Maintenance rule written in: the handbook updates in the same commit as the change it describes.**
 
 ### 44. 🟢 CLOSED 2026-08-03 — Knowledge graph + EXPERTISE LEDGER (Andy pulled it forward; #29's memo TUNES it, no longer blocks it) · → RELEASE 3
 *As a member, MDS knows who knows who — intros, "people like Mo", and "who was in the room"

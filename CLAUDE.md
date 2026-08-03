@@ -19,6 +19,11 @@
 
 ---
 
+> 📗 **OLIVIA: the front door is `OLIVIA_HANDBOOK.md`** — the complete developer handbook
+> (concept · pipeline · data layer · identity · retrieval · runbooks · env · privacy · traps).
+> It REPLACES ClickUp `2531q-103317`. Read it before any Olivia work; update it in the same
+> commit as any change it describes.
+
 # 🔄 SESSION PROTOCOL — follow every session
 
 **This folder is a MULTI-PROJECT MDS working directory** — it holds docs/scripts for many separate
