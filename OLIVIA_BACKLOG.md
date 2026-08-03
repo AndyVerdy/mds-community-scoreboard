@@ -138,6 +138,16 @@ re-verify the phone-joining readers (`persona_signals`, `persona_signal_fingerpr
 `event_registrations` 62% keyed. **Expect:** portal/persona/dossier joins become key-based and
 survive phone changes. **Accept when:** all rows stamped · new rows arrive stamped · readers verified.
 
+**BUILT 2026-08-03 (cited live):** staging nodes edited under lock — `Find Member` select +=
+`airtable_id` · `Resolve Member` carries it (comment pins the NOT-at_member_id trap) · `Save
+Conversation` stamps `member: mem.airtable_id`. **Probe: 4 fresh staging rows all arrived stamped
+with the phone-owner's record** (member_matches_phone_owner = true). **Backfill: 2,554/2,554 rows
+stamped, 0 unstamped, 0 phone↔stamp mismatches** (only phones mapping to exactly ONE member
+record were stamped; none were ambiguous). Readers verified: `persona_signals` (1 row, test
+member) + `persona_signal_fingerprints` (752 = the full active population) execute unchanged;
+`olivia_health_check` doesn't phone-join. Gate GREEN (202). **At the flip:** the promote carries
+the node edits; re-run the backfill one-liner once to stamp prod rows created between now and flip.
+
 ### 45. 🟡 Identity resolution — the rest of the dimension · effort M · → RELEASE 3 (audit §2+§5; #43 needs it to score identity ≥8)
 *As the team, one human is one record everywhere — WhatsApp, Facebook, Airtable, events.*
 #41 covers olivia_messages only. Still unowned (verified in the audit):
