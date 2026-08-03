@@ -18,6 +18,35 @@ history: `OLIVIA_BACKLOG_ARCHIVE.md`). Order within sections = the working order
 
 ---
 
+## 🔁 SPRINT RITUAL (Andy 2026-08-03) — how a sprint opens and closes
+
+**This file becomes a SPRINT doc.** When the closing ticket of a sprint lands (#43 for this one):
+1. **Archive** the finished sprint → `OLIVIA_SPRINT_<n>_ARCHIVE.md` (the whole doc, closed
+   tickets and all — the release record).
+2. **Open the next sprint** → `OLIVIA_SPRINT_<n+1>.md`, containing **ONLY the open tickets**,
+   carried over with their full story/ACs and a one-line note on why they did not ship.
+3. **Everything in this header travels with it** — Definition of Done, the target ladder,
+   EVERY-MEMBER-ALWAYS, Andy's working rules, this ritual.
+4. **THE FINAL STAGE OF EVERY SPRINT IS THE RELEASE NOTES** — one merged member-facing doc
+   (`OLIVIA_RELEASE_NOTES.md`), drafted by me, validated and posted by Andy. A sprint is not
+   closed until they are written.
+
+**Structure inside a sprint doc:**
+- **Sprint goal** — one or two lines: what this sprint is FOR.
+- **At a glance** — a scan table: ticket · name · priority · size · status.
+- **Open tickets**, grouped ARCHITECTURE first then THE REST, each with: number · name ·
+  **priority S1–S4 with its colour** · **size (S/M/L)** · the STORY (as a member/team sentence) ·
+  **a plain-English line a non-technical reader understands** · Accept-when ACs · why-now /
+  dependency notes.
+- **Open questions for Andy** — the accumulating rulings and asks, in one place.
+- **CLOSED — at the BOTTOM of the doc** (Andy's rule): completed tickets move down as they close,
+  keeping their evidence blocks, so the sprint reads open-work-first.
+
+**Priority key:** 🔴 S1 now · 🟡 S2 next · 🔵 S3 planned · ⚪ S4 later · 🏁 closes the sprint ·
+🚀 new data source · 🔥 standing/measurement. **Sizes:** S ≈ a session · M ≈ a day · L ≈ multi-day.
+
+---
+
 ## Definition of Done — one list, applies to EVERY item
 
 Written once, true for everything that ships. Per-item conditions live under each story as
