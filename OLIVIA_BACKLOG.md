@@ -51,7 +51,7 @@ phone-less actives; fixed same day.)
 SQL behind every number; **re-run it after each ticket for the before/after diff**. Regression
 instrument = the 169-question smoke bank (prod baseline 2026-08-03: **3.6%**).
 
-**Release-3 exit = the audit re-scores ≥8/10** (audit bot, 2026-08-03 baseline **6/10**):
+**Release-3 exit = ticket #43: the audit RE-RUNS and re-scores ≥8/10** (baseline 2026-08-03: **6/10**):
 
 | Dimension | Now | Target | Moved by |
 |---|---|---|---|
@@ -59,7 +59,7 @@ instrument = the 169-question smoke bank (prod baseline 2026-08-03: **3.6%**).
 | Identity resolution | **6** | ≥8 | **#41** (+61 missing `at_member_id`, reg 62%) |
 | Semantic coverage | 8 | 9 | #40's corpus filter (junk out of the index) |
 | Event log | **0** | feed live | Andy's app-side (GROUPOS_PAT + app logging, under #29) |
-| Graph | 0 | starts | #29 memo → weighted edges (LAST, deliberately) |
+| Graph | 0 | starts | **#44** (weighted edges; opens after #29's memo, LAST) |
 | Scale 10 · Gate 9 · Layers 8 | — | hold | every ticket: gate GREEN + A9 unchanged |
 
 
@@ -127,7 +127,7 @@ a table (data, not DDL), strip state suffixes, normalize on ingest. **Expect:** 
 people search stops leaking members; adding a city becomes an INSERT. **Accept when:** the four
 audit examples resolve to one canonical each; member_match city counts match hand counts.
 
-**Also NOW, Andy's side (no ticket):** `member_events` = 0 rows — the only *irreversible* daily loss. Our write is ~1 day once the app emits; the feed is the GROUPOS_PAT + app-event-logging ask (under #29). Graph layer deliberately LAST — needs weighted edges, waits for the #29 memo.
+**Also NOW, Andy's side (no ticket):** `member_events` = 0 rows — the only *irreversible* daily loss. Our write is ~1 day once the app emits; the feed is the GROUPOS_PAT + app-event-logging ask (under #29). Graph layer = **#44**, deliberately LAST — waits for the #29 memo.
 
 ---
 
@@ -194,6 +194,21 @@ handling — the Amazon/eBay/Netflix patterns), mapped onto MDS's real signal in
 
 **Impact:** all members — Andy's call: matchmaking is the key product surface. The persona-quality
 critique (2026-07-30: cards too generic) lands here as the redesign.
+
+### 44. 🔵 Knowledge graph — weighted member↔entity edges · effort M-L · → RELEASE 3, LAST (audit P6; opens AFTER #29's research memo)
+*As a member, MDS knows who knows who — intros, "people like Mo", and "who was in the room"
+come from real connections, not just profile fields.*
+**Raw material already exists (audit A11):** 10,266 member↔event edges · 1,327 members ·
+707 events, derivable today with zero new capture. Audit's sample test: 20/20 members got a
+relevant 2-hop niche-matched candidate. **Why not naive:** the biggest event has 409 attendees —
+unweighted co-attendance puts up to 424 people "one hop away" and is unusable. Edges must be
+**weighted by event size** (small dinner ≫ summit) and typed (co-attended · same-chapter ·
+same-chat · talked-in-thread once #40 labels authorship).
+**Build:** materialized `nodes`/`edges` tables in `digest`, refresh job on the nightly pipeline
+(+ heartbeat), gated access like every other source; #29's memo picks the scoring model it feeds.
+**Accept when:** edges materialized + weighted + refreshed nightly · a "who should I meet at
+<event>" probe returns small-event/shared-niche people first, never the 409-attendee blob ·
+gate GREEN · the audit's Graph dimension scores >0 at the #43 re-audit.
 
 ### 17. ⚪ Auto-refresh videos and partners · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01; still blocked on GROUPOS_PAT). TEMP SOLUTION NOW: WEEKLY refresh via the GroupOS connection in-session (videos + partners diff-upsert), heartbeat-backed so the staleness alarm pages if a week is missed; first refresh run 2026-08-01**
 *As a member, new recordings and deals show up without anyone importing them.*
@@ -302,6 +317,24 @@ capped-answer-continues probes · uses-what-she-knows probes · **Andy's own fee
 still robotic becomes a NAMED FIX before the promote.
 
 ---
+
+### 43. 🏁 RE-AUDIT after Release 3 — prove the architecture moved · effort S · runs WITH #34 at the release close
+*As the team, we don't declare the architecture fixed — the same audit that scored it 6/10
+re-runs and scores it ≥8, with nothing else degraded.*
+**The instrument is already written:** `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md` Appendix A
+(A1–A11) — same queries, before/after diff, no fresh methodology. Run it cold (the audit's own
+warning: read the PLAN, not warm wall-time).
+**Accept when:**
+- **Overall ≥8/10** against the baseline 6/10, dimension by dimension: retrieval ≥7 (A4: HNSW
+  `idx_scan > 0` · A5: plan shows the index scan, no 38k seq scan) · identity ≥8 (A2:
+  olivia_messages stamped 100%, members ≥95% keyed) · semantic 9 (A6: empty-embedded = 0) ·
+  event log: `member_events` receiving real app events (A1) · graph: edges exist (#44, A11).
+- **Nothing regressed:** gate GREEN · A9 grants unchanged (anon/authenticated = 0) · smoke
+  re-run ≤ the 3.6% prod baseline with no class worse · scale/layers scores hold.
+- **The diff table is written into the session log + this file's head**, and the audit doc gains
+  a dated re-run section (same format as its 08-03 re-check).
+- Anything still below target is either fixed or filed as a named ticket — the score is not
+  rounded up.
 
 ### 34. 🏁 Finalize the QA doc set — THE LAST TICKET, runs after everything else · effort M
 *As the team, once the whole backlog is done, the three QA docs are true, complete, and
