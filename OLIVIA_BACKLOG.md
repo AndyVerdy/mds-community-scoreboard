@@ -9,11 +9,12 @@
 - **Issues found alongside are not the job.** Check the backlog for an existing ticket, then flag for priority evaluation. Never let them become the work.
 - **Always show a ticket's STORY + ACs. Closing needs: short results · short AC checklist (met/not) · before/after numbers.** (Andy 2026-08-03)
 
-# Olivia — backlog (open items only)
+# Olivia — backlog — OPEN (architecture · the rest) then CLOSED (Andy's structure, 2026-08-03)
 
-Releases 1+2 SHIPPED to prod 2026-08-03 (versionId `90a13237` · prod smoke 3.6% < 5%).
-Everything shipped lives in `OLIVIA_BACKLOG_ARCHIVE.md` — nothing completed appears here.
-**Order below = the working order (Andy 2026-08-03: architecture first).**
+R1+R2 shipped 2026-08-03 (`90a13237`, prod smoke 3.6%) · **R3 architecture batch #40+#41+#39
+LIVE same day (`89ee3632`)**. Structure (Andy 2026-08-03): **OPEN in two sections — ARCHITECTURE
+first, then THE REST — and CLOSED kept visible at the bottom** for this release's record (older
+history: `OLIVIA_BACKLOG_ARCHIVE.md`). Order within sections = the working order.
 
 ---
 
@@ -46,7 +47,7 @@ phone-less actives; fixed same day.)
 
 ---
 
-# 🔴 NOW — architecture (Release 3 IS this — Andy 2026-08-03)
+# 🔴 OPEN — ARCHITECTURE (Release 3 core — Andy 2026-08-03: architecture first)
 
 **Source of truth: `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md`** — Appendix A holds the exact
 SQL behind every number; **re-run it after each ticket for the before/after diff**. Regression
@@ -63,6 +64,326 @@ instrument = the 169-question smoke bank (prod baseline 2026-08-03: **3.6%**).
 | Graph | 0 | starts | **#44** (weighted edges; opens after #29's memo, LAST) |
 | Scale 10 · Gate 9 · Layers 8 | — | hold | every ticket: gate GREEN + A9 unchanged |
 
+
+### 45. 🟡 Identity resolution — the rest of the dimension · effort M · → RELEASE 3 (audit §2+§5; #43 needs it to score identity ≥8)
+*As the team, one human is one record everywhere — WhatsApp, Facebook, Airtable, events.*
+#41 covers olivia_messages only. Still unowned (verified in the audit):
+- **`event_registrations` 62% keyed** (11,003/17,786 have `member_at_id`) — backfill the join
+  path + stamp on ingest; #44's graph quality depends directly on this.
+- **61/646 `digest.members` rows have NO `at_member_id`** — those members can never reach the
+  canonical key however well everything else joins. Resolve each (match or document why not).
+- **74 members carry >1 Facebook identity** (`fb_member_map` 789 rows → 715 members) — dedupe to
+  a primary uid per member (Ivan Ong's two accounts = the known case). Related standing item:
+  ~737 dup `Member ID (FB)` in AT `tblVc38gw21iHLYMG` — NEVER delete member records; merge/flag.
+- Minor, same pass: 4 dup names / 4 dup emails in `members` — verify real-vs-collision.
+**Accept when:** A2 re-run shows event_registrations ≥95% + members ≥95% keyed · fb_member_map
+1 primary uid per member · the 61 resolved-or-documented · gate GREEN.
+
+### 46. 🔴 member_events — start writing from surfaces we control · effort S · → RELEASE 3 (audit P2; stops part of the irreversible loss NOW)
+*As the team, member behaviour starts accumulating today — not after the app integration lands.*
+`member_events` = 0 rows since created. The APP feed (video views, app searches) is Andy's
+GROUPOS_PAT + app-logging ask — but the PORTAL (digest.mds.co) and Olivia are OURS: portal
+logins/page views, Olivia turns (route/lane/sources_used), report filings, nudges can emit
+events immediately. Audit's design rule: **log CHANGES/actions, not states**; one row per event,
+keyed `at_member_id` (fall back `airtable_id` — see #41/#45), typed + timestamped + source.
+**Accept when:** portal + Olivia surfaces emit real events (A1 shows rows growing daily) ·
+schema documented (event_type vocabulary) · nightly heartbeat covers the writer · the app feed
+slot is specified in writing so GroupOS events drop in without rework · gate GREEN.
+
+### 42. 🟡 place_city: aliases to a TABLE + normalize on write · effort S · → RELEASE 3 (audit P5)
+*As a member, "who's in Miami" finds Miami however it was spelled.*
+908 distinct city spellings / 1,718 rows; alias layer is a hardcoded ~11-entry CASE — plain
+lowercase "new york" isn't even folded, and "City, ST" suffixes aren't handled. Move aliases to
+a table (data, not DDL), strip state suffixes, normalize on ingest. **Expect:** city-scoped
+people search stops leaking members; adding a city becomes an INSERT. **Accept when:** the four
+audit examples resolve to one canonical each; member_match city counts match hand counts.
+
+**Also NOW, Andy's side:** the APP half of the `member_events` feed (GROUPOS_PAT + app event logging, under #29) — #46 starts our half immediately. Graph layer = **#44**, deliberately LAST — waits for the #29 memo.
+
+---
+
+### 47. 🔴 event_lookup semantic recall — the events lane never got what #40 gave content · effort S-M · → RELEASE 3 (filed from the #40 slice, 2026-08-03)
+*As a member, "is there a fulfillment conference happening in the city?" finds the logistics
+summit however the calendar spells it.*
+**Q9024 failed the prod smoke AND the #40 slice identically** — it is an `event_lookup` question,
+outside content_search's lane, so #40 could not move it (exception named per the DoD). The bank
+row claims proof "matrix BS053: event_lookup +embedding" — #26 embedded events with RRF, yet the
+paraphrase still misses: diagnose whether event_lookup's vector half is planner-refused / ordered
+keyword-first exactly like content_search v1 was (check `idx_scan` on the events HNSW — the #40
+lesson: only the plan + the counter are honest), then apply the same two-phase RRF shape.
+**Accept when:** Q9024 shape passes · events index idx_scan counting · gate GREEN · BS053 re-proven.
+
+### 44. 🔵 Knowledge graph — weighted member↔entity edges + EXPERTISE LEDGER · effort M-L · → RELEASE 3, LAST (audit P6; opens AFTER #29's research memo)
+*As a member, MDS knows who knows who — intros, "people like Mo", and "who was in the room"
+come from real connections, not just profile fields.*
+
+**EXPERTISE LEDGER (Andy 2026-08-03, his spec — the v2 authority slot's upgrade path):** the
+engagement-score weight in #40's RRF "is good for v1", but engagement ≠ expertise — "it doesn't
+necessarily mean he is an expert in this question." Personas should play a huge role: rank each
+member's expertise from the data we hold — **business details · their posts on specific
+subjects · whether they HOSTED a call · whether they SPOKE on virtual/in-person calls (video
+speaker) · revenue bracket as a credibility multiplier ("people will listen more to a person
+with 50M+ than 1-5M")**. Output = a per-member LIST of expertise — **and maybe weaknesses** —
+**weighted against other members**, so we can say who is strong in AI, DTC, Shopify, specific
+Amazon niches, etc. Data map (today): video_speakers + videos_catalog speakers = HAVE · events
+hosting = events_catalog/calendar (partial — see `OLIVIA_SIGNAL_INVENTORY.md`) · posts-on-subject
+= content_items by author × topic labels/embeddings = DERIVABLE (these ARE member↔topic edges) ·
+business details + niches/channels = member_attributes HAVE · rev_band HAVE · weaknesses ≈
+persona asks/challenges_now vs gives (asking a lot = learning; answering/hosting = strong).
+Consumers: #40's authority rank-list (flat engagement → topic-matched expertise score) ·
+expertise_search · solve/multi lanes · #29 dossier (strengths/weaknesses section). ⚠️ Standing
+ruling holds: revenue/expertise weights are INTERNAL sort keys like engagement — never a
+surfaced ranking, never "X is our strongest in AI because he's 50M+".
+**BACKFILL + REGULAR UPDATES (Andy 2026-08-03):** BOTH halves are the AC. ① One-time BACKFILL
+seeds the ledger from the WHOLE history (all content, videos, rosters, personas — every active
+member per EVERY-MEMBER-ALWAYS, keyed `at_member_id`). ② From day one it recomputes on the
+nightly pipeline (`nightly_derivations.py` job + pre-registered heartbeat, #13-alarmed) so every
+new post, video, event roster and persona row moves the weights — "it's dynamic, the more info
+we gather." Shipping the backfill WITHOUT the scheduled job is the failure mode (the #15 /
+#40-embed lesson: coverage is a process, not an event).
+**Raw material already exists (audit A11):** 10,266 member↔event edges · 1,327 members ·
+707 events, derivable today with zero new capture. Audit's sample test: 20/20 members got a
+relevant 2-hop niche-matched candidate. **Why not naive:** the biggest event has 409 attendees —
+unweighted co-attendance puts up to 424 people "one hop away" and is unusable. Edges must be
+**weighted by event size** (small dinner ≫ summit) and typed (co-attended · same-chapter ·
+same-chat · talked-in-thread once #40 labels authorship).
+**Build:** materialized `nodes`/`edges` tables in `digest`, refresh job on the nightly pipeline
+(+ heartbeat), gated access like every other source; #29's memo picks the scoring model it feeds.
+**Accept when:** edges materialized + weighted + refreshed nightly · a "who should I meet at
+<event>" probe returns small-event/shared-niche people first, never the 409-attendee blob ·
+gate GREEN · the audit's Graph dimension scores >0 at the #43 re-audit.
+
+### 43. 🏁 RE-AUDIT after Release 3 — prove the architecture moved · effort S · runs WITH #34 at the release close
+*As the team, we don't declare the architecture fixed — the same audit that scored it 6/10
+re-runs and scores it ≥8, with nothing else degraded.*
+**The instrument is already written:** `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md` Appendix A
+(A1–A11) — same queries, before/after diff, no fresh methodology. Run it cold (the audit's own
+warning: read the PLAN, not warm wall-time).
+**Accept when:**
+- **Overall ≥8/10** against the baseline 6/10, dimension by dimension: retrieval ≥7 (A4: HNSW
+  `idx_scan > 0` · A5: plan shows the index scan, no 38k seq scan) · identity ≥8 (A2:
+  olivia_messages stamped 100%, members ≥95% keyed) · semantic 9 (A6: empty-embedded = 0) ·
+  event log: `member_events` receiving real app events (A1) · graph: edges exist (#44, A11).
+- **Nothing regressed:** gate GREEN · A9 grants unchanged (anon/authenticated = 0) · smoke
+  re-run ≤ the 3.6% prod baseline with no class worse · scale/layers scores hold.
+- **The diff table is written into the session log + this file's head**, and the audit doc gains
+  a dated re-run section (same format as its 08-03 re-check).
+- Anything still below target is either fixed or filed as a named ticket — the score is not
+  rounded up.
+
+
+# 🔵 OPEN — THE REST (features · sources · close-out)
+
+**THE SMOKE runs once, when this batch of work is ready (Andy 2026-08-03: never per ticket)** —
+it is the release exit exam AND the formal instrument for #40's ≤3.6% and #39's cluster rate.
+
+### 38. 🔵 Interactive buttons (CTAs) for offers + links · effort M · → RELEASE 3 (from Andy's WABA question 2026-08-01)
+*As a member, Olivia's Yes/No offers (ticket, report, nudge) are TAP BUTTONS, not "reply YES" —
+and links (billing portal, event registration) arrive as CTA-URL buttons.*
+The Cloud API we already send through supports interactive session messages: reply buttons (≤3),
+list menus (≤10 rows), CTA-URL buttons — all free-form inside the 24h window (our case). Build:
+Format Reply emits type=interactive for offer-shaped replies; inbound parser maps button_reply
+payloads to their text so taps ride the existing YES flow; eval/silent path unchanged. Scope
+NOTE on "buy": native in-chat payment is India/Brazil only — US flow = product/CTA button →
+our Stripe checkout link; money never moves inside WA (matches the no-payment-agency stance).
+**+ Report confirm-step (Andy 2026-08-01, tried it live): after the bare-"report" flow receives
+the member's text, reply with THREE buttons before filing — Send it · Add more · Cancel
+(wording TBD better) — so multi-message reports and typos don't file prematurely.**
+
+### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L · **→ RELEASE 3 (Andy 2026-08-01: "this is a huge one" — not part of this push; the research memo opens Release 3. His signal asks — app event logging + GROUPOS_PAT — still run THIS week so history accumulates)**
+*As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
+platform would — from everything it knows about me, and it gets the like-minded question right:
+"people like Mo" returns the other multi-market logistics-givers, not everyone in Canada.
+(Andy 2026-07-30: "matchmaking will be the key… we have tons of info we can use for matching…
+you need to research how such DBs are built.")*
+
+**ANDY'S VISION (2026-07-31, verbatim direction — this IS the ticket's north star):** the current
+personas are "useless how it's done now." What he wants is a **DYNAMIC DOSSIER — "like a police
+file"** — roughly ALL the info per member: habits, patterns, likes, dislikes, how often online,
+what they watched, events visited, who they talk to, "your every step, every breath." And **not
+just personas per person: a file for almost EVERY ENTITY and piece of content** (member, video,
+event, partner, thread) — so "his file says he likes C, this video's file is about C → recommend"
+is the *childish base case*, with pattern-learning from behavior on top. This is the
+feature-store + interaction-event-stream architecture the research memo must map onto MDS.
+Consequences filed:
+- #28's persona cards = the first draft of the member file, judged NOT the end state.
+- **Research round 1 must include the SIGNAL INVENTORY + capture gaps**: app video-views/searches
+  not logged yet, `member_events` empty, WA online-presence not captured — name what to START
+  CAPTURING NOW so history accumulates while research runs.
+- "Every step, every breath" requires the written privacy position (#19) before the product
+  promises anything.
+- **`OLIVIA_SIGNAL_INVENTORY.md` WRITTEN 2026-07-31** (Andy: "write all the missing bits and
+  pieces, and we will get it") — HAVE / DERIVABLE / MISSING tables with owners; rows 1-2 (app
+  event logging + GROUPOS_PAT) are the action-this-week items so history accumulates.
+
+**Research FIRST, then build.** Deliverable 1 is a reviewed research memo: how production
+recommender systems actually work (two-stage candidate-generation → ranking · content-based +
+collaborative + behavioral/implicit-feedback signals · embedding feature stores · cold-start
+handling — the Amazon/eBay/Netflix patterns), mapped onto MDS's real signal inventory: personas
+(#28), Olivia question history, event attendance, WA/FB activity + chat memberships, offer claims
+(needs GROUPOS_PAT), video views + app search/activity (once the app logs them), census (#20).
+
+**Accept when**
+- **The research memo exists and Andy has reviewed it**: named patterns, what maps to MDS data,
+  chosen architecture, per-surface candidate pools (people-to-meet · deals · events · videos ·
+  threads), ranking approach, offline + online evaluation plan.
+- **v1 like-minded members works end-to-end** (persona/behavior similarity, gated, reasons =
+  shared topics only — match-don't-quote; secondary sort engagement score, score never shown) and
+  **measurably beats** the tick-box `member_match` on a judged set.
+- **Feed ranking (#27) uses it** and the improvement is measured, not asserted.
+- **Phone-less actives covered** (~170 members: FB + events + profile signals only).
+- Leak gate GREEN; personas/behavioral data never quoted across members.
+
+**Impact:** all members — Andy's call: matchmaking is the key product surface. The persona-quality
+critique (2026-07-30: cards too generic) lands here as the redesign.
+
+### 17. ⚪ Auto-refresh videos and partners · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01; still blocked on GROUPOS_PAT). TEMP SOLUTION NOW: WEEKLY refresh via the GroupOS connection in-session (videos + partners diff-upsert), heartbeat-backed so the staleness alarm pages if a week is missed; first refresh run 2026-08-01**
+*As a member, new recordings and deals show up without anyone importing them.*
+
+**Accept when**
+- **Blocked until the GroupOS key exists.**
+- **New videos and deals appear without an import**, and data older than a day alerts.
+- **The requirements are handed over, the security exposure included**, and it is fixed or owned in writing.
+
+13 videos landed in a week and none surfaced in any catch-up; partner data sits on a frozen snapshot.
+Needs the GroupOS key. Includes sending GroupOS the 13-item requirements doc — one of which is a live
+security exposure: restricted decks are publicly downloadable.
+
+**Effort M** — blocked on a key we don't have. **Impact:** everyone asking what's new; the security item is urgent on its own terms.
+
+### 18. ⚪ How-MDS-works answers · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01)**
+*As a member, I get the real answer about Squads, programs and joining a chat.*
+
+**Accept when**
+- **Every recurring how-MDS-works question has a written answer from the team.**
+- **Each answers consistently across phrasings and cites that source.**
+- **They stop arriving as support requests.**
+
+From the team's own documents rather than inferred from chat chatter. Also unblocks the chapter policy
+questions in #9.
+
+**Effort M** — the work is someone writing the answers; loading them is straightforward. **Impact:** all 722; every one of these currently becomes a support request.
+
+### 19. ⚪ Privacy: share, keep, delete · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01)**
+*As a member, I know what's stored about me and can have it removed.*
+
+**Accept when**
+- **A written position exists:** what may be shared, with whom, and how long conversations are kept.
+- **A deletion request is honoured and verifiable.**
+- **Opt-outs are respected everywhere the data appears.**
+- **Nothing promised to members contradicts it.**
+- A written position on what Olivia may share about a member, with whom
+- How long conversations are kept (Andy's instinct: forever — needs stating, not defaulting)
+- A member can ask for their history to be deleted, and it happens
+- Consistent with what the beta email already promises
+
+**Impact:** all members, low urgency until someone asks.
+
+### 20. ⚪ Census into the warehouse · S4 · effort L · **→ RELEASE 3 (Andy 2026-08-01)**
+*As a member, Olivia knows what I actually said about my business.*
+
+**Accept when**
+- **A member's own census answers are answerable to them.**
+- **0% of anyone else's raw answers ever return**, enforced by the gate.
+- **Persona questions draw on census data** rather than tick-box filtering.
+
+The freshest self-reported revenue, channel and SKU data MDS holds, currently not in the warehouse at
+all. Unblocks member personas — what turns matching from tick-box filtering into "who has actually lived
+through this".
+
+**Impact:** all 722; the biggest single quality lever left.
+
+---
+
+### 35. 🚀 Connect new data source — DOCUMENTS (GroupOS) · S3 · Release 3
+*As a member, MDS documents are searchable like everything else.*
+Extract via the GroupOS MCP document endpoints (documents_list/get, collections, categories —
+already exposed on the connection). Same pattern as videos/partners: catalog + gated retrieval +
+restriction handling + embeddings + gate checks. Filed by Andy 2026-08-01.
+
+### 36. 🚀 Connect new data source — CIRCLEBACK · S3 · effort L · Release 3
+*As a member, what was said in recorded meetings becomes part of what Olivia knows.*
+Circleback (meeting notes/transcripts). **BLOCKED: needs details from Andy** — which workspace,
+what API/export access, which meetings are in scope, and the sensitivity rules (who may see
+what). Filed by Andy 2026-08-01.
+
+---
+
+### 32. 🔥 What Olivia costs — measured AT the smoke, INCLUDING a Kimi cost comparison
+**ANDY'S DECISION (2026-08-01): "let's skip #32 and do it with the full smoke test. We will
+measure spend and COMPARE IT TO KIMI AI, and we will give Kimi a fair chance and try to improve
+things."** Concretely, at the Big Smoke (§G of the QA checklist):
+- **Per-answer + per-month spend MEASURED** from the runs' token counters (`in_tok`/`out_tok`/
+  `cache_w`/`cache_r` already ride every exec), split member traffic vs eval traffic.
+- **Kimi COST comparison on the same runs** — not sticker prices: $/answer on our real cached
+  shape, side by side with Claude (last measured: Kimi 2× $/answer despite cheaper tokens,
+  because 4× output + 1.6× tool calls — re-measure fresh).
+- **A fair Kimi retest + improvement attempts**: re-check the two blockers first (forced
+  thinking-on; no `tool_choice: required` → our forced first fetch unenforceable); try to work
+  around them honestly (prompt-level forcing, output caps); same bar as #22 — organic score ≥
+  current, gate GREEN, latency in band, kill switch exercised. Harness exists
+  (`kimi_harvest/kimi_bench/bench_compare.py`, ~$5.50 last time).
+- **Spike alarm** — a day over threshold reaches a human (plumbing = the #13 alarm, one more
+  signal once spend is persisted).
+- **Balance PRE-warning** (from #13's residual) lands here too.
+- **REPORTED TO PAVEL** — measured numbers + the Kimi verdict; Andy sends (drafts confirmed
+  first).
+*(Historical spend table + projections: see the session logs of 2026-07-31 (PM); baseline
+$0.0135/answer Sonnet vs $0.0270 Kimi, ~$3.70/mo today, ~$110/mo at 748 actives.)*
+
+### 14. 🔥 Conversational, not robotic — its ACs are the smoke's acceptance criteria
+**ANDY'S DECISION (2026-08-01): "#14 sounds like AC for the smoke test" — not a build ticket.**
+Written 2026-07-28 about the pre-loop system; the loop + #2/#5/#6/#7/#8 absorbed the concrete
+bullets. At the Big Smoke it is checked as: follow-up class rate on the FULL run ·
+capped-answer-continues probes · uses-what-she-knows probes · **Andy's own feel verdict**
+("it feels like a bot" was his original complaint — he judges whether that's gone). Anything
+still robotic becomes a NAMED FIX before the promote.
+
+---
+
+### 34. 🏁 Finalize the QA doc set — THE LAST TICKET, runs after everything else · effort M
+*As the team, once the whole backlog is done, the three QA docs are true, complete, and
+reconciled — and the Big Smoke has actually run against them.*
+
+**Andy 2026-08-01: "finish the backlog, THEN revise these docs." This is that revision — the
+deliberate last step, not done piecemeal.** The three docs
+(`OLIVIA_QA_CHECKLIST.md` = method · `OLIVIA_BIG_SMOKE_MATRIX.md` = content ·
+`OLIVIA_SMOKE_CHECKLIST.md` = 5-check gate) were built while the backlog was still closing, so
+the METHOD is whole-backlog-shaped already but the MATRIX only enumerates the tickets that were
+closed when it was written (Release 1 + 2). Every ticket that closes AFTER 2026-08-01 must be
+folded in.
+
+**Accept when**
+- **Every closed ticket has ≥5 matrix rows** — including the ones still open today when this was
+  filed: #15 (data pipeline), #12 (public revenue, once ruled), #29 (dossier, once built), and
+  whichever of #16–#20 ship. A closed ticket with no smoke coverage is the defect this catches.
+- **Authored ⚙️ rows replaced by organic 🟢** wherever real traffic now covers the point.
+- **The three docs reconcile:** no claim in one contradicts another; the doc-map header is
+  current; every §A–I item traces to matrix rows or a measured/forced section.
+- **Expected values in the matrix are filled from their proving SQL** (verified, not placeholder).
+- **THE BIG SMOKE has actually run — ON STAGE FIRST** — one full pass, results pasted into the
+  session log, class rates on the ladder, #14 feel verdict + #32 cost/Kimi done — and the
+  5-check gate is GREEN.
+- **Failure rate < 5% on the complete smoke (Andy's benchmark, 2026-08-01)** — reached via the
+  when-not-if fix loop: triage → fix on stage → gate → re-run failed slice → full clean pass;
+  as many rounds as it takes. Then Andy promotes, and the condensed PROD re-verification holds
+  <5% too.
+- **Anything the smoke surfaces is either fixed or filed** before the promote.
+- **Post-release, in order:** (1) release notes covering PRODUCTION RELEASES 1 + 2 (R1 never
+  announced) — human-written for team + beta, ALL updates listed, drafted for Andy to validate
+  and post himself; (2) backlog archived — released items out, only open items remain.
+
+**Impact:** this is the gate between "backlog closed" and "one big release" — it's how we know
+the release is actually safe to ship, not just that the tickets are marked done.
+
+---
+
+---
+
+
+# ✅ CLOSED — shipped and live (kept here for the release record; older history in `OLIVIA_BACKLOG_ARCHIVE.md`)
+
+**R3 architecture batch LIVE ON PROD `89ee3632` (2026-08-03 ~08:23Z, Andy promoted).**
 
 ### 40. 🟢 LIVE ON PROD 2026-08-03 (`89ee3632`) — Retrieval rewrite (RRF) · remaining: v1 retirement after soak · formal ≤3.6% at the deferred batch smoke · → RELEASE 3 (audit P1+P3)
 *As a member, a question phrased differently from how it was written still finds the answer —
@@ -148,20 +469,6 @@ member) + `persona_signal_fingerprints` (752 = the full active population) execu
 `olivia_health_check` doesn't phone-join. Gate GREEN (202). **At the flip:** the promote carries
 the node edits; re-run the backfill one-liner once to stamp prod rows created between now and flip.
 
-### 45. 🟡 Identity resolution — the rest of the dimension · effort M · → RELEASE 3 (audit §2+§5; #43 needs it to score identity ≥8)
-*As the team, one human is one record everywhere — WhatsApp, Facebook, Airtable, events.*
-#41 covers olivia_messages only. Still unowned (verified in the audit):
-- **`event_registrations` 62% keyed** (11,003/17,786 have `member_at_id`) — backfill the join
-  path + stamp on ingest; #44's graph quality depends directly on this.
-- **61/646 `digest.members` rows have NO `at_member_id`** — those members can never reach the
-  canonical key however well everything else joins. Resolve each (match or document why not).
-- **74 members carry >1 Facebook identity** (`fb_member_map` 789 rows → 715 members) — dedupe to
-  a primary uid per member (Ivan Ong's two accounts = the known case). Related standing item:
-  ~737 dup `Member ID (FB)` in AT `tblVc38gw21iHLYMG` — NEVER delete member records; merge/flag.
-- Minor, same pass: 4 dup names / 4 dup emails in `members` — verify real-vs-collision.
-**Accept when:** A2 re-run shows event_registrations ≥95% + members ≥95% keyed · fb_member_map
-1 primary uid per member · the 61 resolved-or-documented · gate GREEN.
-
 ### 39. 🟢 LIVE ON PROD 2026-08-03 — Attribution · fb_thread marker SHIPPED at flip · remaining: formal cluster rate at the deferred batch smoke · → RELEASE 3
 *As a member, when Olivia quotes or credits somebody, that person actually said it — she never
 credits me with something I only received, asked for, or was tagged in.*
@@ -211,307 +518,4 @@ record" stated plainly. **Matrix +5** (9052-9056, each anchored to a warehouse-v
 bank 178). Gate GREEN (202). **Remaining:** fb_thread shares prod → its marker goes in the FLIP
 migration (never in-place) · the four smoke findings' formal re-fire = the batch smoke (Q3107
 already re-passed in the #40 slice; Q3068 shape probed green today).
-
-### 46. 🔴 member_events — start writing from surfaces we control · effort S · → RELEASE 3 (audit P2; stops part of the irreversible loss NOW)
-*As the team, member behaviour starts accumulating today — not after the app integration lands.*
-`member_events` = 0 rows since created. The APP feed (video views, app searches) is Andy's
-GROUPOS_PAT + app-logging ask — but the PORTAL (digest.mds.co) and Olivia are OURS: portal
-logins/page views, Olivia turns (route/lane/sources_used), report filings, nudges can emit
-events immediately. Audit's design rule: **log CHANGES/actions, not states**; one row per event,
-keyed `at_member_id` (fall back `airtable_id` — see #41/#45), typed + timestamped + source.
-**Accept when:** portal + Olivia surfaces emit real events (A1 shows rows growing daily) ·
-schema documented (event_type vocabulary) · nightly heartbeat covers the writer · the app feed
-slot is specified in writing so GroupOS events drop in without rework · gate GREEN.
-
-### 42. 🟡 place_city: aliases to a TABLE + normalize on write · effort S · → RELEASE 3 (audit P5)
-*As a member, "who's in Miami" finds Miami however it was spelled.*
-908 distinct city spellings / 1,718 rows; alias layer is a hardcoded ~11-entry CASE — plain
-lowercase "new york" isn't even folded, and "City, ST" suffixes aren't handled. Move aliases to
-a table (data, not DDL), strip state suffixes, normalize on ingest. **Expect:** city-scoped
-people search stops leaking members; adding a city becomes an INSERT. **Accept when:** the four
-audit examples resolve to one canonical each; member_match city counts match hand counts.
-
-**Also NOW, Andy's side:** the APP half of the `member_events` feed (GROUPOS_PAT + app event logging, under #29) — #46 starts our half immediately. Graph layer = **#44**, deliberately LAST — waits for the #29 memo.
-
----
-
----
-
-# 🔵 NEXT — Release 3 features
-
-### 47. 🔴 event_lookup semantic recall — the events lane never got what #40 gave content · effort S-M · → RELEASE 3 (filed from the #40 slice, 2026-08-03)
-*As a member, "is there a fulfillment conference happening in the city?" finds the logistics
-summit however the calendar spells it.*
-**Q9024 failed the prod smoke AND the #40 slice identically** — it is an `event_lookup` question,
-outside content_search's lane, so #40 could not move it (exception named per the DoD). The bank
-row claims proof "matrix BS053: event_lookup +embedding" — #26 embedded events with RRF, yet the
-paraphrase still misses: diagnose whether event_lookup's vector half is planner-refused / ordered
-keyword-first exactly like content_search v1 was (check `idx_scan` on the events HNSW — the #40
-lesson: only the plan + the counter are honest), then apply the same two-phase RRF shape.
-**Accept when:** Q9024 shape passes · events index idx_scan counting · gate GREEN · BS053 re-proven.
-
-### 38. 🔵 Interactive buttons (CTAs) for offers + links · effort M · → RELEASE 3 (from Andy's WABA question 2026-08-01)
-*As a member, Olivia's Yes/No offers (ticket, report, nudge) are TAP BUTTONS, not "reply YES" —
-and links (billing portal, event registration) arrive as CTA-URL buttons.*
-The Cloud API we already send through supports interactive session messages: reply buttons (≤3),
-list menus (≤10 rows), CTA-URL buttons — all free-form inside the 24h window (our case). Build:
-Format Reply emits type=interactive for offer-shaped replies; inbound parser maps button_reply
-payloads to their text so taps ride the existing YES flow; eval/silent path unchanged. Scope
-NOTE on "buy": native in-chat payment is India/Brazil only — US flow = product/CTA button →
-our Stripe checkout link; money never moves inside WA (matches the no-payment-agency stance).
-**+ Report confirm-step (Andy 2026-08-01, tried it live): after the bare-"report" flow receives
-the member's text, reply with THREE buttons before filing — Send it · Add more · Cancel
-(wording TBD better) — so multi-message reports and typos don't file prematurely.**
-
-### 29. 🔵 Matchmaking & recommendations, built like the platforms build them · S3 · effort L · **→ RELEASE 3 (Andy 2026-08-01: "this is a huge one" — not part of this push; the research memo opens Release 3. His signal asks — app event logging + GROUPOS_PAT — still run THIS week so history accumulates)**
-*As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
-platform would — from everything it knows about me, and it gets the like-minded question right:
-"people like Mo" returns the other multi-market logistics-givers, not everyone in Canada.
-(Andy 2026-07-30: "matchmaking will be the key… we have tons of info we can use for matching…
-you need to research how such DBs are built.")*
-
-**ANDY'S VISION (2026-07-31, verbatim direction — this IS the ticket's north star):** the current
-personas are "useless how it's done now." What he wants is a **DYNAMIC DOSSIER — "like a police
-file"** — roughly ALL the info per member: habits, patterns, likes, dislikes, how often online,
-what they watched, events visited, who they talk to, "your every step, every breath." And **not
-just personas per person: a file for almost EVERY ENTITY and piece of content** (member, video,
-event, partner, thread) — so "his file says he likes C, this video's file is about C → recommend"
-is the *childish base case*, with pattern-learning from behavior on top. This is the
-feature-store + interaction-event-stream architecture the research memo must map onto MDS.
-Consequences filed:
-- #28's persona cards = the first draft of the member file, judged NOT the end state.
-- **Research round 1 must include the SIGNAL INVENTORY + capture gaps**: app video-views/searches
-  not logged yet, `member_events` empty, WA online-presence not captured — name what to START
-  CAPTURING NOW so history accumulates while research runs.
-- "Every step, every breath" requires the written privacy position (#19) before the product
-  promises anything.
-- **`OLIVIA_SIGNAL_INVENTORY.md` WRITTEN 2026-07-31** (Andy: "write all the missing bits and
-  pieces, and we will get it") — HAVE / DERIVABLE / MISSING tables with owners; rows 1-2 (app
-  event logging + GROUPOS_PAT) are the action-this-week items so history accumulates.
-
-**Research FIRST, then build.** Deliverable 1 is a reviewed research memo: how production
-recommender systems actually work (two-stage candidate-generation → ranking · content-based +
-collaborative + behavioral/implicit-feedback signals · embedding feature stores · cold-start
-handling — the Amazon/eBay/Netflix patterns), mapped onto MDS's real signal inventory: personas
-(#28), Olivia question history, event attendance, WA/FB activity + chat memberships, offer claims
-(needs GROUPOS_PAT), video views + app search/activity (once the app logs them), census (#20).
-
-**Accept when**
-- **The research memo exists and Andy has reviewed it**: named patterns, what maps to MDS data,
-  chosen architecture, per-surface candidate pools (people-to-meet · deals · events · videos ·
-  threads), ranking approach, offline + online evaluation plan.
-- **v1 like-minded members works end-to-end** (persona/behavior similarity, gated, reasons =
-  shared topics only — match-don't-quote; secondary sort engagement score, score never shown) and
-  **measurably beats** the tick-box `member_match` on a judged set.
-- **Feed ranking (#27) uses it** and the improvement is measured, not asserted.
-- **Phone-less actives covered** (~170 members: FB + events + profile signals only).
-- Leak gate GREEN; personas/behavioral data never quoted across members.
-
-**Impact:** all members — Andy's call: matchmaking is the key product surface. The persona-quality
-critique (2026-07-30: cards too generic) lands here as the redesign.
-
-### 44. 🔵 Knowledge graph — weighted member↔entity edges + EXPERTISE LEDGER · effort M-L · → RELEASE 3, LAST (audit P6; opens AFTER #29's research memo)
-*As a member, MDS knows who knows who — intros, "people like Mo", and "who was in the room"
-come from real connections, not just profile fields.*
-
-**EXPERTISE LEDGER (Andy 2026-08-03, his spec — the v2 authority slot's upgrade path):** the
-engagement-score weight in #40's RRF "is good for v1", but engagement ≠ expertise — "it doesn't
-necessarily mean he is an expert in this question." Personas should play a huge role: rank each
-member's expertise from the data we hold — **business details · their posts on specific
-subjects · whether they HOSTED a call · whether they SPOKE on virtual/in-person calls (video
-speaker) · revenue bracket as a credibility multiplier ("people will listen more to a person
-with 50M+ than 1-5M")**. Output = a per-member LIST of expertise — **and maybe weaknesses** —
-**weighted against other members**, so we can say who is strong in AI, DTC, Shopify, specific
-Amazon niches, etc. Data map (today): video_speakers + videos_catalog speakers = HAVE · events
-hosting = events_catalog/calendar (partial — see `OLIVIA_SIGNAL_INVENTORY.md`) · posts-on-subject
-= content_items by author × topic labels/embeddings = DERIVABLE (these ARE member↔topic edges) ·
-business details + niches/channels = member_attributes HAVE · rev_band HAVE · weaknesses ≈
-persona asks/challenges_now vs gives (asking a lot = learning; answering/hosting = strong).
-Consumers: #40's authority rank-list (flat engagement → topic-matched expertise score) ·
-expertise_search · solve/multi lanes · #29 dossier (strengths/weaknesses section). ⚠️ Standing
-ruling holds: revenue/expertise weights are INTERNAL sort keys like engagement — never a
-surfaced ranking, never "X is our strongest in AI because he's 50M+".
-**BACKFILL + REGULAR UPDATES (Andy 2026-08-03):** BOTH halves are the AC. ① One-time BACKFILL
-seeds the ledger from the WHOLE history (all content, videos, rosters, personas — every active
-member per EVERY-MEMBER-ALWAYS, keyed `at_member_id`). ② From day one it recomputes on the
-nightly pipeline (`nightly_derivations.py` job + pre-registered heartbeat, #13-alarmed) so every
-new post, video, event roster and persona row moves the weights — "it's dynamic, the more info
-we gather." Shipping the backfill WITHOUT the scheduled job is the failure mode (the #15 /
-#40-embed lesson: coverage is a process, not an event).
-**Raw material already exists (audit A11):** 10,266 member↔event edges · 1,327 members ·
-707 events, derivable today with zero new capture. Audit's sample test: 20/20 members got a
-relevant 2-hop niche-matched candidate. **Why not naive:** the biggest event has 409 attendees —
-unweighted co-attendance puts up to 424 people "one hop away" and is unusable. Edges must be
-**weighted by event size** (small dinner ≫ summit) and typed (co-attended · same-chapter ·
-same-chat · talked-in-thread once #40 labels authorship).
-**Build:** materialized `nodes`/`edges` tables in `digest`, refresh job on the nightly pipeline
-(+ heartbeat), gated access like every other source; #29's memo picks the scoring model it feeds.
-**Accept when:** edges materialized + weighted + refreshed nightly · a "who should I meet at
-<event>" probe returns small-event/shared-niche people first, never the 409-attendee blob ·
-gate GREEN · the audit's Graph dimension scores >0 at the #43 re-audit.
-
-### 17. ⚪ Auto-refresh videos and partners · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01; still blocked on GROUPOS_PAT). TEMP SOLUTION NOW: WEEKLY refresh via the GroupOS connection in-session (videos + partners diff-upsert), heartbeat-backed so the staleness alarm pages if a week is missed; first refresh run 2026-08-01**
-*As a member, new recordings and deals show up without anyone importing them.*
-
-**Accept when**
-- **Blocked until the GroupOS key exists.**
-- **New videos and deals appear without an import**, and data older than a day alerts.
-- **The requirements are handed over, the security exposure included**, and it is fixed or owned in writing.
-
-13 videos landed in a week and none surfaced in any catch-up; partner data sits on a frozen snapshot.
-Needs the GroupOS key. Includes sending GroupOS the 13-item requirements doc — one of which is a live
-security exposure: restricted decks are publicly downloadable.
-
-**Effort M** — blocked on a key we don't have. **Impact:** everyone asking what's new; the security item is urgent on its own terms.
-
-### 18. ⚪ How-MDS-works answers · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01)**
-*As a member, I get the real answer about Squads, programs and joining a chat.*
-
-**Accept when**
-- **Every recurring how-MDS-works question has a written answer from the team.**
-- **Each answers consistently across phrasings and cites that source.**
-- **They stop arriving as support requests.**
-
-From the team's own documents rather than inferred from chat chatter. Also unblocks the chapter policy
-questions in #9.
-
-**Effort M** — the work is someone writing the answers; loading them is straightforward. **Impact:** all 722; every one of these currently becomes a support request.
-
-### 19. ⚪ Privacy: share, keep, delete · S4 · effort M · **→ RELEASE 3 (Andy 2026-08-01)**
-*As a member, I know what's stored about me and can have it removed.*
-
-**Accept when**
-- **A written position exists:** what may be shared, with whom, and how long conversations are kept.
-- **A deletion request is honoured and verifiable.**
-- **Opt-outs are respected everywhere the data appears.**
-- **Nothing promised to members contradicts it.**
-- A written position on what Olivia may share about a member, with whom
-- How long conversations are kept (Andy's instinct: forever — needs stating, not defaulting)
-- A member can ask for their history to be deleted, and it happens
-- Consistent with what the beta email already promises
-
-**Impact:** all members, low urgency until someone asks.
-
-### 20. ⚪ Census into the warehouse · S4 · effort L · **→ RELEASE 3 (Andy 2026-08-01)**
-*As a member, Olivia knows what I actually said about my business.*
-
-**Accept when**
-- **A member's own census answers are answerable to them.**
-- **0% of anyone else's raw answers ever return**, enforced by the gate.
-- **Persona questions draw on census data** rather than tick-box filtering.
-
-The freshest self-reported revenue, channel and SKU data MDS holds, currently not in the warehouse at
-all. Unblocks member personas — what turns matching from tick-box filtering into "who has actually lived
-through this".
-
-**Impact:** all 722; the biggest single quality lever left.
-
----
-
-### 35. 🚀 Connect new data source — DOCUMENTS (GroupOS) · S3 · Release 3
-*As a member, MDS documents are searchable like everything else.*
-Extract via the GroupOS MCP document endpoints (documents_list/get, collections, categories —
-already exposed on the connection). Same pattern as videos/partners: catalog + gated retrieval +
-restriction handling + embeddings + gate checks. Filed by Andy 2026-08-01.
-
-### 36. 🚀 Connect new data source — CIRCLEBACK · S3 · effort L · Release 3
-*As a member, what was said in recorded meetings becomes part of what Olivia knows.*
-Circleback (meeting notes/transcripts). **BLOCKED: needs details from Andy** — which workspace,
-what API/export access, which meetings are in scope, and the sensitivity rules (who may see
-what). Filed by Andy 2026-08-01.
-
----
-
----
-
-# 🏁 CLOSE-OUT — standing tickets that end the release cycle
-
-### 32. 🔥 What Olivia costs — measured AT the smoke, INCLUDING a Kimi cost comparison
-**ANDY'S DECISION (2026-08-01): "let's skip #32 and do it with the full smoke test. We will
-measure spend and COMPARE IT TO KIMI AI, and we will give Kimi a fair chance and try to improve
-things."** Concretely, at the Big Smoke (§G of the QA checklist):
-- **Per-answer + per-month spend MEASURED** from the runs' token counters (`in_tok`/`out_tok`/
-  `cache_w`/`cache_r` already ride every exec), split member traffic vs eval traffic.
-- **Kimi COST comparison on the same runs** — not sticker prices: $/answer on our real cached
-  shape, side by side with Claude (last measured: Kimi 2× $/answer despite cheaper tokens,
-  because 4× output + 1.6× tool calls — re-measure fresh).
-- **A fair Kimi retest + improvement attempts**: re-check the two blockers first (forced
-  thinking-on; no `tool_choice: required` → our forced first fetch unenforceable); try to work
-  around them honestly (prompt-level forcing, output caps); same bar as #22 — organic score ≥
-  current, gate GREEN, latency in band, kill switch exercised. Harness exists
-  (`kimi_harvest/kimi_bench/bench_compare.py`, ~$5.50 last time).
-- **Spike alarm** — a day over threshold reaches a human (plumbing = the #13 alarm, one more
-  signal once spend is persisted).
-- **Balance PRE-warning** (from #13's residual) lands here too.
-- **REPORTED TO PAVEL** — measured numbers + the Kimi verdict; Andy sends (drafts confirmed
-  first).
-*(Historical spend table + projections: see the session logs of 2026-07-31 (PM); baseline
-$0.0135/answer Sonnet vs $0.0270 Kimi, ~$3.70/mo today, ~$110/mo at 748 actives.)*
-
-### 14. 🔥 Conversational, not robotic — its ACs are the smoke's acceptance criteria
-**ANDY'S DECISION (2026-08-01): "#14 sounds like AC for the smoke test" — not a build ticket.**
-Written 2026-07-28 about the pre-loop system; the loop + #2/#5/#6/#7/#8 absorbed the concrete
-bullets. At the Big Smoke it is checked as: follow-up class rate on the FULL run ·
-capped-answer-continues probes · uses-what-she-knows probes · **Andy's own feel verdict**
-("it feels like a bot" was his original complaint — he judges whether that's gone). Anything
-still robotic becomes a NAMED FIX before the promote.
-
----
-
-### 43. 🏁 RE-AUDIT after Release 3 — prove the architecture moved · effort S · runs WITH #34 at the release close
-*As the team, we don't declare the architecture fixed — the same audit that scored it 6/10
-re-runs and scores it ≥8, with nothing else degraded.*
-**The instrument is already written:** `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md` Appendix A
-(A1–A11) — same queries, before/after diff, no fresh methodology. Run it cold (the audit's own
-warning: read the PLAN, not warm wall-time).
-**Accept when:**
-- **Overall ≥8/10** against the baseline 6/10, dimension by dimension: retrieval ≥7 (A4: HNSW
-  `idx_scan > 0` · A5: plan shows the index scan, no 38k seq scan) · identity ≥8 (A2:
-  olivia_messages stamped 100%, members ≥95% keyed) · semantic 9 (A6: empty-embedded = 0) ·
-  event log: `member_events` receiving real app events (A1) · graph: edges exist (#44, A11).
-- **Nothing regressed:** gate GREEN · A9 grants unchanged (anon/authenticated = 0) · smoke
-  re-run ≤ the 3.6% prod baseline with no class worse · scale/layers scores hold.
-- **The diff table is written into the session log + this file's head**, and the audit doc gains
-  a dated re-run section (same format as its 08-03 re-check).
-- Anything still below target is either fixed or filed as a named ticket — the score is not
-  rounded up.
-
-### 34. 🏁 Finalize the QA doc set — THE LAST TICKET, runs after everything else · effort M
-*As the team, once the whole backlog is done, the three QA docs are true, complete, and
-reconciled — and the Big Smoke has actually run against them.*
-
-**Andy 2026-08-01: "finish the backlog, THEN revise these docs." This is that revision — the
-deliberate last step, not done piecemeal.** The three docs
-(`OLIVIA_QA_CHECKLIST.md` = method · `OLIVIA_BIG_SMOKE_MATRIX.md` = content ·
-`OLIVIA_SMOKE_CHECKLIST.md` = 5-check gate) were built while the backlog was still closing, so
-the METHOD is whole-backlog-shaped already but the MATRIX only enumerates the tickets that were
-closed when it was written (Release 1 + 2). Every ticket that closes AFTER 2026-08-01 must be
-folded in.
-
-**Accept when**
-- **Every closed ticket has ≥5 matrix rows** — including the ones still open today when this was
-  filed: #15 (data pipeline), #12 (public revenue, once ruled), #29 (dossier, once built), and
-  whichever of #16–#20 ship. A closed ticket with no smoke coverage is the defect this catches.
-- **Authored ⚙️ rows replaced by organic 🟢** wherever real traffic now covers the point.
-- **The three docs reconcile:** no claim in one contradicts another; the doc-map header is
-  current; every §A–I item traces to matrix rows or a measured/forced section.
-- **Expected values in the matrix are filled from their proving SQL** (verified, not placeholder).
-- **THE BIG SMOKE has actually run — ON STAGE FIRST** — one full pass, results pasted into the
-  session log, class rates on the ladder, #14 feel verdict + #32 cost/Kimi done — and the
-  5-check gate is GREEN.
-- **Failure rate < 5% on the complete smoke (Andy's benchmark, 2026-08-01)** — reached via the
-  when-not-if fix loop: triage → fix on stage → gate → re-run failed slice → full clean pass;
-  as many rounds as it takes. Then Andy promotes, and the condensed PROD re-verification holds
-  <5% too.
-- **Anything the smoke surfaces is either fixed or filed** before the promote.
-- **Post-release, in order:** (1) release notes covering PRODUCTION RELEASES 1 + 2 (R1 never
-  announced) — human-written for team + beta, ALL updates listed, drafted for Andy to validate
-  and post himself; (2) backlog archived — released items out, only open items remain.
-
-**Impact:** this is the gate between "backlog closed" and "one big release" — it's how we know
-the release is actually safe to ship, not just that the tickets are marked done.
-
----
-
----
 
