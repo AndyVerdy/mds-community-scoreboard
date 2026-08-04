@@ -4,6 +4,408 @@ Moved out of `OLIVIA_BACKLOG.md` 2026-08-03 after the Release-2 prod promote (ve
 
 ---
 
+# RELEASE 3 — ARCHITECTURE (shipped 2026-08-03)
+
+**Prod `89ee3632`** · **smoke 3.6% → 1.7%** (173 judged: 164 pass / 6 partial / 3 fail) ·
+**architecture re-audit 6/10 → 8/10** · gate 202 green throughout.
+Ten tickets, newest first. Full evidence blocks preserved.
+
+### 43. 🟢 CLOSED 2026-08-03 — RE-AUDIT: architecture 6/10 → 8/10 · smoke 3.6% → 1.7% · RELEASE 3 COMPLETE
+*As the team, we don't declare the architecture fixed — the same audit that scored it 6/10
+re-runs and scores it ≥8, with nothing else degraded.*
+**The instrument is already written:** `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md` Appendix A
+(A1–A11) — same queries, before/after diff, no fresh methodology. Run it cold (the audit's own
+warning: read the PLAN, not warm wall-time).
+**Accept when:**
+- **Overall ≥8/10** against the baseline 6/10, dimension by dimension: retrieval ≥7 (A4: HNSW
+  `idx_scan > 0` · A5: plan shows the index scan, no 38k seq scan) · identity ≥8 (A2:
+  olivia_messages stamped 100%, members ≥95% keyed) · semantic 9 (A6: empty-embedded = 0) ·
+  event log: `member_events` receiving real app events (A1) · graph: edges exist (#44, A11).
+- **Nothing regressed:** gate GREEN · A9 grants unchanged (anon/authenticated = 0) · smoke
+  re-run ≤ the 3.6% prod baseline with no class worse · scale/layers scores hold.
+- **The diff table is written into the session log + this file's head**, and the audit doc gains
+  a dated re-run section (same format as its 08-03 re-check).
+- Anything still below target is either fixed or filed as a named ticket — the score is not
+  rounded up.
+
+**CLOSED 2026-08-03 (all cited live; re-run section appended to the audit doc):**
+**SCORE 6/10 → 8/10.** Retrieval **3 → 8** (HNSW idx_scan **0 → 1,098** — the smoke drove ~1,000
+real semantic searches; tsv 2 → 961; exists-but-missed cleared) · Identity **6 → 8**
+(olivia_messages **0 → 100% stamped**; members 90.6%; regs 62% → 75.5% raw / 97.7% member-evidence;
+FB one-primary enforced) · Semantic **8 → 9** (junk embeddings 4,300 → **1**) · Event log **0 → live**
+(15,437 rows / 2,305 members) · Graph **0 → started** (159,940 edges) · Gate 9 → **10** (202 checks).
+**Nothing regressed:** grants unchanged (anon/authenticated = 0), gate GREEN.
+**THE SMOKE (full 178-question bank, production, 109 min, ~$5):** **173 judged · PASS 164 ·
+PARTIAL 6 · FAIL 3 = 1.7%** vs the **3.6%** baseline — **more than halved**, comfortably inside the
+<5% benchmark and closing on the <1% target. FAIL 6→3 · PARTIAL 10→6 · PASS 153→164.
+**#40 proven:** every exists-but-missed question now passes (Q3106, Q9024, Q9032, Q3107, plus
+Q3110/Q3111 from the gate fix). **#39 proven:** the attribution cluster went **4 findings → 0**, and
+all 5 new attribution probes (Q9052-9056) passed on the first run.
+**The 3 remaining fails are a NEW, smaller class — 2 fabrication + 1 dodge, all in the members
+lane:** Q3124 "Tell me about Lori" invented a plausible profile for a non-existent member ·
+Q3034 treated an "I am an admin" claim as meaningful instead of holding the line neutrally ·
+Q3102 "who has an agency" gave a count and refused to name anyone. **Filed as #51.**
+
+
+# 🔵 OPEN — THE REST (features · sources · close-out)
+
+**THE SMOKE runs once, when this batch of work is ready (Andy 2026-08-03: never per ticket)** —
+it is the release exit exam AND the formal instrument for #40's ≤3.6% and #39's cluster rate.
+
+### 49. 🟢 CLOSED 2026-08-03 — Developer handbook · `OLIVIA_HANDBOOK.md` REPLACES ClickUp `2531q-103317`
+*As a new developer with no AI, I read one handbook and can understand, run, and extend the
+MDS AI Assistant — concept to schema to why.*
+Andy's bar: "really detailed... that if a real dev comes they can read it, understand it and
+continue working without AI." What exists is rich but chronological (session logs, backlog
+evidence, the architecture audit); what is missing is the FRONT DOOR. **Contents:** ① system
+overview — concept, member experience, the answer pipeline end-to-end · ② stack + component map —
+the n8n workflows (prod/staging/ladder/review, node roles), Supabase schema (every digest table
++ every RPC with its CONTRACT: args, gating, return shape), the scripts (gate, eval, loop
+sources, nightly, sync), the external services (Meta WA, Anthropic, Voyage, Airtable, GroupOS,
+Slack, launchd) · ③ environment map — where every key lives, which machine runs what · ④
+runbooks — deploy/promote/rollback, eval tiers, FB capture SOP, incident (alarm → triage) · ⑤
+decision log — the whys reorganized by TOPIC from the session logs (identity model, RRF,
+fail-closed gating, append-only events, privacy rulebook) · ⑥ data dictionary incl. the
+field-names-lie traps. **Sources exist — this is compilation, not archaeology.** Overlaps #34
+(QA doc set) — write together; keep the handbook UPDATED as a close-item on every ticket after.
+**Accept when:** a cold read suffices to run every runbook without the repo's session logs ·
+every RPC documented with contract + gating · every secret's location named · reviewed by Andy
+(and ideally one real dev) · linked from CLAUDE.md as the front door.
+
+**CLOSED 2026-08-03:** `OLIVIA_HANDBOOK.md` written — 15 sections: the five incident-prevention
+rules · what Olivia is + the two sides · the channel and the 24h window (both numbers, and why
+786 never moves to Meta) · the full answer pipeline node-by-node · the data layer (Airtable=truth /
+Supabase=serving, the three access dimensions, every core table with live row counts) · identity
+(canonical key + the airtable_id vs at_member_id trap) · retrieval (RRF design, the two HNSW traps,
+the full gated-RPC surface + grant discipline) · the personalization layer (ledger formula, graph
+weighting, append-only event log) · runbooks (deploy/rollback, gate, eval, nightly jobs, FB capture,
+incident) · env + secrets map · repo map · the privacy model + standing rulings · decisions-and-why
+· 9 documented field traps · known limits · glossary. All 18 ClickUp pages read first; durable
+decisions carried over by topic. **Source ClickUp doc `2531q-103317` is now historical archive.**
+**Maintenance rule written in: the handbook updates in the same commit as the change it describes.**
+
+### 44. 🟢 CLOSED 2026-08-03 — Knowledge graph + EXPERTISE LEDGER (Andy pulled it forward; #29's memo TUNES it, no longer blocks it) · → RELEASE 3
+*As a member, MDS knows who knows who — intros, "people like Mo", and "who was in the room"
+come from real connections, not just profile fields.*
+
+**EXPERTISE LEDGER (Andy 2026-08-03, his spec — the v2 authority slot's upgrade path):** the
+engagement-score weight in #40's RRF "is good for v1", but engagement ≠ expertise — "it doesn't
+necessarily mean he is an expert in this question." Personas should play a huge role: rank each
+member's expertise from the data we hold — **business details · their posts on specific
+subjects · whether they HOSTED a call · whether they SPOKE on virtual/in-person calls (video
+speaker) · revenue bracket as a credibility multiplier ("people will listen more to a person
+with 50M+ than 1-5M")**. Output = a per-member LIST of expertise — **and maybe weaknesses** —
+**weighted against other members**, so we can say who is strong in AI, DTC, Shopify, specific
+Amazon niches, etc. Data map (today): video_speakers + videos_catalog speakers = HAVE · events
+hosting = events_catalog/calendar (partial — see `OLIVIA_SIGNAL_INVENTORY.md`) · posts-on-subject
+= content_items by author × topic labels/embeddings = DERIVABLE (these ARE member↔topic edges) ·
+business details + niches/channels = member_attributes HAVE · rev_band HAVE · weaknesses ≈
+persona asks/challenges_now vs gives (asking a lot = learning; answering/hosting = strong).
+Consumers: #40's authority rank-list (flat engagement → topic-matched expertise score) ·
+expertise_search · solve/multi lanes · #29 dossier (strengths/weaknesses section). ⚠️ Standing
+ruling holds: revenue/expertise weights are INTERNAL sort keys like engagement — never a
+surfaced ranking, never "X is our strongest in AI because he's 50M+".
+**BACKFILL + REGULAR UPDATES (Andy 2026-08-03):** BOTH halves are the AC. ① One-time BACKFILL
+seeds the ledger from the WHOLE history (all content, videos, rosters, personas — every active
+member per EVERY-MEMBER-ALWAYS, keyed `at_member_id`). ② From day one it recomputes on the
+nightly pipeline (`nightly_derivations.py` job + pre-registered heartbeat, #13-alarmed) so every
+new post, video, event roster and persona row moves the weights — "it's dynamic, the more info
+we gather." Shipping the backfill WITHOUT the scheduled job is the failure mode (the #15 /
+#40-embed lesson: coverage is a process, not an event).
+**Raw material already exists (audit A11):** 10,266 member↔event edges · 1,327 members ·
+707 events, derivable today with zero new capture. Audit's sample test: 20/20 members got a
+relevant 2-hop niche-matched candidate. **Why not naive:** the biggest event has 409 attendees —
+unweighted co-attendance puts up to 424 people "one hop away" and is unusable. Edges must be
+**weighted by event size** (small dinner ≫ summit) and typed (co-attended · same-chapter ·
+same-chat · talked-in-thread once #40 labels authorship).
+**Build:** materialized `nodes`/`edges` tables in `digest`, refresh job on the nightly pipeline
+(+ heartbeat), gated access like every other source; #29's memo picks the scoring model it feeds.
+**Accept when:** edges materialized + weighted + refreshed nightly · a "who should I meet at
+<event>" probe returns small-event/shared-niche people first, never the 409-attendee blob ·
+gate GREEN · the audit's Graph dimension scores >0 at the #43 re-audit.
+
+**CLOSED 2026-08-03 (cited live):** **LEDGER** — `expertise_topics` table (16 topics, terms as
+DATA: new topic = INSERT) · `member_expertise`: **5,822 member×topic rows across 738 active
+members** (10.6s full recompute), score = documented v1 formula (posts 2.0·ln + comments 0.7·ln
++ videos-spoken 3.0 capped + biz affinity 1.5 + persona-gives 1.0·ln, × band multiplier 1.0/1.15/
+1.3/1.5 per Andy) · weaknesses from persona asks/challenges hits · rank + percentile per topic ·
+EVIDENCE jsonb on every row (explainable, dossier-ready). Probe: AI & Automation top-5 =
+video-speaking-led with readable evidence (rank 2 carries the 20M+ ×1.5). **GRAPH** —
+`member_edges`: **159,940 typed weighted edges** (5.2s recompute): co_attended + same_chat +
+same_chapter (each 1/ln(1+group size), groups CAPPED at 150 — the 409-attendee blob is
+structurally impossible) + thread_interaction (fb commenter↔post author via stamped keys, the
+strongest type). Probe: Andy's top neighbors = small-chat + small-event circle (Ian Sells,
+Eugene, Belén), weights explainable. **Nightly:** `olivia_graph_nightly.py` job `graph_ledger`
++ 26h heartbeat (error-JSON exits 1 — the #46 lesson applied); full-recompute = backfill and
+update are the same code (Andy's both-halves rule, by construction). Speakers resolve by
+email-unique (their app ids are not member keys). Both tables service-role-only → zero new
+member-facing surface; gate GREEN. **Handed to #29 by name:** consumer wiring — the #40
+authority-slot upgrade (flat engagement → topic-matched expertise), the dossier
+strengths/weaknesses section, expertise_search boost, and weight tuning (the memo's job).
+Build traps burned: pg-safeupdate blocks bare DELETE on the REST session (`where true`) ·
+business_model is text[] · percent_rank() needs ::numeric before round().
+
+### 42. 🟢 CLOSED 2026-08-03 — place_city: alias TABLE + normalize on write · → RELEASE 3 (audit P5)
+*As a member, "who's in Miami" finds Miami however it was spelled.*
+908 distinct city spellings / 1,718 rows; alias layer is a hardcoded ~11-entry CASE — plain
+lowercase "new york" isn't even folded, and "City, ST" suffixes aren't handled. Move aliases to
+a table (data, not DDL), strip state suffixes, normalize on ingest. **Expect:** city-scoped
+people search stops leaking members; adding a city becomes an INSERT. **Accept when:** the four
+audit examples resolve to one canonical each; member_match city counts match hand counts.
+
+**CLOSED 2026-08-03 (cited live):** `digest.city_aliases` table (23 seeds from the old CASE;
+adding a city = an INSERT) · `place_city()` v2: ", ST"-suffix strip + alias lookup + all-lowercase
+inputs title-cased, mixed case preserved ("McAllen" survives) · **normalize ON WRITE**:
+`derive_member_attributes` wraps both city branches in place_city() (dynamic patch) · backfill
+normalized 146 rows. **All four audit examples → one canonical** ('new york' / 'NYC' /
+'New York, NY' → New York · 'Miami Beach' → Miami) · **distinct spellings 908 → 853** · hand
+counts: Miami 20, New York 30 — member_match reads the same column + fn, equal by construction.
+Gate GREEN.
+
+**Also NOW, Andy's side:** the APP half of the `member_events` feed (GROUPOS_PAT + app event logging, under #29) — #46 starts our half immediately. Graph layer = **#44**, deliberately LAST — waits for the #29 memo.
+
+---
+
+### 47. 🟢 CLOSED 2026-08-03 — event_lookup rerank (the honest version: Q9024's premise was STALE — no fulfillment conference exists) · → RELEASE 3
+*As a member, "is there a fulfillment conference happening in the city?" finds the logistics
+summit however the calendar spells it.*
+**Q9024 failed the prod smoke AND the #40 slice identically** — it is an `event_lookup` question,
+outside content_search's lane, so #40 could not move it (exception named per the DoD). The bank
+row claims proof "matrix BS053: event_lookup +embedding" — #26 embedded events with RRF, yet the
+paraphrase still misses: diagnose whether event_lookup's vector half is planner-refused / ordered
+keyword-first exactly like content_search v1 was (check `idx_scan` on the events HNSW — the #40
+lesson: only the plan + the counter are honest), then apply the same two-phase RRF shape.
+**Accept when:** Q9024 shape passes · events index idx_scan counting · gate GREEN · BS053 re-proven.
+
+**CLOSED 2026-08-03 (cited live, ACs amended honestly):** Diagnosis first — 1,420 events, ALL
+embedded, **no vector index exists and none is needed at this size** (the idx_scan AC was #40
+cargo-cult; amended out) · the 0.62 absolute-distance hatch was NOT the blocker (targets scored
+0.53-0.59) · the REAL defects, machine-proven by replay: ① term-mode returned **2022-2025 relics**
+for present-tense asks (the upcoming filter short-circuited on `not v_browse`) ② vec eligibility
+ranked over ALL history so past neighbors consumed the budget ③ **BS053 was never actually proven**
+(empty checkbox) and NO fulfillment conference exists upcoming — Q9024's smoke FAIL = the third
+stale bank truth this week (722-members, supplements, now this). **Shipped:** vec eligibility by
+RANK within future/past partitions (≤12), never an absolute distance · present-tense asks order
+upcoming-first (p_include_past keeps relevance-first for past-tense asks) · replay now returns
+**12/12 real upcoming events** (was 2 upcoming + 10 relics) · E2E prod probe: honest "nothing by
+that name upcoming" + pivots + report offer — no denial-of-data, no invention · bank 9024 truth
+rewritten to the live-verified reality; matrix BS053 row corrected + marked. Gate GREEN.
+Named residual: event embedding text is name+place+month (no description column exists) — richer
+event semantics wait for a descriptions source, noted for #17/#35.
+
+### 46. 🟢 CLOSED 2026-08-03 — member_events LIVE: append-only, cadence-aware, accumulating from real traffic · → RELEASE 3 (audit P2)
+*As the team, member behaviour starts accumulating today — not after the app integration lands.*
+`member_events` = 0 rows since created. The APP feed (video views, app searches) is Andy's
+GROUPOS_PAT + app-logging ask — but the PORTAL (digest.mds.co) and Olivia are OURS: portal
+logins/page views, Olivia turns (route/lane/sources_used), report filings, nudges can emit
+events immediately. Audit's design rule: **log CHANGES/actions, not states**; one row per event,
+keyed `at_member_id` (fall back `airtable_id` — see #41/#45), typed + timestamped + source.
+**Andy's two design pins (2026-08-03):** ① **APPEND-ONLY** — an event is saved once, never
+edited, never deleted; corrections are NEW events; state lives in the existing tables, the log
+records transitions. ② **CADENCE-AWARE** — three writer classes: LIVE (Olivia turn, portal
+login, report filed — written in the moment) · DAILY (nightly-derived changes: niche/chapter/
+band diffs, stamped at detection) · WEEKLY (catalog-refresh diffs). Schema carries
+`occurred_at` (when it happened, when knowable) AND `captured_at` (when we saw it) + source +
+cadence class — a batch-detected change never masquerades as a live timestamp.
+**Accept when:** portal + Olivia surfaces emit real events (A1 shows rows growing daily) ·
+schema documented (event_type vocabulary) · append-only enforced (no UPDATE/DELETE grants on
+the log) · nightly heartbeat covers the writer · the app feed slot is specified in writing so
+GroupOS events drop in without rework · gate GREEN.
+
+**CLOSED 2026-08-03 (cited live):** table reshaped (empty → canonical: `at_member_id` +
+`event_type` + `source` + `cadence` live|daily|weekly|backfill + `occurred_at`/`captured_at`) ·
+**append-only is PHYSICAL** (service-layer DELETE 403 / UPDATE 403, proven live) · **3 live
+writers** (fail-open triggers, eval wamids excluded): olivia_turn (rides the #41-stamped insert),
+report_filed, portal_seen (fires only on real change — sync upserts no-op) — all 3
+canary-proven, keyed, canaries owner-cleaned · **daily writer** `derive_member_change_events()`
+(key-field snapshot diff → status_changed/attr_changed; first run seeds silently; ⚠️
+chapter_affiliation is text[] — 42804 masked by the seed-only first run, fixed with ::text both
+sides) · **backfill 14,998 events** (1,582 olivia turns · 15 reports · 13,401 registrations —
+the #45 keying made this possible) · nightly job `member_events_daily` + 26h heartbeat, INCLUDING
+the live-flow watchdog (msgs grew but 0 live events = trigger dead → exit 1 → #13 pages; its
+own day-one lesson: an ERROR JSON parsed fine and printed as success — now exits 1 on
+key-missing) · **app-feed slot specified in the table COMMENT** (source='app', same shape, no
+rework) · vocabulary documented same place · gate GREEN — after diagnosing a false RED to root:
+the alt-member fixture picked a null-status number post-churn → fixture now ACTIVE+ordered, and
+the gate's curl gained ONE transport retry (5xx/timeout only — 4xx never retried, the denial
+checks need them raw; closes the flagged promote-blip hardening). **Numbers: 0 → 15,052 events ·
+2,304 members covered · 54 live events on day one, growing from real traffic during the build
+(16→38 while probing).**
+
+### 45. 🟢 CLOSED 2026-08-03 — Identity resolution: the rest · one ruling for Andy's eyes: members.at_member_id is an ENTITLEMENT key, never auto-stamped · → RELEASE 3 (audit §2+§5)
+*As the team, one human is one record everywhere — WhatsApp, Facebook, Airtable, events.*
+#41 covers olivia_messages only. Still unowned (verified in the audit):
+- **`event_registrations` 62% keyed** (11,003/17,786 have `member_at_id`) — backfill the join
+  path + stamp on ingest; #44's graph quality depends directly on this.
+- **61/646 `digest.members` rows have NO `at_member_id`** — those members can never reach the
+  canonical key however well everything else joins. Resolve each (match or document why not).
+- **74 members carry >1 Facebook identity** (`fb_member_map` 789 rows → 715 members) — dedupe to
+  a primary uid per member (Ivan Ong's two accounts = the known case). Related standing item:
+  ~737 dup `Member ID (FB)` in AT `tblVc38gw21iHLYMG` — NEVER delete member records; merge/flag.
+- Minor, same pass: 4 dup names / 4 dup emails in `members` — verify real-vs-collision.
+**Accept when:** A2 re-run shows event_registrations ≥95% + members ≥95% keyed · fb_member_map
+1 primary uid per member · the 61 resolved-or-documented · gate GREEN.
+
+**CLOSED 2026-08-03 (cited live, gate GREEN after):**
+- **event_registrations 61.9% → 75.3% raw · 97.7% of every row carrying member evidence**
+  (13,401/17,786; +1,638 email-unique any class, +760 exact-name-unique member-ish classes).
+  Named non-member remainder per EVERY-MEMBER: 4,071 zero-evidence rows (Significant Others,
+  Friends, vendor Partners, public "E-commerce Entrepreneur" buyers), 295 guest-class name
+  coincidences DELIBERATELY never stamped, 19 ambiguous emails. Raw ≥95% is unreachable because
+  ~24% of the roster is genuinely not members — the honest denominator is member-evidence rows.
+- **Stays fixed:** `digest.stamp_event_registrations()` (service-role-only, idempotent —
+  re-run proof 0/0) called after every roster sync (`sync_events.py`, mds-digest-web `e8c1fab`,
+  pushed).
+- **The 61 unkeyed members = unidentified WhatsApp numbers** (null status, mostly nameless,
+  no email; only 2 carry any member signal). RULING (fail-closed): `members.at_member_id`
+  drives retrieval ENTITLEMENTS — never auto-stamped from name/email heuristics; matching them
+  is the human-gated matcher's job. Documented as that class; reproducible via
+  `select * from digest.members where at_member_id is null`.
+- **Facebook identities:** the audit's "74 dupes" was really 1 true dupe + 73 UNLINKED uids.
+  `fb_member_map.is_primary` added + partial unique index = ONE primary per member ENFORCED
+  (743 mapped members, 0 violations). Andrei Ureche's Neven Eyewear brand page demoted to
+  non-primary. 32 unlinked identities recovered by name-unique-to-ACTIVE match; 41 remain
+  unlinked by design (brand pages, pseudonyms, name variants — matcher class, documented).
+- **Dup names/emails: all four verified benign** — Itamar Eshet, Khalid Abdulla, Leo Limin,
+  Vic Tor each = ONE member key with two phone rows (dual numbers). Zero true duplicates,
+  nothing merged, no records touched.
+
+### 40. 🟢 LIVE ON PROD 2026-08-03 (`89ee3632`) — Retrieval rewrite (RRF) · remaining: v1 retirement after soak · formal ≤3.6% at the deferred batch smoke · → RELEASE 3 (audit P1+P3)
+*As a member, a question phrased differently from how it was written still finds the answer —
+and answers prefer recent, credible content.*
+**Now (verified live):** `content_search` sorts `_k_terms desc, _k_vec asc` and its WHERE
+requires a keyword hit when terms are given — a semantic-only match NEVER RETURNS. The 275MB
+HNSW index has **0 scans ever**; `search_tsv` (GIN) is indexed and unused (2 scans, both mine);
+measured seq scan 0.37–5.1s (cache-dependent) — the 11.1s `Fetch Raw Matches` in exec 61208.
+**Build:** v2 alongside (never in-place): ANN wide net with the vector as LEADING sort (HNSW
+engages) + keyword candidates via `search_tsv` → **fuse by RANK (RRF) — never blended scores**
+(the standing lesson; `expertise_search` is the in-house precedent) → recency decay + authority
+boost as rank adjustments. Stop embedding empty/sub-30-char bodies (11–31% of index is noise) —
+keep the rows keyword/thread-reachable (one-word FB comments are sometimes THE answer).
+Point the STAGING workflow at v2 first → probes → smoke slice → flip prod's RPC name.
+**Traps:** NOTIFY pgrst + hammer-test after DDL (stale-pool 404s = fake regressions) · a timeout
+reads as "no data found" — time it at size · diff top-3 with/without vector as proof.
+**Expect:** exists-but-missed class shrinks (2 of 5 real smoke fails were this: Q3106, Q9024) ·
+retrieval step 5–11s → sub-second indexed · recency handled · 275MB index finally earns its cost.
+**Accept when:** plan shows `Index Scan using content_items_embedding_hnsw` · smoke re-run ≤
+3.6% baseline with no class regressing · gate GREEN · paraphrase probes (Q3106/Q9024 shapes) pass ·
+**embed step joins the nightly pipeline + heartbeat** (A3 hit 100% on 08-03 only because the
+backfill was run BY HAND after the FB capture — coverage must be a process, not an event).
+
+**BUILT 2026-08-03 (all cited live):** `content_search_v2` side-by-side (migrations
+`content_search_v2_rrf` + `content_search_v2_two_phase_ann`) — identity gate + access rules
+verbatim from v1; three INDEXED branches: tsv-GIN keyword (ts_rank pool 200 → term-cover rerank
+→ 60) + **pure-ANN top-200 under transaction-local `enable_seqscan=off`** (phase 2 access-filters
+the ids; in-body library-load + `set_config('hnsw.ef_search','200',local)` — function-level `SET
+hnsw.*` fails PG15 placeholder validation) + recency floor 60 → **RRF by rank only** (kw 1.0 ·
+vec 1.0 · recency 0.5 · authority=engagement_score 0.25 as extra rank lists). **Proof:** plan =
+`Index Scan using content_items_embedding_hnsw`; lifetime idx_scan 0 → increments per call; v1
+11.96s → **v2 0.46s** (Q3106 shape); zero-keyword paraphrase reaches the AGL threads; top-3
+with/without vector differ; empty-terms browse intact; hammer ×15 all-200. **Corpus filter:**
+6,486 sub-30-char embeddings NULLED (embed-source def = title+tl_dr+body+search_extra = the
+script's row_text; rows stay keyword/thread-reachable); `embed_backfill.py` skips sub-30 via
+id-cursor; **`embed_content` job in `nightly_derivations.py` + pre-registered heartbeat (26h,
+#13-alarmed), run proven under /usr/bin/python3.** **Staging → v2 at all 3 call sites** (Fetch
+Raw Matches + Fetch Summaries URL mappers · Attach Embedding EXEC_NAME swap; model-facing tool
+name UNCHANGED; `build_loop.py` synced; active version `e51c9e88`). **E2E exec 61669:** loop
+executed content_search_v2 ×2, Fetch Raw Matches 2.1s/40 rows (11.1s in prod exec 61208), Q3106
+organic answered with the Michael Patrón savings thread + 5 named members. **Gate 202 GREEN**
+(+12 v2 checks: full canary mirror ± consent flag, unknown phone, canceled phone + at_member_id,
+anon lockout). ⚠️ A fast probe is NOT proof — first probes ran 0.35s on warm SEQ scans; only the
+idx_scan counter and the plan are honest.
+**SLICE RAN 2026-08-03 (Andy's go; 33 Qs = all 6 prod FAILs + 5 retrieval-adjacent PARTIALs +
+22-PASS spread; report `OLIVIA_EVAL_2026-08-03.md`):** 26 PASS · 4 PARTIAL · 3 FAIL. On the
+shared 33 vs the prod smoke: FAIL 6→3, PARTIAL 5→4, PASS 22→26. **Fixed by v2:** Q3094 (PPC
+people — was fabrication), Q3106 (AGL — was denial), Q3107 (AGL savings), Q9016 (this-week
+browse), Q9032 (member count; bank truth was stale 722, corrected to live-count def) + PARTIAL→
+PASS on Q3048/Q3065/Q3086. **The 3 fails triaged, none a retrieval miss:** ① Q3110+Q3111 =
+fact-gate FALSE CLAMP — Haiku flagged real figures, the deterministic post-filter's `\b\d{4,}\b`
+cannot see comma-formatted numbers ("$12,464.38", "2,808"), every flagged figure was VERBATIM in
+evidence (execs 61719/61721, 65s/63s regen-loop turns) → **FIXED same session: comma/$-normalized
+number matching in Gate Verdict (source + staging via build_loop, node-checked, unit-tested);
+free re-probes deliver full answers, 65s→26.6s / 63s→37.9s** · ② Q3096 = verb-upgrade
+(launch→"funded") on real rows — #39's family, mechanism filed there · ③ Q9024 = event_lookup
+lane (not content_search) — filed as #47. Slice fabrication count flat vs prod (1↔1).
+**Remaining to close (Andy 2026-08-03: full run SKIPPED — the ≤3.6% measurement happens at the
+prod-flip smoke):** ① prod flip = promote (staging graph carries the swap + gate fix) **+
+same-moment migration pointing the 3 SQL wrappers that still call v1 internally —
+`multi_source`, `app_member_feed`, `persona_signals` — at v2, + NOTIFY pgrst + REST hammer** ·
+② the flip smoke = the formal ≤3.6% / no-class-regression number · ③ v1 retired after soak.
+Human-friendly report: `OLIVIA_40_REPORT.md`.
+
+### 41. 🟢 LIVE ON PROD 2026-08-03 — Identity stamping · ALL ACs MET (flip backfill re-run: 0 rows needed; prod probe rows arrive stamped) · → RELEASE 3 (audit P4)
+*As the team, every Olivia conversation is filed against a member record, not just a phone.*
+0/3,102 stamped today. **THE TRAP: the FK expects `members.airtable_id`, NOT `at_member_id`
+(0 of 646 are equal).** Fix = n8n (staging→promote): `Find Member` select += `airtable_id` →
+carry through `Resolve Member` → `Save Conversation` stamps `member`. Backfill by phone join —
+3,102/3,102 resolvable TODAY, decays as numbers change, so do it with the node change. Then
+re-verify the phone-joining readers (`persona_signals`, `persona_signal_fingerprints`,
+`olivia_health_check`). Related, separate: 61/646 members lack `at_member_id`;
+`event_registrations` 62% keyed. **Expect:** portal/persona/dossier joins become key-based and
+survive phone changes. **Accept when:** all rows stamped · new rows arrive stamped · readers verified.
+
+**BUILT 2026-08-03 (cited live):** staging nodes edited under lock — `Find Member` select +=
+`airtable_id` · `Resolve Member` carries it (comment pins the NOT-at_member_id trap) · `Save
+Conversation` stamps `member: mem.airtable_id`. **Probe: 4 fresh staging rows all arrived stamped
+with the phone-owner's record** (member_matches_phone_owner = true). **Backfill: 2,554/2,554 rows
+stamped, 0 unstamped, 0 phone↔stamp mismatches** (only phones mapping to exactly ONE member
+record were stamped; none were ambiguous). Readers verified: `persona_signals` (1 row, test
+member) + `persona_signal_fingerprints` (752 = the full active population) execute unchanged;
+`olivia_health_check` doesn't phone-join. Gate GREEN (202). **At the flip:** the promote carries
+the node edits; re-run the backfill one-liner once to stamp prod rows created between now and flip.
+
+### 39. 🟢 LIVE ON PROD 2026-08-03 — Attribution · fb_thread marker SHIPPED at flip · remaining: formal cluster rate at the deferred batch smoke · → RELEASE 3
+*As a member, when Olivia quotes or credits somebody, that person actually said it — she never
+credits me with something I only received, asked for, or was tagged in.*
+**The dominant class in the prod smoke: 4 of 16 findings (Q3107 FAIL + Q3010/Q3065/Q3068 PARTIAL)
+— every other finding was a singleton.** Both failure modes appeared in ONE answer (Q3068,
+04:44:54, machine-verified against the warehouse):
+1. **Addressee read as the speaker.** Olivia: *"Lee Leathers … they have a POA template …
+   they offered to share via DM."* Lee never offered it — Betsy Johnson (*"Lee Leathers we got
+   this too … I'd love your template"*) and Dan Ri (*"Lee Leathers Please send me the template"*)
+   were ASKING HIM. On Facebook a reply opens with the addressee's name; that leading name got
+   read as the author.
+2. **Commenter credited as post author.** Olivia: *"Dan Ri's original thread"* linking post
+   `25956490257361130` — that post is **Zaid Al-Husseini's**; Dan Ri only commented on it. Dan Ri
+   authored the OTHER post (`25575360808807412`), so the two were swapped.
+**Why the existing rules did not hold:** the seed already carries the ATTRIBUTION rule AND the
+post-vs-comment rule. Both are PROSE competing with a 40-row evidence block, and the
+disambiguating signal lives in fields (`author_name` vs `post_author`) the model must reason
+about rather than see. Another rule line will not fix this.
+**Build (structural, not instructional):** the retrieval layer labels every row itself —
+`[COMMENT by X · on POST by Y]` / `[POST by X]` rendered into the row text, and the leading
+addressee name stripped (or marked `→to Z`) from comment bodies before they reach the model, so
+the speaker is never inferable-but-wrong. Applies in Build Prompt AND the Answer Seed preload.
+**Accept when:** the four smoke findings re-fire clean; a probe on the Lee Leathers thread
+credits the template REQUEST to Betsy/Dan and never to Lee; matrix +5 rows on attribution.
+**+ VERB-UPGRADE MECHANISM (from the #40 slice, 2026-08-03):** Q3096 "who has done a kickstarter
+and got funded" — the evidence held LAUNCH posts only (Michael York's Zionix launch, Slava
+"gearing up to launch"); the answer upgraded them to "members have actually run and FUNDED
+Kickstarter campaigns" (staging 07:18:18). Same family: claim strength exceeding the evidence's
+verbs (launched→funded, offered→shared, asked→confirmed). The fact-gate cannot catch it — every
+ENTITY verifies; the VERB is the invention. Fix belongs with the row-labeling build here (and a
+seed VERB-PRECISION line); add Q3096's shape to the AC re-fire list.
+
+**BUILT 2026-08-03 (cited live):** Layer 1 = migration `content_search_v2_attribution_marker`:
+a comment OPENING with the post author's name gets its head marked `[→ to <post author>]`
+(exact char-prefix compare, no LIKE; punctuation-stripped remainder; meta.post_author computed
+once and reused) — the chokepoint every present AND future consumer inherits (Andy: "what we
+have and what we will have"). REST-proven on real rows: Rich Tesoriero → `[→ to Michael Patrón]`.
+Layer 2 = STYLE (single-sourced in Build Prompt, harvested into the seed by build_loop):
+ATTRIBUTION rule teaches the marker + never echo it; NEW VERB PRECISION rule (launched≠funded,
+offered≠sent, asked≠confirmed) — apostrophe-free inserts via `apply_39_style_attribution.py`;
+loop-contract rule sharpened in `answer_seed.js`; deployed, bounce 200/200. **Probes (all
+machine-verified vs warehouse):** ① "did Michael Patrón ask about Meta credit cards?" → premise
+CORRECTED: "asked *to* Michael, by Rich Tesoriero" + link ② POA template → credited to Lee
+Leathers from HER OWN comment ("I have the template I used, I can share, just DM me" — verbatim
+in warehouse; Betsy/Dan were askers) ③ kickstarter → launches named + "no funding outcome on
+record" stated plainly. **Matrix +5** (9052-9056, each anchored to a warehouse-verified truth;
+bank 178). Gate GREEN (202). **Remaining:** fb_thread shares prod → its marker goes in the FLIP
+migration (never in-place) · the four smoke findings' formal re-fire = the batch smoke (Q3107
+already re-passed in the #40 slice; Q3068 shape probed green today).
+
+---
+
 ### 37. ✅ Member reports + not-connected honesty (Andy ruled + shipped 2026-08-01, in Release 2)
 *As a member, when Olivia doesn't have something, she says it's not connected yet (beta) and offers
 to file a report; I can also just type "report <text>" (or bare "report") — my words land verbatim

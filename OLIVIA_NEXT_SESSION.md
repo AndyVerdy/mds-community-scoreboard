@@ -19,39 +19,30 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-03 END-OF-DAY: R3 ARCHITECTURE COMPLETE except the re-audit
+## STATE 2026-08-03: RELEASE 3 COMPLETE · SPRINT 3 OPEN
 
-**Prod `89ee3632`** (Andy promoted ~08:23Z; batch #40 retrieval-RRF + #41 stamping + #39
-attribution; flip companions applied: wrappers→v2, fb_thread marker, hammer 200s, re-backfill).
-**Closed same day, DB-side:** #45 identity-rest (regs 61.9→75.3% raw / 97.7% member-evidence;
-entitlement ruling: members.at_member_id NEVER auto-stamped) · #46 member_events (append-only
-physical, 3 live triggers + daily diff, 0→15,052 events/2,304 members, live-flow watchdog) ·
-#42 place_city (alias TABLE, 908→853 spellings, write-normalized) · #47 event_lookup rerank
-(rank-eligibility partitioned future/past, upcoming-first; Q9024 premise was STALE — third
-stale bank truth fixed) · **#44 pulled forward by Andy and CLOSED**: expertise ledger 5,822
-rows/738 members (16 data-table topics, evidence jsonb, band multiplier) + knowledge graph
-159,940 edges (150-cap, thread_interaction), nightly `graph_ledger` job. Gate 202 GREEN all
-day (+ hardened: transport retry 5xx-only, deterministic active fixture). Nightly now runs
-8 jobs. Tickets #48 (AT write-back) + #49 (developer handbook) filed in THE REST.
+**Prod `89ee3632`.** Release 3 shipped and closed the same day: #40 retrieval-RRF + #41 identity
+stamping + #39 attribution (promoted by Andy) plus #45/#46/#42/#47/#44 database-side.
+**THE SMOKE: 3.6% → 1.7%** (173 judged · 164 pass / 6 partial / 3 fail).
+**#43 RE-AUDIT: architecture 6/10 → 8/10** — retrieval 3→8 (HNSW idx_scan **0 → 1,098**),
+identity 6→8 (conversations 100% stamped), semantic 8→9, event log 0→live (15,437 rows),
+graph 0→started (159,940 edges), gate 9→10 (202 checks), grants unchanged.
+**#49 handbook shipped** (`OLIVIA_HANDBOOK.md`, 733 lines) and **ClickUp `2531q-103317` rebuilt as
+its copy** (TOC + 18 chapter pages + `99 · ARCHIVE`).
+
+**THE BOARD IS NOW `OLIVIA_SPRINT_3.md`** — 14 open tickets, goal = **make Olivia personal**.
+S1: **#51** (members-lane fabrication — she invented "Lori Barzvi", the last failure class) ·
+**#29** (dossier + personalization layer) · **#50** (entity dossiers). Everything shipped in
+Releases 1-3 is in `OLIVIA_BACKLOG_ARCHIVE.md`.
 
 ## NEXT SESSION
 
-1. **#43 — the re-audit** (architecture board's last item): re-run
-   `OLIVIA_ARCHITECTURE_AUDIT_2026-08-02.md` Appendix A, score ≥8/10 vs baseline 6/10 —
-   retrieval 3→? · identity 6→? · events 0→live · graph 0→live. Runs WITH #34 at release close.
-2. **THE SMOKE** (deferred by Andy: once per batch, never per ticket) = the release exit exam +
-   the formal #40 ≤3.6% and #39 attribution-cluster numbers. Propose + WAIT (paid run).
-3. Then THE REST in order: #38 buttons → #29 matchmaking/dossier (best-fed ticket now: events +
-   ledger + graph + stamped identities; consumer wiring of #44 lives HERE by name) → sources.
-4. Andy's side, standing: GROUPOS_PAT + app event logging (the app slot in member_events is
-   specified and waiting).
-
-**Traps burned today (don't re-trip):** PG15 blocks function-level SET hnsw.* → in-body
-set_config(local, fail-open) · planner refuses fused-branch ANN → two-phase pure-ANN ·
-fast probe ≠ proof (only the plan + idx_scan counter) · pg-safeupdate needs `where true` on
-REST DELETEs · chapter_affiliation + business_model are text[] · percent_rank needs ::numeric ·
-data-modifying-CTE counts read the PRE-update snapshot · error-shaped JSON parses fine — check
-keys, never just json.loads · gate fixtures must be ACTIVE + ordered.
+1. **#51 first** — it is small, it is the whole remaining failure surface, and #29/#50 are built
+   on top of member data being trustworthy.
+2. Then **#29 + #50** together (member dossier × entity dossier = the fit score).
+3. Andy's side, standing: **GROUPOS_PAT** · **Circleback details** · **does an event
+   description/agenda field exist anywhere we are not syncing?**
+4. Release notes are the final stage of the sprint — `OLIVIA_RELEASE_NOTES.md`, I draft, Andy posts.
 
 ## Watch-outs (standing)
 - **`olivia_selftest.py` paces by sleep(20)** — an answer >20s races Save Conversation and the

@@ -20,12 +20,29 @@ Form: [MDS Annual Census 2026 — Combined](https://admin.typeform.com/form/DFeK
 - **The fix (TODO):** move it UP (before the operational sections) and gate the operator-only block on it — Business snapshot · Operations · Revenue & channels · Supply chain · Team. Answers "sold & no longer operate / investor / exploring" skip that block → jump to M&A + MDS-feedback. "Actively operate" + "sold but still operate" get everything. Everyone still gets role/expertise, M&A, interests, communities, family, feedback, programs, disclosure.
 - **Design note:** overlaps the screening question — current-involvement is the deeper gate ("do you have an operating business?"), screening ("what changed?") sits under it. Decide the two-level flow before building.
 
+## ✅ SHIPPED & VERIFIED 2026-07-29 (PUT 200 to DFeK5yop, confirmed via re-GET)
+- **Q20 EOS** — added plain description ("EOS (Entrepreneurial Operating System) — a structured framework…") + relabeled "with an implementer" → "with a **certified EOS Implementer**".
+- **Q39 selling-focus** — `long_text` → **8-option multi-select** (Amazon US · Amazon intl · TikTok Shop · DTC · Walmart/Target · Wholesale/B2B · Other · Not expanding); TikTok/DTC labels match Q26.
+- **Q44 member benefits** — 4 FB subgroups → **Facebook Groups**; renamed **Partner Directory/Offers**; added **WhatsApp Chats · Chapters · Squads**; `randomize`=True confirmed.
+
+## ✅ OPEN FIXES — ALL SHIPPED 2026-07-29 (PUT 200 to DFeK5yop, verified via re-GET)
+All items below are now live. Numbers here are the OLD draft numbers; see [[CENSUS_LIVE_INDEX]] for current. Rollback = `census_DFeK5yop_backup_2026-07-29.json`.
+- **#1 Q30 current-involvement branching** — non-operators (sold-no-longer / consultant / investor / exploring) skip the supply-chain block → jump to selling-focus. Refs + OR-condition jump verified.
+- **#2 Q9 manufacturing %** — country multi-select + per-selected-country % with `mfg_total` running total (mirrors the revenue-channel pattern). Fixed the broken single-% approach.
+- **#3 Q10–12 marketing/ops** — restored as **two matrices** (channel/area × N/A·In-house·Agency·Freelancer·Other), always-asked; **Photography + Graphic Design merged**.
+- **#4 Q17 team-pay** — split into **leadership roles** + **other roles** (2 questions). ⚠️ **PAY CAPTURE STILL OPEN** — matrix rejected; need Andy's decision on how to collect leadership pay without a grid.
+- **Q39 selling-focus, Q44 member benefits, Q14 tools, Q20 EOS** — shipped (see above).
+
+### Original open-fix detail (historical):
 ## ⚠️ OPEN FIXES found in re-review (2026-07-29)
 1. **Current involvement → drive branching** (above) — not built.
 2. **Manufacturing % — grab the number** (Andy): current multi-select drops the % split. Fix = mirror the revenue-channels pattern → multi-select countries, then a % per selected country with running total (single country auto-skips → 100%). [Option B: one "% from your main country" if >1 selected.] Andy leaning: get a number.
 3. **Marketing + ops-handling (Q10–12) — I OVER-REDESIGNED these.** Eugene only said they "change every single time" (= keep, always-ask, don't gate) + add smart-logic. He did NOT call them confusing (that was manufacturing + team-pay). My de-matrix (in-house Q10 / outsource Q11 / ops Q12) is confusing + lost the handler detail. **Fix:** restore both as their original matrices (function × in-house/agency/freelancer), always-asked, + add smart-logic follow-up ("for anything you outsource, who?"). No branching is currently built. Also **merge Photography + Graphic Design** into one option.
 4. **Team-pay (Q17) — I dropped pay; Eugene wanted a redesign that KEEPS it.** Fix = "which roles?" (multi) + **gated salary-band follow-up per selected role** (matrix data as individual questions; only selected roles ask pay). Reduce the 12-option list by splitting into **Leadership (role+pay)** + **other roles (presence-only)**. Depth decision (Andy): minimal / detailed(pay all roles) / middle(pay leadership only). Andy leaning + my rec: **middle**.
-5. _(Andy still reviewing — more may follow.)_
+5. **Selling-focus (Q39) — open text → multi-select (DECIDED w/ Andy).** Replace the open text with one multi-select "Which channels are you planning to expand into or grow in the next 12 months?": Amazon US · Amazon international (EU/Canada/Asia/ME) · TikTok Shop · DTC/own website · Walmart.com/Target.com · Wholesale/B2B · Other · Not expanding. Align **Q26** (current channels) to the same vocabulary so now-vs-next compare 1:1 (intent = doubling-down/new-entry derivable from the pair; no matrix). Old matrix was MDSonly Q17 = 11 ch × 7 intent.
+6. **Member benefits (Q44) — new list + randomize (DECIDED w/ Andy).** Combine the 4 FB subgroups → one **Facebook Groups**; rename "Partner Directory/MDS Only Offers" → **Partner Directory/Offers**; add **WhatsApp Chats · Chapters · Squads**. Final 11: Member Map/Directory · Virtual Calls · In-person Events · Video Archives · Document Repository · MDS Perks · Partner Directory/Offers · Facebook Groups · WhatsApp Chats · Chapters · Squads. Set `randomize` on the ranking field. ⚠ verify Typeform accepts `randomize` on ranking at apply time. (Flag: 11 items is heavy to drag-rank — consider "rank your top 5" if completion dips.)
+7. **Tools & providers (Q14) — list sourced (DECIDED).** Use the ~14-category taxonomy in [[CENSUS_TOOLS_LIST]] (from the GroupOS partner directory). ~30 partners still need Google category-verify (classifier-blocked); taxonomy unaffected.
+8. _(Andy still reviewing — more may follow.)_
 
 ### 4 · Manufacturing matrix (Q9)
 - **Eugene:** confusing — find a better way.
