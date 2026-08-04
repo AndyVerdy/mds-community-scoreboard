@@ -6,6 +6,14 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (PROMOTE — EIGHT TICKETS LIVE) — Andy: "lets promote everything". Gate 224 exit-0 pre-flip · `olivia_wf.py promote` moved **12 nodes** (Answer Seed · Attach Embedding · Build Prompt · Build Verbatim Digest · Fetch Raw Matches · Fetch Summaries · Format Reply · Gate Verdict · Log Inbound · Plan Request · Route Request · Send Reply) · in-promote gate re-ran GREEN · pre/post snapshots written · **prod `89ee3632` → `01a94c1a`**, graph matches staging, active=True.
+**LIVE NOW:** #52 follow-up topic binding · #53 fact-gate calibration · #51 members-lane hardening · #54 country/regions/geo-lists · #55 credits (already live DB-side) · #56 partner ranking aggregates · #29 personalization v1 (5 lanes) · #50 entity dossiers + judged recs · #38 interactive buttons.
+**Prod re-verified after the flip** (silent probes, msgs 24121-24133): "who is based in eastern europe?" → named members with `p_country='Eastern Europe'` · "most reviewed partners" → true leaderboard with `p_order='reviews'` (Helium 10 82 first) · "how many credits i have?" → "$3,515.00 in credit" · "recommend me some videos" → "Since you're deep into AI & Automation and Creator/TikTok…" (judged, zero stats).
+**Also today:** two real interactive messages sent to Andy's WhatsApp for the #38 render check (Meta accepted both; taps were inert pre-promote, live now).
+**REMAINING (Andy's):** holding-delay one-liner (`apply_54b_holding_delay.py`, 18s→30s) · the SMOKE as sprint exit exam · #38's report confirm-step (next pass) · standing: event description/agenda field question, GROUPOS_PAT, Circleback.
+
+---
+
 ## 2026-08-04 (DAY 8 — #38 BUTTONS BUILT + STAGED + PROVEN) — yes/no offers become TAP BUTTONS, billing portal becomes a CTA-URL button, taps ride the existing flows: `Log Inbound` accepts type=interactive (tap title/`txt:` id → member text) · builder lives IN `Send Reply (Meta)`'s expression (single source — the ticket offer comes from `Build Verbatim Digest`, which bypasses Format Reply; found live exec 64932, first hook moved) · 1024-char WA cap honored (longer stays text) · offline 4-case proof + **tap E2E: simulated `button_reply` after a live offer → "Yes" → Ticket #215475359197961 filed** (msgs 24114-24117) · eval/silent path untouched · gate 224 exit-0 · staging `ac94ee0f` · REMAINDER: report confirm-step (Send it/Add more/Cancel) = next pass; visual render check on a real device at promote
 
 ---

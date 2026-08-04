@@ -28,15 +28,15 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
-| **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | — awaiting promote |
-| **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | — awaiting promote |
-| **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | — awaiting promote |
-| **#54** | Country dim + regions + geo lists | 🔴 S1 | S | ✅ proven | — awaiting promote (holding-delay fix: Andy runs) |
+| **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
+| **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
+| **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
+| **#54** | Country dim + regions + geo lists | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` (holding-delay fix still Andy's to run) |
 | **#55** | MDS credits into the billing lane (WA→AT→Supa) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** (shared billing fn; Andy's WhatsApp test) |
-| **#56** | Partner ranking asks read a sample (Ian) | 🔴 S1 | S | ✅ proven | — awaiting promote |
-| **#29** | THE DOSSIER + PERSONALIZATION LAYER (v1: 5 lanes) | 🔴 S1 | L | ✅ proven | — awaiting promote |
-| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | ✅ proven (video lane) | — awaiting promote (dossier DB live) |
-| **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M | ✅ proven (report confirm-step open) | — awaiting promote |
+| **#56** | Partner ranking asks read a sample (Ian) | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` |
+| **#29** | THE DOSSIER + PERSONALIZATION LAYER (v1: 5 lanes) | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `01a94c1a` |
+| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | ✅ proven (video lane) | ✅ **LIVE** `01a94c1a` |
+| **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M | ✅ proven (report confirm-step open) | ✅ **LIVE** `01a94c1a` |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | — | — |
 | **#19** | Privacy: share, keep, delete | 🟡 S2 | M | — | — |
 | **#20** | Census into the warehouse | 🔵 S3 | L | — | — |
@@ -49,7 +49,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 
 **Staging/Prod key:** ✅ proven = built + probed on that surface · — = not there yet ·
-one `promote` moves everything staged to prod (staging `5b132a79`, prod `89ee3632`).
+**PROMOTED 2026-08-04 22:35 UTC** — prod `01a94c1a` (was `89ee3632`), graph matches staging; 12 nodes changed. Pre/post snapshots kept in `olivia_snapshots/`.
 **Priority key:** 🔴 S1 now · 🟡 S2 next · 🔵 S3 planned · ⚪ S4 later · 🚀 new data source ·
 🔥 standing/measurement · 🏁 closes the sprint.
 **Sizes:** S ≈ a session · M ≈ a day · L ≈ multi-day.

@@ -39,18 +39,14 @@ Everything shipped in Releases 1-3 is in `OLIVIA_BACKLOG_ARCHIVE.md`.
 
 ## NEXT SESSION
 
-0. **⛳ WAITING ON ANDY — three things:**
-   ① **Promote** — one promote now carries **#52+#29+#51+#53+#54** (staging `1a4e27a2`, incl. #54c/d/e regions + model-supplied geo lists).
-   ② **Holding delay** — `python3 scripts/olivia_loop/apply_54b_holding_delay.py` (rung 1
-   18s→30s; 31% of answers crossed 18s = Ian's "always the same"; classifier blocks me on prod).
-   ③ **Two data calls** — Tanase Tudor - Tude's record: country=CY but city Baia-Mare (Romania) —
-   team fixes the record, then "Cyprus" returns the map-consistent 4 (he was Etienne's "5th").
-   And **#55 credits (ACCESS PROVEN: WA API via n8n cred, Etienne Balance -11,917 live)** —
-   Andy names the AT field/table it lands in, then the WA→AT→Supa→billing-lane build runs.
-   Staging holds #52 topic binding · #29 personalization (5 lanes) · #51 members-lane hardening ·
-   #53 fact-gate calibration · #54 country dim. Prod is still `89ee3632` ("not promoting yet —
-   more features first", Andy 2026-08-03). Test chat (staging by default):
-   digest.mds.co/admin/olivia/test.
+0. **✅ PROMOTED 2026-08-04 — prod `01a94c1a`** (was `89ee3632`; 12 nodes; pre/post snapshots in
+   `olivia_snapshots/`). LIVE: **#52** follow-up binding · **#53** fact-gate calibration ·
+   **#51** members lane · **#54** geo (country/regions/lists) · **#55** credits · **#56** partner
+   rankings · **#29** personalization v1 · **#50** entity dossiers · **#38** interactive buttons.
+   Prod re-verified after the flip (silent probes): Eastern Europe named · partner leaderboard
+   `p_order=reviews` (Helium 10 82) · credit "$3,515.00" · judged video recs. **STILL ANDY'S:**
+   `python3 scripts/olivia_loop/apply_54b_holding_delay.py` (18s→30s rung-1) and the SMOKE
+   (sprint exit exam — every class rate, incl. #53's clamp-rate AC and #29/#50 personalization).
 1. **#50** (entity dossiers — pairs with #29's member side for the fit score), then #29's
    open sub-steps (research memo · retrieval-authority slot · "people like Mo").
 2. **At the next smoke:** #53's clamp-rate AC (before = 1.65% of llm turns) + #29's class rates

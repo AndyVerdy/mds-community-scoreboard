@@ -8,6 +8,7 @@
 prepend the full entry to its STREAM log + ONE line here.** Old references like "read SESSION_LOG
 2026-07-27" resolve through this index: find the date line, open the named stream file.
 
+- 2026-08-04 · **Olivia** · **PROMOTE — 8 TICKETS LIVE** (prod `89ee3632` → `01a94c1a`, 12 nodes, gate 224 exit-0, snapshots kept): #52 · #53 · #51 · #54 · #55 · #56 · #29 v1 · #50 · #38 · prod re-verified (EE members / partner leaderboard / $3,515 credit / judged video recs) · remaining: holding-delay one-liner + the SMOKE → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY 8) **#38 buttons**: offers → [Yes/No thanks] tap buttons, billing → CTA-URL, taps ride existing flows (simulated tap filed Ticket #215475359197961) · builder in Send Reply expr (canned lanes covered) · gate 224 · staging `ac94ee0f` · remainder: report confirm-step → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY 7) **#50 entity dossiers**: 2,934 dossiers (4 kinds) + `video_search_v2` judged recs ("since you're big on AI & Automation…", zero stats) · weakness internal-only · nightly job 8 + heartbeat · gate 224 · staging `c5566eb2` → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY 6) **#56 partner rankings**: `p_order` sorts the whole directory (Ian's ask → true top-5, msg 24101) · asserted-ranking probe → polite correction (24103) · gate 224 exit-0 · staging `5b132a79` → `SESSION_LOG_OLIVIA.md`
