@@ -47,7 +47,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#55** | MDS credits into the billing lane (WA→AT→Supa) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** (shared billing fn; Andy's WhatsApp test) |
 | **#56** | Partner ranking asks read a sample (Ian) | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER (v1: 5 lanes) | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `01a94c1a` |
-| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | ✅ proven (video lane) | ✅ **LIVE** `01a94c1a` |
+| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | ✅ all 4 lanes | ✅ videos LIVE `01a94c1a`; partners/events/chats awaiting promote |
 | **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M | ✅ proven (report confirm-step open) | ✅ **LIVE** `01a94c1a` |
 
 **Staging/Prod key:** ✅ proven = built + probed on that surface · — = not there yet ·
@@ -485,11 +485,23 @@ fit boost + `fit_reason`; `weak_signal` demotes within ties, never returned.
 | weakness never surfaced | ✅ `weak_signal` never in any return column; seed rule: never say weak/poorly-rated — low rank = lower or absent · gate 224 exit-0 |
 | #29 consumes both sides | ✅ member side (topic profile) × entity side (dossier) is exactly `video_search_v2`'s fit computation |
 
-**Named exceptions (in writing):** partners lane already folds member criticism honestly
-(#partner_lookup behaviour, unchanged); `event_lookup_v2` keeps #29's asker-topic
-personalization but does NOT yet join the entity dossier — the event-side join lands when
-Andy answers the standing question (does an event description/agenda field exist anywhere?).
-Staging `c5566eb2`.
+#### ✅ FINISHED 2026-08-04 — all four kinds consume their dossiers (Andy: "finish it, wire partners events and chats")
+The video lane shipped first; the other three were a named exception. Now closed:
+**`partner_lookup_v2`** (fit + strength_note; ranking mode keeps ITS order untouched — #56 is
+not diluted) · **`event_lookup_v3`** (annotates on top of #29's personalized order) ·
+**`chat_recommendations_v3`** (falls back to the same-named chapter dossier, never invented).
+**Events bar raised to 0.3** — their profiles mix attendee-LIFT (0.3–1.0, real) with weak
+name-token matches (~0.1–0.2); surfacing the latter would claim a room "skews TikTok" off a
+title word, the exact thing Andy called out on the Centurion dinner. Below the bar: say nothing.
+
+| lane | proof |
+|---|---|
+| partners | "since it fits what you're focused on… *Tactical Logistic Solutions* — Consistently well-rated by members" (msg 24223) |
+| chats | "*MDS TikTok +1M TTM* — _fits your focus: TikTok Shop_" (msg 24227) |
+| events | "the room skews toward what you work on: Logistics & 3PL, Exits & M&A" + "draws a strong member crowd" (Centurion dinner, SQL) |
+| no regression | partner RANKING mode unchanged (Helium 10 first); gate **224 exit-0** |
+
+Staging `85dc541c` (was `c5566eb2`).
 
 ---
 
