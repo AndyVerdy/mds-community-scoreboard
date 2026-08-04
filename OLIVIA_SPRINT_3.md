@@ -28,6 +28,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 
 | # | Ticket | Priority | Size |
 |---|---|---|---|
+| **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER | 🔴 S1 | L |
 | **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L |
@@ -117,6 +118,35 @@ explicitly, and the claimed-role guard needs to be deterministic rather than a p
 **Accept when:** the three questions re-fire clean · a "tell me about <invented name>" probe set
 (5+ fake names) returns honest not-found every time · no new over-refusal (the naming questions
 still name people) · gate GREEN · matrix rows added.
+
+### #52 · Follow-ups bind to the WRONG topic when an older one is in history
+**🔴 S1 · size S-M**
+
+> **In plain words:** Eugene asked about lenders, then said "how about based on mentions in Facebook?" — and she answered about newsletters, a topic from four hours earlier. She has to follow the thread you are actually on.
+
+*As a member, a short follow-up continues the conversation I am having right now — never a
+different one I had hours ago.*
+**Live evidence — Eugene, 2026-08-04 01:12, the 👎 Andy spotted:**
+`01:10` "Who are the best lenders in our portal?" → good answer (partner ratings, MultiFunding…) ·
+`01:12` **"How about based on mentions in Facebook?"** → **answered about NEWSLETTERS** (a thread
+from 20:46, 4.5h earlier) → **👎** · `01:13` "I think you missed my question. I was asking about
+the lenders" → she recovered correctly. So the data and the recovery are fine; **the binding is
+the defect.**
+**Why the existing rule did not cover it:** the 2026-08-01 Eugene fix pinned *offer acceptance*
+to the last message ("OFFER ACCEPTANCE BINDS TO YOUR LAST MESSAGE ONLY"). A **topic follow-up**
+has no equivalent rule, so the router is free to reach back across the whole 24h window.
+**Shape of the fix:** a bare continuation ("how about X", "what about on Facebook", "and in the
+chats?") resolves against the **most recent substantive exchange**, full stop — deterministic in
+`Plan Request` rather than a prompt line, same as the yes-binding fix. The previous-plan replay
+already stores the last turn's retrieval plan; a follow-up should reuse *that* plan with the new
+qualifier applied, not re-route from scratch.
+**Second finding from the same 48h (fold in here):** `20:40` "Does anyone have a system for using
+AI to quickly build newsletters?" → **the canned "I couldn't verify enough of the details"
+clamp** — a fact-gate false block; the same question re-asked six minutes later answered fine.
+Worth a look while in this code, since both cost a real member a real answer.
+**Accept when:** the Eugene sequence replays clean (lenders → "how about on Facebook?" → lenders
+on Facebook) · 5+ follow-up probes after a topic switch all bind to the newest topic · the
+newsletter question answers first time · gate GREEN · matrix rows added.
 
 ### #29 · THE DOSSIER + PERSONALIZATION LAYER — every answer is personal, not just people-matching
 **🔴 S1 · size L**
