@@ -28,7 +28,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
-| **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | — awaiting promote |
+| **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `955ed56f` |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | — | — |
 | **#19** | Privacy: share, keep, delete | 🟡 S2 | M | — | — |
 | **#20** | Census into the warehouse | 🔵 S3 | L | — | — |
@@ -139,6 +139,7 @@ continues that thread. **③** the send layer rewrites "reply *YES*"/"or *NO*" t
 | button wording | ✅ offline proof: "I can *open a ticket…*. tap *Yes* to open it, or tap *No thanks*." |
 | gate GREEN | ✅ 224 exit-0 |
 
+**PROMOTED 23:36 UTC → prod `955ed56f`** (7 nodes; in-promote gate green; prod-verified: intent → asks (msg 24197) · detail → draft (24199) · Send it → report row **"Cant register to event"**).
 **Named remainder:** the confirm reply still appends a soft follow-up offer ("if you tell me which
 event…"); harmless but not strictly the rule. Quoted-reply binding cannot be probed through the
 silent path (no outbound wamid exists there) — proven by stamping a wamid on a probe row, then
