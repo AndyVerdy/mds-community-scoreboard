@@ -6,6 +6,10 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (DAY 5b — #55 SIGN RULING APPLIED) — Andy: AT stores the MEMBER's perspective, so all values ×(−1): sync job flips at write (WA negative-overpaid → POSITIVE credit), field description restated, `member_billing` reads positive=credit / negative=owed · rollout: two failed runs first (AT 429 while the mirror competed for the base limit → pacing 600ms + retries; then the WA fetch tripped the 60s Code-runner cap → retryOnFail ×3) · final exec 64761 SUCCESS (changed 21, converged) + re-mirror · VERIFIED: Etienne **+11,917** in AT+Supa, line "$11,917.00 credit (overpaid)"; Andy +3,515; 32 negative rows = members who genuinely owe (correct under the new convention) · NOTE: the shared `member_billing` means PROD answers credit asks too; only the seed coaching line is staging-only (`534d87fc`)
+
+---
+
 ## 2026-08-04 (DAY 5 — #55 CREDITS LIVE E2E + IAN TRIAGE → #56 FILED) — "How much MDS credit do I have?" now answers the REAL number: WA API → AT (`Wild Apricot Balance`, n8n `RtigtybHzx2RyQFL` nightly 05:40 ET, exec 64722 success, 1,163/1,163 matched) → Supa mirror (forced) → `member_billing.mds_credit` → E2E staging msg 24079 "$3,515.00 in credit" = Andy's real WA balance; Etienne's line = "$11,917.00 credit (overpaid)" exactly per the screenshot · gate: billing-allowlist correctly caught the new column → allowlisted, 224 exit-0 · traps: WA Balance in FieldValues not top-level · AT 429 → 300ms pacing · Code-runner 60s cap → 'Member' eq true filter · zombie runs from repeat fires stopped · **IAN TRIAGE**: "most reviewed partners" was wrong TWICE (Nemoship-5, then agreed to his JoinBrands-29 assertion) — truth: Helium 10 82 / Scale Insights 59 / Sellerise 48 / Data Dive 46 / Sellerboard 35; JoinBrands 7th; root = partner_lookup has no order-by-reviews + sample read + assertion-agreement → **#56 filed** (partner ranking = aggregate, the content_stats precedent)
 
 ---
