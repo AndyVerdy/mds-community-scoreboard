@@ -304,6 +304,15 @@ questions in #9.
 
 *As a member, I know what's stored about me and can have it removed.*
 
+**2026-08-03: first AC drafted → `OLIVIA_PRIVACY_POLICY_ADDITIONS.md`** — 6 paste-ready
+amendments to mds.co/privacy-policy (live policy of 2025-06-03 has ZERO mention of AI /
+community-content processing / activity analytics): new data categories · an "AI-Assisted
+Services" section (processors = Anthropic + Voyage, no-training, profiling disclosure,
+group-visibility rule) · processor-list update · retention number **[X — Andy must choose]** ·
+deletion + STOP rights via appsupport@ · international transfers. Counsel notes included.
+**Still open:** counsel review + publish · the deletion RUNBOOK (delete across olivia_messages /
+content_items / member_events / embeddings, verifiable) · retention number stated.
+
 **Accept when**
 - **A written position exists:** what may be shared, with whom, and how long conversations are kept.
 - **A deletion request is honoured and verifiable.**
