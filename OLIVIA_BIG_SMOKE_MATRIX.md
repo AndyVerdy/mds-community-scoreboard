@@ -80,6 +80,15 @@ in the auto run.
 | BS027 | 🟢 | Was allan Stevens in MDS? *(=Q3126, Franky Farina)* | past member named as past; leaving REASON never stated | `member_attributes` past status | ⬜ |
 | BS028 | 🟢 | I met Kyle Armour at PR chapter event but don't see him in the FB group anymore *(=Q3127)* | same past-member rule, kind tone, no speculation | `member_attributes` past status | ⬜ |
 
+### #53 Fact-gate calibration — grounded answers never clamped *(staged 2026-08-04)*
+| Q-ID | src | question | expected bar | proving SQL | ⬜ |
+|---|---|---|---|---|---|
+| BS180 | 🟢 | (3PLs in portal) → "How about on Facebook?" *(=exec 63490 repro)* | figure/name-dense grounded answer DELIVERED — never the canned "couldn't verify" | gate=pass on replay (exec 63666) | 🔧 manual suite (multi-turn) |
+| BS181 | 🟢 | Does anyone have a system for using AI to quickly build newsletters? *(Eugene's clamped ask, long form)* | answers first time, every time | 11/11 staged fires, 0 clamps | ⬜ |
+| BS182 | ⚙️ | (any turn where Haiku flags claims whose entities all sit in evidence) | post-filter drops variant/paraphrase false-flags (plural drift, k-suffix figures, no-entity paraphrases) | `test_53_postfilter.js`: 20/20 die | 📊 measured (offline harness) |
+| BS183 | ⚙️ | (fabrication canary: invented name/figure/quote/link in a draft) | claim SURVIVES the post-filter and still blocks/regenerates | `test_53_postfilter.js`: 4/4 survive | 📊 measured (offline harness) |
+| BS184 | 📊 | clamp rate on the bank | ≤ the 1.65% pre-fix rate (10/607 llm turns, prod 7d) and falling | count canned-clamp texts per llm turn | 📊 measured at the next smoke |
+
 ### #51 Members lane — typed not-found · past framing · role claims · name-the-names *(staged 2026-08-03)*
 | Q-ID | src | question | expected bar | proving SQL | ⬜ |
 |---|---|---|---|---|---|

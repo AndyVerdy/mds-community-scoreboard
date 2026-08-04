@@ -39,17 +39,17 @@ Everything shipped in Releases 1-3 is in `OLIVIA_BACKLOG_ARCHIVE.md`.
 
 ## NEXT SESSION
 
-0. **⛳ WAITING ON ANDY: one promote now carries #52 + #29 + #51.** Staging `5b86e6b4` holds the
-   follow-up topic binding (#52) + the personalization layer v1 (#29, 5 lanes) + the members-lane
-   hardening (#51: typed not-found · past-member framing · role-claim flag · name-the-names;
-   5/5 fake names honest, gate 224 GREEN). Prod is still `89ee3632`. Andy said "not promoting
-   yet — more features first" (2026-08-03), so staging accumulates;
-   `python3 scripts/olivia_wf.py promote` when he calls it. Test chat (staging by default):
-   digest.mds.co/admin/olivia/test.
-1. **#53** (fact-gate false clamp) — filed with a full reproduction (exec 63490); the biggest
-   remaining defect class (a grounded answer binned costs a member a whole real answer).
-2. **#50** (entity dossiers — pairs with #29's member side for the fit score), and #29's
+0. **⛳ WAITING ON ANDY: one promote now carries #52 + #29 + #51 + #53.** Staging `e250add5`
+   holds the follow-up topic binding (#52) + the personalization layer v1 (#29, 5 lanes) + the
+   members-lane hardening (#51) + the fact-gate calibration (#53: word-level entity verify ·
+   k/m figures · no-entity claims can't block; 63490 replays clean, newsletter 11/11, canaries
+   4/4 still block). Prod is still `89ee3632`. Andy said "not promoting yet — more features
+   first" (2026-08-03), so staging accumulates; `python3 scripts/olivia_wf.py promote` when he
+   calls it. Test chat (staging by default): digest.mds.co/admin/olivia/test.
+1. **#50** (entity dossiers — pairs with #29's member side for the fit score), then #29's
    open sub-steps (research memo · retrieval-authority slot · "people like Mo").
+2. **At the next smoke:** #53's clamp-rate AC (before = 1.65% of llm turns) + #29's class rates
+   ride the run — the smoke is the sprint's exit exam, one run covers all staged tickets.
 3. NOTE for the next smoke: **Q3124's bank truth was CORRECTED** (Lori Barzvi = real past
    member; expect = former-member framing, not not-found) — `eval_bank_smoke.json`, backup
    `.bak-51-q3124`.

@@ -29,7 +29,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | # | Ticket | Priority | Size |
 |---|---|---|---|
 | **#52** | Follow-ups bind to the wrong topic (the 👎) — **staged + proven, Andy to promote** | 🔴 S1 | S-M |
-| **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M |
+| **#53** | Fact-gate false clamp (grounded answer binned) — **staged + proven, Andy to promote** | 🔴 S1 | M |
 | **#51** | Members-lane fabrication + over-refusal — **staged + proven, Andy to promote** | 🔴 S1 | M |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER — **v1 staged + proven, Andy to promote** | 🔴 S1 | L |
 | **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L |
@@ -226,6 +226,29 @@ not a material invention — today it costs the member the entire answer. Preced
 **Accept when:** exec 63490's answer passes the gate on replay · the newsletter question passes
 10/10 fires · a fabrication canary still FAILS the gate (the clamp must not simply be loosened
 into silence) · clamp rate measured before/after on the bank · gate GREEN.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-04 — awaiting Andy's promote
+**Root cause pinned:** the claims that survived the deterministic post-filter each lap were
+paraphrase/variant misses the exact-string check cannot see — "Tactical Logistic**s**" vs the
+evidence's "Logistic" (plural drift) · "'family-run 3PL'" (hyphenated paraphrase) · "$10K"
+(k-suffix invisible to the 4-digit number regex) · "one member said they quoted over $10K/month"
+(NO extractable entity — the old filter kept it as "trust the gate").
+**The fix (`Gate Verdict` post-filter only — Haiku gate, link gate, AGG/SRCHEAD backstops and
+the 2-lap cap untouched; `apply_53_gate_calibration.py`, staging `e250add5`):**
+① text entities verify at **word level** (≥80% of significant words, plural-tolerant) ·
+② **k/m-suffix figures** join the number entities · ③ a claim with **nothing checkable cannot
+block alone** (a no-entity claim is a paraphrase by construction; every catastrophic class —
+invented people/links/quotes/figures — carries an entity).
+
+| AC | result |
+|---|---|
+| exec 63490 replays clean | ✅ same two-turn sequence → real Tactical answer with the FB link; gate run 1 = **pass** after one regen (exec 63666) |
+| newsletter question 10/10 | ✅ **11/11 fires answered, 0 clamped** |
+| fabrication canary still fails | ✅ offline harness (`test_53_postfilter.js`, the exec's real 46,079-char evidence): **20/20 real flagged claims die · 4/4 fabrication canaries survive** (invented name · invented figure · invented quote · fake link) |
+| clamp rate before/after on the bank | before = **1.65%** of llm turns (10/607, prod 7d). After on the bank = **pending the next smoke** (eval runs are Andy's call); after on probes = 0/13 |
+| gate GREEN | ✅ 224 checks — one transient FAIL on first run (`anon denied on community_info`, the known blip from the R3 flip), **clean on re-run** |
+
+**Not promoted** — staging `e250add5` (carries #52 + #29 + #51 + #53), prod `89ee3632`.
 
 ### #29 · THE DOSSIER + PERSONALIZATION LAYER — every answer is personal, not just people-matching
 **🔴 S1 · size L**

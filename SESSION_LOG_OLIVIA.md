@@ -6,6 +6,42 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (#53 BUILT + STAGED + PROVEN) — fact-gate calibration: word-level entity verify + k/m figures + no-entity claims can't block · exec 63490 replays clean (gate=pass, exec 63666) · newsletter 11/11, 0 clamps · offline: 20/20 real false-flags die, 4/4 fabrication canaries still block · gate 224 GREEN · staging `e250add5` (#52+#29+#51+#53), prod untouched
+
+- **Root cause pinned from the kept execution (63490):** the claims that survived the
+  deterministic post-filter each lap were PARAPHRASE/VARIANT misses the exact-string check
+  cannot see — draft "Tactical Logistics Solutions" vs evidence "Tactical Logistic Solutions"
+  (plural drift) · "'family-run 3PL'" (hyphenated paraphrase) · "$10K" (k-suffix invisible to
+  \b\d{4,}\b) · "one member said they quoted over $10K/month" (NO extractable entity — the
+  old filter's default kept it: "nothing checkable — trust the gate"). Haiku re-flags fresh
+  paraphrases every lap, so the 2-lap cap fired and the member got the canned miss.
+- **Before-number from live prod:** the canned clamp is **1.65% of llm turns** (10/607, 7d).
+- **The fix — `Gate Verdict` post-filter ONLY** (Haiku gate, link gate, AGG/SRCHEAD backstops,
+  2-lap cap untouched; `apply_53_gate_calibration.py`, 4 hunks): ① text entities verify at
+  WORD level — ≥80% of significant words (≥4 chars, letter-led, plural-tolerant via trailing-s)
+  present in the evidence; spelling/plural/hyphen variants of REAL content verify, invented
+  names still fail ② k/m-suffix figures ("10K", "1.5M") join the number entities, both sides
+  comma/$-stripped ③ a claim with NOTHING checkable cannot block alone — no-entity claims are
+  paraphrases by construction; every catastrophic class carries an entity. AGG filter upgraded
+  to the same word-level check (same miss class).
+- **Offline proof BEFORE staging** (`scripts/olivia_loop/test_53_postfilter.js`, run against
+  the exec's real 46,079-char evidence — evidence file deliberately not committed, regen
+  instructions in the header): run0 10→0 · run1 4→0 · run2 6→0 survivors; **4/4 fabrication
+  canaries survive** (invented name · invented figure · invented quote · fake link id).
+- **Proven E2E on staging (`e250add5`):** the 63490 two-turn sequence → real Tactical answer
+  with the FB permalink; Gate Verdict run 1 **gate=pass** after one regen (exec 63666) · the
+  newsletter question **11/11 fires answered, 0 clamps** (msgs 23105-23163) — was: same ask
+  clamped live at 20:40, answered at 20:46.
+- **Gate:** first run 1 transient FAIL (`anon denied on community_info` — the SAME blip as the
+  R3 flip attempt, documented transient), re-run CLEAN: 224 PASS / 0 FAIL.
+- **Selftest harness note:** a backgrounded multi-fire batch died silently (empty output file,
+  0 rows in DB — killed, re-fired in foreground batches). Watch-out: don't background
+  `olivia_selftest.py`.
+- **Docs:** matrix +5 (BS180-184; clamp-rate row measured at the next smoke) · board #53 AC
+  table · handoff: ONE promote now carries #52+#29+#51+#53. Lock released at close.
+
+---
+
 ## 2026-08-03 (LATE NIGHT 3 — #51 BUILT + STAGED + PROVEN) — members lane: typed not-found sentinel + past-member framing + deterministic role-claim flag + name-the-names · the "fabrication" was NOT one (Lori Barzvi = real past member; bank truth corrected) · 5/5 fake names honest · gate 224 GREEN · staging `5b86e6b4` (#52+#29+#51), prod untouched
 
 - **Diagnosis flipped the ticket.** Q3124 "Tell me about Lori": `member_card('Lori')` returns
