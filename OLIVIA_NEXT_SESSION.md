@@ -30,25 +30,31 @@ graph 0→started (159,940 edges), gate 9→10 (202 checks), grants unchanged.
 **#49 handbook shipped** (`OLIVIA_HANDBOOK.md`, 733 lines) and **ClickUp `2531q-103317` rebuilt as
 its copy** (TOC + 18 chapter pages + `99 · ARCHIVE`).
 
-**THE BOARD IS NOW `OLIVIA_SPRINT_3.md`** — 14 open tickets, goal = **make Olivia personal**.
-S1: **#51** (members-lane fabrication — she invented "Lori Barzvi", the last failure class) ·
-**#29** (dossier + personalization layer) · **#50** (entity dossiers). Everything shipped in
-Releases 1-3 is in `OLIVIA_BACKLOG_ARCHIVE.md`.
+**THE BOARD IS NOW `OLIVIA_SPRINT_3.md`** — goal = **make Olivia personal**.
+S1: **#52** (follow-up topic binding — **staged + proven 2026-08-03, awaiting Andy's promote**) ·
+**#51** (members-lane fabrication — she invented "Lori Barzvi") · **#53** (fact-gate false clamp,
+filed 2026-08-03 with a full reproduction) · **#29** (dossier + personalization layer) ·
+**#50** (entity dossiers). Everything shipped in Releases 1-3 is in `OLIVIA_BACKLOG_ARCHIVE.md`.
 
 ## NEXT SESSION
 
-1. **#51 first** — it is small, it is the whole remaining failure surface, and #29/#50 are built
-   on top of member data being trustworthy.
+0. **⛳ WAITING ON ANDY: promote #52.** Staging `456d14dc` holds the follow-up topic binding —
+   built, staged and proven (Eugene's 👎 replays clean · 5/5 follow-up probes · gate 203 GREEN ·
+   matrix +6). Prod is still `89ee3632`. `python3 scripts/olivia_wf.py promote`.
+1. **#51** — the members-lane fabrication class; #29/#50 are built on member data being
+   trustworthy. **#53** (fact-gate false clamp) is filed with a full reproduction (exec 63490)
+   and needs a priority call against #51 — it costs a real member a whole real answer.
 2. Then **#29 + #50** together (member dossier × entity dossier = the fit score).
 3. Andy's side, standing: **GROUPOS_PAT** · **Circleback details** · **does an event
    description/agenda field exist anywhere we are not syncing?**
 4. Release notes are the final stage of the sprint — `OLIVIA_RELEASE_NOTES.md`, I draft, Andy posts.
 
 ## Watch-outs (standing)
-- **`olivia_selftest.py` paces by sleep(20)** — an answer >20s races Save Conversation and the
-  next probe reads INCOMPLETE history (manufactured a phantom yes-binding P0 on 2026-08-03). Fix
-  it to wait on persistence before multi-turn probes. Real-member echo: two messages <2s apart
-  hit the same race — known, low-frequency, filed as a note.
+- ~~`olivia_selftest.py` paces by sleep(20)~~ **FIXED 2026-08-03 (#52):** it now polls
+  `olivia_messages` for THIS turn's reply before firing the next (`--timeout`, default 180s) and
+  prints the wait — a probe in the #52 set took **50.4s** and would have raced the old pacer.
+  Real-member echo: two messages <2s apart hit the same race in the workflow itself — known,
+  low-frequency, still just a note.
 - **FB capture SOP: rewrite `extension/seed_ids.json` from the capture file EVERY run** — 4c
   falls back to it silently (localStorage dies on tab close); a stale seed = comments for the
   wrong days. Backup pattern: `.bak-<date>`.

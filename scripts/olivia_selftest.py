@@ -105,12 +105,40 @@ def fire(text, tag):
     return p.stdout
 
 
+def last_id(key):
+    """Newest olivia_messages id for the probe member (0 when the thread is empty)."""
+    rows = curl("GET", f"{BASE}/olivia_messages?phone=eq.{PROBE_PHONE}"
+                       f"&order=id.desc&limit=1&select=id", key)
+    return rows[0]["id"] if rows else 0
+
+
+def wait_persisted(key, baseline, timeout):
+    """Block until THIS turn is in digest.olivia_messages, not just until a timer expires.
+
+    Fixed 2026-08-03 (#52): the harness paced by sleep(20), so any answer slower than that
+    fired the next question while Save Conversation was still running — the next turn then
+    read INCOMPLETE history (no prev_plan) and manufactured a phantom failure. Multi-turn
+    probes are the whole proof for follow-up binding, so the pacing has to wait on
+    PERSISTENCE. Returns seconds waited, or -1 on timeout (reported, never silent).
+    """
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        time.sleep(3)
+        rows = curl("GET", f"{BASE}/olivia_messages?phone=eq.{PROBE_PHONE}"
+                           f"&id=gt.{baseline}&role=eq.olivia&order=id.desc&limit=1&select=id", key)
+        if rows:
+            return round(time.time() - t0, 1)
+    return -1
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cleanup", action="store_true", help="delete this run's test rows and exit")
     ap.add_argument("--questions", nargs="+", help="override the question bank")
     ap.add_argument("--staging", action="store_true",
                     help="fire at the STAGING copy (scripts/olivia_wf.py stage) instead of live")
+    ap.add_argument("--timeout", type=int, default=180,
+                    help="max seconds to wait for a turn to persist before moving on")
     args = ap.parse_args()
     key = load_key()
 
@@ -132,12 +160,14 @@ def main():
 
     bank = [(q, 20) for q in args.questions] if args.questions else BANK
     print(f"firing {len(bank)} questions as {PROBE_PHONE[:4]}… (replies deliver to their phone)")
-    for i, (text, wait) in enumerate(bank):
+    for i, (text, _wait) in enumerate(bank):
+        baseline = last_id(key)
         code = fire(text, f"Q{i:02d}")
-        print(f"  Q{i:02d} [{code}] {text[:60]}", flush=True)
-        time.sleep(wait)
+        took = wait_persisted(key, baseline, args.timeout)
+        mark = f"{took}s" if took >= 0 else f"NOT PERSISTED in {args.timeout}s"
+        print(f"  Q{i:02d} [{code}] {mark:>22}  {text[:60]}", flush=True)
 
-    time.sleep(10)
+    time.sleep(5)
     rows = curl("GET", f"{BASE}/olivia_messages?phone=eq.{PROBE_PHONE}"
                 f"&order=id.desc&limit={len(bank)*2 + 4}&select=role,route,text", key)
     print("\n=== TRANSCRIPT (newest first) ===")

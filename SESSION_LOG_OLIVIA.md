@@ -6,6 +6,64 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-03 (LATE NIGHT — #52 BUILT + STAGED + PROVEN) — follow-ups now bind to the NEWEST topic, deterministically · Eugene's 👎 replays clean (lenders → "how about on Facebook?" → lenders ON Facebook) · 5/5 follow-up probes + 1 control · selftest paces on PERSISTENCE not sleep(20) · gate 203 GREEN · #53 filed (fact-gate false clamp, reproduced with the whole execution) · NOT PROMOTED — Andy runs `promote`
+
+- **Verified live before touching anything.** Prod `89ee3632` active, staging identical to prod
+  except the webhook paths. Both defects in #52 reproduced from `digest.olivia_messages`:
+  **the 👎** — msg 22972 `01:12` "How about based on mentions in Facebook?" → plan
+  `p_terms ["newsletter","ai"]`, the topic of the `20:46` exchange **4.5h earlier**, while the
+  `01:10` lenders turn sat immediately before it (msg 22971, `partner_lookup p_query='lenders'`).
+  `prev_plan` was CORRECT; the ROUTER overrode it. Term order differed from the stored plan
+  (`["newsletter","ai"]` vs `["ai","newsletter"]`) — proof the terms came from Haiku reading the
+  24h history block, not from a plan replay. **The clamp** — msg 22649 `20:40`, the long form of
+  the newsletter question, 6 terms incl. junk padding (`anyone/system/quickly/newsletters`) →
+  canned "I couldn't verify enough of the details"; the short form at `20:46` answered fine.
+- **The fix — `Plan Request`, two hunks, `scripts/olivia_loop/apply_52_followup_binding.py`:**
+  ① **topic binding.** A PURE-QUALIFIER continuation — a continuation opener (`how/what about`,
+  `and in/on`, `same question but for`) plus a scope/source/recency word and **no topic of its
+  own** — takes its topic from `ctx.prev_plan` (`p_terms` → `p_query` → `p_member` →
+  `p_category` → `raw_params.p_terms`), overriding the router's `search_terms`, and sets
+  `followup`. Guarded by `≤8 words` + a residue check, excludes `bareAffirm` (the yes-binding
+  owns that) and no-prev-plan. ② **the source steer wins the lane.** The first staging replay
+  bound the topic correctly and STILL answered from the partner portal — the router returned
+  `intent='partners'` and that branch sits above the content search in the cascade. So on a
+  carried topic, `wantFb || wantWa` demotes to `intent='question'` and falls through to the
+  scoped content search. Only reachable when the member supplied no topic, so no real subject
+  can be demoted by it.
+- **Offline first:** 21 cases through the extracted block under node — 9 must-carry (incl.
+  "About that", "same question but for facebook", "and in the chats?"), 12 must-not (own topic,
+  a named member, bare affirmation, no prev_plan, the recovery sentence). All pass. Then
+  `node --check` on the whole 900-line node body before it went near n8n.
+- **Proven on staging (`456d14dc`), machine-read from the saved plans, not the prose:**
+  · **Eugene replay** — msg 22991 `op=content_search`, `p_terms ["lenders"]`,
+  `raw_params.p_sources ["fb_post","fb_comment"]`, answer = First Bank / Casey Cutsail SBA
+  chatter with FB permalinks (exec 63485).
+  · **5 follow-ups after a topic switch, 5/5 bound to the NEWEST topic** (msgs 22999-23009):
+  tariffs → 3PLs → "How about on Facebook?" = `["3pl logistics","logistics"]` + fb ·
+  "and in the chats?" = same topic + `wa_message` · freight forwarding → "what about based on
+  mentions in Facebook?" = `["freight forwarding",…]` + fb · "and on Facebook?" = `["tariff"]`
+  + fb. **Control:** "How about tariffs?" carries its own topic → NOT bound, routed fresh.
+  · **The newsletter question re-fired verbatim answers first time** (Constantine Kirillov's
+  Open Claw agent, Hannes Wiech's guide, Khalid Abdulla — named, linked, no clamp).
+- **Harness fix that the proof needed:** `olivia_selftest.py` paced by `sleep(20)`, so any answer
+  slower than that fired the next question while Save Conversation was still running and the next
+  turn read INCOMPLETE history (the phantom-P0 trap from 2026-08-03). It now polls
+  `olivia_messages` for THIS turn's olivia row before firing the next, `--timeout` default 180s,
+  and PRINTS the wait. **Q03 took 50.4s** — under the old pacer that probe would have raced.
+- **Gate 203 GREEN, 0 FAIL.** Matrix +6 rows (BS147-BS149, BS152-BS154, §E multi-turn).
+- **#53 FILED — the fact-gate false clamp, now reproduced with the execution kept.** exec 63490
+  ("How about on Facebook?" → 3PLs): retrieval CORRECT, the model called `content_search` as a
+  tool, and **every claim the gate flagged is present in the evidence handed to the gate** —
+  `Joe Penalba`, `Lee Assoulin`, `Partner Log Group`, `John Ward`, `Brian Kelsey`, `10pm`,
+  `6:30` all `True` in `Answer Parse.evidence` (46,079 chars, under the 64k slice, so NOT
+  truncation). Haiku returned `fail` 3× and its own run-2 explanation contradicts its verdict
+  ("…when in fact they are present in the RAW MATCHES"). The flagged items are composite
+  narrative claims ("worked till 10pm, back online at 6:30am" vs a screenshot showing 6:34 AM) —
+  gate CALIBRATION, same class as the 2026-08-03 comma-number false clamp. Flagged, not worked.
+- **NOT PROMOTED.** Staging `456d14dc`, prod still `89ee3632`. Lock released at close.
+
+---
+
 ## 2026-08-03 (LATE — #40 BUILT + STAGED) — `content_search_v2` RRF side-by-side, HNSW finally serving reads (idx_scan 0→live, v1 12s→v2 0.46s) · 6,486 noise embeddings nulled · embed job now nightly+alarmed · staging on v2 at all 3 call sites, E2E exec 61669 · gate 202 GREEN (+12 v2 checks) · NEXT = propose smoke slice to Andy, then #41
 
 - **v2 (migrations `content_search_v2_rrf`, `content_search_v2_two_phase_ann`):** identity gate +

@@ -215,6 +215,12 @@ in the auto run.
 | BS144 | 🟢 | Who is going to Singapore summit → "give me the whole list please" *(=Q3128)* | continuation DELIVERS the rest chunked | `event_who` Summit Aug 23 | 🔧 manual suite (turn 1 fires auto as Q3128) |
 | BS145 | 🟢 | (ticket exchange → hours later new topic+offer → "Yes") *(=Q3136, Eugene's live prod failure 08-01)* | yes binds to the LAST message's offer only; no stale-topic resurrection; no ticket-capability denial | seed rules + probe EUG1 | 🔧 manual suite |
 | BS146 | 🟢 | can you open a ticket for me about my chat access *(=Q3137, Eugene)* | ticket flow engages; NEVER "I can't open tickets / no system" | seed NEVER-DENY rule | ⬜ |
+| BS147 | 🟢 | "Who are the best lenders in our portal?" → **"How about based on mentions in Facebook?"** *(Eugene's live 👎 08-04 01:12)* | turn 2 = LENDERS on Facebook; NEVER the older topic in history | #52 · plan `p_terms=["lenders"]`, `raw_params.p_sources=["fb_post","fb_comment"]` | 🔧 manual suite (multi-turn) |
+| BS148 | ⚙️ | (tariffs, then 3PLs) → **"How about on Facebook?"** | binds to 3PLs — the NEWEST topic, not tariffs | #52 · plan `p_terms` = the 3PL topic + fb sources | 🔧 manual suite |
+| BS149 | ⚙️ | (…continuing) → **"and in the chats?"** | same topic, source flips to `wa_message` | #52 · `raw_params.p_sources=["wa_message"]` | 🔧 manual suite |
+| BS152 | ⚙️ | (freight-forwarding deals) → **"what about based on mentions in Facebook?"** | freight forwarding on FB; the 3PL/tariff turns are NOT resurrected | #52 · `p_terms` = freight forwarding + fb sources | 🔧 manual suite |
+| BS153 | ⚙️ | (after any topic) → **"How about tariffs?"** | a continuation carrying its OWN topic is a NEW subject — no carry-over | #52 control · `cont_topic` null, router terms stand | 🔧 manual suite |
+| BS154 | ⚙️ | (after a topic answer) → **"and on Facebook?"** | newest topic, FB-scoped | #52 · `p_terms` = newest topic + fb sources | 🔧 manual suite |
 
 ---
 
@@ -261,7 +267,7 @@ in the auto run.
 | §A/§B functional+retrieval | 12 sources/caps | 54 | 20 | 34 |
 | §C safety | 5 groups | 17 | 2 | 15 |
 | §D robustness | 1 | 4 | 0 | 4 |
-| §E conversational | 1 | 5 | 4 | 1 |
+| §E conversational | 1 | 13 | 6 | 7 |
 | §F delivery | 1 | 5 | 3 | 2 |
 | §G/§H/§I | measured/forced | — | — | — |
 | **total** | | **~85 Q** | **29** | **56** |

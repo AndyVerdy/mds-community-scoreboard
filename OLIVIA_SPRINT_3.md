@@ -28,7 +28,8 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 
 | # | Ticket | Priority | Size |
 |---|---|---|---|
-| **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M |
+| **#52** | Follow-ups bind to the wrong topic (the 👎) — **staged + proven, Andy to promote** | 🔴 S1 | S-M |
+| **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER | 🔴 S1 | L |
 | **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L |
@@ -147,6 +148,57 @@ Worth a look while in this code, since both cost a real member a real answer.
 **Accept when:** the Eugene sequence replays clean (lenders → "how about on Facebook?" → lenders
 on Facebook) · 5+ follow-up probes after a topic switch all bind to the newest topic · the
 newsletter question answers first time · gate GREEN · matrix rows added.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-03 — awaiting Andy's promote
+**The fix (deterministic, `Plan Request`, `scripts/olivia_loop/apply_52_followup_binding.py`):**
+① **topic binding** — a PURE-QUALIFIER continuation (a continuation opener + a scope/source/
+recency word and NO topic of its own) takes its topic from the LAST turn's plan (`prev_plan`),
+overriding the router's `search_terms`. A continuation carrying its own topic ("how about
+tariffs?") is a new subject and is untouched. ② **the source steer wins the lane** — on a
+carried topic, "on Facebook" / "in the chats" falls through to the scoped content search;
+without ② the replay still answered from the partner portal (the router kept `intent='partners'`).
+21 offline cases pass (9 carry / 12 must-not, incl. bare affirmations and no-prev-plan).
+
+| AC | result |
+|---|---|
+| Eugene sequence replays clean | ✅ turn 2 = lenders **on Facebook** — plan `p_terms=["lenders"]`, `raw_sources=["fb_post","fb_comment"]` (msg 22991, exec 63485) |
+| 5+ follow-up probes bind to the newest topic | ✅ **5/5** — 3PL after tariffs (fb), "and in the chats?" (wa), freight forwarding (fb), "and on Facebook?" (fb) + the **control** "How about tariffs?" correctly treated as a NEW subject (msgs 22999–23009) |
+| newsletter question answers first time | ✅ re-fired verbatim → real named members + links, no clamp — **but the clamp is intermittent, not fixed: it fired again on an unrelated probe (exec 63490) → filed as #53** |
+| gate GREEN | ✅ **203 checks, 0 FAIL** |
+| matrix rows added | ✅ **BS147–BS149, BS152–BS154** (§E) |
+
+**Before → after** on the failing turn: `p_terms ["newsletter","ai"]` (a topic 4.5h old) →
+`["lenders"]`; sources `wa_digest` → `fb_post`/`fb_comment`. Stale-topic binds **1/1 → 0/6**.
+**Also fixed here:** `olivia_selftest.py` now waits on PERSISTENCE, not `sleep(20)` — the known
+multi-turn race that manufactured a phantom P0 on 2026-08-03. Q03 of the probe set took **50.4s**;
+under the old pacer that turn would have raced Save Conversation and read incomplete history.
+**Not promoted** — staging `456d14dc`, prod still `89ee3632`. Andy runs `promote`.
+
+### #53 · The fact-gate false clamp — a grounded answer blocked as unverified
+**🔴 S1 · size M** *(filed 2026-08-03 out of #52's second finding — flagged, not worked)*
+
+> **In plain words:** Sometimes she does find the answer, writes it, and then her own safety check throws it away and says "I couldn't verify enough of the details."
+
+*As a member, when Olivia has actually retrieved the answer, I get the answer — her own checks
+never bin a reply that is sitting on real evidence.*
+**Two live instances, one class:** `20:40` Eugene's newsletter question → canned clamp; the same
+question six minutes later answered fine. And a reproduction with the whole execution kept:
+**exec 63490** ("How about on Facebook?" → 3PLs) — retrieval was CORRECT, the model called
+`content_search` as a tool, and **every claim the gate flagged is present in the evidence handed
+to the gate** (`Joe Penalba`, `Lee Assoulin`, `Partner Log Group`, `John Ward`, `Brian Kelsey`,
+`10pm`, `6:30` — all `True` in `Answer Parse.evidence`, 46,079 chars, well under the 64k slice).
+Haiku returned `fail` three times; its own run-2 explanation **contradicts its verdict** ("…when
+in fact they are present in the RAW MATCHES"). So this is not truncation and not a retrieval
+miss — it is gate CALIBRATION on long evidence and on composite narrative claims (the flagged
+items are multi-row summaries: "worked till 10pm, back online at 6:30am" vs a screenshot showing
+6:34 AM).
+**Shape of the fix (to evaluate):** the gate should judge claim-by-claim against a located row,
+not the whole 46k blob at once; near-miss detail drift (6:30 vs 6:34) is a WORDING correction,
+not a material invention — today it costs the member the entire answer. Precedent: the
+2026-08-03 number-normalization fix for comma-formatted figures was the same class.
+**Accept when:** exec 63490's answer passes the gate on replay · the newsletter question passes
+10/10 fires · a fabrication canary still FAILS the gate (the clamp must not simply be loosened
+into silence) · clamp rate measured before/after on the bank · gate GREEN.
 
 ### #29 · THE DOSSIER + PERSONALIZATION LAYER — every answer is personal, not just people-matching
 **🔴 S1 · size L**
