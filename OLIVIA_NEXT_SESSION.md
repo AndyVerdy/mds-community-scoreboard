@@ -40,7 +40,7 @@ Everything shipped in Releases 1-3 is in `OLIVIA_BACKLOG_ARCHIVE.md`.
 ## NEXT SESSION
 
 0. **⛳ WAITING ON ANDY — three things:**
-   ① **Promote** — one promote now carries **#52+#29+#51+#53+#54** (staging `95cd49b5`).
+   ① **Promote** — one promote now carries **#52+#29+#51+#53+#54** (staging `fcf1b793`, incl. #54c regions).
    ② **Holding delay** — `python3 scripts/olivia_loop/apply_54b_holding_delay.py` (rung 1
    18s→30s; 31% of answers crossed 18s = Ian's "always the same"; classifier blocks me on prod).
    ③ **Two data calls** — Tanase Tudor - Tude's record: country=CY but city Baia-Mare (Romania) —

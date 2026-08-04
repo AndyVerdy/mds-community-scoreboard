@@ -6,6 +6,10 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (DAY 2 — #54c REGIONS) — region asks work: migration `member_match_v2_region_groups` (`country_region_countries` expands Europe/Eastern Europe/North America/Scandinavia/Asia/Middle East/Latin America/Oceania; single country = one-element set) · SQL: Europe 86 · EE 13 · Scandinavia 10 · NA 500-cap · Germany 7 / Cyprus 5 unchanged · staging `fcf1b793` (router region rule + tool schema) · E2E "who is based in eastern europe?" → 9 named across 6 countries (`p_country=Eastern Europe`, msg 23725) · gate 224 GREEN ×2 · region label rides the reason ("in Tallinn, Estonia (Eastern Europe)")
+
+---
+
 ## 2026-08-04 (DAY — Slack triage → #54 BUILT + STAGED) — Etienne/Eugene/Ian triage: country dim shipped (Germany 7 named E2E; Cyprus routed right but blocked by a WRONG MEMBER RECORD the gate correctly caught) · holding rung measured (31% > 18s) → 30s fix scripted for Andy · credits gap diagnosed (fields mirrored, no lane reads them) · gate 224 · staging `95cd49b5`
 
 - **Slack triage (Eugene + Ian), all three complaints diagnosed from live data:**
