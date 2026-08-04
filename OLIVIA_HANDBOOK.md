@@ -300,10 +300,12 @@ connection-pool caches produce *intermittent* 404s that look exactly like a qual
 
 ---
 
-## 7. The personalization data (built, not yet consumed)
+## 7. The personalization data — and the lanes that consume it (#29)
 
-Three layers exist and refresh nightly. **No answer uses them yet** — wiring them into the lanes is
-the next major piece of work.
+Three layers exist and refresh nightly. **Since #29 (staged 2026-08-03) the lanes consume them**
+through side-by-side v2 RPCs — v1 stays untouched; the workflow's last-inch v1→v2 name map (the
+same execution-layer swap as `content_search_v2`) decides which runs, so prod flips only at
+promote.
 
 ### 7.1 Expertise ledger — `member_expertise`
 Every active member scored across 16 topics (topics live in the `expertise_topics` **table** — a
@@ -332,6 +334,31 @@ triggers: an event-logging failure must never break the member's answer.
 **Rulings that constrain all three:** scores, ranks and weights are **internal sort keys** — never
 surfaced to a member, never used to rank members publicly. A weak area may only ever be used to
 help that member, never disclosed to another.
+
+### 7.4 The consumers (#29) — one dossier, five personalized lanes
+
+`digest.member_topic_profile(atid)` (internal, no REST grant) turns a member's ledger rows into
+matchable topic words; everything below reads it. All v2s are `SECURITY DEFINER`, ACL
+`{postgres, service_role}`, and the gate proves each one fails closed (unknown/canceled phone,
+anon) **plus** that personalization never widens access (`member_match_v2 ⊆ v1 pool`,
+`event_lookup_v2 = v1 set re-ranked`).
+
+| lane | function | what personalizes |
+|---|---|---|
+| dossier | `member_dossier_v2` | v1 + `strength` (top ledger topics, evidence-worded) · `working_on` (framed "building up", never "weak") · `behaviour` (90d event-log counts) · `circle` (top graph neighbours, typed) |
+| events | `event_lookup_v2` | BROWSE re-rank: topic affinity (word-boundary match on name/audience/chapter) → circle attendance → v1 order; booked events sink, never re-pitched. Specific asks keep v1/#47 order |
+| events ctx | `event_history_v2` | v1 + `interest` rows so the prompt argues fits from THEIR topics |
+| chats | `chat_recommendations_v2` | eligibility identical to v1; order = topic fit → circle presence; new `why` column ("fits your focus: …") rendered in the canned list |
+| people | `member_match_v2` | v1 body + complementary boost: candidates strong where the asker is building up float up, with the coarse reason "knows <topic>" |
+| Q&A (solve/multi) | `multi_source_v2` | v1 + a `me` section (persona summary, strengths, working-on, location); its events call uses `event_lookup_v2` |
+
+**The loop is the only llm answering path** (Build Prompt is legacy for llm lanes). Answer Seed
+therefore does three things: its preload filter keeps dossier-shaped rows, event rows and the
+multi_source jsonb (before #29 it silently dropped them); when the zeroth fetch carries `me` it
+renders a deterministic **ABOUT THE ASKER** block into the seed user message; and the
+persona-driven rule adds the framing constraints (tailor silently · never recite · never call an
+area weak). Loop tool calls execute the v2s via the `EXEC_NAME` map in Attach Embedding — the
+model keeps the v1 names.
 
 ---
 

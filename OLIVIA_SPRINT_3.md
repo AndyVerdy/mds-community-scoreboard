@@ -31,7 +31,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#52** | Follow-ups bind to the wrong topic (the 👎) — **staged + proven, Andy to promote** | 🔴 S1 | S-M |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M |
-| **#29** | THE DOSSIER + PERSONALIZATION LAYER | 🔴 S1 | L |
+| **#29** | THE DOSSIER + PERSONALIZATION LAYER — **v1 staged + proven, Andy to promote** | 🔴 S1 | L |
 | **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L |
 | **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M |
 | **#18** | How-MDS-works answers | 🟡 S2 | M |
@@ -253,6 +253,34 @@ nightly jobs (no new manual step) · #34/#49 document the model.
 side + lane wiring, #50 owns the content side.
 **Research memo (the original #29 framing) is now a SUB-STEP, not a blocker:** it picks the
 scoring/blend model for lane ranking; the data model above is already decided by what shipped.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-03 — v1 of the layer, awaiting Andy's promote
+**Database (5 v2 RPCs + 1 internal helper, all side-by-side, prod call sites untouched):**
+`member_dossier_v2` (v1 + strength/working_on/behaviour/circle kinds) · `event_lookup_v2`
+(browse re-rank: topic affinity word-boundary matched → circle attendance → v1 order; booked
+sink) · `event_history_v2` (+ interest rows) · `chat_recommendations_v2` (fit-ranked + a
+member-safe `why`) · `member_match_v2` (complementary boost: strong-where-you're-building floats
+up, coarse "knows <topic>" reason) · `multi_source_v2` (+ `me` section; events via v2) ·
+`member_topic_profile` (internal, no REST grant — gate-proven unreachable).
+**Workflow (staging `9470b4ce`, 18 hunks across 2 apply scripts):** v1→v2 URL map at the last
+inch (Fetch Summaries + Fetch Raw Matches) · `EXEC_NAME` loop-tool map (model keeps v1 names) ·
+Answer Seed: preload filter keeps dossier/event/multi rows (was silently dropping them — found
+live: exec 63570 preload len 0), deterministic ABOUT THE ASKER block, framing rule (tailor
+silently · never recite · never "weak"). Build Verbatim renders the chat `why`. (Build Prompt
+lane edits also applied — legacy-dead for llm lanes, documented as such.)
+
+| AC | result |
+|---|---|
+| dossier v2: strengths + weak areas + behaviour + circle, Andy + 3 others | ✅ SQL: Andy 5/4/2/6 rows per kind; Aaron Biner 5/4/1/6 · Aaron Cordovez 1/4/1/6 · Aaron Fuhrman 5/2/0/6 · E2E msg 23037 renders all four sections, zero scores |
+| ≥4 lanes personalized | ✅ **5**: dossier (23037) · events ("which events fit me?" 23033 — "supplement-industry-specific, squarely in your space") · chats (23025 — "_fits your focus: TikTok Shop_") · people (23041 — "knows Logistics & 3PL" complementary) · Q&A/solve (23029 + ABOUT THE ASKER deterministic, exec 63576) |
+| different results, two members, same question | ✅ at the SQL layer: event top-6 differs 5/6 rows (Andy vs a TikTok-strength member) · chats 1 vs 7 recs with different whys · me-sections Andy vs Wesley Bruns entirely different. **Named exception: E2E two-member replay impossible — the only phone that may be simulated is Andy's (standing probe rule)** |
+| nothing internal leaks | ✅ gate **220 GREEN ×3 runs, 0 FAIL** incl. new: v2 fail-closed ×6 · anon ×6 · helper unreachable via REST · `member_match_v2 ⊆ v1 pool` · `event_lookup_v2 = v1 set` · no scores/ranks in emitted rows |
+| rides the nightly jobs | ✅ zero new jobs — v2s are views over ledger/edges/events/personas (all nightly or live; freshest stamps verified 2026-08-03/04) |
+| #34/#49 document | ✅ handbook §7 rewritten (§7.4 consumers table + loop wiring); matrix +7 rows (BS160–166). ClickUp copy regen pending (sprint ritual, with the next handbook change or at sprint close) |
+
+**Still open in #29 (why it stays open):** Andy's promote (staging only) · the research memo
+sub-step (scoring/blend for lane ranking) · retrieval-authority slot (#40's flat engagement →
+topic-matched expertise) · "people like Mo" similar-member mode · phone-less member verification.
 
 *As a member, MDS recommends people, deals, events and content the way Amazon or a streaming
 platform would — from everything it knows about me, and it gets the like-minded question right:

@@ -705,6 +705,57 @@ def main():
         check("anon denied on event_lookup", st in (401, 403, 404), f"status {st}")
         st, _b = rpc("event_who", {"p_phone": phone, "p_event": MARKER}, ANON_KEY)
         check("anon denied on event_who", st in (401, 403, 404), f"status {st}")
+
+        # ── #29 personalization v2s: same doors, and ranking must never widen access ──
+        print("— #29 personalization lane v2s —")
+        for fn, args in (("member_dossier_v2", {"p_phone": "19999999999"}),
+                         ("event_lookup_v2", {"p_phone": "19999999999", "p_terms": [MARKER]}),
+                         ("event_history_v2", {"p_phone": "19999999999"}),
+                         ("chat_recommendations_v2", {"p_phone": "19999999999"}),
+                         ("member_match_v2", {"p_phone": "19999999999"})):
+            st, z = rpc(fn, args, key)
+            check(f"{fn} unknown phone = zero rows", isinstance(z, list) and not z, f"status {st}, {str(z)[:120]}")
+        st, z = rpc("multi_source_v2", {"p_phone": "19999999999", "p_terms": [MARKER]}, key)
+        check("multi_source_v2 unknown phone = empty object",
+              z == {} or (isinstance(z, dict) and not z), f"status {st}, {str(z)[:120]}")
+        for fn in ("member_dossier_v2", "event_lookup_v2", "event_history_v2",
+                   "chat_recommendations_v2", "member_match_v2", "multi_source_v2"):
+            st, _b = rpc(fn, {"p_phone": phone}, ANON_KEY)
+            check(f"anon denied on {fn}", st in (401, 403, 404), f"status {st}")
+        # the helper carries member topics — REST must never reach it, even as service_role
+        st, _b = rpc("member_topic_profile", {"p_atid": "recCUUw8iiUnJjac1"}, key)
+        check("member_topic_profile not callable via REST", st in (401, 403, 404), f"status {st}")
+        # v2 personalization = RE-RANKING ONLY. Its rows must be a subset of v1's
+        # eligible pool (same WHERE); a row outside the pool = widened access = FAIL.
+        st, pool = rpc("member_match", {"p_phone": phone, "p_dims": ["category"], "p_limit": 5000}, key)
+        st2, v2rows = rpc("member_match_v2", {"p_phone": phone, "p_dims": ["category"], "p_limit": 60}, key)
+        if isinstance(pool, list) and isinstance(v2rows, list):
+            pnames = {r.get("full_name") for r in pool}
+            outside = [r.get("full_name") for r in v2rows if r.get("full_name") not in pnames]
+            check("member_match_v2 rows ⊆ v1 eligible pool", not outside, f"outside: {outside[:3]}")
+            blob2 = json.dumps(v2rows)
+            check("member_match_v2 reasons carry no scores/ranks",
+                  "score" not in blob2 and "rank" not in blob2 and "weakness" not in blob2)
+        else:
+            check("member_match_v2 subset check ran", False, f"status {st}/{st2}")
+        st, pool = rpc("event_lookup", {"p_phone": phone, "p_limit": 30}, key)
+        st2, v2rows = rpc("event_lookup_v2", {"p_phone": phone, "p_limit": 30}, key)
+        if isinstance(pool, list) and isinstance(v2rows, list):
+            pset = {(r.get("event_name"), r.get("starts_at")) for r in pool}
+            v2set = {(r.get("event_name"), r.get("starts_at")) for r in v2rows}
+            check("event_lookup_v2 = v1 rows (re-ranked, same set)", pset == v2set,
+                  f"only_v1 {len(pset - v2set)} only_v2 {len(v2set - pset)}")
+        else:
+            check("event_lookup_v2 set check ran", False, f"status {st}/{st2}")
+        st, dos2 = rpc("member_dossier_v2", {"p_phone": phone}, key)
+        ok_k2 = isinstance(dos2, list) and all(
+            d.get("kind") in ("persona", "active_chat", "recent_said", "upcoming_event",
+                              "past_event", "strength", "working_on", "behaviour", "circle")
+            for d in dos2)
+        check("member_dossier_v2 rows carry only own-data kinds", ok_k2)
+        dblob = json.dumps(dos2 if isinstance(dos2, list) else [])
+        check("member_dossier_v2 emits no scores/emails/bands",
+              "score" not in dblob and "@" not in dblob and "rev_band" not in dblob)
         st, body = curl("GET", f"{BASE}/events_catalog?select=name&limit=1", ANON_KEY,
                         profile_hdr=["Accept-Profile: digest"])
         check("anon cannot read events_catalog",

@@ -6,6 +6,59 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-03 (LATE NIGHT 2 — #29 v1 BUILT + STAGED + PROVEN) — THE PERSONALIZATION LAYER: 5 lanes consult the dossier (dossier · events · chats · people · Q&A) · 5 side-by-side v2 RPCs + loop wiring · found+fixed: the seed preload silently dropped every non-content op's rows · gate 220 GREEN ×3 (+v2 fail-closed, ⊆-pool, no-scores checks) · staging `9470b4ce`, prod untouched · NOT PROMOTED (Andy: "more features first")
+
+- **Andy's call at session start: don't promote yet, add features.** #52 stays staged; #29 rides
+  the same staging copy — ONE promote will carry both.
+- **Verified before building:** all four ingredient tables live + fresh (ledger 5,822×738
+  topics 16 · edges 159,940×3 types · events 15,461 growing · personas 752) and NOTHING consumed
+  them (member_dossier read personas only; event/chat/people/Q&A lanes read none).
+- **DB (`personalization_29_lane_v2s` + 3 fix migrations):** `member_topic_profile` (internal
+  helper, words per ledger topic, NO grants — REST-unreachable, gate-proven) ·
+  `member_dossier_v2` = v1 + strength (evidence-worded, no numbers) / working_on (framed
+  "building up"/"asking the community", never "weak") / behaviour (90d event-log counts) /
+  circle (top graph neighbours by summed weight, typed, names resolved) · `event_lookup_v2` =
+  WRAPPER over v1 (entitlement untouched by construction): BROWSE re-rank affinity→circle→v1
+  order, booked sink; specific asks keep #47's order · `event_history_v2` = v1 + interest rows ·
+  `chat_recommendations_v2` = wrapper, fit-ranked + member-safe `why` column ·
+  `member_match_v2` = v1 body copy (WHERE byte-identical) + complementary boost (candidate
+  strong where the asker is building up) + coarse "knows <topic>" reason · `multi_source_v2` =
+  v1 + `me` section (persona summary/strengths/working_on/location; focus first pulled the raw
+  persona JSON — fixed to the summary narrative) + events via v2.
+- **Two SQL traps burned:** `select t.*, t.ord` after `with ordinality as t(...,ord)` = ambiguous
+  column (t.* already carries it) · substring affinity matched 'shop' inside 'Shoptalk' → all
+  matches now word-boundary regex (`\mword\M`).
+- **Workflow (staging, 18 hunks, `apply_29_personalization.py` + `apply_29b_seed_personal.py`):**
+  v1→v2 name map at the LAST INCH (both fetch URLs) · `EXEC_NAME` loop-tool map extended (the
+  model keeps v1 names; #40's pattern) · **the real find: every llm lane answers via the LOOP —
+  Build Prompt is legacy-dead for them, and Answer Seed's preload filter `(body||title)` DROPPED
+  dossier rows, event rows and the whole multi_source jsonb** (proven live: exec 63570 preload
+  len 0 while the personalized zeroth fetch sat unread; the model re-fetched via tools). Fix:
+  keepRow accepts every op shape · deterministic ABOUT THE ASKER block renders from `me` ·
+  framing rule (tailor silently · never recite · never call an area weak). Build Verbatim
+  renders the chat `why`. Build Prompt lane edits applied anyway + documented legacy-dead.
+- **Proven E2E on staging (machine-read, not prose):** dossier msg 23037 (all 4 new sections,
+  zero scores) · events 23033 "which events fit me?" — argued from HIS topics ("Supply Side —
+  squarely in your space"; Singapore ↔ international expansion; Inspire history acknowledged) ·
+  chats 23025 ("_fits your focus: TikTok Shop_") · people 23041 (NJ supplements members "who
+  also know their way around Logistics & 3PL") · solve 23029/exec 63576 (ABOUT THE ASKER in the
+  seed user message, preload at the 20k cap) · exec 63570 tool result arrived in v2 affinity
+  order = EXEC_NAME path live.
+- **Two-member divergence (the AC):** SQL layer — event top-6 differs 5/6 rows (Andy vs a
+  TikTok-strength member) · chats 1 vs 7 recs, different whys · me-sections Andy vs Wesley
+  Bruns entirely different. **Named exception: E2E two-member replay impossible — the probe
+  rule allows simulating Andy's phone only.**
+- **Gate 220 GREEN ×3 runs, 0 FAIL** (+18-ish new checks; count wobbles ±1 on fixture branches,
+  never a FAIL): v2 unknown/canceled/anon ×6 · helper REST-unreachable ·
+  `member_match_v2 ⊆ v1 eligible pool` (personalization must never widen access) ·
+  `event_lookup_v2 = v1 set re-ranked` · no scores/ranks/weakness in any emitted row.
+- **Docs:** handbook §7 rewritten ("built, not yet consumed" → §7.4 consumer table + loop
+  wiring; ClickUp copy regen pending per ritual) · matrix +7 (BS160–166) · board #29 AC table.
+- **Open in #29:** promote (Andy) · research memo sub-step · retrieval-authority slot ·
+  "people like Mo" · phone-less verification. Lock released at close.
+
+---
+
 ## 2026-08-03 (LATE NIGHT — #52 BUILT + STAGED + PROVEN) — follow-ups now bind to the NEWEST topic, deterministically · Eugene's 👎 replays clean (lenders → "how about on Facebook?" → lenders ON Facebook) · 5/5 follow-up probes + 1 control · selftest paces on PERSISTENCE not sleep(20) · gate 203 GREEN · #53 filed (fact-gate false clamp, reproduced with the whole execution) · NOT PROMOTED — Andy runs `promote`
 
 - **Verified live before touching anything.** Prod `89ee3632` active, staging identical to prod

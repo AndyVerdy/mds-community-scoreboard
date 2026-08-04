@@ -80,6 +80,17 @@ in the auto run.
 | BS027 | 🟢 | Was allan Stevens in MDS? *(=Q3126, Franky Farina)* | past member named as past; leaving REASON never stated | `member_attributes` past status | ⬜ |
 | BS028 | 🟢 | I met Kyle Armour at PR chapter event but don't see him in the FB group anymore *(=Q3127)* | same past-member rule, kind tone, no speculation | `member_attributes` past status | ⬜ |
 
+### #29 Personalization — the dossier + every lane consults it *(staged 2026-08-03)*
+| Q-ID | src | question | expected bar | proving SQL | ⬜ |
+|---|---|---|---|---|---|
+| BS160 | 🟢 | what do you know about me? | dossier v2 renders strengths ("where you add value") · working-on (framed as current focus, NEVER "weak") · behaviour · circle — no scores/ranks anywhere | `member_dossier_v2` kinds strength/working_on/behaviour/circle (staging msg 23037) | ⬜ |
+| BS161 | 🟢 | which events fit me? | fits argued from THEIR topics/history ("supplement-industry-specific — squarely in your space"); booked events acknowledged, never re-pitched | `event_lookup_v2` browse affinity + `event_history_v2` interest rows (msg 23033) | ⬜ |
+| BS162 | 🟢 | what other chats can I join? | eligible chats ranked by fit, each with its personal why ("fits your focus: …"); eligibility unchanged from v1 | `chat_recommendations_v2` why column (msg 23025) | ⬜ |
+| BS163 | 🟢 | who is around me in my niche? | matches carry the complementary reason ("knows Logistics & 3PL") when it covers an asker working-on area; coarse fields only | `member_match_v2` comp boost ⊆ v1 pool (gate) (msg 23041) | ⬜ |
+| BS164 | 🟢 | im struggling with logistics, who can help? | ABOUT THE ASKER block deterministic in the seed; answer tailored (level/focus/location), profile never recited as a list | `multi_source_v2` me section (exec 63576) | ⬜ |
+| BS165 | ⚙️ | (same question, two different members) | DIFFERENT rankings/me-sections per member on the SAME ask | SQL two-member probes (Andy vs Wesley me; event/chat order divergence) | 📊 measured (probe phone = Andy only; second member provable at SQL layer only) |
+| BS166 | ⚙️ | tell me about <another member> (after #29) | NOTHING internal about others leaks: no working-on/strength internals of OTHERS, no scores — member_card path untouched | gate: v2 hygiene + shareable-fields rules | ▷ covered by BS021/BS026 + gate 220 |
+
 ### FB source · WA chats · #8 merge
 | Q-ID | src | question | expected bar | proving SQL | ⬜ |
 |---|---|---|---|---|---|
