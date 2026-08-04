@@ -706,6 +706,25 @@ def main():
         st, _b = rpc("event_who", {"p_phone": phone, "p_event": MARKER}, ANON_KEY)
         check("anon denied on event_who", st in (401, 403, 404), f"status {st}")
 
+        # ── #51 member_card_v2: typed not-found, same doors as v1 ──
+        print("— #51 member_card_v2 (typed not-found) —")
+        st, z = rpc("member_card_v2", {"p_phone": "19999999999", "p_member": "Mo Kuhail"}, key)
+        check("member_card_v2 unknown phone = zero rows (no sentinel either)",
+              isinstance(z, list) and not z, f"status {st}, {str(z)[:120]}")
+        st, _b = rpc("member_card_v2", {"p_phone": phone, "p_member": "Mo Kuhail"}, ANON_KEY)
+        check("anon denied on member_card_v2", st in (401, 403, 404), f"status {st}")
+        st, nf = rpc("member_card_v2", {"p_phone": phone, "p_member": "Zorblat Kepler"}, key)
+        ok_nf = (isinstance(nf, list) and len(nf) == 1
+                 and nf[0].get("membership_state") == "not_found"
+                 and nf[0].get("full_name") == "Zorblat Kepler"
+                 and all(nf[0].get(k) in (None, [])
+                         for k in nf[0] if k not in ("membership_state", "full_name")))
+        check("member_card_v2 fake name = ONE bare not_found sentinel", ok_nf, f"{str(nf)[:160]}")
+        st, a = rpc("member_card", {"p_phone": phone, "p_member": "Mo Kuhail"}, key)
+        st2, b = rpc("member_card_v2", {"p_phone": phone, "p_member": "Mo Kuhail"}, key)
+        check("member_card_v2 real name = v1 rows exactly",
+              isinstance(a, list) and a == b, f"v1 {len(a or [])} rows vs v2 {len(b or [])}")
+
         # ── #29 personalization v2s: same doors, and ranking must never widen access ──
         print("— #29 personalization lane v2s —")
         for fn, args in (("member_dossier_v2", {"p_phone": "19999999999"}),

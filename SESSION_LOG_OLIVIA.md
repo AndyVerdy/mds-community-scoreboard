@@ -6,6 +6,45 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-03 (LATE NIGHT 3 — #51 BUILT + STAGED + PROVEN) — members lane: typed not-found sentinel + past-member framing + deterministic role-claim flag + name-the-names · the "fabrication" was NOT one (Lori Barzvi = real past member; bank truth corrected) · 5/5 fake names honest · gate 224 GREEN · staging `5b86e6b4` (#52+#29+#51), prod untouched
+
+- **Diagnosis flipped the ticket.** Q3124 "Tell me about Lori": `member_card('Lori')` returns
+  **Lori Barzvi — a real member, left 2026-02-21**, and every "invented" detail in the failing
+  answer sits VERBATIM on her card (about_me: retail arbitrage 2014, product invented 2008,
+  Top-10 in 3 weeks, first brand sold 2020; fun_fact: salsa/dance studio). The bank expected
+  not-found → **the bank truth was wrong** (same class as Q9024). The answer's real defect:
+  past member presented in the present tense. Corrected in `eval_bank_smoke.json`
+  (backup `.bak-51-q3124`); organic bank has no 3124 row.
+- **Q3034 reproduced** (msg 22331): the reply LEANED on the claimed role ("Practical bottom
+  line for an admin managing this") — the buried CLAIMED-ROLES seed rule did not hold.
+  **Q3102 reproduced** (msg 22613): "89 members are running an agency… I can't hand out names
+  in bulk this way" — expertise_search HELD 8 names; the no-bulk-names policy was invented.
+- **The fix:** ① `member_card_v2` (migration `member_card_v2_typed_not_found`) — v1 via wrapper
+  (doors identical) + ONE typed sentinel row `membership_state='not_found'` + echoed name when
+  even fuzzy misses; wired via both URL maps + the loop `EXEC_NAME` (model keeps the v1 name).
+  ② Plan Request detects role claims deterministically (`role_claim` on both return sites) →
+  Answer Seed injects a per-turn system note. ③ Three seed rules: MEMBER NOT FOUND (sentinel IS
+  the answer; never assemble a person) · PAST MEMBERS (former up front, left-date ok, reason
+  never — the data does not hold it) · NAME THE NAMES (tool-returned member rows are already
+  access-filtered; a bare count is a dodge). `apply_51_members_lane.py`, 9 hunks, idempotent.
+- **Traps:** patch() single-anchor assert vs the two IDENTICAL Plan Request return sites →
+  replace-all + count==2 proof · the apostrophe trap AGAIN ('not_found' inside a single-quoted
+  JS description) → double quotes throughout.
+- **Proven E2E on staging:** Lori → "*former* MDS member — joined Nov 2022, left Feb 2026" +
+  card facts (msg 23059) · admin claim → "Same answer whether you're admin or not", zero role
+  adoption (23081; the roleNote fired) · agency → 8 members NAMED with locations (23063) ·
+  **5/5 fake names honest not-found** (Zorblat Kepler 23067 · Marvin Quexley 23071 · Janice
+  Plimpton 23075 · Rob Stankovich 23085 · Priya Vandermolen 23089) · controls: paid-ads bench
+  named (23093), Mo Kuhail card normal (23097).
+- **Gate 224 GREEN, 0 FAIL** — new: card_v2 unknown phone = zero rows (a stranger gets NO
+  sentinel either) · anon denied · fake name = ONE bare sentinel (echo + not_found, all else
+  null) · real name = v1 rows EXACTLY. (One gate self-fix: the bare-fields check listed
+  'not_found' as a violation of itself.)
+- **Docs:** matrix +5 (BS170–174) · board #51 AC table · handoff repointed (promote now carries
+  #52+#29+#51; Q3124 bank note for the next smoke). Lock released at close.
+
+---
+
 ## 2026-08-03 (LATE NIGHT 2 — #29 v1 BUILT + STAGED + PROVEN) — THE PERSONALIZATION LAYER: 5 lanes consult the dossier (dossier · events · chats · people · Q&A) · 5 side-by-side v2 RPCs + loop wiring · found+fixed: the seed preload silently dropped every non-content op's rows · gate 220 GREEN ×3 (+v2 fail-closed, ⊆-pool, no-scores checks) · staging `9470b4ce`, prod untouched · NOT PROMOTED (Andy: "more features first")
 
 - **Andy's call at session start: don't promote yet, add features.** #52 stays staged; #29 rides

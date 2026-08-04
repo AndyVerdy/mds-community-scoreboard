@@ -39,16 +39,20 @@ Everything shipped in Releases 1-3 is in `OLIVIA_BACKLOG_ARCHIVE.md`.
 
 ## NEXT SESSION
 
-0. **⛳ WAITING ON ANDY: one promote now carries #52 + #29.** Staging `9470b4ce` holds BOTH the
-   follow-up topic binding (#52: Eugene's 👎 replays clean · 5/5 probes) AND the personalization
-   layer v1 (#29: 5 lanes personal — dossier/events/chats/people/Q&A · gate 220 GREEN ·
-   matrix +13). Prod is still `89ee3632`. Andy said "not promoting yet — more features first"
-   (2026-08-03), so staging accumulates; `python3 scripts/olivia_wf.py promote` when he calls it.
-1. **#51** — the members-lane fabrication class; #50 is built on member data being
-   trustworthy. **#53** (fact-gate false clamp) is filed with a full reproduction (exec 63490)
-   and needs a priority call against #51 — it costs a real member a whole real answer.
-2. Then **#50** (entity dossiers — pairs with #29's member side for the fit score), and #29's
+0. **⛳ WAITING ON ANDY: one promote now carries #52 + #29 + #51.** Staging `5b86e6b4` holds the
+   follow-up topic binding (#52) + the personalization layer v1 (#29, 5 lanes) + the members-lane
+   hardening (#51: typed not-found · past-member framing · role-claim flag · name-the-names;
+   5/5 fake names honest, gate 224 GREEN). Prod is still `89ee3632`. Andy said "not promoting
+   yet — more features first" (2026-08-03), so staging accumulates;
+   `python3 scripts/olivia_wf.py promote` when he calls it. Test chat (staging by default):
+   digest.mds.co/admin/olivia/test.
+1. **#53** (fact-gate false clamp) — filed with a full reproduction (exec 63490); the biggest
+   remaining defect class (a grounded answer binned costs a member a whole real answer).
+2. **#50** (entity dossiers — pairs with #29's member side for the fit score), and #29's
    open sub-steps (research memo · retrieval-authority slot · "people like Mo").
+3. NOTE for the next smoke: **Q3124's bank truth was CORRECTED** (Lori Barzvi = real past
+   member; expect = former-member framing, not not-found) — `eval_bank_smoke.json`, backup
+   `.bak-51-q3124`.
 3. Andy's side, standing: **GROUPOS_PAT** · **Circleback details** · **does an event
    description/agenda field exist anywhere we are not syncing?**
 4. Release notes are the final stage of the sprint — `OLIVIA_RELEASE_NOTES.md`, I draft, Andy posts.

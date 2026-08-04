@@ -30,7 +30,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 |---|---|---|---|
 | **#52** | Follow-ups bind to the wrong topic (the 👎) — **staged + proven, Andy to promote** | 🔴 S1 | S-M |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M |
-| **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M |
+| **#51** | Members-lane fabrication + over-refusal — **staged + proven, Andy to promote** | 🔴 S1 | M |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER — **v1 staged + proven, Andy to promote** | 🔴 S1 | L |
 | **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L |
 | **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M |
@@ -119,6 +119,33 @@ explicitly, and the claimed-role guard needs to be deterministic rather than a p
 **Accept when:** the three questions re-fire clean · a "tell me about <invented name>" probe set
 (5+ fake names) returns honest not-found every time · no new over-refusal (the naming questions
 still name people) · gate GREEN · matrix rows added.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-03 — awaiting Andy's promote
+**The diagnosis changed the ticket:** Q3124 was NOT a fabrication — **Lori Barzvi is a real
+member who left 2026-02-21**, and every "invented" detail sits verbatim on her card
+(`about_me`/`fun_fact`). The bank truth demanded not-found and was WRONG (corrected in
+`eval_bank_smoke.json`, backup kept); the answer's real defect was presenting a past member in
+the present tense. So the class is three smaller classes: past-member framing · role-claim
+adoption · names-dodge.
+**The fix (DB + staging `5b86e6b4`, `apply_51_members_lane.py`):**
+① `member_card_v2` — v1 via wrapper + a **typed `not_found` sentinel row** when even fuzzy
+misses (the model can no longer paper over an empty result); same doors as v1, wired through
+both URL maps + the loop's `EXEC_NAME`. ② **Deterministic role-claim flag** — Plan Request
+detects admin/staff/moderator/team claims; Answer Seed injects a per-turn system note (the
+buried CLAIMED-ROLES rule existed and did not hold; the flag is per-turn and testable).
+③ **Three seed rules**: MEMBER NOT FOUND (the sentinel IS the answer; never assemble a person) ·
+PAST MEMBERS (former up front, left-date ok, reason never) · NAME THE NAMES (tool-returned
+member rows are already access-filtered; a bare count is a dodge; no "bulk names" policy exists).
+
+| AC | result |
+|---|---|
+| the three re-fire clean | ✅ Lori → "*former* MDS member — joined Nov 2022, left Feb 2026" + card facts (msg 23059) · admin claim → "Same answer whether you're admin or not", content unchanged (23081) · agency → 8 members NAMED (23063) |
+| 5+ fake names honest not-found | ✅ **5/5**: Zorblat Kepler · Marvin Quexley · Janice Plimpton · Rob Stankovich · Priya Vandermolen (msgs 23067/23071/23075/23085/23089) |
+| no new over-refusal | ✅ agency 8 named · "who's good at paid ads?" names the bench (23093) · Mo Kuhail card normal (23097) |
+| gate GREEN | ✅ **224 checks, 0 FAIL** — new: card_v2 unknown-phone (no sentinel leak to strangers) · anon denied · fake name = ONE bare sentinel row · real name = v1 rows exactly |
+| matrix rows added | ✅ BS170–BS174 |
+
+**Not promoted** — staging `5b86e6b4` (carries #52 + #29 + #51), prod `89ee3632`.
 
 ### #52 · Follow-ups bind to the WRONG topic when an older one is in history
 **🔴 S1 · size S-M**
