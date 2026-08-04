@@ -39,13 +39,18 @@ Everything shipped in Releases 1-3 is in `OLIVIA_BACKLOG_ARCHIVE.md`.
 
 ## NEXT SESSION
 
-0. **⛳ WAITING ON ANDY: one promote now carries #52 + #29 + #51 + #53.** Staging `e250add5`
-   holds the follow-up topic binding (#52) + the personalization layer v1 (#29, 5 lanes) + the
-   members-lane hardening (#51) + the fact-gate calibration (#53: word-level entity verify ·
-   k/m figures · no-entity claims can't block; 63490 replays clean, newsletter 11/11, canaries
-   4/4 still block). Prod is still `89ee3632`. Andy said "not promoting yet — more features
-   first" (2026-08-03), so staging accumulates; `python3 scripts/olivia_wf.py promote` when he
-   calls it. Test chat (staging by default): digest.mds.co/admin/olivia/test.
+0. **⛳ WAITING ON ANDY — three things:**
+   ① **Promote** — one promote now carries **#52+#29+#51+#53+#54** (staging `95cd49b5`).
+   ② **Holding delay** — `python3 scripts/olivia_loop/apply_54b_holding_delay.py` (rung 1
+   18s→30s; 31% of answers crossed 18s = Ian's "always the same"; classifier blocks me on prod).
+   ③ **Two data calls** — Tanase Tudor - Tude's record: country=CY but city Baia-Mare (Romania) —
+   team fixes the record, then "Cyprus" returns the map-consistent 4 (he was Etienne's "5th").
+   And the MDS-credits balance: which field is authoritative? (`Event Profit - Credits Used` +
+   `Event Credit Log` are mirrored; no lane reads them — Etienne's credits ask, filed report.)
+   Staging holds #52 topic binding · #29 personalization (5 lanes) · #51 members-lane hardening ·
+   #53 fact-gate calibration · #54 country dim. Prod is still `89ee3632` ("not promoting yet —
+   more features first", Andy 2026-08-03). Test chat (staging by default):
+   digest.mds.co/admin/olivia/test.
 1. **#50** (entity dossiers — pairs with #29's member side for the fit score), then #29's
    open sub-steps (research memo · retrieval-authority slot · "people like Mo").
 2. **At the next smoke:** #53's clamp-rate AC (before = 1.65% of llm turns) + #29's class rates

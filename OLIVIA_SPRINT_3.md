@@ -31,6 +31,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#52** | Follow-ups bind to the wrong topic (the 👎) — **staged + proven, Andy to promote** | 🔴 S1 | S-M |
 | **#53** | Fact-gate false clamp (grounded answer binned) — **staged + proven, Andy to promote** | 🔴 S1 | M |
 | **#51** | Members-lane fabrication + over-refusal — **staged + proven, Andy to promote** | 🔴 S1 | M |
+| **#54** | Country dim + holding eagerness — **staged; holding fix = Andy runs** | 🔴 S1 | S |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER — **v1 staged + proven, Andy to promote** | 🔴 S1 | L |
 | **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L |
 | **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M |
@@ -420,6 +421,36 @@ alongside #44's jobs · a recommendation probe explains WHY in judgment language
 weakness never appears in any surfaced text (gate + probe set) · #29 consumes both sides.
 
 ---
+
+### #54 · Country dimension for member lookups (+ the holding-ladder eagerness)
+**🔴 S1 · size S — filed AND built 2026-08-04 (Andy: "this answer we should be able to answer")**
+
+> **In plain words:** "Who is based in Cyprus?" now names the actual people. And the "On it — checking…" filler only appears when an answer is genuinely slow.
+
+*As a member, asking who is based in a country gets me the actual members there — and Olivia
+does not open every slow answer with the same canned filler line.*
+**Live evidence (Etienne, 2026-08-04 08:35, Eugene's Slack "very poor result"):** "who are the
+mds members based in cyprus" declined honestly ×4 — `member_match` had city/state/channel/
+category but **no country**, and stored values were unnormalized (`CY` vs `Cyprus` vs
+`United states`). The data was present all along. Ian's parallel complaint: the identical
+"On it — checking a few sources for you 🔎" opener — measured: **31% of real answers cross the
+18s rung** (median 15s, p90 23s), so a third of questions started with the same filler.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-04 (holding-delay half = ANDY RUNS)
+**DB (migration `member_match_v2_country_dim`):** `digest.country_fold` (ISO2 + name variants →
+one canonical name) + `p_country` in `member_match_v2` (target dim, same doors). SQL-proven:
+`cyprus` and raw `CY` both return the **5 CY-tagged actives**. **Staging `95cd49b5`
+(`apply_54_country_dim.py`):** router `match_country` (schema + rule + example; the
+"based in the US = no filter" carve-out kept) · Plan Request `p_country` · loop tool schema.
+
+| AC | result |
+|---|---|
+| country asks name the members | ✅ E2E "who is based in Germany?" → **7 named** with cities + reasons, plan `p_country=Germany` (msg 23581) |
+| the Etienne question | ⚠️ routed correctly (`p_country=Cyprus`, exec 64381) but **clamped by the fact-gate — and the gate is RIGHT**: Tanase Tudor - Tude's record says country=CY with city **Baia-Mare, Judetul Maramureș (Romania)**; Haiku flags the contradiction. **Member-record fix for the team** (I never edit member records): correct his country, sync flows it, Cyprus then returns the map-consistent 4 clean. He is also the answer to Etienne's "who is the 5th?" |
+| gate GREEN | ✅ 224 checks after the signature change |
+| holding filler | 📊 measured (31% > 18s); **fix scripted, Andy runs:** `python3 scripts/olivia_loop/apply_54b_holding_delay.py` (rung 1 18s→30s ⇒ fires on ~2%; classifier blocked me applying prod-side, consistent with the tiers) |
+
+**Not promoted** — staging `95cd49b5` (carries #52+#29+#51+#53+#54), prod `89ee3632`.
 
 # 🟡 S2 — NEXT
 

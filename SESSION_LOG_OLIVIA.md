@@ -6,6 +6,39 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (DAY — Slack triage → #54 BUILT + STAGED) — Etienne/Eugene/Ian triage: country dim shipped (Germany 7 named E2E; Cyprus routed right but blocked by a WRONG MEMBER RECORD the gate correctly caught) · holding rung measured (31% > 18s) → 30s fix scripted for Andy · credits gap diagnosed (fields mirrored, no lane reads them) · gate 224 · staging `95cd49b5`
+
+- **Slack triage (Eugene + Ian), all three complaints diagnosed from live data:**
+  ① **Credits** — Olivia did NOT invent a zero balance: "I don't see any MDS credit balance…
+  not something I have visibility into" + filed report (msgs 23044-23047). Gap: the self/billing
+  lane reads Stripe-derived plan fields; `Event Profit - Credits Used` (Etienne: 8,482) and
+  `Event Credit Log` ARE mirrored in at_fields but NO lane reads them. OPEN with Andy: which
+  field is the authoritative balance (field names lie).
+  ② **Cyprus ("very poor result")** — honest declines ×4 + map link + report; `member_match`
+  had NO country dim and values were unnormalized (CY/Cyprus/United states…). Data was there.
+  ③ **Ian's "always the same"** — the holding ladder rung 1 fires at 18s with ONE fixed string;
+  measured on 202 real prod answers: median 15s · p75 19s · p90 23s → **31% cross 18s**.
+- **#54 BUILT:** migration `member_match_v2_country_dim` — `digest.country_fold` (ISO2+variants
+  → canonical) + `p_country` target dim in `member_match_v2` (DROP+CREATE for the new signature,
+  grants+NOTIFY; SQL probe: 'cyprus' and 'CY' both → the 5 CY-tagged actives). Staging wiring
+  `apply_54_country_dim.py` (`95cd49b5`): router `match_country` (schema+rule+example, US
+  carve-out kept) · Plan Request `tgtCountry`→`p_country` · loop member_match schema.
+- **E2E:** "who is based in Germany?" → **7 members named** with cities+reasons, plan
+  `p_country=Germany` (msg 23581). "who are the mds members based in cyprus" → `p_country=Cyprus`
+  routed (exec 64381) but **clamped — and the fact-gate is RIGHT**: Tanase Tudor - Tude's record
+  is country=CY with city Baia-Mare, Judetul Maramureș (Romania); Haiku flagged the
+  contradiction ("Baia-Mare… is Romania, not Cyprus"), the #53 filter correctly kept the claim
+  ('Romania' is genuinely absent from evidence). He is Etienne's "5th member"; the real Cyprus
+  count is the map-consistent 4. **Member-record fix → the team** (I never edit member records).
+- **Holding fix scripted, ANDY RUNS** (classifier blocked prod-side edit, consistent with the
+  tiers): `apply_54b_holding_delay.py` — Wait 18s→30s (fires on ~2% instead of 31%; rung-2 gap
+  42s unchanged). Phrase rotation deliberately left to #14.
+- **Gate 224 GREEN** after the signature change. NOTE: a ~400-question eval-bank run flowed
+  through the probe phone mid-day (not mine — presumably Andy's smoke); my probes rode between
+  its turns, results machine-read by id, uncontaminated.
+
+---
+
 ## 2026-08-04 (#53 BUILT + STAGED + PROVEN) — fact-gate calibration: word-level entity verify + k/m figures + no-entity claims can't block · exec 63490 replays clean (gate=pass, exec 63666) · newsletter 11/11, 0 clamps · offline: 20/20 real false-flags die, 4/4 fabrication canaries still block · gate 224 GREEN · staging `e250add5` (#52+#29+#51+#53), prod untouched
 
 - **Root cause pinned from the kept execution (63490):** the claims that survived the
