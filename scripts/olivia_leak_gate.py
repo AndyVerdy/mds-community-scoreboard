@@ -1035,6 +1035,9 @@ def main():
                      "year_joined", "next_renewal", "chapter",
                      "next_invoice_date", "next_invoice_amount", "payment_frequency", "membership_fee",
                      "mds_credit",  # #55: WA balance, self-only, member-worded in-function
+                     "credit_source",  # #55b: INTERNAL provenance note (never quoted) —
+                                       # tells the model the portal cannot show WA credit
+
                      "billing_portal"}
         check("billing row carries ONLY the allowlisted self fields",
               all(set(b.keys()) == BILL_KEYS for b in (bill or [])))
