@@ -31,7 +31,8 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#52** | Follow-ups bind to the wrong topic (the 👎) — **staged + proven, Andy to promote** | 🔴 S1 | S-M |
 | **#53** | Fact-gate false clamp (grounded answer binned) — **staged + proven, Andy to promote** | 🔴 S1 | M |
 | **#51** | Members-lane fabrication + over-refusal — **staged + proven, Andy to promote** | 🔴 S1 | M |
-| **#54** | Country dim + holding eagerness — **staged; holding fix = Andy runs** | 🔴 S1 | S |
+| **#54** | Country dim + regions + geo lists + holding eagerness — **staged; holding fix = Andy runs** | 🔴 S1 | S |
+| **#55** | MDS credits into the billing lane (WA→AT→Supa) — **access proven; field call = Andy** | 🔴 S1 | S-M |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER — **v1 staged + proven, Andy to promote** | 🔴 S1 | L |
 | **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L |
 | **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M |
@@ -448,11 +449,33 @@ one canonical name) + `p_country` in `member_match_v2` (target dim, same doors).
 | country asks name the members | ✅ E2E "who is based in Germany?" → **7 named** with cities + reasons, plan `p_country=Germany` (msg 23581) |
 | the Etienne question | ⚠️ routed correctly (`p_country=Cyprus`, exec 64381) but **clamped by the fact-gate — and the gate is RIGHT**: Tanase Tudor - Tude's record says country=CY with city **Baia-Mare, Judetul Maramureș (Romania)**; Haiku flags the contradiction. **Member-record fix for the team** (I never edit member records): correct his country, sync flows it, Cyprus then returns the map-consistent 4 clean. He is also the answer to Etienne's "who is the 5th?" |
 | gate GREEN | ✅ 224 checks after the signature change (re-run after regions: GREEN) |
+| model-supplied geo lists (Andy's per-request ruling) | ✅ `geo_country_set`/`geo_state_set` — p_country/p_state take a value, a region keyword, OR a comma list; the LOOP MODEL does the geography for unlisted groupings · E2E **"who are the members based in the balkans?"** → 5 named (Greece/Romania/Bulgaria/Slovenia) with the model supplying the list (msg 23959) · SQL: Balkans-list 5 · Scandinavia+Germany 17 · texas,oklahoma,LA 56 · South 184 / TX 52 / Cyprus 5 unchanged |
 | state regions (Andy: "go, add the state regions") | ✅ `state_region_states` — the South 184 · Midwest 38 · West Coast 126 · New England 14 · Tri-State 65 (SQL) · TX/Texas/texas → 52 (attr_state fold, already worked) · E2E "who is based in the southern states?" → 10 named TX/FL/LA/NC, `p_state=the South` (msg 23825) |
 | regions (Andy: "go, add the regions") | ✅ `country_region_countries` — Europe 86 · Eastern Europe 13 · Scandinavia 10 · North America 500-cap (SQL) · E2E "who is based in eastern europe?" → 9 named across 6 countries, `p_country=Eastern Europe` (msg 23725) · Germany 7 / Cyprus 5 unchanged |
 | holding filler | 📊 measured (31% > 18s); **fix scripted, Andy runs:** `python3 scripts/olivia_loop/apply_54b_holding_delay.py` (rung 1 18s→30s ⇒ fires on ~2%; classifier blocked me applying prod-side, consistent with the tiers) |
 
-**Not promoted** — staging `b2d146ca` (carries #52+#29+#51+#53+#54 incl. country+state regions), prod `89ee3632`.
+**Not promoted** — staging `1a4e27a2` (carries #52+#29+#51+#53+#54 incl. regions + model-supplied geo lists), prod `89ee3632`.
+
+### #55 · MDS credits into the billing lane (Wild Apricot → AT → Supa)
+**🔴 S1 · size S-M — filed 2026-08-04; ACCESS PROVEN, build waits on Andy's field call**
+
+> **In plain words:** "How much MDS credit do I have?" gets the real number.
+
+*As a member, asking about my MDS credit gets my actual balance — the same number the team
+sees in Wild Apricot.*
+**Evidence:** Etienne asked (msg 23044), Olivia honestly declined and filed a report — the
+billing/self lane reads Stripe-derived fields only. **Access PROVEN live 2026-08-04:** n8n
+credential "Wild Apricot API" (`LsnIqYL6dTa6xVXY`, used daily by the $500-Event-Credit
+workflow) → `api.wildapricot.org/v2.2/accounts/314326/contacts/55429907` returned
+**Balance: -11,917** for "Ameil, Etienne" (negative = overpaid credit; matches Andy's
+screenshot $11,917.00). One-off probe workflow created + deleted after the read.
+**Build shape:** nightly n8n job (or a step in the existing daily WA touchpoints):
+WA contact Balance → an AT Members-DB field → mirrored to `member_attributes` by the existing
+sync → the self/billing lane reads it (sign flipped to member-friendly wording). ANDY DECIDES:
+which AT field/table it lands in (Members DB is the SoT; field naming per the registry doc),
+and whether `Event Profit - Credits Used` / `Event Credit Log` fold into the same answer.
+**Accept when:** Etienne's question returns his real balance · a zero-balance member gets an
+honest zero · a member with no WA record degrades honestly · nightly refresh proven · gate GREEN.
 
 # 🟡 S2 — NEXT
 

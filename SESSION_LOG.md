@@ -8,6 +8,7 @@
 prepend the full entry to its STREAM log + ONE line here.** Old references like "read SESSION_LOG
 2026-07-27" resolve through this index: find the date line, open the named stream file.
 
+- 2026-08-04 · **Olivia** · (DAY 4) **#54e geo lists** (model does the geography: "the balkans" → 5 named, list-driven) · **WA ACCESS PROVEN** (Etienne Balance -11,917 live via n8n cred; probe wf deleted) · **#55 filed** (credits → billing lane; AT field = Andy's call) · gate 224 · staging `1a4e27a2` → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY 3) **#54d state regions**: the South/Midwest/coasts/New England/Tri-State/DMV expand to state sets · E2E southern states → 10 named · TX fold already worked · gate 224 · staging `b2d146ca` → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY 2) **#54c regions**: Europe/Eastern Europe/North America/Scandinavia/Asia/Middle East expand to country sets in `member_match_v2` · E2E Eastern Europe → 9 named, 6 countries · gate 224 ×2 · staging `fcf1b793` → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY) Slack triage (Eugene/Ian) → **#54 BUILT+STAGED: country dimension** (`country_fold` + `p_country`; Germany E2E 7 named; Cyprus routed right, blocked by Tanase Tudor - Tude's WRONG record — country=CY, city in Romania — gate correctly caught it; = Etienne's '5th') · holding rung measured **31% > 18s** → 30s fix scripted (`apply_54b_holding_delay.py`, Andy runs) · credits gap: fields mirrored, no lane reads them (field call open) · gate 224 · staging `95cd49b5` = #52+#29+#51+#53+#54 → `SESSION_LOG_OLIVIA.md`

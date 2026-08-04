@@ -40,13 +40,13 @@ Everything shipped in Releases 1-3 is in `OLIVIA_BACKLOG_ARCHIVE.md`.
 ## NEXT SESSION
 
 0. **⛳ WAITING ON ANDY — three things:**
-   ① **Promote** — one promote now carries **#52+#29+#51+#53+#54** (staging `b2d146ca`, incl. #54c/d country+state regions).
+   ① **Promote** — one promote now carries **#52+#29+#51+#53+#54** (staging `1a4e27a2`, incl. #54c/d/e regions + model-supplied geo lists).
    ② **Holding delay** — `python3 scripts/olivia_loop/apply_54b_holding_delay.py` (rung 1
    18s→30s; 31% of answers crossed 18s = Ian's "always the same"; classifier blocks me on prod).
    ③ **Two data calls** — Tanase Tudor - Tude's record: country=CY but city Baia-Mare (Romania) —
    team fixes the record, then "Cyprus" returns the map-consistent 4 (he was Etienne's "5th").
-   And the MDS-credits balance: which field is authoritative? (`Event Profit - Credits Used` +
-   `Event Credit Log` are mirrored; no lane reads them — Etienne's credits ask, filed report.)
+   And **#55 credits (ACCESS PROVEN: WA API via n8n cred, Etienne Balance -11,917 live)** —
+   Andy names the AT field/table it lands in, then the WA→AT→Supa→billing-lane build runs.
    Staging holds #52 topic binding · #29 personalization (5 lanes) · #51 members-lane hardening ·
    #53 fact-gate calibration · #54 country dim. Prod is still `89ee3632` ("not promoting yet —
    more features first", Andy 2026-08-03). Test chat (staging by default):
