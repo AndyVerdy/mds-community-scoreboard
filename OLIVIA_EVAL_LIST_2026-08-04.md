@@ -4,7 +4,7 @@
 
 Built from the **live conversation log since 2026-07-28** — every 👎, every report, and every
 real member ask not already in the bank. **Nothing authored.** Ids **3140–3173** (34 questions),
-added to `eval_bank_organic.json` (100 → 134) and `eval_bank_smoke.json` (178 → 212).
+added to `eval_bank_organic.json` (100 → 134) and `eval_bank_smoke.json` (178 → 212) — then **retirement cut the fired set to 110** (see below).
 
 ## What the sweep found
 
@@ -51,6 +51,27 @@ from memory.
 
 3141 · 3144 · 3147 · 3150 · 3151 · 3154 · 3162 — fire these by hand right after the auto run,
 in their pairs, the way the member actually asked them.
+
+## RETIREMENT — the bank now shrinks as well as grows
+
+**Andy 2026-08-04: "are you even removing questions that are working well?"** He was right: the
+retirement rule existed in the routine doc but had **no mechanism** — nothing anywhere recorded
+per-question pass history, so the bank only ever grew (212 and climbing).
+
+Fixed in three parts:
+1. **Reconstructed the history** from 45 judged reports — 74 current-generation questions have
+   failed or partialed at least once; everything else has been clean every time it fired.
+2. **Retired the clean ones** (`retired: true` in the bank — kept in the file for history and
+   rotate-back-in, never fired). **Smoke fired set 212 → 110. Organic 134 → 96.**
+3. **Canary floor of 3 per class** — retirement emptied SMOKE/ATTRIBUTION and SMOKE/REPORTS and
+   left SENSITIVE at 1; those are catastrophic-class guards, so 7 clean questions were restored
+   as explicit canaries. No class is traded for another.
+
+`olivia_eval.py` now fires **non-retired only**; `OLIVIA_EVAL_ALL=1` fires everything for a
+regression sweep. Verified: default 110 · ALL 212.
+
+**What the fired 110 is made of:** every question that ever failed (they stay until 3 consecutive
+clean passes) + the 34 new organics + the per-class canaries. Backups: `*.bak-preretire-0804`.
 
 ## Status
 
