@@ -6,6 +6,10 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (DAY 5 — #55 CREDITS LIVE E2E + IAN TRIAGE → #56 FILED) — "How much MDS credit do I have?" now answers the REAL number: WA API → AT (`Wild Apricot Balance`, n8n `RtigtybHzx2RyQFL` nightly 05:40 ET, exec 64722 success, 1,163/1,163 matched) → Supa mirror (forced) → `member_billing.mds_credit` → E2E staging msg 24079 "$3,515.00 in credit" = Andy's real WA balance; Etienne's line = "$11,917.00 credit (overpaid)" exactly per the screenshot · gate: billing-allowlist correctly caught the new column → allowlisted, 224 exit-0 · traps: WA Balance in FieldValues not top-level · AT 429 → 300ms pacing · Code-runner 60s cap → 'Member' eq true filter · zombie runs from repeat fires stopped · **IAN TRIAGE**: "most reviewed partners" was wrong TWICE (Nemoship-5, then agreed to his JoinBrands-29 assertion) — truth: Helium 10 82 / Scale Insights 59 / Sellerise 48 / Data Dive 46 / Sellerboard 35; JoinBrands 7th; root = partner_lookup has no order-by-reviews + sample read + assertion-agreement → **#56 filed** (partner ranking = aggregate, the content_stats precedent)
+
+---
+
 ## 2026-08-04 (DAY 4 — #54e GEO LISTS + #55 FILED w/ WA ACCESS PROVEN) — p_country/p_state now take a value, a region, or a COMMA LIST (`geo_country_set`/`geo_state_set`); the LOOP MODEL does the geography per request (Andy's ruling) · E2E "the balkans" → 5 named across 4 countries, model supplied the list (msg 23959; router passed the unknown keyword, zeroth fetch empty, the tool call carried the countries) · SQL: Balkans-list 5 · Scandinavia+Germany 17 · texas,oklahoma,LA 56 · regressions none (South 184 / TX 52 / Cyprus 5) · gate 224 exit-0 · staging `1a4e27a2` · **WILD APRICOT ACCESS PROVEN LIVE**: n8n cred `LsnIqYL6dTa6xVXY` (the $500-credit wf's) → v2.2 contact 55429907 → Balance **-11,917** = Etienne's $11,917 overpaid (temp probe wf created→fired→DELETED) · #55 filed (WA→AT→Supa→billing lane; Andy names the AT field)
 
 ---

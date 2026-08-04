@@ -1034,6 +1034,7 @@ def main():
                      "billing_interval", "monthly_amount", "annual_payment", "member_since",
                      "year_joined", "next_renewal", "chapter",
                      "next_invoice_date", "next_invoice_amount", "payment_frequency", "membership_fee",
+                     "mds_credit",  # #55: WA balance, self-only, member-worded in-function
                      "billing_portal"}
         check("billing row carries ONLY the allowlisted self fields",
               all(set(b.keys()) == BILL_KEYS for b in (bill or [])))

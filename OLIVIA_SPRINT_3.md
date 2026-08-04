@@ -32,7 +32,8 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#53** | Fact-gate false clamp (grounded answer binned) — **staged + proven, Andy to promote** | 🔴 S1 | M |
 | **#51** | Members-lane fabrication + over-refusal — **staged + proven, Andy to promote** | 🔴 S1 | M |
 | **#54** | Country dim + regions + geo lists + holding eagerness — **staged; holding fix = Andy runs** | 🔴 S1 | S |
-| **#55** | MDS credits into the billing lane (WA→AT→Supa) — **access proven; field call = Andy** | 🔴 S1 | S-M |
+| **#55** | MDS credits into the billing lane (WA→AT→Supa) — **LIVE E2E; seed line staged** | 🔴 S1 | S-M |
+| **#56** | Partner ranking asks read a sample (Ian's "flat out wrong") | 🔴 S1 | S |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER — **v1 staged + proven, Andy to promote** | 🔴 S1 | L |
 | **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L |
 | **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M |
@@ -476,6 +477,47 @@ which AT field/table it lands in (Members DB is the SoT; field naming per the re
 and whether `Event Profit - Credits Used` / `Event Credit Log` fold into the same answer.
 **Accept when:** Etienne's question returns his real balance · a zero-balance member gets an
 honest zero · a member with no WA record degrades honestly · nightly refresh proven · gate GREEN.
+
+#### ✅ BUILT + LIVE END-TO-END 2026-08-04
+**The pipe:** WA API → AT (`Wild Apricot Balance` + `Synced At` on the Members table, n8n
+`RtigtybHzx2RyQFL` nightly 05:40 ET, no-op on unchanged, paced under AT's rate limit) →
+Supa (`member_profiles.at_fields`, the existing daily mirror — forced once) →
+`member_billing.mds_credit` (member-worded in-function; sign flipped) → the loop tool.
+
+| AC | result |
+|---|---|
+| Etienne's question returns his real balance | ✅ `member_billing('336…')` → "$11,917.00 credit on your MDS account (overpaid balance)" — matches Andy's WA screenshot exactly |
+| zero balance honest | ✅ 0 renders "no credit and nothing owed — $0"; E2E: Andy asked on staging → "You've got *$3,515.00* in credit…" + portal link (msg 24079, `raw_op=member_billing`) — his real WA number |
+| no-WA-record degrades honestly | ✅ null field → null column → seed rule says say-so-plainly + ticket offer; 3,442 past members named as the unmatched subset |
+| nightly refresh proven | ✅ final run exec **64722 success**: 1,163/1,163 current WA members matched, 333 written on the last pass; schedule 05:40 ET active |
+| gate GREEN | ✅ 224 exit-0 — the billing-allowlist check caught the new column first (working as designed), `mds_credit` allowlisted with the #55 note |
+
+**Traps burned:** WA `Balance` lives in `FieldValues`, not top-level (list API) · AT PATCH 429
+at 5 req/s → 300ms pacing + retries · n8n Code-runner 60s cap → WA fetch filtered to
+`'Member' eq true` · three concurrent webhook fires → zombie "running" executions, stopped.
+**DB + AT + n8n side is LIVE (no promote needed); the seed's tool description rides staging `534d87fc`.**
+
+### #56 · Partner ranking asks answer from a sample — "most reviewed" was flat-out wrong (Ian)
+**🔴 S1 · size S — filed 2026-08-04 from Ian's live complaint; not yet worked**
+
+> **In plain words:** Ask "which partners have the most reviews?" and she reads 8 random partners instead of sorting the whole directory — and agrees with whatever you correct her with.
+
+*As a member, a ranking question about the partner directory (most reviewed, top rated, most
+claimed) is answered from the WHOLE directory, sorted by the thing I asked for.*
+**Live evidence (Ian Sells, 2026-08-04 04:22, msgs 23106-23111):** "What are the most reviewed
+partners?" → "Nemoship, 5 reviews" (WRONG). Ian: "JoinBrands has way more" → she agreed:
+"JoinBrands, 29, the most by a wide margin" (ALSO WRONG — she validated his assertion without
+checking). Truth from `partners_catalog`: **Helium 10 82 · Scale Insights 59 · Sellerise 48 ·
+Data Dive 46 · Sellerboard 35**; JoinBrands is 7th. Root cause: `partner_lookup` has no
+order-by mode, p_limit 8, relevance/rating order — a ranking ask is an AGGREGATE question
+(the `content_stats` precedent: "who posts most" got SQL, not a sample read).
+**Shape of the fix:** `partner_lookup` gains `p_order` (reviews|rating|claims|views) or a
+`partner_stats` aggregate; router/seed detect "most reviewed / top rated / most claimed /
+most popular"; seed rule: never confirm a member's asserted ranking without a tool row proving
+it (the sycophancy half).
+**Accept when:** Ian's question returns the true top 5 · "top rated" and "most claimed"
+variants correct · a member asserting a wrong ranking gets the honest correction · gate GREEN ·
+matrix rows.
 
 # 🟡 S2 — NEXT
 

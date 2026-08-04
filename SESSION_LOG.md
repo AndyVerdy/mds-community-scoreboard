@@ -8,6 +8,7 @@
 prepend the full entry to its STREAM log + ONE line here.** Old references like "read SESSION_LOG
 2026-07-27" resolve through this index: find the date line, open the named stream file.
 
+- 2026-08-04 · **Olivia** · (DAY 5) **#55 CREDITS LIVE E2E** (WA→AT nightly `RtigtybHzx2RyQFL` → Supa → `member_billing.mds_credit`; Andy E2E "$3,515.00 in credit", Etienne "$11,917.00 (overpaid)" = the screenshot; 1,163/1,163, gate 224 exit-0) · **Ian triage → #56 filed** (partner "most reviewed" wrong twice; truth Helium 10 82; needs an aggregate) → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY 4) **#54e geo lists** (model does the geography: "the balkans" → 5 named, list-driven) · **WA ACCESS PROVEN** (Etienne Balance -11,917 live via n8n cred; probe wf deleted) · **#55 filed** (credits → billing lane; AT field = Andy's call) · gate 224 · staging `1a4e27a2` → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY 3) **#54d state regions**: the South/Midwest/coasts/New England/Tri-State/DMV expand to state sets · E2E southern states → 10 named · TX fold already worked · gate 224 · staging `b2d146ca` → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY 2) **#54c regions**: Europe/Eastern Europe/North America/Scandinavia/Asia/Middle East expand to country sets in `member_match_v2` · E2E Eastern Europe → 9 named, 6 countries · gate 224 ×2 · staging `fcf1b793` → `SESSION_LOG_OLIVIA.md`
