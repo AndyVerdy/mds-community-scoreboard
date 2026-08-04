@@ -4,7 +4,7 @@ This Privacy Policy describes Our policies and procedures on the collection, use
 
 We use Your Personal data to provide and improve the Service. By using the Service, You agree to the collection and use of information in accordance with this Privacy Policy.
 
-Last Updated: June 3, 2025
+Last Updated: August 3, 2026
 
 This Privacy Policy describes the data protection practices of Million Dollar Sellers (“Million Dollar Sellers,” “we,” “us,” or “our”). This Privacy Policy applies to information that we collect and use about you when you access or use the Million Dollar Sellers website, mobile application, or other online or mobile service that links to or otherwise presents this Privacy Policy to you. We refer to these products and services collectively as the “Services.”
 
@@ -80,30 +80,24 @@ Derived information. We generate information from the data above, such as engage
 We, or our service providers, use your information for various purposes depending on the types of information we have collected from and about you, in order to:
 
 • Provide the Services
-
-• Provide AI-assisted member services, including the MDS Assistant, personalized recommendations, and member matching
-
-• Complete a purchase or provide the Services you have requested, including invoicing and accounting
+    • Complete a purchase or provide the Services you have requested, including invoicing and accounting
+    • Provide AI-assisted member services, including the MDS Assistant, personalized recommendations, and member matching
 
 • Communicate with you and provide support
-
-• Respond to your request for information and provide you with more effective and efficient customer service
-• Provide you with updates and information about classes in which you have enrolled
+    • Respond to your request for information and provide you with more effective and efficient customer service
+    • Provide you with updates and information about classes in which you have enrolled
 
 • Marketing and content customization
-
-• Contact you by email, postal mail, or phone regarding Million Dollar Sellers and third-party products, services, surveys, research studies, promotions, special events and other subjects that we think may be of interest to you
-• Customize the advertising and content you see on the Services
+    • Contact you by email, postal mail, or phone regarding Million Dollar Sellers and third-party products, services, surveys, research studies, promotions, special events and other subjects that we think may be of interest to you
+    • Customize the advertising and content you see on the Services
 
 • Business operations
-
-• Help us better understand your interests and needs, and improve the Services, including through research and reports, and test and create new products, features, and services
-• Secure our websites and applications, and resolve app crashes and other issues being reported
+    • Help us better understand your interests and needs, and improve the Services, including through research and reports, and test and create new products, features, and services
+    • Secure our websites and applications, and resolve app crashes and other issues being reported
 
 • Legal Purposes
-
-• Comply with any procedures, laws, and regulations which apply to us where it is necessary for our legitimate interests or the legitimate interests of others
-• Establish, exercise, or defend our legal rights where it is necessary for our legitimate interests or the legitimate interests of others
+    • Comply with any procedures, laws, and regulations which apply to us where it is necessary for our legitimate interests or the legitimate interests of others
+    • Establish, exercise, or defend our legal rights where it is necessary for our legitimate interests or the legitimate interests of others
 
 Combined Information
 For the purposes discussed in this Privacy Policy, we may combine the information that we collect through the Services with information that we receive from other sources, both online and offline, and use such combined information in accordance with this Privacy Policy.
