@@ -1074,8 +1074,12 @@ def main():
 
         print("— app_member_feed (the mobile app's identity door, #27) —")
         # a known linked member (email + at_member_id + phone) fetched live, not hardcoded
+        # ACTIVE + ordered, or table churn hands us an inactive member the function rightly
+        # refuses (the #46 fixture-churn lesson, re-hit 2026-08-04: Karla, status NULL —
+        # app_member_feed fail-closed = correct, the CHECK was red).
         st, mrow = curl("GET", f"{BASE}/members?select=email,full_name&email=not.is.null"
-                               f"&at_member_id=not.is.null&phone=not.is.null&limit=1", key,
+                               f"&at_member_id=not.is.null&phone=not.is.null"
+                               f"&membership_status=eq.Current%20Member&order=at_member_id.asc&limit=1", key,
                         profile_hdr=["Accept-Profile: digest"])
         if st == 200 and mrow:
             f_email, f_name = mrow[0]["email"], mrow[0].get("full_name") or ""

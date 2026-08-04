@@ -6,6 +6,10 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (DAY 3 — #54d STATE REGIONS) — migration `member_match_v2_state_regions` (`state_region_states`: South/Southeast/Midwest/Northeast/New England/West+East Coast/PNW/Southwest/Mountain West/Tri-State/DMV; single state = one-element set, attr_state TX→Texas already worked) · SQL: South 184 · Midwest 38 · West Coast 126 · New England 14 · Tri-State 65 · Texas 52 + EE 13 unchanged · staging `b2d146ca` (router rule + p_state schema) · E2E "who is based in the southern states?" → 10 named TX/FL/LA/NC (`p_state=the South`, msg 23825) · gate: the #54d run was RED — `app_member_feed resolves a known email` — ROOTED as fixture churn (the pick took the first physical row = Karla, status NULL; the function fail-closed CORRECTLY, the check fixture lacked the #46 active+ordered fix) → pick now active+ordered, gate 224 GREEN exit 0. Lesson re-burned: `gate | tail` masks the exit code — the #54d commit initially claimed green off a masked pipe; message amended · Andy's per-request design question answered in chat (deterministic filter = the gate-provable last inch; the MODEL is the per-request geography brain; option open: model-supplied country/state lists on the tool)
+
+---
+
 ## 2026-08-04 (DAY 2 — #54c REGIONS) — region asks work: migration `member_match_v2_region_groups` (`country_region_countries` expands Europe/Eastern Europe/North America/Scandinavia/Asia/Middle East/Latin America/Oceania; single country = one-element set) · SQL: Europe 86 · EE 13 · Scandinavia 10 · NA 500-cap · Germany 7 / Cyprus 5 unchanged · staging `fcf1b793` (router region rule + tool schema) · E2E "who is based in eastern europe?" → 9 named across 6 countries (`p_country=Eastern Europe`, msg 23725) · gate 224 GREEN ×2 · region label rides the reason ("in Tallinn, Estonia (Eastern Europe)")
 
 ---

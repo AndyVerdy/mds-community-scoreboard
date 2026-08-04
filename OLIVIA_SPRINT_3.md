@@ -448,10 +448,11 @@ one canonical name) + `p_country` in `member_match_v2` (target dim, same doors).
 | country asks name the members | ✅ E2E "who is based in Germany?" → **7 named** with cities + reasons, plan `p_country=Germany` (msg 23581) |
 | the Etienne question | ⚠️ routed correctly (`p_country=Cyprus`, exec 64381) but **clamped by the fact-gate — and the gate is RIGHT**: Tanase Tudor - Tude's record says country=CY with city **Baia-Mare, Judetul Maramureș (Romania)**; Haiku flags the contradiction. **Member-record fix for the team** (I never edit member records): correct his country, sync flows it, Cyprus then returns the map-consistent 4 clean. He is also the answer to Etienne's "who is the 5th?" |
 | gate GREEN | ✅ 224 checks after the signature change (re-run after regions: GREEN) |
+| state regions (Andy: "go, add the state regions") | ✅ `state_region_states` — the South 184 · Midwest 38 · West Coast 126 · New England 14 · Tri-State 65 (SQL) · TX/Texas/texas → 52 (attr_state fold, already worked) · E2E "who is based in the southern states?" → 10 named TX/FL/LA/NC, `p_state=the South` (msg 23825) |
 | regions (Andy: "go, add the regions") | ✅ `country_region_countries` — Europe 86 · Eastern Europe 13 · Scandinavia 10 · North America 500-cap (SQL) · E2E "who is based in eastern europe?" → 9 named across 6 countries, `p_country=Eastern Europe` (msg 23725) · Germany 7 / Cyprus 5 unchanged |
 | holding filler | 📊 measured (31% > 18s); **fix scripted, Andy runs:** `python3 scripts/olivia_loop/apply_54b_holding_delay.py` (rung 1 18s→30s ⇒ fires on ~2%; classifier blocked me applying prod-side, consistent with the tiers) |
 
-**Not promoted** — staging `fcf1b793` (carries #52+#29+#51+#53+#54+regions), prod `89ee3632`.
+**Not promoted** — staging `b2d146ca` (carries #52+#29+#51+#53+#54 incl. country+state regions), prod `89ee3632`.
 
 # 🟡 S2 — NEXT
 
