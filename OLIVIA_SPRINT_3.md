@@ -50,7 +50,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M | ✅ proven (report confirm-step open) | ✅ **LIVE** `01a94c1a` |
 
 **Staging/Prod key:** ✅ proven = built + probed on that surface · — = not there yet ·
-**PROMOTED 2026-08-04 22:35 UTC** — prod `01a94c1a` (was `89ee3632`), graph matches staging; 12 nodes changed. Pre/post snapshots kept in `olivia_snapshots/`.
+**PROMOTED 2026-08-04 22:35 UTC** — prod `01a94c1a` (was `89ee3632`), 12 nodes. **Second promote 23:13 UTC → prod `65958b77`** (Answer Seed: Andy's live-test fixes — grouping-retry rule + credit-never-links-Stripe). Pre/post snapshots kept in `olivia_snapshots/`. The holding-ladder fix (30s + recheck) is live in `X1vzrW9Avqff3qRa`, which has no staging twin.
 **Priority key:** 🔴 S1 now · 🟡 S2 next · 🔵 S3 planned · ⚪ S4 later · 🚀 new data source ·
 🔥 standing/measurement · 🏁 closes the sprint.
 **Sizes:** S ≈ a session · M ≈ a day · L ≈ multi-day.
