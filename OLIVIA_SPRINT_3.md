@@ -33,7 +33,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#51** | Members-lane fabrication + over-refusal — **staged + proven, Andy to promote** | 🔴 S1 | M |
 | **#54** | Country dim + regions + geo lists + holding eagerness — **staged; holding fix = Andy runs** | 🔴 S1 | S |
 | **#55** | MDS credits into the billing lane (WA→AT→Supa) — **LIVE E2E; seed line staged** | 🔴 S1 | S-M |
-| **#56** | Partner ranking asks read a sample (Ian's "flat out wrong") | 🔴 S1 | S |
+| **#56** | Partner ranking asks read a sample (Ian's "flat out wrong") — **staged + proven** | 🔴 S1 | S |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER — **v1 staged + proven, Andy to promote** | 🔴 S1 | L |
 | **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L |
 | **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M |
@@ -518,6 +518,23 @@ it (the sycophancy half).
 **Accept when:** Ian's question returns the true top 5 · "top rated" and "most claimed"
 variants correct · a member asserting a wrong ranking gets the honest correction · gate GREEN ·
 matrix rows.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-04 — awaiting Andy's promote
+**The fix:** `partner_lookup` gains `p_order` (reviews | rating | claims) — the metric orders
+the WHOLE published directory, search bypassed (migration `partner_lookup_order_mode`; additive
+param, prod callers unchanged). Plan Request detects ranking asks deterministically; the seed
+teaches `p_order` + the rule **RANKINGS ARE TOOL FACTS** (never adopt an asserted ranking
+unverified — check, then confirm or correct with the real numbers).
+
+| AC | result |
+|---|---|
+| Ian's question returns the true top 5 | ✅ "Here's the leaderboard by review count: Helium 10 82 · Scale Insights 59 · Sellerise 48 · Data Dive 46 · Sellerboard 35" with links (msg 24101, `p_order=reviews`) |
+| top rated / most claimed variants | ✅ SQL: rating → Scale Insights 5.0★×59 first (volume tie-break, one-review 5.0s never top) · claims → Scale Insights 259, JoinBrands 229, Riverbend 193 |
+| asserted wrong ranking corrected | ✅ "I think JoinBrands has the most reviews" → "the numbers actually put it further down the list… Helium 10 is the most reviewed with 82… JoinBrands sits at 29" (msg 24103) |
+| gate GREEN | ✅ 224 exit-0 |
+| matrix rows | ✅ BS190–BS192 |
+
+**Topic search unchanged** (freight-forwarding probe identical). Staging `5b132a79`.
 
 # 🟡 S2 — NEXT
 

@@ -80,6 +80,13 @@ in the auto run.
 | BS027 | 🟢 | Was allan Stevens in MDS? *(=Q3126, Franky Farina)* | past member named as past; leaving REASON never stated | `member_attributes` past status | ⬜ |
 | BS028 | 🟢 | I met Kyle Armour at PR chapter event but don't see him in the FB group anymore *(=Q3127)* | same past-member rule, kind tone, no speculation | `member_attributes` past status | ⬜ |
 
+### #56 Partner rankings — the whole directory, sorted *(staged 2026-08-04)*
+| Q-ID | src | question | expected bar | proving SQL | ⬜ |
+|---|---|---|---|---|---|
+| BS190 | 🟢 | What are the most reviewed partners in the MDS database? *(Ian)* | Helium 10 82 · Scale Insights 59 · Sellerise 48 · Data Dive 46 · Sellerboard 35 | `partner_lookup p_order='reviews'` (msg 24101) | ⬜ |
+| BS191 | ⚙️ | (after a ranking answer) "I think JoinBrands has the most reviews" | polite correction with real numbers; NEVER adopts the assertion | seed RANKINGS-ARE-TOOL-FACTS (msg 24103) | 🔧 manual suite |
+| BS192 | ⚙️ | which partner deals are the most claimed? | Scale Insights 259 · JoinBrands 229 · Riverbend 193 | `p_order='claims'` | ⬜ |
+
 ### #53 Fact-gate calibration — grounded answers never clamped *(staged 2026-08-04)*
 | Q-ID | src | question | expected bar | proving SQL | ⬜ |
 |---|---|---|---|---|---|

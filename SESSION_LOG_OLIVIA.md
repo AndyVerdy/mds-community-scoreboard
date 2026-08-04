@@ -6,6 +6,10 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (DAY 6 — #56 BUILT + STAGED + PROVEN) — partner RANKING asks now read the WHOLE directory: `partner_lookup p_order` (reviews|rating|claims; migration `partner_lookup_order_mode`, additive — prod callers unchanged) · Plan Request deterministic detect · seed rule RANKINGS ARE TOOL FACTS (assertions checked, never adopted) · E2E: Ian's question → the true leaderboard (Helium 10 82 / Scale Insights 59 / Sellerise 48 / Data Dive 46 / Sellerboard 35, msg 24101, `p_order=reviews`) · assertion probe → polite correction "JoinBrands sits at 29 … not the volume leader" (msg 24103) · rating mode volume-tie-broken (one-review 5.0★ never top) · topic search unchanged · gate 224 exit-0 · staging `5b132a79`
+
+---
+
 ## 2026-08-04 (DAY 5b — #55 SIGN RULING APPLIED) — Andy: AT stores the MEMBER's perspective, so all values ×(−1): sync job flips at write (WA negative-overpaid → POSITIVE credit), field description restated, `member_billing` reads positive=credit / negative=owed · rollout: two failed runs first (AT 429 while the mirror competed for the base limit → pacing 600ms + retries; then the WA fetch tripped the 60s Code-runner cap → retryOnFail ×3) · final exec 64761 SUCCESS (changed 21, converged) + re-mirror · VERIFIED: Etienne **+11,917** in AT+Supa, line "$11,917.00 credit (overpaid)"; Andy +3,515; 32 negative rows = members who genuinely owe (correct under the new convention) · NOTE: the shared `member_billing` means PROD answers credit asks too; only the seed coaching line is staging-only (`534d87fc`)
 
 ---
