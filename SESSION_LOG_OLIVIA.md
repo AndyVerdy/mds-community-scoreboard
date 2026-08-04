@@ -6,6 +6,10 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (DAY 7b — #50 EVENT-PROFILE FIX, Andy's catch) — attendee-derived event topics were BASE-RATE noise (averaging 314 Inspire attendees = the community average; the Centurion dinner's "topics" = what big operators know, not the room's subject). Migration `entity_dossier_event_lift_fix`: flagship events (>150 regs) get NO attendee profile + audience='flagship - for everyone'; selective rooms (5-150 regs) keep a topic only at ≥1.3× LIFT over the community baseline (n≥5); name-derived topics always. VERIFIED: Inspire 2026 → {} + "a flagship - genuinely for everyone" · Centurion dinner → Exits & M&A top by lift, audience says lift-basis · TikTok Dinner keeps TikTok Shop from its name. Tier-gating identity still comes from the event NAME (the full LLM dossier + Andy's event-description answer close the rest).
+
+---
+
 ## 2026-08-04 (DAY 7 — #50 BUILT + STAGED + PROVEN) — ENTITY DOSSIERS live: `entity_dossier` (video 1,022 · partner 492 · event 1,420 · chapter 70) + `refresh_entity_dossiers()` set-based (videos tsv×topics+engagement pct · partners ratings/claims · events DERIVED from attendee ledgers per #47's no-description residual · chapters from member ledgers) · `weak_signal` = INTERNAL-only rank suppressor (Andy's binding rule) · consumer `video_search_v2` (asker working-on ×1.5 × entity profile → fit boost + `fit_reason`; strength_note = only surfaceable phrase) · nightly job 8 `entity_dossiers` + heartbeat (26h), immediate re-run 0 rows = no-op proven · E2E "recommend me some videos worth watching" → "Since you're big on AI & Automation and TikTok Shop, here's what's genuinely worth your time" (zero stats) · per-member reasons differ (Andy AI+Creator / Ian AI+FBA) · seed RECOMMEND-AS-JUDGMENT rule · traps: PL/pgSQL out-param `kind` vs column collision → o_kind; heartbeat cols last_run_at/last_success_at · named exceptions: event_lookup_v2 dossier join waits on Andy's event-description answer; partners lane already honest · gate 224 exit-0 · staging `c5566eb2`
 
 ---
