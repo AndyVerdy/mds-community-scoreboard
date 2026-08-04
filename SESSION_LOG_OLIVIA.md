@@ -6,6 +6,10 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (DAY 7 — #50 BUILT + STAGED + PROVEN) — ENTITY DOSSIERS live: `entity_dossier` (video 1,022 · partner 492 · event 1,420 · chapter 70) + `refresh_entity_dossiers()` set-based (videos tsv×topics+engagement pct · partners ratings/claims · events DERIVED from attendee ledgers per #47's no-description residual · chapters from member ledgers) · `weak_signal` = INTERNAL-only rank suppressor (Andy's binding rule) · consumer `video_search_v2` (asker working-on ×1.5 × entity profile → fit boost + `fit_reason`; strength_note = only surfaceable phrase) · nightly job 8 `entity_dossiers` + heartbeat (26h), immediate re-run 0 rows = no-op proven · E2E "recommend me some videos worth watching" → "Since you're big on AI & Automation and TikTok Shop, here's what's genuinely worth your time" (zero stats) · per-member reasons differ (Andy AI+Creator / Ian AI+FBA) · seed RECOMMEND-AS-JUDGMENT rule · traps: PL/pgSQL out-param `kind` vs column collision → o_kind; heartbeat cols last_run_at/last_success_at · named exceptions: event_lookup_v2 dossier join waits on Andy's event-description answer; partners lane already honest · gate 224 exit-0 · staging `c5566eb2`
+
+---
+
 ## 2026-08-04 (DAY 6 — #56 BUILT + STAGED + PROVEN) — partner RANKING asks now read the WHOLE directory: `partner_lookup p_order` (reviews|rating|claims; migration `partner_lookup_order_mode`, additive — prod callers unchanged) · Plan Request deterministic detect · seed rule RANKINGS ARE TOOL FACTS (assertions checked, never adopted) · E2E: Ian's question → the true leaderboard (Helium 10 82 / Scale Insights 59 / Sellerise 48 / Data Dive 46 / Sellerboard 35, msg 24101, `p_order=reviews`) · assertion probe → polite correction "JoinBrands sits at 29 … not the volume leader" (msg 24103) · rating mode volume-tie-broken (one-review 5.0★ never top) · topic search unchanged · gate 224 exit-0 · staging `5b132a79`
 
 ---

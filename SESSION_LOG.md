@@ -8,6 +8,7 @@
 prepend the full entry to its STREAM log + ONE line here.** Old references like "read SESSION_LOG
 2026-07-27" resolve through this index: find the date line, open the named stream file.
 
+- 2026-08-04 · **Olivia** · (DAY 7) **#50 entity dossiers**: 2,934 dossiers (4 kinds) + `video_search_v2` judged recs ("since you're big on AI & Automation…", zero stats) · weakness internal-only · nightly job 8 + heartbeat · gate 224 · staging `c5566eb2` → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY 6) **#56 partner rankings**: `p_order` sorts the whole directory (Ian's ask → true top-5, msg 24101) · asserted-ranking probe → polite correction (24103) · gate 224 exit-0 · staging `5b132a79` → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY 5b) **#55 sign ruling**: AT/Supa store MEMBER-perspective (+11,917 = Etienne's credit); sync flips at write; exec 64761 success; 32 negatives = real owes; prod answers credit asks via shared member_billing → `SESSION_LOG_OLIVIA.md`
 - 2026-08-04 · **Olivia** · (DAY 5) **#55 CREDITS LIVE E2E** (WA→AT nightly `RtigtybHzx2RyQFL` → Supa → `member_billing.mds_credit`; Andy E2E "$3,515.00 in credit", Etienne "$11,917.00 (overpaid)" = the screenshot; 1,163/1,163, gate 224 exit-0) · **Ian triage → #56 filed** (partner "most reviewed" wrong twice; truth Helium 10 82; needs an aggregate) → `SESSION_LOG_OLIVIA.md`

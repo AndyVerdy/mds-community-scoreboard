@@ -30,6 +30,9 @@ JOBS = [
     ("member_events_daily",  [f"{REPO}/scripts/olivia_member_events_daily.py"]),
     # #44: expertise ledger + knowledge graph, full recompute (backfill == update, by design)
     ("graph_ledger",         [f"{REPO}/scripts/olivia_graph_nightly.py"]),
+    # #50: entity dossiers (video/partner/event/chapter) — after graph_ledger so event/chapter
+    # profiles read tonight's fresh member_expertise rows
+    ("entity_dossiers",      [f"{REPO}/scripts/olivia_entity_dossiers_nightly.py"]),
 ]
 
 

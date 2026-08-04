@@ -80,6 +80,13 @@ in the auto run.
 | BS027 | 🟢 | Was allan Stevens in MDS? *(=Q3126, Franky Farina)* | past member named as past; leaving REASON never stated | `member_attributes` past status | ⬜ |
 | BS028 | 🟢 | I met Kyle Armour at PR chapter event but don't see him in the FB group anymore *(=Q3127)* | same past-member rule, kind tone, no speculation | `member_attributes` past status | ⬜ |
 
+### #50 Entity dossiers — judged recommendations *(staged 2026-08-04)*
+| Q-ID | src | question | expected bar | proving SQL | ⬜ |
+|---|---|---|---|---|---|
+| BS195 | ⚙️ | recommend me some videos worth watching | opens with WHY-for-you judgment ("since you're big on…"), no view counts/scores ever | `video_search_v2` fit_reason/strength_note | ⬜ |
+| BS196 | ⚙️ | (any video/event/partner recommendation) | weakness NEVER surfaced — no "poorly rated/attended"; low rank = lower or absent | `entity_dossier.weak_signal` internal-only | 📊 gate + seed rule |
+| BS197 | ⚙️ | same browse ask from two different members | different fit reasons per asker (their ledger topics) | SQL both members | 📊 measured |
+
 ### #56 Partner rankings — the whole directory, sorted *(staged 2026-08-04)*
 | Q-ID | src | question | expected bar | proving SQL | ⬜ |
 |---|---|---|---|---|---|

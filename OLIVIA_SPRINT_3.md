@@ -35,7 +35,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#55** | MDS credits into the billing lane (WA→AT→Supa) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** (shared billing fn; Andy's WhatsApp test) |
 | **#56** | Partner ranking asks read a sample (Ian) | 🔴 S1 | S | ✅ proven | — awaiting promote |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER (v1: 5 lanes) | 🔴 S1 | L | ✅ proven | — awaiting promote |
-| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | — | — |
+| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | ✅ proven (video lane) | — awaiting promote (dossier DB live) |
 | **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | — | — |
 | **#19** | Privacy: share, keep, delete | 🟡 S2 | M | — | — |
@@ -423,6 +423,29 @@ standing ruling as #44: scores/ranks never leave the system.
 **Accept when:** entity_dossier rows exist for videos/partners/events/chapters, nightly-refreshed
 alongside #44's jobs · a recommendation probe explains WHY in judgment language with no numbers ·
 weakness never appears in any surfaced text (gate + probe set) · #29 consumes both sides.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-04 — awaiting Andy's promote (video lane); DB live
+**Built:** `digest.entity_dossier` (kind × entity: topic_profile · reception · `strength_note`
+= the only surfaceable phrase · `weak_signal` = INTERNAL rank suppressor) +
+`refresh_entity_dossiers()` — all four kinds set-based, no LLM: videos from tsv×topic-terms +
+engagement percentiles · partners from tsv + ratings/claims · events DERIVED from who attends
+(roster → #44 ledger, the #47 no-description residual) + name + draw · chapters from member
+ledgers. Consumer: **`video_search_v2`** — asker topics (working-on ×1.5) × video profile →
+fit boost + `fit_reason`; `weak_signal` demotes within ties, never returned.
+
+| AC | result |
+|---|---|
+| rows exist, nightly-refreshed | ✅ video 1,022 · partner 492 · event 1,420 · chapter 70; `entity_dossiers` job joined `nightly_derivations.py` (8th job, after graph_ledger), heartbeat seeded max_age 26h; immediate re-run = 0 rows (no-op semantics proven) |
+| judgment probe, no numbers | ✅ "recommend me some videos worth watching" → "Since you're big on AI & Automation and TikTok Shop, here's what's genuinely worth your time…" — zero stats surfaced (staging E2E) |
+| per-member difference | ✅ same browse, different reasons: Andy → "AI & Automation, Creator & Influencer"; Ian → "AI & Automation, Amazon FBA" (SQL, both members) |
+| weakness never surfaced | ✅ `weak_signal` never in any return column; seed rule: never say weak/poorly-rated — low rank = lower or absent · gate 224 exit-0 |
+| #29 consumes both sides | ✅ member side (topic profile) × entity side (dossier) is exactly `video_search_v2`'s fit computation |
+
+**Named exceptions (in writing):** partners lane already folds member criticism honestly
+(#partner_lookup behaviour, unchanged); `event_lookup_v2` keeps #29's asker-topic
+personalization but does NOT yet join the entity dossier — the event-side join lands when
+Andy answers the standing question (does an event description/agenda field exist anywhere?).
+Staging `c5566eb2`.
 
 ---
 
