@@ -59,9 +59,10 @@ and privacy policy.
 
 Current text is the generic "no longer than necessary." State the real practice:
 
-> Assistant conversations and community content are retained for as long as you are a member,
-> and for up to [X months] after membership ends, unless you request earlier deletion. [X = the
-> number MDS chooses — it must be a stated number, not left open.]
+> Assistant conversations and community content are retained indefinitely, including after your
+> membership ends, unless you request deletion of your personal information as described in
+> "Your Rights and Choices." Content you contributed to shared community spaces may remain part
+> of the community record after your membership ends.
 
 ## 5. Amend "Your Rights and Choices" — deletion requests + assistant opt-out
 
