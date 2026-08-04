@@ -6,6 +6,10 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (DAY 8 — #38 BUTTONS BUILT + STAGED + PROVEN) — yes/no offers become TAP BUTTONS, billing portal becomes a CTA-URL button, taps ride the existing flows: `Log Inbound` accepts type=interactive (tap title/`txt:` id → member text) · builder lives IN `Send Reply (Meta)`'s expression (single source — the ticket offer comes from `Build Verbatim Digest`, which bypasses Format Reply; found live exec 64932, first hook moved) · 1024-char WA cap honored (longer stays text) · offline 4-case proof + **tap E2E: simulated `button_reply` after a live offer → "Yes" → Ticket #215475359197961 filed** (msgs 24114-24117) · eval/silent path untouched · gate 224 exit-0 · staging `ac94ee0f` · REMAINDER: report confirm-step (Send it/Add more/Cancel) = next pass; visual render check on a real device at promote
+
+---
+
 ## 2026-08-04 (DAY 7b — #50 EVENT-PROFILE FIX, Andy's catch) — attendee-derived event topics were BASE-RATE noise (averaging 314 Inspire attendees = the community average; the Centurion dinner's "topics" = what big operators know, not the room's subject). Migration `entity_dossier_event_lift_fix`: flagship events (>150 regs) get NO attendee profile + audience='flagship - for everyone'; selective rooms (5-150 regs) keep a topic only at ≥1.3× LIFT over the community baseline (n≥5); name-derived topics always. VERIFIED: Inspire 2026 → {} + "a flagship - genuinely for everyone" · Centurion dinner → Exits & M&A top by lift, audience says lift-basis · TikTok Dinner keeps TikTok Shop from its name. Tier-gating identity still comes from the event NAME (the full LLM dossier + Andy's event-description answer close the rest).
 
 ---

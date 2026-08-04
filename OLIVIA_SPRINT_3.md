@@ -36,7 +36,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#56** | Partner ranking asks read a sample (Ian) | 🔴 S1 | S | ✅ proven | — awaiting promote |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER (v1: 5 lanes) | 🔴 S1 | L | ✅ proven | — awaiting promote |
 | **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | ✅ proven (video lane) | — awaiting promote (dossier DB live) |
-| **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M | — | — |
+| **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M | ✅ proven (report confirm-step open) | — awaiting promote |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | — | — |
 | **#19** | Privacy: share, keep, delete | 🟡 S2 | M | — | — |
 | **#20** | Census into the warehouse | 🔵 S3 | L | — | — |
@@ -579,6 +579,26 @@ our Stripe checkout link; money never moves inside WA (matches the no-payment-ag
 **+ Report confirm-step (Andy 2026-08-01, tried it live): after the bare-"report" flow receives
 the member's text, reply with THREE buttons before filing — Send it · Add more · Cancel
 (wording TBD better) — so multi-message reports and typos don't file prematurely.**
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-04 — awaiting Andy's promote (visual check at promote)
+**Three edits (`apply_38_buttons.py` + the Send Reply expression):** ① `Log Inbound` accepts
+`type=interactive` — a tap becomes the member's text (`txt:` ids carry the payload), so taps
+ride the existing flows unchanged ② the button/CTA builder lives IN `Send Reply (Meta)`'s
+payload expression — single source, covers the canned lanes too (the ticket offer is built by
+`Build Verbatim Digest`, which never passes Format Reply — found live, exec 64932) ③ offers ≤
+WA's 1024-char cap get [Yes / No thanks] reply buttons; billing-portal replies become a
+"Open billing portal" `cta_url` button (URL stripped from the body); longer replies stay text.
+
+| AC | result |
+|---|---|
+| offers become buttons | ✅ expression proven 4-way offline (offer→buttons · portal→CTA · plain→text · >1024→text) — runs on every real send |
+| taps ride the YES flow | ✅ simulated `button_reply` tap after a live offer → "Yes" → **Ticket #215475359197961 filed** (msgs 24114-24117) |
+| eval/silent unchanged | ✅ silent path exits before Send Reply by design |
+| gate GREEN | ✅ 224 exit-0 |
+
+**Named remainder:** the report confirm-step (Send it · Add more · Cancel) is NOT built yet —
+it needs a small state machine in Plan Request, next pass. Visual button rendering needs a real
+device: verify on Andy's WhatsApp at promote (the silent path cannot show it). Staging `ac94ee0f`.
 
 ### #18 · How-MDS-works answers
 **🟡 S2 · size M**
