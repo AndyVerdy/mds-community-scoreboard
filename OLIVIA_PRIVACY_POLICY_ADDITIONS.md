@@ -34,9 +34,9 @@ additions below; draft language included for each.
 > them:
 >
 > - Your messages to the Assistant, and relevant member and community content, are processed by
->   third-party AI service providers acting on our behalf (currently including Anthropic and
->   Voyage AI). These providers are contractually limited to processing the data to provide the
->   service to us, and do not use your data to train their models.
+>   third-party AI service providers acting on our behalf. These providers are contractually
+>   limited to processing the data to provide the service to us, and do not use your data to
+>   train their AI models.
 > - AI-generated responses may be inaccurate. The Assistant's answers are informational and are
 >   not professional, financial, or legal advice.
 > - We use automated processing to personalize what the Assistant and MDS services show you
@@ -49,10 +49,10 @@ additions below; draft language included for each.
 
 ## 3. Add to "How We Disclose Your Information" — processor list update
 
-Add to the service-provider examples: *hosting and database providers (e.g., Supabase),
-AI service providers (e.g., Anthropic, Voyage AI), workflow-automation providers (e.g., n8n),
-messaging providers (e.g., Meta's WhatsApp Business Platform), and internal business tools
-(e.g., Airtable, Slack).* Note that WhatsApp messages are also subject to WhatsApp's own terms
+Add to the service-provider examples, as CATEGORIES only (no vendor names): *hosting and
+database providers, AI service providers, workflow-automation providers, messaging-platform
+providers, and internal business tools.* One platform is named because members use it directly:
+messages you exchange with the Assistant on WhatsApp are also subject to WhatsApp's own terms
 and privacy policy.
 
 ## 4. Amend "Retention of Your Information" — state the actual position
@@ -97,9 +97,14 @@ MDS has members in the EU/UK (Europe Chapter) and processes data on U.S.-based i
   orientation, political views, ethnicity — not tracked, not inferred, not filterable. Exact
   member revenue is never disclosed by the Assistant (bands only); private contact details are
   never shared.
-- Anthropic API data is not used for model training by default per their commercial terms —
-  the "do not train" line above reflects that; counsel should confirm current terms (and
-  Voyage's) at publication time.
+- **Vendor names stay OUT of the published policy (Andy 2026-08-03)** — categories satisfy
+  GDPR Art. 13(1)(e) ("recipients or categories of recipients") and CCPA. Keep the named list
+  in an INTERNAL vendor register (currently: Anthropic, Voyage AI, Supabase, n8n, Meta WhatsApp
+  Business Platform, Airtable, Slack, Stripe) for DPAs, sub-processor answers, and regulator or
+  verified member requests. The analytics vendors already named in the live policy (Google,
+  Meta, Microsoft Clarity) stay — their own terms are why they're named.
+- The "do not train" line reflects our AI providers' commercial terms (API data not used for
+  training by default); counsel should confirm current terms at publication time.
 - The deletion right needs an internal runbook to be honorable ("honoured and verifiable" —
   backlog #19): delete across olivia_messages, content_items, member_events, embeddings, and
   document what shared-space content is retained and why.
