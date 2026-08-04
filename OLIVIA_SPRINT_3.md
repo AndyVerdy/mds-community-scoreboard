@@ -28,6 +28,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
+| **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | — awaiting promote |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | — | — |
 | **#19** | Privacy: share, keep, delete | 🟡 S2 | M | — | — |
 | **#20** | Census into the warehouse | 🔵 S3 | L | — | — |
@@ -99,6 +100,49 @@ reason in writing.
 instrument for every class rate. Per-ticket proof is probes plus the gate.
 
 ---
+
+### #57 · The live-test trio — empty reports, wrong-turn "Yes", buttons that say "reply"
+**🔴 S1 · size M — filed AND built 2026-08-04 from Andy's own WhatsApp session**
+
+> **In plain words:** "I want to report a bug" filed an empty report; tapping Yes answered a different question; and the message said "reply YES" while showing buttons.
+
+*As a member, a report is only filed once I have actually said what it is and confirmed it —
+and when I reply to a specific message, the answer continues THAT conversation.*
+**Live evidence (prod, 23:13–23:14 UTC):** `I want to report a bug` → filed instantly with that
+sentence AS the report body (msg 24151, report row saved) · the real detail `Cant register to
+event` then became a NEW events question (24157) · a tapped **Yes** replayed an unrelated credit
+answer (24163) · the body read "reply *YES*" under tap buttons.
+**Honest note on the third one:** the wrong-turn Yes was **partly self-inflicted** — prod probes
+were firing into Andy's own thread at those minutes and twice sent "new question", resetting his
+context. Standing rule now: **never fire probes at prod against a real member's number.**
+**Accept when:** an intent-only report files NOTHING · the detail message becomes the report BODY ·
+nothing is filed until an explicit confirm · a quoted reply binds to the quoted turn in plan AND
+prose · button bodies never say "reply YES" · gate GREEN.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-04 — awaiting promote
+**① Report flow is now CANNED end-to-end** (a prompt rule was tried first and did not hold —
+staging 24168 still answered the detail as an events question). Three deterministic states in
+`Plan Request` + `Build Verbatim Digest`: `report_ask` → "*What would you like to report?*" and
+files nothing · `report_draft` → quotes their words back behind the fixed marker *"Ready to send
+this to the MDS team:"* with **Send it · Add more · Cancel** · confirm → `report_create` with the
+drafted text. **② Quoted-reply binding**: `Log Inbound` keeps `context.id`, history carries
+`wamid`, `Prep Context` replays the QUOTED turn's plan and passes its text so the answer
+continues that thread. **③** the send layer rewrites "reply *YES*"/"or *NO*" to "tap *Yes*"/"tap
+*No thanks*" whenever buttons attach.
+
+| AC | result |
+|---|---|
+| intent-only files nothing | ✅ "I want to report a bug" → asks what to report, route `report_ask`, no report row (msg 24175) |
+| detail becomes the body | ✅ "Cant register to event" → route `report_draft`, quoted back for confirmation (24177) |
+| nothing filed until confirm | ✅ "Send it" → report row **`report_text = "Cant register to event"`** (was: "I want to report a bug") |
+| quoted reply binds to the quoted turn | ✅ quoted "Yes" on an older Cyprus turn, with a NEWER events turn present → plan `period=match, p_country=Cyprus` **and** prose "Here's the Cyprus list: Nacho Nachelis…" (24195) |
+| button wording | ✅ offline proof: "I can *open a ticket…*. tap *Yes* to open it, or tap *No thanks*." |
+| gate GREEN | ✅ 224 exit-0 |
+
+**Named remainder:** the confirm reply still appends a soft follow-up offer ("if you tell me which
+event…"); harmless but not strictly the rule. Quoted-reply binding cannot be probed through the
+silent path (no outbound wamid exists there) — proven by stamping a wamid on a probe row, then
+cleared. Staging `a1b060c2`.
 
 # 🟡 S2 — NEXT
 
