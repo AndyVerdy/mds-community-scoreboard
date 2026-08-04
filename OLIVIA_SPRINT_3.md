@@ -26,28 +26,30 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 
 ## 📋 At a glance
 
-| # | Ticket | Priority | Size |
-|---|---|---|---|
-| **#52** | Follow-ups bind to the wrong topic (the 👎) — **staged + proven, Andy to promote** | 🔴 S1 | S-M |
-| **#53** | Fact-gate false clamp (grounded answer binned) — **staged + proven, Andy to promote** | 🔴 S1 | M |
-| **#51** | Members-lane fabrication + over-refusal — **staged + proven, Andy to promote** | 🔴 S1 | M |
-| **#54** | Country dim + regions + geo lists + holding eagerness — **staged; holding fix = Andy runs** | 🔴 S1 | S |
-| **#55** | MDS credits into the billing lane (WA→AT→Supa) — **LIVE E2E; seed line staged** | 🔴 S1 | S-M |
-| **#56** | Partner ranking asks read a sample (Ian's "flat out wrong") — **staged + proven** | 🔴 S1 | S |
-| **#29** | THE DOSSIER + PERSONALIZATION LAYER — **v1 staged + proven, Andy to promote** | 🔴 S1 | L |
-| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L |
-| **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M |
-| **#18** | How-MDS-works answers | 🟡 S2 | M |
-| **#19** | Privacy: share, keep, delete | 🟡 S2 | M |
-| **#20** | Census into the warehouse | 🔵 S3 | L |
-| **#35** | Connect new data source | 🚀 S3 | M |
-| **#17** | Auto-refresh videos and partners | 🔵 S3 | M |
-| **#48** | AT roster write-back | ⚪ S4 | S-M |
-| **#36** | Connect new data source | 🚀 S4 | L |
-| **#32** | What Olivia costs | 🔥 — | S |
-| **#14** | Conversational, not robotic | 🔥 — | M |
-| **#34** | Finalize the QA doc set | 🏁 — | M |
+| # | Ticket | Priority | Size | Staging | Prod |
+|---|---|---|---|---|---|
+| **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | — awaiting promote |
+| **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | — awaiting promote |
+| **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | — awaiting promote |
+| **#54** | Country dim + regions + geo lists | 🔴 S1 | S | ✅ proven | — awaiting promote (holding-delay fix: Andy runs) |
+| **#55** | MDS credits into the billing lane (WA→AT→Supa) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** (shared billing fn; Andy's WhatsApp test) |
+| **#56** | Partner ranking asks read a sample (Ian) | 🔴 S1 | S | ✅ proven | — awaiting promote |
+| **#29** | THE DOSSIER + PERSONALIZATION LAYER (v1: 5 lanes) | 🔴 S1 | L | ✅ proven | — awaiting promote |
+| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | — | — |
+| **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M | — | — |
+| **#18** | How-MDS-works answers | 🟡 S2 | M | — | — |
+| **#19** | Privacy: share, keep, delete | 🟡 S2 | M | — | — |
+| **#20** | Census into the warehouse | 🔵 S3 | L | — | — |
+| **#35** | Connect new data source | 🚀 S3 | M | — | — |
+| **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
+| **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
+| **#36** | Connect new data source | 🚀 S4 | L | — | — |
+| **#32** | What Olivia costs | 🔥 — | S | — | — |
+| **#14** | Conversational, not robotic | 🔥 — | M | — | — |
+| **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 
+**Staging/Prod key:** ✅ proven = built + probed on that surface · — = not there yet ·
+one `promote` moves everything staged to prod (staging `5b132a79`, prod `89ee3632`).
 **Priority key:** 🔴 S1 now · 🟡 S2 next · 🔵 S3 planned · ⚪ S4 later · 🚀 new data source ·
 🔥 standing/measurement · 🏁 closes the sprint.
 **Sizes:** S ≈ a session · M ≈ a day · L ≈ multi-day.
