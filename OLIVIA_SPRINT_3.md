@@ -31,6 +31,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `955ed56f` |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
+| **#58** | Cancelled registrations count as attendance | 🔴 S1 | S | — | — |
 | **#20** | Census into the warehouse | 🟡 S2 | L | ⛔ BLOCKED — census form not launched yet (Andy 2026-08-05) | — |
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
@@ -167,6 +168,52 @@ persist, since `Save Conversation` files `Log Inbound`.text.
 **Not promoted** — staging `eb4dc393`, prod `7f7b932f`. Apply script
 `scripts/olivia_loop/apply_57b_report_stop_geo_typo.py` (idempotent; re-running swaps a revised
 guard in place).
+
+### #58 · Cancelled registrations count as attendance — she can tell a member they are going to an event they cancelled
+**🔴 S1 · size S — filed 2026-08-05, found while checking `Upcoming Events Registered` for Andy**
+
+> **In plain words:** Someone cancels their ticket, and Olivia still says they're going.
+
+*As a member, Olivia never tells me I am attending an event I cancelled — and never counts a
+cancelled ticket as if I had gone.*
+
+**How it surfaced:** Andy asked whether the Airtable rollup `Upcoming Events Registered` was
+broken. **It is not** — it correctly hides cancellations, via the condition
+`Order ID does not contain "Unconfirmed"` (`Ticket Status` folds Canceled / Pending Approval /
+Not Going / Unpaid / Waitlist into "Unconfirmed"). Airtable has been filtering this all along.
+**The warehouse does not.** `digest.event_registrations` carries the `ticket_status` column, and
+nothing downstream reads it:
+
+| ticket_status | rows | FUTURE rows |
+|---|---|---|
+| Confirmed | 13,992 | 286 |
+| **Unconfirmed** | **2,962** | **44** ← 41 Canceled · 3 Pending Approval · 2 Not Going |
+| No Show | 845 | 0 |
+| Partially Refunded | 3 | 0 |
+
+So every consumer that joins `event_registrations` treats a cancellation as a live registration —
+**44 future rows right now**, most of them MDS Summit Singapore. It also means 845 No-Show rows
+count as attendance in anything historical.
+
+**Where to look (all unverified until checked — do NOT assume the list is complete):** the event
+lanes (`event_lookup_v3`), `member_events` (#46 backfilled 13,401 registrations), the #50 event
+dossiers (attendee-derived topic profiles, which currently include people who cancelled), and any
+"events you're going to" answer.
+
+**Accept when**
+- **A cancelled registration never appears as an upcoming event** in any lane — probe a member
+  with a cancelled future ticket (Sarah Parks / MDS Summit Singapore is a live case).
+- **Attendance-derived data excludes No Show and cancellations**, or the exception is named in
+  writing with the reason.
+- **The filter lives at the SQL chokepoint**, not in each caller — the `content_search_v2`
+  precedent: one place, so future consumers inherit it.
+- **Before/after counts on the affected lanes**, and the #50 dossiers recomputed if their inputs move.
+- Gate GREEN.
+
+**Impact:** small blast radius, high embarrassment — it is confidently wrong to a member about
+their own plans, which is the same class as the members-lane fabrication in #51.
+
+---
 
 # 🟡 S2 — NEXT
 
