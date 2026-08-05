@@ -32,7 +32,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
 | **#20** | Census into the warehouse | 🟡 S2 | L | ⛔ BLOCKED — census form not launched yet (Andy 2026-08-05) | — |
-| **#59** | Same-named events duplicate in the events lane | 🟡 S2 | S | — | — |
+| **#60** | Two Airtable events share one app event → duplicate catalog row | 🟡 S2 | S | — | — |
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
@@ -42,6 +42,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | — | *— closed, evidence at the bottom —* | | | | |
 | **#58** | Cancelled registrations count as attendance | 🔴 S1 | S | n/a (SQL) | ✅ **LIVE** — one chokepoint view |
+| **#59** | Same event listed twice (events + partners) | 🟡 S2 | S | n/a (SQL) | ✅ **LIVE** — dossier joins on the row, not the name |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -174,25 +175,26 @@ guard in place).
 
 # 🟡 S2 — NEXT
 
-### #59 · The same event listed twice — same-named events across years duplicate in the lane
-**🟡 S2 · size S — filed 2026-08-05, found while proving #58 (NOT caused by it)**
+### #60 · Two Airtable events share one MDS app event — the catalog carries a duplicate row
+**🟡 S2 · size S — filed 2026-08-05, found while closing #59 (a different root cause, not a join bug)**
 
-> **In plain words:** Ask about events and the same one can come back twice.
+> **In plain words:** A cancelled side-event wears the Summit's name, so the Summit can show twice.
 
-*As a member, an event appears once in Olivia's answer, however many years MDS has run it.*
+*As a member, two different MDS events never appear under the same name and time.*
 
-`event_lookup_v3` annotates each row by joining `digest.entity_dossier` on **`ed.name =
-v.event_name` alone** (`kind='event'`). **27 event names have more than one dossier** — MDS runs
-"MDS Summit Singapore", "MDS Inspire" and friends every year — so the join fans out and the row is
-returned twice. Reproduced: `event_lookup_v3('12536781361', …)` returns **MDS Summit Singapore
-twice**, identical values; `event_lookup_v2` (no dossier join) returns it once. Pre-existing since
-#50; `entity_dossier` row count is unchanged by #58 (1,420 event rows before and after).
+`digest.events_catalog` holds two rows pointing at the same app event
+`689cfd00f1f12d7791cf9525`: `recgTQvtrZtTYSePj` = **"MDS Summit Singapore Speaker's Lunch 2026"**
+(phase **Canceled**, capacity 15) and `recrATwhUDA55iQN5` = **"MDS Summit Singapore"** (Registration
+Open). `sync_events.py` overrides `app_title` and `app_starts_at` from the joined app event, so the
+Speaker's Lunch is renamed into the Summit and inherits its start — one duplicated (name,
+`starts_at`) pair, the only one in 1,422 catalog rows. Surfaces on an explicit term search or
+`include_past`; browse mode already drops `Canceled`.
 
 **Accept when**
-- An event name that exists in several years returns **exactly one row per calendar event**.
-- The dossier join keys on something unique (the event's `at_record_id`, or name + `starts_at`),
-  not the display name — the same shape as the #58 chokepoint: fix it where the join is made.
-- A regression check covers a duplicated name so it cannot silently come back.
+- Either the Airtable link is corrected, or the sync stops letting a shared `app_event_id` rename a
+  distinct Airtable event — an app title may fill a blank, never overwrite a different event's name.
+- No two catalog rows share (display name, `starts_at`) — assert it, so a future mis-link is caught.
+- Decide in writing whether a `Canceled` event should reach a term search at all.
 
 ### #18 · How-MDS-works answers
 **🟡 S2 · size M · ⛔ BLOCKED (Andy 2026-08-05: "we dont have data for #18")**
@@ -474,6 +476,45 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #59 · The same event listed twice — same-named events across years duplicate in the lane
+**🟡 S2 · size S — filed AND closed 2026-08-05. Data-layer only: nothing to promote.**
+
+> **In plain words:** Ask about events and the same one can come back twice.
+
+*As a member, an event appears once in Olivia's answer, however many years MDS has run it.*
+
+**The defect:** the #50 dossier annotation joined `digest.entity_dossier` on the **display name**
+(`ed.name = v.event_name`). MDS runs the same summits every year, so **27 event names** carry more
+than one dossier row and the join fanned out. **Same bug in the partner lane** — `partner_lookup_v2`
+joined `ed.name = v.name` with **12 duplicated partner names**, and its final `join dos` was on the
+name too. `video_search_v2` already keyed on `entity_id` (correct, untouched); chapter names are
+unique, so `chat_recommendations_v3` is unaffected.
+
+#### ✅ SHIPPED 2026-08-05 — key the dossier on the ROW, never on the name
+
+Migration `dossier_join_by_row_not_name_59`. Both lanes now resolve **at most one dossier per
+result row** (`left join lateral … limit 1`) and join it back on the row's own **ordinality**.
+Events additionally key on the **event record** — `entity_dossier.entity_id = events_catalog.at_record_id`,
+matched by name **+ `starts_at`** — so a 2026 summit can no longer borrow the 2024 summit's topic
+profile, which the name-only join allowed.
+
+| AC | result |
+|---|---|
+| a same-named event returns exactly one row per calendar event | ✅ *MDS Summit Singapore* **2 rows → 1** · swept all **27** duplicated event names: **0** (name, `starts_at`) pairs duplicate from the join |
+| the dossier join keys on something unique | ✅ events → `entity_id` via catalog (name + `starts_at`); partners → lateral `limit 1` + `ord`; **no join on a display name remains** |
+| the same fix covers the partner lane | ✅ *Riverbend Consulting* **2 rows → 1**; swept all **12** duplicated partner names: **0** duplicating |
+| annotations survive | ✅ Summit Singapore keeps "draws a strong member crowd"; Riverbend keeps "heavily reviewed by members and strongly rated" |
+| ranking mode still undiluted (#56) | ✅ `partner_lookup` vs `partner_lookup_v2` in `ranking` order: **8/8 identical** |
+| event order unchanged | ✅ v2 vs v3 browse: **12 rows, 0 mismatches** |
+| gate GREEN | ✅ **224 checks, 0 FAIL, exit 0** |
+
+**One duplicate remains and it is NOT this bug — filed as #60.** Two *different* Airtable events
+("MDS Summit Singapore Speaker's Lunch 2026", phase **Canceled**, and "MDS Summit Singapore",
+Registration Open) point at the **same MDS app event** `689cfd00f1f12d7791cf9525`, so the sync's
+`app_title` / `app_starts_at` override renames the Speaker's Lunch into the Summit. Two catalog
+rows, identical display name and start. It only surfaces on an explicit term search or
+`include_past` — browse mode already drops `Canceled`.
 
 ### #58 · Cancelled registrations count as attendance — she can tell a member they are going to an event they cancelled
 **🔴 S1 · size S — filed AND closed 2026-08-05. Data-layer only: no n8n node changed, nothing to promote.**

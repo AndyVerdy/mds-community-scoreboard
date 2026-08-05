@@ -59,15 +59,21 @@ ten reader functions repointed mechanically, the writers keep the raw ledger. **
 member-event pairs** stopped being told they are attending a cancelled event; 0 members lost a live
 ticket. Gate 224 exit-0. **Pure SQL — no n8n node changed, so there is nothing to promote.**
 
-**#59 filed (🟡 S2, size S)** — same-named events across years duplicate in the events lane;
-`event_lookup_v3` joins `entity_dossier` on the display name alone and 27 names have >1 dossier.
-Found while proving #58, NOT caused by it (`event_lookup_v2` returns the row once).
+**#59 is also CLOSED** — the dossier annotation joined `entity_dossier` on the display name; 27 event
+names and 12 partner names carry >1 dossier, so the join fanned out (Summit Singapore twice,
+Riverbend twice). Both lanes now take one dossier per row (`lateral … limit 1`) and join back on
+**ordinality**, events keyed on the event record. All 27 + all 12 names swept clean; partner ranking
+8/8 identical; gate 224 exit-0. SQL only.
+
+**#60 filed (🟡 S2, size S)** — two Airtable events share one MDS app event `689cfd00f1f12d7791cf9525`,
+so `sync_events.py` renames a **Canceled** "Speaker's Lunch" into "MDS Summit Singapore" and it
+inherits the Summit's start. One duplicated (name, `starts_at`) pair in 1,422 catalog rows.
 
 ### Pick up here
-1. **No unblocked build ticket remains.** #58 is closed; #59 is the newest open one (S2). The rest
-   is blocked (#18 data · #20 census form · #17 GROUPOS_PAT · #36 Circleback), S4, or a smoke-time
-   measurement (#32, #14, #34). Next move is an unblock from Andy, #59, or the **sprint-close
-   ritual**: smoke → #32 + #14 measured → #34 → release notes.
+1. **No unblocked build ticket remains.** #58 and #59 are closed; #60 is the newest open one (S2).
+   The rest is blocked (#18 data · #20 census form · #17 GROUPOS_PAT · #36 Circleback), S4, or a
+   smoke-time measurement (#32, #14, #34). Next move is an unblock from Andy, #60, or the
+   **sprint-close ritual**: smoke → #32 + #14 measured → #34 → release notes.
 2. **Nothing is waiting to promote** — staging and prod match, and #58 was data-layer only.
 3. **Andy's side:** post the release note (`OLIVIA_RELEASE_NOTES_2026-08-04.md`, WhatsApp AND
    ClickUp syntax) · two AT country records are wrong (`NE` row is Haarlem/Netherlands, `ZW` row

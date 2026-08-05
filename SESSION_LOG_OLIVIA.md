@@ -6,6 +6,39 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-05 (later still) — #59 SHIPPED (events + partners) · #60 filed
+
+**#59 · The same event listed twice — CLOSED.** The #50 dossier annotation joined
+`digest.entity_dossier` on the **display name**, and MDS runs the same summits every year: **27
+event names** carry more than one dossier row, so the join fanned out and *MDS Summit Singapore*
+came back twice. **The partner lane had the identical defect** — `partner_lookup_v2` joined
+`ed.name = v.name` (and its final `join dos` on the name too) with **12 duplicated partner names**;
+*Riverbend Consulting* returned twice. `video_search_v2` already keyed on `entity_id` and is
+untouched; chapter names are unique so `chat_recommendations_v3` was never affected.
+
+**Fix — key the dossier on the ROW, never on the name.** Migration `dossier_join_by_row_not_name_59`.
+Both lanes now resolve **at most one dossier per result row** (`left join lateral … limit 1`) and
+join it back on the row's own **ordinality**. Events additionally key on the **event record**
+(`entity_dossier.entity_id = events_catalog.at_record_id`, matched by name **+ `starts_at`**), so a
+2026 summit can no longer borrow the 2024 summit's topic profile — the name-only join allowed that
+silently.
+
+**Proof:** Summit Singapore **2 rows → 1**, Riverbend **2 rows → 1**, annotations intact ("draws a
+strong member crowd" / "heavily reviewed by members and strongly rated"). Swept **all 27** duplicated
+event names and **all 12** duplicated partner names: **0 duplicating from the join**. No regression:
+partner `ranking` order `partner_lookup` vs `_v2` **8/8 identical** (#56 stays undiluted), event
+browse v2 vs v3 **12 rows, 0 mismatches**. Gate **224 exit-0**. SQL only — nothing to promote.
+
+**#60 FILED · 🟡 S2 · size S — a different root cause, found by the sweep.** One (name, `starts_at`)
+pair still duplicates, and it is not a join: `events_catalog` has TWO rows on the same app event
+`689cfd00f1f12d7791cf9525` — `recgTQvtrZtTYSePj` "MDS Summit Singapore Speaker's Lunch 2026" (phase
+**Canceled**) and `recrATwhUDA55iQN5` "MDS Summit Singapore" (Registration Open). `sync_events.py`
+overrides `app_title`/`app_starts_at` from the joined app event, so the Speaker's Lunch is renamed
+into the Summit and inherits its start. Only pair in 1,422 catalog rows; surfaces on a term search
+or `include_past` (browse already drops `Canceled`).
+
+---
+
 ## 2026-08-05 (later) — #58 SHIPPED (SQL only, nothing to promote) · #59 filed
 
 **#58 · Cancelled registrations count as attendance — CLOSED.** Olivia was telling members they are
