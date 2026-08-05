@@ -183,7 +183,8 @@ access-tagged. An undefined source does not exist to her.* No crawling raw bases
 |---|---|---|
 | `content_items` | 38,711 | **The unified search index.** Every searchable thing — WhatsApp messages, chat digests, Facebook posts and comments, application answers — one row each, with `access_rule`, `sensitivity`, a full-text vector and a 1024-dim embedding. |
 | `member_edges` | 159,940 | The knowledge graph: typed, weighted member↔member connections. |
-| `event_registrations` | 17,795 | The registration ledger, keyed to members. |
+| `event_registrations` | 17,802 | The raw registration ledger, keyed to members. **Only the sync + `stamp_event_registrations()` may read it.** |
+| `event_registrations_live` (view) | 13,995 | **#58 chokepoint — every reader uses this.** Drops `ticket_status` **Unconfirmed** (Airtable's fold of Canceled / Pending Approval / Not Going / Unpaid / Waitlist) and **No Show**. Unknown/NULL statuses stay visible on purpose: silently dropping a real registration is the worse failure. |
 | `member_events` | 15,071 | **Append-only** behaviour log (see §7.3). |
 | `member_expertise` | 5,822 | The expertise ledger: member × topic scores with evidence. |
 | `member_attributes` | 5,740 | The derived member profile — the canonical member population. |
@@ -690,11 +691,16 @@ member_expertise(at_member_id, topic, score, rank_in_topic, pct, weakness_score,
 member_edges(a_id, b_id, edge_type, weight, evidence jsonb, refreshed_at)  -- CHECK (a_id < b_id)
 expertise_topics(topic PK, terms text[])   -- topics are DATA; a new topic is an INSERT
 
--- REGISTRATION LEDGER (17,795 rows)
+-- REGISTRATION LEDGER (17,802 rows) — WRITERS ONLY (sync + stamp_event_registrations)
 event_registrations(roster_record_id PK, event_at_id, member_at_id, email, full_name,
-  order_date, ticket_type, ticket_status,  -- Confirmed | Unconfirmed | No Show
+  order_date, ticket_type, ticket_status,  -- Confirmed | Unconfirmed | No Show | Partially Refunded
   ticket_for text[],                       -- MDS Member | Significant Other | Partner | …
   source, app_event_id, app_user_id, synced_at)
+
+-- #58 CHOKEPOINT — every reader goes through this view, never the table above.
+-- A cancelled ticket is not an upcoming event, and a No Show is not attendance.
+event_registrations_live = event_registrations
+  WHERE ticket_status IS DISTINCT FROM 'Unconfirmed' AND IS DISTINCT FROM 'No Show'
 ```
 
 ### B.2 Indexes that matter

@@ -19,7 +19,7 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-05: SPRINT 3 OPEN · PROD `163d175b` (#57b promoted; staging matches)
+## STATE 2026-08-05: SPRINT 3 OPEN · PROD `163d175b` (#57b promoted; staging matches) · #58 shipped in SQL
 
 **Sprint 3 goal = make Olivia personal.** Ten tickets closed and live (evidence at the BOTTOM of
 `OLIVIA_SPRINT_3.md`); ten still open. Release 3 and everything before it is in
@@ -52,16 +52,23 @@ were already blocked on his side.
 **#57b is LIVE** — prod `163d175b`, gate green at promote, verified against the prod node itself
 (the typo harness re-run there: 20/20). #54's holding-delay was already at 30s.
 
-**#58 is the only unblocked build ticket left** — cancelled registrations count as attendance.
-Everything else is blocked, S4, or measured at the smoke (#32, #14, #34). So the next move is
-either an unblock from Andy or the **sprint-close ritual**: smoke → #32 + #14 measured → #34 →
-release notes.
+### 2026-08-05 (later) — #58 SHIPPED · #59 filed · every build ticket is now blocked or S4
+**#58 is CLOSED and live on both surfaces** — cancelled registrations no longer count. One
+chokepoint view `digest.event_registrations_live` (drops `ticket_status` Unconfirmed + No Show),
+ten reader functions repointed mechanically, the writers keep the raw ledger. **35 members × 36
+member-event pairs** stopped being told they are attending a cancelled event; 0 members lost a live
+ticket. Gate 224 exit-0. **Pure SQL — no n8n node changed, so there is nothing to promote.**
+
+**#59 filed (🟡 S2, size S)** — same-named events across years duplicate in the events lane;
+`event_lookup_v3` joins `entity_dossier` on the display name alone and 27 names have >1 dossier.
+Found while proving #58, NOT caused by it (`event_lookup_v2` returns the row once).
 
 ### Pick up here
-1. **#58 · Cancelled registrations count as attendance** is the only unblocked build ticket —
-   🔴 S1, size S. Everything else is blocked, S4, or measured at the smoke. Closed tickets sit at
-   the BOTTOM of `OLIVIA_SPRINT_3.md` with their evidence.
-2. **Nothing is waiting to promote** — staging and prod match at the close.
+1. **No unblocked build ticket remains.** #58 is closed; #59 is the newest open one (S2). The rest
+   is blocked (#18 data · #20 census form · #17 GROUPOS_PAT · #36 Circleback), S4, or a smoke-time
+   measurement (#32, #14, #34). Next move is an unblock from Andy, #59, or the **sprint-close
+   ritual**: smoke → #32 + #14 measured → #34 → release notes.
+2. **Nothing is waiting to promote** — staging and prod match, and #58 was data-layer only.
 3. **Andy's side:** post the release note (`OLIVIA_RELEASE_NOTES_2026-08-04.md`, WhatsApp AND
    ClickUp syntax) · two AT country records are wrong (`NE` row is Haarlem/Netherlands, `ZW` row
    is Zug/Switzerland) · standing: GROUPOS_PAT · Circleback · does an event description/agenda

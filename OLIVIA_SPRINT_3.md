@@ -31,8 +31,8 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `955ed56f` |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
-| **#58** | Cancelled registrations count as attendance | 🔴 S1 | S | — | — |
 | **#20** | Census into the warehouse | 🟡 S2 | L | ⛔ BLOCKED — census form not launched yet (Andy 2026-08-05) | — |
+| **#59** | Same-named events duplicate in the events lane | 🟡 S2 | S | — | — |
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
@@ -41,6 +41,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | — | *— closed, evidence at the bottom —* | | | | |
+| **#58** | Cancelled registrations count as attendance | 🔴 S1 | S | n/a (SQL) | ✅ **LIVE** — one chokepoint view |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -169,53 +170,29 @@ persist, since `Save Conversation` files `Log Inbound`.text.
 `scripts/olivia_loop/apply_57b_report_stop_geo_typo.py` (idempotent; re-running swaps a revised
 guard in place).
 
-### #58 · Cancelled registrations count as attendance — she can tell a member they are going to an event they cancelled
-**🔴 S1 · size S — filed 2026-08-05, found while checking `Upcoming Events Registered` for Andy**
-
-> **In plain words:** Someone cancels their ticket, and Olivia still says they're going.
-
-*As a member, Olivia never tells me I am attending an event I cancelled — and never counts a
-cancelled ticket as if I had gone.*
-
-**How it surfaced:** Andy asked whether the Airtable rollup `Upcoming Events Registered` was
-broken. **It is not** — it correctly hides cancellations, via the condition
-`Order ID does not contain "Unconfirmed"` (`Ticket Status` folds Canceled / Pending Approval /
-Not Going / Unpaid / Waitlist into "Unconfirmed"). Airtable has been filtering this all along.
-**The warehouse does not.** `digest.event_registrations` carries the `ticket_status` column, and
-nothing downstream reads it:
-
-| ticket_status | rows | FUTURE rows |
-|---|---|---|
-| Confirmed | 13,992 | 286 |
-| **Unconfirmed** | **2,962** | **44** ← 41 Canceled · 3 Pending Approval · 2 Not Going |
-| No Show | 845 | 0 |
-| Partially Refunded | 3 | 0 |
-
-So every consumer that joins `event_registrations` treats a cancellation as a live registration —
-**44 future rows right now**, most of them MDS Summit Singapore. It also means 845 No-Show rows
-count as attendance in anything historical.
-
-**Where to look (all unverified until checked — do NOT assume the list is complete):** the event
-lanes (`event_lookup_v3`), `member_events` (#46 backfilled 13,401 registrations), the #50 event
-dossiers (attendee-derived topic profiles, which currently include people who cancelled), and any
-"events you're going to" answer.
-
-**Accept when**
-- **A cancelled registration never appears as an upcoming event** in any lane — probe a member
-  with a cancelled future ticket (Sarah Parks / MDS Summit Singapore is a live case).
-- **Attendance-derived data excludes No Show and cancellations**, or the exception is named in
-  writing with the reason.
-- **The filter lives at the SQL chokepoint**, not in each caller — the `content_search_v2`
-  precedent: one place, so future consumers inherit it.
-- **Before/after counts on the affected lanes**, and the #50 dossiers recomputed if their inputs move.
-- Gate GREEN.
-
-**Impact:** small blast radius, high embarrassment — it is confidently wrong to a member about
-their own plans, which is the same class as the members-lane fabrication in #51.
-
 ---
 
 # 🟡 S2 — NEXT
+
+### #59 · The same event listed twice — same-named events across years duplicate in the lane
+**🟡 S2 · size S — filed 2026-08-05, found while proving #58 (NOT caused by it)**
+
+> **In plain words:** Ask about events and the same one can come back twice.
+
+*As a member, an event appears once in Olivia's answer, however many years MDS has run it.*
+
+`event_lookup_v3` annotates each row by joining `digest.entity_dossier` on **`ed.name =
+v.event_name` alone** (`kind='event'`). **27 event names have more than one dossier** — MDS runs
+"MDS Summit Singapore", "MDS Inspire" and friends every year — so the join fans out and the row is
+returned twice. Reproduced: `event_lookup_v3('12536781361', …)` returns **MDS Summit Singapore
+twice**, identical values; `event_lookup_v2` (no dossier join) returns it once. Pre-existing since
+#50; `entity_dossier` row count is unchanged by #58 (1,420 event rows before and after).
+
+**Accept when**
+- An event name that exists in several years returns **exactly one row per calendar event**.
+- The dossier join keys on something unique (the event's `at_record_id`, or name + `starts_at`),
+  not the display name — the same shape as the #58 chokepoint: fix it where the join is made.
+- A regression check covers a duplicated name so it cannot silently come back.
 
 ### #18 · How-MDS-works answers
 **🟡 S2 · size M · ⛔ BLOCKED (Andy 2026-08-05: "we dont have data for #18")**
@@ -497,6 +474,57 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #58 · Cancelled registrations count as attendance — she can tell a member they are going to an event they cancelled
+**🔴 S1 · size S — filed AND closed 2026-08-05. Data-layer only: no n8n node changed, nothing to promote.**
+
+> **In plain words:** Someone cancels their ticket, and Olivia still says they're going.
+
+*As a member, Olivia never tells me I am attending an event I cancelled — and never counts a
+cancelled ticket as if I had gone.*
+
+**How it surfaced:** Andy asked whether the Airtable rollup `Upcoming Events Registered` was
+broken. **It is not** — it correctly hides cancellations via `Order ID does not contain
+"Unconfirmed"` (`Ticket Status` folds Canceled / Pending Approval / Not Going / Unpaid / Waitlist
+into "Unconfirmed"). **The warehouse did not.** `digest.event_registrations` carried
+`ticket_status` and nothing downstream read it: **2,962 Unconfirmed rows, 43 of them FUTURE**, plus
+845 No Show counting as attendance in anything historical.
+
+#### ✅ SHIPPED 2026-08-05 — one view, ten functions repointed
+
+**The chokepoint is a view.** `digest.event_registrations_live` = the ledger minus `ticket_status`
+**Unconfirmed** and **No Show**. Migration `event_registrations_live_chokepoint` created it and then
+rewrote every reader mechanically — `pg_get_functiondef` → regex swap → `EXECUTE`, so no function
+body was retyped and a function that failed to change would have raised. **Ten repointed**
+(`event_history` ×3 refs · `event_lookup` · `event_lookup_v2` · `member_dossier` ·
+`member_dossier_v2` · `event_who` · `persona_signals` · `persona_signal_fingerprints` ·
+`derive_knowledge_graph` · `refresh_entity_dossiers`); **the writers keep the raw ledger**
+(`stamp_event_registrations` + `sync_events.py`), which is the point — the ledger stays whole.
+`event_lookup_v3` and `event_history_v2` inherit through their v2 parents.
+
+**Unknown/NULL statuses stay VISIBLE on purpose** (a blocklist, not an allowlist): silently cutting
+a real registration is the worse failure, and it is exactly the "203 phone-less members" mistake.
+
+| AC | result |
+|---|---|
+| a cancelled registration never appears as an upcoming event **in any lane** | ✅ Sharon Yang (Summit Singapore, Unconfirmed, her only row for it): `event_history` upcoming **"MDS Summit Singapore 2026-08-22" → gone** · `member_dossier_v2` upcoming_event → gone · `event_lookup` / `_v2` / `_v3` `is_registered` **true → false** |
+| attendance-derived data excludes No Show and cancellations | ✅ her `past_total` **28 → 25** (the 3 dropped are all Unconfirmed: Operator Room Miami, MDS DTC Mastermind 2025, Women's Chapter Retreat 2025 — nothing real cut) · `member_edges` **162,235 → 148,796** (−13,439 co-attendance edges) · `refresh_entity_dossiers` re-derived **304 event dossiers**, other kinds 0 |
+| the filter lives at the SQL chokepoint | ✅ one view; 10 functions carry **0** raw-table references, 1 writer keeps 2 |
+| before/after counts on the affected lanes | ✅ **35 members × 36 member-event pairs** no longer told they are attending a cancelled event; **0** pairs where a member had cancelled *and* re-registered (so nobody lost a live ticket) · Summit Singapore `registered_count` **174 → 137**, Pre-Event Dinner spots_left **21 → 22**, Women's Lunch **13 → 15** |
+| nothing else moved | ✅ `event_who` Summit total **102 → 102** (it already filtered `Confirmed`; verified raw-table vs view side by side) |
+| gate GREEN | ✅ **224 checks, 0 FAIL, exit 0** |
+
+**Named exception (AC allows it in writing):** `digest.member_events` keeps its 13,401
+`event_registered` rows including later-cancelled ones. It is an **append-only log of what
+happened** — the registration did happen — and its only consumer is a 90-day *behaviour* counter in
+`member_dossier_v2`, never an attendance or upcoming claim. Each row carries `meta.ticket_status`,
+so a future consumer that needs the distinction has it.
+
+**Not a code change in n8n** — Olivia reaches all of this through RPCs whose names and signatures
+are unchanged, so staging and prod both have the fix now and there is nothing to promote. No n8n
+snapshot references the table directly (checked). Outside Olivia, `mds-digest-web`
+`src/lib/admin/member360.ts` still reads the raw ledger **correctly on purpose** — the admin page
+shows upcoming/past/**canceled** chips.
 
 ### #38 · Interactive buttons (CTAs) for offers + links
 **🟡 S2 · size M**

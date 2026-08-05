@@ -6,6 +6,62 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-05 (later) — #58 SHIPPED (SQL only, nothing to promote) · #59 filed
+
+**#58 · Cancelled registrations count as attendance — CLOSED.** Olivia was telling members they are
+going to events they had cancelled. Airtable had been filtering this correctly all along
+(`Order ID does not contain "Unconfirmed"`); the warehouse was not — `digest.event_registrations`
+carried `ticket_status` and nothing downstream read it.
+
+**The fix is one chokepoint, not eight patches.** New view **`digest.event_registrations_live`** =
+the ledger minus `ticket_status` **Unconfirmed** (Airtable's fold of Canceled / Pending Approval /
+Not Going / Unpaid / Waitlist) and **No Show**. Migration `event_registrations_live_chokepoint`
+created it and then repointed every reader **mechanically** — `pg_get_functiondef` → regex swap →
+`EXECUTE`, raising if any function came back unchanged, so no body was retyped by hand. **Ten
+functions repointed**: `event_history` (3 refs) · `event_lookup` · `event_lookup_v2` ·
+`member_dossier` · `member_dossier_v2` · `event_who` · `persona_signals` ·
+`persona_signal_fingerprints` · `derive_knowledge_graph` · `refresh_entity_dossiers`.
+`event_lookup_v3` / `event_history_v2` inherit through their v2 parents. **The writers keep the raw
+ledger** (`stamp_event_registrations`, `sync_events.py`) — the ledger stays whole, which is the
+point. Unknown/NULL statuses stay VISIBLE on purpose (blocklist, not allowlist): silently dropping
+a real registration is the worse failure — the "203 phone-less members" lesson.
+
+**Proof (Sharon Yang, Summit Singapore, Unconfirmed, her only row for that event):** `event_history`
+upcoming **"MDS Summit Singapore 2026-08-22" → gone** · `member_dossier_v2` upcoming_event → gone ·
+`event_lookup`/`_v2`/`_v3` `is_registered` **true → false**. Attendance: her `past_total` **28 → 25**,
+all three dropped rows Unconfirmed (Operator Room Miami, DTC Mastermind 2025, Women's Retreat 2025)
+— nothing real cut. Derived layers re-run: `member_edges` **162,235 → 148,796** (−13,439
+co-attendance edges), `refresh_entity_dossiers` re-derived **304 event dossiers** (video/partner/
+chapter 0). Population: **35 members × 36 member-event pairs** no longer told they are attending a
+cancelled event, and **0** pairs where someone cancelled then re-registered, so nobody lost a live
+ticket. Counts: Summit Singapore `registered_count` **174 → 137**, Pre-Event Dinner spots_left
+**21 → 22**, Women's Lunch **13 → 15**. Unchanged where it should be: `event_who` Summit total
+**102 → 102** (already `Confirmed`-only; verified raw-table vs view side by side). Gate **224
+exit-0**.
+
+**Named exception, in writing:** `digest.member_events` keeps its 13,401 `event_registered` rows
+including later-cancelled ones — it is an append-only log of what happened, its only consumer is a
+90-day *behaviour* counter in `member_dossier_v2`, and each row carries `meta.ticket_status` for any
+future consumer that needs the distinction.
+
+**No n8n change** — Olivia reaches all of this through RPCs whose names and signatures are
+unchanged, so staging and prod both have the fix and there is nothing to promote. No workflow
+snapshot references the table directly. Outside Olivia, `mds-digest-web`
+`src/lib/admin/member360.ts` still reads the raw ledger **on purpose** (the admin page shows
+canceled chips).
+
+**#59 FILED · 🟡 S2 · size S — the same event listed twice.** `event_lookup_v3` joins
+`entity_dossier` on the display name alone (`ed.name = v.event_name`, `kind='event'`) and **27 event
+names have more than one dossier** (MDS runs the same summits every year), so the row fans out —
+`event_lookup_v3` returns *MDS Summit Singapore* twice while `event_lookup_v2` returns it once.
+Pre-existing since #50, not caused by #58 (`entity_dossier` row count identical before and after).
+
+**Sprint 3 state:** no unblocked build ticket remains. #58 closed; #59 is the newest open one.
+Everything else is blocked (#18 data, #20 census form, #17 GROUPOS_PAT, #36 Circleback), S4, or a
+smoke-time measurement (#32, #14, #34).
+
+---
+
 ## 2026-08-05 — #57b PROMOTED · board re-prioritised by Andy · #58 filed
 
 **PROD `7f7b932f` → `163d175b`** (2 nodes, in-promote gate GREEN, pre/post snapshots kept).
