@@ -6,6 +6,45 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-04 (SESSION CLOSE — SPRINT 3 STILL OPEN, smoke deferred to sprint completion)
+
+**TEN TICKETS SHIPPED AND LIVE TODAY. Prod `89ee3632` → `7f7b932f` across four promotes**, gate
+224 exit-0 at every one, pre/post snapshots kept:
+#52 follow-up topic binding · #53 fact-gate calibration · #51 members-lane hardening · #54 geo
+(country + regions + model-supplied lists) · #55 MDS credits (WA→AT→Supa) · #56 partner ranking
+aggregates · #29 personalization v1 (5 lanes) · #50 entity dossiers (all four kinds) · #38
+interactive buttons · #57 report confirm-step + quoted-reply binding + tap wording.
+
+**ANDY'S RULINGS THIS SESSION (all now standing):**
+- *"sprint is not over"* — Sprint 3 stays open; 10 tickets remain.
+- **"big smoke after sprint completion"** — the fresh bank is built and STORED but must NOT fire
+  early. Fired set **110** (organic 96) incl. the 34 new organics **3140–3173**.
+- *"are you even removing questions that are working well?"* — retirement had NO mechanism; now
+  reconstructed from 45 judged reports, mechanised (`retired: true`), canary floor 3/class.
+- *"only to people who used it"* — broadcast audience = `digest.olivia_broadcast_audience()`, 25.
+- **Closed tickets move to the BOTTOM of the board**; new skill `mds-sprint-ritual` encodes
+  open/file/close/promote/close-sprint.
+- **AT is the source of truth and stores the MEMBER's perspective** — WA balance ×(−1).
+- **Hardcoding continents is the wrong shape** — a place returning nothing is a GROUPING to
+  expand and retry, never "no members there".
+
+**TWO PROCESS ERRORS OWNED:**
+1. Prod probes fired into Andy's own WhatsApp thread mid-test, twice sending "new question" and
+   resetting his context — that, not a product bug, caused the wrong-turn "Yes" in his screenshot.
+   **Standing rule: never probe prod against a real member's number.**
+2. The broadcast script reported "25 sent" off HTTP 200s. **17 of 25 actually failed (131049).**
+   **Standing rule: a 200 from `/messages` is not delivery — read `digest.olivia_sends`.**
+
+**STORED FOR NEXT SESSION:** banks snapshotted into `eval_bank_snapshots/` (the tools folder has
+no git history) · `OLIVIA_EVAL_LIST_2026-08-04.md` (the list + retirement reasoning) ·
+`OLIVIA_RELEASE_NOTES_2026-08-04.md` (WhatsApp + ClickUp syntax, Andy posts) · handoff rewritten
+around an OPEN sprint. **Owed by me:** the "who is form africa?" typo case; the report
+confirmation still appending a soft offer. **Owed by Andy:** post the notes · two AT country
+records (`NE`=Haarlem/Netherlands, `ZW`=Zug/Switzerland) · GROUPOS_PAT · Circleback · does an
+event description/agenda field exist anywhere.
+
+---
+
 ## 2026-08-04 (BROADCAST SENT — 25 fired, 8 landed, 17 blocked by Meta 131049) — Andy approved the send after the template came back **APPROVED** (`mds_assistant_whats_new_aug2026`, id 27016348374704952, rejected_reason NONE). Fired to the 25-member audience; the API accepted all 25 and then the DELIVERY webhook told the real story: **17 × error 131049** "This message was not delivered to maintain healthy ecosystem engagement" — Meta's PER-USER MARKETING CAP, counted across every business that messages that person. Not our content, not a quality penalty (number still GREEN), no charge for undelivered.
 **Landed (8):** Eugene · Ian · Kayleigh · Belén · Constantine · Jason · Etienne (sent) · **Ivan Ong read it within minutes**. **Blocked (17):** Franky, Ryan, Jasim, Matthew, Morris, Adam, Alicia, Sam, Damon, Alex, Brandon H, Brandon F, Conor, Lee, Peter, Anita, Courtney.
 **THE LESSON, now in the script docstring: a 200 from `/messages` is NOT delivery.** The send loop reported "25 sent" because every call was accepted; the truth arrived asynchronously in `digest.olivia_sends`. Any future broadcast must read that table before claiming reach.

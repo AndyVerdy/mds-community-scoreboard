@@ -75,6 +75,7 @@ clean passes) + the 34 new organics + the per-class canaries. Backups: `*.bak-pr
 
 ## Status
 
-**List built. The RUN is Andy's call** — standing tier: eval runs = propose + wait.
+**List built and STORED; the RUN waits for SPRINT COMPLETION** (Andy 2026-08-04: "big smoke
+after sprint completion"). Snapshots live in `eval_bank_snapshots/`. The run is Andy's call — standing tier: eval runs = propose + wait.
 Prod is `01a94c1a` with nine tickets live, so this run doubles as the post-promote check on
 #52 · #53 · #51 · #54 · #55 · #56 · #29 · #50 · #38.

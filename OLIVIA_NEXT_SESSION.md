@@ -19,46 +19,57 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-03: RELEASE 3 COMPLETE · SPRINT 3 OPEN
+## STATE 2026-08-04: SPRINT 3 OPEN · PROD `7f7b932f`
 
-**Prod `89ee3632`.** Release 3 shipped and closed the same day: #40 retrieval-RRF + #41 identity
-stamping + #39 attribution (promoted by Andy) plus #45/#46/#42/#47/#44 database-side.
-**THE SMOKE: 3.6% → 1.7%** (173 judged · 164 pass / 6 partial / 3 fail).
-**#43 RE-AUDIT: architecture 6/10 → 8/10** — retrieval 3→8 (HNSW idx_scan **0 → 1,098**),
-identity 6→8 (conversations 100% stamped), semantic 8→9, event log 0→live (15,437 rows),
-graph 0→started (159,940 edges), gate 9→10 (202 checks), grants unchanged.
-**#49 handbook shipped** (`OLIVIA_HANDBOOK.md`, 733 lines) and **ClickUp `2531q-103317` rebuilt as
-its copy** (TOC + 18 chapter pages + `99 · ARCHIVE`).
+**Sprint 3 goal = make Olivia personal.** Ten tickets closed and live (evidence at the BOTTOM of
+`OLIVIA_SPRINT_3.md`); ten still open. Release 3 and everything before it is in
+`OLIVIA_BACKLOG_ARCHIVE.md`. Entry point for the whole system: `OLIVIA_HANDBOOK.md`.
 
-**THE BOARD IS NOW `OLIVIA_SPRINT_3.md`** — goal = **make Olivia personal**.
-S1: **#52** (follow-up topic binding) + **#29 v1** (THE PERSONALIZATION LAYER — 5 lanes personal)
-are **both staged + proven 2026-08-03, awaiting ONE promote** ·
-**#51** (members-lane fabrication — she invented "Lori Barzvi") · **#53** (fact-gate false clamp,
-filed 2026-08-03 with a full reproduction) · **#50** (entity dossiers).
-Everything shipped in Releases 1-3 is in `OLIVIA_BACKLOG_ARCHIVE.md`.
+**Last measured quality: smoke 1.7% wrong** (173 judged, 2026-08-03) — that number predates all
+ten of today's tickets, so it is stale in BOTH directions until the next smoke runs.
 
-## NEXT SESSION
+## NEXT SESSION — SPRINT 3 IS STILL OPEN (Andy 2026-08-04: "sprint is not over")
 
-0. **✅ PROMOTED 2026-08-04 — prod `01a94c1a`** (was `89ee3632`; 12 nodes; pre/post snapshots in
-   `olivia_snapshots/`). LIVE: **#52** follow-up binding · **#53** fact-gate calibration ·
-   **#51** members lane · **#54** geo (country/regions/lists) · **#55** credits · **#56** partner
-   rankings · **#29** personalization v1 · **#50** entity dossiers · **#38** interactive buttons.
-   Prod re-verified after the flip (silent probes): Eastern Europe named · partner leaderboard
-   `p_order=reviews` (Helium 10 82) · credit "$3,515.00" · judged video recs. **STILL ANDY'S:**
-   `python3 scripts/olivia_loop/apply_54b_holding_delay.py` (18s→30s rung-1) and the SMOKE
-   (sprint exit exam — every class rate, incl. #53's clamp-rate AC and #29/#50 personalization).
-1. **#50** (entity dossiers — pairs with #29's member side for the fit score), then #29's
-   open sub-steps (research memo · retrieval-authority slot · "people like Mo").
-2. **At the next smoke:** #53's clamp-rate AC (before = 1.65% of llm turns) + #29's class rates
-   ride the run — the smoke is the sprint's exit exam, one run covers all staged tickets.
-3. NOTE for the next smoke: **Q3124's bank truth was CORRECTED** (Lori Barzvi = real past
-   member; expect = former-member framing, not not-found) — `eval_bank_smoke.json`, backup
-   `.bak-51-q3124`.
-3. Andy's side, standing: **GROUPOS_PAT** · **Circleback details** · **does an event
-   description/agenda field exist anywhere we are not syncing?**
-4. Release notes are the final stage of the sprint — `OLIVIA_RELEASE_NOTES.md`, I draft, Andy posts.
+**Prod `7f7b932f`.** Ten tickets shipped and live today: #52 follow-up binding · #53 fact-gate
+calibration · #51 members lane · #54 geo (country/region/list) · #55 credits · #56 partner
+rankings · #29 personalization v1 · #50 entity dossiers (all four kinds) · #38 buttons ·
+#57 report confirm-step + quoted-reply binding. Gate 224 exit-0; snapshots at every promote.
+
+### THE SMOKE RUNS AT SPRINT COMPLETION, NOT BEFORE (Andy's ruling)
+The fresh bank is built and stored — do NOT fire it early. **Fired set 110** (organic 96),
+including the 34 new organics **3140–3173**: every uncleared 👎, both of Etienne's filed reports,
+Ian's partner-ranking trio and Eugene's lender pair verbatim. Retirement is mechanised
+(`retired: true`; `OLIVIA_EVAL_ALL=1` for a full 212 regression sweep). Multi-turn rows fire by
+hand: **3141 · 3144 · 3147 · 3150 · 3151 · 3154 · 3162**. Docs: `OLIVIA_EVAL_LIST_2026-08-04.md`;
+snapshots in `eval_bank_snapshots/` (the tools folder has no git history).
+
+### Pick up here
+1. **#18 How-MDS-works answers** and **#19 Privacy: share, keep, delete** are the top open S1/S2.
+   Ten tickets remain open; closed ones sit at the BOTTOM of `OLIVIA_SPRINT_3.md` with evidence.
+2. **Two small things I owe:** the *"who is form africa?"* typo case (she hunts a member named
+   "Form Africa" instead of reading it as "from Africa"), and the report confirmation still
+   appends a soft follow-up offer instead of stopping clean.
+3. **Andy's side:** post the release note (`OLIVIA_RELEASE_NOTES_2026-08-04.md`, WhatsApp AND
+   ClickUp syntax) · two AT country records are wrong (`NE` row is Haarlem/Netherlands, `ZW` row
+   is Zug/Switzerland) · standing: GROUPOS_PAT · Circleback · does an event description/agenda
+   field exist anywhere we are not syncing?
+4. **Sprint close ritual** (when the tickets are done): smoke → archive closed tickets to
+   `OLIVIA_BACKLOG_ARCHIVE.md` → open `OLIVIA_SPRINT_4.md` with open tickets only → regenerate
+   the ClickUp handbook copy → release notes are the FINAL stage. Skill: `mds-sprint-ritual`.
+
+### Broadcast state (2026-08-04)
+Template `mds_assistant_whats_new_aug2026` (id 27016348374704952) is **APPROVED** on WABA
+`1575708577606583`. Fired to the 25-member audience: **8 landed, 17 blocked by Meta 131049**
+(per-user MARKETING cap across all businesses — not our content, no charge, number still GREEN).
+**Do not retry the 17 immediately.** Andy's own number is excluded from the audience by design.
 
 ## Watch-outs (standing)
+- **NEVER fire probes at PROD against a real member's number.** On 2026-08-04 prod probes ran
+  into Andy's own thread mid-test and twice sent "new question", resetting his context and
+  stealing a button tap. Staging only, or a dedicated test number.
+- **A 200 from Meta's `/messages` is NOT delivery.** The truth arrives asynchronously on the
+  status webhook — read `digest.olivia_sends` before claiming reach (17 of 25 broadcast
+  messages failed with 131049 *after* the API accepted every one).
 - ~~`olivia_selftest.py` paces by sleep(20)~~ **FIXED 2026-08-03 (#52):** it now polls
   `olivia_messages` for THIS turn's reply before firing the next (`--timeout`, default 180s) and
   prints the wait — a probe in the #52 set took **50.4s** and would have raced the old pacer.
