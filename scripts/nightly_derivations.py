@@ -69,7 +69,13 @@ def main():
             r = subprocess.run(["/usr/bin/python3"] + argv, cwd=REPO,
                                capture_output=True, text=True, timeout=1800)
             ok = r.returncode == 0
-            tail = (r.stdout or r.stderr or "").strip().splitlines()
+            # On FAILURE prefer stderr: `r.stdout or r.stderr` silently threw the error away
+            # whenever the job had printed any progress at all. That is why the 2026-08-03
+            # derive_niches failure was recorded as "batch 2/10 classified" — a progress line —
+            # instead of the anthropic error that actually killed it, and the heartbeat told
+            # whoever triaged it nothing. The error is the whole point of the detail field.
+            src = ((r.stderr or r.stdout) if not ok else (r.stdout or r.stderr)) or ""
+            tail = src.strip().splitlines()
             detail = (tail[-1] if tail else f"exit {r.returncode}") + f" [{time.time()-t0:.0f}s]"
         except Exception as e:
             ok, detail = False, f"runner error: {e}"

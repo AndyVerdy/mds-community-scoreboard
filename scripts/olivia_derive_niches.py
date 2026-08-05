@@ -32,6 +32,7 @@ import argparse
 import json
 import subprocess
 import sys
+import time
 
 ENV_PATH = "/Users/Born/mds-digest-web/.env.local"
 BASE = "https://nadtudwuwjhckotrngzn.supabase.co/rest/v1"
@@ -104,7 +105,7 @@ def load_env():
 
 
 def curl_json(url, key, method="GET", body=None, headers=None):
-    cmd = ["curl", "-s", "-X", method, url, "-H", f"apikey: {key}",
+    cmd = ["curl", "-s", "--max-time", "120", "-X", method, url, "-H", f"apikey: {key}",
            "-H", f"Authorization: Bearer {key}", "-H", "Content-Type: application/json",
            "-H", "Accept-Profile: digest", "-H", "Content-Profile: digest"]
     for h in (headers or []):
@@ -135,17 +136,35 @@ def paged(url, key, page=1000):
     return out
 
 
-def anthropic(key, system, user):
+def anthropic(key, system, user, tries=3):
+    """⚠️ ALWAYS bounded. This call had NO timeout until 2026-08-05, and on 2026-08-03 it hung
+    mid-batch: the nightly job sat on batch 2/10 for 16,203s (4.5 HOURS), never finished, and
+    derive_niches went stale for two days while the alarm repeated every 30 minutes. curl with no
+    --max-time waits forever, so one wedged connection = a dead nightly job. Bounded + retried:
+    a transient now costs 120s and a retry instead of the whole run."""
     body = {"model": MODEL, "max_tokens": 4000, "thinking": {"type": "disabled"},
             "system": system, "messages": [{"role": "user", "content": user}]}
-    r = subprocess.run(["curl", "-s", "https://api.anthropic.com/v1/messages",
-                        "-H", f"x-api-key: {key}", "-H", "anthropic-version: 2023-06-01",
-                        "-H", "content-type: application/json", "--data-binary", "@-"],
-                       input=json.dumps(body), capture_output=True, text=True)
-    resp = json.loads(r.stdout)
-    if "content" not in resp:
-        sys.exit(f"anthropic error: {r.stdout[:300]}")
-    return "".join(c.get("text", "") for c in resp["content"])
+    last = ""
+    for attempt in range(tries):
+        r = subprocess.run(["curl", "-s", "--max-time", "120",
+                            "https://api.anthropic.com/v1/messages",
+                            "-H", f"x-api-key: {key}", "-H", "anthropic-version: 2023-06-01",
+                            "-H", "content-type: application/json", "--data-binary", "@-"],
+                           input=json.dumps(body), capture_output=True, text=True)
+        if r.returncode != 0:                      # 28 = timed out
+            last = f"curl exit {r.returncode}"
+        else:
+            try:
+                resp = json.loads(r.stdout)
+            except json.JSONDecodeError:
+                resp, last = {}, f"non-JSON: {r.stdout[:200]}"
+            if "content" in resp:
+                return "".join(c.get("text", "") for c in resp["content"])
+            last = last or f"api error: {r.stdout[:200]}"
+        if attempt < tries - 1:
+            print(f"  anthropic retry {attempt + 1}/{tries - 1} after {last}")
+            time.sleep(3 * (attempt + 1))
+    sys.exit(f"anthropic failed after {tries} tries: {last}")
 
 
 def main():
