@@ -19,7 +19,7 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-05: SPRINT 3 OPEN · PROD `7f7b932f` · STAGING `eb4dc393` (#57b, awaiting promote)
+## STATE 2026-08-05: SPRINT 3 OPEN · PROD `163d175b` (#57b promoted; staging matches)
 
 **Sprint 3 goal = make Olivia personal.** Ten tickets closed and live (evidence at the BOTTOM of
 `OLIVIA_SPRINT_3.md`); ten still open. Release 3 and everything before it is in
@@ -30,10 +30,11 @@ ten of today's tickets, so it is stale in BOTH directions until the next smoke r
 
 ## NEXT SESSION — SPRINT 3 IS STILL OPEN (Andy 2026-08-04: "sprint is not over")
 
-**Prod `7f7b932f`.** Ten tickets shipped and live today: #52 follow-up binding · #53 fact-gate
+**Prod `163d175b`.** Eleven tickets live: #52 follow-up binding · #53 fact-gate
 calibration · #51 members lane · #54 geo (country/region/list) · #55 credits · #56 partner
 rankings · #29 personalization v1 · #50 entity dossiers (all four kinds) · #38 buttons ·
-#57 report confirm-step + quoted-reply binding. Gate 224 exit-0; snapshots at every promote.
+#57 report confirm-step + quoted-reply binding · **#57b** (report confirm stops clean, form→from).
+Gate 224 exit-0; snapshots at every promote.
 
 ### THE SMOKE RUNS AT SPRINT COMPLETION, NOT BEFORE (Andy's ruling)
 The fresh bank is built and stored — do NOT fire it early. **Fired set 110** (organic 96),
@@ -43,28 +44,24 @@ Ian's partner-ranking trio and Eugene's lender pair verbatim. Retirement is mech
 hand: **3141 · 3144 · 3147 · 3150 · 3151 · 3154 · 3162**. Docs: `OLIVIA_EVAL_LIST_2026-08-04.md`;
 snapshots in `eval_bank_snapshots/` (the tools folder has no git history).
 
-### 2026-08-05 — the board has nothing unblocked above S4
+### 2026-08-05 — the board is down to ONE unblocked ticket
 Andy's rulings: **#18 BLOCKED** ("we dont have data") · **#19 → S4** ("skip it") · **#35 → S4** ·
-**#20 → S2 but BLOCKED** ("census is not done yet… we need to launch the form first"). #17 and
-#36 were already blocked on his side. So the next real move is either an unblock from Andy or the
-**sprint-close ritual** (smoke → #32 + #14 measured → #34 → release notes).
+**#20 → S2 but BLOCKED** ("census is not done yet… we need to launch the form first"). #17 and #36
+were already blocked on his side.
 
-**#48 is done and closed** — 1,900 of 2,446 `Match to Member` links written, verified 25/25,
-Andy: *"keep it"*; the last 546 need him to run
-`python3 scripts/event_roster_match_writeback.py --apply`. **Its premise was wrong and is
-corrected on the board: the AT matcher is 97% on 2026 MEMBER tickets** (30 blanks in a year) — the
-"30-40% unmatched" is guests plus ticket types that never declare member-or-guest. AC ② was
-dropped on measurement (widening the email search buys 2 rows), so **Make 4270329 was NOT
-touched**. ⚠️ **Lesson: size the defect on the population that is supposed to match, BEFORE
-writing to a production base.** One query would have caught it.
+**#57b is LIVE** — prod `163d175b`, gate green at promote, verified against the prod node itself
+(the typo harness re-run there: 20/20). #54's holding-delay was already at 30s.
+
+**#58 is the only unblocked build ticket left** — cancelled registrations count as attendance.
+Everything else is blocked, S4, or measured at the smoke (#32, #14, #34). So the next move is
+either an unblock from Andy or the **sprint-close ritual**: smoke → #32 + #14 measured → #34 →
+release notes.
 
 ### Pick up here
-1. **#18 How-MDS-works answers** and **#19 Privacy: share, keep, delete** are the top open S1/S2.
-   Ten tickets remain open; closed ones sit at the BOTTOM of `OLIVIA_SPRINT_3.md` with evidence.
-2. ~~**Two small things I owe**~~ **DONE 2026-08-05, staged and waiting on your promote** (#57b):
-   the *"who is form africa?"* typo now answers like the correctly-spelled question, and the
-   report confirmation stops clean. Staging `eb4dc393` · gate 224 exit-0 · evidence under #57 on
-   the board. **Promote:** `python3 scripts/olivia_wf.py promote`.
+1. **#58 · Cancelled registrations count as attendance** is the only unblocked build ticket —
+   🔴 S1, size S. Everything else is blocked, S4, or measured at the smoke. Closed tickets sit at
+   the BOTTOM of `OLIVIA_SPRINT_3.md` with their evidence.
+2. **Nothing is waiting to promote** — staging and prod match at the close.
 3. **Andy's side:** post the release note (`OLIVIA_RELEASE_NOTES_2026-08-04.md`, WhatsApp AND
    ClickUp syntax) · two AT country records are wrong (`NE` row is Haarlem/Netherlands, `ZW` row
    is Zug/Switzerland) · standing: GROUPOS_PAT · Circleback · does an event description/agenda
