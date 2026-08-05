@@ -125,10 +125,19 @@ def main():
     if a.to:
         targets = [a.to]
     elif a.all:
-        rows = curl("GET", f"{SUPA}/olivia_messages?select=phone&role=eq.member&limit=100000", key,
-                    extra=["-H", f"apikey: {key}", "-H", "Accept-Profile: digest"])
-        targets = sorted({r["phone"] for r in rows if r.get("phone")})
-        print(f"{len(targets)} members have messaged the assistant at least once")
+        # THE AUDIENCE (Andy 2026-08-04: "only to people who used it"): members who have actually
+        # sent the assistant a message, minus anyone who opted out, minus the probe number.
+        # This is the whole opt-in population — 25 people, not the 748-member roster.
+        rows = curl("GET", f"{SUPA}/rpc/olivia_broadcast_audience", key, {},
+                    extra=["-H", f"apikey: {key}", "-H", "Accept-Profile: digest",
+                           "-H", "Content-Profile: digest"])
+        if isinstance(rows, dict) and rows.get("code"):
+            sys.exit(f"audience lookup failed: {json.dumps(rows)[:300]}")
+        targets = [r["phone"] for r in rows]
+        print(f"AUDIENCE — {len(targets)} members who have used the assistant:")
+        for r in rows:
+            print(f"   {r['full_name']:<24} {r['turns']:>4} turns · last {r['last_use']}")
+        print()
     else:
         sys.exit("--to <phone> or --all")
 
