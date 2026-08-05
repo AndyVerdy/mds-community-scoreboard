@@ -32,7 +32,6 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
 | **#20** | Census into the warehouse | 🟡 S2 | L | ⛔ BLOCKED — census form not launched yet (Andy 2026-08-05) | — |
-| **#60** | Two Airtable events share one app event → duplicate catalog row | 🟡 S2 | S | — | — |
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
@@ -43,6 +42,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | — | *— closed, evidence at the bottom —* | | | | |
 | **#58** | Cancelled registrations count as attendance | 🔴 S1 | S | n/a (SQL) | ✅ **LIVE** — one chokepoint view |
 | **#59** | Same event listed twice (events + partners) | 🟡 S2 | S | n/a (SQL) | ✅ **LIVE** — dossier joins on the row, not the name |
+| **#60** | Cancelled side-event wore the Summit's name (app-event mis-link) | 🟡 S2 | S | n/a (sync+SQL) | ✅ **LIVE** — sync dedupe + 5-min alarm |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -174,27 +174,6 @@ guard in place).
 ---
 
 # 🟡 S2 — NEXT
-
-### #60 · Two Airtable events share one MDS app event — the catalog carries a duplicate row
-**🟡 S2 · size S — filed 2026-08-05, found while closing #59 (a different root cause, not a join bug)**
-
-> **In plain words:** A cancelled side-event wears the Summit's name, so the Summit can show twice.
-
-*As a member, two different MDS events never appear under the same name and time.*
-
-`digest.events_catalog` holds two rows pointing at the same app event
-`689cfd00f1f12d7791cf9525`: `recgTQvtrZtTYSePj` = **"MDS Summit Singapore Speaker's Lunch 2026"**
-(phase **Canceled**, capacity 15) and `recrATwhUDA55iQN5` = **"MDS Summit Singapore"** (Registration
-Open). `sync_events.py` overrides `app_title` and `app_starts_at` from the joined app event, so the
-Speaker's Lunch is renamed into the Summit and inherits its start — one duplicated (name,
-`starts_at`) pair, the only one in 1,422 catalog rows. Surfaces on an explicit term search or
-`include_past`; browse mode already drops `Canceled`.
-
-**Accept when**
-- Either the Airtable link is corrected, or the sync stops letting a shared `app_event_id` rename a
-  distinct Airtable event — an app title may fill a blank, never overwrite a different event's name.
-- No two catalog rows share (display name, `starts_at`) — assert it, so a future mis-link is caught.
-- Decide in writing whether a `Canceled` event should reach a term search at all.
 
 ### #18 · How-MDS-works answers
 **🟡 S2 · size M · ⛔ BLOCKED (Andy 2026-08-05: "we dont have data for #18")**
@@ -476,6 +455,44 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #60 · A cancelled side-event wore the Summit's name — app-event mis-link renamed it
+**🟡 S2 · size S — filed AND closed 2026-08-05. Sync + SQL only: nothing to promote.**
+
+> **In plain words:** A cancelled Speaker's Lunch showed up as "MDS Summit Singapore — Canceled" right next to the real, open Summit.
+
+*As a member, two different MDS events never appear under the same name and time.*
+
+**The defect:** `sync_events.py`'s app-enrichment fallback matches by substring, so
+"…Speaker's Lunch 2026" and "MDS Summit Singapore" both uniquely claimed the same app event
+`689cfd00f1f12d7791cf9525` — and `app_title` then **renamed** the lunch into the Summit and gave it
+the Summit's start. A named ask returned "MDS Summit Singapore / **Canceled**" beside the real one;
+Olivia could tell a member the Summit was cancelled three weeks out. (The Canceled phase itself is
+correct — admins cancel drafts and side-events; the bug was the stolen name.)
+
+#### ✅ SHIPPED 2026-08-05 — sync dedupe + explicit un-steal + a 5-minute alarm
+
+**mds-digest-web commit `9abc8fc`** — claims are grouped by `app_event_id`: **one app event
+enriches ONE catalog row**. Winner = exact normalized-name match, else closest start date; losers
+get their `app_*` fields **explicitly NULLed** (the upsert's key-omission convention would have
+preserved the stolen title forever). New skip counter `app_event_claimed_by_better_match`.
+**Supabase migration `health_signal5_catalog_dup_60`** — health-check signal 5: any two FUTURE
+catalog rows sharing one display (name, start) fire the `catalog-duplicate-event` alarm on the
+existing 5-minute pg_cron + Slack latch, so the next mis-link is caught in minutes, not at a
+member's question.
+
+**Phase decision, in writing (Andy 2026-08-05):** members are offered **Registration Open /
+Confirmed** events only — that is browse mode, unchanged. A **named** ask about a Canceled or
+Postponed event stays answerable on purpose, with its true phase shown — "was Miami cancelled?"
+deserves "yes", not silence. `Tentative` / `Awaiting Feedback` remain invisible everywhere.
+
+| AC | result |
+|---|---|
+| Airtable link corrected OR the sync stops the rename | ✅ sync fix applied + full run: lunch row keeps its own name, `app_title/app_starts_at/app_url` **NULL**, its own 12:30 start; skip counter caught exactly **1** |
+| no two catalog rows share (display name, starts_at) | ✅ **0 duplicate pairs across all 1,422 rows** (was 1); named ask now returns ONE "MDS Summit Singapore" (Registration Open) + the lunch under its own name, phase Canceled |
+| a future mis-link is caught | ✅ signal 5 live — verified against real data: the pre-sync tick recorded `"MDS Summit Singapore @ Aug 22 ×2"` in `olivia_alarm_state`, post-sync tick shows `is_firing = false`, fresh `last_ok_at` |
+| Canceled-reachability decided in writing | ✅ paragraph above |
+| gate GREEN | ✅ **224 checks, 0 FAIL, exit 0** |
 
 ### #59 · The same event listed twice — same-named events across years duplicate in the lane
 **🟡 S2 · size S — filed AND closed 2026-08-05. Data-layer only: nothing to promote.**

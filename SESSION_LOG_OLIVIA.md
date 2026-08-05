@@ -6,6 +6,43 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-05 (night) — #60 SHIPPED (sync dedupe + 5-min alarm) · phase rule written
+
+**#60 · A cancelled side-event wore the Summit's name — CLOSED.** Andy pushed back on the first
+reading of the ticket ("this actually might be correct… admins have a lot of drafts") and he was
+right: the Speaker's Lunch being **Canceled is correct data**. The bug was the NAME —
+`sync_events.py`'s substring fallback let "…Speaker's Lunch 2026" and "MDS Summit Singapore" both
+uniquely claim app event `689cfd00f1f12d7791cf9525`, and the `app_title` override renamed the lunch
+into the Summit with the Summit's start. Named ask returned "MDS Summit Singapore / Canceled"
+beside the real open Summit.
+
+**Fix, two layers:**
+1. **mds-digest-web `9abc8fc`** — claims grouped by `app_event_id`: **one app event enriches ONE
+   catalog row** (winner = exact name match, else closest start); losers get `app_*` **explicitly
+   NULLed** — the upsert's key-omission convention would otherwise have preserved the stolen title
+   forever. New skip counter `app_event_claimed_by_better_match` (caught exactly 1 on the apply run).
+2. **Migration `health_signal5_catalog_dup_60`** — health-check **signal 5**: two FUTURE rows
+   sharing one display (name, start) fire `catalog-duplicate-event` on the existing 5-min pg_cron +
+   Slack latch. Verified with real data: the pre-sync tick recorded "MDS Summit Singapore @ Aug 22
+   ×2" in `olivia_alarm_state`; post-sync, `is_firing=false`, fresh `last_ok_at`.
+
+**Proof:** lunch row keeps its own name (`app_title/app_starts_at/app_url` NULL, own 12:30 start);
+**0 duplicate (display name, start) pairs across all 1,422 catalog rows** (was 1); named ask now
+returns ONE "MDS Summit Singapore" (Registration Open) plus the lunch under its own name, phase
+Canceled. Full sync applied: 1,422 catalog upserts, 17,837 registration upserts, 0 stale deletions.
+Gate **224 exit-0**. Nothing to promote (sync + SQL only).
+
+**Phase rule now WRITTEN (Andy's "check Registration Open" + honesty):** browse offers
+**Registration Open / Confirmed** only (unchanged); a **named** ask about a Canceled/Postponed
+event stays answerable with its true phase — "was Miami cancelled?" deserves "yes", not silence;
+Tentative/Awaiting Feedback invisible everywhere. Handbook §event_lookup row updated.
+
+**Sprint 3 state:** #58, #59, #60 all closed today, all data-layer, nothing awaiting promote. No
+unblocked build ticket remains — next is an unblock from Andy or the sprint-close ritual (smoke →
+#32 + #14 → #34 → release notes).
+
+---
+
 ## 2026-08-05 (later still) — #59 SHIPPED (events + partners) · #60 filed
 
 **#59 · The same event listed twice — CLOSED.** The #50 dossier annotation joined

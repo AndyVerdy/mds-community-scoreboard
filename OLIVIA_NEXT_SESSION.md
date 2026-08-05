@@ -65,15 +65,18 @@ Riverbend twice). Both lanes now take one dossier per row (`lateral … limit 1`
 **ordinality**, events keyed on the event record. All 27 + all 12 names swept clean; partner ranking
 8/8 identical; gate 224 exit-0. SQL only.
 
-**#60 filed (🟡 S2, size S)** — two Airtable events share one MDS app event `689cfd00f1f12d7791cf9525`,
-so `sync_events.py` renames a **Canceled** "Speaker's Lunch" into "MDS Summit Singapore" and it
-inherits the Summit's start. One duplicated (name, `starts_at`) pair in 1,422 catalog rows.
+**#60 is also CLOSED** — the Canceled phase was correct (Andy: admins cancel drafts); the bug was
+the sync's substring fallback renaming the Speaker's Lunch into "MDS Summit Singapore". Fix: one app
+event enriches ONE catalog row (mds-digest-web `9abc8fc`, losers' `app_*` NULLed) + health **signal 5**
+`catalog-duplicate-event` on the 5-min alarm. 0 dup pairs in 1,422 rows. **Phase rule written:**
+browse = Registration Open/Confirmed only; named asks answer Canceled/Postponed honestly with the
+true phase; Tentative/Awaiting Feedback invisible everywhere.
 
 ### Pick up here
-1. **No unblocked build ticket remains.** #58 and #59 are closed; #60 is the newest open one (S2).
-   The rest is blocked (#18 data · #20 census form · #17 GROUPOS_PAT · #36 Circleback), S4, or a
-   smoke-time measurement (#32, #14, #34). Next move is an unblock from Andy, #60, or the
-   **sprint-close ritual**: smoke → #32 + #14 measured → #34 → release notes.
+1. **No unblocked build ticket remains.** #58, #59 and #60 all closed 2026-08-05, all data-layer,
+   nothing awaiting promote. The rest is blocked (#18 data · #20 census form · #17 GROUPOS_PAT ·
+   #36 Circleback), S4, or a smoke-time measurement (#32, #14, #34). Next move is an unblock from
+   Andy or the **sprint-close ritual**: smoke → #32 + #14 measured → #34 → release notes.
 2. **Nothing is waiting to promote** — staging and prod match, and #58 was data-layer only.
 3. **Andy's side:** post the release note (`OLIVIA_RELEASE_NOTES_2026-08-04.md`, WhatsApp AND
    ClickUp syntax) · two AT country records are wrong (`NE` row is Haarlem/Netherlands, `ZW` row
