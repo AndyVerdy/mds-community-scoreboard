@@ -15,6 +15,17 @@ USAGE
 The WABA id is in Meta Business Manager → WhatsApp Accounts → (account) → the id under its name,
 or in the WhatsApp API Setup screen. The system-user token here cannot enumerate it.
 
+WHAT ACTUALLY HAPPENED ON THE FIRST BROADCAST (2026-08-04, 25 recipients):
+  API accepted all 25 — then Meta's DELIVERY webhook reported **17 failures with error 131049**
+  ("not delivered to maintain healthy ecosystem engagement"). That is Meta's per-user MARKETING
+  cap, counted across every business that messages that person; it is not about our content and
+  not a quality-rating penalty. 8 landed (Eugene, Ian, Kayleigh, Belén, Constantine, Jason,
+  Etienne, Ivan — Ivan read it within minutes).
+  **LESSON: a 200 from the send endpoint is NOT delivery.** Always read digest.olivia_sends
+  afterwards; the truth arrives asynchronously on the status webhook.
+  Do not immediately re-send to the blocked 17 — the cap needs time and repeat blasts make it
+  worse. They pick the update up for free the moment they message the assistant themselves.
+
 BEFORE THE REAL BROADCAST — read this:
   * MARKETING category. Meta throttles marketing per user (error 131049 has hit MDS before) and
     charges per marketing conversation. Utility category is NOT available for a product update.
