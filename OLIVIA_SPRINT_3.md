@@ -31,7 +31,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `955ed56f` |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
-| **#20** | Census into the warehouse | 🔵 S3 | L | — | — |
+| **#20** | Census into the warehouse | 🟡 S2 | L | ⛔ BLOCKED — census form not launched yet (Andy 2026-08-05) | — |
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
@@ -224,7 +224,9 @@ content_items / member_events / embeddings, verifiable) · retention number stat
 # 🔵 S3 — PLANNED
 
 ### #20 · Census into the warehouse
-**🔵 S3 · size L**
+**🟡 S2 · size L — PROMOTED S3 → S2, but ⛔ BLOCKED (Andy 2026-08-05: "census is not done yet.
+its s2. But we need to launch the form first")** — the rebuilt census form has to go out and
+collect answers before there is anything to load. Tracked in the separate census-rebuild project.
 
 > **In plain words:** Census answers become searchable, so questions about what members sell and where become answerable.
 
