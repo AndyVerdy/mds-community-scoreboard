@@ -30,7 +30,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 |---|---|---|---|---|---|
 | **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `955ed56f` |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
-| **#19** | Privacy: share, keep, delete | 🟡 S2 | M | — | — |
+| **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
 | **#20** | Census into the warehouse | 🔵 S3 | L | — | — |
 | **#35** | Connect new data source | 🚀 S3 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
@@ -192,7 +192,7 @@ questions in #9.
 **Effort M** — the work is someone writing the answers; loading them is straightforward. **Impact:** all 722; every one of these currently becomes a support request.
 
 ### #19 · Privacy: share, keep, delete
-**🟡 S2 · size M**
+**⚪ S4 · size M — DEMOTED S2 → S4 (Andy 2026-08-05: "skip it, its like s4 priority")**
 
 > **In plain words:** A member can ask what Olivia knows about them, and control it.
 
