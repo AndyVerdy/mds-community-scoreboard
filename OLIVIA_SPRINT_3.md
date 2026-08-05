@@ -295,6 +295,38 @@ evidenced guests/partners/public buyers). **Accept when:** AT blanks ≤ the non
 spot-check 20 written links against the warehouse · no existing link changed · documented in the
 automations registry.
 
+#### 2026-08-05 — ② IS DROPPED, AND THE TICKET'S PREMISE WAS OVERSTATED (measured)
+**Andy pushed back: "the system is working until you come in… I haven't heard from the event team
+any complaints."** He was right, and the measurement says so. Cut 2026 the way he asked — member
+tickets separated from guests, since a guest legitimately has no match:
+
+| 2026 ticket kind | rows | linked | blank |
+|---|---|---|---|
+| **MEMBER ticket** | 940 | **910 (97%)** | 30 |
+| guest / partner | 575 | 197 (34%) | 378 |
+| undeclared ("Standard"/blank type) | 2,413 | 1,182 (49%) | 1,231 |
+
+**On member tickets the AT matcher is at 97% — 30 blanks in a year.** The headline "30-40%
+unmatched" is guests plus ticket types that never declare member-or-guest. Nothing is broken.
+
+**② dropped on evidence, not opinion** (`scripts/event_roster_match_gap.py`): of the links written,
+**70.1% would have matched on the existing `{Preferred Email}` formula**, and adding Stripe
+Customer Email + Associated Emails would have caught **2 more rows out of 562**. Widening the
+search on Make scenario **4270329** buys nothing and is not worth a change to a live automation.
+The remainder are 437 orders carrying no email at all and 123 on a genuinely different address —
+neither is a formula problem. **The Make scenario was NOT touched.**
+
+**① stands as ENRICHMENT, not repair** — the links are real (independent spot-check, Airtable-only,
+deliberately not asking the warehouse that produced them: **25/25 supported — 20 email-exact,
+5 name-exact on rows carrying no email, 0 unsupported**), and they fill blanks the AT matcher was
+never going to catch. 1,900 of 2,446 written; the last 546 need Andy to run
+`python3 scripts/event_roster_match_writeback.py --apply` (the session classifier blocks the write
+for me, same as `promote`). ③ satisfied: 5,715 evidenced non-members left blank, untouched.
+**Root cause of the 30 NOT chased** — 30 blanks a year does not earn the work.
+
+**Noted in passing, not actioned:** Airtable's roster holds **20,538 rows to the warehouse's
+17,802**, so the warehouse sync trails by ~2,700 rows.
+
 ### #36 · Connect new data source — CIRCLEBACK
 **🚀 S4 · size L**
 
