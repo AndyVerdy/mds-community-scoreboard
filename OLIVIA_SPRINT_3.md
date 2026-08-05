@@ -29,7 +29,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
 | **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `955ed56f` |
-| **#18** | How-MDS-works answers | 🟡 S2 | M | — | — |
+| **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#19** | Privacy: share, keep, delete | 🟡 S2 | M | — | — |
 | **#20** | Census into the warehouse | 🔵 S3 | L | — | — |
 | **#35** | Connect new data source | 🚀 S3 | M | — | — |
@@ -171,7 +171,11 @@ guard in place).
 # 🟡 S2 — NEXT
 
 ### #18 · How-MDS-works answers
-**🟡 S2 · size M**
+**🟡 S2 · size M · ⛔ BLOCKED (Andy 2026-08-05: "we dont have data for #18")**
+
+> The ACs below already said it: *the work is someone writing the answers.* Those written answers
+> do not exist, so there is nothing to load. **Unblocks when the team writes them** — or when #35
+> (GroupOS documents) lands and the answers turn out to live in there.
 
 > **In plain words:** She can answer “how does MDS work” questions — policies, processes, what's included — instead of passing them to the team.
 
