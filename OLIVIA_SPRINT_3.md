@@ -47,7 +47,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#55** | MDS credits into the billing lane (WA→AT→Supa) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** (shared billing fn; Andy's WhatsApp test) |
 | **#56** | Partner ranking asks read a sample (Ian) | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#29** | THE DOSSIER + PERSONALIZATION LAYER (v1: 5 lanes) | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `01a94c1a` |
-| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | ✅ all 4 lanes | ✅ videos LIVE `01a94c1a`; partners/events/chats awaiting promote |
+| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | ✅ all 4 lanes | ✅ **LIVE** `7f7b932f` (all four) |
 | **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M | ✅ proven (report confirm-step open) | ✅ **LIVE** `01a94c1a` |
 
 **Staging/Prod key:** ✅ proven = built + probed on that surface · — = not there yet ·
@@ -501,7 +501,7 @@ title word, the exact thing Andy called out on the Centurion dinner. Below the b
 | events | "the room skews toward what you work on: Logistics & 3PL, Exits & M&A" + "draws a strong member crowd" (Centurion dinner, SQL) |
 | no regression | partner RANKING mode unchanged (Helium 10 first); gate **224 exit-0** |
 
-Staging `85dc541c` (was `c5566eb2`).
+**PROMOTED 00:06 UTC → prod `7f7b932f`** (4 nodes; in-promote gate green; prod-verified: all three v2/v3 names present in both URL maps AND the loop's EXEC_NAME, judgment hints on both tool descriptions).
 
 ---
 
