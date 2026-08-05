@@ -32,10 +32,10 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
 | **#20** | Census into the warehouse | 🔵 S3 | L | — | — |
-| **#35** | Connect new data source | 🚀 S3 | M | — | — |
+| **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
-| **#36** | Connect new data source | 🚀 S4 | L | — | — |
+| **#36** | New data source — CIRCLEBACK | 🚀 S4 | L | — | — |
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
@@ -244,7 +244,7 @@ through this".
 ---
 
 ### #35 · Connect new data source — DOCUMENTS (GroupOS)
-**🚀 S3 · size M**
+**⚪ S4 · size M — DEMOTED S3 → S4 (Andy 2026-08-05: "#35 is s4 as well")**
 
 > **In plain words:** MDS documents become a source she can search and cite.
 
