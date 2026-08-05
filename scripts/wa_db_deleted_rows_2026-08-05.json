@@ -1,0 +1,128 @@
+[
+ {
+  "id": "rec9qciQdmwtkNFgO",
+  "createdTime": "2026-04-24T01:20:21.000Z",
+  "fields": {
+   "phone": "124133480349883",
+   "msgs_30d": 1,
+   "match_status": "no_match",
+   "channels_count": 0,
+   "last_active_at": "2026-04-24T00:00:00.000Z",
+   "msgs_7d": 0
+  }
+ },
+ {
+  "id": "rec9sZu1T7tXWDwRU",
+  "createdTime": "2026-08-04T17:41:18.000Z",
+  "fields": {
+   "phone": "sam",
+   "match_status": "no_match",
+   "channels_count": 0
+  }
+ },
+ {
+  "id": "recLVw9fFJlKeMawj",
+  "createdTime": "2026-04-24T01:20:21.000Z",
+  "fields": {
+   "phone": "228445183295731",
+   "msgs_30d": 3,
+   "match_status": "no_match",
+   "channels_count": 0,
+   "last_active_at": "2026-04-24T00:00:00.000Z",
+   "msgs_7d": 0
+  }
+ },
+ {
+  "id": "recND50F4pNiDrxUv",
+  "createdTime": "2026-04-24T04:56:08.000Z",
+  "fields": {
+   "phone": "15005550006",
+   "match_status": "no_match",
+   "channels_count": 0
+  }
+ },
+ {
+  "id": "recNsa9oPn2ERhEkN",
+  "createdTime": "2026-04-24T01:20:21.000Z",
+  "fields": {
+   "phone": "253381645963314",
+   "msgs_30d": 2,
+   "match_status": "no_match",
+   "channels_count": 0,
+   "last_active_at": "2026-04-24T00:00:00.000Z",
+   "msgs_7d": 0
+  }
+ },
+ {
+  "id": "recfu2TaQZsp2cEOQ",
+  "createdTime": "2026-04-24T01:20:21.000Z",
+  "fields": {
+   "phone": "209525802016998",
+   "msgs_30d": 2,
+   "match_status": "no_match",
+   "channels_count": 0,
+   "last_active_at": "2026-04-24T00:00:00.000Z",
+   "msgs_7d": 0
+  }
+ },
+ {
+  "id": "rechbGNYDTclFjUc7",
+  "createdTime": "2026-04-24T01:20:21.000Z",
+  "fields": {
+   "phone": "33007478022339",
+   "msgs_30d": 1,
+   "match_status": "no_match",
+   "channels_count": 0,
+   "last_active_at": "2026-04-24T00:00:00.000Z",
+   "msgs_7d": 0
+  }
+ },
+ {
+  "id": "recjXoDx2EZf5OxMm",
+  "createdTime": "2026-04-24T01:20:21.000Z",
+  "fields": {
+   "phone": "107374215970918",
+   "msgs_30d": 1,
+   "match_status": "no_match",
+   "channels_count": 0,
+   "last_active_at": "2026-04-24T00:00:00.000Z",
+   "msgs_7d": 0
+  }
+ },
+ {
+  "id": "recrd0AU5bDA2F1Mr",
+  "createdTime": "2026-04-24T01:20:21.000Z",
+  "fields": {
+   "phone": "149555240816821",
+   "msgs_30d": 3,
+   "match_status": "no_match",
+   "channels_count": 0,
+   "last_active_at": "2026-04-24T00:00:00.000Z",
+   "msgs_7d": 0
+  }
+ },
+ {
+  "id": "rect95CPBSrfK2AyR",
+  "createdTime": "2026-04-24T01:20:21.000Z",
+  "fields": {
+   "phone": "132160455499944",
+   "msgs_30d": 3,
+   "match_status": "no_match",
+   "channels_count": 0,
+   "last_active_at": "2026-04-24T00:00:00.000Z",
+   "msgs_7d": 0
+  }
+ },
+ {
+  "id": "rectVlmTRC0aUBwLp",
+  "createdTime": "2026-04-24T01:20:21.000Z",
+  "fields": {
+   "phone": "152746267295998",
+   "msgs_30d": 2,
+   "match_status": "no_match",
+   "channels_count": 0,
+   "last_active_at": "2026-04-24T00:00:00.000Z",
+   "msgs_7d": 0
+  }
+ }
+]

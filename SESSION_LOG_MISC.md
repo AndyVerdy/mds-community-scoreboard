@@ -6,45 +6,6 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
-## 2026-08-05 — WA DB matching reviewed: sync verified clean, the "no matches" are import residue
-
-**Andy's ask:** review the WA DB matching system; he pasted 37 no-match numbers ("some numbers
-don't look real"), plus "a week ago we noticed that new joiners were not populated".
-
-**1. New joiners ARE populated — the session-9 create-gap fix is VERIFIED.** On the **18 chats the
-digest ingests**: 574 live Whapi participants, **0 missing** from the WA DB. That closes the
-"verify first 6am exec" left open on 2026-07-24 for Whapi Sync `Lo45BM43boK1gM19`
-(`Compute Missing Members`→`Create Missing Members`). WA DB row creation is alive: 439 Apr · 28 May ·
-39 Jun · 139 Jul · 3 Aug.
-**⚠️ The trap:** diffing against ALL 55 Whapi groups shows *98 missing* — 81 of them only in
-**MDSOnly**, the rest team/event/ops chats. In-scope vs all-groups = "0 missing" vs "98 missing".
-
-**2. The odd ids are not live LIDs and did not come from WhatsApp.** All 55 groups / 702 distinct
-participants: **zero** `@lid`, **zero** 14+ digit ids. None of the flagged ids appear as a
-participant anywhere. They are genesis-import residue — created **2026-04-23/24**, `channels_count
-= 0` — the same rows session 9 logged as "9 LID + 1 Twilio junk". `@lid` DOES ride in payloads, but
-only inside `context.mentions` (`41171606855866@lid` next to plain `447599279507`).
-**⚠️ Digit length is not a validity test:** `5493413071313` is Tomi MDS's real Argentine number
-(365 messages). A length rule discards real members.
-
-**3. The real finding: 32 WA rows belong to no chat** (16 matched / 16 no_match; 29 from April).
-The 16 *matched* orphans are members who left the chats — leave them, the Scorecard join keys on
-`source_member_id`. One row has `phone = 'sam'`, **created 2026-08-04**, so something is still
-writing junk into `phone`; find the writer before cleaning. Of Andy's 37: **10 non-phone · 1 Twilio
-test number · 26 real numbers, 23 of which never sent a message** (only Rey Pelaez, Tina Jereza and
-"Rob" ever posted).
-
-**Filed, read-only, nothing executed:** `AT_CLEANUP_WORKLIST.md` → new section **"WA DB — orphan
-rows"** with the full 32-row table, the proposed parking, and the blast radius to check first
-(`DailyActivity.member_phone`, Scorecard WA Sync `RPfnori7C26NcT9N`, Daily Stats `1VDbwlQqXcfbotic`,
-Engagement Sync `v9D1bROMGMivfXH2`).
-
-**Key IDs confirmed live:** WA DB `appT9TVZWhv7io4CN` / Members `tbli8B589iNbsGF0Z` · Members DB
-`appou5JVr0WIrioWS` / `tblfwOSROSHfuYUxv` · matcher `4B79OVfyT2a9a3Xt` (daily 8am, searches
-Preferred Phone + WhatsApp Number (Verified), exactly-1-clean-else-no_match).
-
----
-
 ## 2026-07-29 — Tools-health: **"Member profiles ← Airtable sync" red was REAL — GitHub cron delivers ~half the hourly runs**
 
 **Project = Tools-health dashboard.** Second alert Andy pasted: 🔴 **Member profiles ← Airtable sync — last write 4h ago** (generated 03:15 UTC). **Opposite verdict to yesterday's: this one was a true staleness, and the monitor was right.**
