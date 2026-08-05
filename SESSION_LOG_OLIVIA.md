@@ -6,6 +6,71 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-05 — #57b remainders staged · #48 write-back + the premise it was built on, corrected
+
+**#57b — the two things I owed, BUILT + STAGED + PROVEN, gate 224 exit-0, staging `eb4dc393`,
+NOT promoted (prod stays `7f7b932f`).**
+① *The report confirmation stops clean.* #57 shipped the confirm-step but the seed rule ("confirm
+in one warm line and STOP") kept losing to a trailing soft offer. Same remedy as the rest of #57 —
+out of the model's hands: `Format Reply` clamps the reply on a `period === 'report_file'` turn,
+**only when `report_create` actually appears in `sources_used`**, so a failed filing can never be
+reported as a success. Proven: "Send it" → "Sent to the MDS team 👍 They will see it in their
+portal." and nothing else, with `digest.olivia_reports` id 28 = "Cant register to event".
+② *"who is FORM africa?"* hunted a member named "Form Africa" and honestly declined, while the
+correctly-spelled question answers fine. `Resolve Member` normalises `form` → `from` where a
+preposition is grammatically required — ONE point, since router, plan and loop all read their text
+from there; the member's verbatim words still persist (`Save Conversation` files `Log Inbound`.text).
+The risk is the FALSE POSITIVE, not the typo, so `test_57b_typo.js` runs against the SHIPPED node
+source and cannot drift: **20/20** — 8 rewritten · 8 form-nouns preserved ("the signup form is
+broken", "form a company", "where are form submissions going") · 1 accepted limit asserted in the
+open · 3 no-ops. E2E: "who is form africa?" → "*Benjamin*, in Grand Baie" — identical to the
+correctly-spelled ask.
+
+**#48 — I ran with the ticket's premise instead of testing it. ANDY CAUGHT IT.**
+> *"Why do you even think that matching is broken? … the system is working until you come in."*
+
+He was right. Cut 2026 the way he asked — member tickets separated from guests, because a guest
+legitimately has no match:
+
+| 2026 ticket kind | rows | linked | blank |
+|---|---|---|---|
+| **MEMBER ticket** | 940 | **910 (97%)** | 30 |
+| guest / partner | 575 | 197 (34%) | 378 |
+| undeclared ("Standard"/blank type) | 2,413 | 1,182 (49%) | 1,231 |
+
+**The AT matcher is at 97% on member tickets — 30 blanks in a year.** The ticket's "2,398 links the
+AT matcher missed" reads as a defect and is not one; the headline 30–40% is guests plus ticket
+types that never declare member-or-guest.
+
+**② DROPPED on measurement** (`scripts/event_roster_match_gap.py`): **70.1% of the written links
+would have matched on the EXISTING `{Preferred Email}` formula**, and adding Stripe Customer Email
++ Associated Emails catches **2 more rows out of 562**. Widening Make scenario **4270329** buys
+nothing — **the live scenario was NOT touched**. The remainder: 437 orders carrying no email at all,
+123 on a genuinely different address. Neither is a formula problem.
+
+**① stands as ENRICHMENT, not repair.** 1,900 of 2,446 `Match to Member` links written (blanks
+only; 12,377 existing links untouched; 5,715 evidenced non-members left blank). Verified
+independently — Airtable only, deliberately NOT asking the warehouse that produced the links:
+**25/25 supported (20 email-exact, 5 name-exact on rows carrying no email, 0 unsupported)**. Andy:
+**"keep it."** The last 546 need him to run `--apply` (the session classifier blocks the write for
+me, as with `promote`). No field, table or schema was created — only PATCHes into the existing
+`Match to Member` (`fldgcQ9q7erpDNFqn`). Audit trail: `scripts/event_roster_writeback_applied.log`.
+
+**LESSON (the real output of this session):** the ticket asserted a defect rate; I wrote 1,900 rows
+into the team's production base before cutting the data the way that would have falsified it. The
+cut cost one query. **Size the defect on the population that is supposed to match, before writing
+anything.**
+
+**BOARD, per Andy's rulings today:** #18 BLOCKED ("we dont have data") · #19 S2→S4 ("skip it, its
+like s4") · #35 S3→S4 · #20 S3→**S2 but BLOCKED** ("census is not done yet… we need to launch the
+form first"). Both "Connect new data source" rows now name their source. **Nothing unblocked above
+S4 remains on the board.**
+
+**Noted, not actioned:** Airtable's roster holds **20,538 rows to the warehouse's 17,802** — the
+warehouse sync trails by ~2,700.
+
+---
+
 ## 2026-08-04 (SESSION CLOSE — SPRINT 3 STILL OPEN, smoke deferred to sprint completion)
 
 **TEN TICKETS SHIPPED AND LIVE TODAY. Prod `89ee3632` → `7f7b932f` across four promotes**, gate

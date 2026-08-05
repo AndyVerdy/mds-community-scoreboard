@@ -43,6 +43,21 @@ Ian's partner-ranking trio and Eugene's lender pair verbatim. Retirement is mech
 hand: **3141 · 3144 · 3147 · 3150 · 3151 · 3154 · 3162**. Docs: `OLIVIA_EVAL_LIST_2026-08-04.md`;
 snapshots in `eval_bank_snapshots/` (the tools folder has no git history).
 
+### 2026-08-05 — the board has nothing unblocked above S4
+Andy's rulings: **#18 BLOCKED** ("we dont have data") · **#19 → S4** ("skip it") · **#35 → S4** ·
+**#20 → S2 but BLOCKED** ("census is not done yet… we need to launch the form first"). #17 and
+#36 were already blocked on his side. So the next real move is either an unblock from Andy or the
+**sprint-close ritual** (smoke → #32 + #14 measured → #34 → release notes).
+
+**#48 is done and closed** — 1,900 of 2,446 `Match to Member` links written, verified 25/25,
+Andy: *"keep it"*; the last 546 need him to run
+`python3 scripts/event_roster_match_writeback.py --apply`. **Its premise was wrong and is
+corrected on the board: the AT matcher is 97% on 2026 MEMBER tickets** (30 blanks in a year) — the
+"30-40% unmatched" is guests plus ticket types that never declare member-or-guest. AC ② was
+dropped on measurement (widening the email search buys 2 rows), so **Make 4270329 was NOT
+touched**. ⚠️ **Lesson: size the defect on the population that is supposed to match, BEFORE
+writing to a production base.** One query would have caught it.
+
 ### Pick up here
 1. **#18 How-MDS-works answers** and **#19 Privacy: share, keep, delete** are the top open S1/S2.
    Ten tickets remain open; closed ones sit at the BOTTOM of `OLIVIA_SPRINT_3.md` with evidence.
