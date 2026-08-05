@@ -618,3 +618,90 @@ _(total duplicate-email groups: 39)_
 - `KEVAN SOH` (`recKkm6L9pDkqpKS2`)
 - `TENG MA` (`recgmm90TDV66dijS`)
 - `HAFIZ IMRAN HAMEED` (`reco4FSsGiJwSFwpv`)
+
+---
+
+# WA DB — orphan rows (added 2026-08-05)
+
+> Different table from everything above: **WA DB** `appT9TVZWhv7io4CN/tbli8B589iNbsGF0Z`, not the
+> Members DB. Filed after Andy reviewed the no-match list and said *"some numbers don't look real"*.
+> **Read-only audit. Nothing changed.**
+
+## What was actually wrong — and what wasn't
+
+**The sync is NOT dropping new joiners.** Across the **18 chats the digest ingests**: 574 live
+participants, **0 missing** from the WA DB. That verifies the create-gap perma-fix shipped
+2026-07-24 (Whapi Sync `Lo45BM43boK1gM19`, the `Compute Missing Members` → `Create Missing Members`
+pair), which had been left "verify first 6am exec". **Consider it verified.** A raw diff against
+*all* 55 Whapi groups shows 98 apparent gaps, but 81 of those people are only in **MDSOnly** and
+the rest sit in team/event/ops chats — none of it in scope. Cutting the diff to the in-scope
+population is the difference between "98 missing" and "0 missing".
+
+**Whapi is not the problem.** All 55 groups, 702 distinct participants: **zero** ids containing
+`@lid`, **zero** ids of 14+ digits. Whapi returns clean phone numbers today.
+
+**Digit length is not a validity test.** `5493413071313` is 13 digits and is Tomi MDS's real
+Argentine number (365 messages). Any rule that discards long numbers discards real members.
+
+## The actual defect: 32 rows that belong to no chat
+
+These are the "no match" list Andy pasted. They are **not people we are failing to match** — they
+are rows for identities that are in no MDS chat at all. 29 of 32 were created in the
+**2026-04-23/24 genesis import**. This is the same population memory recorded on 2026-07-24 as
+*"12 no-phone + 9 LID + 1 Twilio junk rows"*, re-counted against live data.
+
+| phone | shape | match_status | msgs_30d | last_active | created |
+|---|---|---|---|---|---|
+| `107374215970918` | not a phone | no_match | 1 | 2026-04-24 | 2026-04-24 |
+| `124133480349883` | not a phone | no_match | 1 | 2026-04-24 | 2026-04-24 |
+| `13103449385` | plausible | matched | 0 | 2026-06-03 | 2026-04-23 |
+| `13143636090` | plausible | matched | 1 | 2026-07-13 | 2026-04-23 |
+| `132160455499944` | not a phone | no_match | 3 | 2026-04-24 | 2026-04-24 |
+| `14246775086` | plausible | matched | 0 | 2026-06-10 | 2026-04-23 |
+| `149555240816821` | not a phone | no_match | 3 | 2026-04-24 | 2026-04-24 |
+| `15005550006` | TEST number | no_match | 0 | — | 2026-04-24 |
+| `152746267295998` | not a phone | no_match | 2 | 2026-04-24 | 2026-04-24 |
+| `15615522578` | plausible | matched | 4 | 2026-05-15 | 2026-04-23 |
+| `16047710238` | plausible | matched | 0 | — | 2026-04-23 |
+| `16262989786` | plausible | matched | 0 | — | 2026-04-23 |
+| `16307071402` | plausible | matched | 3 | 2026-05-08 | 2026-04-23 |
+| `17024993755` | plausible | matched | 0 | — | 2026-04-23 |
+| `18139245802` | plausible | no_match | 0 | 2026-06-05 | 2026-04-23 |
+| `18153826543` | plausible | matched | 0 | — | 2026-04-23 |
+| `19174710967` | plausible | matched | 0 | — | 2026-04-23 |
+| `19704526436` | plausible | no_match | 1 | 2026-06-26 | 2026-06-27 |
+| `209525802016998` | not a phone | no_match | 2 | 2026-04-24 | 2026-04-24 |
+| `228445183295731` | not a phone | no_match | 3 | 2026-04-24 | 2026-04-24 |
+| `2345068970128` | plausible | no_match | 8 | 2026-04-24 | 2026-04-24 |
+| `253381645963314` | not a phone | no_match | 2 | 2026-04-24 | 2026-04-24 |
+| `33007478022339` | not a phone | no_match | 1 | 2026-04-24 | 2026-04-24 |
+| `33631533580` | plausible | matched | 0 | — | 2026-04-23 |
+| `40758346707` | plausible | no_match | 0 | — | 2026-04-23 |
+| `447305494555` | plausible | no_match | 0 | — | 2026-04-23 |
+| `5219997479923` | plausible | matched | 0 | 2026-05-25 | 2026-04-23 |
+| `639683131345` | plausible | matched | 0 | — | 2026-04-23 |
+| `64224065455` | plausible | matched | 0 | — | 2026-04-23 |
+| `971585751270` | plausible | matched | 6 | 2026-07-23 | 2026-05-10 |
+| `972542005255` | plausible | matched | 0 | — | 2026-04-23 |
+| `sam` | not a phone | no_match | 0 | — | 2026-08-04 |
+
+total orphan rows: 32
+
+## Proposed cleanup — NOT executed, needs Andy's call
+
+1. **The non-phone rows** (15-digit ids, `sam`, Twilio's test number `15005550006`): these can never
+   match anything. Park them — add a `status`/`archived` marker, or move to a holding view.
+   **Do not delete blindly**: [[feedback_never_delete_members]] is about Members-DB records, but the
+   same instinct applies until we know nothing links to these rows.
+2. **`sam` was created 2026-08-04** — one day before this audit. Something is still writing junk
+   into `phone`. Worth finding the writer before cleaning, or it comes straight back.
+3. **The 16 `matched` orphans** are real people with a real member link who are simply in no chat
+   today (left the chats, still members). **Leave them alone** — clearing them would break the
+   Scorecard join, which keys on `source_member_id`.
+4. **The 23 real-looking numbers that never sent a message** need their origin traced before any
+   action: if a roster/import path is creating WA rows for people who were never in a chat, that is
+   the thing to fix, not the rows.
+
+**Blast radius to check before touching any row:** `DailyActivity.member_phone` (all engagement
+rollups key on phone, not the link), Scorecard WA Sync `RPfnori7C26NcT9N` (`source_member_id`),
+Daily Stats Builder `1VDbwlQqXcfbotic`, WA Engagement Sync `v9D1bROMGMivfXH2`.
