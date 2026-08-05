@@ -140,10 +140,33 @@ continues that thread. **③** the send layer rewrites "reply *YES*"/"or *NO*" t
 | gate GREEN | ✅ 224 exit-0 |
 
 **PROMOTED 23:36 UTC → prod `955ed56f`** (7 nodes; in-promote gate green; prod-verified: intent → asks (msg 24197) · detail → draft (24199) · Send it → report row **"Cant register to event"**).
-**Named remainder:** the confirm reply still appends a soft follow-up offer ("if you tell me which
-event…"); harmless but not strictly the rule. Quoted-reply binding cannot be probed through the
-silent path (no outbound wamid exists there) — proven by stamping a wamid on a probe row, then
-cleared. Staging `a1b060c2`.
+**Named remainder:** ~~the confirm reply still appends a soft follow-up offer~~ **CLOSED 2026-08-05
+(staging `eb4dc393`, awaiting promote)** — see *#57b* below. Quoted-reply binding cannot be probed
+through the silent path (no outbound wamid exists there) — proven by stamping a wamid on a probe
+row, then cleared. Staging `a1b060c2`.
+
+#### ✅ #57b — the two named remainders, BUILT + STAGED + PROVEN 2026-08-05 (awaiting promote)
+**① The report confirmation stops clean.** The seed rule ("confirm in one warm line and STOP")
+kept losing to a trailing soft offer, so the same remedy as the rest of #57 applies: it leaves the
+model's hands. `Format Reply` clamps the reply on a `period === 'report_file'` turn — **but only
+when `report_create` actually appears in `sources_used`**, so a failed filing can never be
+reported as a success. **② "who is FORM africa?"** (#54's residual) hunted a member named *Form
+Africa* and honestly declined, while the correctly-spelled question answers fine. `Resolve Member`
+now normalises `form` → `from` where a preposition is grammatically required — one point, because
+every consumer (router, plan, loop) reads its text from there; the member's verbatim words still
+persist, since `Save Conversation` files `Log Inbound`.text.
+
+| AC | result |
+|---|---|
+| the typo reads as the preposition | ✅ "who is form africa?" → "*Benjamin*, in Grand Baie, Riviere du Rempart" — same answer as the correctly-spelled question (was: "I don't have anyone named \"Form Africa\" on file") |
+| a real form is never rewritten | ✅ offline harness against the SHIPPED node (`test_57b_typo.js`): **20/20** — 8 rewritten · 8 form-nouns preserved ("the signup form is broken", "form a company", "where are form submissions going") · 1 accepted limit asserted in the open · 3 no-ops |
+| confirm stops clean | ✅ "Send it" → "Sent to the MDS team 👍 They will see it in their portal." and nothing else (was: + "if you tell me which event…") |
+| nothing claimed unless filed | ✅ `digest.olivia_reports` id **28** `report_text = "Cant register to event"`, written by that turn |
+| gate GREEN | ✅ **224 checks, 0 FAIL** |
+
+**Not promoted** — staging `eb4dc393`, prod `7f7b932f`. Apply script
+`scripts/olivia_loop/apply_57b_report_stop_geo_typo.py` (idempotent; re-running swaps a revised
+guard in place).
 
 # 🟡 S2 — NEXT
 

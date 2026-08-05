@@ -19,7 +19,7 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-04: SPRINT 3 OPEN · PROD `7f7b932f`
+## STATE 2026-08-05: SPRINT 3 OPEN · PROD `7f7b932f` · STAGING `eb4dc393` (#57b, awaiting promote)
 
 **Sprint 3 goal = make Olivia personal.** Ten tickets closed and live (evidence at the BOTTOM of
 `OLIVIA_SPRINT_3.md`); ten still open. Release 3 and everything before it is in
@@ -46,9 +46,10 @@ snapshots in `eval_bank_snapshots/` (the tools folder has no git history).
 ### Pick up here
 1. **#18 How-MDS-works answers** and **#19 Privacy: share, keep, delete** are the top open S1/S2.
    Ten tickets remain open; closed ones sit at the BOTTOM of `OLIVIA_SPRINT_3.md` with evidence.
-2. **Two small things I owe:** the *"who is form africa?"* typo case (she hunts a member named
-   "Form Africa" instead of reading it as "from Africa"), and the report confirmation still
-   appends a soft follow-up offer instead of stopping clean.
+2. ~~**Two small things I owe**~~ **DONE 2026-08-05, staged and waiting on your promote** (#57b):
+   the *"who is form africa?"* typo now answers like the correctly-spelled question, and the
+   report confirmation stops clean. Staging `eb4dc393` · gate 224 exit-0 · evidence under #57 on
+   the board. **Promote:** `python3 scripts/olivia_wf.py promote`.
 3. **Andy's side:** post the release note (`OLIVIA_RELEASE_NOTES_2026-08-04.md`, WhatsApp AND
    ClickUp syntax) · two AT country records are wrong (`NE` row is Haarlem/Netherlands, `ZW` row
    is Zug/Switzerland) · standing: GROUPOS_PAT · Circleback · does an event description/agenda
