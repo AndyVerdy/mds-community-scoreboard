@@ -6,6 +6,33 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 — FORMS WAREHOUSE: digest.form_responses — every form, every question, per member, in Supa
+
+Andy: *"I want all the data, all the questions… add it to his profile in supa"* + six rules
+(recency/time-decay · conditional gaps ≠ No · any number of forms · feed dossiers/personas ·
+raw answers OWNER-ONLY, silent personalization OK · aggregates fine incl. chapter/region slices,
+small cells suppressed).
+
+**Built:** `digest.form_responses` (token PK, form_id, member_at_id, email, submitted_at, answers
+jsonb `ref→{q,t,v}`, raw jsonb) + view **`form_answers_latest`** (latest answer per member×form×ref,
+submitted_at for decay) + `stamp_form_responses()` (exact-unique email, never guesses) + loader
+`mds-digest-web/scripts/sync_form_responses.py` (`e02a2cb`) — config dict, new form = one line.
+
+**Loaded 2,276 submissions, 2,048 member-stamped (90%):** census 2026 ×17 · app v3 ×21 · honorary
+×7 · legacy Standard ×1,170 · legacy MDSonly ×1,061 — the legacy history is deliberate (YoY +
+decay contrast). Proof of the decay axis on one member: TTM **4,000,000 (census 2026, Aug)** over
+**3,200,000 (legacy census, Jun)**; same niche both years. Two loader traps fixed: Responses API
+omits question titles (pull form definition), PostgREST jsonb double-encoding.
+
+**Gate 224 → 226**: anon denied on the table AND the view; no exposing RPC exists — any future one
+needs owner-gating + min cell size. Memory: `project_mds_forms_warehouse`. Olivia **#20 unblocked**
+(census launched + warehouse foundation done) — dossier/persona wiring is #20's build.
+
+Also this hour: census AT sync caught 6 more organic submissions on its own — **17/17 in AT,
+17/17 member-linked** (live-delivery proof after the webhook re-enable).
+
+---
+
 ## 2026-08-06 — CENSUS: Typeform had silently DISABLED the webhook — re-enabled + 8 backfilled, 11/11 in AT
 
 Andy: "we have 11 now. check." Typeform showed 11 completed; **AT had 3.** Root cause: Typeform

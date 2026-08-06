@@ -1176,6 +1176,15 @@ def main():
         check("anon key denied on content_search_v2", st in (401, 403, 404), f"status {st}")
         st, body = rpc("content_lookup", {"p_phone": phone, "p_source": "wa_digest"}, ANON_KEY)
         check("anon key denied on content_lookup", st in (401, 403, 404), f"status {st}")
+
+        # form_responses: the raw form ledger is OWNER-ONLY by rule (2026-08-05) and today has
+        # NO exposing RPC at all — the anon key must bounce off both the table and the view.
+        st, body = curl("GET", f"{BASE}/form_responses?select=token&limit=1", ANON_KEY,
+                        profile_hdr=["Accept-Profile: digest"])
+        check("anon key denied on form_responses table", st in (401, 403, 404), f"status {st}")
+        st, body = curl("GET", f"{BASE}/form_answers_latest?select=ref&limit=1", ANON_KEY,
+                        profile_hdr=["Accept-Profile: digest"])
+        check("anon key denied on form_answers_latest view", st in (401, 403, 404), f"status {st}")
     finally:
         cleanup()
         st, left = curl("GET", f"{BASE}/content_items?source=eq.{CANARY_SOURCE}&select=id", key,
