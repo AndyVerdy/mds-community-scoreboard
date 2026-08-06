@@ -6,6 +6,20 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 — CENSUS SYNC v4: Andy's four table rulings applied — 58 fields
+
+From Andy's review of the 85-question table: ① full name also into `What is your full name?`
+(kept `Name`) · ② phone also into `Phone Number` (kept the legacy question field) · ③ **two new
+AT fields created** — `% in Vietnam Manufacture` + `% in Mexico Manufacture` (singleSelect, legacy
+brackets, descriptions stamped); the sum-into-Other hack removed, `% in Other Manufacture` now =
+"elsewhere" alone · ④ "Do you have kids? = No" now writes **0** into `How many kids do you have?`.
+
+Re-replayed all 3 responses; verified: Ian kids **2** (have_kids Yes + num_kids 2), both phone
+fields `+16196077048`, both name fields filled; VN/MX empty for all 3 respondents (none manufacture
+there — bucket logic identical to the proven China/USA fields). Scenario 4860042 at **58 fields**.
+
+---
+
 ## 2026-08-05 (latest) — CENSUS SYNC v3: full 760-field sweep found 13 more mappable questions
 
 Andy: *"check all the fields and lets see if there are something we can map."* Swept all 760 Forms
