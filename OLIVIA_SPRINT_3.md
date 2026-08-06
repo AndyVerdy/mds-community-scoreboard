@@ -44,6 +44,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#59** | Same event listed twice (events + partners) | 🟡 S2 | S | n/a (SQL) | ✅ **LIVE** — dossier joins on the row, not the name |
 | **#60** | Cancelled side-event wore the Summit's name (app-event mis-link) | 🟡 S2 | S | n/a (sync+SQL) | ✅ **LIVE** — sync dedupe + 5-min alarm |
 | **#61** | Schema audit: tables with no declared connections | 🔴 S1 | M | — | — |
+| **#62** | Resolve the 17 Security Advisor warnings | 🔴 S1 | S | — | — |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -221,6 +222,41 @@ billing_nudges…), `event_at_id` → events_catalog, `chat_id/chat_name` → ch
 - FKs added only where the sync jobs provably tolerate them; everything else carries a written
   reason in a table COMMENT.
 - Gate GREEN; no sync job broken (next scheduled runs all succeed).
+
+---
+
+### #62 · Security Advisor: 17 warnings — resolve every one or rule it accepted in writing
+**🔴 S1 · size S — filed 2026-08-06 from Andy's Advisors review (do not act; ticketed)**
+
+> **In plain words:** Supabase's own security scanner shows 17 warnings. Clear the board.
+
+*As the owner, the Security Advisor shows zero unexplained warnings — each is fixed, or its
+acceptance is written down where the next person will look.*
+
+**The 17, by class (from the dashboard):**
+1. **Function Search Path Mutable ×12** — older `digest` helpers created without a pinned
+   `search_path` (`olivia_touch`, `member_partner_url`, `member_event_url`,
+   `immutable_text_array_join`, `attr_clean`, `expertise_query`, `name_fold`, `member_video_url`,
+   `partners_embed_invalidate`, `events_embed_invalidate`, `member_personas_archive`,
+   `is_active_member_status`). Fix = `ALTER FUNCTION … SET search_path = 'digest','pg_temp'` (the
+   pattern every NEW function already uses). ⚠️ `immutable_text_array_join` feeds two generated
+   tsvector columns — verify pinning does not invalidate the generated columns before touching.
+2. **SECURITY DEFINER callable by public / signed-in ×4** — `public.auth_org_ids()` and
+   `public.rls_auto_enable()`. Neither is a digest function; research what installed them (an
+   extension or template?), then `REVOKE EXECUTE FROM anon, authenticated` unless something
+   client-side genuinely calls them.
+3. **Leaked Password Protection Disabled ×1** — Auth setting (dashboard toggle, Andy's click);
+   only relevant if password auth is used anywhere (portal is OTP-based — may be a one-line
+   "accepted: no password auth" ruling instead).
+
+**Accept when**
+- Advisor re-run shows **0 warnings**, or each remaining one carries a written acceptance in the
+  handbook §security.
+- All 12 pinned functions proven live after the change (leak gate 232 + one smoke call per
+  touched RPC; the two embed-invalidate triggers fire on a real row).
+- The `public.*` functions' origin identified before any revoke; revoke verified not to break the
+  portal/app login flows.
+- Gate GREEN.
 
 ---
 
