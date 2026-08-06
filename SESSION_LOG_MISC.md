@@ -6,6 +6,23 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 (day) — FORMS WAREHOUSE scheduled: daily GH Action step 3, proven end-to-end
+
+Census hit **49 completed** (11 → 49 in a day). Airtable kept up LIVE — 49/49 rows, 48 linked, and
+the no-match Slack alert fired twice (Charles Chakkalo unlinked; Prudence Millsap alerted at 08:52
+and manually linked by the team — the alert→human loop works unprompted). The Supa ledger sat at
+17 because the loader was manual; caught it up (49/49, 43 auto-stamped by exact-unique email) and
+**scheduled it: step 3 of `member-profiles-sync`** (daily 13:47 UTC, after profiles + events).
+`CENTURION_TYPEFORM_PAT` added to the repo secrets via gh; env-var-first loading (sync_events
+pattern); mds-digest-web `e7dabfa`, pushed. **Proving run 31115206987: success** — Action logs show
+"total rows loaded: 2308". Cadence: AT = instant webhook, Supa ledger = daily top-up.
+
+Olivia CANNOT read the ledger yet, deliberately — no RPC exposes it (gate 226 proves the anon
+bounce). The door = Olivia #20: owner-only lane, decay-weighted dossier input, aggregates with the
+≥3-member cell floor, via staging → gate → Andy's promote.
+
+---
+
 ## 2026-08-06 — FORMS WAREHOUSE: digest.form_responses — every form, every question, per member, in Supa
 
 Andy: *"I want all the data, all the questions… add it to his profile in supa"* + six rules

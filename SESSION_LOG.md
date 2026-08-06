@@ -8,6 +8,7 @@
 prepend the full entry to its STREAM log + ONE line here.** Old references like "read SESSION_LOG
 2026-07-27" resolve through this index: find the date line, open the named stream file.
 
+- 2026-08-06 · **Forms** · **ledger SCHEDULED — member-profiles-sync step 3 (daily 13:47 UTC), proving run 31115206987 success, 2,308 rows** · census at 49: AT 49/49 live via webhook (2 no-match alerts fired, 1 manually linked by team), Supa 49/49 after catch-up · Olivia still walled off pending #20 → `SESSION_LOG_MISC.md`
 - 2026-08-06 · **Forms** · **digest.form_responses SHIPPED — raw Typeform ledger, 2,276 submissions across 5 forms, 2,048 member-stamped** · `form_answers_latest` view = latest-per-question + decay axis · owner-only exposure rule locked (aggregates OK, small cells suppressed) · gate 224→226 (anon denied table+view) · census AT sync caught 6 organics alone, 17/17 linked · Olivia #20 unblocked → `SESSION_LOG_MISC.md`
 - 2026-08-06 · **Census** · **webhook was silently DISABLED by Typeform (first delivery pre-scenario failed) — re-enabled, 8 backfilled, 11/11 rows in AT, 11/11 member-linked** · risk flagged: needs a count-drift check, Typeform disables webhooks silently → `SESSION_LOG_MISC.md`
 - 2026-08-06 · **Census** · **SYNC v5 — no-match Slack alert**: router after member search; 0/multiple matches post ⚠️ to #automation-tests with name+email+AT link · proven with fake submission (0 matches, alert landed, junk row deleted) → `SESSION_LOG_MISC.md`
