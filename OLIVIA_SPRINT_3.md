@@ -48,7 +48,8 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#63** | Airtable-formula injection in the Make member-match (census + app v3) | 🔴 S1 | S | — | — |
 | **#64** | Runtime inventory: consolidate where logic runs (drift, not the load-bearing splits) | 🔵 S3 | M | — | — |
 | **#65** | 🚨 SQL functions exist ONLY in the live DB — no file in git | 🔴 S1 | M | — | — |
-| **#66** | Forms warehouse: 5 known gaps (validation · mapping coverage · refresh · units · lag) | 🔴 S1 | M | — | — |
+| **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
+| **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -238,7 +239,55 @@ layer that gates every member's data):**
 
 ---
 
-### #66 · Forms warehouse — the 5 known gaps
+### #68 · 🔑 Canonical question dictionary — make mapping scale before the form count does
+**🔴 S1 · size L — filed 2026-08-06 (Andy: "mapping becomes a paramount task… this number will go up rapidly")**
+
+> **In plain words:** Questions asking the same thing on different forms must resolve to one field —
+> and that has to keep working when we have twenty forms, not five.
+
+*As the owner, any concept the community answers about — revenue, staff, margin, tools — reads as
+ONE field no matter which form or year it came from, and adding a form does not create mapping debt.*
+
+**Measured 2026-08-06 (the honest number):** **25 of 316 form-questions are mapped — 8%.** 291
+unmapped, **184 of those with 50+ respondents**. Unmapped answers ARE processed (they key on their
+own ref, appear in the catalog, answer normally — 94 of the 100 askable questions today are
+unmapped). The ONLY thing missing is cross-form/cross-year unification: legacy census revenue and
+census-2026 revenue stay two streams instead of one, and the failure is SILENT — a half-answer, not
+an error.
+
+**Why this compounds:** check-in forms, Inspire check-ins, last year's check-ins and historical
+forms are all queued to load. Each adds 40–85 questions. Hand-curation is O(n) forever and drifts.
+
+**The shape that makes it tractable — the work is NOT 700 mappings:**
+1. **Concept dictionary (~40–60 keys), not per-question mapping.** Most questions are single-form
+   and never need a key. What recurs is a small stable set: revenue family, channel splits, niche,
+   products, brands, staff/team, margin/COGS, kids, tools, financing. Dictionary carries name +
+   description + **type + units + period** (kills #66④: "revenue USD" cannot collide with
+   "revenue local", "pay monthly" cannot collide with "pay annual").
+2. **Coverage report as a standing instrument** — every question split into *needs a key* (concept
+   appears on 2+ forms) vs *single-form, none needed*, ranked by respondents. Without this split the
+   291 looks like 291 units of work when it is likely a few dozen.
+3. **Assisted matching, human ratification.** Propose candidates with `pg_trgm` (installed) +
+   Voyage embeddings (in the stack) so "What do you pay a Manager per month?" matches `pay_manager`
+   with no shared words. **PROPOSAL ONLY — never auto-apply.** A wrong merge silently fuses two
+   different concepts, which is worse than unmapped, and violates the never-guess rule.
+4. **Upstream fix — the real leverage.** New forms pick questions FROM the dictionary at build time
+   (same ref, same wording, declared units), so mapping cost on arrival is zero. Retro-mapping is
+   cleanup; the dictionary is what stops it recurring. Needs Eugene in the loop.
+
+**Accept when**
+- Dictionary exists with type/units/period per concept, in the DB and documented.
+- Coverage report separates needs-a-key from single-form; every needs-a-key question above a
+  respondent threshold is either mapped or ruled not-comparable in writing.
+- Assisted proposals produce a ratification queue; nothing enters `form_field_map` unratified.
+- A cross-form question proves it end to end (revenue 2022 → 2026 as one stream, and a newly mapped
+  concept like staff location or pay bands doing the same).
+- Form-design rule written into the census/forms docs so the next form ships WITH its mappings.
+- QA sweep extended to assert units/period; gate GREEN.
+
+---
+
+### #66 · Forms warehouse — the remaining gaps (mapping split out to #68)
 **🔴 S1 · size M — filed 2026-08-06. Architecture is CORRECT (Andy confirmed); these are gaps
 inside it. Fixing any of them changes nothing about the two tables.**
 
@@ -254,11 +303,8 @@ Medians and the p10–p90 range absorb them today, so no answer is visibly wrong
 small slice can be. Fix: a validation pass at load (flag, never silently drop — a real 0 and a typo
 0 must stay distinguishable), plus a per-field plausibility rule set Andy ratifies.
 
-**② `form_field_map` coverage is the real scaling risk.** 28 mappings over **~150 distinct
-questions** across 5 forms. Anything unmapped cannot be compared across forms or years — it still
-answers within its own form, so the failure is silent. Mapping is hand-curated and grows with every
-form added. Fix: coverage report (which questions have no canonical key, ranked by respondents),
-finish the high-value ones, and a rule that a new form's mapping ships WITH the form, not after.
+**② MOVED TO #68** — measured properly it is 25 mapped of 316 form-questions (8%), and Andy
+ruled it paramount. Now its own S1 ticket with the dictionary + assisted-matching design.
 
 **③ Matview refresh is a full rebuild.** `form_answers_exploded` = 111,282 rows today, rebuilt
 whole on every load — fine now, expensive at 50k+ submissions. Fix: incremental refresh keyed on
