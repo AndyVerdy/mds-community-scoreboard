@@ -49,6 +49,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#64** | Runtime inventory: consolidate where logic runs (drift, not the load-bearing splits) | 🔵 S3 | M | — | — |
 | **#65** | 🚨 SQL functions exist ONLY in the live DB — no file in git | 🔴 S1 | M | — | — |
 | **#66** | Forms warehouse: 5 known gaps (validation · mapping coverage · refresh · units · lag) | 🔴 S1 | M | — | — |
+| **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -449,6 +450,52 @@ migration proven by a real run (never "should work").
   ruled as accepted with its reason).
 - Each move proven by a live run, old path disabled in the same session (no double-running).
 - Handbook updated; gate GREEN.
+
+---
+
+### #67 · Cohort and trend comparison — per field, panel AND cross-section
+**🟡 S2 · size M — filed 2026-08-06 (Andy: "comparing last year's cohort to this year's, on every single field")**
+
+> **In plain words:** Show how any answer moved year over year — and be clear whether that's the
+> same people changing, or a different crowd answering.
+
+*As a member, I can ask how the community changed on any question and get an answer that says which
+comparison it used.*
+
+**What already exists:** `form_responses` is append-only, every submission timestamped — the event
+log is real, no new storage needed. Panel depth measured 2026-08-06: **386 members have answered in
+2+ years** (169 two · 123 three · 84 four · 10 five), 295 in one year only. Per-year respondents:
+2022 364 · 2023 337 · 2024 316 · 2025 263 · 2026 107 (still collecting).
+
+**What is missing:** nothing compares two windows. `form_stats` takes one `p_since`/`p_until` at a
+time; a year-over-year answer today is two calls plus arithmetic, and Olivia has no tool for it.
+
+**The trap the design must handle:** 2025 had 263 respondents, 2026 has 107 — a naive comparison
+mixes real change with **who happened to answer**. Two different questions, two different numbers:
+- **PANEL** — the same members who answered both years: "of the 386 who answered twice, revenue
+  moved X%". Measures actual change.
+- **CROSS-SECTION** — everyone in each window: "the 2026 cohort's median vs the 2025 cohort's".
+  Measures the community as it stands, composition shift included.
+The answer must state which it used, never blend them silently.
+
+**Field coverage:** same form across years compares on ref alone (evergreen census — every question
+works, no mapping needed). Across different forms (legacy 2022 census vs census 2026) needs a
+canonical key — **28 mapped of ~150 questions**, so back-comparison is partial until #66 ② lands.
+The tool must say when a field cannot be compared rather than return a half-answer.
+
+**Shape (proposed):** `form_trend(p_phone, p_question, p_from, p_to, p_mode)` where mode = panel |
+cohort, returning per period: median/avg/% distribution, the delta, and the comparison basis; same
+suppression rules as `form_stats` (percent not counts, cells under 3 dropped, n internal). Plus the
+loop rule: any "how has X changed / compared to last year" question routes here.
+
+**Accept when**
+- Panel and cross-section both available, and the spoken answer names which was used.
+- Any field comparable within one form across years; unmapped cross-form fields say so explicitly
+  instead of half-answering.
+- Suppression rules identical to `form_stats` (verified by the QA sweep, extended to cover trends).
+- Probed on real questions ("how did revenue change from 2022 to 2026", "are members hiring more
+  offshore than last year") with answers matching SQL truth.
+- Gate GREEN.
 
 ---
 
