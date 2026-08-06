@@ -6,6 +6,36 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-05 (night) — CENSUS: the live form now SYNCS to Airtable (Make 4860042, mirrors app v3)
+
+**Project = Census rebuild.** Andy: census completed/launched; *"step one, its not synced at all —
+lets work on this and on forms in general."* Verified live first: form `DFeK5yop` retitled **"MDS
+Annual Census 2026 (Live)"** (Eugene restructured it Aug 4 — ~87 refs, pay bands, tariffs, cost
+block; backups `KSQ9sVyq` + `LbQtet4c`), **10 completed responses, 0 in Airtable, no webhook, no
+scenario** — truly unsynced. Only 3 responses carry answers (Tabrez · Damon · Ian); 7 are
+zero-answer test walkthroughs.
+
+**Built Make scenario `4860042` "MDS Annual Census 2026 -> Airtable"** mirroring app v3 (4784286):
+Typeform webhook-INSTANT (hook `2790200`) → create Forms row (`tblblwPcgqhkPTVec`, **35 fields
+mapped**, `Form ID = "Annual Census 2026"` via typecast) → member search
+`LOWER({Preferred Email})=LOWER(email)` → link `Link to Member (restored)`. **Revenue per §G2:**
+`ttm_revenue` → `(NEW) Unverified Revenue` (never `Total TTM Revenue`), `ftm_revenue` →
+`Projected FTM Revnue`, channel %s → the `(NEW) … % (raw)` quartet.
+
+**Proven E2E on real data:** Tabrez's organic submission flowed through the live webhook; Damon +
+Ian replayed (webhook envelope rebuilt from the Responses API + form definition, POSTed to the hook).
+**All 3 rows in AT, all member-linked; Damon's Members row now shows Most Recent Revenue =
+4,000,000** — the census → reported-revenue pipeline works end to end. One bug found + fixed
+mid-build: Make record-link values must be ARRAYS (`["{{3.id}}"]`) — bare id = `[422] Value is not
+an array of record IDs`. One replay duplicate (Tabrez) deleted.
+
+**Flagged, not silently dropped:** ~50 refs have NO AT field (screening, mfg %s, tariffs, matrices,
+pay bands, cost-structure block, benefits_rank, ratings, activities…) — needs Andy/Eugene: create
+AT fields vs leave Typeform-only (Olivia #20 can read Typeform directly). **No hidden field on the
+live form** — matching is by typed email until personalized links ship (Andy's own July concern).
+
+---
+
 ## 2026-07-29 — Tools-health: **"Member profiles ← Airtable sync" red was REAL — GitHub cron delivers ~half the hourly runs**
 
 **Project = Tools-health dashboard.** Second alert Andy pasted: 🔴 **Member profiles ← Airtable sync — last write 4h ago** (generated 03:15 UTC). **Opposite verdict to yesterday's: this one was a true staleness, and the monitor was right.**
