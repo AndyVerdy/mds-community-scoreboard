@@ -6,6 +6,28 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-05 (latest) — CENSUS SYNC v3: full 760-field sweep found 13 more mappable questions
+
+Andy: *"check all the fields and lets see if there are something we can map."* Swept all 760 Forms
+fields (names + types + choices + descriptions) against the 52 unmapped census refs. **13 more
+questions mapped into 15 existing fields — scenario now writes 54 fields; 46 of ~85 census
+questions land in Airtable.**
+
+New: manufacturing %s → the legacy `% in China/USA/India/Other Manufacture` bucket selects
+(Vietnam+Mexico+elsewhere summed into "Other" — no per-country fields exist) · EOS → `EOS Business`
++ `Implement EOS` derived from one answer · M&A multi → the four legacy fields (`Bought a
+business`, `Sold a business`, `purchased or sold`, `Acquiring Ecom Business?`) via contains() ·
+numeric gross margin → legacy `Gross Margin` buckets · activities + explanation → the two
+app-v3-reused fields · benefits ranking → `Rank Member Benfits` · staff location → `Staff located`.
+
+Rows deleted + re-replayed a third time; verified per row: Ian China 90 → `76-99%`, purchased+sold
+→ both checkboxes true + Acquiring No; Damon EOS → Yes/Self-Implemented, gross margin 40 → `> 30%`,
+staff LATAM; Tabrez margin 30 → `15% - 30%`, benefits ranking joined in order. **39 questions
+remain with genuinely no existing field** — tariffs, pay bands, cost-structure block, matrices,
+staffing/team rosters, handling Qs, ai_depth, ratings, screening — Andy/Eugene field-creation call.
+
+---
+
 ## 2026-08-05 (later) — CENSUS SYNC v2: app v3 is the reference — 39 fields, dual channel mapping, TTM seeded
 
 Andy's direction: *all form responses land in the Forms table; reuse as many existing fields as
