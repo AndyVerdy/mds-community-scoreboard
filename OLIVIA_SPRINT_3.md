@@ -48,6 +48,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#63** | Airtable-formula injection in the Make member-match (census + app v3) | 🔴 S1 | S | — | — |
 | **#64** | Runtime inventory: consolidate where logic runs (drift, not the load-bearing splits) | 🔵 S3 | M | — | — |
 | **#65** | 🚨 SQL functions exist ONLY in the live DB — no file in git | 🔴 S1 | M | — | — |
+| **#66** | Forms warehouse: 5 known gaps (validation · mapping coverage · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -233,6 +234,54 @@ layer that gates every member's data):**
 - A CI drift check runs and demonstrably fails on an injected difference (proven, not assumed).
 - The tier rule and its exceptions are written in the handbook.
 - Gate GREEN before and after every step; no RPC behaviour changed by the export.
+
+---
+
+### #66 · Forms warehouse — the 5 known gaps
+**🔴 S1 · size M — filed 2026-08-06. Architecture is CORRECT (Andy confirmed); these are gaps
+inside it. Fixing any of them changes nothing about the two tables.**
+
+> **In plain words:** The forms warehouse works. Five things inside it are unfinished, and I found
+> all five myself — before they found us.
+
+*As the owner, the forms warehouse validates what it stores, compares every question it can, and
+scales past today's volume without a rebuild.*
+
+**① No validation at write — junk lands as-is.** Audit found **2 `ttm_revenue` values ≥ $1B**,
+**1 `projected_revenue` ≥ $1B**, **2 `ttm_revenue` = 0** on active sellers, **1 `num_kids` > 12**.
+Medians and the p10–p90 range absorb them today, so no answer is visibly wrong — but a mean or a
+small slice can be. Fix: a validation pass at load (flag, never silently drop — a real 0 and a typo
+0 must stay distinguishable), plus a per-field plausibility rule set Andy ratifies.
+
+**② `form_field_map` coverage is the real scaling risk.** 28 mappings over **~150 distinct
+questions** across 5 forms. Anything unmapped cannot be compared across forms or years — it still
+answers within its own form, so the failure is silent. Mapping is hand-curated and grows with every
+form added. Fix: coverage report (which questions have no canonical key, ranked by respondents),
+finish the high-value ones, and a rule that a new form's mapping ships WITH the form, not after.
+
+**③ Matview refresh is a full rebuild.** `form_answers_exploded` = 111,282 rows today, rebuilt
+whole on every load — fine now, expensive at 50k+ submissions. Fix: incremental refresh keyed on
+new/changed tokens.
+
+**④ `canonical_key` is a flat namespace — no units, no declared type.** Revenue-in-USD vs
+revenue-in-local-currency, monthly vs annual pay, percent vs absolute would collide silently under
+one key. Nothing collides TODAY; the next form could. Fix: units/period in the map (or in the key),
+asserted by the QA sweep.
+
+**⑤ Warehouse lags Airtable by up to a day.** AT is instant via webhook; the ledger tops up on the
+13:47 UTC Action. Deliberate, but undocumented — a member who answers at 14:00 is invisible to
+Olivia's stats until the next day. Fix: either document as accepted, or trigger the loader from the
+same webhook.
+
+**Accept when**
+- Implausible values flagged with a ratified rule per field; nothing silently dropped; before/after
+  counts on every affected stat.
+- Coverage report exists; every question above a respondent threshold either mapped or ruled
+  not-comparable in writing.
+- Refresh is incremental, proven on a real load (timing before/after).
+- Units/period declared and sweep-asserted.
+- Lag documented or removed.
+- QA sweep + gate GREEN after each.
 
 ---
 
