@@ -6,6 +6,32 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 (v3) — #20: percent distributions + "these ARE numbers" — Andy's prod-screenshot rulings
+
+Andy probed PROD ("average member's revenue?") — got the band-data refusal ("MDS only tracks
+bands... a true average can't be calculated") + member-count breakdowns + a "none on file" bucket.
+Prod doesn't have the census tools yet (awaiting promote), but three rulings came out of it:
+**no member counts — use %** · **exclude no-answers from the base** · **never claim exact numbers
+don't exist** — "take all rev reported, one person = most recent value, divide. what's so complex?"
+(his formula = literally `form_windowed` + avg).
+
+**Shipped:** `form_stats` v3 — choice distributions return **PERCENT of members who answered**
+(no-answer members excluded from the base entirely; n stays internal); numeric detail now opens
+"EXACT reported numbers". Staging `b9090bcf` (`apply_20c_percent_exact.py`): distributions speak %,
+never counts, never a "none on file" bucket · never claim "only bands / cannot compute an average"
+— band data is the coarse fallback, census numbers are the real ones. One apply-script trap:
+an unescaped apostrophe in the injected seed rule broke node --check pre-PUT (workflow untouched);
+rewritten without it.
+
+**Probes (staging):** "What's the average member's revenue?" → "The typical (median) MDS member
+does about **$5.5M** in trailing-12-month revenue. The average comes out much higher — around
+$26M — but that's skewed hard by a few very large sellers" — exact numbers, no bands refusal, no
+counts. "where do members manufacture?" → "**China — about 70% of members who answered** · USA
+~40% · India ~14% · Vietnam ~12%… percentages add past 100% because members mix locations" —
+percent-of-respondents, multi-select honesty, zero counts. **Gate 232 exit-0.**
+
+---
+
 ## 2026-08-06 (later) — #20 v2: evergreen census mechanics — Andy's six rulings, staged
 
 Andy's rulings on the first staged cut: ① 50+ answers now ② **never show the member count** ③ a
