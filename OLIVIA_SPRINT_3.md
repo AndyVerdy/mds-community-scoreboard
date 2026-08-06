@@ -47,6 +47,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#62** | Resolve the 17 Security Advisor warnings | 🔴 S1 | S | — | — |
 | **#63** | Airtable-formula injection in the Make member-match (census + app v3) | 🔴 S1 | S | — | — |
 | **#64** | Runtime inventory: consolidate where logic runs (drift, not the load-bearing splits) | 🔵 S3 | M | — | — |
+| **#65** | 🚨 SQL functions exist ONLY in the live DB — no file in git | 🔴 S1 | M | — | — |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -178,6 +179,62 @@ guard in place).
 ---
 
 # 🔴 S1 — NOW
+
+### #65 · 🚨 THE SQL LAYER IS NOT IN VERSION CONTROL — single point of failure
+**🔴 S1 · size M — filed 2026-08-06 · ⚠️ HUGE RISK, DOUBLE-CONFIRM BEFORE ANY REMEDIATION TOUCHES THE DB**
+
+> **In plain words:** ~75 database functions run the retrieval, the gating and the stats — and not
+> one of them exists as a file anywhere. They live only inside the live production database.
+
+*As the owner, every line of logic that runs MDS can be read, reviewed and restored from the
+repository — nothing exists only inside a running system.*
+
+**Verified 2026-08-06:** `find` across the repo returns **zero `.sql` files**. The only record of
+any function is (a) the live `pg_proc` catalog and (b) Supabase's `supabase_migrations` history,
+which is itself inside the same database. There is no second copy anywhere.
+
+**Why this is the biggest risk on the board — what it costs today:**
+- **No restore path independent of the database.** If the project is lost, misconfigured, or a
+  migration corrupts a function, the source is gone with it. Supabase backups protect the DB — they
+  do not give a diffable source tree, and a backup restore is all-or-nothing.
+- **No code review.** Every migration this session went straight to production logic with no diff
+  anyone could read. A `drop function` + `create` typo has no reviewer between it and members.
+- **No diff between environments.** Staging vs prod n8n has a version id and a snapshot ritual; the
+  SQL layer has neither — "what changed" is only answerable by dumping `pg_proc` and eyeballing.
+- **No blame/history.** Which ruling produced which clause is reconstructible only from session
+  logs, not from the code.
+- **The security boundary is in the unversioned layer.** Access rules, owner-gating, small-cell
+  suppression and the active-member checks all live in these functions. The leak gate proves they
+  hold TODAY; nothing proves what they looked like last week.
+
+**Architecture ruling to record with it (Andy's 3-tier question, 2026-08-06):** the functions are
+NOT misplaced — data access + access control belong in Postgres because it is the last hop before
+the data and FOUR consumers share it (n8n, Python scripts, GitHub Actions, digest-web); moving the
+gate into one app leaves the other three unguarded, and moving retrieval out means pulling 38k rows
+over the wire and losing HNSW-in-query. Genuine tier violations are small and named:
+`olivia_alarm_fire` posting to Slack from inside Postgres (deliberate — alarm independence; record
+as an accepted exception) and `member_event_url` doing URL/presentation shaping in SQL. **Fix the
+source-of-truth problem, do not relocate the compute.**
+
+**Proposed remediation (DO NOT START WITHOUT ANDY'S EXPLICIT SECOND CONFIRMATION — this touches the
+layer that gates every member's data):**
+1. **Read-only first.** Dump every `digest` function/view/policy to `db/functions/*.sql` from
+   `pg_get_functiondef`. Pure export; the database is not modified. Commit as the baseline.
+2. **Drift check in CI** — a job that re-dumps and fails if the repo and the live DB differ. Still
+   read-only; catches an out-of-band change within a day.
+3. **Only after 1+2 are green and stable:** decide whether future changes flow repo→DB (apply from
+   file) or DB→repo (export after migration). The repo→DB direction is the safer end state but is
+   also the only step that can break production — it needs its own proof plan, the leak gate green
+   before and after, and a rollback rehearsed.
+4. Handbook section: the tier rule + the two accepted exceptions above.
+
+**Accept when**
+- Every `digest` function, view and policy exists as a file in git, byte-matched to the live DB.
+- A CI drift check runs and demonstrably fails on an injected difference (proven, not assumed).
+- The tier rule and its exceptions are written in the handbook.
+- Gate GREEN before and after every step; no RPC behaviour changed by the export.
+
+---
 
 ### #61 · Schema audit — most warehouse tables show NO connections, and nobody has written down why
 **🔴 S1 · size M — filed 2026-08-06 from Andy's Schema Visualizer review (do not act; research first)**
