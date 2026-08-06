@@ -6,6 +6,32 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-05 (later) — CENSUS SYNC v2: app v3 is the reference — 39 fields, dual channel mapping, TTM seeded
+
+Andy's direction: *all form responses land in the Forms table; reuse as many existing fields as
+possible; app v3 = first reference; check field descriptions; revenue per the docs.* Read CU
+**§G2/page 06** (`2531q-67177`) first-hand + extracted app v3's full **75-field mapper with AT
+field descriptions** as the mapping reference.
+
+**v2 changes (35 → 39 fields):** `Total TTM Revenue` **seeded = reported** (the §G2 model; the
+census-gated Members lookups read this field) · the four **legacy bucket fields** (`Amazon US &
+% of Revenue` / DTC / Tiktok / Retail) computed from the raw %s with app v3's exact brackets —
+the doc's "dual channel-% mapping" · `Name` = **full name unsplit** (app-v3 convention; dropped my
+first/last split). Deleted the 3 v1 rows, re-replayed all 3 through v2.
+
+**Verified per row:** Damon — Unverified 4,000,000 · TTM 4,000,000 · Amazon 72 → `51%+` · TikTok
+18 → `16%-25%` · linked. Tabrez — 2,500,000 · Amazon 100 → `51%+` · TikTok null → null (bucket
+skips empty, no fake N/A). Ian — 1,000,000 · TikTok 5 → `<=5%`. **Members-side: Most Recent
+Revenue = the census figure for all 3.**
+
+**Flagged:** Members `Total TTM Revenue` / `Maximum TTM` lookups still show OLD census values —
+their per-field conditions are gated to the legacy census Form IDs, and lookup conditions cannot
+be edited via the API. Andy: either add "Annual Census 2026" to those conditions in the AT UI, or
+treat `Most Recent Revenue` as the field of record (§G2 already says to trust it). **52 refs
+remain unmapped** (no AT field exists) — decision list in the census memory.
+
+---
+
 ## 2026-08-05 (night) — CENSUS: the live form now SYNCS to Airtable (Make 4860042, mirrors app v3)
 
 **Project = Census rebuild.** Andy: census completed/launched; *"step one, its not synced at all —
