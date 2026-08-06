@@ -45,6 +45,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#60** | Cancelled side-event wore the Summit's name (app-event mis-link) | 🟡 S2 | S | n/a (sync+SQL) | ✅ **LIVE** — sync dedupe + 5-min alarm |
 | **#61** | Schema audit: tables with no declared connections | 🔴 S1 | M | — | — |
 | **#62** | Resolve the 17 Security Advisor warnings | 🔴 S1 | S | — | — |
+| **#63** | Airtable-formula injection in the Make member-match (census + app v3) | 🔴 S1 | S | — | — |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -257,6 +258,47 @@ acceptance is written down where the next person will look.*
 - The `public.*` functions' origin identified before any revoke; revoke verified not to break the
   portal/app login flows.
 - Gate GREEN.
+
+---
+
+### #63 · Injection audit verdict — SQL clean; ONE real injection found in the Make member-match
+**🔴 S1 · size S — filed 2026-08-06 from Andy's "double check for SQL injection" (audited, not fixed)**
+
+> **In plain words:** The database itself is injection-clean. But the form-to-Airtable member
+> matching interpolates the TYPED email into an Airtable formula string — a crafted email can
+> break out and force a match to the wrong member.
+
+*As the owner, no user-typed value ever reaches a query language un-escaped — SQL, Airtable
+formula, or anything else.*
+
+**Audited clean (SQL proper):**
+- **Zero dynamic SQL** in the whole `digest` schema — no function contains `EXECUTE` or
+  `format()` (verified against `pg_proc`). Every RPC binds user text as parameters; the model's
+  tool arguments hit typed RPC params through PostgREST — no path composes SQL from input.
+- `ILIKE '%'||input||'%'` patterns (form_stats, event lanes) = LIKE-wildcard nuisance only
+  (`%`/`_` widen a match), not injection.
+
+**The finding:** both Make member-match modules build an Airtable `filterByFormula` by string
+interpolation — `LOWER({Preferred Email})=LOWER("{{2.Email}}")` — in **census scenario 4860042
+(module 3)** and **app v3 scenario 4784286 (module M4)**. A typed email containing a double quote
+breaks out of the formula string; a crafted value can force the search to match an arbitrary
+member, so the attacker's Forms row LINKS TO ANOTHER MEMBER — and their fake revenue becomes that
+member's `Most Recent Revenue` (data poisoning, not just leakage). Partial shield today: Typeform
+email validation likely rejects quoted-local-part emails — but RFC allows them, and the shield is
+upstream of us, not ours.
+
+**Fix (when worked):** escape in the Make expression — `substitute()` the double quote (or strip
+non-email-safe chars) before interpolation, in BOTH scenarios; prove with a quote-bearing email
+through staging-safe replay (never a live member). Secondary nuisance, same ticket or note:
+`to_tsquery('english', p_query)` throws on unbalanced quote syntax (honest error, no injection) —
+consider `websearch_to_tsquery` for the two lookup fns if eval ever shows user-visible failures.
+
+**Accept when**
+- A double-quote-bearing email can no longer alter either formula (proven by replay against the
+  census scenario; app v3 fix verified by module inspection + one controlled test submission).
+- No other interpolation-into-query-language sites exist (grep both blueprints for `{{` inside
+  `formula`).
+- Gate GREEN; both scenarios' next real submissions process normally.
 
 ---
 
