@@ -6,6 +6,32 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 (v4) — #20 QA'd: mechanical sweep over EVERY askable question, 4 defect classes fixed
+
+Andy: *"we are battling for one field and there are dozens. You need to QA it."* Built
+**`scripts/qa_form_stats.py`** — sweeps the full form_stats catalog and asserts the standing
+rulings on every question mechanically (R1 exact numerics · R2 percent ≤100 · R3 n internal ·
+R4 no none-on-file · R6 windows · R7 multi-point revenue · R8 identity refs excluded from owner
+tools).
+
+**First sweep: 25 failures, 4 real defect classes** → fixed in `form_stats` v4
+(migration `form_stats_v4_qa_hardening_b`):
+1. **PII leak into the catalog** — legacy refs (member name, email, brand/company name, links)
+   were advertised as askable questions. Broad exclusion: ref list + question-pattern regex +
+   `file_url` type, inside `form_windowed` so every consumer inherits it.
+2. **Free-text junk distributions** — open-text questions (every answer unique) produced
+   always-empty "distributions" the catalog still advertised. Distributions now only for real
+   choice/boolean questions OR curated canonical keys.
+3. **Mixed-type canonicals** — `num_brands` = census numbers + legacy "1".."5+" strings fell into
+   the choice path. Numeric when ≥80% of values parse; parsable strings counted, junk skipped.
+4. **Tiny percentages rounded to 0** → one decimal.
+
+**Second sweep: PASS — every askable question obeys the rulings** (18 numeric + 515 percent rows
+validated, windows + multi-point + owner exclusions green). Gate re-run after the function swap:
+232 exit-0.
+
+---
+
 ## 2026-08-06 (v3) — #20: percent distributions + "these ARE numbers" — Andy's prod-screenshot rulings
 
 Andy probed PROD ("average member's revenue?") — got the band-data refusal ("MDS only tracks
