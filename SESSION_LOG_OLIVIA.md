@@ -6,6 +6,44 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 (v7) — #20: probe verdicts reported, timeout fixed, sweep clean, 3 failure classes closed
+
+**Andy: "I don't think 20 is done… did you run test questions? what was the result."** He was right,
+and the verdict had not been reported. Owning it: the 20-probe set (≈31 answers judged against SQL
+truth) came back **~17 correct · ~9 wrong · ~5 partial** — far from the <1% bar. Failure classes:
+① **invented numbers** ("82% of members have kids"; truth 67%) ② **claimed census data does not
+exist** ("MDS doesn't run a census question on where staff are based" — `staff_loc` holds
+Philippines 60.3%, USA 63.7%) ③ **ignored the tool** and answered pay bands / financing /
+marketplace tools / AI depth from chat anecdotes ④ privacy-adjacent: refused Sherman's census
+revenue then volunteered his revenue TIER; for Cyprus claimed "revenue only comes as bands" while
+naming four Cyprus members.
+
+**Root cause of ③ was SQL, not the model:** whole-phrase ILIKE matching meant "pay managers" never
+matched "What do you pay a Manager per month?". Fixed with tokenized matching + stop-words
+(v6/v6b), plus agreement/consent blocks excluded from the stats surface.
+
+**THE TIMEOUT (Andy: "fix the timeout and re-run the sweep").** `form_stats` was 5.5s/call and the
+sweep died at 60s. Two causes: `form_windowed` is SECURITY DEFINER so the planner **cannot inline
+it**, and `form_stats` called it three times per query — each a full `jsonb_each` explosion of
+2.3k submissions × ~60 answers, spilling to temp. Fixes: **matview `form_answers_exploded`**
+(111,282 rows, indexed on canonical_key + window cols, PII filtered at build) + `WITH … AS
+MATERIALIZED` so the window is scanned once. **5.5s → 0.79s (7×).** Loader now calls
+`refresh_form_answers()` after every load — without it new census answers would sit in the ledger
+and silently never reach an answer. QA per-call ceiling tightened 60s → 25s so a future slowdown
+fails loudly (a timeout is indistinguishable from "no data").
+
+**Results after the fixes — all three classes closed:**
+- **Sweep: 1,857 checks, 0 failures**, 100 askable questions (19 numeric + 595 percent rows), no timeouts.
+- **Pay bands:** "what do members typically pay managers?" → *"Per the census… Under $3k 34% · $3k–5k 19% · $5k–8k 28% · $8k–12k 16%"* then chat color — census leads, matches SQL exactly.
+- **Philippines:** *"about 60% of members who answered have team members in the Philippines"* — was "no such census question"; SQL 60.3%.
+- **Chapter:** *"~46% in $1–5M · ~17% $5–10M · ~10% $10–20M · ~28% $20M+ (excluding members with no revenue on file)"* — percent, base excludes no-data, zero member counts. The global presentation rule now binds the band tools too.
+- **Gate 232 exit-0** after every change.
+
+**#20 status:** data layer + tool layer green and fast; the three probe failure classes fixed and
+re-proven. Still open before close: personas/dossier consumption (P1–P3) and Andy's promote.
+
+---
+
 ## 2026-08-06 (v4) — #20 QA'd: mechanical sweep over EVERY askable question, 4 defect classes fixed
 
 Andy: *"we are battling for one field and there are dozens. You need to QA it."* Built

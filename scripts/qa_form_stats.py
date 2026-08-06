@@ -39,8 +39,10 @@ E = env()
 
 
 def rpc(fn, args):
+    # 25s ceiling on purpose: form_stats must stay fast. A timeout is indistinguishable from
+    # "no data", so a slow RPC would silently under-run this sweep instead of failing loudly.
     p = subprocess.run(
-        ["curl", "-sS", "-m", "60", "-X", "POST",
+        ["curl", "-sS", "-m", "25", "-X", "POST",
          f"{E['SUPABASE_URL']}/rest/v1/rpc/{fn}",
          "-H", f"apikey: {E['SUPABASE_SECRET_KEY']}",
          "-H", f"Authorization: Bearer {E['SUPABASE_SECRET_KEY']}",
@@ -114,6 +116,30 @@ def main():
         rows = rpc(fn, {"p_phone": PH})
         bad = [r for r in rows if (r.get("ref") or r.get("canonical_key")) in ("email", "phone", "full_name")]
         check(f"{fn}: identity refs excluded (R8)", not bad, str(bad)[:80])
+
+    # R9 (v5): numeric detail carries share>0 and the p10..p90 range, never min/max extremes
+    k = rpc("form_stats", {"p_phone": PH, "p_question": "num_kids"})
+    det = (k[0].get("detail") or "") if k else ""
+    check("numeric detail has share>0 (R9)", "share>0=" in det, det[:80])
+    check("numeric detail has typical range, no min/max (R9)",
+          "typical range" in det and "min=" not in det and "max=" not in det, det[:80])
+
+    # R10 (v5): chapter slice works and every cell respects the floor
+    ch = rpc("form_stats", {"p_phone": PH, "p_question": "ttm_revenue", "p_group_by": "chapter"})
+    check("chapter slice returns rows (R10)", len(ch) >= 3, f"{len(ch)}")
+
+    # R11 (v5b): free-text options case-fold — no duplicate option differing only by case
+    ni = rpc("form_stats", {"p_phone": PH, "p_question": "main_niche"})
+    opts = [r["label"].split(" — ")[-1] for r in ni]
+    lowered = [o.lower() for o in opts]
+    check("no case-duplicate options (R11)", len(set(lowered)) == len(lowered), str(opts)[:100])
+
+    # R12: PII questions are unaskable — name/email/link fields return nothing
+    for q in ("full name", "email address", "facebook", "brand / company name"):
+        rows = rpc("form_stats", {"p_phone": PH, "p_question": q})
+        pii = [r for r in rows if any(w in (r.get("label") or "").lower()
+                                      for w in ("name?", "email", "facebook", "link"))]
+        check(f"PII unaskable: '{q}' (R12)", not pii, str(pii)[:80])
 
     print()
     if fails:
