@@ -46,6 +46,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#61** | Schema audit: tables with no declared connections | 🔴 S1 | M | — | — |
 | **#62** | Resolve the 17 Security Advisor warnings | 🔴 S1 | S | — | — |
 | **#63** | Airtable-formula injection in the Make member-match (census + app v3) | 🔴 S1 | S | — | — |
+| **#64** | Runtime inventory: consolidate where logic runs (drift, not the load-bearing splits) | 🔵 S3 | M | — | — |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -299,6 +300,49 @@ consider `websearch_to_tsquery` for the two lookup fns if eval ever shows user-v
 - No other interpolation-into-query-language sites exist (grep both blueprints for `{{` inside
   `formula`).
 - Gate GREEN; both scenarios' next real submissions process normally.
+
+---
+
+### #64 · Runtime inventory — write down where every job runs and why, then move only the drift
+**🔵 S3 · size M — filed 2026-08-06 (Andy: "why is the app logic scattered between so many places")**
+
+> **In plain words:** Work runs across Postgres, n8n, Make, Vercel, Render, GitHub Actions and
+> Python on Andy's Mac. Some of that is deliberate; some is history. Write it down, then fix only
+> the history.
+
+*As the owner, I can name where any piece of MDS logic runs and why it lives there — and nothing
+critical depends on a laptop being awake.*
+
+**Deliberate, keep (document, do not move):** retrieval / gating / stats in **Postgres** (set
+operations over 40k+ rows with vector search, and the security boundary the leak gate proves —
+app-layer filtering could be bypassed) · the alarm in **pg_cron + pg_net** (an alarm inside the
+system it watches is worthless; the launchd watchdog covers Supabase itself being down) · the
+WhatsApp workflow in **n8n** (Meta webhooks, retries, the tool-calling loop) · the Claude-vision
+revenue verifier on **Render** (long-running + file handling; fights Vercel's serverless model).
+
+**Drift, candidates to consolidate:**
+1. **Make vs n8n** — Make runs ONLY the Typeform→Airtable form syncs (app v3 `4784286`, census
+   `4860042`); n8n runs everything else. The census one was mirrored from app v3 out of
+   consistency, not conviction. Decide one home for form syncs; note Make's webhook fragility and
+   that both scenarios carry the #63 injection.
+2. **launchd Python on Andy's Mac** — FB engagement job, `alarm_watchdog.py`, ad-hoc scripts. Same
+   class of work runs on GitHub Actions elsewhere (member-profiles-sync + its 3 steps). A sleeping
+   laptop silently stops these. EXCEPT the watchdog, whose whole point is being outside Supabase —
+   it needs an off-Supabase, non-laptop home, not a GH Action in the same cloud.
+3. **Vercel + Render for one app** (`mds-digest-web`) — one codebase, two hosts, two deploy
+   stories, two env-var behaviours (Render needs a MANUAL redeploy on env change).
+4. **Two schedulers for nightly derivations** — GH Actions vs n8n vs pg_cron; pick per job class.
+
+**Deliverable:** one table in the handbook — job · runtime · trigger · why-here · owner · what
+breaks if it stops — covering every scheduled or triggered piece; then a short move-list with each
+migration proven by a real run (never "should work").
+
+**Accept when**
+- Every scheduled/triggered job appears in the inventory with a written why-here.
+- Nothing business-critical depends on Andy's Mac being awake (watchdog explicitly re-homed or
+  ruled as accepted with its reason).
+- Each move proven by a live run, old path disabled in the same session (no double-running).
+- Handbook updated; gate GREEN.
 
 ---
 
