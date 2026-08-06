@@ -6,6 +6,36 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 (later) — #20 v2: evergreen census mechanics — Andy's six rulings, staged
+
+Andy's rulings on the first staged cut: ① 50+ answers now ② **never show the member count** ③ a
+"revenue" ask must not silently pick TTM — several data points or ask ④ the census is **EVERGREEN**
+(same person answers yearly; "2026 census" = answers GIVEN in 2026, also Q3/Aug windows) ⑤ several
+forms hit the SAME field — match, never spawn "10 revenue fields" ⑥ no rewriting — field change
+over time must be readable.
+
+**Shipped (DB):** `form_field_map` — canonical keys as DATA, 28 seed mappings (ttm_revenue /
+projected_revenue / prior_year_revenue / revenue_yoy_pct / pct_* / main_niche / num_products /
+num_brands / num_kids) across census 2026 + app v3 + both legacy censuses + honorary; new form =
+INSERTs. `form_stats` v2 — up to 4 matching questions per ask, `p_since`/`p_until` windows,
+cross-form by default, n= marked INTERNAL in detail. `form_windowed` helper (latest-per-member
+inside the window). `form_field_history` — self-only field-over-time, oldest-first; the ledger is
+append-only so history is a READ, not an update. Proven: a member's ttm_revenue **20M (2022 legacy
+census) → 30M (census 2026)** in one stream. Traps: percentile_cont returns double (cast before
+round); view column reshape needs DROP VIEW.
+
+**Staging `725e2366`** (`apply_20b_census_evergreen.py`): tool schemas + rules — several points
+never a pick · counts internal · period words map to windows · own history = form_field_history.
+**Re-probe of the screenshot question:** "Here's what the Census 2026 shows on revenue: TTM median
+**$6.38M** (avg $47.4M, skewed by a few very large brands) · projected median **$10M**" — two data
+points, 2026 window, **no member count spoken**, median-first. **Gate 232 exit-0.**
+
+Numbers moved vs the first probe (5.83M → 6.38M) because cross-form unification now folds app-v3
+2026 applicants into the same canonical field — ruling ⑤ working as ordered; a census-form-only ask
+still narrows via p_form_id.
+
+---
+
 ## 2026-08-06 — #20 BUILT + STAGED + PROVEN (aggregates + owner lane) — awaiting promote
 
 **Trigger: Andy's prod screenshot** — "what is the avg revenue according to Census 2026" got an

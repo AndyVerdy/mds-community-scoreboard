@@ -1140,6 +1140,9 @@ def main():
             st, rows = rpc("my_form_answers", {"p_phone": rphone}, key)
             check("canceled member phone gets ZERO own form answers (#20)",
                   isinstance(rows, list) and not rows, f"got {len(rows or [])}")
+            st, rows = rpc("form_field_history", {"p_phone": rphone}, key)
+            check("canceled member phone gets ZERO form history (#20)",
+                  isinstance(rows, list) and not rows, f"got {len(rows or [])}")
             remail = rem[0].get("email")
             if remail:
                 st, feed = rpc("app_member_feed", {"p_email": remail}, key)
@@ -1195,6 +1198,8 @@ def main():
         check("anon key denied on form_stats", st in (401, 403, 404), f"status {st}")
         st, body = rpc("my_form_answers", {"p_phone": phone}, ANON_KEY)
         check("anon key denied on my_form_answers", st in (401, 403, 404), f"status {st}")
+        st, body = rpc("form_field_history", {"p_phone": phone}, ANON_KEY)
+        check("anon key denied on form_field_history", st in (401, 403, 404), f"status {st}")
     finally:
         cleanup()
         st, left = curl("GET", f"{BASE}/content_items?source=eq.{CANARY_SOURCE}&select=id", key,

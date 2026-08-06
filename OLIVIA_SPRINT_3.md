@@ -242,6 +242,19 @@ country/state/niche/rev_band) + `my_form_answers` (asker's own rows, self-only b
 taught + census rule (census asks = form_stats never content_search · never another member's
 individual answer · absent = never shown = UNKNOWN, not "No" · lead with median on wide spreads).
 
+**Evergreen v2 (same day, Andy's six rulings):** `form_field_map` — canonical keys are DATA
+(28 mappings seeded: revenue trio + YoY, channel %s, niche, products, brands, kids across census
+2026 / app v3 / legacy censuses / honorary), so a new form = INSERTs, never new columns.
+`form_stats` v2: returns **every matching question** (a "revenue" ask = TTM + projected + prior +
+YoY rows, never a silent pick) · **time windows** (`p_since`/`p_until` — "2026 census" = answers
+GIVEN in 2026; evergreen form, same member yearly) · cross-form unification (omit `p_form_id`) ·
+**counts stay internal** (n= marked INTERNAL in detail; spoken only when the ask IS a count).
+`form_field_history` — the asker's OWN field over time, oldest-first (append-only ledger = the
+event stream; proven: a member's ttm_revenue 20M in the 2022 legacy census → 30M in census 2026).
+Staging `725e2366` (`apply_20b_census_evergreen.py`). Re-probe: "avg revenue according to Census
+2026" → **TTM median $6.38M + projected median $10M, both windowed to 2026, no member count
+spoken, median-first**. Gate **232** exit-0 (anon + canceled denied on all three doors).
+
 **Staged proof — the exact question from Andy's prod screenshot:** *"what is the avg revenue
 according to Census 2026"* → **"the median TTM revenue among the 42 members who answered is $5.83M
 … the raw average comes out to about $29M, but I'd trust the median far more"* — numbers = SQL
