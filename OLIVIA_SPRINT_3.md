@@ -43,6 +43,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#58** | Cancelled registrations count as attendance | 🔴 S1 | S | n/a (SQL) | ✅ **LIVE** — one chokepoint view |
 | **#59** | Same event listed twice (events + partners) | 🟡 S2 | S | n/a (SQL) | ✅ **LIVE** — dossier joins on the row, not the name |
 | **#60** | Cancelled side-event wore the Summit's name (app-event mis-link) | 🟡 S2 | S | n/a (sync+SQL) | ✅ **LIVE** — sync dedupe + 5-min alarm |
+| **#61** | Schema audit: tables with no declared connections | 🔴 S1 | M | — | — |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -170,6 +171,56 @@ persist, since `Save Conversation` files `Log Inbound`.text.
 **Not promoted** — staging `eb4dc393`, prod `7f7b932f`. Apply script
 `scripts/olivia_loop/apply_57b_report_stop_geo_typo.py` (idempotent; re-running swaps a revised
 guard in place).
+
+---
+
+# 🔴 S1 — NOW
+
+### #61 · Schema audit — most warehouse tables show NO connections, and nobody has written down why
+**🔴 S1 · size M — filed 2026-08-06 from Andy's Schema Visualizer review (do not act; research first)**
+
+> **In plain words:** Open the Supabase schema map and most tables float alone — no lines. Are the relationships real and just undeclared, or are some tables genuinely orphaned?
+
+*As the owner, every table in `digest` either declares its relationships, or carries a written
+reason why it deliberately does not — no silent islands.*
+
+**What the visualizer shows (Andy's screenshot + schema dump):** only a handful of true FKs exist
+(`wa_messages.sender_member` · `member_sessions.member` · `member_events.member` ·
+`olivia_messages.member` — all → `members.airtable_id`; `fb_comments.post_id` → `fb_posts`;
+`partner_reviews.partner_id` → `partners_catalog`; `video_files.video_id` → `videos_catalog`;
+`olivia_question_labels.message_id` → `olivia_messages`). **Everything else joins on undeclared
+text keys** — `at_member_id` across ~15 tables (member_attributes, member_profiles,
+member_expertise, member_niches, member_personas(+history), member_profile_embeddings,
+member_state_snapshot, event_registrations, form_responses, fb_member_map, olivia_reports/requests,
+billing_nudges…), `event_at_id` → events_catalog, `chat_id/chat_name` → chats,
+`summaries.chat_name`, `member_edges.a_id/b_id`, `entity_dossier.entity_id` (polymorphic),
+`content_items.source_id` (polymorphic), wamid keys (olivia_sends/seen/feedback), and the
+`canonical_key` layer in form_field_map.
+
+**Research questions (the ticket's actual work):**
+1. Per table: what is its implicit relation set, and WHY is it undeclared? Known legitimate
+   reasons to document: sync-order independence (mirrors land before/after each other),
+   partially-stamped keys (`member_at_id` NULL until matched — FK would reject honest unknowns),
+   polymorphic keys (entity_dossier, content_items), append-only ledgers, cross-system IDs
+   (wamid, fb_uid, app ids). A FK that forces guessing violates the never-guess rule.
+2. Which relations COULD safely become real FKs (and with what ON DELETE behavior) without
+   breaking the sync jobs? Candidates to test: event_registrations.event_at_id,
+   member_expertise/niches/personas/embeddings → member_attributes.
+3. Orphan audit — count rows whose implicit parent is missing, per relation (the real risk the
+   diagram hides). Decide per case: backfill, delete-as-junk (never a real member), or accept.
+4. Two members tables (`members` = WA layer keyed airtable_id vs `member_profiles`/`member_attributes`
+   keyed at_member_id) — document the dual-key spine once, in the handbook AND as table COMMENTs
+   the visualizer can show.
+5. Deliverable: `FORMS_ERD.md` extended to the FULL digest schema (every table placed, every
+   implicit edge drawn) + table COMMENTs in the DB + a handbook section; any FKs actually added
+   ship with sync-job proof (full re-run green) + gate green.
+
+**Accept when**
+- Every `digest` table appears in the ERD with its edges (declared or documented-implicit).
+- Orphan counts measured per relation, each with a ruling (fix / accept / junk-clean).
+- FKs added only where the sync jobs provably tolerate them; everything else carries a written
+  reason in a table COMMENT.
+- Gate GREEN; no sync job broken (next scheduled runs all succeed).
 
 ---
 
