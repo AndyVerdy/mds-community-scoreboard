@@ -6,6 +6,23 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 — CENSUS: Typeform had silently DISABLED the webhook — re-enabled + 8 backfilled, 11/11 in AT
+
+Andy: "we have 11 now. check." Typeform showed 11 completed; **AT had 3.** Root cause: Typeform
+**auto-disabled the webhook at 02:12:47** — the very first delivery (Tabrez) hit the Make hook
+before the scenario existed, was rejected, and Typeform turned the webhook off. Every submission
+from 02:17 on never left Typeform. **Re-enabled via `PUT /forms/DFeK5yop/webhooks/WHTP2790200`**,
+backfilled the 8 missing through the proven replay pattern. **11/11 rows in AT, 11/11
+member-linked** (Aaron Biner 1.9M · Daniel Meredith 4M · Eric Winkler 3.85M · Kyle Yamamoto 12M ·
+Max Krishtul 1M · Merissa Cohen 2.5M · Ramon Gonzalez 1.3M · Sherman Chang 7.5M + the earlier 3).
+Webhook confirmed enabled after; the next organic submission is the live-delivery proof.
+
+⚠️ Standing risk flagged: Typeform silently disables webhooks after failures — worth a
+tools-health-style check (Typeform completed count vs AT census-row count) rather than trusting
+the webhook. Not built (out of scope tonight).
+
+---
+
 ## 2026-08-06 — CENSUS SYNC v5: unmatched submissions now ALERT — router + Slack
 
 Andy: *"how can I know if someone was not mapped?"* Scenario restructured with a router after the

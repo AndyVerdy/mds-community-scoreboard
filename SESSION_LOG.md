@@ -8,6 +8,7 @@
 prepend the full entry to its STREAM log + ONE line here.** Old references like "read SESSION_LOG
 2026-07-27" resolve through this index: find the date line, open the named stream file.
 
+- 2026-08-06 · **Census** · **webhook was silently DISABLED by Typeform (first delivery pre-scenario failed) — re-enabled, 8 backfilled, 11/11 rows in AT, 11/11 member-linked** · risk flagged: needs a count-drift check, Typeform disables webhooks silently → `SESSION_LOG_MISC.md`
 - 2026-08-06 · **Census** · **SYNC v5 — no-match Slack alert**: router after member search; 0/multiple matches post ⚠️ to #automation-tests with name+email+AT link · proven with fake submission (0 matches, alert landed, junk row deleted) → `SESSION_LOG_MISC.md`
 - 2026-08-06 · **Census** · **SYNC v4 — Andy's table rulings: 58 fields**: name+phone also into the literal fields · 2 NEW AT fields `% in Vietnam/Mexico Manufacture` (no more summing into Other) · have_kids No writes 0 kids · re-replayed + verified (Ian kids 2, both phones, VN/MX correctly empty) → `SESSION_LOG_MISC.md`
 - 2026-08-05 · **Census** · **SYNC v3 — swept all 760 Forms fields, 13 more questions mapped into 15 existing fields (54 total; 46 of ~85 questions in AT)**: mfg % buckets (VN+MX+other summed), EOS 2-field derive, M&A multi to 4 legacy checkboxes/selects, gross-margin buckets, activities/explain, benefits ranking, staff location · third replay verified per row · 39 questions left with NO existing field — field-creation decision Andy/Eugene → `SESSION_LOG_MISC.md`
