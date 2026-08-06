@@ -6,6 +6,21 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 — CENSUS SYNC v5: unmatched submissions now ALERT — router + Slack
+
+Andy: *"how can I know if someone was not mapped?"* Scenario restructured with a router after the
+member search: **exactly one match → link the Forms row** (unchanged) · **zero or multiple matches
+→ Slack alert to #automation-tests** with the name, typed email, match count and a direct link to
+the AT Forms row ("link it manually"). Proven live: fired a fake submission
+(selftest-census-nomatch@example.com) → alert landed in the channel with match count **0** and a
+working AT link; test row deleted after. Second way to see them: AT filter
+`Form ID = "Annual Census 2026"` + empty `Link to Member (restored)`.
+
+Note: Carmel's Make-error alert bot posted "scenario stopped" during the build window (the
+record-link 422, fixed within minutes) — scenario has run clean since; she may ask.
+
+---
+
 ## 2026-08-06 — CENSUS SYNC v4: Andy's four table rulings applied — 58 fields
 
 From Andy's review of the 85-question table: ① full name also into `What is your full name?`
