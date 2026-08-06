@@ -49,7 +49,6 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#64** | Runtime inventory: consolidate where logic runs (drift, not the load-bearing splits) | 🔵 S3 | M | — | — |
 | **#65** | 🚨 SQL functions exist ONLY in the live DB — no file in git | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
-| **#69** | Member matching: phone as second signal (hidden fields ruled out) | 🔴 S1 | S | — | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -237,48 +236,6 @@ layer that gates every member's data):**
 - A CI drift check runs and demonstrably fails on an injected difference (proven, not assumed).
 - The tier rule and its exceptions are written in the handbook.
 - Gate GREEN before and after every step; no RPC behaviour changed by the export.
-
----
-
-### #69 · Member matching — add phone as a second signal; hidden fields are dead
-**🔴 S1 · size S — filed 2026-08-06. Andy's ruling: "We will not use hidden fields since we are
-sharing forms in chats."**
-
-> **In plain words:** Some submissions never attach to a member because the typed email doesn't
-> match. We already ask for their phone number and never use it.
-
-*As the owner, a submission attaches to its member on the evidence we already collect — and when it
-can't, that failure is visible, never guessed.*
-
-**Why hidden fields are out (Andy, 2026-08-06):** forms are shared in chats, so one personalized
-link reaches many people — a hidden member id would attach everyone's answers to whoever's link was
-forwarded. That is worse than the current gap: silently WRONG data instead of missing data. This
-supersedes the July spec (personalized links + hidden `at_member_id`); do not revive it.
-
-**Measured 2026-08-06 — the fix is already in the data:**
-- Census `DFeK5yop`: **61 submissions, 7 unlinked** by email.
-- **All 7 carry a phone that matches a member**, and each matches **exactly one** — zero ambiguity.
-- Phone-as-second-signal takes census linkage **54/61 → 61/61**. Warehouse-wide today: 2,088 of
-  2,321 linked (90%), 233 unlinked, not yet measured for phone coverage.
-- The census literally asks "Please verify your phone number" — collected, stored in the ledger,
-  never matched on.
-
-**Build:**
-1. `stamp_form_responses()` — after the email pass, a phone pass: normalize to digits, compare last
-   9, link ONLY when exactly one active member matches. Zero or multiple = stay NULL.
-2. Same two-signal logic in the Make scenarios (census `4860042`, app v3 `4784286`), so Airtable's
-   `Link to Member (restored)` matches the warehouse instead of drifting from it.
-3. Conflict path unchanged: still the Slack alert with name, email and the AT row link.
-4. `pg_trgm` name similarity MAY sit behind phone+email as a tiebreaker; never as the only signal.
-5. Side effect worth noting for **#63**: phone is stripped to digits before matching, so it carries
-   no injectable string — the email interpolation still needs escaping on its own.
-
-**Accept when**
-- Census reaches 61/61 (or the exact remainder is explained per row).
-- Warehouse-wide before/after linkage counts reported; no row linked on an ambiguous match.
-- Airtable and warehouse agree on who each submission belongs to (spot-checked on the 7).
-- Nothing links where zero or multiple members match — proven with a deliberate ambiguous fixture.
-- Gate GREEN.
 
 ---
 
