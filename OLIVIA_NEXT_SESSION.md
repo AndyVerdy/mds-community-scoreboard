@@ -72,11 +72,21 @@ event enriches ONE catalog row (mds-digest-web `9abc8fc`, losers' `app_*` NULLed
 browse = Registration Open/Confirmed only; named asks answer Canceled/Postponed honestly with the
 true phase; Tentative/Awaiting Feedback invisible everywhere.
 
+### 2026-08-06 — #20 UNBLOCKED, and its foundation already exists
+The census LAUNCHED (17 real submissions night one, all synced to AT + member-linked via new Make
+scenario 4860042) and the **forms warehouse shipped**: `digest.form_responses` (2,276 submissions
+across census 2026 + app v3 + honorary + both legacy censuses, 90% member-stamped) + view
+`form_answers_latest` (latest answer per member×form×ref, `submitted_at` = decay axis) + gate 226.
+**Andy's rules are in memory `project_mds_forms_warehouse`** — recency wins · conditional gaps ≠ No
+· raw answers OWNER-ONLY (silent personalization fine, aggregates fine incl. chapter/region slices
+with small-cell suppression). **#20's remaining build = the Olivia side**: owner-gated lane
+("what did I say on my census"), dossier/persona consumption, aggregate answers.
+
 ### Pick up here
-1. **No unblocked build ticket remains.** #58, #59 and #60 all closed 2026-08-05, all data-layer,
-   nothing awaiting promote. The rest is blocked (#18 data · #20 census form · #17 GROUPOS_PAT ·
-   #36 Circleback), S4, or a smoke-time measurement (#32, #14, #34). Next move is an unblock from
-   Andy or the **sprint-close ritual**: smoke → #32 + #14 measured → #34 → release notes.
+1. **#20 · Census into the warehouse is UNBLOCKED and half-done** (data layer live; Olivia lane +
+   dossier wiring remain). Everything else is blocked (#18 data · #17 GROUPOS_PAT · #36 Circleback),
+   S4, or a smoke-time measurement (#32, #14, #34). Next move is #20 or the **sprint-close
+   ritual**: smoke → #32 + #14 measured → #34 → release notes.
 2. **Nothing is waiting to promote** — staging and prod match, and #58 was data-layer only.
 3. **Andy's side:** post the release note (`OLIVIA_RELEASE_NOTES_2026-08-04.md`, WhatsApp AND
    ClickUp syntax) · two AT country records are wrong (`NE` row is Haarlem/Netherlands, `ZW` row
