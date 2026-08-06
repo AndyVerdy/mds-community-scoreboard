@@ -1134,6 +1134,12 @@ def main():
             st, rows = rpc("chapter_info", {"p_phone": rphone}, key)
             check("canceled member phone gets ZERO chapter rows",
                   isinstance(rows, list) and not rows, f"got {len(rows or [])}")
+            st, rows = rpc("form_stats", {"p_phone": rphone, "p_question": "revenue"}, key)
+            check("canceled member phone gets ZERO form stats (#20)",
+                  isinstance(rows, list) and not rows, f"got {len(rows or [])}")
+            st, rows = rpc("my_form_answers", {"p_phone": rphone}, key)
+            check("canceled member phone gets ZERO own form answers (#20)",
+                  isinstance(rows, list) and not rows, f"got {len(rows or [])}")
             remail = rem[0].get("email")
             if remail:
                 st, feed = rpc("app_member_feed", {"p_email": remail}, key)
@@ -1177,14 +1183,18 @@ def main():
         st, body = rpc("content_lookup", {"p_phone": phone, "p_source": "wa_digest"}, ANON_KEY)
         check("anon key denied on content_lookup", st in (401, 403, 404), f"status {st}")
 
-        # form_responses: the raw form ledger is OWNER-ONLY by rule (2026-08-05) and today has
-        # NO exposing RPC at all — the anon key must bounce off both the table and the view.
+        # form_responses: the raw form ledger is OWNER-ONLY by rule (2026-08-05) — the anon key
+        # must bounce off the table, the view, AND the two #20 doors.
         st, body = curl("GET", f"{BASE}/form_responses?select=token&limit=1", ANON_KEY,
                         profile_hdr=["Accept-Profile: digest"])
         check("anon key denied on form_responses table", st in (401, 403, 404), f"status {st}")
         st, body = curl("GET", f"{BASE}/form_answers_latest?select=ref&limit=1", ANON_KEY,
                         profile_hdr=["Accept-Profile: digest"])
         check("anon key denied on form_answers_latest view", st in (401, 403, 404), f"status {st}")
+        st, body = rpc("form_stats", {"p_phone": phone, "p_question": "revenue"}, ANON_KEY)
+        check("anon key denied on form_stats", st in (401, 403, 404), f"status {st}")
+        st, body = rpc("my_form_answers", {"p_phone": phone}, ANON_KEY)
+        check("anon key denied on my_form_answers", st in (401, 403, 404), f"status {st}")
     finally:
         cleanup()
         st, left = curl("GET", f"{BASE}/content_items?source=eq.{CANARY_SOURCE}&select=id", key,

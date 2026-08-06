@@ -31,7 +31,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `955ed56f` |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
-| **#20** | Census into the warehouse | 🟡 S2 | L | ⛔ BLOCKED — census form not launched yet (Andy 2026-08-05) | — |
+| **#20** | Census into the warehouse | 🟡 S2 | L | ✅ staged + proven `1dd2f39b` (aggregates + owner lane; personas open) | ⏳ awaiting promote |
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
@@ -229,9 +229,26 @@ content_items / member_events / embeddings, verifiable) · retention number stat
 # 🔵 S3 — PLANNED
 
 ### #20 · Census into the warehouse
-**🟡 S2 · size L — PROMOTED S3 → S2, but ⛔ BLOCKED (Andy 2026-08-05: "census is not done yet.
-its s2. But we need to launch the form first")** — the rebuilt census form has to go out and
-collect answers before there is anything to load. Tracked in the separate census-rebuild project.
+**🟡 S2 · size L — UNBLOCKED 2026-08-06 (census launched, 49 responses day one) · BUILT + STAGED +
+PROVEN same day — awaiting Andy's promote. Persona AC still open.**
+
+**Data layer (shipped outside the workflow):** `digest.form_responses` (2,308 submissions across
+census 2026 + app v3 + honorary + both legacy censuses, 90% member-stamped, daily GH-Action sync)
++ `form_answers_latest` (latest answer per member × form × ref = the decay axis) + two gated doors:
+`form_stats` (aggregates only, **groups under 3 members suppressed in SQL**, group_by
+country/state/niche/rev_band) + `my_form_answers` (asker's own rows, self-only by construction).
+
+**Loop (staging `1dd2f39b`, apply `scripts/olivia_loop/apply_20_census_lane.py`):** both tools
+taught + census rule (census asks = form_stats never content_search · never another member's
+individual answer · absent = never shown = UNKNOWN, not "No" · lead with median on wide spreads).
+
+**Staged proof — the exact question from Andy's prod screenshot:** *"what is the avg revenue
+according to Census 2026"* → **"the median TTM revenue among the 42 members who answered is $5.83M
+… the raw average comes out to about $29M, but I'd trust the median far more"* — numbers = SQL
+truth exactly (n=42, median 5,833,071, avg 29,019,432), median-first per the tool hint. Owner lane:
+"what did i say on my census?" (Andy, no census on file) → honest empty + offers the application.
+**Gate 226 → 230** (anon denied on table, view, and both RPCs; canceled member gets zero rows from
+both). Remaining for full close: **personas draw on census** (dossier/persona derivation) + promote.
 
 > **In plain words:** Census answers become searchable, so questions about what members sell and where become answerable.
 

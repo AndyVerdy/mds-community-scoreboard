@@ -6,6 +6,37 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 — #20 BUILT + STAGED + PROVEN (aggregates + owner lane) — awaiting promote
+
+**Trigger: Andy's prod screenshot** — "what is the avg revenue according to Census 2026" got an
+honest not-found + related-but-different links. Data existed (49 census responses in the
+warehouse); Olivia had no door. This is #20, unblocked this morning by the census launch.
+
+**DB doors (migrations `form_stats_and_my_answers_20` + choice-lateral fix):**
+`form_stats(p_phone, p_question, p_form_id, p_group_by)` — aggregates ONLY over
+`form_answers_latest`: numeric = avg + n/median/min/max in detail; choice/multi = distribution;
+**groups and options under 3 members suppressed IN SQL** (whale-ruling floor); group_by
+country/state/niche/rev_band; no p_question = catalog of askable questions. `my_form_answers` —
+the asker's own submissions, self-only by construction (active-member check, email/phone/full_name
+refs excluded). Trap fixed mid-build: set-returning function inside CASE is illegal — lateral.
+
+**Loop (staging `1dd2f39b`, `apply_20_census_lane.py`):** two tools + the census rule block
+(form_stats not content_search for census asks · never an individual's answer · absent = never
+shown = UNKNOWN · median-first on wide spreads).
+
+**Staged proof, the EXACT screenshot question:** → "According to Census 2026, the median TTM
+revenue among the 42 members who answered is *$5.83M* … raw average ~$29M, but I'd trust the
+median" — n=42 / median 5,833,071 / avg 29,019,432 = SQL truth verbatim, median led. Owner lane:
+"what did i say on my census?" (Andy has none) → honest empty + application offer. Real-member
+owner data proven at SQL level (never probed at a member's number).
+
+**Gate 226 → 230**: anon denied on form_responses, form_answers_latest, form_stats,
+my_form_answers; canceled member gets ZERO rows from both doors. Exit 0.
+
+**#20 remaining:** personas/dossier consumption of census answers + Andy's promote.
+
+---
+
 ## 2026-08-05 (night) — #60 SHIPPED (sync dedupe + 5-min alarm) · phase rule written
 
 **#60 · A cancelled side-event wore the Summit's name — CLOSED.** Andy pushed back on the first
