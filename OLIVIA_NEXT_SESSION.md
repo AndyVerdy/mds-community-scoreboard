@@ -19,7 +19,7 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-05: SPRINT 3 OPEN · PROD `163d175b` (#57b promoted; staging matches) · #58 shipped in SQL
+## STATE 2026-08-06: SPRINT 3 OPEN · PROD `f6b54620` · STAGING `9b14c44c` carries #20, AWAITING REVIEW + PROMOTE
 
 **Sprint 3 goal = make Olivia personal.** Ten tickets closed and live (evidence at the BOTTOM of
 `OLIVIA_SPRINT_3.md`); ten still open. Release 3 and everything before it is in
@@ -82,12 +82,27 @@ across census 2026 + app v3 + honorary + both legacy censuses, 90% member-stampe
 with small-cell suppression). **#20's remaining build = the Olivia side**: owner-gated lane
 ("what did I say on my census"), dossier/persona consumption, aggregate answers.
 
-### Pick up here
+### NEXT SESSION = REVIEW #20, THEN PROMOTE (Andy 2026-08-06)
+**#20 is BUILT + STAGED + probe-proven on staging `9b14c44c`; prod is `f6b54620` and has NONE of
+it.** Next session opens by REVIEWING #20 — not by starting new work. Review = re-read the ticket's
+ACs, re-run `scripts/qa_form_stats.py` (last: 1,857 checks, 0 fails) + the leak gate (232, exit-0),
+re-probe the three classes that failed and were fixed (pay bands · staff location/Philippines ·
+chapter percentages), then promote if all green.
+
+**#20's open AC:** personas/dossier consumption of census answers (P1 attributes overlay, P2
+census long-text into `content_items` — needs Andy's exposure ruling, P3 dossier section). Decide
+whether that ships before the promote or as a follow-up.
+
+⛔ **The Airtable forms-structure discussion (new tables, Answers table, sandbox base
+`appE6FkiVESss5mbZ`) is NOT sprint work** — Andy 2026-08-06. It belongs to the census/forms project,
+not Olivia. Do not let it re-enter the sprint.
+
+### Pick up here (after the #20 review)
 1. **#20 · Census into the warehouse is UNBLOCKED and half-done** (data layer live; Olivia lane +
    dossier wiring remain). Everything else is blocked (#18 data · #17 GROUPOS_PAT · #36 Circleback),
    S4, or a smoke-time measurement (#32, #14, #34). Next move is #20 or the **sprint-close
    ritual**: smoke → #32 + #14 measured → #34 → release notes.
-2. **Nothing is waiting to promote** — staging and prod match, and #58 was data-layer only.
+2. **#20 IS waiting to promote** — staging `9b14c44c` vs prod `f6b54620`. Nothing else pending.
 3. **Andy's side:** post the release note (`OLIVIA_RELEASE_NOTES_2026-08-04.md`, WhatsApp AND
    ClickUp syntax) · two AT country records are wrong (`NE` row is Haarlem/Netherlands, `ZW` row
    is Zug/Switzerland) · standing: GROUPOS_PAT · Circleback · does an event description/agenda

@@ -6,6 +6,44 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 (SESSION CLOSE) — #20 staged and probe-proven; NEXT SESSION = REVIEW #20, THEN PROMOTE
+
+**Closed at Andy's instruction: "review #20 before promoting."**
+
+**Shipped today (all data-layer, no promote needed):** #58 cancelled registrations · #59 duplicate
+dossier joins · #60 app-event rename + health signal 5 · the forms warehouse (`form_responses`,
+2,321 submissions across 5 forms, 90% member-stamped, daily GH-Action sync + matview refresh).
+
+**#20 · Census into the warehouse — BUILT + STAGED, NOT promoted.** Staging `9b14c44c`; prod
+`f6b54620` has none of it. Three gated doors (`form_stats`, `my_form_answers`,
+`form_field_history`), canonical field map, evergreen time windows, percent-not-counts rules.
+Performance fixed this session: `form_stats` 5.5s → 0.79s via the `form_answers_exploded` matview
+(111,282 rows) + single materialized window; QA per-call ceiling 60s → 25s so a slowdown fails
+loudly instead of looking like "no data". Final state: **QA sweep 1,857 checks / 0 fails** over 100
+askable questions · **gate 232 exit-0** · the three probe failure classes (pay bands · staff
+location · chapter counts) fixed and re-proven.
+
+**#20's open AC: personas.** P1 attributes overlay + P3 dossier section are drafted, not applied;
+P2 (census long-text into `content_items`) is blocked on Andy's exposure ruling — searchable like
+application answers, or owner-only.
+
+**Filed today, none acted on:** #61 schema audit (undeclared relations) · #62 the 17 Security
+Advisor warnings · #63 Airtable-formula injection in BOTH Make member-match scenarios (SQL layer
+audited clean — zero dynamic SQL anywhere) · #64 runtime inventory · #65 🚨 **the SQL layer exists
+only in the live DB, no file in git** (biggest risk on the board; export-first remediation needs a
+second confirmation) · #66 forms-warehouse remaining gaps · #67 cohort/trend comparison · #68
+canonical question dictionary (mapping measured at **25 of 316 questions**).
+
+**Andy's rulings recorded:** hidden fields are DEAD for member matching (forms are shared in chats,
+so a personalized link would attach everyone's answers to one member — supersedes the July spec) ·
+the forms-warehouse architecture is CORRECT, the 5 items are gaps inside it, not reasons to change
+shape · the Airtable forms-structure work (sandbox base `appE6FkiVESss5mbZ`) is NOT sprint work.
+
+**Next session opens with the #20 review**, not new work: re-read ACs, re-run `qa_form_stats.py`
+and the leak gate, re-probe the three fixed classes, then promote if green.
+
+---
+
 ## 2026-08-06 (v7) — #20: probe verdicts reported, timeout fixed, sweep clean, 3 failure classes closed
 
 **Andy: "I don't think 20 is done… did you run test questions? what was the result."** He was right,
