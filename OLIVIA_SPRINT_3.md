@@ -28,10 +28,11 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
+| **#70** | 🚀 New data source — ZOOM CALLS (attendance · transcripts · schedule) | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `7fe60761` |
 | **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `955ed56f` |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
-| **#20** | Census into the warehouse | 🟡 S2 | L | ✅ staged + proven `1dd2f39b` (aggregates + owner lane; personas open) | ⏳ awaiting promote |
+| **#20** | Census into the warehouse | 🟡 S2 | L | ✅ proven | ✅ **LIVE** `7fe60761` (only P2 exposure ruling open) |
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
@@ -182,6 +183,154 @@ guard in place).
 ---
 
 # 🔴 S1 — NOW
+
+### #70 · 🚀 New data source — ZOOM CALLS (attendance · transcripts · schedule)
+**🔴 S1 · size L — filed 2026-08-06 · research COMPLETE, build NOT started**
+
+#### ✅ 2026-08-07 — BUILT, PROBED, PROMOTED (prod `7fe60761`)
+
+| AC | result |
+|---|---|
+| `digest.calls` holds every 2026 call, loaders idempotent | ✅ 254 calls · re-runs change 0 rows |
+| `call_attendance` ~2,000 rows across the member calls | ✅ **4,348** rows, all 90 calls |
+| ≥95% of published member calls carry `groupos_video_id` | ⚠️ **85 of 90** — the other 5: 4 genuinely unpublished, 1 recovered late |
+| ≥60% of attendance rows resolve to a member | ❌ **48.1%** of person rows — the honest number; `partial` guesses are a review queue, not stamped |
+| transcript chunks searchable with the right access_rule | ✅ 3,116 chunks, all embedded, restricted follow the video |
+| a probe returns the passage WITH the video link | ✅ and on natural questions, not just named-call asks |
+| nightly/weekly job heartbeats and alarms when stale | ✅ `com.mds.zoom.weekly` + `zoom_weekly` heartbeat (**degraded** while GROUPOS_PAT is missing) |
+| gate GREEN | ✅ **232 → 243**, now covering attendance + transcripts |
+
+**Andy's rulings:** ① transcripts vectorized to drive VIDEO suggestions; quote and link the
+LIBRARY video, never Zoom ② **attendance STORED, NEVER SHOWN** ③ summaries short and scannable
+(one lead line + 4-5 labelled bullets, WhatsApp bold).
+
+**The filename join was fragile and it had already cost us.** Andy: *"what if someone changes the
+file name?"* — right. Fallback added on signals a rename cannot destroy (same-week publish,
+duration within 3 min, title overlap, unique candidate only). It **recovered 2 renamed files**,
+Craig Brockie and the AppLovin Expert Call, both previously counted as "never published". A
+detector now separates "unpublished" from "we missed it".
+
+**A third of "attendance" was never a person** — 138 AI-notetaker and host names, 1,089 rows,
+which would have become `co_attended` edges for people who do not exist.
+
+**The lane took four things and the first three alone changed nothing:** title-rank as a fourth
+RRF list in `content_search_v2` (`dorian gorski` 0 → 6 transcript rows) · `videos_catalog.search_tsv`
+indexes the SUMMARY at weight B · tool descriptions · **and the rule that advice-shaped asks run
+`video_search` alongside the chats**. Same lesson as #20: describing a tool is not telling her to
+use it.
+
+**Code review found 5 Criticals, all real:** TLS verification silently OFF in the launchd job
+(`/usr/bin/python3` has no certifi, so credentials went over an unverified connection) ·
+`videos_weekly_check.py` had never once run · **Zoom URLs stored on 253/253 `calls.raw` rows** ·
+`zoom_resolve_attendance` existed only in the live DB · **the gate had zero coverage of the new
+surfaces**. All fixed. Separately the gate caught a concurrent session resetting `video_search`'s
+ACL, leaving **anon able to call it**.
+
+**Still open:** speakers on only 413 of 1,024 videos · 4 calls with no published recording ·
+`map_video` imported from an untracked repo.
+
+> **In plain words:** Olivia can see that a call happened and that a video exists. She cannot see
+> who was in the room or a single word that was said. Zoom holds both, and we now have the API key
+> that reads them.
+
+*As a member, Olivia knows which calls I actually attend and what was said inside them — so she
+answers "what did they say about TikTok Shop on the last mogul call", points me to the minute of the
+video that covers it, and stops recommending the channel call I never miss.*
+
+This closes three of the handbook's own §14 limits verbatim: **"No transcripts. Olivia finds a call
+and its deck, never what was said inside it."** · **"The live calls calendar (Mogul / Expert /
+Channel Calls) is not connected."** · and it supplies the missing event *description*, since a
+transcript is the richest description a call has.
+
+#### What the research established (all verified live 2026-08-06, nothing written anywhere)
+
+**Access.** A Server-to-Server OAuth app (**"Mille"**, created by owner Ian Sells) is live; creds in
+`/Users/Born/Scorecard/.env.zoom` (gitignored). Token exchange, scopes and every endpoint below were
+proven with `scripts/zoom_probe.py`. All 395 member-facing calls in 5 years were hosted by the single
+account `contact@milliondollarsellers.com`.
+
+**Three different history depths — this shapes the whole design:**
+
+| Data | Endpoint | Reach | 2026 volume |
+|---|---|---|---|
+| Calls + recordings + MP4/M4A | `/accounts/me/recordings` (1-month windows) | **2020-05-26 →** | 253 recorded, **90 member-facing** |
+| Transcripts (VTT, speaker-labelled) | `/meetings/{uuid}/recordings` → `TRANSCRIPT` | **2026 only** (Zoom transcription switched on ~Jan 2026; 0 before) | **165**, of which 63 on mapped member calls |
+| Attendance | `/report/…/participants` = `/metrics/…/participants` (identical counts) | **~13 months, ROLLING** — Jun 2025 ✅, May 2025 `12702 a year ago`, 2024 `3001 does not exist` | ~2,000 rows over 90 calls |
+| Forward schedule | `/users/{id}/upcoming_meetings` + `type=scheduled` | forward | 43 member occurrences / 17 series |
+
+**The video join is exact, not fuzzy.** GroupOS stores Zoom's original filename in `video_url`
+(`…1786034085413-GMT20260805-160238_Recording_1920x1080.mp4`); `GMT<YYYYMMDD>-<HHMMSS>` is the Zoom
+`recording_start` in UTC. **82 of 90 member calls matched by exact filename, 0 needed a ±3-min
+window, 0 orphans the other way.** The 8 unmatched are genuine publishing gaps (18 Feb Leslie Eisen
+hotseat, 18 Feb Rockies, 2 Apr Advisory Council, 21 May Logistics, 3 Jun Craig Brockie, 20 Jul Large
+Catalog Sellers, 21 Jul AppLovin, 31 Jul Accelerator). Title and duration matching were tried first
+and are **rejected** — nearly every call runs ~55 min, so duration paired Dorian Gorski with a
+CAC/LTV video; the two-hop event join only reached 48%.
+
+**Identity is the hard part, and registration is ruled out (Andy 2026-08-06: "this is an expensive
+cost. so no reg").** Verified: `approval_type=2` on every call and `/registrants` returns
+*"Registration has not been enabled"*, so Zoom holds **no email** for link-joiners — **7 of 765
+distinct names (0.9%) carry one, always the host**. `participant_uuid` exists only on the dashboard
+endpoint and is per-meeting, so it is **not** a stable person key. Matching is therefore by display
+name against `member_attributes`, measured on the real 12-month set: **67% of attendance rows
+auto-resolve** (279 exact + 102 partial), 58 names need one human decision, 306 names never match
+(232 are single-word: `Adi`, `Holly`, `Matt`, `Scott`). Draft alias sheet already produced
+(`scripts/zoom_alias_draft.py` → `zoom_alias_draft.csv`, 765 names ranked by call count).
+Frequent unresolved names worth a human eye: **Reinaldo Pelaez (36 calls)**, Sriram Ponvel (21),
+Bogdan Lupu (14), Fazlul Karim (13), Holly (12).
+
+**Scope ruling (Andy 2026-08-06): 2026 only.** That drops the AssemblyAI backfill of ~1,400
+pre-2026 recordings entirely — 2026 transcripts already exist as Zoom VTTs, so this ticket costs no
+transcription spend.
+
+**Shape of the fix** — three tables in `digest`, files-first because of #65:
+- **`calls`** — one row per Zoom meeting UUID: topic, derived `call_type` (mogul / expert / channel /
+  chapter), host, actual start+end, duration, participant_count, `has_recording`, `has_transcript`,
+  `groupos_video_id` (filename join), raw payload jsonb. Ingest all 253 with an `is_member_facing`
+  flag, not just the 90 — cheap now, avoids a re-pull.
+- **`call_attendance`** — one row per join: call_uuid, display_name, folded name, join/leave,
+  seconds, nullable `at_member_id`. **Never keyed on the video** — 8 calls have no video, and
+  attendance exists whether or not anything was published.
+- **`zoom_name_alias`** — folded display name → `at_member_id` + confidence + who decided.
+  Resolution lives here, never baked into attendance rows, so one new alias re-resolves all of 2026
+  for free.
+- **Transcripts** land as `content_items` rows (chunked, embedded, `access_rule` + `sensitivity`)
+  so `content_search_v2` finds them with no new engine, plus the raw VTT kept against the call.
+- **Attendance also feeds `member_events`** (append-only, `cadence='backfill'` then `'daily'`) and
+  `co_attended` edges in `member_edges` — the personalization layer already reads both.
+
+**What we do next, in order:**
+1. **Andy's two rulings below** — nothing is built until the sensitivity ruling lands.
+2. **DDL as files** (`sql/` in this repo, applied via migration) — the three tables + indexes.
+3. **Backfill 2026:** calls (253) → attendance (~2,000 rows, 90 calls) → the 82 video links →
+   transcripts (63 member calls) chunked + embedded into `content_items`.
+4. **Alias review pass** — Andy or Kat clears the 58-name queue once; unresolved rows still load.
+5. **Nightly job** (launchd + heartbeat, same pattern as the other 5): yesterday's calls,
+   participants, new VTTs, alias re-resolve. Attendance ages out of Zoom on a rolling window, so
+   this is what stops the loss becoming permanent.
+6. **Olivia lanes** — transcript search inside `content_search_v2`, "what did I attend" in the
+   member's own dossier, and the calls calendar answering "when is the next mogul call".
+
+**Accept when:**
+- `digest.calls` holds every 2026 call (253) with `is_member_facing` correct on the 90; every table's
+  DDL exists as a file in the repo (#65's rule) · re-running any loader changes 0 rows (idempotent).
+- `call_attendance` holds ~2,000 rows across the 90 member calls; **spot-checked against the Zoom
+  report API for 3 calls, exact row-count match**.
+- ≥95% of published 2026 member calls carry their `groupos_video_id` (today's measured join: 82/90 =
+  91%, the other 8 have no video to link).
+- ≥60% of attendance rows resolve to an `at_member_id` on first load (measured today: 67%), and the
+  unresolved remainder is still queryable by name.
+- Transcript chunks are searchable through `content_search_v2` with the correct `access_rule`, and a
+  probe of the form *"what was said about X on the <date> mogul call"* returns the passage **with the
+  video link**.
+- The nightly job stamps `olivia_job_heartbeats` and alarms when stale · **gate GREEN (224+)** ·
+  matrix rows added.
+
+**Named non-goals:** pre-2026 anything (scope ruling) · AssemblyAI transcription · turning on Zoom
+registration · surfacing attendance counts or rankings to members (§7.3's internal-sort-key rule
+applies unchanged).
+
+---
 
 ### #65 · 🚨 THE SQL LAYER IS NOT IN VERSION CONTROL — single point of failure
 **🔴 S1 · size M — filed 2026-08-06 · ⚠️ HUGE RISK, DOUBLE-CONFIRM BEFORE ANY REMEDIATION TOUCHES THE DB**
@@ -635,6 +784,85 @@ truth exactly (n=42, median 5,833,071, avg 29,019,432), median-first per the too
 **Gate 226 → 230** (anon denied on table, view, and both RPCs; canceled member gets zero rows from
 both). Remaining for full close: **personas draw on census** (dossier/persona derivation) + promote.
 
+#### 2026-08-07 — COVERAGE MEASURED, then two defects fixed (Andy: "are we processing all 80ish questions")
+The honest count was **64 of 96** census-2026 questions answerable and correctly labelled. Two
+defects, both fixed and proven:
+- **① 13 matrix rows had no question at all.** Typeform sends matrix rows with `"q": ""` — the
+  question lives on the matrix parent — and the loader only recursed into `group` fields, so
+  form_stats aggregated them into labels like `" — Inhouse" 64.2%`. A percentage with no question
+  attached is a wrong-answer generator, not a gap. `sync_form_responses.fetch_titles` now composes
+  the two (`How do you handle each of these areas? (Bookkeeping)`), re-synced across all 64 forms:
+  **0 blank labels in 125,014 rows**, the legacy census matrix rows picked up labels too.
+- **② Two questions were killed by a false positive in the PII filter.** The exploded view drops
+  any question whose text matches `website`, which caught *DTC / your own website* revenue share
+  and the *MDS systems UX rating* — 837 answers across 3 forms. Numeric answers now bypass the
+  text heuristic (a number cannot be PII), and **the same pass closed a real leak: phone_number
+  and url answers were reaching the stats layer** (20 refs, raw phone numbers and LinkedIn URLs) —
+  those types are excluded outright now.
+- **Follow-through:** composing the matrix label put "Email" into a legit topic, so
+  "what's Sherman's email" began matching a marketing stat (no PII, but nonsense). Identity words
+  are now query-side stop-words in `form_stats`; topical asks still resolve.
+- **Tool pick:** the data alone did not answer — a probe for bookkeeping/customer service came back
+  from chat anecdotes. The census topic map in the form_stats description now names the matrix and
+  rating topics (`apply_20f_matrix_topics.py`, staging `4b851e05`).
+
+| | before | after |
+|---|---|---|
+| census-2026 questions askable + correctly labelled | 64 / 96 | **79 / 96** |
+| blank question labels, whole warehouse | 13 refs | **0** |
+| phone/url answers in the stats layer | 20 refs | **0** |
+| QA sweep | 1,857 checks / 0 fails | **1,872 checks / 0 fails** |
+| leak gate | 232 exit-0 | **232 exit-0** |
+
+The remaining 17: **13 free-text** (P2 — blocked on Andy's exposure ruling) + **4 PII by design**
+(email, phone, full_name, brand_names). Staging probes: bookkeeping **61% in-house / 36% agency**
+census-led then chat color (SQL 60.7 / 36.1) · DTC **median 5%, avg 15%** median-first. SQL kept in
+`scripts/sql/` (partial answer to #65). ⚠️ A concurrent Trend-Report session added
+`digest.form_scope` mid-session, pinning Olivia to the 5 profile forms — Olivia's answers unchanged.
+
+#### 2026-08-07 (later) — AC③ CLOSED: personas read the FORMS warehouse, and keep themselves current
+Andy: *"we need to wire it to forms, not just census… if several forms impact the same question we
+must use the latest one — e.g. revenue constantly changing."*
+
+**Why it had never happened:** connecting a source to personas takes TWO edits and the census had
+neither. `persona_signal_fingerprints` decides WHEN a persona rebuilds (it hashed only
+`member_attributes.refreshed_at`, Olivia questions, event attendance, FB posts — so filling in the
+census left the hash identical and no rebuild fired) and `persona_signals` decides WHAT the
+derivation sees (a forced rebuild would not have shown the answers anyway).
+
+**① The dictionary first.** `form_windowed` already does latest-wins (`distinct on (member_at_id,
+canonical_key) order by submitted_at desc`) but can only unify fields that SHARE a canonical key,
+and only **22 of 284** keys spanned more than one form. Two mapping passes — A mechanical
+(identical wording after normalising), B read by hand (the marketing matrix, the ops matrix, UX
+rating, benefits rank, competitive advantage, industries) — took it to **55 of 247**;
+`form_field_map` 27 → 78. Deliberately NOT merged, axis differs: pay bands (2026 seniority vs
+legacy named roles) · manufacturing · selling focus · employees · EOS. Two pass-B refs written from
+a truncated listing matched nothing and were caught by a guard query — silent no-ops, now in the file.
+
+**② The wiring.** `persona_signals` gained `self_reported` (own latest answer per canonical field,
+every profile-scope form, free-text excluded pending the P2 exposure ruling) and the fingerprint
+gained a forms term, so a new submission now marks that member stale on its own. Personas stay
+owner-scoped — `member_dossier`, `member_dossier_v2` and `multi_source_v2`'s `me` block all resolve
+to the ASKER — which is what keeps this inside "silent personalization fine, raw answers owner-only".
+
+| | before | after |
+|---|---|---|
+| canonical keys spanning >1 form | 22 / 284 | **55 / 247** |
+| personas drawing on forms | 0 | **462 of the 489 members who have answers (94.5%)** |
+| persona_signals payload | 21.8k chars · 2.4s | **14.3k chars · 0.5s** |
+| full rebuild wall-clock | 5h (29s each, serial) | **~50 min (5 workers)** |
+| rebuild result | — | **752 rebuilt · 0 failed · 0 missing · 0 stale** |
+
+**Three pre-existing bugs found by doing it:** `max_tokens: 3500` truncated the richest members'
+JSON mid-object and the parser could only say "no valid JSON" — that was the standing *missing: 3*
+(now 6000) · the builder was fully serial · `sb()` returns `[]` on an empty curl response, which
+reads as "this member has no signals" with no retry — at 8 workers the pool saturated and **228
+members were skipped as if they had no data**. Retry-with-backoff added, workers 8 → 5.
+
+Sample, unprompted: *"Runs lean (4 FT staff), handles bookkeeping/CS/listings in-house, outsources
+creative/design"* · *"9 FT + 8 PT staff + 5 VAs across Eastern Europe, Western Europe, China,
+Pakistan… ~200 containers annually"*. Revenue figures still absent per the standing rule.
+
 > **In plain words:** Census answers become searchable, so questions about what members sell and where become answerable.
 
 *As a member, Olivia knows what I actually said about my business.*
@@ -842,7 +1070,10 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 | Question | Why it matters |
 |---|---|
-| **Does an event description/agenda field exist** in Airtable or GroupOS that we are not syncing? | Decides whether event "fit" in #29/#50 is real or inferred from attendees. |
+| **#70 — how sensitive is a call transcript?** `public` to members like the video already is, or does some class need `restricted`? | **Blocks #70's build.** Members speak candidly about their businesses on these calls; the access rule decides what `content_search_v2` may return. Same shape as #20's exposure ruling. |
+| **#70 — may Olivia say WHO attended a call?** | `event_who` sets precedent for registered events, but Zoom attendance is unregistered and name-matched at 67% confidence — a wrong name is a wrong claim about a member. |
+| **#70 — does this supersede #36 (Circleback)?** | Both are "meeting notes become a source". Zoom already gives speaker-labelled transcripts for 2026; #36 stays blocked on details we may no longer need. |
+| **Does an event description/agenda field exist** in Airtable or GroupOS that we are not syncing? | Decides whether event "fit" in #29/#50 is real or inferred from attendees. **#70 partly answers this** — a transcript is the richest description a call has. |
 | **GROUPOS_PAT** | Unblocks #17 (auto-refresh) and the app half of the member-events feed. |
 | **Circleback workspace + scope** | Unblocks #36. |
 | Whale ruling — chapter TTM sums can identify a single member | Currently ON per the public-site precedent. |

@@ -31,6 +31,12 @@
       "port": 8091
     },
     {
+      "name": "trend-report",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8093", "-d", "/private/tmp/claude-501/-Users-Born-Scorecard/e5a4adaa-79b8-4641-9eb5-c7ac1100377c/scratchpad"],
+      "port": 8093
+    },
+    {
       "name": "hampton-deck",
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "8092", "-d", "/Users/Born/groupos-hampton"],

@@ -3,6 +3,7 @@
 .airtable_pat
 .env
 .env.local
+.env.*
 *.token
 *.pat
 

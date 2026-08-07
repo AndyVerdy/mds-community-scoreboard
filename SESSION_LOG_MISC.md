@@ -6,6 +6,144 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-06 (night) — MRR: LIFETIME PAID (membership dues) shipped — AT + Supabase + nightly sync
+
+**Andy's ask:** a field for "how much a member paid over time", Stripe + Wild Apricot, with a rough
+cross-check for deviation. Two mid-session corrections from Andy reshaped it and both were right:
+(1) WA managed the subscriptions pre-2026 and **fired invoices into Stripe under WA-CREATED Stripe
+customers**, which do NOT match the `Stripe Customer ID` on the member today — so joining Stripe on
+that key silently returns 2026-onward only; (2) **WA also bills events** — "get data for the sub
+payment only."
+
+**What shipped.** n8n **`PkKOxdYcW0UftVMA` "MDS Lifetime Paid (membership dues) → AT"** — ACTIVE,
+nightly 06:10 ET + force webhook `lifetime-paid-sync` (responseMode onReceived; the run is ~10 min,
+Cloudflare kills a waiting webhook at 100s). Two sources, no double-count:
+- **Wild Apricot invoices** with `OrderType` ∈ MembershipRenewal / MembershipApplication /
+  MembershipLevelChange, keyed on **`WA User ID`** → **$8,768,752** / 893 contacts. Excluded:
+  EventRegistration $6.47M (n=3135) and Undefined $2.18M (n=950, memos = Summit passes, credit
+  transfers). Scanned 8,734 invoices, reached end.
+- **Stripe paid invoices attached to a subscription**, keyed on `Stripe Customer ID` → **$3,970,416**
+  / 837 customers. 3,759 of 3,996 paid invoices are subscription-linked; 237 one-off ($444,010) are
+  event/store and excluded. Not truncated.
+- De-dup (same amount within 5 days) for members holding both ids: **0 rows dropped** — the two
+  sources are era-disjoint, which is exactly what the WA→Stripe migration implies.
+
+**Result: 1,026 members, $11,141,235 dues. Active coverage 697/718 = 97%.** Split: 517 WA-only,
+172 Stripe-only, 337 both. 21 active members have no dues found.
+
+**Airtable Members fields (all with descriptions):** `Lifetime Paid` fldZ4t1dOsSAZIV84 ·
+`Lifetime Paid — First Payment` fldZVbmFhdAdeoVGN · `Lifetime Paid — Payments` fldwt8rVEaOc7iG0o ·
+`Lifetime Paid Synced At` fldbWtqB578HuNfrv · `Rough Benchmark Paid ($6k/yr)` fldwE2BoUCgcZwND2
+(Andy's benchmark: full years rounded UP × $6,000) · `Lifetime Paid vs Benchmark (%)` fldjbegHvwHYyz0AI.
+`zzz UNUSED — Lifetime Paid (Events & Other)` fldS3txrzNodBHXO9 is an empty leftover from the
+all-cash scope (AT API cannot drop a field) — populating it is a small change if event spend is wanted.
+
+**Benchmark validation (strong):** long-tenured annual members land on it almost exactly — six annual
+payments of $5,997 = **$35,982 vs the $36,000 benchmark, 0.0% deviation**, repeatedly (Erik Fisher,
+Kenneth Hayden, Jay Kamhi, Jack Hanan, Monse Lozano, Nirbhay Patel). Christian Cox $38,919/17 pmts
+= +8.1%. Distribution across 1,014 members: p10 −100% · p25 −89% · **median −48%** · p75 −17% ·
+p90 +8%; 43% within ±40%. The negative skew is expected — the benchmark rounds UP to a full year, so
+anyone early in year one looks deeply negative, and quarterly/monthly plans bill below $6k/yr.
+
+**Known limits (stated, not hidden).** (a) **WA's API window starts 2020-05-16** — 279 of the 1,026
+joined before that and are understated; of the 234 members at ≤−90% deviation, 58% are pre-2020
+joiners. (b) A tail shows only a $195 application fee or a $1 card-auth as their dues (Mike Franzini
+joined 2025-02-19, $195) = missing/incorrect id link or dues taken outside both systems. (c) **$942,409
+of WA cash never went through Stripe** (Credit Card $402k / Wire $265k / Mercury Bank $242k / Cash /
+PayPal, 459 contacts) plus $284,514 unlabelled tender — measured but NOT yet in Lifetime Paid.
+
+**Supabase:** `digest.member_profiles` + `lifetime_paid`, `rough_benchmark_paid`,
+`lifetime_paid_vs_benchmark_pct`, `lifetime_paid_first_payment`, `lifetime_paid_payments`,
+`lifetime_paid_synced_at` (migrations `member_profiles_lifetime_paid`,
+`member_profiles_lifetime_paid_dues_only`); mappings added to mds-digest-web
+`scripts/backfill_member_profiles.py`. **Not yet re-run — Supabase columns are still empty.**
+
+**Traps hit (worth remembering).** n8n Cloud Code nodes die at **60s** → the WA scan is split across
+4 chained nodes (WA hard-caps `$top` at 100 whatever you ask, so ~88 sequential calls). WA `$filter`
+on `/payments` **silently no-ops** — it returned unfiltered rows and made a first overlap test
+meaningless. Stripe rate-limited a full `/v1/charges` + `/v1/invoices` pull → dropped charges
+entirely, added `requestInterval: 350`. Airtable rate-limited the writes → `batchInterval` 1500ms,
+maxTries 5, `onError: continueRegularOutput`. Renaming an AT field while a workflow still requests it
+by name = **422 on the whole list call**.
+
+**DUPLICATE-RECORD MERGE added (same session, exec 68688).** Andy audited 17 blank members. Verdict:
+most blanks are CORRECT — their "active" Stripe subscriptions only ever produced **$0.00 invoices**
+(`due=$0 paid=$0 attempted=true`), so no dues were ever charged. Three real findings: (1) **duplicate
+records split identity** — the dormant row held the payment history while the active row read blank.
+Email does NOT match across these dups (Sheiva: sajadpour.sheiva@gmail.com vs sheiva@epikkproducts.com),
+so **name is the only link**. Merge rule added to `Combine + Diff`, deliberately narrow: fires only
+when a name group has exactly ONE record carrying an `AT Database Status`, that record has NO dues of
+its own, and a sibling does; then the primary takes the union of the group's WA ids + Stripe customer
+ids and siblings are cleared so nothing double-counts. Result: **Sheiva Sajadpour $29,985/5 pmts since
+2021-07-19 and Adrian Markus $7,497 moved onto their active records**, 2 siblings cleared, **214
+ambiguous name groups left untouched**, grand total unchanged at $11,141,235. Base-wide there are 358
+multi-record name groups but only these 2 had money stranded on a non-primary. (2) **Rodrigo Gonzalez
+has an OPEN, never-attempted $3,497 invoice** (2026-07-22, "Legacy, $3,497 Annual Membership") —
+uncollected cash, financial action left to Andy/Tina. (3) **8 new joiners approved Jun–Jul 2026 have
+no dues invoice in either system** (Waszek, Wills, Santic, Denic, Indig, Ege, Dong, Balcazar) while WA
+granted Indig/Errafik/Ege $500 "MDS Event Credit" tagged "Standard Quarterly/Annual" on 2026-08-05 —
+member benefits with no invoice on file. Jenny Lee has neither a WA User ID nor a Stripe customer, so
+nothing to match on.
+
+**WILD APRICOT TAKEN OUT OF THE NIGHTLY PATH (Andy: "wild is already dead").** WA no longer bills
+membership, so its dues are history and re-deriving them from ~88 sequential API calls every night
+reproduced yesterday's answer. Scanned once into three FROZEN Airtable fields —
+`Lifetime Paid (WA history)` fldShiyG68xAxwZ56 · `— Payments` fldIFSS7oc8GK7Yom ·
+`— First` fldwziAfFAOjVjLpN (854 records, $8,602,486 attributable; WA's own total is $8,768,752, the
+$166,266 difference being 39 WA contacts with no Members record). The nightly job now reads those
+fields and calls **Stripe only**, recomputing the live half in full so refunds/voids/corrected
+customer ids still self-heal. WA nodes deleted from `PkKOxdYcW0UftVMA` (14 → 9 nodes). Run ~10 min
+→ **292s**, and the remaining time is the Airtable read + writes, not WA. Rebuild tool kept INACTIVE
+as `Ot4ylZgPBGe3qrpj` "WA history rebuild" for the only case that needs it.
+
+**BUG I INTRODUCED AND FIXED — `onError: continueRegularOutput` on a WRITE node caused SILENT DATA
+LOSS.** Added to survive an Airtable 429, it instead swallowed ~110 rate-limited PATCH batches while
+the run still reported **success**: only 744 of 854 records got their WA history, and the next
+Stripe-only run recomputed the total DOWN to $10,014,769 (−$1,126,466) with no error anywhere. Caught
+by comparing totals across runs, not by any alarm. Fix: `onError: stopWorkflow`, maxTries 5,
+waitBetweenTries 15s, batchInterval 2000ms, plus a one-off idempotent refill. Total restored to
+**$11,141,235 / 1,026 members / 517 WA-only + 172 Stripe-only + 337 both** — identical to the
+WA-scanning version, which is the proof the frozen-field swap is lossless. **Never let a write node
+continue on error; a loud failure beats a silent wrong number.**
+
+**SUPABASE + MEMBER-360 SHIPPED (staff-only).** `backfill_member_profiles.py --apply` run over all
+5,902 members — `digest.member_profiles` now carries **1,026 rows / $11,141,235**, matching Airtable
+exactly. Member-360 detail page gained a **"Lifetime paid" tile** (value + payment count + first-payment
+year) and four rows in *Membership & billing* (dues, payments, first payment, benchmark + deviation %).
+mds-digest-web **`6f4674c`, committed NOT pushed** — pushing deploys to prod, waiting on Andy.
+Verified by rendering `/admin/member360/recYo5xDJEqrj2cnk` with a real QA staff session: HTTP 200,
+tile reads **$29,985 · 5 payments since 2021 · first 2021-07-19 · benchmark $36,000**. (The Browser
+pane can't hold the httpOnly session cookie, so the render was proven via curl, not a screenshot.)
+
+**PRIVACY — Andy: "super important, we are not exposing this info to members." Four surfaces checked,
+all closed:** (1) `/admin` redirects anything that is not an `@mds.co` OTP session, so member-360 is
+staff-only; (2) the anon/publishable key gets **401 `permission denied for table member_profiles`** —
+the anon role has no GRANT, so `member_profiles` having RLS disabled does not expose it (tested
+directly against both `lifetime_paid` and the `at_fields` dump); (3) **no digest function anywhere
+mentions `lifetime_paid`** — the only two anon-executable functions touching `at_fields`
+(`fill_member_chapter`, `stamp_member_profiles_synced_at`) both return `trigger` and cannot be called
+for data; (4) `digest.member_attributes` — Olivia's matching fuel, derived from `at_fields` — is an
+explicit column allowlist (rev_band, niches, expertise …) with **no money column**, so Olivia cannot
+read or speak the number. ⚠️ NOTE the Airtable `at_fields` jsonb dump inside `member_profiles` DOES
+now contain the Lifetime Paid keys — safe today only because nothing member-facing reads that column;
+any future feature that surfaces `at_fields` wholesale would leak it. Leak gate run: all Olivia
+checks PASS; its single failure (`videos_catalog never stores the raw video-file storage path`) is
+pre-existing drift from the video workstream, unrelated to this change.
+
+**PUSHED to prod `e7dabfa..2897777`** (mds-digest-web main): `6f4674c` Lifetime Paid in member-360 ·
+`597b6f0` Lifetime paid/Payments/First payment in the Membership rail card · `2897777` **MRR now reads
+ONLY the canonical `Stripe MRR` fldbnXyjxB8StHIre** — the legacy `{MRR}` fallback was audited across
+all 718 active members and fired exactly ONCE, so it was dropped (604 active carry Stripe MRR summing
+$269,097/mo, in line with the official figure). The push also carried `8573bf8` (form_responses matview
+refresh), which was already sitting local-unpushed from earlier work — not from this session.
+⚠️ **Deploy NOT independently verified:** Vercel posts no commit status or GitHub deployment for this
+repo, and the only page showing the change is behind an `@mds.co` session I will not impersonate.
+Prod answers 200; a reload of `/admin/member360/<id>` by staff is the confirmation.
+
+**Next:** confirm the prod render ·
+decide whether the $942k non-Stripe WA cash and the pre-2020 gap get folded in · Rodrigo's $3,497 open
+invoice + the 8 uninvoiced joiners are ops/finance calls, not sync bugs.
+
 ## 2026-08-06 (day) — FORMS WAREHOUSE scheduled: daily GH Action step 3, proven end-to-end
 
 Census hit **49 completed** (11 → 49 in a day). Airtable kept up LIVE — 49/49 rows, 48 linked, and

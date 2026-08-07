@@ -6,6 +6,98 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-07 (SESSION CLOSE) — #20 PROMOTED · #70 ZOOM SHIPPED end-to-end · prod `7fe60761`
+
+**PROMOTED (Andy ran it via me, 20:44 UTC): prod `f6b54620` → `7fe60761`**, 65 nodes changed,
+gate green inside the promote, pre/post snapshots in `olivia_snapshots/`. Both lanes are LIVE.
+Verified in the prod node itself, each rule present exactly once: `form_stats` ×6 · `WHO HANDLES
+WHAT` · `- CALLS (#70)` · `ADVICE ASKS CHECK THE LIBRARY` · `Want a quick summary?` ·
+`WHO WAS IN THE AUDIENCE IS NEVER ANSWERED`.
+
+### #20 — reviewed, two real defects found, then CLOSED including the persona AC
+Coverage was **64 of 96** census questions, not "done". ① **13 matrix rows had no question at
+all** — Typeform sends matrix rows with `"q": ""` and the loader only recursed into `group`
+fields, so form_stats aggregated them into labels like `" — Inhouse" 64.2%`: a percentage with no
+question attached. `fetch_titles` now composes parent+row; **0 blank labels in 125,014 rows**.
+② **`pct_dtc` and `ux_rating` were killed by the PII regex** matching the word "website" (837
+answers). Numeric answers now bypass the text heuristic — **and the same pass closed a real leak:
+phone_number and url answers were reaching the stats layer** (20 refs, raw phone numbers and
+LinkedIn URLs). **64 → 79 of 96 askable.**
+
+**AC③ personas — CLOSED.** Two edits are needed to connect ANY source and the census had neither:
+`persona_signals` (what the derivation SEES) and `persona_signal_fingerprints` (what makes a
+member DUE). Filling in the census left the hash identical, so no rebuild ever fired. Both wired;
+**752 personas rebuilt, 0 failed, 462 of the 489 members with answers now draw on them.**
+Cross-form mapping first: `form_windowed` does latest-wins per canonical key, but only **22 of
+284** keys spanned >1 form → two passes (mechanical + hand-read) → **55 of 247**, `form_field_map`
+27 → 78. NOT merged, axis differs: pay bands · manufacturing · selling focus · employees · EOS.
+
+**Three pre-existing bugs found while doing it:** `max_tokens: 3500` truncated the richest
+members' JSON mid-object — that was the standing *missing: 3* · the persona builder was fully
+serial (29s each, 5h for a rebuild) → 5 workers · `sb()` returning `[]` on an empty curl response
+was indistinguishable from "no signals", which silently skipped **228 members** as if they had no
+data. Also: **expertise strength rule** was `weakness = 0`, so Mo Kuhail's top topic (Logistics &
+3PL, 22.8, the channel he MODERATES) was filed under "working on"; now `score >= 2 × weakness`.
+
+**REVERTED on evidence:** feeding forms into the expertise ledger. Substring matching is unsound —
+`ai` matches inside "Em(ai)l" and "Ret(ai)l" (denied AI & Automation on 680+ members), and
+"manufacture in Europe = N/A" denied International Expansion on 453. Needs an explicit
+canonical_key → topic map (#68), not a heuristic. Documented, not hidden.
+
+### #70 ZOOM — built, probed, promoted
+`digest.calls` **254** · `call_attendance` **4,348** · `zoom_name_alias` · transcripts **65 calls /
+3,116 chunks, all embedded** · **65 summaries** · video dossiers 7.8 → **14.4** topics.
+Andy's rulings: ① transcripts vectorized to drive VIDEO suggestions, quote + link the LIBRARY
+video, never Zoom ② **attendance STORED, NEVER SHOWN** ③ summaries short and scannable.
+
+**The join no longer rests on the filename** (Andy: "what if someone changes the file name?").
+Primary = exact `GMT<date>-<time>` stamp; fallback = same-week publish + duration within 3 min +
+title overlap, unique candidate only. **It recovered 2 renamed files** — Craig Brockie and the
+AppLovin Expert Call, both previously miscounted as "never published". A detector now separates
+"unpublished" from "we missed it": 4 remain, all genuinely unpublished.
+
+**Attendance is 48.1% resolved on person rows**, not the 67% the research claimed. A third of
+"attendance" was never a person — **138 AI-notetaker/host names, 1,089 rows** (Otter, Circleback,
+Fireflies, read.ai, MeetGeek), which would have become co_attended edges for people who do not
+exist. `partial` aliases are a review queue and are NOT stamped onto attendance rows.
+
+**The lane needed four things**, and the first three alone changed nothing: title-rank as a fourth
+RRF list in `content_search_v2` (`dorian gorski` 0 → 6 transcript rows) · `videos_catalog.search_tsv`
+indexes the SUMMARY at weight B · tool descriptions · **and the rule that advice-shaped asks run
+`video_search` alongside the chats**. Probed natural questions: returns and cash-flow both answer
+from the community then recommend the call with the library link and *"Want a quick summary?"*.
+
+**Schedules:** `com.mds.zoom.weekly` (launchd, Mon 05:15) + scheduled Claude task
+`groupos-videos-weekly` (Sun 06:05 — the GroupOS MCP needs a session, cron cannot call it; the job
+reports **degraded**, not ok, while GROUPOS_PAT is missing).
+
+### CODE REVIEW — 5 Criticals, all real, all fixed
+**TLS verification was silently OFF in the scheduled job**: `/usr/bin/python3` (what launchd runs)
+has no `certifi`, so the fallback set `CERT_NONE` and every run sent the Zoom client secret over an
+unverified connection, while every manual run verified fine · `videos_weekly_check.py` selected a
+dropped column and had **never once run** · **`calls.raw` stored Zoom play/download/share URLs on
+253 of 253 rows** — now stripped recursively · `zoom_resolve_attendance` existed ONLY in the live
+DB (#65's exact failure mode) → filed · **the gate had zero coverage of the new surfaces**, so
+"attendance is never shown" rested on prompt text → 8 checks added.
+Importants also closed: attendance no longer silently lost on 429/5xx · `fetch_calls` paginates ·
+`sb()` distinguishes failure from empty · `--dry` is dry · heartbeat no longer nulls
+`last_success_at` · one `sb_all()` for the 1000-row cap · transcripts incremental.
+
+**A concurrent session's migration reset `video_search`'s ACL** — a recreated function defaults to
+EXECUTE for PUBLIC, so **anon could call the video library**. Found by the gate, revoked.
+
+**Gate 232 → 243 exit-0.** SQL mirrored into `scripts/sql/` (8 files) against #65.
+
+### Open
+- **P2 ruling (Andy):** the 13 free-text census answers into `content_items` — searchable like
+  application answers, or owner-only? Everything else in #20 is closed.
+- 4 member calls genuinely unpublished · **speakers on only 413 of 1,024 videos** · `map_video`
+  imported from the untracked `mds-digest-web` · 961 videos have no summary BY DESIGN (no
+  transcript; a blurb is not a summary).
+- **NOTHING IS COMMITTED** — ~15 new scripts, 8 SQL files, the gate edit, all working-tree.
+
+---
+
 ## 2026-08-06 (SESSION CLOSE) — #20 staged and probe-proven; NEXT SESSION = REVIEW #20, THEN PROMOTE
 
 **Closed at Andy's instruction: "review #20 before promoting."**

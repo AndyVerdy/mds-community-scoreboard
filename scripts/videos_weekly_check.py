@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+"""#70/#17 — weekly check for NEW and CHANGED GroupOS videos, 2026 only.
+
+Why this exists as a two-part job: the GroupOS MCP only runs inside a Claude session, so a
+cron script cannot call it. Until GROUPOS_PAT lands (#17), a scheduled Claude session does the
+one thing only it can do — dump the 2026 listing to a file — and this script does everything
+else headlessly: diff it against the warehouse, upsert what moved, then run the Zoom chain so a
+newly published call gets its transcript, embeddings and dossier in the same pass.
+
+Scope is 2026 (Andy 2026-08-07): ~152 videos, two MCP pages, instead of re-reading all 1,024.
+
+  python3 scripts/videos_weekly_check.py <dump.json>            # report only
+  python3 scripts/videos_weekly_check.py <dump.json> --apply    # upsert + run the chain
+"""
+import json
+import os
+import subprocess
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "scripts"))
+sys.path.insert(0, "/Users/Born/mds-digest-web/scripts")
+from zoom_backfill import ENV_SB, env, sb            # noqa: E402
+from ingest_videos import map_video                  # noqa: E402  (single source of the row shape)
+
+# Fields whose change actually matters downstream. A view count ticking up is not a content
+# change and must not trigger a re-embed of the whole video.
+WATCH = ("title", "description_text", "cliff_notes", "status", "access_restriction",
+         "zoom_recording_stamp", "category_names", "tag_names", "speaker_ids", "event_ids")
+
+
+def load_dump(path):
+    d = json.loads(open(path).read())
+    items = d["items"] if isinstance(d, dict) and "items" in d else d
+    return [v for v in items if isinstance(v, dict) and v.get("id")]
+
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if not args:
+        sys.exit(__doc__)
+    apply = "--apply" in sys.argv
+    key = env(ENV_SB)["SUPABASE_SECRET_KEY"]
+
+    incoming = load_dump(args[0])
+    print(f"dump: {len(incoming)} videos")
+
+    have = {r["video_id"]: r for r in sb(
+        "GET", "videos_catalog?select=" + ",".join(("video_id",) + WATCH) + "&limit=5000", key)}
+
+    new, changed, rows = [], [], []
+    for v in incoming:
+        row, why = map_video(v)
+        if not row:
+            continue
+        cur = have.get(row["video_id"])
+        if not cur:
+            new.append(row)
+        else:
+            diff = [f for f in WATCH if json.dumps(cur.get(f), sort_keys=True)
+                                     != json.dumps(row.get(f), sort_keys=True)]
+            if diff:
+                changed.append((row, diff))
+        rows.append(row)
+
+    print(f"NEW: {len(new)}")
+    for r in new[:20]:
+        print(f"   + {r['video_id']} {r['title'][:64]}")
+    print(f"CHANGED: {len(changed)}")
+    for r, diff in changed[:20]:
+        print(f"   ~ {r['video_id']} {r['title'][:48]} — {', '.join(diff)}")
+
+    if not apply:
+        print("REPORT ONLY — pass --apply to upsert and run the Zoom chain")
+        return 0
+    if not (new or changed):
+        print("nothing moved — chain not run")
+        return 0
+
+    touched = new + [r for r, _ in changed]
+    for i in range(0, len(touched), 100):
+        sb("POST", "videos_catalog?on_conflict=video_id", key, touched[i:i + 100],
+           "resolution=merge-duplicates,return=minimal")
+    print(f"  upserted: {len(touched)}")
+
+    # A new or re-published video may be the first time a call becomes citable, so the chain
+    # runs in the same pass: link -> transcript -> embed -> dossier.
+    p = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "zoom_weekly.py")],
+                       capture_output=True, text=True)
+    print(p.stdout.strip()[-1200:])
+    return p.returncode
+
+
+if __name__ == "__main__":
+    sys.exit(main())

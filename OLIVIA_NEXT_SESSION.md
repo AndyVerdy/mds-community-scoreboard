@@ -19,14 +19,40 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-06: SPRINT 3 OPEN · PROD `f6b54620` · STAGING `9b14c44c` carries #20, AWAITING REVIEW + PROMOTE
+## STATE 2026-08-07: SPRINT 3 OPEN · PROD `7fe60761` — #20 AND #70 ARE LIVE
 
-**Sprint 3 goal = make Olivia personal.** Ten tickets closed and live (evidence at the BOTTOM of
-`OLIVIA_SPRINT_3.md`); ten still open. Release 3 and everything before it is in
-`OLIVIA_BACKLOG_ARCHIVE.md`. Entry point for the whole system: `OLIVIA_HANDBOOK.md`.
+**Promoted 2026-08-07 20:44 UTC** (`f6b54620` → `7fe60761`, 65 nodes, gate green inside the
+promote, snapshots either side in `olivia_snapshots/`). Verified in the prod node: `form_stats`
+×6 · `WHO HANDLES WHAT` · `- CALLS (#70)` · `ADVICE ASKS CHECK THE LIBRARY` ·
+`Want a quick summary?` · `WHO WAS IN THE AUDIENCE IS NEVER ANSWERED`, each exactly once.
 
-**Last measured quality: smoke 1.7% wrong** (173 judged, 2026-08-03) — that number predates all
-ten of today's tickets, so it is stale in BOTH directions until the next smoke runs.
+**#20 is CLOSED except P2.** Census coverage 64 → **79 of 96** questions · cross-form mapping
+22 → **55** keys · **personas read the forms warehouse** (752 rebuilt, 462 of the 489 members with
+answers draw on them) and a new submission now moves the fingerprint, so it self-updates.
+
+**#70 ZOOM is LIVE.** 254 calls · 4,348 attendance rows (**stored, never shown**) · 65 transcripts
+/ 3,116 chunks embedded · 65 summaries · video dossiers 7.8 → 14.4 topics · weekly chain on
+launchd + a Sunday scheduled task for the GroupOS fetch.
+
+**Gate 232 → 243 exit-0**, now covering the Zoom surfaces (anon denied on `calls`,
+`call_attendance`, `zoom_name_alias`; transcripts always cite `app.mds.co`; restricted chunks
+excluded).
+
+⛔ **NOTHING FROM 2026-08-07 IS COMMITTED** — ~15 new scripts, 8 files in `scripts/sql/`, the gate
+edit, and `ingest_videos.py` in mds-digest-web are all working-tree. Commit before anything else.
+
+### THE ONE THING BLOCKED ON ANDY
+**#20 P2 — the 13 free-text census answers** (biggest challenge, what worked best, strongest
+expertise, how MDS impacted you) into `content_items`: searchable and quotable like application
+answers, or owner-only? Everything else in #20 is done.
+
+### Known and deliberately left
+- 4 member calls have no published video — checked individually, genuinely unpublished.
+- **Speakers on only 413 of 1,024 videos**, so speaker-name search misses 60% of the library.
+- `videos_weekly_check.py` imports `map_video` from the UNTRACKED `mds-digest-web` repo.
+- 961 videos have no summary BY DESIGN: no transcript, and a GroupOS blurb is not a summary.
+- Forms → expertise ledger was built, measured, REVERTED (substring matching is unsound: `ai`
+  matches inside "Em(ai)l"). Needs #68's canonical_key → topic map.
 
 ## NEXT SESSION — SPRINT 3 IS STILL OPEN (Andy 2026-08-04: "sprint is not over")
 

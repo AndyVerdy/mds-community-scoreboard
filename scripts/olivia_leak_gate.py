@@ -907,15 +907,19 @@ def main():
               bool(rv)
               and (_rdesc is None
                    or (str(_rdesc).startswith("[RESTRICTED VIDEO") and MARKER not in str(_rdesc)))
-              and rv.get("cliff_notes_snippet") is None and rv.get("attachments") is None,
+              and rv.get("cliff_notes_snippet") is None and rv.get("attachments") is None
+              and rv.get("summary") is None,
               f"got {rv}")
         check("soft-deleted video invisible",
               f"REDTEAM Deleted Video {MARKER}" not in vtitles)
         check("non-published video invisible",
               f"REDTEAM Draft Video {MARKER}" not in vtitles)
+        # summary added #70 (Andy 2026-08-07): a recommendation must be able to say what the
+        # video covers. It is suppressed on restricted videos — asserted just below, so this
+        # widening cannot become a way for restricted content to escape.
         VIDEO_KEYS = {"title", "call_type", "speakers", "description_snippet", "cliff_notes_snippet",
                       "attachments", "duration", "categories", "tags", "published_at",
-                      "video_url", "matched_rank", "is_restricted"}
+                      "video_url", "matched_rank", "is_restricted", "summary"}
         check("video rows carry ONLY the allowlisted fields",
               all(set(v.keys()) == VIDEO_KEYS for v in (vids or [])))
         vblob = json.dumps(vids)
@@ -1186,6 +1190,43 @@ def main():
         st, body = rpc("content_lookup", {"p_phone": phone, "p_source": "wa_digest"}, ANON_KEY)
         check("anon key denied on content_lookup", st in (401, 403, 404), f"status {st}")
 
+        # #70 CALLS. Two new leak classes shipped with this source and neither had a check:
+        #   ATTENDANCE is stored, NEVER shown (Andy 2026-08-07) — it exists only to feed
+        #   personalization, and Zoom name-matching is confidence-scored, so a leaked row is
+        #   also very possibly a WRONG claim about a member.
+        #   TRANSCRIPTS may be quoted, but only ever alongside the LIBRARY video — a Zoom URL
+        #   or storage path must never reach a member.
+        for tbl, col in (("call_attendance", "display_name"), ("calls", "topic"),
+                         ("zoom_name_alias", "name_folded")):
+            st, body = curl("GET", f"{BASE}/{tbl}?select={col}&limit=1", ANON_KEY,
+                            profile_hdr=["Accept-Profile: digest"])
+            check(f"anon key denied on {tbl}", st in (401, 403, 404), f"status {st}")
+
+        st, rows = rpc("content_search_v2",
+                       {"p_phone": phone, "p_terms": ["mogul", "call"],
+                        "p_sources": ["call_transcript"], "p_limit": 30}, key)
+        tr = [r for r in (rows or [])] if isinstance(rows, list) else []
+        check("transcript retrieval is alive (positive control)", len(tr) > 0, f"got {len(tr)} rows")
+        check("transcript rows ALWAYS cite the library video, never Zoom",
+              all(str(r.get("url") or "").startswith("https://app.mds.co/videos/") for r in tr),
+              str([r.get("url") for r in tr
+                   if not str(r.get("url") or "").startswith("https://app.mds.co/videos/")])[:200])
+        check("no transcript row carries a Zoom reference in its body",
+              not any(re.search(r"zoom\.us|download_url|play_url", str(r.get("body") or ""), re.I)
+                      for r in tr))
+        check("no transcript row exposes who attended",
+              not any(("attend" in str(r.get("meta") or "").lower()) for r in tr))
+
+        # a restricted video's transcript must be excluded by default, like any restricted row
+        st, rows = rpc("content_search_v2",
+                       {"p_phone": phone, "p_terms": ["mogul", "call"],
+                        "p_sources": ["call_transcript"], "p_limit": 60}, key)
+        check("restricted-video transcript chunks are excluded by default",
+              isinstance(rows, list)
+              and not any(r.get("sensitivity") == "restricted" for r in rows),
+              str([r.get("title") for r in (rows or [])
+                   if r.get("sensitivity") == "restricted"])[:160])
+
         # form_responses: the raw form ledger is OWNER-ONLY by rule (2026-08-05) — the anon key
         # must bounce off the table, the view, AND the two #20 doors.
         st, body = curl("GET", f"{BASE}/form_responses?select=token&limit=1", ANON_KEY,
@@ -1200,6 +1241,49 @@ def main():
         check("anon key denied on my_form_answers", st in (401, 403, 404), f"status {st}")
         st, body = rpc("form_field_history", {"p_phone": phone}, ANON_KEY)
         check("anon key denied on form_field_history", st in (401, 403, 404), f"status {st}")
+
+        # THE SCOPE WALL. digest.form_responses is shared with the event/trend corpus, so every
+        # reader Olivia can reach MUST inner-join digest.form_scope on scope='profile'. On
+        # 2026-08-07 form_field_history and my_form_answers did not, and a member's Inspire 2026
+        # check-in answers came back through the "what did I say" door. A form with no scope row
+        # is invisible by default, so the whitelist is what makes a new load safe — assert it
+        # against a member who actually HAS unscoped answers, or the check proves nothing.
+        print("— form_scope wall: trend forms must be unreachable (#20) —")
+        st, prof = curl("GET", f"{BASE}/form_scope?scope=eq.profile&select=form_id", key,
+                        profile_hdr=["Accept-Profile: digest"])
+        profile_ids = {r["form_id"] for r in (prof or [])} if st == 200 else set()
+        check("form_scope lists at least one profile form", bool(profile_ids),
+              f"status {st}, {len(profile_ids)} profile forms")
+        # Filter server-side: PostgREST caps a page at 1000 rows, and the census forms alone
+        # exceed that, so a client-side scan would only ever see profile rows and pass blind.
+        st, unscoped = curl("GET", f"{BASE}/form_responses?member_at_id=not.is.null"
+                                   f"&form_id=not.in.({','.join(profile_ids)})"
+                                   f"&select=member_at_id&limit=200", key,
+                            profile_hdr=["Accept-Profile: digest"])
+        # Take MANY candidates, not one: plenty of members have no phone on file, and a single
+        # phone-less pick would silently downgrade the wall test to "no fixture".
+        cands = sorted({r["member_at_id"] for r in (unscoped or [])}) if st == 200 else []
+        vphone = None
+        if cands:
+            st, vms = curl("GET", f"{BASE}/members?at_member_id=in.({','.join(cands)})"
+                                  f"&phone=not.is.null&select=phone&limit=1", key,
+                           profile_hdr=["Accept-Profile: digest"])
+            vphone = (vms or [{}])[0].get("phone") if st == 200 else None
+        if vphone:
+            for fn in ("my_form_answers", "form_field_history"):
+                st, rows = rpc(fn, {"p_phone": vphone}, key)
+                names = {r.get("form_name") for r in (rows or [])} if isinstance(rows, list) else set()
+                st2, allowed = curl("GET", f"{BASE}/form_responses?select=form_name"
+                                           f"&form_id=in.({','.join(profile_ids)})&limit=5000", key,
+                                    profile_hdr=["Accept-Profile: digest"])
+                ok_names = {r["form_name"] for r in (allowed or [])} if st2 == 200 else set()
+                stray = names - ok_names
+                check(f"{fn} returns ZERO event/trend forms", not stray, f"leaked {sorted(stray)}")
+        else:
+            # No member carries an unscoped answer yet: the wall is untestable, not proven.
+            for fn in ("my_form_answers", "form_field_history"):
+                check(f"{fn} returns ZERO event/trend forms", False,
+                      "NO FIXTURE — no member has an unscoped form answer to test against")
     finally:
         cleanup()
         st, left = curl("GET", f"{BASE}/content_items?source=eq.{CANARY_SOURCE}&select=id", key,
