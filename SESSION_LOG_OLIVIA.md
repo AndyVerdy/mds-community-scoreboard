@@ -6,6 +6,70 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-07 (later) — #65 CLOSED: the SQL layer is in git, and drift now has an alarm
+
+**0 → 118 files.** Every `digest` function (104), view (8), trigger (18), grant, RLS flag and
+table/index DDL now exists in `db/`, byte-matched to the live database. Until today the entire
+retrieval, gating, stats and small-cell-suppression layer existed **only inside the running
+Supabase project** — no diff, no review, no history, no restore path. It is the risk that hid
+`zoom_resolve_attendance` last session.
+
+### What shipped
+- `digest.schema_source()` (`06ba14f`) — one read-only introspection RPC: STABLE, security INVOKER,
+  returns DDL text only, `service_role` only. **Why a new function at all:** there is no
+  psql / psycopg / DB password / Management-API PAT on this machine, so PostgREST is the only path
+  to the database and it cannot read `pg_catalog`. Byte-exactness is the point of the ticket, and a
+  model retyping 262 KB cannot be byte-matched — the export had to be machine-driven.
+- `scripts/db_export_schema.py` — export (`DB → db/`) and `--check` (exit 1 on drift, with a
+  unified diff per object). Baseline committed in `fe3be75`.
+- `com.mds.db.drift` (`c731728`) — launchd, daily 05:40, `--check --alert`. Plist tracked at
+  `launchd/com.mds.db.drift.plist`, log `scripts/db_drift.log`.
+- Handbook (`d6eca7f`) — §12 the Postgres-tier ruling + its two accepted exceptions, §10 the `db/`
+  tree, §8.2b the post-migration re-export runbook, §8.4 the new job.
+
+### What was verified (not assumed)
+- **Byte-match, by an independent path:** md5 computed *inside Postgres*
+  (`md5(rtrim(pg_get_functiondef(oid), E'\n') || E'\n')`) matched the md5 of the bytes on disk for
+  `content_search_v2`, `form_stats`, `member_card_v2`. `--check` alone would only have proven the
+  writer and the checker agree.
+- **The drift check fails on an injected difference — both directions.** Repo-side: appended a line
+  to `db/functions/member_card_v2.sql` → `DIFFERS`, exit 1, diff printed; `git checkout` → exit 0.
+  DB-side: created `digest.drift_canary()` → `MISSING FROM GIT functions/drift_canary.sql` **plus**
+  the `grants.sql` diff, exit 1; dropped it → exit 0, working tree clean. The DB-side case is the
+  exact failure mode that hid `zoom_resolve_attendance`.
+- **Forced run through launchd** under `/usr/bin/python3` — the interpreter with no `certifi`, where
+  the Zoom job's TLS bug lived. Log: `DB IN SYNC — 117 files byte-match the live database.` No SSL
+  error, because every HTTPS call goes through `curl`.
+- **Slack delivery proven before trusting the silence:** `ok=True ts=1786143161.343899`. The alert
+  path now prints `ok`/`ts` so it can never fail quietly.
+- **Gate:** 243 exit-0 before the DDL, 243 after, **245** after adding the two new checks.
+
+### The gate check that passed for the wrong reason
+The first draft of "no member phone numbers in the DDL" matched `"\+?\d{10,15}"` — JSON-quoted
+digits. SQL literals are single-quoted, so it could never have fired. Rewritten to scan
+`'\+?(\d{10,15})'` against an explicit allowlist, and **proven to bite**: empty the allowlist and it
+reports the probe number as stray. The only phone-shaped literal in the whole 412 KB of DDL is
+`17866578153` — Andy's probe number, hardcoded in `olivia_health_check` and
+`olivia_broadcast_audience` to EXCLUDE his thread, and already committed in 8 other files here.
+
+### Found while doing it — flagged, NOT chased
+- `digest.chapters_catalog` has **RLS enabled with zero policies** (the export makes this visible
+  for the first time: `rls.sql` says enabled, `policies.sql` says none exist). That is #62/#61.
+- **Eight launchd plists exist only on Andy's Mac and in no repo** — the same class of risk this
+  ticket just fixed, one layer up. That is #64's lane. Only the new `com.mds.db.drift` is tracked.
+
+### Still open on #65
+The **repo→DB direction** (apply-from-file) is deliberately not wired up. It is the only step that
+can break production; the ticket gates it on 1+2 being green and stable, and it needs its own proof
+plan and a rehearsed rollback. **Andy's ruling required before anyone starts it.**
+
+### Next
+Sprint 3's open S1 lane is now **#68** (canonical question dictionary, L) · **#66** (forms-warehouse
+gaps, M) · **#61** (schema audit) · **#62** (17 security-advisor warnings) · **#63** (Airtable-formula
+injection in the Make member-match). #20's P2 exposure ruling is still the one thing blocked on Andy.
+
+---
+
 ## 2026-08-07 (SESSION CLOSE) — #20 PROMOTED · #70 ZOOM SHIPPED end-to-end · prod `7fe60761`
 
 **PROMOTED (Andy ran it via me, 20:44 UTC): prod `f6b54620` → `7fe60761`**, 65 nodes changed,

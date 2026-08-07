@@ -48,7 +48,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#62** | Resolve the 17 Security Advisor warnings | 🔴 S1 | S | — | — |
 | **#63** | Airtable-formula injection in the Make member-match (census + app v3) | 🔴 S1 | S | — | — |
 | **#64** | Runtime inventory: consolidate where logic runs (drift, not the load-bearing splits) | 🔵 S3 | M | — | — |
-| **#65** | 🚨 SQL functions exist ONLY in the live DB — no file in git | 🔴 S1 | M | — | — |
+| **#65** | 🚨 SQL functions exist ONLY in the live DB — no file in git | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED** — 118 files in `db/`, daily drift check proven |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
@@ -329,62 +329,6 @@ transcription spend.
 **Named non-goals:** pre-2026 anything (scope ruling) · AssemblyAI transcription · turning on Zoom
 registration · surfacing attendance counts or rankings to members (§7.3's internal-sort-key rule
 applies unchanged).
-
----
-
-### #65 · 🚨 THE SQL LAYER IS NOT IN VERSION CONTROL — single point of failure
-**🔴 S1 · size M — filed 2026-08-06 · ⚠️ HUGE RISK, DOUBLE-CONFIRM BEFORE ANY REMEDIATION TOUCHES THE DB**
-
-> **In plain words:** ~75 database functions run the retrieval, the gating and the stats — and not
-> one of them exists as a file anywhere. They live only inside the live production database.
-
-*As the owner, every line of logic that runs MDS can be read, reviewed and restored from the
-repository — nothing exists only inside a running system.*
-
-**Verified 2026-08-06:** `find` across the repo returns **zero `.sql` files**. The only record of
-any function is (a) the live `pg_proc` catalog and (b) Supabase's `supabase_migrations` history,
-which is itself inside the same database. There is no second copy anywhere.
-
-**Why this is the biggest risk on the board — what it costs today:**
-- **No restore path independent of the database.** If the project is lost, misconfigured, or a
-  migration corrupts a function, the source is gone with it. Supabase backups protect the DB — they
-  do not give a diffable source tree, and a backup restore is all-or-nothing.
-- **No code review.** Every migration this session went straight to production logic with no diff
-  anyone could read. A `drop function` + `create` typo has no reviewer between it and members.
-- **No diff between environments.** Staging vs prod n8n has a version id and a snapshot ritual; the
-  SQL layer has neither — "what changed" is only answerable by dumping `pg_proc` and eyeballing.
-- **No blame/history.** Which ruling produced which clause is reconstructible only from session
-  logs, not from the code.
-- **The security boundary is in the unversioned layer.** Access rules, owner-gating, small-cell
-  suppression and the active-member checks all live in these functions. The leak gate proves they
-  hold TODAY; nothing proves what they looked like last week.
-
-**Architecture ruling to record with it (Andy's 3-tier question, 2026-08-06):** the functions are
-NOT misplaced — data access + access control belong in Postgres because it is the last hop before
-the data and FOUR consumers share it (n8n, Python scripts, GitHub Actions, digest-web); moving the
-gate into one app leaves the other three unguarded, and moving retrieval out means pulling 38k rows
-over the wire and losing HNSW-in-query. Genuine tier violations are small and named:
-`olivia_alarm_fire` posting to Slack from inside Postgres (deliberate — alarm independence; record
-as an accepted exception) and `member_event_url` doing URL/presentation shaping in SQL. **Fix the
-source-of-truth problem, do not relocate the compute.**
-
-**Proposed remediation (DO NOT START WITHOUT ANDY'S EXPLICIT SECOND CONFIRMATION — this touches the
-layer that gates every member's data):**
-1. **Read-only first.** Dump every `digest` function/view/policy to `db/functions/*.sql` from
-   `pg_get_functiondef`. Pure export; the database is not modified. Commit as the baseline.
-2. **Drift check in CI** — a job that re-dumps and fails if the repo and the live DB differ. Still
-   read-only; catches an out-of-band change within a day.
-3. **Only after 1+2 are green and stable:** decide whether future changes flow repo→DB (apply from
-   file) or DB→repo (export after migration). The repo→DB direction is the safer end state but is
-   also the only step that can break production — it needs its own proof plan, the leak gate green
-   before and after, and a rollback rehearsed.
-4. Handbook section: the tier rule + the two accepted exceptions above.
-
-**Accept when**
-- Every `digest` function, view and policy exists as a file in git, byte-matched to the live DB.
-- A CI drift check runs and demonstrably fails on an injected difference (proven, not assumed).
-- The tier rule and its exceptions are written in the handbook.
-- Gate GREEN before and after every step; no RPC behaviour changed by the export.
 
 ---
 
@@ -1088,6 +1032,91 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #65 · 🚨 THE SQL LAYER IS NOT IN VERSION CONTROL — single point of failure
+**🔴 S1 · size M — filed 2026-08-06 · CLOSED 2026-08-07**
+
+> **In plain words:** ~75 database functions run the retrieval, the gating and the stats — and not
+> one of them exists as a file anywhere. They live only inside the live production database.
+
+*As the owner, every line of logic that runs MDS can be read, reviewed and restored from the
+repository — nothing exists only inside a running system.*
+
+**Verified 2026-08-06:** `find` across the repo returns **zero `.sql` files**. The only record of
+any function is (a) the live `pg_proc` catalog and (b) Supabase's `supabase_migrations` history,
+which is itself inside the same database. There is no second copy anywhere.
+
+**Why this is the biggest risk on the board — what it costs today:**
+- **No restore path independent of the database.** If the project is lost, misconfigured, or a
+  migration corrupts a function, the source is gone with it. Supabase backups protect the DB — they
+  do not give a diffable source tree, and a backup restore is all-or-nothing.
+- **No code review.** Every migration this session went straight to production logic with no diff
+  anyone could read. A `drop function` + `create` typo has no reviewer between it and members.
+- **No diff between environments.** Staging vs prod n8n has a version id and a snapshot ritual; the
+  SQL layer has neither — "what changed" is only answerable by dumping `pg_proc` and eyeballing.
+- **No blame/history.** Which ruling produced which clause is reconstructible only from session
+  logs, not from the code.
+- **The security boundary is in the unversioned layer.** Access rules, owner-gating, small-cell
+  suppression and the active-member checks all live in these functions. The leak gate proves they
+  hold TODAY; nothing proves what they looked like last week.
+
+**Architecture ruling to record with it (Andy's 3-tier question, 2026-08-06):** the functions are
+NOT misplaced — data access + access control belong in Postgres because it is the last hop before
+the data and FOUR consumers share it (n8n, Python scripts, GitHub Actions, digest-web); moving the
+gate into one app leaves the other three unguarded, and moving retrieval out means pulling 38k rows
+over the wire and losing HNSW-in-query. Genuine tier violations are small and named:
+`olivia_alarm_fire` posting to Slack from inside Postgres (deliberate — alarm independence; record
+as an accepted exception) and `member_event_url` doing URL/presentation shaping in SQL. **Fix the
+source-of-truth problem, do not relocate the compute.**
+
+**Proposed remediation (DO NOT START WITHOUT ANDY'S EXPLICIT SECOND CONFIRMATION — this touches the
+layer that gates every member's data):**
+1. **Read-only first.** Dump every `digest` function/view/policy to `db/functions/*.sql` from
+   `pg_get_functiondef`. Pure export; the database is not modified. Commit as the baseline.
+2. **Drift check in CI** — a job that re-dumps and fails if the repo and the live DB differ. Still
+   read-only; catches an out-of-band change within a day.
+3. **Only after 1+2 are green and stable:** decide whether future changes flow repo→DB (apply from
+   file) or DB→repo (export after migration). The repo→DB direction is the safer end state but is
+   also the only step that can break production — it needs its own proof plan, the leak gate green
+   before and after, and a rollback rehearsed.
+4. Handbook section: the tier rule + the two accepted exceptions above.
+
+**Accept when**
+- Every `digest` function, view and policy exists as a file in git, byte-matched to the live DB.
+- A CI drift check runs and demonstrably fails on an injected difference (proven, not assumed).
+- The tier rule and its exceptions are written in the handbook.
+- Gate GREEN before and after every step; no RPC behaviour changed by the export.
+
+---
+
+---
+
+**CLOSED 2026-08-07** — 0 → 118 files. Every `digest` function (104), view (8), trigger (18),
+grant, RLS flag and table/index DDL now exists in `db/`, byte-matched to the live database.
+
+| AC | Verdict |
+|---|---|
+| Every function, view and policy is a file in git, byte-matched | ✅ **met** — 118 files (`fe3be75`); md5 computed *inside Postgres* matched the bytes on disk for `content_search_v2`, `form_stats`, `member_card_v2`. Policies: zero exist, and the file records that zero. |
+| CI drift check demonstrably fails on an injected difference | ✅ **met** — both directions. Repo edit → `DIFFERS functions/member_card_v2.sql`, exit 1. Live `drift_canary()` → `MISSING FROM GIT` + the grants diff, exit 1. Green again after each, working tree clean. |
+| Tier rule + exceptions in the handbook | ✅ **met** — §12, with `olivia_alarm_fire` (Slack from inside Postgres, deliberate) and `member_event_url` (URL shaping in SQL) named as accepted exceptions. |
+| Gate GREEN before and after; no RPC behaviour changed | ✅ **met** — 243 exit-0 before, 243 after the DDL, **245** after the two new checks. The only DDL was one added read-only function; nothing existing was altered. |
+
+**Before → after:** source files **0 → 118** · restore path **none → `db/`** · an out-of-band
+`create or replace` detected **never → within 24h** (`com.mds.db.drift`, 05:40 daily, Slack-alerting,
+forced run proven under `/usr/bin/python3`) · gate **243 → 245** · handbook function count corrected
+**~75 → 104**, gate count **202 → 245**.
+
+**How it reaches the DB:** one read-only `digest.schema_source()` — STABLE, security INVOKER, DDL
+text only, `service_role` only (anon: `401 permission denied`, now a gate check). There is no
+psql/psycopg/DB-password/PAT on this machine, so PostgREST is the only path and it cannot read
+`pg_catalog` without a function.
+
+**Found while doing it, NOT chased (flagged for priority):** `digest.chapters_catalog` has RLS
+**enabled with zero policies** — belongs to #62/#61, not here. Eight other launchd plists exist only
+on Andy's Mac and in no repo — the same class of risk this ticket just fixed, and #64's lane.
+
+**Remaining, for Andy to rule:** the repo→DB direction (apply-from-file). It is the only step that
+can break production, so it stays out until it has its own proof plan and a rehearsed rollback.
 
 ### #60 · A cancelled side-event wore the Summit's name — app-event mis-link renamed it
 **🟡 S2 · size S — filed AND closed 2026-08-05. Sync + SQL only: nothing to promote.**
