@@ -8,6 +8,14 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ## 2026-08-07 (later) — #65 CLOSED: the SQL layer is in git, and drift now has an alarm
 
+### Prod moved again at 23:09 UTC — Andy's own promote (not part of #65)
+`7fe60761` → **`ebe7244b`**, label `70c-recency-and-buttons`, two nodes changed (`Format Reply`,
+`Answer Seed`), snapshots either side in `olivia_snapshots/`. #65 touched no n8n node. Caught by
+re-reading `updatedAt` during the verification pass, after I had wrongly asserted prod was still
+`7fe60761` from an `updatedAt` I had read hours earlier — **read it fresh, never carry it forward.**
+The new drift check ran AFTER that promote and came back in sync, so the change was n8n-only and
+moved no SQL. Its source script was untracked and is now committed.
+
 **0 → 118 files.** Every `digest` function (104), view (8), trigger (18), grant, RLS flag and
 table/index DDL now exists in `db/`, byte-matched to the live database. Until today the entire
 retrieval, gating, stats and small-cell-suppression layer existed **only inside the running

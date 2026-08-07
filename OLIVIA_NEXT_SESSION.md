@@ -19,7 +19,12 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-07: SPRINT 3 OPEN · PROD `7fe60761` — #20 AND #70 ARE LIVE
+## STATE 2026-08-07: SPRINT 3 OPEN · PROD `ebe7244b` — #20, #70 AND #70c ARE LIVE
+
+> **Prod moved twice on 2026-08-07.** 20:44 UTC `f6b54620` → `7fe60761` (#20 + #70). Then **23:09
+> UTC `7fe60761` → `ebe7244b`** — Andy's own promote, label `70c-recency-and-buttons`, two nodes
+> (`Format Reply`, `Answer Seed`), snapshots either side in `olivia_snapshots/`. **`ebe7244b` is
+> current.** Source: `scripts/olivia_loop/apply_70c_recency_and_buttons.py`.
 
 **Promoted 2026-08-07 20:44 UTC** (`f6b54620` → `7fe60761`, 65 nodes, gate green inside the
 promote, snapshots either side in `olivia_snapshots/`). Verified in the prod node: `form_stats`
