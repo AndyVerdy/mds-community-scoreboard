@@ -16,6 +16,18 @@ re-reading `updatedAt` during the verification pass, after I had wrongly asserte
 The new drift check ran AFTER that promote and came back in sync, so the change was n8n-only and
 moved no SQL. Its source script was untracked and is now committed.
 
+### #71 FILED (S3) — "virtual event" vs "call" vs "recording"
+From Andy's own WhatsApp session: *"what was the last vitrual event"* → **Feb 4, 2026** (Peter-Paul
+Maan); *"and what was the last mogul call"* → **Aug 5, 2026** (Dorian Gorski). Same kind of thing,
+six months apart, two turns apart. **The calendar is not disconnected** — `events_catalog` holds
+the Aug 5 Dorian Gorski row as `event_type='Virtual'`; **615 of 634 virtual events have
+`phase = NULL`** and the lane surfaces only the phase-stamped slice (8 Registration Open, newest
+2026-07-15), so a PAST-tense ask got answered from a set built for browsing UPCOMING events.
+Worse than the wrong date: she told a member *"our live events calendar isn't fully connected here
+yet"* — **an invented infrastructure excuse for her own filter**, and offered to file a report about
+it. Three systems describe one real thing (`events_catalog` · `videos_catalog` · `digest.calls`);
+the ticket's real deliverable is Andy's ruling on which is authoritative for which question.
+
 **0 → 118 files.** Every `digest` function (104), view (8), trigger (18), grant, RLS flag and
 table/index DDL now exists in `db/`, byte-matched to the live database. Until today the entire
 retrieval, gating, stats and small-cell-suppression layer existed **only inside the running

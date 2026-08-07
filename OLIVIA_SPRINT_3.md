@@ -35,6 +35,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#20** | Census into the warehouse | 🟡 S2 | L | ✅ proven | ✅ **LIVE** `7fe60761` (only P2 exposure ruling open) |
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
+| **#71** | "Virtual event" vs "call" vs "recording" — two contradicting "latest" answers | 🔵 S3 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
 | **#36** | New data source — CIRCLEBACK | 🚀 S4 | L | — | — |
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
@@ -692,6 +693,71 @@ content_items / member_events / embeddings, verifiable) · retention number stat
 ---
 
 # 🔵 S3 — PLANNED
+
+### #71 · "Virtual event", "call", "recording" — three words, three systems, two contradicting answers
+**🔵 S3 · size M — filed 2026-08-07 from Andy's own WhatsApp session (18:11–18:13 local)**
+
+> **In plain words:** Andy asked for the last virtual event and got February. He asked for the last
+> Mogul Call — the same kind of thing — and got August. Both in the same breath, both confident.
+
+*As a member, when I ask about a call, Olivia knows whether I mean the session that happened, the
+recording of it, or the one coming up — and she never gives me two different "latest" answers in
+one conversation.*
+
+**The transcript (verbatim, 2026-08-07):**
+- *"what was the last vitrual event"* → **"The most recent virtual event on record is the Mogul Call
+  with Peter-Paul Maan, held Wed Feb 4, 2026."** Plus: *"our live events calendar isn't fully
+  connected here yet, so there could be newer virtual sessions."*
+- *"and what was the last mogul call"* → **"The latest Mogul Call … was published August 5, 2026:
+  … with Dorian Gorski"** (restricted, so she fell back to Guido Reyes, July 29).
+
+**Measured 2026-08-07 — the calendar is NOT disconnected, the lane filters it out:**
+`digest.events_catalog` holds **"Mogul Call with Dorian Gorski", event_type Virtual, 2026-08-05**.
+The right answer was one row away. But of **634 Virtual events, 615 have `phase = NULL`**; only 8
+are `Registration Open` (newest **2026-07-15**) and 8 `Confirmed` (newest 2025-10-23). The events
+lane surfaces the phase-stamped slice only (#60's browse rule), so a **past-tense** question got
+answered from a set built for **upcoming** browsing → February.
+
+**Three systems describe the same real-world thing, and nothing says which is authoritative:**
+
+| System | What it holds | Latest mogul call |
+|---|---|---|
+| `digest.events_catalog` | the scheduled event (Airtable + app) | 2026-08-05 Dorian Gorski |
+| `digest.videos_catalog` | the published recording | 2026-08-05 (restricted) |
+| `digest.calls` (#70) | the Zoom meeting itself — 33 mogul, 38 channel, 6 expert, 4 chapter | 2026-08-05 |
+
+**Two defects, one root:**
+1. **The contradiction** — whichever word the member happens to use decides which system answers,
+   and the systems disagree by six months.
+2. **The false excuse is worse than the wrong date.** *"our live events calendar isn't fully
+   connected here yet"* is not true. She invented an infrastructure explanation for her own filter,
+   and offered to file a report about it. A member would repeat that to the team.
+
+**Shape of the fix (structural, not a prompt line):**
+- **Write the vocabulary down first — this is the ticket's real deliverable.** What IS a virtual
+  event vs a call vs a recording; which of the three is authoritative for *when it happened*, for
+  *what was said*, and for *how to attend*. Needs Andy's ruling; the rest follows mechanically.
+- **Tense decides the source, not the noun.** Past-tense ("last / most recent / was there a")
+  answers from what actually happened; future-tense answers from the browse set. Today `phase` is
+  doing both jobs and only works for one.
+- **One answer per real-world thing.** The Aug 5 Dorian Gorski call is one event with a recording,
+  not two competing rows — join the three systems on the call the way #70 already joins video ↔ Zoom.
+- **A restricted RECORDING must not hide the EVENT.** The event is on the public events page; only
+  its content is restricted. Today the restriction on the video pushed the answer back to July 29.
+- **Ban the fabricated infrastructure excuse.** If a lane filtered something out, she says she is
+  not sure, never invents a reason about our plumbing.
+
+**Accept when**
+- The three terms are defined in the handbook, with the authoritative source named per question type.
+- "What was the last virtual event" and "what was the last mogul call" return the **same** call on
+  the same day — proven on both phrasings, plus "what's the next virtual event" still answering
+  from the upcoming set.
+- The 615 phase-less virtual events are reachable for past-tense asks, or ruled out in writing.
+- A restricted recording no longer suppresses its event; the event is named, the content is not.
+- No answer claims a system "isn't connected" unless a health signal says so.
+- Gate GREEN · matrix rows added for both phrasings and the restricted-recording case.
+
+---
 
 ### #20 · Census into the warehouse
 **🟡 S2 · size L — UNBLOCKED 2026-08-06 (census launched, 49 responses day one) · BUILT + STAGED +
