@@ -60,7 +60,7 @@ link.
 | Layer | Technology | Specifics |
 |---|---|---|
 | **Orchestration** | **n8n Cloud** (`mdsco.app.n8n.cloud`) | 4 workflows: production `12wj6h1TWqb0d4Dq` (67 nodes) · staging `bqHstPDi84uOhTCJ` · holding ladder `X1vzrW9Avqff3qRa` · daily review `xkX7wnIwxJLU7YgY`. Edited via the public API (`N8N_API_KEY`), never the UI, so changes are diffable and snapshotable. |
-| **Database** | **Supabase Postgres 15**, project `nadtudwuwjhckotrngzn`, schema `digest` | 43 tables, ~75 functions. Extensions in use: **`vector` 0.8.0** (pgvector/HNSW), **`pg_cron` 1.6.4** (the health alarm, every 5 min), **`pg_net` 0.20.0** (Slack calls from inside Postgres), **`pg_trgm` 1.6** (fuzzy name matching), `pgcrypto`, `uuid-ossp`. |
+| **Database** | **Supabase Postgres 15**, project `nadtudwuwjhckotrngzn`, schema `digest` | 43 tables, **104 functions** (exported to `db/`, see #65). Extensions in use: **`vector` 0.8.0** (pgvector/HNSW), **`pg_cron` 1.6.4** (the health alarm, every 5 min), **`pg_net` 0.20.0** (Slack calls from inside Postgres), **`pg_trgm` 1.6** (fuzzy name matching), `pgcrypto`, `uuid-ossp`. |
 | **API surface** | **PostgREST** (Supabase REST) | Everything is `POST /rest/v1/rpc/<function>` with the `service_role` key and `Content-Profile: digest`. No ORM, no direct Postgres connections from n8n. |
 | **Answer model** | **Anthropic `claude-sonnet-5`** | The answering loop, tool-calling, thinking **disabled**, 3 prompt-cache breakpoints (tools, system, moving message mark). |
 | **Router + fact gate** | **Anthropic `claude-haiku-4-5`** | Intent routing (cached ~6.2K-token prompt) and the evidence check. Cheap, fast, replaceable. |
@@ -389,12 +389,25 @@ python3 scripts/olivia_wf.py unlock
 ### 8.2 The safety gate
 
 ```bash
-python3 scripts/olivia_leak_gate.py     # 202 checks, ~3 min, free
+python3 scripts/olivia_leak_gate.py     # 245 checks, ~3 min, free
 ```
 It inserts canary rows with every access rule and sensitivity, asks the real RPCs for them as
 several different members, and asserts what must *not* come back. It also verifies anon lockout,
 cancelled-member refusal, field allowlists and grant hygiene, then cleans up after itself.
 **Green before every ship. No exceptions.**
+
+### 8.2b After ANY migration: re-export the SQL layer (#65)
+
+```bash
+python3 scripts/db_export_schema.py     # DB -> files
+git diff db/                            # this is your code review
+git add db && git commit
+```
+
+`com.mds.db.drift` (daily 05:40) runs `--check --alert` and shouts in Slack when the repo and the
+live database disagree. Log: `scripts/db_drift.log`. **A drift alert means someone changed the
+database out of band** — re-export, read the diff, and find out who and why before committing it.
+Applying files back to the database (repo → DB) is deliberately not wired up.
 
 ### 8.3 Quality evaluation
 
@@ -418,6 +431,7 @@ OLIVIA_EVAL_BANK=eval_bank_smoke.json python3 olivia_eval.py --score
 | `com.mds.persona.refresh` (04:15) | `persona_refresh.py` — rebuilds member personas |
 | `com.mds.olivia-eval` (03:30) | the nightly eval run |
 | `com.mds.olivia.watchdog` (every 15 min) | `alarm_watchdog.py` — watches the alarm system from *outside* Supabase |
+| `com.mds.db.drift` (05:40) | `db_export_schema.py --check --alert` — fails and alerts Slack when `db/` and the live SQL layer disagree (#65) |
 
 Every job stamps `digest.olivia_job_heartbeats`. A job that goes stale (>26h, or >192h for weekly
 catalog refreshes) triggers the Slack alarm. **Prove any scheduled script under `/usr/bin/python3`**
@@ -475,9 +489,12 @@ consumed the whole token budget and members received "Sorry — I could not gene
   OLIVIA_ARCHITECTURE_AUDIT_*.md        ← the architecture scorecard + its SQL
   OLIVIA_RELEASE_NOTES.md               ← member-facing notes (Andy posts them)
   OLIVIA_SHAREABLE_FIELDS.md            ← the privacy rulebook (see §11)
+  db/                                   ← THE SQL LAYER IN GIT (#65) — generated, never hand-edit
+    functions/ (104) views/ (8) triggers.sql policies.sql grants.sql rls.sql tables.sql
   scripts/
     olivia_wf.py                        ← stage / promote / rollback / snapshot / lock
-    olivia_leak_gate.py                 ← the 202-check safety gate
+    olivia_leak_gate.py                 ← the 245-check safety gate
+    db_export_schema.py                 ← DB → db/ export + the drift check (#65)
     olivia_selftest.py                  ← fire questions through a workflow
     nightly_derivations.py              ← the 8-job nightly pipeline
     olivia_loop/                        ← the answering-loop source (build_loop.py re-applies)
@@ -536,6 +553,25 @@ selects them. "Used in a calculation" is not "shareable".
 | **Organic eval bank only** | Generated questions can be overfitted and do not reflect what members actually ask. |
 | **One smoke test per batch, not per ticket** | The full run is slow and paid; per-ticket proof is probes plus the gate. |
 | **Coverage is a process, never an event** | Anything hand-run rots. Every derivation is a scheduled job with a heartbeat and an alarm. |
+| **The data-access tier lives in Postgres — and stays there** | See below. |
+
+### The data-access tier lives in Postgres — and that is deliberate (2026-08-07, #65)
+
+Data access and access control belong in Postgres because it is the last hop before the data, and
+**four consumers share it**: n8n, the Python scripts, the GitHub Actions and digest-web. Moving the
+gate into one application leaves the other three unguarded; moving retrieval out means pulling 38k
+rows over the wire and losing HNSW-in-query. So the 104 functions are not misplaced logic — they
+are the boundary.
+
+What #65 fixed was not the placement but the **source of truth**: the functions now exist as files
+in `db/`, exported from the live database, with a daily drift check. Changes flow **DB → repo**;
+repo → DB is deliberately not wired up.
+
+**Two accepted tier exceptions, named rather than pretended away:**
+- `olivia_alarm_fire` posts to Slack from inside Postgres (via `pg_net`). On purpose — the alarm
+  must survive n8n being the thing that is down.
+- `member_event_url` does URL/presentation shaping in SQL. A genuine violation, small, and cheaper
+  where it is than duplicated across four consumers.
 
 ---
 
