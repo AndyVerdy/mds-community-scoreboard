@@ -1242,6 +1242,23 @@ def main():
         st, body = rpc("form_field_history", {"p_phone": phone}, ANON_KEY)
         check("anon key denied on form_field_history", st in (401, 403, 404), f"status {st}")
 
+        # #65 — the schema-source door. It hands out the DDL of every digest object, which is
+        # the map of the security boundary itself: anon must never reach it, and what comes
+        # back must be DDL and nothing else.
+        st, body = rpc("schema_source", {}, ANON_KEY)
+        check("anon key denied on schema_source (#65)", st in (401, 403, 404), f"status {st}")
+        # Every phone-shaped literal in the DDL must be one we have accepted in writing.
+        # Today that is exactly the probe number, hardcoded in olivia_health_check and
+        # olivia_broadcast_audience to EXCLUDE Andy's own thread from live traffic. Any other
+        # number means a member's phone got hardcoded into a function — a leak the export
+        # would then commit to git.
+        ALLOWED_NUMS = {"17866578153"}          # the probe number, already public in this repo
+        st, rows = rpc("schema_source", {}, key)
+        ddl = " ".join(r["definition"] for r in rows) if st == 200 else ""
+        stray = set(re.findall(r"'\+?(\d{10,15})'", ddl)) - ALLOWED_NUMS
+        check("schema_source returns DDL only — no unexpected phone numbers (#65)",
+              st == 200 and not stray, f"status {st}, stray {sorted(stray)[:3]}")
+
         # THE SCOPE WALL. digest.form_responses is shared with the event/trend corpus, so every
         # reader Olivia can reach MUST inner-join digest.form_scope on scope='profile'. On
         # 2026-08-07 form_field_history and my_form_answers did not, and a member's Inspire 2026
