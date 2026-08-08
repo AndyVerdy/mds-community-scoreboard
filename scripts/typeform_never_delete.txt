@@ -1,0 +1,27 @@
+# Typeform forms that must NEVER be deleted. One id per line, reason after it.
+# Enforced by every scripts/typeform_prune*.sh run — a form listed here is skipped
+# even if it appears in a batch list.
+#
+# WHY THIS FILE EXISTS: on 2026-08-07 batch 1 deleted two zero-response forms that
+# turned out to be staged approval gates — "Under 30 Verification Form" (PFDcRZr1)
+# and "Accelerator Channel Verification" (vqDFPdf4). Zero responses is NOT evidence
+# a form is junk: a gate that has not fired yet looks exactly like dead weight.
+
+# --- WA approval / channel verification (Andy, 2026-08-07: "the only ones I need for approval")
+IaKWKysS  Centurion 20M+
+gILdcvsp  TikTok Channel Verification
+j5JAS5sT  Supplement Channel Verification
+BKg5wDeY  Large Catalog Sellers Channel Verification
+N1BkcKGe  Real Estate Channel Verification
+Y8SqIEy1  TikTok +1M TTM Verification
+
+# --- live verification forms found outside Andy's list; protected pending his ruling
+EOKnKOIK  Team User Verification (134 responses)
+ygLBCSth  SaaS Channel Verification form (17 responses)
+
+# --- Olivia's five canonical forms (digest.form_scope, scope='profile')
+DFeK5yop  MDS Annual Census 2026
+FsVHzNN9  New Member Application v3
+mkUJqsfM  Honorary Member Application
+I409BFlj  Standard - Annual Census (legacy)
+DXs5mhZn  MDSonly - Annual Census Master (legacy)
