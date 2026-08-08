@@ -1,0 +1,5362 @@
+{
+ "S9BMpqQw": {
+  "definition": {
+   "id": "S9BMpqQw",
+   "type": "quiz",
+   "title": "For Testing - Komal",
+   "workspace": {
+    "href": "https://api.typeform.com/workspaces/2e4u5B"
+   },
+   "theme": {
+    "href": "https://api.typeform.com/themes/qHWOQ7"
+   },
+   "settings": {
+    "language": "en",
+    "progress_bar": "proportion",
+    "meta": {
+     "allow_indexing": false
+    },
+    "hide_navigation": false,
+    "is_public": true,
+    "is_trial": false,
+    "show_progress_bar": true,
+    "show_typeform_branding": true,
+    "are_uploads_public": false,
+    "show_time_to_complete": true,
+    "show_number_of_submissions": false,
+    "show_cookie_consent": false,
+    "show_question_number": true,
+    "hide_required_indicator": false,
+    "show_key_hint_on_choices": true,
+    "autosave_progress": true,
+    "free_form_navigation": false,
+    "use_lead_qualification": false,
+    "pro_subdomain_enabled": false,
+    "email_consent_notifications_config": {
+     "send_email_copy": true
+    },
+    "auto_translate": true,
+    "partial_responses_to_all_integrations": false
+   },
+   "thankyou_screens": [
+    {
+     "id": "pEQTxonLaeEx",
+     "ref": "01H43DZAFXFSW3KB3JMKX76Q84",
+     "title": "",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": true,
+      "button_mode": "default_redirect",
+      "button_text": "Create a typeform"
+     }
+    },
+    {
+     "id": "DefaultTyScreen",
+     "ref": "default_tys",
+     "title": "Thanks for completing this typeform\nNow *create your own* \u2014 it's free, easy, & beautiful",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": false,
+      "button_mode": "default_redirect",
+      "button_text": "Create a *typeform*"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://public-assets.typeform.com/public/admin/2dpnUBBkz2VN.gif"
+     }
+    }
+   ],
+   "fields": [
+    {
+     "id": "u8XvgzfNdgwm",
+     "title": "...",
+     "ref": "01H43DZAFWNVJVQXFQJXT3ZTAY",
+     "properties": {
+      "randomize": false,
+      "allow_multiple_selection": false,
+      "allow_other_choice": false,
+      "vertical_alignment": true,
+      "choices": [
+       {
+        "id": "OTCXyAvcko64",
+        "ref": "01H43DZAFWEW6F5319PK334QGD",
+        "label": "Choice 1"
+       },
+       {
+        "id": "1cMCitS2RBOv",
+        "ref": "01H43DZAFX0M5EJ4N2ZJJP1FTT",
+        "label": "Choice 2"
+       }
+      ]
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "multiple_choice",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/WMALzu59xbXQ"
+     },
+     "layout": {
+      "type": "split",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/WMALzu59xbXQ"
+      }
+     }
+    },
+    {
+     "id": "GX2T5b6lCoiR",
+     "title": "...",
+     "ref": "5a53db71-ce9d-419a-8868-444c74956959",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "short_text"
+    }
+   ],
+   "hidden": [
+    "email",
+    "name"
+   ],
+   "created_at": "2023-06-29T11:17:48+00:00",
+   "last_updated_at": "2026-06-25T14:41:42+00:00",
+   "published_at": "2023-06-29T11:22:29+00:00",
+   "_links": {
+    "display": "https://form.typeform.com/to/S9BMpqQw",
+    "responses": "https://api.typeform.com/forms/S9BMpqQw/responses"
+   }
+  },
+  "responses": {
+   "items": [
+    {
+     "landing_id": "ianbczy4rkc43ianbc56jkvwa9fbrqgj",
+     "token": "ianbczy4rkc43ianbc56jkvwa9fbrqgj",
+     "response_id": "ianbczy4rkc43ianbc56jkvwa9fbrqgj",
+     "response_type": "completed",
+     "landed_at": "2024-06-13T16:21:52Z",
+     "submitted_at": "2024-06-13T16:21:54Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/S9BMpqQw",
+      "network_id": "59c3ad9427",
+      "browser": "default"
+     },
+     "hidden": {
+      "email": "xxxxx",
+      "name": "xxxxx"
+     },
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choice",
+       "field": {
+        "id": "u8XvgzfNdgwm",
+        "type": "multiple_choice",
+        "ref": "01H43DZAFWNVJVQXFQJXT3ZTAY"
+       },
+       "choice": {
+        "id": "OTCXyAvcko64",
+        "ref": "01H43DZAFWEW6F5319PK334QGD",
+        "label": "Choice 1"
+       }
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "GX2T5b6lCoiR",
+        "type": "short_text",
+        "ref": "5a53db71-ce9d-419a-8868-444c74956959"
+       },
+       "text": "234"
+      }
+     ],
+     "status": "final"
+    }
+   ],
+   "total_items": 1,
+   "page_count": 1
+  }
+ },
+ "szz8pilk": {
+  "definition": {
+   "id": "szz8pilk",
+   "type": "quiz",
+   "title": "Partner Offer Form",
+   "workspace": {
+    "href": "https://api.typeform.com/workspaces/fx6YbX"
+   },
+   "theme": {
+    "href": "https://api.typeform.com/themes/mH4la0XA"
+   },
+   "settings": {
+    "language": "en",
+    "progress_bar": "proportion",
+    "meta": {
+     "allow_indexing": false
+    },
+    "hide_navigation": false,
+    "is_public": true,
+    "is_trial": false,
+    "show_progress_bar": true,
+    "show_typeform_branding": true,
+    "are_uploads_public": false,
+    "show_time_to_complete": true,
+    "show_number_of_submissions": false,
+    "show_cookie_consent": false,
+    "show_question_number": true,
+    "hide_required_indicator": false,
+    "show_key_hint_on_choices": true,
+    "autosave_progress": true,
+    "free_form_navigation": false,
+    "use_lead_qualification": false,
+    "pro_subdomain_enabled": false,
+    "email_consent_notifications_config": {
+     "send_email_copy": true
+    },
+    "auto_translate": true,
+    "partial_responses_to_all_integrations": false
+   },
+   "thankyou_screens": [
+    {
+     "id": "dXupOrcYKaMn",
+     "ref": "120194ba-1c91-4e44-bd47-019e4442e220",
+     "title": "Thanks a Million!",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": true,
+      "button_mode": "default_redirect",
+      "button_text": "Create a typeform"
+     }
+    },
+    {
+     "id": "DefaultTyScreen",
+     "ref": "default_tys",
+     "title": "Thanks for completing this typeform\nNow *create your own* \u2014 it's free, easy, & beautiful",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": false,
+      "button_mode": "default_redirect",
+      "button_text": "Create a *typeform*"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://public-assets.typeform.com/public/admin/2dpnUBBkz2VN.gif"
+     }
+    }
+   ],
+   "welcome_screens": [
+    {
+     "id": "ig4GiH7BGAx3",
+     "ref": "0fb826ad-52eb-41ac-ba13-f2836e099c32",
+     "title": "Partner Offer Submission Form",
+     "properties": {
+      "show_button": true,
+      "button_text": "Start"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/4j4R3Wx8xYVi",
+      "properties": {
+       "description": "2023 mds logo white"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/4j4R3Wx8xYVi",
+       "properties": {
+        "brightness": 0,
+        "description": "2023 mds logo white"
+       }
+      },
+      "placement": "left"
+     }
+    }
+   ],
+   "fields": [
+    {
+     "id": "PqOgVUnknrpz",
+     "title": "What is the name of your company?",
+     "ref": "b6989d77-1b9a-44d9-8037-679b6df51caa",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "icuT82TRulbk",
+     "title": "What is the official website of your company?",
+     "ref": "1eb5aff6-36d0-405d-80b7-9441c85de9b3",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "website"
+    },
+    {
+     "id": "P9HbKVckNszi",
+     "title": "What is the name of the main contact person in your company?",
+     "ref": "4a7d7da2-6203-470d-af56-d3d5aeed8484",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "KVnad1zcgoik",
+     "title": "What is the email address of the main contact person?",
+     "ref": "77c284ce-b1e8-493b-88a5-1aa35efea309",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "email"
+    },
+    {
+     "id": "hYDIwz2Nw2lW",
+     "title": "What is the phone number of the main contact person?",
+     "ref": "69181cee-00f5-4aa6-93b7-612b45d0f241",
+     "properties": {
+      "default_country_code": "US"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "phone_number"
+    },
+    {
+     "id": "V1gzjwWadscc",
+     "title": "Please provide details of your MDS Only offer.",
+     "ref": "d502c358-6bfb-472b-9a55-978b6c0c5101",
+     "properties": {
+      "description": "Ideal offers provide MDS members a discount on the recurring fee and/or a value added service."
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "6Q2e0lVeScUD",
+     "title": "How can MDS community members claim your offer?",
+     "ref": "b47c9aff-e982-436b-935c-38c392afc3bf",
+     "properties": {
+      "description": "Sample offer instructions: Email alex@gmail.com and mention MDS sent you."
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "8DcE3dsXsz8D",
+     "title": "Please provide the terms and conditions of your offer.",
+     "ref": "da65d137-af15-4991-a592-7cd4bf5f8743",
+     "properties": {
+      "description": "Sample offer terms & requirements: \"Can't be combined with other promotions.\""
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    }
+   ],
+   "created_at": "2023-07-20T05:07:14+00:00",
+   "last_updated_at": "2026-06-25T15:54:46+00:00",
+   "published_at": "2023-07-20T05:14:45+00:00",
+   "_links": {
+    "display": "https://form.typeform.com/to/szz8pilk",
+    "responses": "https://api.typeform.com/forms/szz8pilk/responses"
+   }
+  },
+  "responses": {
+   "items": [
+    {
+     "landing_id": "zc7lqmo3089e9wzc7my34wyhajg70j94",
+     "token": "zc7lqmo3089e9wzc7my34wyhajg70j94",
+     "response_id": "zc7lqmo3089e9wzc7my34wyhajg70j94",
+     "response_type": "completed",
+     "landed_at": "2023-07-20T06:21:59Z",
+     "submitted_at": "2023-07-20T06:23:15Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/szz8pilk",
+      "network_id": "afcd981944",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "text",
+       "field": {
+        "id": "PqOgVUnknrpz",
+        "type": "short_text",
+        "ref": "b6989d77-1b9a-44d9-8037-679b6df51caa"
+       },
+       "text": "MDS Test"
+      },
+      {
+       "type": "url",
+       "field": {
+        "id": "icuT82TRulbk",
+        "type": "website",
+        "ref": "1eb5aff6-36d0-405d-80b7-9441c85de9b3"
+       },
+       "url": "https://www.milliondollarsellers.com/"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "P9HbKVckNszi",
+        "type": "short_text",
+        "ref": "4a7d7da2-6203-470d-af56-d3d5aeed8484"
+       },
+       "text": "MDS Test"
+      },
+      {
+       "type": "email",
+       "field": {
+        "id": "KVnad1zcgoik",
+        "type": "email",
+        "ref": "77c284ce-b1e8-493b-88a5-1aa35efea309"
+       },
+       "email": "partners@milliondollarsellers.com"
+      },
+      {
+       "type": "phone_number",
+       "field": {
+        "id": "hYDIwz2Nw2lW",
+        "type": "phone_number",
+        "ref": "69181cee-00f5-4aa6-93b7-612b45d0f241"
+       },
+       "phone_number": "+12345678910"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "V1gzjwWadscc",
+        "type": "long_text",
+        "ref": "d502c358-6bfb-472b-9a55-978b6c0c5101"
+       },
+       "text": "Test offer"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "6Q2e0lVeScUD",
+        "type": "long_text",
+        "ref": "b47c9aff-e982-436b-935c-38c392afc3bf"
+       },
+       "text": "Test instructions"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "8DcE3dsXsz8D",
+        "type": "long_text",
+        "ref": "da65d137-af15-4991-a592-7cd4bf5f8743"
+       },
+       "text": "Test terms"
+      }
+     ],
+     "status": "final"
+    }
+   ],
+   "total_items": 1,
+   "page_count": 1
+  }
+ },
+ "imAQQzd7": {
+  "definition": {
+   "id": "imAQQzd7",
+   "type": "quiz",
+   "title": "Site Inspection for MDS Events (test)",
+   "workspace": {
+    "href": "https://api.typeform.com/workspaces/7K9nx3"
+   },
+   "theme": {
+    "href": "https://api.typeform.com/themes/HxrdIV3h"
+   },
+   "settings": {
+    "language": "en",
+    "progress_bar": "proportion",
+    "meta": {
+     "allow_indexing": false
+    },
+    "hide_navigation": false,
+    "is_public": true,
+    "is_trial": false,
+    "show_progress_bar": true,
+    "show_typeform_branding": true,
+    "are_uploads_public": false,
+    "show_time_to_complete": true,
+    "show_number_of_submissions": false,
+    "show_cookie_consent": false,
+    "show_question_number": true,
+    "hide_required_indicator": false,
+    "show_key_hint_on_choices": true,
+    "autosave_progress": true,
+    "free_form_navigation": false,
+    "use_lead_qualification": false,
+    "pro_subdomain_enabled": false,
+    "email_consent_notifications_config": {
+     "send_email_copy": true
+    },
+    "auto_translate": true,
+    "partial_responses_to_all_integrations": false
+   },
+   "thankyou_screens": [
+    {
+     "id": "Hm3w4NlhNw4O",
+     "ref": "4d8eec85-faa8-40f2-9212-d58065a0d2ec",
+     "title": "Thank you for helping choose the best venues!",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": true,
+      "button_mode": "reload",
+      "button_text": "again"
+     }
+    },
+    {
+     "id": "DefaultTyScreen",
+     "ref": "default_tys",
+     "title": "Thanks for completing this typeform\nNow *create your own* \u2014 it's free, easy, & beautiful",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": false,
+      "button_mode": "default_redirect",
+      "button_text": "Create a *typeform*"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://public-assets.typeform.com/public/admin/2dpnUBBkz2VN.gif"
+     }
+    }
+   ],
+   "welcome_screens": [
+    {
+     "id": "NgJLP184T16H",
+     "ref": "1b4d4a48-f608-4568-8e33-8e874161ad6f",
+     "title": "MDS Event Venue\nInspection Form",
+     "properties": {
+      "show_button": true,
+      "button_text": "Continue",
+      "description": "Please be as critical as you can be, we are leveling up!"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/L2WZJgzKjxe6",
+      "properties": {
+       "description": "183074813_3907414566016578_2346194447216271594_n"
+      }
+     },
+     "layout": {
+      "type": "split",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/L2WZJgzKjxe6",
+       "properties": {
+        "description": "183074813_3907414566016578_2346194447216271594_n"
+       }
+      },
+      "placement": "right"
+     }
+    }
+   ],
+   "fields": [
+    {
+     "id": "E2r19rfaRowg",
+     "title": "Inspector Name",
+     "ref": "01F5KF5FJ42448VK8J377FQ62E",
+     "properties": {
+      "description": "Please enter your full name"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "BgvjwmyK8MyC",
+     "title": "Date",
+     "ref": "9af251fc-001d-4f96-bfae-44a7c6fc3017",
+     "properties": {
+      "description": "Please today's date",
+      "separator": "/",
+      "structure": "MMDDYYYY"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "date"
+    },
+    {
+     "id": "E9KwLf1zxHcm",
+     "title": "Which event are you inspecting for?",
+     "ref": "7e3a2dba-60d5-4a0e-ae4d-8dc883327299",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "lhtBygIHNzf5",
+     "title": "Venue Type",
+     "ref": "9c076484-a6f3-45f2-9a86-8e32f56f8986",
+     "properties": {
+      "randomize": false,
+      "alphabetical_order": false,
+      "choices": [
+       {
+        "id": "cyzo9ss1cGM5",
+        "ref": "aa495448-27b4-4ce8-8e4c-4b246035e65d",
+        "label": "Hotel"
+       },
+       {
+        "id": "6jNmUcIOZBzp",
+        "ref": "ea87c89b-bfc4-4ebe-af32-4c23552a6344",
+        "label": "Bedroom"
+       },
+       {
+        "id": "gtmwvcGaZmcn",
+        "ref": "5ba70d38-bf9a-4766-affe-38e44e253c54",
+        "label": "Condo"
+       },
+       {
+        "id": "bY2OGPrrUGDL",
+        "ref": "d243a50f-52ce-47d5-96f0-889b5b68d302",
+        "label": "Restaurant"
+       },
+       {
+        "id": "V36wfoWO9nX6",
+        "ref": "332916a7-3e4f-4773-bdc7-3cf32c016d49",
+        "label": "Bar"
+       },
+       {
+        "id": "7j5095Nw8x0I",
+        "ref": "9a57478c-3ca9-4423-ae83-e53550d93e32",
+        "label": "Conference Room"
+       },
+       {
+        "id": "mKK6jfstrrW8",
+        "ref": "403da20e-2f18-4561-8b84-d0ac831cee46",
+        "label": "Breakout Room"
+       }
+      ]
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "dropdown"
+    },
+    {
+     "id": "6k881HqIqpCH",
+     "title": "Venue Name",
+     "ref": "1cb51233-fd56-423f-b050-ba42fd349833",
+     "properties": {
+      "description": "Enter full name of venue you are inspecting"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "pNOaTir7Q56Y",
+     "title": "Venue Website",
+     "ref": "74051e85-fbff-4818-9be2-28239cfca548",
+     "properties": {
+      "description": "Enter website IF there is one"
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "website"
+    },
+    {
+     "id": "PQfWJQq7jOZ0",
+     "title": "Venue Type II",
+     "ref": "7a7415b0-a73b-4d46-8e26-621e0261e6a8",
+     "properties": {
+      "description": "Select a Venue type",
+      "randomize": false,
+      "alphabetical_order": false,
+      "choices": [
+       {
+        "id": "feKpxM18dhry",
+        "ref": "af0f17e3-8668-439d-a2a1-30789f30fceb",
+        "label": "Indoor"
+       },
+       {
+        "id": "4tGCq1b92UHp",
+        "ref": "ed0dd2da-ff2d-41c4-a7b5-f294a3b39fcc",
+        "label": "Outdoor"
+       }
+      ]
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "dropdown"
+    },
+    {
+     "id": "y3BcAoEi7naU",
+     "title": "Address",
+     "ref": "de9940fb-a5ab-4038-aa54-acb6f7623038",
+     "properties": {
+      "description": "Enter address of venue"
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "WFoFxD4brD5w",
+     "title": "Contact Information",
+     "ref": "cc217d0c-9898-407c-a529-767105c5fa37",
+     "properties": {
+      "description": "Enter the best contact for the venue",
+      "button_text": "Continue",
+      "show_button": true,
+      "fields": [
+       {
+        "id": "XD44EkU3Ocs6",
+        "title": "Email Address",
+        "ref": "dca019ca-ea3b-4e8a-ae7b-09f5b1a4887b",
+        "properties": {
+         "description": "Enter email address for venue contact"
+        },
+        "validations": {
+         "required": false
+        },
+        "type": "email"
+       },
+       {
+        "id": "c4zdTMK6rklp",
+        "title": "Phone Number",
+        "ref": "971c0462-03d1-4e86-a2f7-ebb67f907c9c",
+        "properties": {
+         "description": "Enter the phone number of venue contact",
+         "default_country_code": "us"
+        },
+        "validations": {
+         "required": false
+        },
+        "type": "phone_number"
+       }
+      ]
+     },
+     "type": "group"
+    },
+    {
+     "id": "xwatMKOFLjL0",
+     "title": "Venue Rating in Google Searches",
+     "ref": "4b8ade5c-32cc-4c33-ad2e-acb242ea98d2",
+     "properties": {
+      "description": "Enter the venue average rating",
+      "shape": "star",
+      "steps": 5
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "rating"
+    },
+    {
+     "id": "AYeknhTUXJtR",
+     "title": "Booking Requirements",
+     "ref": "cbad7373-c9c6-4525-a6c9-4ac20360d13f",
+     "properties": {
+      "description": "What is needed to book this venue"
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "makY4OnOGBwN",
+     "title": "Distance from Main Functions",
+     "ref": "3f066a32-25ab-414b-966c-b19acb6189e9",
+     "properties": {
+      "description": "How far is it from where the group will be"
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "WxVR2p9pOuSl",
+     "title": "Soundproofing",
+     "ref": "fef435fb-7511-4586-8a93-2683a368c881",
+     "properties": {
+      "description": "How is the sound level or possible sound disruption"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "ikS7vi5MV7LV",
+     "title": "Ceiling Height",
+     "ref": "1eb81dda-04d9-4370-bcd5-3713b9686e10",
+     "properties": {
+      "description": "How tall is the ceiling at venue"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "XekMAJEQA721",
+     "title": "Lighting",
+     "ref": "aa84046c-3cc9-40df-b05d-2c6af78416e9",
+     "properties": {
+      "description": "How is the lighting at venue"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "LnfjdwPO6ZdD",
+     "title": "Temperature Control",
+     "ref": "83d684a4-9ab6-48ef-9f6c-9802f57aa7f6",
+     "properties": {
+      "description": "Are we able to control temperature in venue"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "VAnxAcoqsFX1",
+     "title": "Sound System",
+     "ref": "53c9d222-c974-4224-bc31-79ec211ae10b",
+     "properties": {
+      "description": "Is there sound system, can it be workable for functions"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "Zp0Pn7xwL9kU",
+     "title": "Nearest restroom proximity",
+     "ref": "d8e9fa0a-a70a-46aa-8fa2-17e8df2313a5",
+     "properties": {
+      "description": "How accessible are the restrooms"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "CrfDJWfBOd4U",
+     "title": "What is the maximun capacity?",
+     "ref": "62112b04-e50e-4f24-866d-b21c2ec287c2",
+     "properties": {
+      "description": "Legal Maximum Capacity at venue"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "sA78L9Sxvwgf",
+     "title": "Nearby elevators and entrances/exits?",
+     "ref": "f0aaef8d-9412-4ca3-97a3-ec276bef6870",
+     "properties": {
+      "description": "How accessible is entering and exiting the venue"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "vRF0CgsuBcQm",
+     "title": "How late can events run?",
+     "ref": "abe54077-8393-4cc2-81e7-2b744cc322e6",
+     "properties": {
+      "description": "What is the latest we can host at this venue"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "4G9iWJ6uQia3",
+     "title": "Is there a designated area for storage?",
+     "ref": "fc87f497-c885-41b0-bde0-4e59e3659700",
+     "properties": {
+      "description": "We would need a small room for event material, where is it located"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "ly8deSR3fjcb",
+     "title": "Parking availability?",
+     "ref": "033fe4a9-3d09-4db1-96a0-7216fd515476",
+     "properties": {
+      "description": "Is parking available and is it free"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "laD8nLHWgOSq",
+     "title": "Is it easy to find location?",
+     "ref": "94305e1a-5bcd-41a6-bd1b-aa4aee10dd9b",
+     "properties": {
+      "description": "How is the experience of getting to this venue"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "X2Ad0uukj4oK",
+     "title": "WiFi usage policy",
+     "ref": "215029f6-49af-4be1-865a-af970e93ffaf",
+     "properties": {
+      "description": "Is there WiFi accessible"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "FrG9nWnsLn4j",
+     "title": "Please take as many images for the venue as possible",
+     "ref": "abdacd21-1bef-4f94-810b-1b71ddc006a4",
+     "properties": {
+      "description": "The more images the better you will support the team"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "file_upload"
+    },
+    {
+     "id": "W2umoH1D6T35",
+     "title": "Please take a video of the venue to best view the space",
+     "ref": "9f462d67-23fb-4a0c-96da-f7650d74ece9",
+     "properties": {
+      "description": "The most you can get on video the better"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "file_upload"
+    },
+    {
+     "id": "zYDslZOfLxMv",
+     "title": "Venue Type Additional Comments",
+     "ref": "8af2d4af-35d3-47b1-96e8-0605913ab3e0",
+     "properties": {
+      "description": "Anything else we should know about the venue type"
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "mEQJi7dmxGRE",
+     "title": "Rate each of the following on a 5 point scale\n(1 being the worst, 5 being the best)",
+     "ref": "7f0f6685-d208-4a0b-a5e4-b8c9f3c44cd4",
+     "properties": {
+      "description": "Please be as critical as you can be",
+      "button_text": "Continue",
+      "hide_marks": false
+     },
+     "type": "statement",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/r8xcSm8aNVVw",
+      "properties": {
+       "description": "dog wearing Superman costume"
+      }
+     },
+     "layout": {
+      "type": "split",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/r8xcSm8aNVVw",
+       "properties": {
+        "description": "dog wearing Superman costume"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "QfJCG55cH0JV",
+     "title": "Design",
+     "ref": "e5e24691-3afe-417a-8b4d-e77385c6a704",
+     "properties": {
+      "description": "Rate the venue design",
+      "shape": "star",
+      "steps": 5
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "rating"
+    },
+    {
+     "id": "LK87YIquWmvj",
+     "title": "Additional Comments on Design",
+     "ref": "58bd3063-03bc-42d2-b337-f831439b5061",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "fwycz7iED6WH",
+     "title": "Ambience",
+     "ref": "fd0a24ff-eba2-4020-b2a1-4d10cbea1fad",
+     "properties": {
+      "description": "Rate the venue ambience",
+      "shape": "star",
+      "steps": 5
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "rating"
+    },
+    {
+     "id": "N3NLw4kgazTI",
+     "title": "Additional Comments on Ambience",
+     "ref": "27f85fb5-b756-47f6-9e02-92e9372d731e",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "VA1EsUtsDoSt",
+     "title": "Location",
+     "ref": "eb180c33-356b-45ec-8087-029bf079386d",
+     "properties": {
+      "description": "Rate the venue design",
+      "shape": "star",
+      "steps": 5
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "rating"
+    },
+    {
+     "id": "XYM6hy2BHYwY",
+     "title": "Additional Comments on Location",
+     "ref": "736a33a4-51b8-4293-a713-d48fcec9fc8e",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "oCQXdmsS8cLu",
+     "title": "Pricing",
+     "ref": "899d0834-868a-4c38-9e6d-1352bafbbf83",
+     "properties": {
+      "description": "Rate the venue Pricing",
+      "shape": "star",
+      "steps": 5
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "rating"
+    },
+    {
+     "id": "FAxScDkUzq1N",
+     "title": "Additional Comments on Pricing",
+     "ref": "48969a9b-ee5d-4132-b9e5-b9b741bfbca7",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "1djD7zzfHglK",
+     "title": "Food",
+     "ref": "4892fcd3-be57-4a6f-9529-69edb6f0c0d8",
+     "properties": {
+      "description": "Rate the venue food",
+      "shape": "star",
+      "steps": 5
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "rating"
+    },
+    {
+     "id": "juShdOHcOQ47",
+     "title": "Additional Comments on Food",
+     "ref": "348bfb0e-4adb-4492-9042-3791a73109c9",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "RBBpSXlAMm3P",
+     "title": "Beverages",
+     "ref": "67d96005-620e-4068-ae6d-a180d8a8662e",
+     "properties": {
+      "description": "Rate the venue beverages",
+      "shape": "star",
+      "steps": 5
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "rating"
+    },
+    {
+     "id": "1YxmXj29maB8",
+     "title": "Additional Comments on Beverages",
+     "ref": "196712d3-a90e-4bf7-9e0d-943669ac16a8",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "zrbCP5ppaYMr",
+     "title": "Service\nAttentiveness / Conflict Resolution / Responsiveness",
+     "ref": "62afeb02-b08c-4961-b0c6-e02c73a7f1f4",
+     "properties": {
+      "description": "Rate the venue service based on the above",
+      "shape": "star",
+      "steps": 5
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "rating"
+    },
+    {
+     "id": "dFmLnG0xAs5A",
+     "title": "Additional Comments on Service",
+     "ref": "aac8ffd8-f350-46d7-89e2-37a7989874bd",
+     "properties": {
+      "description": "Attentiveness / Conflict Resolution / Responsiveness"
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "JFDELPM3jSuw",
+     "title": "Service\nFriendliness / Warmth / Personal touches",
+     "ref": "6192a07e-0a11-4c71-8ef8-057e927b1e0c",
+     "properties": {
+      "description": "Rate the venue service based on the above",
+      "shape": "star",
+      "steps": 5
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "rating"
+    },
+    {
+     "id": "U4kC2MThoGjO",
+     "title": "Additional Comments on Service",
+     "ref": "69e16119-0c2c-474d-9584-9df1b04c2c2b",
+     "properties": {
+      "description": "Friendliness / Warmth / Personal touches"
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "7xRu3uTQNDKD",
+     "title": "Cleanliness",
+     "ref": "cd12186f-4c3e-40a3-9347-313ad24b4d42",
+     "properties": {
+      "description": "Rate the venue cleanliness",
+      "shape": "star",
+      "steps": 5
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "rating"
+    },
+    {
+     "id": "J8HaSTj683RT",
+     "title": "Additional Comments on Cleanliness",
+     "ref": "3a352836-a9e5-4b38-91ff-4abadd4b85a4",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "8cEg9ScSdAfs",
+     "title": "Audio & Visual",
+     "ref": "03f70a85-f096-40b1-95a9-10ef2468211c",
+     "properties": {
+      "description": "Provide details about the AV at venue",
+      "button_text": "Continue",
+      "show_button": true,
+      "fields": [
+       {
+        "id": "axF5vssAKEjz",
+        "title": "Quality of available equipment",
+        "ref": "62a7c281-731b-48c2-a7dc-3dc962b2de02",
+        "properties": {
+         "description": "If there is equipment available"
+        },
+        "validations": {
+         "required": false
+        },
+        "type": "long_text"
+       },
+       {
+        "id": "xNNkDAYUlE46",
+        "title": "AV availability in conference rooms",
+        "ref": "ad5dd720-7efd-48ff-a394-5a7681c8ac21",
+        "properties": {
+         "description": "If there is available AV at venue"
+        },
+        "validations": {
+         "required": false
+        },
+        "type": "long_text"
+       }
+      ]
+     },
+     "type": "group"
+    }
+   ],
+   "logic": [
+    {
+     "type": "field",
+     "ref": "971c0462-03d1-4e86-a2f7-ebb67f907c9c",
+     "actions": [
+      {
+       "action": "jump",
+       "details": {
+        "to": {
+         "type": "field",
+         "value": "3f066a32-25ab-414b-966c-b19acb6189e9"
+        }
+       },
+       "condition": {
+        "op": "and",
+        "vars": [
+         {
+          "op": "is",
+          "vars": [
+           {
+            "type": "field",
+            "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+           },
+           {
+            "type": "choice",
+            "value": "ea87c89b-bfc4-4ebe-af32-4c23552a6344"
+           }
+          ]
+         },
+         {
+          "op": "is",
+          "vars": [
+           {
+            "type": "field",
+            "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+           },
+           {
+            "type": "choice",
+            "value": "5ba70d38-bf9a-4766-affe-38e44e253c54"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "type": "field",
+     "ref": "74051e85-fbff-4818-9be2-28239cfca548",
+     "actions": [
+      {
+       "action": "jump",
+       "details": {
+        "to": {
+         "type": "field",
+         "value": "de9940fb-a5ab-4038-aa54-acb6f7623038"
+        }
+       },
+       "condition": {
+        "op": "and",
+        "vars": [
+         {
+          "op": "is",
+          "vars": [
+           {
+            "type": "field",
+            "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+           },
+           {
+            "type": "choice",
+            "value": "aa495448-27b4-4ce8-8e4c-4b246035e65d"
+           }
+          ]
+         },
+         {
+          "op": "is",
+          "vars": [
+           {
+            "type": "field",
+            "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+           },
+           {
+            "type": "choice",
+            "value": "ea87c89b-bfc4-4ebe-af32-4c23552a6344"
+           }
+          ]
+         },
+         {
+          "op": "is",
+          "vars": [
+           {
+            "type": "field",
+            "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+           },
+           {
+            "type": "choice",
+            "value": "5ba70d38-bf9a-4766-affe-38e44e253c54"
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "action": "jump",
+       "details": {
+        "to": {
+         "type": "field",
+         "value": "7a7415b0-a73b-4d46-8e26-621e0261e6a8"
+        }
+       },
+       "condition": {
+        "op": "and",
+        "vars": [
+         {
+          "op": "is",
+          "vars": [
+           {
+            "type": "field",
+            "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+           },
+           {
+            "type": "choice",
+            "value": "d243a50f-52ce-47d5-96f0-889b5b68d302"
+           }
+          ]
+         },
+         {
+          "op": "is",
+          "vars": [
+           {
+            "type": "field",
+            "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+           },
+           {
+            "type": "choice",
+            "value": "332916a7-3e4f-4773-bdc7-3cf32c016d49"
+           }
+          ]
+         },
+         {
+          "op": "is",
+          "vars": [
+           {
+            "type": "field",
+            "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+           },
+           {
+            "type": "choice",
+            "value": "9a57478c-3ca9-4423-ae83-e53550d93e32"
+           }
+          ]
+         },
+         {
+          "op": "is",
+          "vars": [
+           {
+            "type": "field",
+            "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+           },
+           {
+            "type": "choice",
+            "value": "403da20e-2f18-4561-8b84-d0ac831cee46"
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "type": "field",
+     "ref": "cbad7373-c9c6-4525-a6c9-4ac20360d13f",
+     "actions": [
+      {
+       "action": "jump",
+       "details": {
+        "to": {
+         "type": "field",
+         "value": "fef435fb-7511-4586-8a93-2683a368c881"
+        }
+       },
+       "condition": {
+        "op": "is",
+        "vars": [
+         {
+          "type": "field",
+          "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+         },
+         {
+          "type": "choice",
+          "value": "aa495448-27b4-4ce8-8e4c-4b246035e65d"
+         }
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "type": "field",
+     "ref": "fef435fb-7511-4586-8a93-2683a368c881",
+     "actions": [
+      {
+       "action": "jump",
+       "details": {
+        "to": {
+         "type": "field",
+         "value": "62112b04-e50e-4f24-866d-b21c2ec287c2"
+        }
+       },
+       "condition": {
+        "op": "is",
+        "vars": [
+         {
+          "type": "field",
+          "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+         },
+         {
+          "type": "choice",
+          "value": "aa495448-27b4-4ce8-8e4c-4b246035e65d"
+         }
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "type": "field",
+     "ref": "62112b04-e50e-4f24-866d-b21c2ec287c2",
+     "actions": [
+      {
+       "action": "jump",
+       "details": {
+        "to": {
+         "type": "field",
+         "value": "abe54077-8393-4cc2-81e7-2b744cc322e6"
+        }
+       },
+       "condition": {
+        "op": "is",
+        "vars": [
+         {
+          "type": "field",
+          "value": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+         },
+         {
+          "type": "choice",
+          "value": "aa495448-27b4-4ce8-8e4c-4b246035e65d"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "created_at": "2021-05-14T19:25:36+00:00",
+   "last_updated_at": "2026-06-24T06:22:18+00:00",
+   "published_at": "2021-07-08T05:24:49+00:00",
+   "_links": {
+    "display": "https://form.typeform.com/to/imAQQzd7",
+    "responses": "https://api.typeform.com/forms/imAQQzd7/responses"
+   }
+  },
+  "responses": {
+   "items": [
+    {
+     "landing_id": "crvx9lasbaqvf2crv6r5356g76t6dxzz",
+     "token": "crvx9lasbaqvf2crv6r5356g76t6dxzz",
+     "response_id": "crvx9lasbaqvf2crv6r5356g76t6dxzz",
+     "response_type": "completed",
+     "landed_at": "2021-07-08T05:24:58Z",
+     "submitted_at": "2021-07-08T05:29:24Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/imAQQzd7",
+      "network_id": "bbd86f7cd8",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "text",
+       "field": {
+        "id": "E2r19rfaRowg",
+        "type": "short_text",
+        "ref": "01F5KF5FJ42448VK8J377FQ62E"
+       },
+       "text": "anita test"
+      },
+      {
+       "type": "date",
+       "field": {
+        "id": "BgvjwmyK8MyC",
+        "type": "date",
+        "ref": "9af251fc-001d-4f96-bfae-44a7c6fc3017"
+       },
+       "date": "2021-07-07T00:00:00.000Z"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "E9KwLf1zxHcm",
+        "type": "long_text",
+        "ref": "7e3a2dba-60d5-4a0e-ae4d-8dc883327299"
+       },
+       "text": "MDS X"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "lhtBygIHNzf5",
+        "type": "dropdown",
+        "ref": "9c076484-a6f3-45f2-9a86-8e32f56f8986"
+       },
+       "text": "Hotel"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "6k881HqIqpCH",
+        "type": "short_text",
+        "ref": "1cb51233-fd56-423f-b050-ba42fd349833"
+       },
+       "text": "Hotel XYZ"
+      },
+      {
+       "type": "url",
+       "field": {
+        "id": "pNOaTir7Q56Y",
+        "type": "website",
+        "ref": "74051e85-fbff-4818-9be2-28239cfca548"
+       },
+       "url": "https://hotelxyz.com"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "PQfWJQq7jOZ0",
+        "type": "dropdown",
+        "ref": "7a7415b0-a73b-4d46-8e26-621e0261e6a8"
+       },
+       "text": "Indoor"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "y3BcAoEi7naU",
+        "type": "long_text",
+        "ref": "de9940fb-a5ab-4038-aa54-acb6f7623038"
+       },
+       "text": "sfsafa"
+      },
+      {
+       "type": "email",
+       "field": {
+        "id": "XD44EkU3Ocs6",
+        "type": "email",
+        "ref": "dca019ca-ea3b-4e8a-ae7b-09f5b1a4887b"
+       },
+       "email": "adsa@gmail.com"
+      },
+      {
+       "type": "phone_number",
+       "field": {
+        "id": "c4zdTMK6rklp",
+        "type": "phone_number",
+        "ref": "971c0462-03d1-4e86-a2f7-ebb67f907c9c"
+       },
+       "phone_number": "+18492892929"
+      },
+      {
+       "type": "number",
+       "field": {
+        "id": "xwatMKOFLjL0",
+        "type": "rating",
+        "ref": "4b8ade5c-32cc-4c33-ad2e-acb242ea98d2"
+       },
+       "number": 5
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "AYeknhTUXJtR",
+        "type": "long_text",
+        "ref": "cbad7373-c9c6-4525-a6c9-4ac20360d13f"
+       },
+       "text": "i am not sure"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "WxVR2p9pOuSl",
+        "type": "long_text",
+        "ref": "fef435fb-7511-4586-8a93-2683a368c881"
+       },
+       "text": "good"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "CrfDJWfBOd4U",
+        "type": "long_text",
+        "ref": "62112b04-e50e-4f24-866d-b21c2ec287c2"
+       },
+       "text": "200"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "vRF0CgsuBcQm",
+        "type": "long_text",
+        "ref": "abe54077-8393-4cc2-81e7-2b744cc322e6"
+       },
+       "text": "11pm"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "4G9iWJ6uQia3",
+        "type": "long_text",
+        "ref": "fc87f497-c885-41b0-bde0-4e59e3659700"
+       },
+       "text": "no"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "ly8deSR3fjcb",
+        "type": "short_text",
+        "ref": "033fe4a9-3d09-4db1-96a0-7216fd515476"
+       },
+       "text": "no"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "laD8nLHWgOSq",
+        "type": "long_text",
+        "ref": "94305e1a-5bcd-41a6-bd1b-aa4aee10dd9b"
+       },
+       "text": "no"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "X2Ad0uukj4oK",
+        "type": "short_text",
+        "ref": "215029f6-49af-4be1-865a-af970e93ffaf"
+       },
+       "text": "yes"
+      },
+      {
+       "type": "file_url",
+       "field": {
+        "id": "FrG9nWnsLn4j",
+        "type": "file_upload",
+        "ref": "abdacd21-1bef-4f94-810b-1b71ddc006a4"
+       },
+       "file_url": "https://api.typeform.com/forms/imAQQzd7/responses/crvx9lasbaqvf2crv6r5356g76t6dxzz/fields/FrG9nWnsLn4j/files/1039aeefe4a2-facebook_avatarsadvisory_council.png"
+      },
+      {
+       "type": "file_url",
+       "field": {
+        "id": "W2umoH1D6T35",
+        "type": "file_upload",
+        "ref": "9f462d67-23fb-4a0c-96da-f7650d74ece9"
+       },
+       "file_url": "https://api.typeform.com/forms/imAQQzd7/responses/crvx9lasbaqvf2crv6r5356g76t6dxzz/fields/W2umoH1D6T35/files/9d166a0588ff-20210128_MDS_Day_PR_7124.jpg"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "zYDslZOfLxMv",
+        "type": "long_text",
+        "ref": "8af2d4af-35d3-47b1-96e8-0605913ab3e0"
+       },
+       "text": "adsad"
+      },
+      {
+       "type": "number",
+       "field": {
+        "id": "QfJCG55cH0JV",
+        "type": "rating",
+        "ref": "e5e24691-3afe-417a-8b4d-e77385c6a704"
+       },
+       "number": 5
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "LK87YIquWmvj",
+        "type": "long_text",
+        "ref": "58bd3063-03bc-42d2-b337-f831439b5061"
+       },
+       "text": "dasd"
+      },
+      {
+       "type": "number",
+       "field": {
+        "id": "fwycz7iED6WH",
+        "type": "rating",
+        "ref": "fd0a24ff-eba2-4020-b2a1-4d10cbea1fad"
+       },
+       "number": 5
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "N3NLw4kgazTI",
+        "type": "long_text",
+        "ref": "27f85fb5-b756-47f6-9e02-92e9372d731e"
+       },
+       "text": "dasda"
+      },
+      {
+       "type": "number",
+       "field": {
+        "id": "VA1EsUtsDoSt",
+        "type": "rating",
+        "ref": "eb180c33-356b-45ec-8087-029bf079386d"
+       },
+       "number": 5
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "XYM6hy2BHYwY",
+        "type": "long_text",
+        "ref": "736a33a4-51b8-4293-a713-d48fcec9fc8e"
+       },
+       "text": "dasd"
+      },
+      {
+       "type": "number",
+       "field": {
+        "id": "oCQXdmsS8cLu",
+        "type": "rating",
+        "ref": "899d0834-868a-4c38-9e6d-1352bafbbf83"
+       },
+       "number": 5
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "FAxScDkUzq1N",
+        "type": "long_text",
+        "ref": "48969a9b-ee5d-4132-b9e5-b9b741bfbca7"
+       },
+       "text": "sfsf"
+      },
+      {
+       "type": "number",
+       "field": {
+        "id": "1djD7zzfHglK",
+        "type": "rating",
+        "ref": "4892fcd3-be57-4a6f-9529-69edb6f0c0d8"
+       },
+       "number": 5
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "juShdOHcOQ47",
+        "type": "long_text",
+        "ref": "348bfb0e-4adb-4492-9042-3791a73109c9"
+       },
+       "text": "asda"
+      },
+      {
+       "type": "number",
+       "field": {
+        "id": "RBBpSXlAMm3P",
+        "type": "rating",
+        "ref": "67d96005-620e-4068-ae6d-a180d8a8662e"
+       },
+       "number": 5
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "1YxmXj29maB8",
+        "type": "long_text",
+        "ref": "196712d3-a90e-4bf7-9e0d-943669ac16a8"
+       },
+       "text": "asa"
+      },
+      {
+       "type": "number",
+       "field": {
+        "id": "zrbCP5ppaYMr",
+        "type": "rating",
+        "ref": "62afeb02-b08c-4961-b0c6-e02c73a7f1f4"
+       },
+       "number": 5
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "dFmLnG0xAs5A",
+        "type": "long_text",
+        "ref": "aac8ffd8-f350-46d7-89e2-37a7989874bd"
+       },
+       "text": "sasda"
+      },
+      {
+       "type": "number",
+       "field": {
+        "id": "JFDELPM3jSuw",
+        "type": "rating",
+        "ref": "6192a07e-0a11-4c71-8ef8-057e927b1e0c"
+       },
+       "number": 5
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "U4kC2MThoGjO",
+        "type": "long_text",
+        "ref": "69e16119-0c2c-474d-9584-9df1b04c2c2b"
+       },
+       "text": "asda"
+      },
+      {
+       "type": "number",
+       "field": {
+        "id": "7xRu3uTQNDKD",
+        "type": "rating",
+        "ref": "cd12186f-4c3e-40a3-9347-313ad24b4d42"
+       },
+       "number": 5
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "J8HaSTj683RT",
+        "type": "long_text",
+        "ref": "3a352836-a9e5-4b38-91ff-4abadd4b85a4"
+       },
+       "text": "dad"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "axF5vssAKEjz",
+        "type": "long_text",
+        "ref": "62a7c281-731b-48c2-a7dc-3dc962b2de02"
+       },
+       "text": "tes"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "xNNkDAYUlE46",
+        "type": "long_text",
+        "ref": "ad5dd720-7efd-48ff-a394-5a7681c8ac21"
+       },
+       "text": "ds"
+      }
+     ],
+     "status": "final"
+    }
+   ],
+   "total_items": 1,
+   "page_count": 1
+  }
+ },
+ "m1dejwtP": {
+  "definition": {
+   "id": "m1dejwtP",
+   "type": "quiz",
+   "title": "MDS Partner Perk Approval Form",
+   "workspace": {
+    "href": "https://api.typeform.com/workspaces/fx6YbX"
+   },
+   "theme": {
+    "href": "https://api.typeform.com/themes/mH4la0XA"
+   },
+   "settings": {
+    "language": "en",
+    "progress_bar": "proportion",
+    "meta": {
+     "title": "MDS Partner Perk Approval Form",
+     "allow_indexing": false,
+     "description": "Create your offer: Use our simple, self-service tool to build your perk and get approval within 3-5 business days. Your offer must be a non-public discount/perk.",
+     "image": {
+      "href": "https://images.typeform.com/images/LBtWxDCBECSJ"
+     }
+    },
+    "hide_navigation": false,
+    "is_public": true,
+    "is_trial": false,
+    "show_progress_bar": true,
+    "show_typeform_branding": true,
+    "are_uploads_public": false,
+    "show_time_to_complete": true,
+    "show_number_of_submissions": false,
+    "show_cookie_consent": false,
+    "show_question_number": true,
+    "hide_required_indicator": false,
+    "show_key_hint_on_choices": true,
+    "autosave_progress": true,
+    "free_form_navigation": false,
+    "use_lead_qualification": false,
+    "pro_subdomain_enabled": false,
+    "email_consent_notifications_config": {
+     "send_email_copy": true
+    },
+    "auto_translate": true,
+    "partial_responses_to_all_integrations": false
+   },
+   "thankyou_screens": [
+    {
+     "id": "etgreFvLgUwr",
+     "ref": "8d99432a-f144-412d-8f17-8053f8c6c780",
+     "title": "Thanks a Million!",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": true,
+      "button_mode": "default_redirect",
+      "button_text": "Create a typeform"
+     }
+    },
+    {
+     "id": "DefaultTyScreen",
+     "ref": "default_tys",
+     "title": "Thanks for completing this typeform\nNow *create your own* \u2014 it's free, easy, & beautiful",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": false,
+      "button_mode": "default_redirect",
+      "button_text": "Create a *typeform*"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://public-assets.typeform.com/public/admin/2dpnUBBkz2VN.gif"
+     }
+    }
+   ],
+   "welcome_screens": [
+    {
+     "id": "0IcYhz6KwDHI",
+     "ref": "fb78acb0-ae02-4d50-b2bf-3a2069c91fde",
+     "title": "Partner Perk Program",
+     "properties": {
+      "show_button": true,
+      "button_text": "Start",
+      "description": "Use our simple, self-service tool to build your perk and get approval within 3-5 business days. Your offer must be a non-public discount/perk."
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/k3LjHrWW8ZaJ",
+      "properties": {
+       "description": "2023 mds logo white"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/k3LjHrWW8ZaJ",
+       "properties": {
+        "brightness": 0,
+        "description": "2023 mds logo white"
+       }
+      },
+      "placement": "left"
+     }
+    }
+   ],
+   "fields": [
+    {
+     "id": "1j9HBnXp4lt6",
+     "title": "Company Name",
+     "ref": "1c80d2c5-0821-43d7-9ce7-94bf475fca91",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "O1MT7bf0fxek",
+     "title": "Contact Person's Name and Title",
+     "ref": "73b62303-5cef-47a6-a925-6300684433c2",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "9RCV7WB6enc7",
+     "title": "Email Address",
+     "ref": "3957e4a2-0bda-4706-8f0c-c2ce0e7fecfa",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "email"
+    },
+    {
+     "id": "NaUgmcwqRWyU",
+     "title": "Phone Number",
+     "ref": "410e6a17-c6ed-4a81-9972-af9247d297b1",
+     "properties": {
+      "default_country_code": "US"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "phone_number"
+    },
+    {
+     "id": "3SpxeQX2rqJi",
+     "title": "Company Website",
+     "ref": "da786737-835f-45b0-b4c1-a4897f23470e",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "website"
+    },
+    {
+     "id": "uMxdpHXwKyhB",
+     "title": "Description of your Company",
+     "ref": "edc7734b-9d63-4de4-8816-24955236ee14",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "a14QUuDHkvRU",
+     "title": "Logo",
+     "ref": "a543ce05-e2dc-4bbf-a49b-1ac91905fbdf",
+     "properties": {
+      "description": "Please attach a high-resolution logo, preferably in vector formats (AI, EPS, SVG). If you will send this at a later date, please make sure to send to partners@milliondollarsellers.com"
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "file_upload"
+    },
+    {
+     "id": "WK8tTv429NnY",
+     "title": "New or Updating an Existing Perk",
+     "ref": "723eb14e-4534-43e5-b378-8e4dd480a372",
+     "properties": {
+      "randomize": false,
+      "allow_multiple_selection": false,
+      "allow_other_choice": false,
+      "vertical_alignment": true,
+      "choices": [
+       {
+        "id": "qyv7qC8wsg3Z",
+        "ref": "7de49f0e-a2f7-48b1-bd4b-6dc5b07f812a",
+        "label": "New"
+       },
+       {
+        "id": "OxzIToD6jPKN",
+        "ref": "b37c0d6c-07da-4da1-a88f-e0fc3f65d589",
+        "label": "Updating"
+       }
+      ]
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "multiple_choice"
+    },
+    {
+     "id": "CakBJNx3VOJo",
+     "title": "Type of Perk You Would Like to Submit",
+     "ref": "a93f2e05-3b5f-4721-aad1-9dbd7a73e1d2",
+     "properties": {
+      "description": "Go to this [Google Doc](https://docs.google.com/document/d/1zKNTl5ufe86BR4dOkhXls-rwkTkkNfmpHV4kxYXTgvo/edit?usp=sharing) to learn about the different perk types. \n\nPlease keep in mind that perks should be something that is for free. It should not require the user to join your service or tool in order to obtain the perk or continue the perk. ",
+      "randomize": false,
+      "alphabetical_order": false,
+      "choices": [
+       {
+        "id": "Xr22P0pN946B",
+        "ref": "aa2ceb5b-063d-429d-8439-0a0a7662f610",
+        "label": "Free Trials or Samples"
+       },
+       {
+        "id": "925E52UqGqHM",
+        "ref": "c521ee66-01c4-4fdd-a7e8-3f84c9eca466",
+        "label": "Educational Resources"
+       },
+       {
+        "id": "Pzk9XmYtXhH7",
+        "ref": "2b59bcef-b63a-4fd0-815c-519fc1e9f874",
+        "label": "Early Access to New Products or Features"
+       },
+       {
+        "id": "TQ7qBzDcHzoX",
+        "ref": "379da3da-3960-420c-9a98-99cac31e42a6",
+        "label": "Industry Insights and Reports"
+       },
+       {
+        "id": "SzfM4TFmQKHr",
+        "ref": "84362181-eee8-44c3-893d-6ca9c6f5dfb7",
+        "label": "Networking Opportunities"
+       },
+       {
+        "id": "fMyETQc66uHR",
+        "ref": "fb596d44-2429-447c-8df2-cb455ad48be2",
+        "label": "Consult Expert One on One"
+       },
+       {
+        "id": "yREe3xlolNNM",
+        "ref": "8b3d92d3-96f6-4b40-8880-f6a9e3d1e5e4",
+        "label": "Free Audit"
+       }
+      ]
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "dropdown"
+    },
+    {
+     "id": "Rjsx5rBsn9VW",
+     "title": "Perk You Want to Provide to Members",
+     "ref": "2e25ee26-2805-49f4-bda1-b65567671c6e",
+     "properties": {
+      "description": "Please provide it in the way you would want it to appear on our site.\n\nExample: \n\nFree Audit Report for XYZ. This Extensive Audit will provide you with the following pieces of information which can be used for xyz: \n-a\n-b\n-c"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "LPDAkLOojLM9",
+     "title": "How Do You Want MDS Members to Access This Perk?",
+     "ref": "d3160f8c-6561-414f-a75a-76674d450327",
+     "properties": {
+      "description": "ex: Member must access this perk via this link, Member must go to this link and provide this code, etc."
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "J7LdAt4iWQXe",
+     "title": "Relevant Social Media Handles (optional)",
+     "ref": "c6e71fc4-e51c-4c23-93c3-b08fa052a26b",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "Qyq8xfwDoZRY",
+     "title": "Please confirm that you have read the Terms and Conditions of the Program below.",
+     "ref": "5f8c4dd1-2ece-4112-9265-e1177dfd7ef9",
+     "properties": {
+      "description": "Partner Perk Program Terms and Conditions: \n\na. You must be in good standing with our community to access our perks program \n\nb. The program will be listed for the duration of 12 months unless otherwise specified or approved and must be renewed yearly or as the perk changes. \n\nc. It is the partners obligation to renew and update the perk via the perk portal and connect with the partnerships department (partners@milliondollarsellers.com) as needed. \n\ne. Partners are limited to one perk per year, any updates or changes within the year may cost an extra fee.\n\n f. We will only include information provided by the partner to protect the privacy of partners' information.\n\ng. Our community member information will not be provided unless the member chooses to do so on their own by signing up for your perk. "
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "yes_no"
+    }
+   ],
+   "created_at": "2023-07-04T06:17:39+00:00",
+   "last_updated_at": "2026-06-25T14:57:20+00:00",
+   "published_at": "2023-07-04T06:39:08+00:00",
+   "_links": {
+    "display": "https://form.typeform.com/to/m1dejwtP",
+    "responses": "https://api.typeform.com/forms/m1dejwtP/responses"
+   }
+  },
+  "responses": {
+   "items": [
+    {
+     "landing_id": "k3graxzv1vavblamxx43j6k3grathwb2",
+     "token": "k3graxzv1vavblamxx43j6k3grathwb2",
+     "response_id": "k3graxzv1vavblamxx43j6k3grathwb2",
+     "response_type": "completed",
+     "landed_at": "2023-07-04T10:34:49Z",
+     "submitted_at": "2023-07-04T10:39:24Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/m1dejwtP?typeform-source=app.clickup.com",
+      "network_id": "5d6209e128",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "text",
+       "field": {
+        "id": "1j9HBnXp4lt6",
+        "type": "short_text",
+        "ref": "1c80d2c5-0821-43d7-9ce7-94bf475fca91"
+       },
+       "text": "anita testing"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "O1MT7bf0fxek",
+        "type": "short_text",
+        "ref": "73b62303-5cef-47a6-a925-6300684433c2"
+       },
+       "text": "anita testing"
+      },
+      {
+       "type": "email",
+       "field": {
+        "id": "9RCV7WB6enc7",
+        "type": "email",
+        "ref": "3957e4a2-0bda-4706-8f0c-c2ce0e7fecfa"
+       },
+       "email": "anita@milliondollarsellers.com"
+      },
+      {
+       "type": "phone_number",
+       "field": {
+        "id": "NaUgmcwqRWyU",
+        "type": "phone_number",
+        "ref": "410e6a17-c6ed-4a81-9972-af9247d297b1"
+       },
+       "phone_number": "+18589522670"
+      },
+      {
+       "type": "url",
+       "field": {
+        "id": "3SpxeQX2rqJi",
+        "type": "website",
+        "ref": "da786737-835f-45b0-b4c1-a4897f23470e"
+       },
+       "url": "https://mds.com"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "uMxdpHXwKyhB",
+        "type": "long_text",
+        "ref": "edc7734b-9d63-4de4-8816-24955236ee14"
+       },
+       "text": "anita testing"
+      },
+      {
+       "type": "file_url",
+       "field": {
+        "id": "a14QUuDHkvRU",
+        "type": "file_upload",
+        "ref": "a543ce05-e2dc-4bbf-a49b-1ac91905fbdf"
+       },
+       "file_url": "https://api.typeform.com/forms/m1dejwtP/responses/k3graxzv1vavblamxx43j6k3grathwb2/fields/a14QUuDHkvRU/files/24975a48e6f0-mds_summit_202316_9_event_promo_partner.png"
+      },
+      {
+       "type": "choice",
+       "field": {
+        "id": "WK8tTv429NnY",
+        "type": "multiple_choice",
+        "ref": "723eb14e-4534-43e5-b378-8e4dd480a372"
+       },
+       "choice": {
+        "id": "qyv7qC8wsg3Z",
+        "ref": "7de49f0e-a2f7-48b1-bd4b-6dc5b07f812a",
+        "label": "New"
+       }
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "CakBJNx3VOJo",
+        "type": "dropdown",
+        "ref": "a93f2e05-3b5f-4721-aad1-9dbd7a73e1d2"
+       },
+       "text": "Free Trials or Samples: Offer free trials to your  software, tools, or services for a limited period. You may also provide samples of your products to allow community members to experience and evaluate them."
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "Rjsx5rBsn9VW",
+        "type": "long_text",
+        "ref": "2e25ee26-2805-49f4-bda1-b65567671c6e"
+       },
+       "text": "Perk You Want to Provide to MembersThis question is required. *"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "LPDAkLOojLM9",
+        "type": "short_text",
+        "ref": "d3160f8c-6561-414f-a75a-76674d450327"
+       },
+       "text": "How Do You Want MDS Members to Access This Perk?This question is required. *"
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "Qyq8xfwDoZRY",
+        "type": "yes_no",
+        "ref": "5f8c4dd1-2ece-4112-9265-e1177dfd7ef9"
+       },
+       "boolean": true
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "53shsrqio85hmucq53shs02uo72tln4o",
+     "token": "53shsrqio85hmucq53shs02uo72tln4o",
+     "response_id": "53shsrqio85hmucq53shs02uo72tln4o",
+     "response_type": "completed",
+     "landed_at": "2023-07-04T06:57:56Z",
+     "submitted_at": "2023-07-04T06:59:33Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/m1dejwtP",
+      "network_id": "ee68558dae",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "text",
+       "field": {
+        "id": "1j9HBnXp4lt6",
+        "type": "short_text",
+        "ref": "1c80d2c5-0821-43d7-9ce7-94bf475fca91"
+       },
+       "text": "MDS Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "O1MT7bf0fxek",
+        "type": "short_text",
+        "ref": "73b62303-5cef-47a6-a925-6300684433c2"
+       },
+       "text": "Test Name"
+      },
+      {
+       "type": "email",
+       "field": {
+        "id": "9RCV7WB6enc7",
+        "type": "email",
+        "ref": "3957e4a2-0bda-4706-8f0c-c2ce0e7fecfa"
+       },
+       "email": "partners@milliondollarsellers.com"
+      },
+      {
+       "type": "phone_number",
+       "field": {
+        "id": "NaUgmcwqRWyU",
+        "type": "phone_number",
+        "ref": "410e6a17-c6ed-4a81-9972-af9247d297b1"
+       },
+       "phone_number": "+12345678910"
+      },
+      {
+       "type": "url",
+       "field": {
+        "id": "3SpxeQX2rqJi",
+        "type": "website",
+        "ref": "da786737-835f-45b0-b4c1-a4897f23470e"
+       },
+       "url": "https://www.milliondollarsellers.com/podcast"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "uMxdpHXwKyhB",
+        "type": "long_text",
+        "ref": "edc7734b-9d63-4de4-8816-24955236ee14"
+       },
+       "text": "Real Talk From 7-Figure Online Entrepreneurs"
+      },
+      {
+       "type": "file_url",
+       "field": {
+        "id": "a14QUuDHkvRU",
+        "type": "file_upload",
+        "ref": "a543ce05-e2dc-4bbf-a49b-1ac91905fbdf"
+       },
+       "file_url": "https://api.typeform.com/forms/m1dejwtP/responses/53shsrqio85hmucq53shs02uo72tln4o/fields/a14QUuDHkvRU/files/9ce21de45cf7-mds_logo.png"
+      },
+      {
+       "type": "choice",
+       "field": {
+        "id": "WK8tTv429NnY",
+        "type": "multiple_choice",
+        "ref": "723eb14e-4534-43e5-b378-8e4dd480a372"
+       },
+       "choice": {
+        "id": "qyv7qC8wsg3Z",
+        "ref": "7de49f0e-a2f7-48b1-bd4b-6dc5b07f812a",
+        "label": "New"
+       }
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "CakBJNx3VOJo",
+        "type": "dropdown",
+        "ref": "a93f2e05-3b5f-4721-aad1-9dbd7a73e1d2"
+       },
+       "text": "Free Trials or Samples: Offer free trials to your  software, tools, or services for a limited period. You may also provide samples of your products to allow community members to experience and evaluate them."
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "Rjsx5rBsn9VW",
+        "type": "long_text",
+        "ref": "2e25ee26-2805-49f4-bda1-b65567671c6e"
+       },
+       "text": "Test perk"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "LPDAkLOojLM9",
+        "type": "short_text",
+        "ref": "d3160f8c-6561-414f-a75a-76674d450327"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "J7LdAt4iWQXe",
+        "type": "short_text",
+        "ref": "c6e71fc4-e51c-4c23-93c3-b08fa052a26b"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "Qyq8xfwDoZRY",
+        "type": "yes_no",
+        "ref": "5f8c4dd1-2ece-4112-9265-e1177dfd7ef9"
+       },
+       "boolean": true
+      }
+     ],
+     "status": "final"
+    }
+   ],
+   "total_items": 2,
+   "page_count": 1
+  }
+ },
+ "Hk8Qe4tG": {
+  "definition": {
+   "id": "Hk8Qe4tG",
+   "type": "quiz",
+   "title": "Partner Form - MDS Podcast Guest",
+   "workspace": {
+    "href": "https://api.typeform.com/workspaces/jY2Dd2"
+   },
+   "theme": {
+    "href": "https://api.typeform.com/themes/HxrdIV3h"
+   },
+   "settings": {
+    "language": "en",
+    "progress_bar": "proportion",
+    "meta": {
+     "allow_indexing": false
+    },
+    "hide_navigation": false,
+    "is_public": true,
+    "is_trial": false,
+    "show_progress_bar": true,
+    "show_typeform_branding": true,
+    "are_uploads_public": false,
+    "show_time_to_complete": true,
+    "show_number_of_submissions": false,
+    "show_cookie_consent": false,
+    "show_question_number": true,
+    "hide_required_indicator": false,
+    "show_key_hint_on_choices": true,
+    "autosave_progress": true,
+    "free_form_navigation": false,
+    "use_lead_qualification": false,
+    "pro_subdomain_enabled": false,
+    "email_consent_notifications_config": {
+     "send_email_copy": true
+    },
+    "auto_translate": true,
+    "partial_responses_to_all_integrations": false
+   },
+   "thankyou_screens": [
+    {
+     "id": "x0XwNBgc4tKM",
+     "ref": "01EZQTDRS2R133Q202PA6BF84W",
+     "title": "*THANKS FOR FILLING OUT THE FORM!*",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": false,
+      "button_mode": "reload",
+      "button_text": "reload"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/vBjsukxxrTe9",
+      "properties": {
+       "description": "mdsnewyork"
+      }
+     },
+     "layout": {
+      "type": "split",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/vBjsukxxrTe9",
+       "properties": {
+        "brightness": -0.06,
+        "focal_point": {
+         "x": 0,
+         "y": 0
+        },
+        "description": "mdsnewyork"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "DefaultTyScreen",
+     "ref": "default_tys",
+     "title": "Thanks for completing this typeform\nNow *create your own* \u2014 it's free, easy, & beautiful",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": false,
+      "button_mode": "default_redirect",
+      "button_text": "Create a *typeform*"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://public-assets.typeform.com/public/admin/2dpnUBBkz2VN.gif"
+     }
+    }
+   ],
+   "welcome_screens": [
+    {
+     "id": "eOMO78hvwPZ1",
+     "ref": "940db471-d5e1-4478-a6fd-3cfb040dcfc5",
+     "title": "*Welcome to The Million Dollar Sellers' Podcast!*\n\nHelp us make your episode sound extra awesome by answering some easy background questions.\n\nNow, finish this thing and get on our podcast already!",
+     "properties": {
+      "show_button": true,
+      "button_text": "Start"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/w9r9uWv4zcjy",
+      "properties": {
+       "description": "grey condenser microphone"
+      }
+     },
+     "layout": {
+      "type": "split",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/w9r9uWv4zcjy",
+       "properties": {
+        "brightness": 0.78,
+        "description": "grey condenser microphone"
+       }
+      },
+      "placement": "left"
+     }
+    }
+   ],
+   "fields": [
+    {
+     "id": "yPrKML7hnOCJ",
+     "title": "Full Name",
+     "ref": "01EZQTDRS26NJB4Q1QCKP89JHS",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "short_text",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+      "properties": {
+       "description": "MDS Logo_Icon_B"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+       "properties": {
+        "brightness": 0.05,
+        "description": "MDS Logo_Icon_B"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "p9cep0JDBP4n",
+     "title": "What is the name of your company?",
+     "ref": "99ac16fe-6f71-4c5d-a6bc-1e6715445174",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "1rihzGj1vbbZ",
+     "title": "When did you start your business?",
+     "ref": "543fed48-526e-4110-9429-0d51ad645d09",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "long_text",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+      "properties": {
+       "description": "MDS Logo_Icon_B"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+       "properties": {
+        "brightness": 0.05,
+        "description": "MDS Logo_Icon_B"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "gF15EgDhWHsx",
+     "title": "How do you prefer to be introduced?",
+     "ref": "cec04105-7453-4c4c-8980-7042403db348",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "LQheDInvlQX2",
+     "title": "What accomplishments are you most proud of when it comes to your journey as an entrepreneur?",
+     "ref": "ecabfba4-4c69-4f2e-860d-e0f38dc00227",
+     "properties": {},
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "5Z9v6Iee1tnZ",
+     "title": "What is your current title/role?",
+     "ref": "a4f9f218-d639-4354-926f-a849b4c8b62f",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "short_text",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+      "properties": {
+       "description": "MDS Logo_Icon_B"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+       "properties": {
+        "brightness": 0.05,
+        "description": "MDS Logo_Icon_B"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "hCqTGLEDsnya",
+     "title": "Tell us about your team:",
+     "ref": "7e56b665-8178-4e69-bee5-4f9b8ecc7e40",
+     "properties": {
+      "randomize": false,
+      "allow_multiple_selection": false,
+      "allow_other_choice": false,
+      "vertical_alignment": true,
+      "choices": [
+       {
+        "id": "VNCQgbmwivIQ",
+        "ref": "d65daf37-e508-404f-96cc-d79f2687f018",
+        "label": "Solopreneur"
+       },
+       {
+        "id": "2WoeWeN1ClG1",
+        "ref": "46d80f9d-af15-49f1-9e6f-edd249f41877",
+        "label": "Husband & Wife Team"
+       },
+       {
+        "id": "XfSiRgXCqQ9k",
+        "ref": "dcbaf6c0-5395-4610-895a-390648155288",
+        "label": "3-5 Employees"
+       },
+       {
+        "id": "rZ5GefTZtbvp",
+        "ref": "425229d0-87c9-413a-afd6-55400fa36f93",
+        "label": "5-10 Employees"
+       },
+       {
+        "id": "FyGiuWBFhkjD",
+        "ref": "debaf3ad-65f6-4dbf-88a2-8e5d0dc67d46",
+        "label": "10-20 Employees"
+       },
+       {
+        "id": "Ozi9rIV2OG7g",
+        "ref": "d246990f-9f38-46b0-a4d1-e4ececfad5fc",
+        "label": "20+ Employees"
+       }
+      ]
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "multiple_choice",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+      "properties": {
+       "description": "MDS Logo_Icon_B"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+       "properties": {
+        "brightness": 0.05,
+        "description": "MDS Logo_Icon_B"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "rixrWjLuGzRx",
+     "title": "List out your team's top 1-3 accomplishments within the past year.",
+     "ref": "1ea0607b-c05e-4042-a961-64fa6da9c593",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "SWdwXeBcKVrU",
+     "title": "Where are you from originally? Where are you based now?",
+     "ref": "dae79682-c020-4b8d-9428-a8926e92d215",
+     "properties": {
+      "description": "Example: From California, current living in Miami."
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "short_text",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+      "properties": {
+       "description": "MDS Logo_Icon_B"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+       "properties": {
+        "brightness": 0.05,
+        "description": "MDS Logo_Icon_B"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "l1X2oMK1t107",
+     "title": "Why did you partner with MDS?",
+     "ref": "c2dd6127-7b8c-4345-9e97-1e5a5e159f22",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "long_text",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+      "properties": {
+       "description": "MDS Logo_Icon_B"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+       "properties": {
+        "brightness": 0.05,
+        "description": "MDS Logo_Icon_B"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "dw7G00vFchqU",
+     "title": "Briefly, how has MDS impacted your business?",
+     "ref": "e3e3c6c3-766f-41e9-b547-a3176caf7fa0",
+     "properties": {
+      "description": "(please be as specific as possible with examples)"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+      "properties": {
+       "description": "MDS Logo_Icon_B"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+       "properties": {
+        "brightness": 0.05,
+        "description": "MDS Logo_Icon_B"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "8nQoGS0N5slj",
+     "title": "Briefly, how has MDS impacted your personal life?",
+     "ref": "259611e5-00d5-417c-b9d4-52b569511594",
+     "properties": {
+      "description": "(please be as specific as possible with examples)"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+      "properties": {
+       "description": "MDS Logo_Icon_B"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+       "properties": {
+        "brightness": 0.05,
+        "description": "MDS Logo_Icon_B"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "zVikjk2amcpR",
+     "title": "What are your big goals this year",
+     "ref": "45100d86-455e-41a2-be7f-15081c698647",
+     "properties": {
+      "description": "(business and personal responses welcome)"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "long_text",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+      "properties": {
+       "description": "MDS Logo_Icon_B"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+       "properties": {
+        "brightness": 0.05,
+        "description": "MDS Logo_Icon_B"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "xDDzQvU7tH1E",
+     "title": "When it comes to business, what are you really good at?",
+     "ref": "3de61549-08f1-4b02-8a55-8f17caf34532",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "long_text",
+     "attachment": {
+      "type": "image",
+      "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+      "properties": {
+       "description": "MDS Logo_Icon_B"
+      }
+     },
+     "layout": {
+      "type": "float",
+      "attachment": {
+       "type": "image",
+       "href": "https://images.typeform.com/images/TtsWmrYDZpG9",
+       "properties": {
+        "brightness": 0.05,
+        "description": "MDS Logo_Icon_B"
+       }
+      },
+      "placement": "right"
+     }
+    },
+    {
+     "id": "HTVwUUHzv5uE",
+     "title": "What topic would you be MOST excited to talk about in detail?",
+     "ref": "5b247217-d6dd-4e17-a9aa-9318df28de21",
+     "properties": {
+      "randomize": false,
+      "allow_multiple_selection": false,
+      "allow_other_choice": false,
+      "vertical_alignment": true,
+      "choices": [
+       {
+        "id": "L6GCeVCbD7kA",
+        "ref": "a859afa4-f8fa-4cec-a4dc-8c4bd5172d77",
+        "label": "Team Management"
+       },
+       {
+        "id": "nLEbYlSTSCUL",
+        "ref": "85ca8b44-568f-446f-8c8f-85ba45803941",
+        "label": "ECommerce Strategy"
+       },
+       {
+        "id": "HQAkw4vPVT3I",
+        "ref": "ba728b9e-e1ad-4a41-8512-5de4209ef006",
+        "label": "Brand Strategy"
+       },
+       {
+        "id": "ERySecKiNAJk",
+        "ref": "aeee1413-1485-4a06-a97f-734ce8540324",
+        "label": "Personal Development"
+       },
+       {
+        "id": "SwleILnbNsv2",
+        "ref": "bb341393-5366-4766-a4b3-8d9759a0cc24",
+        "label": "Balancing Work & Family"
+       },
+       {
+        "id": "xi9tozUc3Np5",
+        "ref": "a286bf78-c824-4fd9-ae9b-e9756e274d0b",
+        "label": "Importance of Community"
+       },
+       {
+        "id": "odrHYacipv4b",
+        "ref": "667fecd3-c714-46e8-aafe-679e79d893ce",
+        "label": "Managing Cashflow"
+       },
+       {
+        "id": "9123WuYUnghp",
+        "ref": "a37739b3-ef3f-4f10-9379-aa7d8e1a3c6b",
+        "label": "Team Building"
+       },
+       {
+        "id": "PZKCGCRcgqbt",
+        "ref": "aea3c19e-16c3-425d-a69c-b15dda34d25d",
+        "label": "Systems and Processes"
+       }
+      ]
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "multiple_choice"
+    }
+   ],
+   "created_at": "2022-04-04T13:53:39+00:00",
+   "last_updated_at": "2026-06-24T19:44:10+00:00",
+   "published_at": "2022-04-04T14:02:29+00:00",
+   "_links": {
+    "display": "https://form.typeform.com/to/Hk8Qe4tG",
+    "responses": "https://api.typeform.com/forms/Hk8Qe4tG/responses"
+   }
+  },
+  "responses": {
+   "items": [
+    {
+     "landing_id": "3cm6dx0aqgc1lqe684into3cm6dx0ryj",
+     "token": "3cm6dx0aqgc1lqe684into3cm6dx0ryj",
+     "response_id": "3cm6dx0aqgc1lqe684into3cm6dx0ryj",
+     "response_type": "completed",
+     "landed_at": "2023-03-22T12:27:29Z",
+     "submitted_at": "2023-03-22T12:31:05Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/Hk8Qe4tG",
+      "network_id": "cfd8e04b5b",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "text",
+       "field": {
+        "id": "yPrKML7hnOCJ",
+        "type": "short_text",
+        "ref": "01EZQTDRS26NJB4Q1QCKP89JHS"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "1rihzGj1vbbZ",
+        "type": "long_text",
+        "ref": "543fed48-526e-4110-9429-0d51ad645d09"
+       },
+       "text": "s"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "gF15EgDhWHsx",
+        "type": "long_text",
+        "ref": "cec04105-7453-4c4c-8980-7042403db348"
+       },
+       "text": "d"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "LQheDInvlQX2",
+        "type": "long_text",
+        "ref": "ecabfba4-4c69-4f2e-860d-e0f38dc00227"
+       },
+       "text": "d"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "5Z9v6Iee1tnZ",
+        "type": "short_text",
+        "ref": "a4f9f218-d639-4354-926f-a849b4c8b62f"
+       },
+       "text": "d"
+      },
+      {
+       "type": "choice",
+       "field": {
+        "id": "hCqTGLEDsnya",
+        "type": "multiple_choice",
+        "ref": "7e56b665-8178-4e69-bee5-4f9b8ecc7e40"
+       },
+       "choice": {
+        "id": "Ozi9rIV2OG7g",
+        "ref": "d246990f-9f38-46b0-a4d1-e4ececfad5fc",
+        "label": "20+ Employees"
+       }
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "rixrWjLuGzRx",
+        "type": "long_text",
+        "ref": "1ea0607b-c05e-4042-a961-64fa6da9c593"
+       },
+       "text": "s"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "SWdwXeBcKVrU",
+        "type": "short_text",
+        "ref": "dae79682-c020-4b8d-9428-a8926e92d215"
+       },
+       "text": "d"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "l1X2oMK1t107",
+        "type": "long_text",
+        "ref": "c2dd6127-7b8c-4345-9e97-1e5a5e159f22"
+       },
+       "text": "d"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "dw7G00vFchqU",
+        "type": "long_text",
+        "ref": "e3e3c6c3-766f-41e9-b547-a3176caf7fa0"
+       },
+       "text": "d"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "8nQoGS0N5slj",
+        "type": "long_text",
+        "ref": "259611e5-00d5-417c-b9d4-52b569511594"
+       },
+       "text": "d"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "zVikjk2amcpR",
+        "type": "long_text",
+        "ref": "45100d86-455e-41a2-be7f-15081c698647"
+       },
+       "text": "d"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "xDDzQvU7tH1E",
+        "type": "long_text",
+        "ref": "3de61549-08f1-4b02-8a55-8f17caf34532"
+       },
+       "text": "d"
+      },
+      {
+       "type": "choice",
+       "field": {
+        "id": "HTVwUUHzv5uE",
+        "type": "multiple_choice",
+        "ref": "5b247217-d6dd-4e17-a9aa-9318df28de21"
+       },
+       "choice": {
+        "id": "PZKCGCRcgqbt",
+        "ref": "aea3c19e-16c3-425d-a69c-b15dda34d25d",
+        "label": "Systems and Processes"
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "lylxg0j5t5yg6j1x0lylxg29a7mu6krq",
+     "token": "lylxg0j5t5yg6j1x0lylxg29a7mu6krq",
+     "response_id": "lylxg0j5t5yg6j1x0lylxg29a7mu6krq",
+     "response_type": "completed",
+     "landed_at": "2023-03-13T17:06:06Z",
+     "submitted_at": "2023-03-13T17:07:32Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/Hk8Qe4tG",
+      "network_id": "cfd8e04b5b",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "text",
+       "field": {
+        "id": "yPrKML7hnOCJ",
+        "type": "short_text",
+        "ref": "01EZQTDRS26NJB4Q1QCKP89JHS"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "p9cep0JDBP4n",
+        "type": "short_text",
+        "ref": "99ac16fe-6f71-4c5d-a6bc-1e6715445174"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "1rihzGj1vbbZ",
+        "type": "long_text",
+        "ref": "543fed48-526e-4110-9429-0d51ad645d09"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "gF15EgDhWHsx",
+        "type": "long_text",
+        "ref": "cec04105-7453-4c4c-8980-7042403db348"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "LQheDInvlQX2",
+        "type": "long_text",
+        "ref": "ecabfba4-4c69-4f2e-860d-e0f38dc00227"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "5Z9v6Iee1tnZ",
+        "type": "short_text",
+        "ref": "a4f9f218-d639-4354-926f-a849b4c8b62f"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "choice",
+       "field": {
+        "id": "hCqTGLEDsnya",
+        "type": "multiple_choice",
+        "ref": "7e56b665-8178-4e69-bee5-4f9b8ecc7e40"
+       },
+       "choice": {
+        "id": "XfSiRgXCqQ9k",
+        "ref": "dcbaf6c0-5395-4610-895a-390648155288",
+        "label": "3-5 Employees"
+       }
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "rixrWjLuGzRx",
+        "type": "long_text",
+        "ref": "1ea0607b-c05e-4042-a961-64fa6da9c593"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "SWdwXeBcKVrU",
+        "type": "short_text",
+        "ref": "dae79682-c020-4b8d-9428-a8926e92d215"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "l1X2oMK1t107",
+        "type": "long_text",
+        "ref": "c2dd6127-7b8c-4345-9e97-1e5a5e159f22"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "dw7G00vFchqU",
+        "type": "long_text",
+        "ref": "e3e3c6c3-766f-41e9-b547-a3176caf7fa0"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "8nQoGS0N5slj",
+        "type": "long_text",
+        "ref": "259611e5-00d5-417c-b9d4-52b569511594"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "zVikjk2amcpR",
+        "type": "long_text",
+        "ref": "45100d86-455e-41a2-be7f-15081c698647"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "xDDzQvU7tH1E",
+        "type": "long_text",
+        "ref": "3de61549-08f1-4b02-8a55-8f17caf34532"
+       },
+       "text": "Test"
+      },
+      {
+       "type": "choice",
+       "field": {
+        "id": "HTVwUUHzv5uE",
+        "type": "multiple_choice",
+        "ref": "5b247217-d6dd-4e17-a9aa-9318df28de21"
+       },
+       "choice": {
+        "id": "nLEbYlSTSCUL",
+        "ref": "85ca8b44-568f-446f-8c8f-85ba45803941",
+        "label": "ECommerce Strategy"
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "iuub7z3r96vkqgc3giuu9ohh735huurc",
+     "token": "iuub7z3r96vkqgc3giuu9ohh735huurc",
+     "response_id": "iuub7z3r96vkqgc3giuu9ohh735huurc",
+     "response_type": "completed",
+     "landed_at": "2023-02-26T15:47:26Z",
+     "submitted_at": "2023-02-26T15:49:32Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/Hk8Qe4tG?typeform-source=www.google.com",
+      "network_id": "59c3ad9427",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "text",
+       "field": {
+        "id": "yPrKML7hnOCJ",
+        "type": "short_text",
+        "ref": "01EZQTDRS26NJB4Q1QCKP89JHS"
+       },
+       "text": "Andy"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "p9cep0JDBP4n",
+        "type": "short_text",
+        "ref": "99ac16fe-6f71-4c5d-a6bc-1e6715445174"
+       },
+       "text": "Testing"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "1rihzGj1vbbZ",
+        "type": "long_text",
+        "ref": "543fed48-526e-4110-9429-0d51ad645d09"
+       },
+       "text": "1 year ago"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "gF15EgDhWHsx",
+        "type": "long_text",
+        "ref": "cec04105-7453-4c4c-8980-7042403db348"
+       },
+       "text": "Andy"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "LQheDInvlQX2",
+        "type": "long_text",
+        "ref": "ecabfba4-4c69-4f2e-860d-e0f38dc00227"
+       },
+       "text": "everything"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "5Z9v6Iee1tnZ",
+        "type": "short_text",
+        "ref": "a4f9f218-d639-4354-926f-a849b4c8b62f"
+       },
+       "text": "title"
+      },
+      {
+       "type": "choice",
+       "field": {
+        "id": "hCqTGLEDsnya",
+        "type": "multiple_choice",
+        "ref": "7e56b665-8178-4e69-bee5-4f9b8ecc7e40"
+       },
+       "choice": {
+        "id": "VNCQgbmwivIQ",
+        "ref": "d65daf37-e508-404f-96cc-d79f2687f018",
+        "label": "Solopreneur"
+       }
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "rixrWjLuGzRx",
+        "type": "long_text",
+        "ref": "1ea0607b-c05e-4042-a961-64fa6da9c593"
+       },
+       "text": "one, two and three"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "SWdwXeBcKVrU",
+        "type": "short_text",
+        "ref": "dae79682-c020-4b8d-9428-a8926e92d215"
+       },
+       "text": "here"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "l1X2oMK1t107",
+        "type": "long_text",
+        "ref": "c2dd6127-7b8c-4345-9e97-1e5a5e159f22"
+       },
+       "text": "because"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "dw7G00vFchqU",
+        "type": "long_text",
+        "ref": "e3e3c6c3-766f-41e9-b547-a3176caf7fa0"
+       },
+       "text": "a lot"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "8nQoGS0N5slj",
+        "type": "long_text",
+        "ref": "259611e5-00d5-417c-b9d4-52b569511594"
+       },
+       "text": "not much"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "zVikjk2amcpR",
+        "type": "long_text",
+        "ref": "45100d86-455e-41a2-be7f-15081c698647"
+       },
+       "text": "survive"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "xDDzQvU7tH1E",
+        "type": "long_text",
+        "ref": "3de61549-08f1-4b02-8a55-8f17caf34532"
+       },
+       "text": "same"
+      },
+      {
+       "type": "choice",
+       "field": {
+        "id": "HTVwUUHzv5uE",
+        "type": "multiple_choice",
+        "ref": "5b247217-d6dd-4e17-a9aa-9318df28de21"
+       },
+       "choice": {
+        "id": "PZKCGCRcgqbt",
+        "ref": "aea3c19e-16c3-425d-a69c-b15dda34d25d",
+        "label": "Systems and Processes"
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "0zqmoxlnomur4055ni0zqmoxlnw9vxtb",
+     "token": "0zqmoxlnomur4055ni0zqmoxlnw9vxtb",
+     "response_id": "0zqmoxlnomur4055ni0zqmoxlnw9vxtb",
+     "response_type": "completed",
+     "landed_at": "2022-04-19T18:29:24Z",
+     "submitted_at": "2022-04-19T18:39:41Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/Hk8Qe4tG",
+      "network_id": "3ff2a9f0d4",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "text",
+       "field": {
+        "id": "yPrKML7hnOCJ",
+        "type": "short_text",
+        "ref": "01EZQTDRS26NJB4Q1QCKP89JHS"
+       },
+       "text": "JEREMY ALLEN"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "p9cep0JDBP4n",
+        "type": "short_text",
+        "ref": "99ac16fe-6f71-4c5d-a6bc-1e6715445174"
+       },
+       "text": "ECOM CPA LLC"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "1rihzGj1vbbZ",
+        "type": "long_text",
+        "ref": "543fed48-526e-4110-9429-0d51ad645d09"
+       },
+       "text": "JANUARY 2018"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "gF15EgDhWHsx",
+        "type": "long_text",
+        "ref": "cec04105-7453-4c4c-8980-7042403db348"
+       },
+       "text": "CEO OF ECOM CPA LLC"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "LQheDInvlQX2",
+        "type": "long_text",
+        "ref": "ecabfba4-4c69-4f2e-860d-e0f38dc00227"
+       },
+       "text": "Growing the team"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "5Z9v6Iee1tnZ",
+        "type": "short_text",
+        "ref": "a4f9f218-d639-4354-926f-a849b4c8b62f"
+       },
+       "text": "CEO"
+      },
+      {
+       "type": "choice",
+       "field": {
+        "id": "hCqTGLEDsnya",
+        "type": "multiple_choice",
+        "ref": "7e56b665-8178-4e69-bee5-4f9b8ecc7e40"
+       },
+       "choice": {
+        "id": "FyGiuWBFhkjD",
+        "ref": "debaf3ad-65f6-4dbf-88a2-8e5d0dc67d46",
+        "label": "10-20 Employees"
+       }
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "rixrWjLuGzRx",
+        "type": "long_text",
+        "ref": "1ea0607b-c05e-4042-a961-64fa6da9c593"
+       },
+       "text": "1.  Saved Clients over 11M in tax savings 2.  Became the leader in Tax Planning for eCommerce Businesses.  3.  Surpassed our revenue targets."
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "SWdwXeBcKVrU",
+        "type": "short_text",
+        "ref": "dae79682-c020-4b8d-9428-a8926e92d215"
+       },
+       "text": "Chicago Suburbs, currently Grants Pass, Oregon"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "l1X2oMK1t107",
+        "type": "long_text",
+        "ref": "c2dd6127-7b8c-4345-9e97-1e5a5e159f22"
+       },
+       "text": "Had clients in MDS that said it was a great community and I found that to be true"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "dw7G00vFchqU",
+        "type": "long_text",
+        "ref": "e3e3c6c3-766f-41e9-b547-a3176caf7fa0"
+       },
+       "text": "We've been able to become the leader in tax services for ecommerce businesses.  Also have been able to grow our team to serve more clients."
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "8nQoGS0N5slj",
+        "type": "long_text",
+        "ref": "259611e5-00d5-417c-b9d4-52b569511594"
+       },
+       "text": "Have met some great people that I consider to be great friends."
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "zVikjk2amcpR",
+        "type": "long_text",
+        "ref": "45100d86-455e-41a2-be7f-15081c698647"
+       },
+       "text": "Business- Save clients over 20M in taxes.  Personal- Get better at surfing."
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "xDDzQvU7tH1E",
+        "type": "long_text",
+        "ref": "3de61549-08f1-4b02-8a55-8f17caf34532"
+       },
+       "text": "Bringing in new business and finding mistakes on tax returns."
+      },
+      {
+       "type": "choice",
+       "field": {
+        "id": "HTVwUUHzv5uE",
+        "type": "multiple_choice",
+        "ref": "5b247217-d6dd-4e17-a9aa-9318df28de21"
+       },
+       "choice": {
+        "id": "9123WuYUnghp",
+        "ref": "a37739b3-ef3f-4f10-9379-aa7d8e1a3c6b",
+        "label": "Team Building"
+       }
+      }
+     ],
+     "status": "final"
+    }
+   ],
+   "total_items": 4,
+   "page_count": 1
+  }
+ },
+ "VSq4R50C": {
+  "definition": {
+   "id": "VSq4R50C",
+   "type": "quiz",
+   "title": "MDS Chapter Packs 2023-Partners (Part 2)",
+   "workspace": {
+    "href": "https://api.typeform.com/workspaces/3nrcDv"
+   },
+   "theme": {
+    "href": "https://api.typeform.com/themes/HxrdIV3h"
+   },
+   "settings": {
+    "language": "en",
+    "progress_bar": "proportion",
+    "meta": {
+     "allow_indexing": false,
+     "image": {
+      "href": "https://images.typeform.com/images/r6axF2c6Zjcd"
+     }
+    },
+    "hide_navigation": false,
+    "is_public": true,
+    "is_trial": false,
+    "show_progress_bar": true,
+    "show_typeform_branding": true,
+    "are_uploads_public": false,
+    "show_time_to_complete": false,
+    "show_number_of_submissions": false,
+    "show_cookie_consent": false,
+    "show_question_number": false,
+    "hide_required_indicator": false,
+    "show_key_hint_on_choices": true,
+    "autosave_progress": true,
+    "free_form_navigation": false,
+    "use_lead_qualification": false,
+    "pro_subdomain_enabled": false,
+    "email_consent_notifications_config": {
+     "send_email_copy": true
+    },
+    "auto_translate": true,
+    "partial_responses_to_all_integrations": false
+   },
+   "thankyou_screens": [
+    {
+     "id": "1hUj9divUDLv",
+     "ref": "52033237-0560-4719-aad4-2bd58f1a2848",
+     "title": "We look forward to touring around with world with you! ",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": false,
+      "share_icons": false,
+      "button_mode": "default_redirect",
+      "button_text": "again",
+      "description": "Our Partnerships Team will review the information you have provided and will be in touch soon with next steps!"
+     }
+    },
+    {
+     "id": "DefaultTyScreen",
+     "ref": "default_tys",
+     "title": "Thanks for completing this typeform\nNow *create your own* \u2014 it's free, easy, & beautiful",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": false,
+      "button_mode": "default_redirect",
+      "button_text": "Create a *typeform*"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://public-assets.typeform.com/public/admin/2dpnUBBkz2VN.gif"
+     }
+    }
+   ],
+   "fields": [
+    {
+     "id": "qroswiwqnhyF",
+     "title": "Thank you for your payment. Please review this contract and sign by selecting \"I accept\"",
+     "ref": "084a6c69-b056-49b0-9faa-47e18d9a81f1",
+     "properties": {
+      "description": "\n[View Contract ](https://docs.google.com/document/d/1zffCb3MXNqRxiFSmEcFoogKuNNmogvqBFm9nJ1Zlb5g/edit?usp=sharing)\n\"I accept\" = your agreement to this contract"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "legal"
+    },
+    {
+     "id": "JzTEieUoQOC1",
+     "title": "Please sign the Event Liability Waiver, Code of Ethics, Covid & Media Release",
+     "ref": "a66b203d-8c8b-4190-a197-89acab517b1d",
+     "properties": {
+      "description": "\n[View MDS Code of Ethics](https://docs.google.com/document/d/1PwbtgSejKWFPutPTnDL0VthvyQB1sRAZEv6JpKYxaU0/edit?usp=sharing)\n\"I accept\" = your signature and agreement to this document \n"
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "legal"
+    },
+    {
+     "id": "hGV7OmGIB1mt",
+     "title": "Please View the Schedule below and list your top (4) Chapter Events that you are interested in. ",
+     "ref": "f56d2770-2304-4645-a50a-ab461b597925",
+     "properties": {
+      "description": "[View schedule ](https://airtable.com/shrVxl6Hmzk2U6u0A)"
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "long_text"
+    },
+    {
+     "id": "4AEHy9YtF4Nt",
+     "title": "Would you like to provide a unique offer to the Chapters?",
+     "ref": "7514d5c8-0578-4604-9bb0-0f27ba35b5f8",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "yes_no"
+    },
+    {
+     "id": "SijjIHT88IFS",
+     "title": "What is your Unique Offer? ",
+     "ref": "724aca25-1ea4-413e-8f8f-eaaa190ad336",
+     "properties": {},
+     "validations": {
+      "required": true
+     },
+     "type": "short_text"
+    },
+    {
+     "id": "uuYAmS8JDIpA",
+     "title": "Submit your Logo to speed up the process for branding  ",
+     "ref": "b4159eb9-1df7-4736-b908-1a945ce344d3",
+     "properties": {
+      "description": "Submit your logo in \"ai format\" to partners@milliondollarsellers.com",
+      "randomize": false,
+      "alphabetical_order": false,
+      "choices": [
+       {
+        "id": "k8wUAYivrj8C",
+        "ref": "6f5880d7-163b-41a8-9574-87edf8fff63e",
+        "label": "Submitted!"
+       },
+       {
+        "id": "qKoTArzSpIOo",
+        "ref": "85e0ff9c-8a6f-45d4-98b9-d0bebf820d7c",
+        "label": "Will Submit soon"
+       }
+      ]
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "dropdown"
+    },
+    {
+     "id": "aZ3fg808DqFH",
+     "title": "Have any additional questions?",
+     "ref": "f534e329-f2ca-4514-998a-379bc9cb0665",
+     "properties": {
+      "description": "The partnerships team will reach out shortly with the next steps. However, if you have any questions you want to be sure get answered, please add them here. "
+     },
+     "validations": {
+      "required": true
+     },
+     "type": "short_text"
+    }
+   ],
+   "hidden": [
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_term",
+    "utm_content",
+    "id"
+   ],
+   "logic": [
+    {
+     "type": "field",
+     "ref": "7514d5c8-0578-4604-9bb0-0f27ba35b5f8",
+     "actions": [
+      {
+       "action": "jump",
+       "details": {
+        "to": {
+         "type": "field",
+         "value": "b4159eb9-1df7-4736-b908-1a945ce344d3"
+        }
+       },
+       "condition": {
+        "op": "is",
+        "vars": [
+         {
+          "type": "field",
+          "value": "7514d5c8-0578-4604-9bb0-0f27ba35b5f8"
+         },
+         {
+          "type": "constant",
+          "value": false
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "created_at": "2023-03-28T02:01:13+00:00",
+   "last_updated_at": "2026-06-25T09:57:00+00:00",
+   "published_at": "2023-03-28T22:37:12+00:00",
+   "_links": {
+    "display": "https://form.typeform.com/to/VSq4R50C",
+    "responses": "https://api.typeform.com/forms/VSq4R50C/responses"
+   }
+  },
+  "responses": {
+   "items": [
+    {
+     "landing_id": "cyvwlebbhbkdvs5hcyvymof99gngum6b",
+     "token": "cyvwlebbhbkdvs5hcyvymof99gngum6b",
+     "response_id": "cyvwlebbhbkdvs5hcyvymof99gngum6b",
+     "response_type": "completed",
+     "landed_at": "2023-05-04T04:20:15Z",
+     "submitted_at": "2023-05-04T04:20:33Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/VSq4R50C?typeform-source=marketing824423.typeform.com",
+      "network_id": "4c188cd44b",
+      "browser": "default"
+     },
+     "hidden": {
+      "id": "alelgzz@icloud.com",
+      "utm_campaign": "",
+      "utm_content": "",
+      "utm_medium": "",
+      "utm_source": "",
+      "utm_term": ""
+     },
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "boolean",
+       "field": {
+        "id": "qroswiwqnhyF",
+        "type": "legal",
+        "ref": "084a6c69-b056-49b0-9faa-47e18d9a81f1"
+       },
+       "boolean": true
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "JzTEieUoQOC1",
+        "type": "legal",
+        "ref": "a66b203d-8c8b-4190-a197-89acab517b1d"
+       },
+       "boolean": true
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "hGV7OmGIB1mt",
+        "type": "long_text",
+        "ref": "f56d2770-2304-4645-a50a-ab461b597925"
+       },
+       "text": "1"
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "4AEHy9YtF4Nt",
+        "type": "yes_no",
+        "ref": "7514d5c8-0578-4604-9bb0-0f27ba35b5f8"
+       },
+       "boolean": true
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "SijjIHT88IFS",
+        "type": "short_text",
+        "ref": "724aca25-1ea4-413e-8f8f-eaaa190ad336"
+       },
+       "text": "offer"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "uuYAmS8JDIpA",
+        "type": "dropdown",
+        "ref": "b4159eb9-1df7-4736-b908-1a945ce344d3"
+       },
+       "text": "Will Submit soon"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "aZ3fg808DqFH",
+        "type": "short_text",
+        "ref": "f534e329-f2ca-4514-998a-379bc9cb0665"
+       },
+       "text": "no"
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "gmnlj0y50t4pc0ikfd8hgmnlj0yd68kg",
+     "token": "gmnlj0y50t4pc0ikfd8hgmnlj0yd68kg",
+     "response_id": "gmnlj0y50t4pc0ikfd8hgmnlj0yd68kg",
+     "response_type": "completed",
+     "landed_at": "2023-05-04T04:08:05Z",
+     "submitted_at": "2023-05-04T04:13:05Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/VSq4R50C?typeform-source=marketing824423.typeform.com",
+      "network_id": "4c188cd44b",
+      "browser": "default"
+     },
+     "hidden": {
+      "id": "alelgzz@icloud.com",
+      "utm_campaign": "",
+      "utm_content": "",
+      "utm_medium": "",
+      "utm_source": "",
+      "utm_term": ""
+     },
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "boolean",
+       "field": {
+        "id": "qroswiwqnhyF",
+        "type": "legal",
+        "ref": "084a6c69-b056-49b0-9faa-47e18d9a81f1"
+       },
+       "boolean": true
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "JzTEieUoQOC1",
+        "type": "legal",
+        "ref": "a66b203d-8c8b-4190-a197-89acab517b1d"
+       },
+       "boolean": true
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "hGV7OmGIB1mt",
+        "type": "long_text",
+        "ref": "f56d2770-2304-4645-a50a-ab461b597925"
+       },
+       "text": "123"
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "4AEHy9YtF4Nt",
+        "type": "yes_no",
+        "ref": "7514d5c8-0578-4604-9bb0-0f27ba35b5f8"
+       },
+       "boolean": false
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "uuYAmS8JDIpA",
+        "type": "dropdown",
+        "ref": "b4159eb9-1df7-4736-b908-1a945ce344d3"
+       },
+       "text": "Will Submit soon"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "aZ3fg808DqFH",
+        "type": "short_text",
+        "ref": "f534e329-f2ca-4514-998a-379bc9cb0665"
+       },
+       "text": "no"
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "e38gb5y0n8lxdi41ye38gbe7eux73hj5",
+     "token": "e38gb5y0n8lxdi41ye38gbe7eux73hj5",
+     "response_id": "e38gb5y0n8lxdi41ye38gbe7eux73hj5",
+     "response_type": "completed",
+     "landed_at": "2023-05-03T05:14:30Z",
+     "submitted_at": "2023-05-03T05:14:50Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/VSq4R50C?",
+      "network_id": "aa19d97f72",
+      "browser": "default"
+     },
+     "hidden": {
+      "id": "a@gmail.com",
+      "utm_campaign": "",
+      "utm_content": "",
+      "utm_medium": "",
+      "utm_source": "",
+      "utm_term": ""
+     },
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "boolean",
+       "field": {
+        "id": "qroswiwqnhyF",
+        "type": "legal",
+        "ref": "084a6c69-b056-49b0-9faa-47e18d9a81f1"
+       },
+       "boolean": true
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "JzTEieUoQOC1",
+        "type": "legal",
+        "ref": "a66b203d-8c8b-4190-a197-89acab517b1d"
+       },
+       "boolean": true
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "hGV7OmGIB1mt",
+        "type": "long_text",
+        "ref": "f56d2770-2304-4645-a50a-ab461b597925"
+       },
+       "text": "1,2,3,4"
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "4AEHy9YtF4Nt",
+        "type": "yes_no",
+        "ref": "7514d5c8-0578-4604-9bb0-0f27ba35b5f8"
+       },
+       "boolean": false
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "uuYAmS8JDIpA",
+        "type": "dropdown",
+        "ref": "b4159eb9-1df7-4736-b908-1a945ce344d3"
+       },
+       "text": "Will Submit soon"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "aZ3fg808DqFH",
+        "type": "short_text",
+        "ref": "f534e329-f2ca-4514-998a-379bc9cb0665"
+       },
+       "text": "no"
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "ootkrvplh2fp0qdd770kootkrlogm8zt",
+     "token": "ootkrvplh2fp0qdd770kootkrlogm8zt",
+     "response_id": "ootkrvplh2fp0qdd770kootkrlogm8zt",
+     "response_type": "completed",
+     "landed_at": "2023-03-29T18:11:46Z",
+     "submitted_at": "2023-03-29T18:12:30Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/VSq4R50C?utm_source=xxxxx&utm_medium=xxxxx&utm_campaign=xxxxx&utm_term=xxxxx&utm_content=xxxxx",
+      "network_id": "2fc948db99",
+      "browser": "default"
+     },
+     "hidden": {
+      "id": "xxxxx",
+      "utm_campaign": "xxxxx",
+      "utm_content": "xxxxx",
+      "utm_medium": "xxxxx",
+      "utm_source": "xxxxx",
+      "utm_term": "xxxxx"
+     },
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "boolean",
+       "field": {
+        "id": "qroswiwqnhyF",
+        "type": "legal",
+        "ref": "084a6c69-b056-49b0-9faa-47e18d9a81f1"
+       },
+       "boolean": true
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "JzTEieUoQOC1",
+        "type": "legal",
+        "ref": "a66b203d-8c8b-4190-a197-89acab517b1d"
+       },
+       "boolean": true
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "hGV7OmGIB1mt",
+        "type": "long_text",
+        "ref": "f56d2770-2304-4645-a50a-ab461b597925"
+       },
+       "text": "1. Chapter London"
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "4AEHy9YtF4Nt",
+        "type": "yes_no",
+        "ref": "7514d5c8-0578-4604-9bb0-0f27ba35b5f8"
+       },
+       "boolean": false
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "SijjIHT88IFS",
+        "type": "short_text",
+        "ref": "724aca25-1ea4-413e-8f8f-eaaa190ad336"
+       },
+       "text": "N/A"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "uuYAmS8JDIpA",
+        "type": "dropdown",
+        "ref": "b4159eb9-1df7-4736-b908-1a945ce344d3"
+       },
+       "text": "Will Submit soon"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "aZ3fg808DqFH",
+        "type": "short_text",
+        "ref": "f534e329-f2ca-4514-998a-379bc9cb0665"
+       },
+       "text": "N/A"
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "6ewod6sox8re8x1nv6ew2ggkjt9ml0ze",
+     "token": "6ewod6sox8re8x1nv6ew2ggkjt9ml0ze",
+     "response_id": "6ewod6sox8re8x1nv6ew2ggkjt9ml0ze",
+     "response_type": "completed",
+     "landed_at": "2023-03-28T22:46:02Z",
+     "submitted_at": "2023-03-28T22:46:32Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/VSq4R50C?id=1234",
+      "network_id": "6160b50ecd",
+      "browser": "default"
+     },
+     "hidden": {
+      "id": "1234",
+      "utm_campaign": "",
+      "utm_content": "",
+      "utm_medium": "",
+      "utm_source": "",
+      "utm_term": ""
+     },
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "boolean",
+       "field": {
+        "id": "qroswiwqnhyF",
+        "type": "legal",
+        "ref": "084a6c69-b056-49b0-9faa-47e18d9a81f1"
+       },
+       "boolean": true
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "JzTEieUoQOC1",
+        "type": "legal",
+        "ref": "a66b203d-8c8b-4190-a197-89acab517b1d"
+       },
+       "boolean": true
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "hGV7OmGIB1mt",
+        "type": "long_text",
+        "ref": "f56d2770-2304-4645-a50a-ab461b597925"
+       },
+       "text": "1,2,3,4"
+      },
+      {
+       "type": "boolean",
+       "field": {
+        "id": "4AEHy9YtF4Nt",
+        "type": "yes_no",
+        "ref": "7514d5c8-0578-4604-9bb0-0f27ba35b5f8"
+       },
+       "boolean": true
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "SijjIHT88IFS",
+        "type": "short_text",
+        "ref": "724aca25-1ea4-413e-8f8f-eaaa190ad336"
+       },
+       "text": "offer"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "uuYAmS8JDIpA",
+        "type": "dropdown",
+        "ref": "b4159eb9-1df7-4736-b908-1a945ce344d3"
+       },
+       "text": "Will Submit soon"
+      },
+      {
+       "type": "text",
+       "field": {
+        "id": "aZ3fg808DqFH",
+        "type": "short_text",
+        "ref": "f534e329-f2ca-4514-998a-379bc9cb0665"
+       },
+       "text": "no"
+      }
+     ],
+     "status": "final"
+    }
+   ],
+   "total_items": 5,
+   "page_count": 1
+  }
+ },
+ "sngkZSBx": {
+  "definition": {
+   "id": "sngkZSBx",
+   "type": "quiz",
+   "title": "My branded typeform",
+   "workspace": {
+    "href": "https://api.typeform.com/workspaces/7UKhQQ"
+   },
+   "theme": {
+    "href": "https://api.typeform.com/themes/qHWOQ7"
+   },
+   "settings": {
+    "language": "en",
+    "progress_bar": "proportion",
+    "meta": {
+     "allow_indexing": false
+    },
+    "hide_navigation": false,
+    "is_public": true,
+    "is_trial": false,
+    "show_progress_bar": true,
+    "show_typeform_branding": true,
+    "are_uploads_public": false,
+    "show_time_to_complete": true,
+    "show_number_of_submissions": false,
+    "show_cookie_consent": false,
+    "show_question_number": true,
+    "hide_required_indicator": false,
+    "show_key_hint_on_choices": true,
+    "autosave_progress": true,
+    "free_form_navigation": false,
+    "use_lead_qualification": false,
+    "pro_subdomain_enabled": false,
+    "email_consent_notifications_config": {
+     "send_email_copy": true
+    },
+    "auto_translate": true,
+    "partial_responses_to_all_integrations": false
+   },
+   "thankyou_screens": [
+    {
+     "id": "DefaultTyScreen",
+     "ref": "default_tys",
+     "title": "Thanks for completing this typeform\nNow *create your own* \u2014 it's free, easy, & beautiful",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": false,
+      "button_mode": "default_redirect",
+      "button_text": "Create a *typeform*"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://public-assets.typeform.com/public/admin/2dpnUBBkz2VN.gif"
+     }
+    }
+   ],
+   "fields": [
+    {
+     "id": "TsKmQvleUilT",
+     "title": "Vote best of the day!",
+     "ref": "a9538c9c-3516-4438-84c6-42f0eda824fc",
+     "properties": {
+      "description": "Please choose one",
+      "randomize": false,
+      "allow_multiple_selection": false,
+      "allow_other_choice": false,
+      "vertical_alignment": true,
+      "choices": [
+       {
+        "id": "GUI6LMugobkr",
+        "ref": "c673869e-d679-48fe-ab9b-6c1565ac2f18",
+        "label": "EOS and How We\u2019ve Customized it to Suit Our Business - Hank Holcomb"
+       },
+       {
+        "id": "n9ePBjAgCn7g",
+        "ref": "9c166273-f385-4d66-8a90-ad377d236081",
+        "label": "Optimizing FBA Shipments - Kyle Dilger"
+       },
+       {
+        "id": "kDstPAHC6Lzo",
+        "ref": "ef05557c-9165-46fd-bf73-5ae0e1786805",
+        "label": "Keeping Your Health Products Healthy - Samson Uloho"
+       },
+       {
+        "id": "44i0qYAQjrLT",
+        "ref": "27ff6553-1909-4d64-9ac2-ac958aef9db9",
+        "label": "TikTok Marketing #thenewwildwest - Jonathan Jesper"
+       },
+       {
+        "id": "JUk8RvgrzGfW",
+        "ref": "ed7ca878-5915-4bae-b799-6dd557019aa9",
+        "label": "TikTok Slideshows - Alex Bonilla"
+       },
+       {
+        "id": "PDPGjrZSew7r",
+        "ref": "3e6891d9-832d-4478-8142-12b188394649",
+        "label": "The Visitor No One Wants - Jonathan Jewett"
+       },
+       {
+        "id": "JcBzCAlpM6lS",
+        "ref": "96e99c8b-a056-4d81-b35d-e33fa7a82b02",
+        "label": "Supply Chain Optimization for Fast & Lean Product Launching - Derrek Wiedeman"
+       },
+       {
+        "id": "mRQsJBsCZADc",
+        "ref": "f6089e50-ab32-463c-af6b-668daeb18bbe",
+        "label": "What's the Value Of A Review - Bryce Alderson"
+       }
+      ]
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "multiple_choice"
+    }
+   ],
+   "created_at": "2024-08-09T02:58:50+00:00",
+   "last_updated_at": "2026-06-26T12:19:21+00:00",
+   "published_at": "2024-08-09T06:30:44+00:00",
+   "_links": {
+    "display": "https://form.typeform.com/to/sngkZSBx",
+    "responses": "https://api.typeform.com/forms/sngkZSBx/responses"
+   }
+  },
+  "responses": {
+   "items": [
+    {
+     "landing_id": "woedauj29ycjsb4woe8ushg6bnwzo5q4",
+     "token": "woedauj29ycjsb4woe8ushg6bnwzo5q4",
+     "response_id": "woedauj29ycjsb4woe8ushg6bnwzo5q4",
+     "response_type": "completed",
+     "landed_at": "2024-08-14T01:03:26Z",
+     "submitted_at": "2024-08-14T01:03:27Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/sngkZSBx",
+      "network_id": "700b760d2f",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choice",
+       "field": {
+        "id": "TsKmQvleUilT",
+        "type": "multiple_choice",
+        "ref": "a9538c9c-3516-4438-84c6-42f0eda824fc"
+       },
+       "choice": {
+        "id": "JUk8RvgrzGfW",
+        "ref": "ed7ca878-5915-4bae-b799-6dd557019aa9",
+        "label": "TikTok Slideshows - Alex Bonilla"
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "8fucor1m6d7m8k8oqab935hp8fucor1z",
+     "token": "8fucor1m6d7m8k8oqab935hp8fucor1z",
+     "response_id": "8fucor1m6d7m8k8oqab935hp8fucor1z",
+     "response_type": "completed",
+     "landed_at": "2024-08-09T22:00:23Z",
+     "submitted_at": "2024-08-09T22:00:29Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/sngkZSBx",
+      "network_id": "2bebc70458",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choice",
+       "field": {
+        "id": "TsKmQvleUilT",
+        "type": "multiple_choice",
+        "ref": "a9538c9c-3516-4438-84c6-42f0eda824fc"
+       },
+       "choice": {
+        "id": "JUk8RvgrzGfW",
+        "ref": "ed7ca878-5915-4bae-b799-6dd557019aa9",
+        "label": "TikTok Slideshows - Alex Bonilla"
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "vp3jh394la06d1ivp3jh31qaz5q8x231",
+     "token": "vp3jh394la06d1ivp3jh31qaz5q8x231",
+     "response_id": "vp3jh394la06d1ivp3jh31qaz5q8x231",
+     "response_type": "completed",
+     "landed_at": "2024-08-09T17:10:59Z",
+     "submitted_at": "2024-08-09T21:47:16Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2.1 Safari/605.1.15",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/sngkZSBx",
+      "network_id": "da53aa2eaf",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choice",
+       "field": {
+        "id": "TsKmQvleUilT",
+        "type": "multiple_choice",
+        "ref": "a9538c9c-3516-4438-84c6-42f0eda824fc"
+       },
+       "choice": {
+        "id": "mRQsJBsCZADc",
+        "ref": "f6089e50-ab32-463c-af6b-668daeb18bbe",
+        "label": "What's the Value Of A Review - Bryce Alderson"
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "5gj8fuxfwxme53im7adkimsk5gj8fux0",
+     "token": "5gj8fuxfwxme53im7adkimsk5gj8fux0",
+     "response_id": "5gj8fuxfwxme53im7adkimsk5gj8fux0",
+     "response_type": "completed",
+     "landed_at": "2024-08-09T18:38:17Z",
+     "submitted_at": "2024-08-09T18:38:20Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/sngkZSBx",
+      "network_id": "184d7d0c32",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choice",
+       "field": {
+        "id": "TsKmQvleUilT",
+        "type": "multiple_choice",
+        "ref": "a9538c9c-3516-4438-84c6-42f0eda824fc"
+       },
+       "choice": {
+        "id": "PDPGjrZSew7r",
+        "ref": "3e6891d9-832d-4478-8142-12b188394649",
+        "label": "The Visitor No One Wants - Jonathan Jewett"
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "guoxbe7ilds2d1qfguoxbqv71vc28717",
+     "token": "guoxbe7ilds2d1qfguoxbqv71vc28717",
+     "response_id": "guoxbe7ilds2d1qfguoxbqv71vc28717",
+     "response_type": "completed",
+     "landed_at": "2024-08-09T17:50:41Z",
+     "submitted_at": "2024-08-09T17:50:44Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/sngkZSBx",
+      "network_id": "f2732ab9a7",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choice",
+       "field": {
+        "id": "TsKmQvleUilT",
+        "type": "multiple_choice",
+        "ref": "a9538c9c-3516-4438-84c6-42f0eda824fc"
+       },
+       "choice": {
+        "id": "JUk8RvgrzGfW",
+        "ref": "ed7ca878-5915-4bae-b799-6dd557019aa9",
+        "label": "TikTok Slideshows - Alex Bonilla"
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "vt6ud339h9dhd7hvt6uumn1610kfk6k6",
+     "token": "vt6ud339h9dhd7hvt6uumn1610kfk6k6",
+     "response_id": "vt6ud339h9dhd7hvt6uumn1610kfk6k6",
+     "response_type": "completed",
+     "landed_at": "2024-08-09T16:01:31Z",
+     "submitted_at": "2024-08-09T16:01:33Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+      "platform": "other",
+      "referer": "https://marketing824423.typeform.com/to/sngkZSBx",
+      "network_id": "7eae677e20",
+      "browser": "default"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choice",
+       "field": {
+        "id": "TsKmQvleUilT",
+        "type": "multiple_choice",
+        "ref": "a9538c9c-3516-4438-84c6-42f0eda824fc"
+       },
+       "choice": {
+        "id": "JcBzCAlpM6lS",
+        "ref": "96e99c8b-a056-4d81-b35d-e33fa7a82b02",
+        "label": "Supply Chain Optimization for Fast & Lean Product Launching - Derrek Wiedeman"
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "c5hw6cq7q9wng5qpc5hwhh2rjhwwno08",
+     "token": "c5hw6cq7q9wng5qpc5hwhh2rjhwwno08",
+     "response_id": "c5hw6cq7q9wng5qpc5hwhh2rjhwwno08",
+     "response_type": "completed",
+     "landed_at": "2024-08-09T07:48:11Z",
+     "submitted_at": "2024-08-09T07:48:12Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+      "platform": "mobile",
+      "referer": "https://marketing824423.typeform.com/to/sngkZSBx",
+      "network_id": "0e43256b62",
+      "browser": "touch"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choice",
+       "field": {
+        "id": "TsKmQvleUilT",
+        "type": "multiple_choice",
+        "ref": "a9538c9c-3516-4438-84c6-42f0eda824fc"
+       },
+       "choice": {
+        "id": "JUk8RvgrzGfW",
+        "ref": "ed7ca878-5915-4bae-b799-6dd557019aa9",
+        "label": "TikTok Slideshows - Alex Bonilla"
+       }
+      }
+     ],
+     "status": "final"
+    }
+   ],
+   "total_items": 7,
+   "page_count": 1
+  }
+ },
+ "j0PYJRRO": {
+  "definition": {
+   "id": "j0PYJRRO",
+   "type": "quiz",
+   "title": "My branded typeform",
+   "workspace": {
+    "href": "https://api.typeform.com/workspaces/7UKhQQ"
+   },
+   "theme": {
+    "href": "https://api.typeform.com/themes/qHWOQ7"
+   },
+   "settings": {
+    "language": "en",
+    "progress_bar": "proportion",
+    "meta": {
+     "allow_indexing": false
+    },
+    "hide_navigation": false,
+    "is_public": true,
+    "is_trial": false,
+    "show_progress_bar": true,
+    "show_typeform_branding": true,
+    "are_uploads_public": false,
+    "show_time_to_complete": true,
+    "show_number_of_submissions": false,
+    "show_cookie_consent": false,
+    "show_question_number": true,
+    "hide_required_indicator": false,
+    "show_key_hint_on_choices": true,
+    "autosave_progress": true,
+    "free_form_navigation": false,
+    "use_lead_qualification": false,
+    "pro_subdomain_enabled": false,
+    "email_consent_notifications_config": {
+     "send_email_copy": true
+    },
+    "auto_translate": true,
+    "partial_responses_to_all_integrations": false
+   },
+   "thankyou_screens": [
+    {
+     "id": "DefaultTyScreen",
+     "ref": "default_tys",
+     "title": "Thanks for completing this typeform\nNow *create your own* \u2014 it's free, easy, & beautiful",
+     "type": "thankyou_screen",
+     "properties": {
+      "show_button": true,
+      "share_icons": false,
+      "button_mode": "default_redirect",
+      "button_text": "Create a *typeform*"
+     },
+     "attachment": {
+      "type": "image",
+      "href": "https://public-assets.typeform.com/public/admin/2dpnUBBkz2VN.gif"
+     }
+    }
+   ],
+   "fields": [
+    {
+     "id": "sacytV0aSzBI",
+     "title": "Please vote on the order of our #ValueAdd Presentations\n",
+     "ref": "ce18fdab-f09e-46ac-9899-0d6d6345a035",
+     "properties": {
+      "randomize": false,
+      "allow_multiple_selection": true,
+      "choices": [
+       {
+        "id": "V34KblLhXY8B",
+        "ref": "20830c99-1a42-45f9-952c-5a51ae7b34d5",
+        "label": "TikTok Slideshows\n/TikTok Marketing - #thenewwildwest - Alex and Jonathan Jesper"
+       },
+       {
+        "id": "SA7BCO40e08M",
+        "ref": "e266a0a0-116d-43b4-82e2-84c73e3430c2",
+        "label": "What's the value of a review? - Bryce Alderson"
+       },
+       {
+        "id": "AmMVHz2hnJRl",
+        "ref": "76f942b9-5e86-483e-b061-55c9885aa8a5",
+        "label": "Supply Chain Optimization for Fast & Lean Product Launching - Derrek Wiedeman\n"
+       },
+       {
+        "id": "UXeXE3l1kKlh",
+        "ref": "2cfbb1a3-440a-44a6-b9b9-25c93eccaeb6",
+        "label": "The Visitor No One Wants - Jonathan Jewett"
+       },
+       {
+        "id": "7lmpZ5B0zXGO",
+        "ref": "45eb4a36-cd7e-4842-bab2-e49a319e5daf",
+        "label": "Keeping your health products healthy - Samson Uloho"
+       },
+       {
+        "id": "1wEwt0HAaO8S",
+        "ref": "374aa57e-b78a-4b0d-be7e-ba17722446ee",
+        "label": "Cost - Kyle Dilger"
+       },
+       {
+        "id": "gnBnm6tf5MYp",
+        "ref": "aa150bf3-af60-415c-b617-c72b787a35dc",
+        "label": "EOS and How We\u2019ve Customized it to Suit Our Business - Hank Holcomb"
+       }
+      ]
+     },
+     "validations": {
+      "required": false
+     },
+     "type": "ranking"
+    }
+   ],
+   "created_at": "2024-08-07T14:00:03+00:00",
+   "last_updated_at": "2026-06-26T12:14:19+00:00",
+   "published_at": "2024-08-07T14:18:17+00:00",
+   "_links": {
+    "display": "https://form.typeform.com/to/j0PYJRRO",
+    "responses": "https://api.typeform.com/forms/j0PYJRRO/responses"
+   }
+  },
+  "responses": {
+   "items": [
+    {
+     "landing_id": "0jetaaofijup0jet5dvp7lrkjbc5c72k",
+     "token": "0jetaaofijup0jet5dvp7lrkjbc5c72k",
+     "response_id": "0jetaaofijup0jet5dvp7lrkjbc5c72k",
+     "response_type": "completed",
+     "landed_at": "2024-08-07T17:20:20Z",
+     "submitted_at": "2024-08-07T17:21:00Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36",
+      "platform": "mobile",
+      "referer": "https://marketing824423.typeform.com/to/j0PYJRRO?typeform-source=pixelfy.me",
+      "network_id": "8a91d4966f",
+      "browser": "touch"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choices",
+       "field": {
+        "id": "sacytV0aSzBI",
+        "type": "ranking",
+        "ref": "ce18fdab-f09e-46ac-9899-0d6d6345a035"
+       },
+       "choices": {
+        "ids": [
+         "UXeXE3l1kKlh",
+         "AmMVHz2hnJRl",
+         "SA7BCO40e08M",
+         "V34KblLhXY8B",
+         "7lmpZ5B0zXGO",
+         "1wEwt0HAaO8S",
+         "gnBnm6tf5MYp"
+        ],
+        "refs": [
+         "2cfbb1a3-440a-44a6-b9b9-25c93eccaeb6",
+         "76f942b9-5e86-483e-b061-55c9885aa8a5",
+         "e266a0a0-116d-43b4-82e2-84c73e3430c2",
+         "20830c99-1a42-45f9-952c-5a51ae7b34d5",
+         "45eb4a36-cd7e-4842-bab2-e49a319e5daf",
+         "374aa57e-b78a-4b0d-be7e-ba17722446ee",
+         "aa150bf3-af60-415c-b617-c72b787a35dc"
+        ],
+        "labels": [
+         "The Visitor No One Wants - Jonathan Jewett",
+         "Supply Chain Optimization for Fast & Lean Product Launching - Derrek Wiedeman\n",
+         "What's the value of a review? - Bryce Alderson",
+         "TikTok Slideshows\n/TikTok Marketing - #thenewwildwest - Alex and Jonathan Jesper",
+         "Keeping your health products healthy - Samson Uloho",
+         "Cost - Kyle Dilger",
+         "EOS and How We\u2019ve Customized it to Suit Our Business - Hank Holcomb"
+        ]
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "eokotu48zp8hv2eokotu6qfrkcwoqojn",
+     "token": "eokotu48zp8hv2eokotu6qfrkcwoqojn",
+     "response_id": "eokotu48zp8hv2eokotu6qfrkcwoqojn",
+     "response_type": "completed",
+     "landed_at": "2024-08-07T17:20:19Z",
+     "submitted_at": "2024-08-07T17:20:43Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36",
+      "platform": "mobile",
+      "referer": "https://marketing824423.typeform.com/to/j0PYJRRO?typeform-source=pixelfy.me",
+      "network_id": "46ee3a3112",
+      "browser": "touch"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choices",
+       "field": {
+        "id": "sacytV0aSzBI",
+        "type": "ranking",
+        "ref": "ce18fdab-f09e-46ac-9899-0d6d6345a035"
+       },
+       "choices": {
+        "ids": [
+         "UXeXE3l1kKlh",
+         "1wEwt0HAaO8S",
+         "SA7BCO40e08M",
+         "AmMVHz2hnJRl",
+         "gnBnm6tf5MYp",
+         "7lmpZ5B0zXGO",
+         "V34KblLhXY8B"
+        ],
+        "refs": [
+         "2cfbb1a3-440a-44a6-b9b9-25c93eccaeb6",
+         "374aa57e-b78a-4b0d-be7e-ba17722446ee",
+         "e266a0a0-116d-43b4-82e2-84c73e3430c2",
+         "76f942b9-5e86-483e-b061-55c9885aa8a5",
+         "aa150bf3-af60-415c-b617-c72b787a35dc",
+         "45eb4a36-cd7e-4842-bab2-e49a319e5daf",
+         "20830c99-1a42-45f9-952c-5a51ae7b34d5"
+        ],
+        "labels": [
+         "The Visitor No One Wants - Jonathan Jewett",
+         "Cost - Kyle Dilger",
+         "What's the value of a review? - Bryce Alderson",
+         "Supply Chain Optimization for Fast & Lean Product Launching - Derrek Wiedeman\n",
+         "EOS and How We\u2019ve Customized it to Suit Our Business - Hank Holcomb",
+         "Keeping your health products healthy - Samson Uloho",
+         "TikTok Slideshows\n/TikTok Marketing - #thenewwildwest - Alex and Jonathan Jesper"
+        ]
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "9vxqpitpa8hu322x9vxlys9tx5ttztij",
+     "token": "9vxqpitpa8hu322x9vxlys9tx5ttztij",
+     "response_id": "9vxqpitpa8hu322x9vxlys9tx5ttztij",
+     "response_type": "completed",
+     "landed_at": "2024-08-07T17:20:15Z",
+     "submitted_at": "2024-08-07T17:20:43Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+      "platform": "mobile",
+      "referer": "https://marketing824423.typeform.com/to/j0PYJRRO?typeform-source=pixelfy.me",
+      "network_id": "12de18c643",
+      "browser": "touch"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choices",
+       "field": {
+        "id": "sacytV0aSzBI",
+        "type": "ranking",
+        "ref": "ce18fdab-f09e-46ac-9899-0d6d6345a035"
+       },
+       "choices": {
+        "ids": [
+         "gnBnm6tf5MYp",
+         "7lmpZ5B0zXGO",
+         "AmMVHz2hnJRl",
+         "1wEwt0HAaO8S",
+         "SA7BCO40e08M",
+         "UXeXE3l1kKlh",
+         "V34KblLhXY8B"
+        ],
+        "refs": [
+         "aa150bf3-af60-415c-b617-c72b787a35dc",
+         "45eb4a36-cd7e-4842-bab2-e49a319e5daf",
+         "76f942b9-5e86-483e-b061-55c9885aa8a5",
+         "374aa57e-b78a-4b0d-be7e-ba17722446ee",
+         "e266a0a0-116d-43b4-82e2-84c73e3430c2",
+         "2cfbb1a3-440a-44a6-b9b9-25c93eccaeb6",
+         "20830c99-1a42-45f9-952c-5a51ae7b34d5"
+        ],
+        "labels": [
+         "EOS and How We\u2019ve Customized it to Suit Our Business - Hank Holcomb",
+         "Keeping your health products healthy - Samson Uloho",
+         "Supply Chain Optimization for Fast & Lean Product Launching - Derrek Wiedeman\n",
+         "Cost - Kyle Dilger",
+         "What's the value of a review? - Bryce Alderson",
+         "The Visitor No One Wants - Jonathan Jewett",
+         "TikTok Slideshows\n/TikTok Marketing - #thenewwildwest - Alex and Jonathan Jesper"
+        ]
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "rfoi663tiqnu5uwcvkvv5uarfoi663tf",
+     "token": "rfoi663tiqnu5uwcvkvv5uarfoi663tf",
+     "response_id": "rfoi663tiqnu5uwcvkvv5uarfoi663tf",
+     "response_type": "completed",
+     "landed_at": "2024-08-07T17:20:16Z",
+     "submitted_at": "2024-08-07T17:20:42Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1",
+      "platform": "mobile",
+      "referer": "https://marketing824423.typeform.com/to/j0PYJRRO?typeform-source=pixelfy.me",
+      "network_id": "3d3fb6b683",
+      "browser": "touch"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choices",
+       "field": {
+        "id": "sacytV0aSzBI",
+        "type": "ranking",
+        "ref": "ce18fdab-f09e-46ac-9899-0d6d6345a035"
+       },
+       "choices": {
+        "ids": [
+         "V34KblLhXY8B",
+         "SA7BCO40e08M",
+         "UXeXE3l1kKlh",
+         "7lmpZ5B0zXGO",
+         "AmMVHz2hnJRl",
+         "1wEwt0HAaO8S",
+         "gnBnm6tf5MYp"
+        ],
+        "refs": [
+         "20830c99-1a42-45f9-952c-5a51ae7b34d5",
+         "e266a0a0-116d-43b4-82e2-84c73e3430c2",
+         "2cfbb1a3-440a-44a6-b9b9-25c93eccaeb6",
+         "45eb4a36-cd7e-4842-bab2-e49a319e5daf",
+         "76f942b9-5e86-483e-b061-55c9885aa8a5",
+         "374aa57e-b78a-4b0d-be7e-ba17722446ee",
+         "aa150bf3-af60-415c-b617-c72b787a35dc"
+        ],
+        "labels": [
+         "TikTok Slideshows\n/TikTok Marketing - #thenewwildwest - Alex and Jonathan Jesper",
+         "What's the value of a review? - Bryce Alderson",
+         "The Visitor No One Wants - Jonathan Jewett",
+         "Keeping your health products healthy - Samson Uloho",
+         "Supply Chain Optimization for Fast & Lean Product Launching - Derrek Wiedeman\n",
+         "Cost - Kyle Dilger",
+         "EOS and How We\u2019ve Customized it to Suit Our Business - Hank Holcomb"
+        ]
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "mjdpjctdoxuk1mjdeljkpgs0u9yy39bp",
+     "token": "mjdpjctdoxuk1mjdeljkpgs0u9yy39bp",
+     "response_id": "mjdpjctdoxuk1mjdeljkpgs0u9yy39bp",
+     "response_type": "completed",
+     "landed_at": "2024-08-07T17:19:55Z",
+     "submitted_at": "2024-08-07T17:20:34Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+      "platform": "mobile",
+      "referer": "https://marketing824423.typeform.com/to/j0PYJRRO?typeform-source=pixelfy.me",
+      "network_id": "9fd4ce101d",
+      "browser": "touch"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choices",
+       "field": {
+        "id": "sacytV0aSzBI",
+        "type": "ranking",
+        "ref": "ce18fdab-f09e-46ac-9899-0d6d6345a035"
+       },
+       "choices": {
+        "ids": [
+         "AmMVHz2hnJRl",
+         "V34KblLhXY8B",
+         "SA7BCO40e08M",
+         "UXeXE3l1kKlh",
+         "7lmpZ5B0zXGO",
+         "1wEwt0HAaO8S",
+         "gnBnm6tf5MYp"
+        ],
+        "refs": [
+         "76f942b9-5e86-483e-b061-55c9885aa8a5",
+         "20830c99-1a42-45f9-952c-5a51ae7b34d5",
+         "e266a0a0-116d-43b4-82e2-84c73e3430c2",
+         "2cfbb1a3-440a-44a6-b9b9-25c93eccaeb6",
+         "45eb4a36-cd7e-4842-bab2-e49a319e5daf",
+         "374aa57e-b78a-4b0d-be7e-ba17722446ee",
+         "aa150bf3-af60-415c-b617-c72b787a35dc"
+        ],
+        "labels": [
+         "Supply Chain Optimization for Fast & Lean Product Launching - Derrek Wiedeman\n",
+         "TikTok Slideshows\n/TikTok Marketing - #thenewwildwest - Alex and Jonathan Jesper",
+         "What's the value of a review? - Bryce Alderson",
+         "The Visitor No One Wants - Jonathan Jewett",
+         "Keeping your health products healthy - Samson Uloho",
+         "Cost - Kyle Dilger",
+         "EOS and How We\u2019ve Customized it to Suit Our Business - Hank Holcomb"
+        ]
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "k4v5kw4yp5xd5761gk4vtbmpndjkpb0n",
+     "token": "k4v5kw4yp5xd5761gk4vtbmpndjkpb0n",
+     "response_id": "k4v5kw4yp5xd5761gk4vtbmpndjkpb0n",
+     "response_type": "completed",
+     "landed_at": "2024-08-07T17:20:26Z",
+     "submitted_at": "2024-08-07T17:20:30Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36",
+      "platform": "mobile",
+      "referer": "https://marketing824423.typeform.com/to/j0PYJRRO?typeform-source=pixelfy.me",
+      "network_id": "fe910ef2d3",
+      "browser": "touch"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choices",
+       "field": {
+        "id": "sacytV0aSzBI",
+        "type": "ranking",
+        "ref": "ce18fdab-f09e-46ac-9899-0d6d6345a035"
+       },
+       "choices": {
+        "ids": [
+         "SA7BCO40e08M",
+         "V34KblLhXY8B",
+         "AmMVHz2hnJRl",
+         "UXeXE3l1kKlh",
+         "7lmpZ5B0zXGO",
+         "1wEwt0HAaO8S",
+         "gnBnm6tf5MYp"
+        ],
+        "refs": [
+         "e266a0a0-116d-43b4-82e2-84c73e3430c2",
+         "20830c99-1a42-45f9-952c-5a51ae7b34d5",
+         "76f942b9-5e86-483e-b061-55c9885aa8a5",
+         "2cfbb1a3-440a-44a6-b9b9-25c93eccaeb6",
+         "45eb4a36-cd7e-4842-bab2-e49a319e5daf",
+         "374aa57e-b78a-4b0d-be7e-ba17722446ee",
+         "aa150bf3-af60-415c-b617-c72b787a35dc"
+        ],
+        "labels": [
+         "What's the value of a review? - Bryce Alderson",
+         "TikTok Slideshows\n/TikTok Marketing - #thenewwildwest - Alex and Jonathan Jesper",
+         "Supply Chain Optimization for Fast & Lean Product Launching - Derrek Wiedeman\n",
+         "The Visitor No One Wants - Jonathan Jewett",
+         "Keeping your health products healthy - Samson Uloho",
+         "Cost - Kyle Dilger",
+         "EOS and How We\u2019ve Customized it to Suit Our Business - Hank Holcomb"
+        ]
+       }
+      }
+     ],
+     "status": "final"
+    },
+    {
+     "landing_id": "g73wbfxtyd8d0vj4g73wbnxiullvuuct",
+     "token": "g73wbfxtyd8d0vj4g73wbnxiullvuuct",
+     "response_id": "g73wbfxtyd8d0vj4g73wbnxiullvuuct",
+     "response_type": "completed",
+     "landed_at": "2024-08-07T17:19:42Z",
+     "submitted_at": "2024-08-07T17:20:05Z",
+     "metadata": {
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+      "platform": "mobile",
+      "referer": "https://marketing824423.typeform.com/to/j0PYJRRO?typeform-source=pixelfy.me",
+      "network_id": "9fd4ce101d",
+      "browser": "touch"
+     },
+     "hidden": {},
+     "calculated": {
+      "score": 0
+     },
+     "answers": [
+      {
+       "type": "choices",
+       "field": {
+        "id": "sacytV0aSzBI",
+        "type": "ranking",
+        "ref": "ce18fdab-f09e-46ac-9899-0d6d6345a035"
+       },
+       "choices": {
+        "ids": [
+         "V34KblLhXY8B",
+         "SA7BCO40e08M",
+         "AmMVHz2hnJRl",
+         "UXeXE3l1kKlh",
+         "1wEwt0HAaO8S",
+         "7lmpZ5B0zXGO",
+         "gnBnm6tf5MYp"
+        ],
+        "refs": [
+         "20830c99-1a42-45f9-952c-5a51ae7b34d5",
+         "e266a0a0-116d-43b4-82e2-84c73e3430c2",
+         "76f942b9-5e86-483e-b061-55c9885aa8a5",
+         "2cfbb1a3-440a-44a6-b9b9-25c93eccaeb6",
+         "374aa57e-b78a-4b0d-be7e-ba17722446ee",
+         "45eb4a36-cd7e-4842-bab2-e49a319e5daf",
+         "aa150bf3-af60-415c-b617-c72b787a35dc"
+        ],
+        "labels": [
+         "TikTok Slideshows\n/TikTok Marketing - #thenewwildwest - Alex and Jonathan Jesper",
+         "What's the value of a review? - Bryce Alderson",
+         "Supply Chain Optimization for Fast & Lean Product Launching - Derrek Wiedeman\n",
+         "The Visitor No One Wants - Jonathan Jewett",
+         "Cost - Kyle Dilger",
+         "Keeping your health products healthy - Samson Uloho",
+         "EOS and How We\u2019ve Customized it to Suit Our Business - Hank Holcomb"
+        ]
+       }
+      }
+     ],
+     "status": "final"
+    }
+   ],
+   "total_items": 7,
+   "page_count": 1
+  }
+ }
+}
