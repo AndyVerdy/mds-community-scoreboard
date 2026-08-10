@@ -961,6 +961,14 @@ collection problem, and it is ~25% of the room at any member event.
   member's data — the worst failure this system has. Scripted backfill with a dry run Andy reads,
   never an ad-hoc insert. `members.airtable_id` is NOT NULL.
 
+**⛔ Access gating rides on this table.** Every gated RPC calls
+`is_active_member_status(m.membership_status)` against `digest.members` — a COPY of the roster, not
+the live status. Verified 2026-08-10: 596 matched rows, **0 mismatches**, so nothing leaks today.
+Backfilling 183 rows means 183 more copies: each inserted row must carry the correct
+`membership_status` and stay synced, or the backfill manufactures the exact stale-access leak that
+does not currently exist. Andy 2026-08-10: **only active members may use Olivia.** The four active
+statuses are Current Member · New Member · Current Member- Not Renewing · Staff.
+
 **Accept when** reachable rises from 559 with the before/after counted · every inserted number
 normalised and no junk written · a spot-check proves 5 backfilled members resolve to themselves and
 not to anyone else · the 9 with no phone are listed for the team to chase · gate GREEN.
