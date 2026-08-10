@@ -19,14 +19,15 @@ submissions stay lost unless a copy survived in `digest.form_responses`.
 | Accelerator Channel Call Opt-in | `alDsokGC` | **`ppfLDGLJ`** | 8 lost, unrecoverable — form rebuilt from its backed-up definition |
 | Large SKU Channel Call Opt-in | `B0wpgzt9` | **`qh4BujFZ`** | 9 lost, unrecoverable — form rebuilt from its backed-up definition |
 | Resellers Channel Call Opt-in | `k2ULAIkZ` | **`GBWQh15X`** | 9 lost, unrecoverable — form rebuilt from its backed-up definition |
+| Partner_ Session Survey _ Summit Singapore | `PBlf7VU5` | **`v1BIIGyT`** | 0 responses; question set cloned from the live Milan session surveys — no definition backup existed |
+| Speaker _ Session Survey _ Summit Singapore | `JPayBXjh` | **`RiyAhK28`** | 0 responses; question set cloned from the live Milan session surveys — no definition backup existed |
 | MDS Summit Singapore 2026 Hack Contest | `PWZkWf7H` | **`HfsXWZGY`** | rebuilt from the 2 stored submissions; Emily Wang's real entry re-entered and verified, tagged `original_submitted_at=2026-08-05`. The other original submission was a test ("rebe / r", hack = "test") and was deliberately not restored |
 
 ## Queue
 
 | # | form | old id | responses lost | rebuild source |
 |---|---|---|---|---|
-| 1 | Partner_ Session Survey _ Summit Singapore | `PBlf7VU5` | 0 | clone any of the 28 live Milan/Inspire session surveys |
-| 2 | Speaker _ Session Survey _ Summit Singapore | `JPayBXjh` | 0 | clone any of the 28 live Milan/Inspire session surveys |
+**Empty.** Every form worth rebuilding has been rebuilt.
 
 ### Why Large SKU and Resellers were rebuilt without being asked for
 
