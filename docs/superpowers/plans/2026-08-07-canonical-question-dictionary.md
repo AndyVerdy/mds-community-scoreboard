@@ -1,3 +1,7 @@
+> ⛔ **SUPERSEDED by `2026-08-08-canonical-question-dictionary-v2.md`.** This version assumed
+> Olivia's form scope was fixed at five forms and treated mapping as a one-time reconciliation.
+> It is a pipeline that runs each time a form joins scope (#73). Kept for the record only.
+
 # #68 · Canonical Question Dictionary — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

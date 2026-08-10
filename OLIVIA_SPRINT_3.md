@@ -345,7 +345,7 @@ applies unchanged).
 *As the owner, any concept the community answers about — revenue, staff, margin, tools — reads as
 ONE field no matter which form or year it came from, and adding a form does not create mapping debt.*
 
-#### ⬛ RE-MEASURED 2026-08-08 — the ticket got smaller AND bigger. Plan written: `docs/superpowers/plans/2026-08-07-canonical-question-dictionary.md`
+#### ⬛ RE-MEASURED 2026-08-08 — the ticket got smaller AND bigger. Plan: `docs/superpowers/plans/2026-08-08-canonical-question-dictionary-v2.md` (v1 superseded — it assumed scope was fixed at 5 forms)
 
 **Smaller, because the dictionary already exists and is not ours.** `digest.form_concept` (81
 concepts carrying label/family/value_kind/window_note — the type/units/period this ticket asked
