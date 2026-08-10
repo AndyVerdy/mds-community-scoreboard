@@ -48,6 +48,7 @@ checkbox "Opt-in to receive monthly call reminders for the <channel> Channel".
 | Singapore Excursions | `xLml7iw1` | live `rTOf6Pfm` "Singapore Excursions Survey" supersedes it — same question, more options |
 | MDS Singapore Summit Hack Contest | `aoggJSeO` | superseded by the 2026 version (`PWZkWf7H`, queue #4) |
 | Logistics Channel Call Opt-in | `BC34iFXw` | live equivalent `qPWmyvCT` already exists |
+| MDS Annual Census 2026 (v2) | `NENqozp9` | Andy 2026-08-10: "we dont care". 1 response, recoverable from the backup if that ever changes; the live census is `DFeK5yop` |
 
 ## Protection
 
