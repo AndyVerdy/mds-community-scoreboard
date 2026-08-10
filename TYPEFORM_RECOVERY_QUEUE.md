@@ -15,7 +15,8 @@ submissions stay lost unless a copy survived in `digest.form_responses`.
 
 | form | old id | new id | responses |
 |---|---|---|---|
-| MDS Summit Singapore 2026 - Company Information | `IaRcNdOZ` | **`GljwvNGO`** | 7 of 8 survived; 2 re-entered so far, 5 pending — see [SINGAPORE_RESTORE_WORKLIST.md](SINGAPORE_RESTORE_WORKLIST.md) |
+| MDS Summit Singapore 2026 - Company Information | `IaRcNdOZ` | **`GljwvNGO`** | 7 of 8 survived; **all 7 re-entered 2026-08-10** and verified via the Responses API. ⚠️ the `restored` / `original_submitted_at` hidden fields were dropped from the form at 16:23 (form edited in the Typeform editor), so the restored rows are no longer tagged inside Typeform — [the CSV](singapore_company_information_responses.csv) is the record of which rows are restored and their true dates |
+| MDS Summit Singapore 2026 Hack Contest | `PWZkWf7H` | **`HfsXWZGY`** | rebuilt from the 2 stored submissions; Emily Wang's real entry re-entered and verified, tagged `original_submitted_at=2026-08-05`. The other original submission was a test ("rebe / r", hack = "test") and was deliberately not restored |
 
 ## Queue
 
@@ -24,8 +25,7 @@ submissions stay lost unless a copy survived in `digest.form_responses`.
 | 1 | **Accelerator Channel Call Opt-in** | `alDsokGC` | 8 | definition backed up — 3 fields, no logic |
 | 2 | Large SKU Channel Call Opt-in | `B0wpgzt9` | 9 | definition backed up — 3 fields, no logic |
 | 3 | Resellers Channel Call Opt-in | `k2ULAIkZ` | 9 | definition backed up — 3 fields, no logic |
-| 4 | MDS Summit Singapore 2026 Hack Contest | `PWZkWf7H` | 0 (2 survived) | no definition; 5 fields reconstructable from the stored answers |
-| 5 | Partner_ Session Survey _ Summit Singapore | `PBlf7VU5` | 0 | clone any of the 28 live Milan/Inspire session surveys |
+| 4 | Partner_ Session Survey _ Summit Singapore | `PBlf7VU5` | 0 | clone any of the 28 live Milan/Inspire session surveys |
 | 6 | Speaker _ Session Survey _ Summit Singapore | `JPayBXjh` | 0 | clone any of the 28 live Milan/Inspire session surveys |
 
 ### Why 2 and 3 are on the list without being asked for
