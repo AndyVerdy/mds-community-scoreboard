@@ -1,4 +1,4 @@
-> 📌 **Andy: keep answers short — 1–4 paragraphs.** <!-- ANDY-PREF -->
+> 📌 **Andy: 2 PARAGRAPHS MAX.** <!-- ANDY-PREF -->
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
