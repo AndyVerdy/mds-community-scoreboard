@@ -1,3 +1,15 @@
+## 🗿 CAVEMAN FIRST — invoke it at the start of every session <!-- CAVEMAN-FIRST -->
+
+**First action of every session: invoke the `caveman` skill.** It is the default output mode and it
+**takes precedence over the prose-style rule below**.
+
+- **Caveman governs STYLE** — compression, phrasing, how long a reply runs.
+- **The blocks below govern CONTENT and always apply, caveman on or off** — lead with the answer ·
+  no "done, but…" · one ticket at a time · task NUMBER + NAME + STORY when asked what's next ·
+  story + ACs on every ticket · every "it works" cites live proof.
+- **When caveman is off or disabled, the blocks below apply unchanged**, including the 1–4
+  paragraph rule. They are the standing fallback — caveman outranks them, it never deletes them.
+
 > 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
 
 ## How we work — Andy's rules <!-- ANDY-WORKING-RULES -->

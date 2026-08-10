@@ -48,6 +48,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#58** | Cancelled registrations count as attendance | 🔴 S1 | S | n/a (SQL) | ✅ **LIVE** — one chokepoint view |
 | **#59** | Same event listed twice (events + partners) | 🟡 S2 | S | n/a (SQL) | ✅ **LIVE** — dossier joins on the row, not the name |
 | **#60** | Cancelled side-event wore the Summit's name (app-event mis-link) | 🟡 S2 | S | n/a (sync+SQL) | ✅ **LIVE** — sync dedupe + 5-min alarm |
+| — | ⭐ *— architecture & audit: START HERE, before feature work —* | | | | |
 | **#61** | 🏗️ Schema audit: tables with no declared connections | 🔴 S1 | M | — | — |
 | **#62** | 🏗️ Resolve the 17 Security Advisor warnings | 🔴 S1 | S | — | — |
 | **#63** | 🏗️ Airtable-formula injection in the Make member-match (census + app v3) | 🔴 S1 | S | — | — |
@@ -188,7 +189,11 @@ guard in place).
 
 # 🔴 S1 — NOW
 
-## 🏗️ ARCHITECTURE & AUDIT — these come first (Andy 2026-08-08)
+## 🏗️ ARCHITECTURE & AUDIT — ⭐ START HERE (Andy 2026-08-08)
+
+> ⭐ **Andy's call: these four run before any feature work.** #62 and #63 are both size S —
+> the quickest way to open a session. #63 is a live injection hole, so it is the one with a
+> clock on it.
 
 Four tickets, ahead of feature work. #65 closed tonight and every one of these was made
 sharper by what it exposed: logic living in one place only, checks that pass for the wrong
