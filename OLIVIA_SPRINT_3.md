@@ -36,6 +36,9 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
 | **#71** | "Virtual event" vs "call" vs "recording" — two contradicting "latest" answers | 🔵 S3 | M | — | — |
+| **#72** | 🚦 LOAD TEST before the Mille demo (~100 concurrent users) | 🔴 S1 | M | — | — |
+| **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
+| **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
 | **#36** | New data source — CIRCLEBACK | 🚀 S4 | L | — | — |
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
@@ -342,7 +345,48 @@ applies unchanged).
 *As the owner, any concept the community answers about — revenue, staff, margin, tools — reads as
 ONE field no matter which form or year it came from, and adding a form does not create mapping debt.*
 
-**Measured 2026-08-06 (the honest number):** **25 of 316 form-questions are mapped — 8%.** 291
+#### ⬛ RE-MEASURED 2026-08-08 — the ticket got smaller AND bigger. Plan written: `docs/superpowers/plans/2026-08-07-canonical-question-dictionary.md`
+
+**Smaller, because the dictionary already exists and is not ours.** `digest.form_concept` (81
+concepts carrying label/family/value_kind/window_note — the type/units/period this ticket asked
+for), `concept_rule` (80 prioritised regexes), `form_question_map` (1,314 questions across 114
+forms) and `member_fact` (56,876 member×concept×year rows, 2020→2026) were built by the
+trend-report agent. **Do not build a second dictionary — converge on that one and PIN it**, because
+it is regenerated from regex rules another team owns and a rule edit would silently change Olivia's
+answers.
+
+**Bigger, because the real gap is on the forms she already reads.** Of the **350 questions across
+Olivia's five forms, 149 are linked — 43%.** Per form:
+
+| form | questions | linked | |
+|---|---|---|---|
+| MDS Annual Census 2026 | 96 | 65 | 68% |
+| Standard – Annual Census (legacy) | 63 | 31 | 49% |
+| MDSonly – Census Master (legacy) | 89 | 28 | 31% |
+| **New Member Application v3** | 61 | **16** | **26%** |
+| Honorary Member Application | 41 | 9 | 22% |
+
+**201 unlinked questions**, and the worst offender is app v3 — the newest, most structured form,
+where three-quarters of what an applicant tells us reaches no canonical field.
+
+**Rules settled with Andy 2026-08-07/08:**
+- **Canonical namespace = the LIVE forms** (census 2026, app v3, honorary). Legacy maps *into* it;
+  a legacy-only question stays history-only and never becomes a key.
+- **Nothing decays and nothing is deleted.** Every answer is a timestamped event; the canonical
+  value is the newest by `submitted_at` — never by upload order. Load an old form tomorrow and a
+  newer census answer still wins.
+- **Axis mismatch groups but never merges** (bands vs figures; per-country columns vs one
+  multi-select). Say which years can actually be compared.
+- **Nothing auto-applies.** The matcher emits a RANKED list of 5; a human picks, says none, or
+  opens a new key. Evidence: trigram ranked the correct match for "formal title" **third**, losing
+  to "what is your main niche?" by 0.01 — lexical similarity is noise at that range, so Voyage
+  embeddings rank and trigram is only a recall net.
+- **Matrix rows collapse to their PARENT before matching** — legacy stored "Where do you
+  manufacture? (China)" as 8 sibling columns; matching per-ref made trigram pick an arbitrary
+  sibling in 21 of 39 cases.
+- **21 mappings already ratified by Andy** (2 exact, 12 near, 7 from the weak list).
+
+**Old measurement, kept for the record — 2026-08-06:** **25 of 316 form-questions mapped — 8%.** 291
 unmapped, **184 of those with 50+ respondents**. Unmapped answers ARE processed (they key on their
 own ref, appear in the catalog, answer normally — 94 of the 100 askable questions today are
 unmapped). The ONLY thing missing is cross-form/cross-year unification: legacy census revenue and
@@ -636,6 +680,155 @@ loop rule: any "how has X changed / compared to last year" question routes here.
 - Probed on real questions ("how did revenue change from 2022 to 2026", "are members hiring more
   offshore than last year") with answers matching SQL truth.
 - Gate GREEN.
+
+---
+
+### #72 · LOAD TEST before the Mille demo — 100 people at once, on a system that has never seen 6
+**🔴 S1 · size M — filed 2026-08-07 (Andy: "in 2 weeks we present Mille, we might get 100 people using it")**
+
+> **In plain words:** Olivia has never had more than five people message her in the same minute. In
+> two weeks she may get a hundred, in a room, watching.
+
+*As a member in that room, I message Olivia during the demo and get a normal answer in a normal
+time — not a two-minute silence, not a holding message, not an error.*
+
+**Measured 2026-08-07 — the gap between today's load and demo load is two orders of magnitude:**
+
+| | today | demo |
+|---|---|---|
+| real member turns | **544 in 30 days** (963 more were eval traffic) | ~100 people, minutes |
+| distinct askers | **35 in 30 days** | ~100 at once |
+| busiest real minute ever | **5 turns** | plausibly 30–50 |
+| minutes with ≥3 real turns | **19, ever** | continuous |
+
+**We currently cannot measure the thing we are about to stress: `digest.olivia_messages.latency_ms`
+is NULL on all 1,505 rows.** The column exists and nothing has ever written to it. Every latency
+number we quote (median 22.8s, worst 56.1s, from #23) came from hand-timed staging probes, 8
+questions. A load test without per-turn timing produces an anecdote, not a result — **fixing the
+telemetry is step one of this ticket, not a nice-to-have.**
+
+**Where it will break first — each of these is a hypothesis the test must confirm or kill:**
+1. **n8n Cloud production-execution concurrency.** The limit for our plan is not written down
+   anywhere. Past it, executions QUEUE: the member sees nothing, then everything at once.
+   Related known ceilings: Code node dies at 60s, webhook cut at 100s.
+2. **The holding ladder amplifies congestion.** Every turn slower than 18s fires extra executions
+   (rung 1, then 60s rung 2) — so the system spends MORE capacity exactly when it has least. This
+   is a feedback loop and it has never been tested under contention.
+3. **Anthropic rate limits.** One turn = router + up to 5 tool rounds + the Haiku fact-gate. A
+   hundred concurrent turns is a burst of several hundred calls; 429s inside the loop are untested.
+4. **Supabase**: HNSW vector search per turn plus the PostgREST connection pool.
+5. **Meta WhatsApp throughput** on the number, and the fact that every attendee must message FIRST
+   (member-initiated) — so the arrival pattern is a spike, not a ramp.
+
+**Shape of the fix**
+- **Instrument first**: populate `latency_ms` on every turn, and record queue-wait separately from
+  answer time — a queued turn and a slow turn need different fixes and look identical today.
+- **A repeatable load script** (`scripts/olivia_loadtest.py`) firing N synthetic turns at STAGING at
+  a controlled arrival rate, reusing the `SELFTEST` wamid convention so nothing reaches a real
+  member and eval traffic stays separable. Ramp 5 → 25 → 50 → 100 concurrent; report p50/p95/max,
+  error rate, and executions queued at each step.
+- **Never at prod against real numbers** — the standing rule. Staging, or a dedicated test number.
+- **Find the knee, then decide**: raise the n8n concurrency, throttle admissions with an honest
+  "I'm busy, one moment" instead of silence, or cap the demo audience. The decision is Andy's; the
+  number is this ticket's job.
+
+**Accept when**
+- `latency_ms` is populated on 100% of new turns, queue-wait recorded separately.
+- The load script exists, is committed, and runs against staging on one command.
+- p50/p95/max and error rate are reported at 5 / 25 / 50 / 100 concurrent, with the knee named.
+- The holding-ladder amplification is measured at load, not assumed.
+- Each of the five failure hypotheses is confirmed or ruled out **in writing**.
+- A go/no-go for the demo with a number behind it — plus the mitigation if it is no-go.
+- Gate GREEN (nothing here changes retrieval, but the run touches the live stack).
+
+**⚠️ Flagged, not folded in — needs Andy's ruling.** A demo audience is not necessarily the member
+roster, and identity hard-fails by design: `is_active_member_status()` gates all 20 RPCs, so a
+non-member gets refused. **If Mille attendees are not in the Members DB, load is irrelevant — every
+one of them gets a refusal.** Cheaper to check than the load test, and it decides whether this
+ticket is even the right one. Cost is not a concern at this scale (~$0.007–0.01/answer, so 100
+people ≈ $1), but #32's spike alarm should be on before the room fills.
+
+---
+
+### #73 · Connect the useful forms to Olivia — she reads 5 of 161
+**🔴 S1 · size M — filed 2026-08-08**
+
+> **In plain words:** 88 forms sync into Supabase every day. Olivia can read five of them.
+
+*As a member, when Olivia answers about me she draws on everything I have ever told MDS on a form —
+not just the census.*
+
+**Measured 2026-08-08:** Typeform holds **187** forms · **88 sync to Supabase daily** ·
+`digest.form_responses` holds **161 forms / 13,601 rows** · **Olivia reads 5 forms / 2,370 rows —
+17%**. Every candidate below is ALREADY synced daily, so connecting one is a single row in
+`digest.form_scope`, not an ingest job.
+
+| form | id | questions | members | verdict |
+|---|---|---|---|---|
+| Prior Member – MDS Only Access | `VM6vgL` | 87 | 265 | **add** — full profile questionnaire, scanned clean of sensitive fields |
+| New Member – MDS Only Access | `lDqob4vD` | 54 | 203 | **add** — same family, still recent |
+| Membership Wrap-Up | `QR2XKFyx` | 7 | 75 | **add** — current; members describing their year |
+| Centurion 20M+ | `IaKWKysS` | 3 | 95 | add — but its revenue answer is an EXACT figure and must stay band-only when spoken |
+| MDS Summit Singapore Check-In | `w3kCjPAK` | 63 | 73 | ⛔ **HOLD** — see below |
+
+**⛔ Why Singapore is blocked, and what it exposes about the model.** That form holds **42 passport
+numbers, 43 passport expiry dates, 44 passport places of issue, 45 dates of birth, 44 home
+addresses** and city/country of birth. `form_scope` is a **whole-form** switch: adding it would put
+government IDs one RPC away through `my_form_answers` and countable in `form_stats`. Andy's standing
+rulebook already puts address and government IDs in 🔴 NEVER. **`form_scope` needs question-level
+scoping — an allowlist of refs — before any event form joins.** Roughly 15 of its 63 questions are
+the business info actually worth having.
+
+**Shape of the fix**
+- Add the three clean forms to `form_scope` as `profile`; verify personas rebuild (the fingerprint
+  should move on its own — confirm, do not assume).
+- Extend `form_scope` with per-ref scoping, then admit Singapore's business questions only.
+- Pin the Centurion revenue rule the same way `Most Recent Revenue` is pinned: informs silently,
+  never spoken as a figure.
+
+**Accept when**
+- The three forms are readable by the owner lane and feed personas; 468 more members have profile
+  answers reaching Olivia.
+- Per-question scoping exists and is gate-checked; Singapore's passport/DOB/address block is proven
+  unreachable by a canary.
+- Centurion revenue proven band-only in a probe.
+- Gate GREEN · counts before/after recorded.
+
+---
+
+### #74 · Identity: half of every form submission belongs to nobody
+**🟡 S2 · size M — filed 2026-08-08**
+
+> **In plain words:** 4,617 of 9,089 form submissions are not attached to any member, so whatever
+> those people said cannot inform anything.
+
+*As a member, what I filled in three years ago under a different email still counts as mine.*
+
+**Measured 2026-08-07:**
+- **4,617 of 9,089 responses (51%) are unstamped.** `stamp_form_responses()` matches on
+  exact-unique **email only**.
+- An email waterfall across all five known email fields (`Preferred Email`, Stripe, Gsuite, Slack,
+  `members.email`) recovers just **75** more.
+- **Phone is the real lever: 23 forms collect one, 3,927 responses carry one, 772 match a member** —
+  roughly ten times what email adds, and `stamp_form_responses()` never looks at phone.
+- **`Aliases` is populated but thin** — 2,379 members have the field, only **569** carry a variant
+  that differs from the full name. "Mo Kuhail" has no "Mohamed Kuhail".
+- **2,871 responses carry no identifier at all** — no email, no phone, no name, no hidden field.
+  No matcher can ever resolve those; that is a capture problem, not a matching one.
+
+**Design rule, from Andy 2026-08-07 — do not conflate these:**
+- **Known names / emails / phones** = an internal MATCHING set. Never rendered, never spoken.
+- **Preferred / display name** = how the member wants to be addressed. `Profile Name Cleaned`.
+  Never fed from aliases. An alias reaching output is a defect, same class as showing a legal name.
+
+**Shape of the fix:** a `member_identity` table holding every known email, phone and name variant
+per member, populated from the Airtable mirror; `stamp_form_responses()` matches email → phone →
+exact name, with fuzzy name requiring a second signal (city). Upstream: hidden fields or a required
+identifier on forms we control, which is the only thing that touches the 2,871.
+
+**Accept when** stamped share rises from 49% with the new signals counted before/after · no fuzzy
+match applied on name alone · an alias never appears in output (gate check) · the unresolvable
+remainder is stated in writing rather than chased.
 
 ---
 
