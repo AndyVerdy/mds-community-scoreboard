@@ -41,6 +41,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
 | **#75** | Reactions may be silently dead — nothing logs one pre-parse | 🔴 S1 | S | — | — |
 | **#76** | New eval bank — 150 questions from real member traffic | 🔴 S1 | M | — | — |
+| **#77** | 183 members unreachable — AT has the phone, WA layer does not (demo blocker) | 🔴 S1 | S | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
 | **#36** | New data source — CIRCLEBACK | 🚀 S4 | L | — | — |
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
@@ -937,6 +938,32 @@ in `olivia_feedback` are the highest-value rows in the whole dataset.
 every uncleared 👎 included · ground truth written from the warehouse, not from Olivia's answer ·
 class distribution matches real traffic rather than the old bank's shape · the retired set named
 with its reason · one baseline run on the new bank, its rate recorded as the new starting number.
+
+---
+
+### #77 · 183 members are unreachable by Olivia for no good reason — AT has their phone, the WA layer does not
+**🔴 S1 · size S — filed 2026-08-10 · DEMO BLOCKER for #72**
+
+> **In plain words:** One in four active members would get "I don't know you", and we already have their phone number.
+
+*As a member at the Mille announcement, I message Olivia and she knows who I am.*
+
+**Measured 2026-08-10:** 751 active members · **559 reachable** (phone in `digest.members`) ·
+**192 not**. Of those 192, **183 already carry a Preferred Phone Number in Airtable** — the number
+never reached the WA layer that `is_active_member_status()` and every RPC resolve against. Only
+**9 genuinely have no phone anywhere** (2 New Members, 7 Staff). So this is a sync gap, not a
+collection problem, and it is ~25% of the room at any member event.
+
+**Two traps for whoever builds it:**
+- **AT phone formats are inconsistent** — `3852166681`, `+13602596458`, `12053442149` all present,
+  plus junk (`"0"`). Normalise to the WA format Olivia matches on; drop junk rather than insert it.
+- **`digest.members` is the identity layer.** A wrong number there means one member reads another
+  member's data — the worst failure this system has. Scripted backfill with a dry run Andy reads,
+  never an ad-hoc insert. `members.airtable_id` is NOT NULL.
+
+**Accept when** reachable rises from 559 with the before/after counted · every inserted number
+normalised and no junk written · a spot-check proves 5 backfilled members resolve to themselves and
+not to anyone else · the 9 with no phone are listed for the team to chase · gate GREEN.
 
 ---
 
