@@ -192,6 +192,53 @@ guard in place).
 
 # 🔴 S1 — NOW
 
+### #78 · Typeform recovery — I deleted 250 forms; 96 lost their responses and live collection points went dead
+**🔴 S1 · size M · filed 2026-08-10 — DEADLINE: Singapore Summit in 10 days**
+
+> **In plain words:** Members and sponsors are clicking links that no longer exist, and we are finding out through complaints.
+
+*As a sponsor filling in the Singapore company form, my link works and my submission is recorded.*
+
+**What happened:** on 2026-08-08 I deleted 250 Typeforms via the API as a "prune" of low-response
+forms. API deletes are permanent and bypass the trash. Andy's ruling after the fact:
+**never delete from Typeform — it is a source of record** (memory `feedback_never_delete_typeform`;
+prune scripts removed in `1aa0951`).
+
+**The damage, all 250 accounted for** — [TYPEFORM_LOSS_REGISTER.md](TYPEFORM_LOSS_REGISTER.md):
+129 had zero responses · 24 have their data safe in `digest.form_responses` · 1 partial ·
+**96 lost 465 responses with no copy anywhere.** 2026 breakdown in
+[TYPEFORM_2026_LOSSES.md](TYPEFORM_2026_LOSSES.md): 12 forms/58 replies confirmed 2026 and safe,
+18 forms/101 replies certainly 2026 and gone, 78 forms/364 replies undatable.
+
+**Two forms were still actively collecting when deleted** — Singapore Company Information (last
+reply Aug 6) and Singapore Hack Contest (Aug 5). Work queue:
+[TYPEFORM_RECOVERY_QUEUE.md](TYPEFORM_RECOVERY_QUEUE.md).
+
+**Done so far:** Company Information rebuilt as **`GljwvNGO`** — 10 fields matching the backup on
+title/type/required/choices/ref, logic byte-identical, public page HTTP 200. Two of its seven
+surviving responses re-entered and verified through the Responses API, tagged with hidden
+`restored=true` + their true original dates.
+
+**Four traps for whoever finishes it:**
+- **A rebuild gets a NEW form id.** Old links stay dead in Webflow, GHL, WhatsApp and the app —
+  none of which are greppable from this repo. Rebuilding is half the job; re-sharing is the rest.
+- **Responses cannot be imported.** The Responses API is GET and DELETE only; the only POSTs
+  generate media files. Restoring data means re-entering it by hand through the live form.
+- **`submitted_at` is server-set** and cannot be backdated, so every restored row reads today.
+  The hidden `original_submitted_at` is the only thing distinguishing a restored row from a fresh
+  signature — and these forms carry legal acknowledgements, so that distinction matters.
+- **The harness blocks `PUT /forms/{id}`** (create works, edit does not) and the browser pane
+  collapses to a 0×0 viewport mid-session. Form edits go through
+  `scripts/typeform_add_hidden_fields.sh` for Andy to run.
+
+**Accept when** the recovery queue is empty · every rebuilt form is in
+`scripts/typeform_never_delete.txt` · all 7 Singapore Company Information responses are re-entered
+and verified field-for-field against the CSV via the Responses API · the 3 orphaned Channel Call
+Opt-ins (Accelerator, Large SKU, Resellers — the only 3 of 16 channels with no live opt-in) are
+back · someone has re-shared the new links wherever the old ones were published.
+
+---
+
 ## 🏗️ ARCHITECTURE & AUDIT — ⭐ START HERE (Andy 2026-08-08)
 
 > ⭐ **Andy's call: these four run before any feature work.** #62 and #63 are both size S —
