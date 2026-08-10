@@ -11,11 +11,11 @@ begin
   if p_at_member_id is not null then
     select count(*) into v_n from digest.member_attributes mz where mz.at_member_id = p_at_member_id and digest.is_active_member_status(mz.membership_status);
   else
-    select count(*) into v_n from digest.members mz where mz.phone = p_phone and digest.is_active_member_status(mz.membership_status);
+    select count(*) into v_n from digest.member_identity mz where mz.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(mz.membership_status);
   end if;
   if v_n <> 1 then return; end if;
   select coalesce(m.channels_present, '{}'), m.at_member_id into v_chats, v_atid
-    from digest.members m where (case when p_at_member_id is not null then m.at_member_id = p_at_member_id else m.phone = p_phone end) and digest.is_active_member_status(m.membership_status) order by (m.phone is not null) desc, m.airtable_id limit 1;
+    from digest.member_identity m where (case when p_at_member_id is not null then m.at_member_id = p_at_member_id else m.at_member_id = digest.resolve_asker(p_phone) end) and digest.is_active_member_status(m.membership_status) order by (m.phone is not null) desc, m.airtable_id limit 1;
   if p_at_member_id is not null and v_atid is null then v_atid := p_at_member_id; end if;
 
   v_in_fb := v_atid is not null and exists (select 1 from digest.fb_member_map f where f.at_member_id = v_atid);

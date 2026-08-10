@@ -7,11 +7,11 @@ CREATE OR REPLACE FUNCTION digest.partner_lookup_v2(p_phone text, p_query text D
 AS $function$
 declare v_atid text;
 begin
-  select m.at_member_id into v_atid from digest.members m
-   where (case when p_at_member_id is not null then m.at_member_id = p_at_member_id
-               else m.phone = p_phone end)
-     and digest.is_active_member_status(m.membership_status)
-   order by (m.phone is not null) desc, m.airtable_id limit 1;
+  select case when p_at_member_id is not null
+              then (select a.at_member_id from digest.member_attributes a
+                     where a.at_member_id = p_at_member_id
+                       and digest.is_active_member_status(a.membership_status))
+              else digest.resolve_asker(p_phone) end into v_atid;
   if v_atid is null then v_atid := p_at_member_id; end if;
 
   return query

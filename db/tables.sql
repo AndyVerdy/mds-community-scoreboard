@@ -450,6 +450,15 @@ CREATE UNIQUE INDEX member_personas_pkey ON digest.member_personas USING btree (
 alter table digest.member_personas_history add constraint member_personas_history_pkey PRIMARY KEY (at_member_id, version);
 CREATE UNIQUE INDEX member_personas_history_pkey ON digest.member_personas_history USING btree (at_member_id, version);
 
+-- digest.member_phone_index
+--   phone10                            text not null
+--   at_member_id                       text not null
+--   source                             text not null
+--   refreshed_at                       timestamp with time zone not null default now()
+alter table digest.member_phone_index add constraint member_phone_index_pkey PRIMARY KEY (phone10);
+CREATE INDEX member_phone_index_member ON digest.member_phone_index USING btree (at_member_id);
+CREATE UNIQUE INDEX member_phone_index_pkey ON digest.member_phone_index USING btree (phone10);
+
 -- digest.member_profile_embeddings
 --   at_member_id                       text not null
 --   profile_text                       text not null

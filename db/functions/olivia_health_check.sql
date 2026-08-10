@@ -82,4 +82,16 @@ begin
       'two catalog rows share one display name+start (app-event mis-link?): ' || coalesce(v_dups, ''),
       v_token, v_channel);
   exception when others then null; end;
+
+  -- signal 6 (#77): the identity phone index is refreshed by pg_cron every 15 min; if that
+  -- stops, active members silently lose access instead of anything visibly breaking.
+  begin
+    select to_char(max(refreshed_at), 'Mon DD HH24:MI') into v_stale
+      from digest.member_phone_index;
+    perform digest.olivia_alarm_fire('phone-index-stale',
+      not exists (select 1 from digest.member_phone_index
+                   where refreshed_at > now() - interval '60 minutes'),
+      'member_phone_index has not refreshed since ' || coalesce(v_stale, 'NEVER') ||
+      ' — active members not in a WA chat cannot be identified', v_token, v_channel);
+  exception when others then null; end;
 end $function$

@@ -11,9 +11,9 @@ declare
   v_me_city text; v_total int;
 begin
   if nullif(trim(coalesce(p_event,'')),'') is null then return; end if;
-  select count(*) into v_n from digest.members m where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
   if v_n <> 1 then return; end if;
-  select m.at_member_id into v_atid from digest.members m where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select digest.resolve_asker(p_phone) into v_atid;
   if v_atid is not null then
     select coalesce(ma.rev_band = '20M+', false), ma.city into v_is_20m, v_me_city
       from digest.member_attributes ma where ma.at_member_id = v_atid;

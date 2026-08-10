@@ -11,8 +11,8 @@ begin
     select count(*), max(mz.at_member_id) into v_n, v_asker from digest.member_attributes mz
       where mz.at_member_id = p_at_member_id and digest.is_active_member_status(mz.membership_status);
   else
-    select count(*), max(mz.at_member_id) into v_n, v_asker from digest.members mz
-      where mz.phone = p_phone and digest.is_active_member_status(mz.membership_status);
+    select count(*), max(mz.at_member_id) into v_n, v_asker from digest.member_identity mz
+      where mz.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(mz.membership_status);
   end if;
   if v_n <> 1 then return; end if;
 

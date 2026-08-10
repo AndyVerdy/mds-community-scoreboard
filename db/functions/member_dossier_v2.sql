@@ -8,12 +8,12 @@ AS $function$
 declare
   v_n int; v_atid text; v_warow text;
 begin
-  select count(*) into v_n from digest.members m
-   where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select count(*) into v_n from digest.member_identity m
+   where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
   if v_n <> 1 then return; end if;
   select m.at_member_id, m.airtable_id into v_atid, v_warow
-    from digest.members m
-   where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+    from digest.member_identity m
+   where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
 
   -- ── v1 sections, verbatim ────────────────────────────────────────────────
   if v_atid is not null then

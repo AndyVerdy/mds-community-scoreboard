@@ -7,8 +7,7 @@ CREATE OR REPLACE FUNCTION digest.chat_recommendations_v3(p_phone text)
 AS $function$
 declare v_atid text;
 begin
-  select m.at_member_id into v_atid from digest.members m
-   where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select digest.resolve_asker(p_phone) into v_atid;
 
   return query
   with v2 as (

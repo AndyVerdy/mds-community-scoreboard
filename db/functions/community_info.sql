@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION digest.community_info(p_phone text)
 AS $function$
 declare v_n int;
 begin
-  select count(*) into v_n from digest.members m where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
   if v_n <> 1 then return; end if;
   return query
   with member_chapters as (

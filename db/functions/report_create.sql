@@ -8,8 +8,8 @@ AS $function$
 declare v_name text; v_at text; v_id bigint;
 begin
   select m.name, m.at_member_id into v_name, v_at
-  from digest.members m
-  where m.phone = p_phone and digest.is_active_member_status(m.membership_status)
+  from digest.member_identity m
+  where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status)
   limit 1;
   if v_name is null then return; end if;                      -- fail closed
   if length(trim(coalesce(p_text,''))) < 3 then
@@ -18,7 +18,7 @@ begin
   -- idempotent: the loop sometimes double-calls its tools; same member + same text
   -- within 15 min is ONE report (probe 2026-08-01 filed rows 10+11 from one command)
   select r.id into v_id from digest.olivia_reports r
-  where r.phone = p_phone and r.report_text = left(trim(p_text), 4000)
+  where r.at_member_id = digest.resolve_asker(p_phone) and r.report_text = left(trim(p_text), 4000)
     and r.created_at > now() - interval '15 minutes'
   order by r.id desc limit 1;
   if v_id is not null then

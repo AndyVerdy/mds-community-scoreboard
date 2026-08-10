@@ -9,8 +9,7 @@ declare v_atid text;
 begin
   return query select * from digest.event_history(p_phone);
 
-  select m.at_member_id into v_atid from digest.members m
-   where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select digest.resolve_asker(p_phone) into v_atid;
   if v_atid is null then return; end if;
 
   return query

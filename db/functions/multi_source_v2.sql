@@ -7,9 +7,9 @@ CREATE OR REPLACE FUNCTION digest.multi_source_v2(p_phone text, p_query text DEF
 AS $function$
 declare v_n int; v_atid text; result jsonb := '{}'::jsonb; v_q text;
 begin
-  select count(*) into v_n from digest.members m where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
   if v_n <> 1 then return '{}'::jsonb; end if;                 -- fail closed
-  select m.at_member_id into v_atid from digest.members m where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select digest.resolve_asker(p_phone) into v_atid;
   if v_atid is null then return '{}'::jsonb; end if;
   v_q := nullif(trim(coalesce(p_query, array_to_string(p_terms, ' '))), '');
 

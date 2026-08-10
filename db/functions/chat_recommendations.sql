@@ -8,10 +8,10 @@ AS $function$
 declare
   v_n int; v_atid text; v_chats text[]; me digest.member_attributes;
 begin
-  select count(*) into v_n from digest.members m where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
   if v_n <> 1 then return; end if;
   select m.at_member_id, coalesce(m.channels_present, '{}') into v_atid, v_chats
-    from digest.members m where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+    from digest.member_identity m where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
   select * into me from digest.member_attributes ma where ma.at_member_id = v_atid;
 
   return query

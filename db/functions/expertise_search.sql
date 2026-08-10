@@ -9,9 +9,9 @@ declare
   v_n int; v_atid text; v_q tsquery; v_vec extensions.vector(1024);
 begin
   if nullif(trim(coalesce(p_query,'')),'') is null then return; end if;
-  select count(*) into v_n from digest.members m where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
   if v_n <> 1 then return; end if;
-  select m.at_member_id into v_atid from digest.members m where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select digest.resolve_asker(p_phone) into v_atid;
   if v_atid is null then return; end if;
 
   v_q := digest.expertise_query(p_query);

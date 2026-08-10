@@ -9,8 +9,8 @@ declare
   v_n int;
   v_tokens text[];
 begin
-  select count(*) into v_n from digest.members m
-   where m.phone = p_phone and digest.is_active_member_status(m.membership_status);
+  select count(*) into v_n from digest.member_identity m
+   where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
   if v_n <> 1 then return; end if;
 
   if nullif(trim(coalesce(p_question,'')),'') is null then
