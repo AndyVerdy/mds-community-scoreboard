@@ -25,8 +25,6 @@ submissions stay lost unless a copy survived in `digest.form_responses`.
 
 ## Queue
 
-| # | form | old id | responses lost | rebuild source |
-|---|---|---|---|---|
 **Empty.** Every form worth rebuilding has been rebuilt.
 
 ### Why Large SKU and Resellers were rebuilt without being asked for
