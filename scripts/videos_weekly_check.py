@@ -28,6 +28,21 @@ from ingest_videos import map_video                  # noqa: E402  (single sourc
 WATCH = ("title", "description_text", "cliff_notes", "status", "access_restriction",
          "zoom_recording_stamp", "category_names", "tag_names", "speaker_ids", "event_ids")
 
+JOB = "videos_refresh"
+MAX_AGE_HOURS = 192          # weekly cadence + buffer; matches the row the alarm reads
+
+
+def heartbeat(key, status, detail):
+    """Stamp digest.olivia_job_heartbeats. Called on EVERY completed run, moved or not."""
+    row = {"job": JOB, "last_run_at": "now()", "status": status,
+           "detail": detail[:500], "max_age_hours": MAX_AGE_HOURS}
+    # Only stamp success — sending the key with a failure would overwrite "when did this last
+    # work" at the exact moment you need it. Same rule as zoom_weekly.py.
+    if status == "ok":
+        row["last_success_at"] = "now()"
+    sb("POST", "olivia_job_heartbeats?on_conflict=job", key, [row],
+       "resolution=merge-duplicates,return=minimal")
+
 
 def load_dump(path):
     d = json.loads(open(path).read())
@@ -74,7 +89,11 @@ def main():
         print("REPORT ONLY — pass --apply to upsert and run the Zoom chain")
         return 0
     if not (new or changed):
-        print("nothing moved — chain not run")
+        # A clean check IS a successful run. Stamping only when something moved is why
+        # videos_refresh sat "stale since Aug 01" through several good runs and the alarm
+        # could never clear — the monitor could not tell a healthy no-op from a dead job.
+        heartbeat(key, "ok", f"checked {len(dump)} videos, nothing moved")
+        print("nothing moved — chain not run (heartbeat stamped)")
         return 0
 
     touched = new + [r for r, _ in changed]
@@ -82,6 +101,7 @@ def main():
         sb("POST", "videos_catalog?on_conflict=video_id", key, touched[i:i + 100],
            "resolution=merge-duplicates,return=minimal")
     print(f"  upserted: {len(touched)}")
+    heartbeat(key, "ok", f"{len(new)} new, {len(changed)} changed, {len(touched)} upserted")
 
     # A new or re-published video may be the first time a call becomes citable, so the chain
     # runs in the same pass: link -> transcript -> embed -> dossier.
