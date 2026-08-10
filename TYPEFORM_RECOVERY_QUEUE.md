@@ -21,6 +21,7 @@ submissions stay lost unless a copy survived in `digest.form_responses`.
 | Resellers Channel Call Opt-in | `k2ULAIkZ` | **`GBWQh15X`** | 9 lost, unrecoverable — form rebuilt from its backed-up definition |
 | Partner_ Session Survey _ Summit Singapore | `PBlf7VU5` | **`v1BIIGyT`** | 0 responses; question set cloned from the live Milan session surveys — no definition backup existed |
 | Speaker _ Session Survey _ Summit Singapore | `JPayBXjh` | **`RiyAhK28`** | 0 responses; question set cloned from the live Milan session surveys — no definition backup existed |
+| Squad Archetype ("Squad Pulse Check") | `PYxpuBrl` | **`h3fEDrAY`** | exact 9-field rebuild from the backed-up definition. Its only response was a test ("dd" / `ddd@ddd.com`) and was not restored. ⚠️ carries two inherited thank-you screens about TikTok channel access — copy-paste leftovers from whatever form it was duplicated from, wrong for a squad survey |
 | MDS Summit Singapore 2026 Hack Contest | `PWZkWf7H` | **`HfsXWZGY`** | rebuilt from the 2 stored submissions; Emily Wang's real entry re-entered and verified, tagged `original_submitted_at=2026-08-05`. The other original submission was a test ("rebe / r", hack = "test") and was deliberately not restored |
 
 ## Queue
