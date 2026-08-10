@@ -48,10 +48,10 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#58** | Cancelled registrations count as attendance | 🔴 S1 | S | n/a (SQL) | ✅ **LIVE** — one chokepoint view |
 | **#59** | Same event listed twice (events + partners) | 🟡 S2 | S | n/a (SQL) | ✅ **LIVE** — dossier joins on the row, not the name |
 | **#60** | Cancelled side-event wore the Summit's name (app-event mis-link) | 🟡 S2 | S | n/a (sync+SQL) | ✅ **LIVE** — sync dedupe + 5-min alarm |
-| **#61** | Schema audit: tables with no declared connections | 🔴 S1 | M | — | — |
-| **#62** | Resolve the 17 Security Advisor warnings | 🔴 S1 | S | — | — |
-| **#63** | Airtable-formula injection in the Make member-match (census + app v3) | 🔴 S1 | S | — | — |
-| **#64** | Runtime inventory: consolidate where logic runs (drift, not the load-bearing splits) | 🔵 S3 | M | — | — |
+| **#61** | 🏗️ Schema audit: tables with no declared connections | 🔴 S1 | M | — | — |
+| **#62** | 🏗️ Resolve the 17 Security Advisor warnings | 🔴 S1 | S | — | — |
+| **#63** | 🏗️ Airtable-formula injection in the Make member-match (census + app v3) | 🔴 S1 | S | — | — |
+| **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
 | **#65** | 🚨 SQL functions exist ONLY in the live DB — no file in git | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED** — 118 files in `db/`, daily drift check proven |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
@@ -187,6 +187,210 @@ guard in place).
 ---
 
 # 🔴 S1 — NOW
+
+## 🏗️ ARCHITECTURE & AUDIT — these come first (Andy 2026-08-08)
+
+Four tickets, ahead of feature work. #65 closed tonight and every one of these was made
+sharper by what it exposed: logic living in one place only, checks that pass for the wrong
+reason, and jobs whose failure mode is silence.
+
+### #61 · Schema audit — most warehouse tables show NO connections, and nobody has written down why
+
+#### ⬛ ADDED 2026-08-08 — three concrete violations found while doing #65 and #68
+
+1. **TWO competing mapping tables for one job.** `digest.form_field_map` (form+ref → canonical_key,
+   56 rows, Olivia's) and `digest.form_question_map` (form+question → concept, 1,314 rows across 114
+   forms, the trend-report agent's) both answer "which canonical field is this question". Textbook
+   SSOT violation; #68 resolves it by pinning one and retiring the other.
+2. **The form-scope wall is a convention repeated five times, not a chokepoint.** `form_windowed`,
+   `my_form_answers`, `form_field_history`, `persona_signals` and `persona_signal_fingerprints` each
+   inner-join `form_scope` themselves. A sixth consumer written without it exposes all 156
+   non-scoped forms. #58 solved this exact class for events with one view; forms never got the same
+   treatment. #68 Task 1 adds `digest.form_reach`.
+3. **The FB linker exists in no file and no function.** `load_feed.py` fills `digest.fb_posts`, but
+   the INSERT that moves those rows into `content_items` — the thing that makes them searchable — is
+   raw SQL typed by hand each run. It **silently never ran once**, hiding four days of data. Same
+   class #65 fixed for the other 104 functions; this one is not even in the database to export.
+**🔴 S1 · size M — filed 2026-08-06 from Andy's Schema Visualizer review (do not act; research first)**
+
+> **In plain words:** Open the Supabase schema map and most tables float alone — no lines. Are the relationships real and just undeclared, or are some tables genuinely orphaned?
+
+*As the owner, every table in `digest` either declares its relationships, or carries a written
+reason why it deliberately does not — no silent islands.*
+
+**What the visualizer shows (Andy's screenshot + schema dump):** only a handful of true FKs exist
+(`wa_messages.sender_member` · `member_sessions.member` · `member_events.member` ·
+`olivia_messages.member` — all → `members.airtable_id`; `fb_comments.post_id` → `fb_posts`;
+`partner_reviews.partner_id` → `partners_catalog`; `video_files.video_id` → `videos_catalog`;
+`olivia_question_labels.message_id` → `olivia_messages`). **Everything else joins on undeclared
+text keys** — `at_member_id` across ~15 tables (member_attributes, member_profiles,
+member_expertise, member_niches, member_personas(+history), member_profile_embeddings,
+member_state_snapshot, event_registrations, form_responses, fb_member_map, olivia_reports/requests,
+billing_nudges…), `event_at_id` → events_catalog, `chat_id/chat_name` → chats,
+`summaries.chat_name`, `member_edges.a_id/b_id`, `entity_dossier.entity_id` (polymorphic),
+`content_items.source_id` (polymorphic), wamid keys (olivia_sends/seen/feedback), and the
+`canonical_key` layer in form_field_map.
+
+**Research questions (the ticket's actual work):**
+1. Per table: what is its implicit relation set, and WHY is it undeclared? Known legitimate
+   reasons to document: sync-order independence (mirrors land before/after each other),
+   partially-stamped keys (`member_at_id` NULL until matched — FK would reject honest unknowns),
+   polymorphic keys (entity_dossier, content_items), append-only ledgers, cross-system IDs
+   (wamid, fb_uid, app ids). A FK that forces guessing violates the never-guess rule.
+2. Which relations COULD safely become real FKs (and with what ON DELETE behavior) without
+   breaking the sync jobs? Candidates to test: event_registrations.event_at_id,
+   member_expertise/niches/personas/embeddings → member_attributes.
+3. Orphan audit — count rows whose implicit parent is missing, per relation (the real risk the
+   diagram hides). Decide per case: backfill, delete-as-junk (never a real member), or accept.
+4. Two members tables (`members` = WA layer keyed airtable_id vs `member_profiles`/`member_attributes`
+   keyed at_member_id) — document the dual-key spine once, in the handbook AND as table COMMENTs
+   the visualizer can show.
+5. Deliverable: `FORMS_ERD.md` extended to the FULL digest schema (every table placed, every
+   implicit edge drawn) + table COMMENTs in the DB + a handbook section; any FKs actually added
+   ship with sync-job proof (full re-run green) + gate green.
+
+**Accept when**
+- Every `digest` table appears in the ERD with its edges (declared or documented-implicit).
+- Orphan counts measured per relation, each with a ruling (fix / accept / junk-clean).
+- FKs added only where the sync jobs provably tolerate them; everything else carries a written
+  reason in a table COMMENT.
+- Gate GREEN; no sync job broken (next scheduled runs all succeed).
+
+---
+
+### #62 · Security Advisor: 17 warnings — resolve every one or rule it accepted in writing
+**🔴 S1 · size S — filed 2026-08-06 from Andy's Advisors review (do not act; ticketed)**
+
+> **In plain words:** Supabase's own security scanner shows 17 warnings. Clear the board.
+
+*As the owner, the Security Advisor shows zero unexplained warnings — each is fixed, or its
+acceptance is written down where the next person will look.*
+
+**The 17, by class (from the dashboard):**
+1. **Function Search Path Mutable ×12** — older `digest` helpers created without a pinned
+   `search_path` (`olivia_touch`, `member_partner_url`, `member_event_url`,
+   `immutable_text_array_join`, `attr_clean`, `expertise_query`, `name_fold`, `member_video_url`,
+   `partners_embed_invalidate`, `events_embed_invalidate`, `member_personas_archive`,
+   `is_active_member_status`). Fix = `ALTER FUNCTION … SET search_path = 'digest','pg_temp'` (the
+   pattern every NEW function already uses). ⚠️ `immutable_text_array_join` feeds two generated
+   tsvector columns — verify pinning does not invalidate the generated columns before touching.
+2. **SECURITY DEFINER callable by public / signed-in ×4** — `public.auth_org_ids()` and
+   `public.rls_auto_enable()`. Neither is a digest function; research what installed them (an
+   extension or template?), then `REVOKE EXECUTE FROM anon, authenticated` unless something
+   client-side genuinely calls them.
+3. **Leaked Password Protection Disabled ×1** — Auth setting (dashboard toggle, Andy's click);
+   only relevant if password auth is used anywhere (portal is OTP-based — may be a one-line
+   "accepted: no password auth" ruling instead).
+
+**Accept when**
+- Advisor re-run shows **0 warnings**, or each remaining one carries a written acceptance in the
+  handbook §security.
+- All 12 pinned functions proven live after the change (leak gate 232 + one smoke call per
+  touched RPC; the two embed-invalidate triggers fire on a real row).
+- The `public.*` functions' origin identified before any revoke; revoke verified not to break the
+  portal/app login flows.
+- Gate GREEN.
+
+---
+
+### #63 · Injection audit verdict — SQL clean; ONE real injection found in the Make member-match
+**🔴 S1 · size S — filed 2026-08-06 from Andy's "double check for SQL injection" (audited, not fixed)**
+
+> **In plain words:** The database itself is injection-clean. But the form-to-Airtable member
+> matching interpolates the TYPED email into an Airtable formula string — a crafted email can
+> break out and force a match to the wrong member.
+
+*As the owner, no user-typed value ever reaches a query language un-escaped — SQL, Airtable
+formula, or anything else.*
+
+**Audited clean (SQL proper):**
+- **Zero dynamic SQL** in the whole `digest` schema — no function contains `EXECUTE` or
+  `format()` (verified against `pg_proc`). Every RPC binds user text as parameters; the model's
+  tool arguments hit typed RPC params through PostgREST — no path composes SQL from input.
+- `ILIKE '%'||input||'%'` patterns (form_stats, event lanes) = LIKE-wildcard nuisance only
+  (`%`/`_` widen a match), not injection.
+
+**The finding:** both Make member-match modules build an Airtable `filterByFormula` by string
+interpolation — `LOWER({Preferred Email})=LOWER("{{2.Email}}")` — in **census scenario 4860042
+(module 3)** and **app v3 scenario 4784286 (module M4)**. A typed email containing a double quote
+breaks out of the formula string; a crafted value can force the search to match an arbitrary
+member, so the attacker's Forms row LINKS TO ANOTHER MEMBER — and their fake revenue becomes that
+member's `Most Recent Revenue` (data poisoning, not just leakage). Partial shield today: Typeform
+email validation likely rejects quoted-local-part emails — but RFC allows them, and the shield is
+upstream of us, not ours.
+
+**Fix (when worked):** escape in the Make expression — `substitute()` the double quote (or strip
+non-email-safe chars) before interpolation, in BOTH scenarios; prove with a quote-bearing email
+through staging-safe replay (never a live member). Secondary nuisance, same ticket or note:
+`to_tsquery('english', p_query)` throws on unbalanced quote syntax (honest error, no injection) —
+consider `websearch_to_tsquery` for the two lookup fns if eval ever shows user-visible failures.
+
+**Accept when**
+- A double-quote-bearing email can no longer alter either formula (proven by replay against the
+  census scenario; app v3 fix verified by module inspection + one controlled test submission).
+- No other interpolation-into-query-language sites exist (grep both blueprints for `{{` inside
+  `formula`).
+- Gate GREEN; both scenarios' next real submissions process normally.
+
+---
+
+### #64 · Runtime inventory — write down where every job runs and why, then move only the drift
+
+#### ⬛ ADDED 2026-08-08 — the failure mode is always silence
+
+- **26 of the loader's 114 form ids pointed at forms deleted from Typeform.** `fetch_form` gets an
+  error body, `d.get("items") or []` yields nothing, and the run prints "0 completed" — forever.
+  Fixed to 88, but the lesson stands: **a dead job here looks identical to an idle one.**
+- **Eight launchd plists exist only on Andy's Mac and in no repo** — the same single-copy risk #65
+  just fixed for SQL, one layer up. Only the new `com.mds.db.drift` is tracked.
+- **Thirteen channel-call opt-in forms collect into nothing** — members sign up for call reminders,
+  the responses reach no warehouse table and no workflow anyone can find. Either wire them up or
+  retire them; right now the signup is a dead letter.
+- **Typeform deletions are permanent and bypass the trash.** 245 forms were deleted on 2026-08-07
+  before that was understood. Rule recorded: **Typeform is a source of record — prune the loader
+  config or `form_scope`, never the source.**
+**🔴 S1 · size M — filed 2026-08-06 (Andy: "why is the app logic scattered between so many places")**
+
+> **In plain words:** Work runs across Postgres, n8n, Make, Vercel, Render, GitHub Actions and
+> Python on Andy's Mac. Some of that is deliberate; some is history. Write it down, then fix only
+> the history.
+
+*As the owner, I can name where any piece of MDS logic runs and why it lives there — and nothing
+critical depends on a laptop being awake.*
+
+**Deliberate, keep (document, do not move):** retrieval / gating / stats in **Postgres** (set
+operations over 40k+ rows with vector search, and the security boundary the leak gate proves —
+app-layer filtering could be bypassed) · the alarm in **pg_cron + pg_net** (an alarm inside the
+system it watches is worthless; the launchd watchdog covers Supabase itself being down) · the
+WhatsApp workflow in **n8n** (Meta webhooks, retries, the tool-calling loop) · the Claude-vision
+revenue verifier on **Render** (long-running + file handling; fights Vercel's serverless model).
+
+**Drift, candidates to consolidate:**
+1. **Make vs n8n** — Make runs ONLY the Typeform→Airtable form syncs (app v3 `4784286`, census
+   `4860042`); n8n runs everything else. The census one was mirrored from app v3 out of
+   consistency, not conviction. Decide one home for form syncs; note Make's webhook fragility and
+   that both scenarios carry the #63 injection.
+2. **launchd Python on Andy's Mac** — FB engagement job, `alarm_watchdog.py`, ad-hoc scripts. Same
+   class of work runs on GitHub Actions elsewhere (member-profiles-sync + its 3 steps). A sleeping
+   laptop silently stops these. EXCEPT the watchdog, whose whole point is being outside Supabase —
+   it needs an off-Supabase, non-laptop home, not a GH Action in the same cloud.
+3. **Vercel + Render for one app** (`mds-digest-web`) — one codebase, two hosts, two deploy
+   stories, two env-var behaviours (Render needs a MANUAL redeploy on env change).
+4. **Two schedulers for nightly derivations** — GH Actions vs n8n vs pg_cron; pick per job class.
+
+**Deliverable:** one table in the handbook — job · runtime · trigger · why-here · owner · what
+breaks if it stops — covering every scheduled or triggered piece; then a short move-list with each
+migration proven by a real run (never "should work").
+
+**Accept when**
+- Every scheduled/triggered job appears in the inventory with a written why-here.
+- Nothing business-critical depends on Andy's Mac being awake (watchdog explicitly re-homed or
+  ruled as accepted with its reason).
+- Each move proven by a live run, old path disabled in the same session (no double-running).
+- Handbook updated; gate GREEN.
+
+---
+
 
 ### #70 · 🚀 New data source — ZOOM CALLS (attendance · transcripts · schedule)
 **🔴 S1 · size L — filed 2026-08-06 · research COMPLETE, build NOT started**
@@ -467,173 +671,6 @@ same webhook.
 - Units/period declared and sweep-asserted.
 - Lag documented or removed.
 - QA sweep + gate GREEN after each.
-
----
-
-### #61 · Schema audit — most warehouse tables show NO connections, and nobody has written down why
-**🔴 S1 · size M — filed 2026-08-06 from Andy's Schema Visualizer review (do not act; research first)**
-
-> **In plain words:** Open the Supabase schema map and most tables float alone — no lines. Are the relationships real and just undeclared, or are some tables genuinely orphaned?
-
-*As the owner, every table in `digest` either declares its relationships, or carries a written
-reason why it deliberately does not — no silent islands.*
-
-**What the visualizer shows (Andy's screenshot + schema dump):** only a handful of true FKs exist
-(`wa_messages.sender_member` · `member_sessions.member` · `member_events.member` ·
-`olivia_messages.member` — all → `members.airtable_id`; `fb_comments.post_id` → `fb_posts`;
-`partner_reviews.partner_id` → `partners_catalog`; `video_files.video_id` → `videos_catalog`;
-`olivia_question_labels.message_id` → `olivia_messages`). **Everything else joins on undeclared
-text keys** — `at_member_id` across ~15 tables (member_attributes, member_profiles,
-member_expertise, member_niches, member_personas(+history), member_profile_embeddings,
-member_state_snapshot, event_registrations, form_responses, fb_member_map, olivia_reports/requests,
-billing_nudges…), `event_at_id` → events_catalog, `chat_id/chat_name` → chats,
-`summaries.chat_name`, `member_edges.a_id/b_id`, `entity_dossier.entity_id` (polymorphic),
-`content_items.source_id` (polymorphic), wamid keys (olivia_sends/seen/feedback), and the
-`canonical_key` layer in form_field_map.
-
-**Research questions (the ticket's actual work):**
-1. Per table: what is its implicit relation set, and WHY is it undeclared? Known legitimate
-   reasons to document: sync-order independence (mirrors land before/after each other),
-   partially-stamped keys (`member_at_id` NULL until matched — FK would reject honest unknowns),
-   polymorphic keys (entity_dossier, content_items), append-only ledgers, cross-system IDs
-   (wamid, fb_uid, app ids). A FK that forces guessing violates the never-guess rule.
-2. Which relations COULD safely become real FKs (and with what ON DELETE behavior) without
-   breaking the sync jobs? Candidates to test: event_registrations.event_at_id,
-   member_expertise/niches/personas/embeddings → member_attributes.
-3. Orphan audit — count rows whose implicit parent is missing, per relation (the real risk the
-   diagram hides). Decide per case: backfill, delete-as-junk (never a real member), or accept.
-4. Two members tables (`members` = WA layer keyed airtable_id vs `member_profiles`/`member_attributes`
-   keyed at_member_id) — document the dual-key spine once, in the handbook AND as table COMMENTs
-   the visualizer can show.
-5. Deliverable: `FORMS_ERD.md` extended to the FULL digest schema (every table placed, every
-   implicit edge drawn) + table COMMENTs in the DB + a handbook section; any FKs actually added
-   ship with sync-job proof (full re-run green) + gate green.
-
-**Accept when**
-- Every `digest` table appears in the ERD with its edges (declared or documented-implicit).
-- Orphan counts measured per relation, each with a ruling (fix / accept / junk-clean).
-- FKs added only where the sync jobs provably tolerate them; everything else carries a written
-  reason in a table COMMENT.
-- Gate GREEN; no sync job broken (next scheduled runs all succeed).
-
----
-
-### #62 · Security Advisor: 17 warnings — resolve every one or rule it accepted in writing
-**🔴 S1 · size S — filed 2026-08-06 from Andy's Advisors review (do not act; ticketed)**
-
-> **In plain words:** Supabase's own security scanner shows 17 warnings. Clear the board.
-
-*As the owner, the Security Advisor shows zero unexplained warnings — each is fixed, or its
-acceptance is written down where the next person will look.*
-
-**The 17, by class (from the dashboard):**
-1. **Function Search Path Mutable ×12** — older `digest` helpers created without a pinned
-   `search_path` (`olivia_touch`, `member_partner_url`, `member_event_url`,
-   `immutable_text_array_join`, `attr_clean`, `expertise_query`, `name_fold`, `member_video_url`,
-   `partners_embed_invalidate`, `events_embed_invalidate`, `member_personas_archive`,
-   `is_active_member_status`). Fix = `ALTER FUNCTION … SET search_path = 'digest','pg_temp'` (the
-   pattern every NEW function already uses). ⚠️ `immutable_text_array_join` feeds two generated
-   tsvector columns — verify pinning does not invalidate the generated columns before touching.
-2. **SECURITY DEFINER callable by public / signed-in ×4** — `public.auth_org_ids()` and
-   `public.rls_auto_enable()`. Neither is a digest function; research what installed them (an
-   extension or template?), then `REVOKE EXECUTE FROM anon, authenticated` unless something
-   client-side genuinely calls them.
-3. **Leaked Password Protection Disabled ×1** — Auth setting (dashboard toggle, Andy's click);
-   only relevant if password auth is used anywhere (portal is OTP-based — may be a one-line
-   "accepted: no password auth" ruling instead).
-
-**Accept when**
-- Advisor re-run shows **0 warnings**, or each remaining one carries a written acceptance in the
-  handbook §security.
-- All 12 pinned functions proven live after the change (leak gate 232 + one smoke call per
-  touched RPC; the two embed-invalidate triggers fire on a real row).
-- The `public.*` functions' origin identified before any revoke; revoke verified not to break the
-  portal/app login flows.
-- Gate GREEN.
-
----
-
-### #63 · Injection audit verdict — SQL clean; ONE real injection found in the Make member-match
-**🔴 S1 · size S — filed 2026-08-06 from Andy's "double check for SQL injection" (audited, not fixed)**
-
-> **In plain words:** The database itself is injection-clean. But the form-to-Airtable member
-> matching interpolates the TYPED email into an Airtable formula string — a crafted email can
-> break out and force a match to the wrong member.
-
-*As the owner, no user-typed value ever reaches a query language un-escaped — SQL, Airtable
-formula, or anything else.*
-
-**Audited clean (SQL proper):**
-- **Zero dynamic SQL** in the whole `digest` schema — no function contains `EXECUTE` or
-  `format()` (verified against `pg_proc`). Every RPC binds user text as parameters; the model's
-  tool arguments hit typed RPC params through PostgREST — no path composes SQL from input.
-- `ILIKE '%'||input||'%'` patterns (form_stats, event lanes) = LIKE-wildcard nuisance only
-  (`%`/`_` widen a match), not injection.
-
-**The finding:** both Make member-match modules build an Airtable `filterByFormula` by string
-interpolation — `LOWER({Preferred Email})=LOWER("{{2.Email}}")` — in **census scenario 4860042
-(module 3)** and **app v3 scenario 4784286 (module M4)**. A typed email containing a double quote
-breaks out of the formula string; a crafted value can force the search to match an arbitrary
-member, so the attacker's Forms row LINKS TO ANOTHER MEMBER — and their fake revenue becomes that
-member's `Most Recent Revenue` (data poisoning, not just leakage). Partial shield today: Typeform
-email validation likely rejects quoted-local-part emails — but RFC allows them, and the shield is
-upstream of us, not ours.
-
-**Fix (when worked):** escape in the Make expression — `substitute()` the double quote (or strip
-non-email-safe chars) before interpolation, in BOTH scenarios; prove with a quote-bearing email
-through staging-safe replay (never a live member). Secondary nuisance, same ticket or note:
-`to_tsquery('english', p_query)` throws on unbalanced quote syntax (honest error, no injection) —
-consider `websearch_to_tsquery` for the two lookup fns if eval ever shows user-visible failures.
-
-**Accept when**
-- A double-quote-bearing email can no longer alter either formula (proven by replay against the
-  census scenario; app v3 fix verified by module inspection + one controlled test submission).
-- No other interpolation-into-query-language sites exist (grep both blueprints for `{{` inside
-  `formula`).
-- Gate GREEN; both scenarios' next real submissions process normally.
-
----
-
-### #64 · Runtime inventory — write down where every job runs and why, then move only the drift
-**🔵 S3 · size M — filed 2026-08-06 (Andy: "why is the app logic scattered between so many places")**
-
-> **In plain words:** Work runs across Postgres, n8n, Make, Vercel, Render, GitHub Actions and
-> Python on Andy's Mac. Some of that is deliberate; some is history. Write it down, then fix only
-> the history.
-
-*As the owner, I can name where any piece of MDS logic runs and why it lives there — and nothing
-critical depends on a laptop being awake.*
-
-**Deliberate, keep (document, do not move):** retrieval / gating / stats in **Postgres** (set
-operations over 40k+ rows with vector search, and the security boundary the leak gate proves —
-app-layer filtering could be bypassed) · the alarm in **pg_cron + pg_net** (an alarm inside the
-system it watches is worthless; the launchd watchdog covers Supabase itself being down) · the
-WhatsApp workflow in **n8n** (Meta webhooks, retries, the tool-calling loop) · the Claude-vision
-revenue verifier on **Render** (long-running + file handling; fights Vercel's serverless model).
-
-**Drift, candidates to consolidate:**
-1. **Make vs n8n** — Make runs ONLY the Typeform→Airtable form syncs (app v3 `4784286`, census
-   `4860042`); n8n runs everything else. The census one was mirrored from app v3 out of
-   consistency, not conviction. Decide one home for form syncs; note Make's webhook fragility and
-   that both scenarios carry the #63 injection.
-2. **launchd Python on Andy's Mac** — FB engagement job, `alarm_watchdog.py`, ad-hoc scripts. Same
-   class of work runs on GitHub Actions elsewhere (member-profiles-sync + its 3 steps). A sleeping
-   laptop silently stops these. EXCEPT the watchdog, whose whole point is being outside Supabase —
-   it needs an off-Supabase, non-laptop home, not a GH Action in the same cloud.
-3. **Vercel + Render for one app** (`mds-digest-web`) — one codebase, two hosts, two deploy
-   stories, two env-var behaviours (Render needs a MANUAL redeploy on env change).
-4. **Two schedulers for nightly derivations** — GH Actions vs n8n vs pg_cron; pick per job class.
-
-**Deliverable:** one table in the handbook — job · runtime · trigger · why-here · owner · what
-breaks if it stops — covering every scheduled or triggered piece; then a short move-list with each
-migration proven by a real run (never "should work").
-
-**Accept when**
-- Every scheduled/triggered job appears in the inventory with a written why-here.
-- Nothing business-critical depends on Andy's Mac being awake (watchdog explicitly re-homed or
-  ruled as accepted with its reason).
-- Each move proven by a live run, old path disabled in the same session (no double-running).
-- Handbook updated; gate GREEN.
 
 ---
 
