@@ -1,23 +1,26 @@
 # Typeform deletion — loss register
 
-**What happened:** on 2026-08-08 I deleted 250 Typeforms via the API as a "prune" of low-response forms. Typeform API deletes are permanent and bypass the trash — neither I nor the UI can undo them. Andy's ruling afterwards: **never delete from Typeform, it is a source of record.** The prune scripts are gone (commit `1aa0951`); this is the damage accounting.
+**What happened:** on 2026-08-08 I deleted 250 Typeforms via the API as a "prune" of low-response forms. Typeform API deletes are permanent and bypass the trash — neither I nor the UI can undo them. Andy's ruling afterwards: **never delete from Typeform, it is a source of record.** The prune scripts are gone (commit `1aa0951`).
 
-**How to read it:** *responses* is what the form held at inventory time (2026-08-07); *in warehouse* is what survives in `digest.form_responses`. "unknown" means the form was deleted but never appeared in the inventory, so no response count was ever recorded — those are the ones I cannot bound. A backed-up definition can be recreated, but a rebuild gets a **new form id**, so every link already shared stays dead.
+*Counts corrected 2026-08-10: the first version of this file was built from a chunked REST read that dropped rows and overstated the losses. These numbers come from a single SQL aggregate, cross-checked row-for-row.*
+
+**How to read it:** *responses* is what the form held at inventory time (2026-08-07); *kept* is what survives in `digest.form_responses`. A backed-up definition means the form can be recreated — but a rebuild gets a **new form id**, so links already shared stay dead.
 
 | | forms | responses |
 |---|---|---|
 | deleted | 250 | — |
 | zero responses — nothing lost | 129 | 0 |
-| data safe in warehouse | 24 | — |
-| partially lost | 1 | 1 |
+| responses fully safe in warehouse | 24 | 131 |
+| partially lost | 1 | 1 lost |
 | **all responses lost** | **96** | **465** |
-| **count never recorded, nothing in warehouse** | **0** | **unknown** |
+| **total responses lost** | | **466** |
 
 
 ## ❌ Responses gone — no copy anywhere (96)
-The real losses. The response-level backup I took covered the forms I **kept**, not the ones I deleted.
 
-| form id | title | responses | in warehouse | rebuildable |
+The response-level backup I took covered the 94 forms I **kept**, not the ones I deleted.
+
+| form id | title | responses | kept | rebuildable |
 |---|---|---|---|---|
 | `Hflzbz9C` | Advisory Council Agreement 8-4-2020 | 9 | 0 | definition backed up |
 | `B0wpgzt9` | Large SKU Channel Call Opt-in | 9 | 0 | definition backed up |
@@ -118,25 +121,25 @@ The real losses. The response-level backup I took covered the forms I **kept**, 
 
 ## ⚠️ Partially lost (1)
 
-
-| form id | title | responses | in warehouse | rebuildable |
+| form id | title | responses | kept | rebuildable |
 |---|---|---|---|---|
 | `IaRcNdOZ` | MDS Summit Singapore 2026 - Company Information | 8 | 7 | definition backed up |
 
 ## ✅ Deleted, responses survive in the warehouse (24)
+
 Form gone from Typeform; submitted data intact and still queryable by Olivia.
 
-| form id | title | responses | in warehouse | rebuildable |
+| form id | title | responses | kept | rebuildable |
 |---|---|---|---|---|
 | `Tugcd47E` | Charles Chakkalo _ Hot Seat 1 _ Session Survey _ Summit Milan | 9 | 9 | questions only, from warehouse |
 | `GIwhKbyS` | Inspire 2026 _ Session Survey _ Isaac Medeiros - Affiliate Network on Youtube Shop | 9 | 9 | questions only, from warehouse |
 | `aEu5UlJK` | MDS Inspire 2025 - Exhibition | 9 | 9 | questions only, from warehouse |
-| `zh5oWBow` | MDS Inspire Rooming Request | 9 | 9 | definition backed up |
 | `sGvCDqpp` | Michael Corrigan _ Session Survey _ Summit Milan | 9 | 9 | questions only, from warehouse |
-| `HFQa9TMA` | 2026 Ideas & Priorities | 8 | 8 | definition backed up |
+| `zh5oWBow` | MDS Inspire Rooming Request | 9 | 9 | definition backed up |
 | `E2uRJD3Q` | Inspire 2026 _ Session Survey _Bryce Alderson - Amazon Marketshare vs Margin | 8 | 8 | questions only, from warehouse |
-| `ACOyOnvB` | MDS Inspire Lounge | 8 | 8 | definition backed up |
 | `nqGvqZXY` | Matthew Kalatsky _ Hot Seat 2 _ Session Survey _ Summit Milan | 8 | 8 | questions only, from warehouse |
+| `HFQa9TMA` | 2026 Ideas & Priorities | 8 | 8 | definition backed up |
+| `ACOyOnvB` | MDS Inspire Lounge | 8 | 8 | definition backed up |
 | `b6ZkDAbu` | MDS App - Team Member Feature Survey | 7 | 7 | definition backed up |
 | `xLml7iw1` | Singapore Excursions | 7 | 7 | definition backed up |
 | `mJqqtCfT` | Inspire 2026 _ Session Survey _ Eli Kroll - Customer Experience | 5 | 5 | questions only, from warehouse |
@@ -154,9 +157,10 @@ Form gone from Typeform; submitted data intact and still queryable by Olivia.
 | `qLyLlGG1` | MDS Inspire 2026 Hack Contest | 1 | 1 | questions only, from warehouse |
 
 ## Deleted with zero responses (129)
+
 No submitted data existed. Form structure only.
 
-| form id | title | responses | in warehouse | rebuildable |
+| form id | title | responses | kept | rebuildable |
 |---|---|---|---|---|
 | `ruTtQKjZ` | 1. Free gift - Email | 0 | 0 | nothing to rebuild from |
 | `ZA7aMOIU` | 10% off discount | 0 | 0 | nothing to rebuild from |
