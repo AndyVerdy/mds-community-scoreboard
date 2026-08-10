@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION digest.olivia_touch(p_phone text)
  RETURNS void
  LANGUAGE sql
  SECURITY DEFINER
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$
   update digest.members
      set olivia_interactions = coalesce(olivia_interactions, 0) + 1,

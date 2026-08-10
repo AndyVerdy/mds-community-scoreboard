@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION digest.is_active_member_status(p_status text)
  RETURNS boolean
  LANGUAGE sql
  IMMUTABLE
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$
   select p_status in ('Current Member', 'New Member', 'Current Member- Not Renewing', 'Staff')
 $function$

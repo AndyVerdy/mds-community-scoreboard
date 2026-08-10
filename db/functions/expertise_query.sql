@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION digest.expertise_query(p_query text)
  RETURNS tsquery
  LANGUAGE plpgsql
  IMMUTABLE
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$
 declare
   q text := lower(coalesce(p_query, ''));

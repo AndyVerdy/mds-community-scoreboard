@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION digest.name_fold(t text)
  RETURNS text
  LANGUAGE sql
  IMMUTABLE
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$
   select lower(translate(coalesce(t,''),
     'ÁÀÂÄÃÅáàâäãåÉÈÊËéèêëÍÌÎÏíìîïÓÒÔÖÕóòôöõÚÙÛÜúùûüÑñÇçŠšŽžŸÿ',

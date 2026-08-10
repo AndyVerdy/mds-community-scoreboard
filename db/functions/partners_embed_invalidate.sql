@@ -2,6 +2,7 @@
 CREATE OR REPLACE FUNCTION digest.partners_embed_invalidate()
  RETURNS trigger
  LANGUAGE plpgsql
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$
 begin
   if (new.name, new.description_text, new.offer_value, new.category_names)

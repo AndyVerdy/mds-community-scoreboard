@@ -3,4 +3,5 @@ CREATE OR REPLACE FUNCTION digest.immutable_text_array_join(p_arr text[])
  RETURNS text
  LANGUAGE sql
  IMMUTABLE
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$ select coalesce(array_to_string(p_arr, ' '), '') $function$

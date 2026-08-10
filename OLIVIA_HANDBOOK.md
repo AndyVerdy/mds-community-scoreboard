@@ -573,6 +573,37 @@ repo → DB is deliberately not wired up.
 - `member_event_url` does URL/presentation shaping in SQL. A genuine violation, small, and cheaper
   where it is than duplicated across four consumers.
 
+### Security Advisor — the board, and the two accepted survivors (2026-08-10, #62)
+
+Supabase's Security Advisor was at **18 WARN**. #62 cleared 16 and wrote down the 2 that remain by
+design, so the next person reading the dashboard knows they are known, not missed.
+
+**Fixed:**
+- **13 × Function Search Path Mutable** — every flagged `digest` helper now pins
+  `search_path = 'digest', 'pg_temp'` (the house style, 76 functions already used it). Applied with
+  `ALTER FUNCTION`, never `CREATE OR REPLACE`, so `immutable_text_array_join` kept its IMMUTABLE
+  volatility and the STORED generated `search_tsv` columns on `partners_catalog`/`videos_catalog`
+  that depend on it stayed valid (proven: 497 + 1032 rows, 0 nulls, both embed-invalidate triggers
+  fired on a live self-update without wiping an embedding).
+- **3 × Public-executable SECURITY DEFINER** — `public.auth_org_ids()` (anon) and
+  `public.rls_auto_enable()` (anon + authenticated). Both are the *shared public-schema app's*
+  objects, not Olivia's. The grant reaching `anon` was the default **PUBLIC** grant, so revoking the
+  roles was a no-op until we `REVOKE … FROM public`.
+
+**Two accepted survivors (written here per the ticket, not fixed):**
+- **`public.auth_org_ids()` executable by `authenticated`** — *required.* The RLS policy
+  `self_read_org_members` on `public.organization_members` calls it for the authenticated role; a
+  revoke there breaks that app's row security. `anon` was removed; `authenticated` + `service_role`
+  keep their explicit grants.
+- **Leaked Password Protection disabled** — an Auth dashboard toggle, not SQL, and it belongs to the
+  password-based public-schema app (Olivia's portal is OTP). **Andy's call to enable**; left as-is
+  until then.
+
+**Not a warning, but noted:** 28 `digest` tables show INFO `rls_enabled_no_policy`. For a
+service_role-only schema that is the **secure** state — RLS-enabled-no-policy denies anon and
+authenticated by default and `service_role` bypasses; the leak gate proves anon is refused. Accepted
+as defense-in-depth. (Why RLS is enabled on them at all, and by what, is #61/#64 territory, not #62.)
+
 ---
 
 ## 13. Field traps (real bugs, documented so they do not recur)

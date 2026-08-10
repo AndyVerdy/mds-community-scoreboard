@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION digest.member_partner_url(p_partner_id text)
  RETURNS text
  LANGUAGE sql
  IMMUTABLE
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$
   select case
     when p_partner_id ~ '^[0-9a-f]{24}$'

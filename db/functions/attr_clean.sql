@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION digest.attr_clean(v text)
  RETURNS text
  LANGUAGE sql
  IMMUTABLE
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$
   select nullif(nullif(nullif(nullif(trim(case when v like '["%"]'
               then replace(substring(v from 3 for greatest(length(v) - 4, 0)), '", "', ', ')

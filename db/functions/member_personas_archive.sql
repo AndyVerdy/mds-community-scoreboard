@@ -2,6 +2,7 @@
 CREATE OR REPLACE FUNCTION digest.member_personas_archive()
  RETURNS trigger
  LANGUAGE plpgsql
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$
 begin
   insert into digest.member_personas_history

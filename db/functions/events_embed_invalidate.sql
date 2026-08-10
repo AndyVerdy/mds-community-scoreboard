@@ -2,6 +2,7 @@
 CREATE OR REPLACE FUNCTION digest.events_embed_invalidate()
  RETURNS trigger
  LANGUAGE plpgsql
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$
 begin
   if (new.name, new.app_title, new.event_type, new.style, new.chapter_area, new.chapter_hint,

@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION digest.member_event_url(p_link text, p_fallback text)
  RETURNS text
  LANGUAGE sql
  IMMUTABLE
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$
   select case
     when p_link is null or trim(p_link) = '' then p_fallback

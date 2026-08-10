@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION digest.pct_from_answer(v jsonb, t text)
  RETURNS numeric
  LANGUAGE plpgsql
  IMMUTABLE
+ SET search_path TO 'digest', 'pg_temp'
 AS $function$
 declare s text; lo numeric; hi numeric; m text[];
 begin
