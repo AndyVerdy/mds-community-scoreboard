@@ -39,6 +39,8 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#72** | 🚦 LOAD TEST before the Mille demo (~100 concurrent users) | 🔴 S1 | M | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
+| **#75** | Reactions may be silently dead — nothing logs one pre-parse | 🔴 S1 | S | — | — |
+| **#76** | New eval bank — 150 questions from real member traffic | 🔴 S1 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
 | **#36** | New data source — CIRCLEBACK | 🚀 S4 | L | — | — |
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
@@ -871,6 +873,70 @@ identifier on forms we control, which is the only thing that touches the 2,871.
 **Accept when** stamped share rises from 49% with the new signals counted before/after · no fuzzy
 match applied on name alone · an alias never appears in output (gate check) · the unresolvable
 remainder is stated in writing rather than chased.
+
+---
+
+### #75 · Reactions may be silently dead — nothing logs one before it is parsed
+**🔴 S1 · size S — filed 2026-08-10**
+
+> **In plain words:** 👍/👎 is the only signal a member gives us for free, and we cannot tell whether we are still receiving them.
+
+*As the team, a member's thumbs-down always reaches the review queue — and if the path breaks we find out that day, not six weeks later.*
+
+**Measured 2026-08-10:** `digest.olivia_feedback` holds **10 reactions all-time — 6 👎, 4 👍**, spanning
+2026-07-24 → **2026-08-04**. **Zero in the six days since.** Prod was promoted twice on Aug 4
+(22:35, 23:13 UTC) and twice more after. At the observed 3.7% reaction rate over ~78 answers since,
+roughly 3 were expected. Zero is not proof, but "reactions stop the same day as a promote, silence
+ever after" is the shape of a broken parse.
+
+**Why we cannot answer it today — the actual defect.** Nothing records a reaction before the
+Parse Reaction node handles it: no rows in `olivia_messages`, no raw inbound webhook store on the
+Olivia side (`wa_messages` is the digest/Whapi system). **A dropped reaction leaves no trace
+anywhere**, so the count can never be verified. Same class as the heartbeat that never stamped and
+the linker that never ran: the failure mode is silence.
+
+**Shape of the fix**
+- Persist every inbound Meta webhook payload (or at minimum every `reaction` event) before parsing,
+  so a parse failure is visible as a gap between raw and parsed.
+- One canary: react from a test number, assert `olivia_feedback` gains the row. **Never against a
+  real member's number.**
+- Heartbeat/alarm on the reaction path — "0 reactions in 14 days" should page, not pass quietly.
+
+**Accept when** a raw store exists and is gate-checked · the canary proves round-trip · the 6-day
+gap is explained as either broken (fixed, with a reaction landing after) or genuinely quiet (with
+the raw log showing zero arrived) · no claim of "working" without one of those two.
+
+---
+
+### #76 · New eval bank — 150 questions from real member traffic
+**🔴 S1 · size M — filed 2026-08-10 (Andy: "we def. need to create a new bank of 150 questions based on real users")**
+
+> **In plain words:** The bank should be what members actually ask, not what we imagined they would.
+
+*As the owner, the quality number I trust is measured on real questions, so improving it improves the product members touch.*
+
+**Where we are:** nightly eval runs 220 judged, **7.7% fail (Aug 9), 6.8% (Aug 8)** against a <1%
+target. Andy 2026-08-10: **7.7% is acceptable for now** — the bank is the priority, not the rate.
+Six questions failed both nights (Q2090, Q2096, Q2110, Q2130, Q2138, Q2142) so there is a real
+persistent class inside that number, but the instrument is what gets rebuilt first.
+
+**Source material is already there:** 1,513 member turns in 30 days · 544 of them real (the rest
+eval traffic) · 35 distinct askers · `digest.olivia_question_labels` classifies each one · the 6 👎
+in `olivia_feedback` are the highest-value rows in the whole dataset.
+
+**Rules that hold (standing):**
+- **ORGANIC only.** Generated questions may only deepen a pattern that already appeared organically,
+  and only if necessary.
+- **Retirement is part of it** — a bank that only grows stops being an instrument. `retired: true`,
+  canary floor 3 per class.
+- **Snapshot before and after** into `eval_bank_snapshots/` — `mds-scorecard-tools` has no git.
+- **Class coverage preserved**: AT_PROFILE · CROSS · DECLINE · EVENT · FB · FORM · GEN · PARTNER ·
+  REAL · VIDEO · WA_DIGEST · WA_RAW.
+
+**Accept when** 150 questions, every one traceable to a real member turn (phone + wamid + date) ·
+every uncleared 👎 included · ground truth written from the warehouse, not from Olivia's answer ·
+class distribution matches real traffic rather than the old bank's shape · the retired set named
+with its reason · one baseline run on the new bank, its rate recorded as the new starting number.
 
 ---
 
