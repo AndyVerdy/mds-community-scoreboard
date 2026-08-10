@@ -10,10 +10,10 @@
 - **When caveman is off or disabled, the blocks below apply unchanged**, including the 1–4
   paragraph rule. They are the standing fallback — caveman outranks them, it never deletes them.
 
-> 📌 **Andy: 2 PARAGRAPHS MAX** (Andy 2026-08-10; was 1–4). He asks for details if needed. <!-- ANDY-PREF -->
+> 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
 
 ## How we work — Andy's rules <!-- ANDY-WORKING-RULES -->
-- **Short replies: 2 PARAGRAPHS MAX.** Lead with the answer. He asks for detail if he wants it.
+- **Short replies: 1-4 paragraphs.** Lead with the answer. He asks for detail if he wants it.
 - **No "done, but...".** Say what shipped. If it is not shipped, say it is not. Never bury a list of caveats behind a "but".
 - **One ticket at a time.** No jumping between tasks. Rapid delivery.
 - **When asked what is next, give task NUMBER, NAME and STORY.** Nothing else unless asked.
