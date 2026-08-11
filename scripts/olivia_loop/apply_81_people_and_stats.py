@@ -82,6 +82,36 @@ NEW_RULES = (
     "  '- NEVER CALL A DATA GAP A LIMIT (#81): if a tool came back thin, name what is missing in one "
     "short clause and move straight to what you CAN answer. Never say you are unable to judge, not "
     "able to rank, or that something is not something you do, when the truth is a tool returned "
+    "little. Never OPEN a reply with I cannot - lead with the part you can answer. And NEVER hedge "
+    "an answer you are about to give: if the numbers are in front of you, state them, with no "
+    "preface about the shape they do or do not come in.',\n"
+    "  '- ANSWER IN THE FRAME ASKED (#81): if the member asked about no-kids, answer in no-kids; if "
+    "they asked a share, give the share. form_stats reports share>0 (the HAVE side), so invert it "
+    "yourself rather than making the member do the subtraction. Same for any group slice.',\n"
+    "  '- DECLINE ONCE (#81): once you have declined a request, never repeat that refusal on a later "
+    "turn. If the member moves on to a different question - a count, a percentage, a breakdown - "
+    "answer THAT question on its own merits and say nothing further about the earlier decline.',\n"
+    "  '- LONG ROSTERS (#81): never dump more than 12 names in one reply. Lead with the few that "
+    "carry a reason, group the rest by what makes them useful (city, niche), give the total, and "
+    "offer the remainder as ONE concrete next step.',\n"
+    "  '- CROSS-CUT STATS (#81): form_stats slices by country, state, niche, rev_band, chapter AND "
+    "gender. Breaking an existing figure down by any of those is a normal question - call form_stats "
+    "with p_group_by instead of saying the split is not tracked. The tool suppresses small groups "
+    "itself, so quote what it returns and nothing more.',\n"
+)
+
+# The first shipped version of the rules block, kept ONLY so the upgrade path above can
+# recognise and replace it. Do not edit: it must stay byte-identical to what was installed.
+RULES_V1 = (
+    "  '- WHO SHOULD I TALK TO (#81): who-is-the-best-match / who-must-I-meet / who-is-good-for-me "
+    "about an event is a QUESTION YOU ANSWER, not one you decline. Call event_who and lead with the "
+    "attendees carrying fit_reason, saying the reason in plain words. Give the NUMBER asked for - "
+    "three means three names, not a disclaimer. Location alone is the weakest reason: use it only "
+    "when nothing better exists, and say that is what it is. Never quote a score, rank or match "
+    "percentage.',\n"
+    "  '- NEVER CALL A DATA GAP A LIMIT (#81): if a tool came back thin, name what is missing in one "
+    "short clause and move straight to what you CAN answer. Never say you are unable to judge, not "
+    "able to rank, or that something is not something you do, when the truth is a tool returned "
     "little. Never OPEN a reply with I cannot - lead with the part you can answer.',\n"
     "  '- DECLINE ONCE (#81): once you have declined a request, never repeat that refusal on a later "
     "turn. If the member moves on to a different question - a count, a percentage, a breakdown - "
@@ -103,6 +133,19 @@ NEW_RULES = (
 # show me the rest. Format Reply's own OFFER_TAIL already matches "want the rest" for buttons.
 
 
+# ---- E: location is noise unless the question is about location (Andy 2026-08-11) ---------
+# "(Supplements, Costa Mesa CA)" — the niche earns its place, the city does not. Not a privacy
+# matter (city is green-list); it is clutter, and it was in every line of every roster answer.
+ANCHOR_FRAME = "  '- ANSWER IN THE FRAME ASKED (#81):"
+LOCATION_RULE = (
+    "  '- LOCATION IS NOT A LABEL (#81, Andy): do NOT append a city, state or country after a "
+    "member name. A bracket after a name carries their NICHE and nothing else - Alex Bonilla "
+    "(Supplements), never Alex Bonilla (Supplements, Costa Mesa CA). Give location only when the "
+    "member asked about place (who is in Austin, who is near me, who is in Europe) or when it is "
+    "the actual reason you are naming them, and then say it in the sentence, not in brackets.',\n"
+)
+
+
 def main():
     wf = api("GET", f"/workflows/{STAGING_ID}")
     nodes = {n["name"]: n for n in wf["nodes"]}
@@ -110,8 +153,22 @@ def main():
 
     seed = patch(seed, OLD_EW, NEW_EW, "event_who schema", "best-fit FIRST")
     seed = patch(seed, OLD_GB, NEW_GB, "form_stats p_group_by gender", "rev_band | gender")
-    seed = patch(seed, OLD_RULE_TAIL, NEW_RULES + OLD_RULE_TAIL, "rules x5",
-                 "WHO SHOULD I TALK TO")
+    # The rules block is versioned: a plain marker check would silently skip an AMENDMENT
+    # to rules that are already installed (it did, once). So: if the newest rule is present
+    # we are done; if an OLDER block is installed, swap it wholesale; else insert fresh.
+    if "LOCATION IS NOT A LABEL" in seed:
+        print("  rules: already at the current version")
+    elif "ANSWER IN THE FRAME ASKED" in seed:
+        i = seed.index(ANCHOR_FRAME)
+        j = seed.index("',\n", i) + 3
+        seed = seed[:j] + LOCATION_RULE + seed[j:]
+        print("  rules: appended LOCATION IS NOT A LABEL")
+    elif RULES_V1 in seed:
+        seed = seed.replace(RULES_V1, NEW_RULES, 1)
+        print("  rules: upgraded the installed block v1 -> v2 (hedge ban + frame rule)")
+    else:
+        seed = patch(seed, OLD_RULE_TAIL, NEW_RULES + OLD_RULE_TAIL, "rules",
+                     "ANSWER IN THE FRAME ASKED")
     nodes["Answer Seed"]["parameters"]["jsCode"] = seed
 
     with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as f:
@@ -137,7 +194,7 @@ def main():
     s2 = {n["name"]: n for n in wf2["nodes"]}["Answer Seed"]["parameters"]["jsCode"]
     for marker in ("best-fit FIRST", "rev_band | gender", "WHO SHOULD I TALK TO",
                    "NEVER CALL A DATA GAP A LIMIT", "DECLINE ONCE", "LONG ROSTERS",
-                   "CROSS-CUT STATS"):
+                   "CROSS-CUT STATS", "ANSWER IN THE FRAME ASKED", "LOCATION IS NOT A LABEL"):
         assert marker in s2, f"marker {marker!r} missing after PUT"
         print(f"  verified: {marker!r}")
     print(f"staging versionId: {wf2.get('versionId')}")

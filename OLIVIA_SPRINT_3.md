@@ -50,7 +50,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
-| **#81** | People + stats lanes answer what we have the data for (fit_reason, gender split) | 🔴 S1 | M | ✅ proven `670fdc57` | ⏳ **awaiting promote** |
+| **#81** | People + stats lanes answer what we have the data for (fit_reason, gender split) | 🔴 S1 | M | ✅ proven `3d5f2b1b` | ✅ **LIVE** `fd957034` (prod probe: named + reasons) |
 | **#79** | Intro message rewritten — MDS AI assistant, early beta, current capabilities | 🔵 S3 | S | ✅ proven `d839a024` | ✅ **LIVE** `c59fd3ff` (byte-identical to approved copy) |
 | **#80** | Offer binding: accepted offers deliver the teased video (+ offer rules) | 🔴 S1 | M | ✅ proven `dcc75770` | ✅ **LIVE** `c59fd3ff` (prod probe: `video_search`) |
 | **#75** | Reactions raw store + canary + alarms | 🔴 S1 | S | ✅ proven `289a9656` | ✅ **LIVE** `e5d57236` (prod canary exit 0) |
@@ -1506,7 +1506,7 @@ kind still qualified 90+. The discriminator is weight **relative to this roster*
 quartile) — self-normalising across event sizes. ② `form_stats` gained `gender` grouping, and choice
 rows now carry `n` so the model prefers the 550-respondent question over the 20-respondent one.
 ③ Answer Seed: six rules — WHO SHOULD I TALK TO · NEVER CALL A DATA GAP A LIMIT · DECLINE ONCE ·
-LONG ROSTERS · CROSS-CUT STATS · ANSWER IN THE FRAME ASKED. Staging `670fdc57`.
+LONG ROSTERS · CROSS-CUT STATS · ANSWER IN THE FRAME ASKED. Staging `670fdc57`; a seventh rule (LOCATION IS NOT A LABEL — Andy: the niche earns its bracket, the city does not) shipped in `3d5f2b1b`.
 
 | AC | result |
 |---|---|
@@ -1517,7 +1517,7 @@ LONG ROSTERS · CROSS-CUT STATS · ANSWER IN THE FRAME ASKED. Staging `670fdc57`
 | no roster reply dumps more than 12 names | ✅ #31003: 5 named with reasons + 7 grouped + the total + one offer, out of 108 |
 | fit never shows a score | ✅ gate check #81 (shape test: known opener, no %, no decimal — a naive no-digits test false-fires on "3PL") |
 | gate GREEN | ✅ **247 exit-0** |
-| verified in the prod node | ⏳ the promote step |
+| verified in the prod node | ✅ **PROMOTED 2026-08-11 23:42 UTC** `c59fd3ff` → **`fd957034`**, gate green inside. Prod probe: *"Top pick for you at the Singapore Summit is Mo Kuhail — strong on Logistics & 3PL and International Expansion"* + two more, `sources_used=[event_who]` |
 
 **Before → after** on Andy's own words: *"I really can't rank people or tell you who you must talk
 to"* → three names with reasons. *"that breakdown isn't something I can split by gender"* → the
