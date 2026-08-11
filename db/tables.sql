@@ -706,6 +706,18 @@ CREATE INDEX olivia_sends_phone_idx ON digest.olivia_sends USING btree (to_phone
 CREATE INDEX olivia_sends_status_idx ON digest.olivia_sends USING btree (status);
 CREATE UNIQUE INDEX olivia_sends_pkey ON digest.olivia_sends USING btree (wamid);
 
+-- digest.olivia_webhook_events
+--   id                                 bigint not null
+--   received_at                        timestamp with time zone not null default now()
+--   msg_type                           text not null
+--   from_phone                         text
+--   wamid                              text
+--   payload                            jsonb not null
+alter table digest.olivia_webhook_events add constraint olivia_webhook_events_pkey PRIMARY KEY (id);
+CREATE INDEX olivia_webhook_events_received ON digest.olivia_webhook_events USING btree (received_at DESC);
+CREATE INDEX olivia_webhook_events_type ON digest.olivia_webhook_events USING btree (msg_type, received_at DESC);
+CREATE UNIQUE INDEX olivia_webhook_events_pkey ON digest.olivia_webhook_events USING btree (id);
+
 -- digest.partner_reviews
 --   review_id                          text not null
 --   partner_id                         text not null

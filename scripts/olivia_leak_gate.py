@@ -1202,6 +1202,13 @@ def main():
                             profile_hdr=["Accept-Profile: digest"])
             check(f"anon key denied on {tbl}", st in (401, 403, 404), f"status {st}")
 
+        # #75 RAW WEBHOOK STORE. Every inbound member event is persisted verbatim —
+        # phone numbers, message text, reaction targets. Strictly service-role.
+        st, body = curl("GET", f"{BASE}/olivia_webhook_events?select=id&limit=1", ANON_KEY,
+                        profile_hdr=["Accept-Profile: digest"])
+        check("anon key denied on olivia_webhook_events (#75)", st in (401, 403, 404),
+              f"status {st}")
+
         st, rows = rpc("content_search_v2",
                        {"p_phone": phone, "p_terms": ["mogul", "call"],
                         "p_sources": ["call_transcript"], "p_limit": 30}, key)

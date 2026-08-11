@@ -94,4 +94,38 @@ begin
       'member_phone_index has not refreshed since ' || coalesce(v_stale, 'NEVER') ||
       ' — active members not in a WA chat cannot be identified', v_token, v_channel);
   exception when others then null; end;
+
+  -- signal 7 (#75): a reaction reached the raw store but never became a feedback row —
+  -- the parse path dropped it. 15-min grace covers in-flight events; 24h lookback keeps
+  -- the jsonb extraction on a handful of rows.
+  begin
+    select count(*) into v_n
+    from digest.olivia_webhook_events e
+    where e.msg_type = 'reaction'
+      and e.received_at between now() - interval '24 hours' and now() - interval '15 minutes'
+      and not exists (
+        select 1 from digest.olivia_feedback f
+        where f.wamid = e.payload->'entry'->0->'changes'->0->'value'->'messages'->0->'reaction'->>'message_id'
+          and f.phone = e.from_phone);
+    perform digest.olivia_alarm_fire('reaction-parse-gap', v_n > 0,
+      v_n || ' reaction(s) hit the raw store in the last 24h with no olivia_feedback row — the parse path is dropping them',
+      v_token, v_channel);
+  exception when others then null; end;
+
+  -- signal 8 (#75): no member reaction has ARRIVED in 14 days. 👍/👎 is the only free teaching
+  -- signal; before the raw store, six silent weeks were invisible. Quiet until the store has
+  -- 14 days of history, so a fresh deploy cannot page.
+  begin
+    perform digest.olivia_alarm_fire('reaction-silence-14d',
+      exists (select 1 from digest.olivia_webhook_events
+               where received_at < now() - interval '14 days')
+      and not exists (
+        select 1 from digest.olivia_webhook_events
+        where msg_type = 'reaction'
+          and coalesce(wamid,'') not like '%SELFTEST%'
+          and payload::text not like '%SELFTEST%'
+          and received_at > now() - interval '14 days'),
+      'no member reaction has arrived in 14+ days — check the Meta webhook subscription and the reaction path',
+      v_token, v_channel);
+  exception when others then null; end;
 end $function$
