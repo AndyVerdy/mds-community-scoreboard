@@ -6,6 +6,42 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-11 (night) — #80 AND #79 PROMOTED · prod `c59fd3ff`
+
+**Promoted 20:09 UTC on Andy's order:** prod `e5d57236` → **`c59fd3ff`**, two nodes
+(`Answer Seed`, `Build Verbatim Digest`), gate GREEN inside the promote (as Ian via
+`OLIVIA_GATE_PHONE`), graph matches staging, snapshots either side in `olivia_snapshots/`.
+
+### #79 — the intro message, rewritten with Andy line by line
+The shipped copy was frozen at launch and had gone FALSE: *"Not yet: what was said inside a
+recording (no transcripts)"* survived months past #70, and three releases of capability were
+missing. Rewritten and shipped (`scripts/olivia_loop/apply_79_help_message.py`). Andy's rules,
+captured in the node comment so the next editor inherits them: identity is **the MDS AI
+assistant** (not a person), **no member names anywhere**, WhatsApp bold is a **single** asterisk,
+early beta stated next to the 👍/👎 ask, revenue-limit line dropped, personalization described
+honestly (he rejected "shaped around your business" as untrue, and rejected the first draft of
+the section as tautology — it re-listed the sources). Decision recorded: **CURATED, never
+auto-generated** — a generator writes a changelog and leaks half-shipped work into a first
+impression. Cadence added to the board header so it cannot drift again.
+
+**Proof:** the copy was sent to Andy's own WhatsApp first (`olivia_sends` status=**delivered**,
+not merely a 200) and approved; the prod `help` route then returned **1,217 chars byte-identical**
+to that approved text (#30973). Every example phrasing probe-proven BEFORE shipping —
+*"what % of members sell on TikTok?"* → `form_stats` 89% / median 3% · *"who leads the NY
+chapter?"* → `chapter_info` 3 leads + link.
+
+### #80 — verified on prod
+offer→"Yes" delivered the bound call summary with `sources_used=['video_search']` (#30979) —
+the exact class that failed 3/3 in the week of Aug 4–11. Probe rows cleaned.
+
+### Note on a self-inflicted check
+The #79 apply script asserted the old copy was gone by grepping "no transcripts" — which my own
+new code COMMENT quotes, so the check failed against itself after a correct patch. Fixed to test
+member-facing strings only. Worth remembering: an assertion that greps the whole node can match
+the comment you just wrote about the thing you removed.
+
+---
+
 ## 2026-08-11 (evening) — #80 CLOSED (staged `dcc75770`, awaiting promote) — accepted offers deliver the teased video
 
 **Andy's protocol for this one: systematic-debugging → findings report → writing-plans →

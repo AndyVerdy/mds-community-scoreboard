@@ -19,7 +19,18 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-11 (evening): SPRINT 3 OPEN · PROD `e5d57236` — #75 LIVE · #80 STAGED
+## STATE 2026-08-11 (night): SPRINT 3 OPEN · PROD `c59fd3ff` — #75, #80, #79 ALL LIVE
+
+**Promoted 20:09 UTC:** `e5d57236` → **`c59fd3ff`** (`Answer Seed` + `Build Verbatim Digest`).
+#80 offer binding live (prod probe: offer→Yes returns the bound video summary via `video_search`).
+#79 intro message live and **byte-identical to the copy Andy approved on WhatsApp** — identity is
+"the MDS AI assistant", no names, early beta stated, false no-transcripts claim gone. The intro is
+**CURATED, never generated**; the release-notes step now re-reads it (board header).
+**Standing:** gate + promote run as Ian (`OLIVIA_GATE_PHONE=16196077048`) until Andy's
+`channels_present` row is fixed upstream. Open S1: #78 (verify-close) · #61 · #64 · #66 · #72 ·
+#73 · #76 · #68.
+
+## STATE 2026-08-11 (evening, superseded): #75 LIVE · #80 STAGED
 
 **#80 (offer binding) is BUILT + STAGED + PROVEN on `dcc75770`; prod has the SQL half only.**
 The migration (`video_search_v2` + `p_video_id` + `summary` column) is live in the DB; the

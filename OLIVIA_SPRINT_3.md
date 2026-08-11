@@ -40,7 +40,6 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
-| **#79** | Olivia's intro message goes stale as we ship features — keep it current | 🔵 S3 | S | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
 | **#71** | "Virtual event" vs "call" vs "recording" — two contradicting "latest" answers | 🔵 S3 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
@@ -51,7 +50,8 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
-| **#80** | Offer binding: accepted offers deliver the teased video (+ offer rules) | 🔴 S1 | M | ✅ proven `dcc75770` | ⏳ **awaiting promote** |
+| **#79** | Intro message rewritten — MDS AI assistant, early beta, current capabilities | 🔵 S3 | S | ✅ proven `d839a024` | ✅ **LIVE** `c59fd3ff` (byte-identical to approved copy) |
+| **#80** | Offer binding: accepted offers deliver the teased video (+ offer rules) | 🔴 S1 | M | ✅ proven `dcc75770` | ✅ **LIVE** `c59fd3ff` (prod probe: `video_search`) |
 | **#75** | Reactions raw store + canary + alarms | 🔴 S1 | S | ✅ proven `289a9656` | ✅ **LIVE** `e5d57236` (prod canary exit 0) |
 | **#77** | Identity: active member usable without a WA chat row (559→732 reachable) | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-10** `b227682` |
 | **#54** | Country dim + regions + geo lists | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` (holding-delay fix still Andy's to run) |
@@ -100,6 +100,10 @@ priority + size + STORY + a plain-English line + ACs · open questions for Andy 
 **CLOSED tickets at the BOTTOM**, moved down as they close, keeping their evidence.
 
 ---
+
+> 📣 **Release-notes step also re-reads Olivia's intro/help copy** (#79, Andy 2026-08-11):
+> the capability list is CURATED, never generated — so shipping a member-facing feature
+> means checking whether the intro still tells the truth. It went stale for three releases.
 
 ## Definition of Done — one list, applies to EVERY item
 
@@ -1056,31 +1060,6 @@ content_items / member_events / embeddings, verifiable) · retention number stat
 
 # 🔵 S3 — PLANNED
 
-### #79 · Olivia's intro goes stale as we ship features — keep it current, don't auto-generate it
-**🔵 S3 · size S — filed 2026-08-10 (Andy)**
-
-> **In plain words:** Olivia's first hello lists what she can do. We keep adding capabilities
-> (census, calls, events, partners…) and the intro doesn't move — so a new member's first
-> impression is already out of date.
-
-*As a member messaging Olivia for the first time, her intro reflects what she can actually do
-today — not a frozen list from launch.*
-
-**Design call (Andy asked: dynamic, or overdesign?): keep it CURATED, don't auto-generate it.**
-An intro is warm, deliberate copy with a voice; generating it from whatever features exist produces
-a changelog, leaks internal or half-shipped capabilities into a member's first impression, and loses
-the tone. The fix is a **cadence, not a generator**: the intro is hand-written against a short list
-of member-facing capabilities, and that list is reviewed whenever a member-facing feature ships
-(fold it into the sprint-close / release-notes step). A middle option — a tiny hand-maintained
-capability list the message renders from — stays available if we ever want it, but full
-auto-generation is ruled **overdesign** unless Andy decides otherwise.
-
-**Accept when**
-- The intro reflects the current member-facing capabilities — nothing stale, nothing missing.
-- The dynamic-vs-curated decision is recorded (default: curated + a review cadence).
-- A cadence exists so it can't silently drift again (a line in the sprint-close ritual or release notes).
-- Shipped in the prod workflow, gate green, verified in the prod node.
-
 ### #71 · "Virtual event", "call", "recording" — three words, three systems, two contradicting answers
 **🔵 S3 · size M — filed 2026-08-07 from Andy's own WhatsApp session (18:11–18:13 local)**
 
@@ -1493,6 +1472,53 @@ the release is actually safe to ship, not just that the tickets are marked done.
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
 
+### #79 · Olivia's intro goes stale as we ship features — keep it current, don't auto-generate it
+**🔵 S3 · size S — filed 2026-08-10 (Andy)**
+
+> **In plain words:** Olivia's first hello lists what she can do. We keep adding capabilities
+> (census, calls, events, partners…) and the intro doesn't move — so a new member's first
+> impression is already out of date.
+
+*As a member messaging Olivia for the first time, her intro reflects what she can actually do
+today — not a frozen list from launch.*
+
+**Design call (Andy asked: dynamic, or overdesign?): keep it CURATED, don't auto-generate it.**
+An intro is warm, deliberate copy with a voice; generating it from whatever features exist produces
+a changelog, leaks internal or half-shipped capabilities into a member's first impression, and loses
+the tone. The fix is a **cadence, not a generator**: the intro is hand-written against a short list
+of member-facing capabilities, and that list is reviewed whenever a member-facing feature ships
+(fold it into the sprint-close / release-notes step). A middle option — a tiny hand-maintained
+capability list the message renders from — stays available if we ever want it, but full
+auto-generation is ruled **overdesign** unless Andy decides otherwise.
+
+**Accept when**
+- The intro reflects the current member-facing capabilities — nothing stale, nothing missing.
+- The dynamic-vs-curated decision is recorded (default: curated + a review cadence).
+- A cadence exists so it can't silently drift again (a line in the sprint-close ritual or release notes).
+- Shipped in the prod workflow, gate green, verified in the prod node.
+
+#### ✅ SHIPPED + LIVE 2026-08-11 — prod `c59fd3ff`
+**The fix:** the intro was frozen at launch and had gone FALSE — it still said *"Not yet: what was
+*said* inside a recording (no transcripts)"* months after #70 put transcripts and summaries live,
+and never mentioned census stats, credits, chapters or bug reports. Rewritten with Andy line by
+line and shipped to the `help` route (`Build Verbatim Digest`, apply script
+`scripts/olivia_loop/apply_79_help_message.py`).
+
+| AC | result |
+|---|---|
+| reflects current member-facing capabilities | ✅ calls/videos, census responses, applications, chapters, credits, bug reports all present; the false no-transcripts claim gone |
+| dynamic-vs-curated decision recorded | ✅ **CURATED** — a generator writes a changelog and leaks half-shipped work into a first impression; recorded in the ticket and in the node comment |
+| a cadence exists so it cannot drift again | ✅ re-read at every sprint close / release-notes step (sprint ritual header) |
+| shipped in the prod workflow, gate green, verified in the prod node | ✅ promote gate GREEN · **prod probe #30973 byte-identical (1,217 chars) to the copy Andy approved on WhatsApp** (delivered, `olivia_sends` status=delivered) |
+
+**Andy's rules captured in the copy:** identity is *the MDS AI assistant*, never a person · no
+member names anywhere · WhatsApp bold is a SINGLE asterisk · early beta stated next to the 👍/👎 ask
+(the #75 signal) · revenue-limit line dropped · personalization described honestly, not overclaimed.
+Every example phrasing probe-proven first — *"what % of members sell on TikTok?"* → `form_stats`
+(89%, median 3%) · *"who leads the NY chapter?"* → `chapter_info` (3 leads + link).
+
+---
+
 ### #80 · Olivia over-suggests a next step — and doesn't deliver what it teases
 **🔴 S1 · size M — filed 2026-08-10 (Andy, from his own digest.mds.co session)**
 
@@ -1541,8 +1567,9 @@ not hijacked, chat-scope + events follow-ups clean. Mechanism confirmed in the e
 `p_video_id` present on the inspected accepts (execs 75346/75349). Named remainder: either/or
 offer tails still appear (~3 of 12 closes) — OFFER SPARINGLY killed the redundant re-offer class,
 the rate itself is re-measured on a week of prod traffic.
-**Andy's step: promote (gate runs inside as Ian via `OLIVIA_GATE_PHONE=16196077048`), then one
-prod spot-probe of offer→Yes.**
+**PROMOTED 2026-08-11 20:09 UTC** (Andy's order): prod `e5d57236` → **`c59fd3ff`**, gate green
+inside the promote (as Ian), graph matches staging, snapshots either side. **Prod probe: offer→"Yes"
+delivered the bound call summary, `sources_used=['video_search']` (#30979).**
 
 ---
 
