@@ -19,7 +19,25 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-11 (night): SPRINT 3 OPEN · PROD `c59fd3ff` — #75, #80, #79 ALL LIVE
+## STATE 2026-08-11 (late night): SPRINT 3 OPEN · PROD `c59fd3ff` · #81 STAGED `670fdc57`
+
+**#81 (people + stats lanes) is BUILT + STAGED + PROVEN; the SQL half is already live in the DB,
+the Answer Seed half waits on the promote.** "who is the best match to me?" now names people with
+reasons; gender cross-tabs work. Gate **247 exit-0**.
+**Andy: `OLIVIA_GATE_PHONE=16196077048 python3 scripts/olivia_wf.py promote`, then re-probe the two
+sequences on prod.**
+
+🚨 **RUNBOOK RULE, learned the hard way today: after `DROP FUNCTION`, granting is NOT enough.**
+Postgres re-grants EXECUTE to PUBLIC on the fresh CREATE, so you must
+`revoke all ... from public, anon, authenticated` in the SAME migration. Two RPCs shipped
+anon-callable today (`event_who` minutes, `video_search_v2` ~6h on prod) before the gate caught it.
+
+**Flagged, not chased:** 28 digest functions are anon-executable (24 trigger-only/pure helpers, 4
+callable maintenance writes) — #62's lane. 10 of the 108 Summit roster carry no fit_reason, all
+staff or non-member records. The 50-question follow-up eval set is deferred until after this
+promote (#76 owns the bank rebuild).
+
+## STATE 2026-08-11 (night, superseded): PROD `c59fd3ff` — #75, #80, #79 ALL LIVE
 
 **Promoted 20:09 UTC:** `e5d57236` → **`c59fd3ff`** (`Answer Seed` + `Build Verbatim Digest`).
 #80 offer binding live (prod probe: offer→Yes returns the bound video summary via `video_search`).

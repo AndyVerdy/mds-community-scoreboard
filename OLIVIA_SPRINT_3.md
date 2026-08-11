@@ -50,6 +50,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#81** | People + stats lanes answer what we have the data for (fit_reason, gender split) | 🔴 S1 | M | ✅ proven `670fdc57` | ⏳ **awaiting promote** |
 | **#79** | Intro message rewritten — MDS AI assistant, early beta, current capabilities | 🔵 S3 | S | ✅ proven `d839a024` | ✅ **LIVE** `c59fd3ff` (byte-identical to approved copy) |
 | **#80** | Offer binding: accepted offers deliver the teased video (+ offer rules) | 🔴 S1 | M | ✅ proven `dcc75770` | ✅ **LIVE** `c59fd3ff` (prod probe: `video_search`) |
 | **#75** | Reactions raw store + canary + alarms | 🔴 S1 | S | ✅ proven `289a9656` | ✅ **LIVE** `e5d57236` (prod canary exit 0) |
@@ -1471,6 +1472,73 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #81 · She declines the question she was built for — and calls missing joins "I can't"
+**🔴 S1 · size M — filed 2026-08-11 (Andy, from two live WhatsApp sessions; he rated follow-ups 3/10)**
+
+> **In plain words:** Ask "who should I talk to at the Summit?" and she says ranking people isn't
+> something she can judge — then lists people by country. Ask her to split a census percentage by
+> men vs women and she says it isn't tracked. Both are things we have the data for.
+
+*As a member, when I ask who is worth my time or how a number breaks down, I get the answer and the
+reason — not an apology.*
+
+**Measured 2026-08-11:** `event_who` returned `full_name` + `state` and nothing else, while **98 of
+the 108 Summit registrants carry a live topic profile** · `form_stats` grouped by
+country/state/niche/rev_band/chapter but **not gender**, though the split computes in one join ·
+**no rule forbids ranking members** — the refusal was emergent from an empty tool ·
+`entity_dossier` holds **0** rows of `kind='member'`.
+
+**Shape of the fix:** fit computed AT QUERY TIME per asker (the `video_search_v2` `fit_reason`
+pattern), not a static match graph — the same roster must read differently for different askers.
+Plus rules that forbid presenting a thin tool result as a personal limit.
+
+**Accept when** the two failing sequences are replayed and answered · three-people asks return three
+named people each with a non-location reason · a breakdown by gender returns real figures · a
+correct decline still happens once and is never repeated on a later turn · no roster reply dumps
+more than 12 names · fit never shows a score · gate GREEN · verified in the prod node.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-11 — awaiting Andy's promote
+**The fix, in three layers:** ① `event_who` gained `fit_reason` / `niche` / `city` / `channels`,
+fit computed per asker at query time (`scripts/sql/event_who_81.sql`). Two drafts were measured and
+REJECTED first: raw topic overlap fires on all 108 (everyone shares 2–5 topics), and splitting by
+kind still qualified 90+. The discriminator is weight **relative to this roster** (percent_rank, top
+quartile) — self-normalising across event sizes. ② `form_stats` gained `gender` grouping, and choice
+rows now carry `n` so the model prefers the 550-respondent question over the 20-respondent one.
+③ Answer Seed: six rules — WHO SHOULD I TALK TO · NEVER CALL A DATA GAP A LIMIT · DECLINE ONCE ·
+LONG ROSTERS · CROSS-CUT STATS · ANSWER IN THE FRAME ASKED. Staging `670fdc57`.
+
+| AC | result |
+|---|---|
+| both failing sequences replayed and answered | ✅ "who is the best match to me?" → **"Top of the pack for you is Alex Bonilla (Supplements, Costa Mesa CA) — strong match on AI & Automation and Hiring & Team"** (#31005) · "break down this 20%, M vs W?" → **women 25% / men 32% no kids** (#31025) |
+| three-people asks return three, each with a non-location reason | ✅ #31007: Alex Bonilla · Neeme Roos · Daniel Meredith, each with the topic overlap named, no disclaimer |
+| a breakdown by gender returns real figures | ✅ `form_stats p_group_by=gender`, verified against `form_windowed` (the tool's own source) |
+| a correct decline happens once, never repeated | ✅ #31037 still declines the matchmaking ask; the next turn (#31033) answers the member count with **no re-litigation** |
+| no roster reply dumps more than 12 names | ✅ #31003: 5 named with reasons + 7 grouped + the total + one offer, out of 108 |
+| fit never shows a score | ✅ gate check #81 (shape test: known opener, no %, no decimal — a naive no-digits test false-fires on "3PL") |
+| gate GREEN | ✅ **247 exit-0** |
+| verified in the prod node | ⏳ the promote step |
+
+**Before → after** on Andy's own words: *"I really can't rank people or tell you who you must talk
+to"* → three names with reasons. *"that breakdown isn't something I can split by gender"* → the
+split. Niche coverage on the roster 29 → 60 of 60 returned rows; 30 names carry a different reason
+for Ian than for Andy, which is the proof that fit is per-asker and not a static label.
+
+**🚨 Found and fixed during this ticket — a leak I introduced.** `DROP FUNCTION` discards the ACL and
+Postgres re-grants EXECUTE to PUBLIC on CREATE, so both DROP+CREATE migrations left their RPC
+anon-callable: `event_who` (minutes) and **`video_search_v2` (#80, ~6h, on PROD)** — roster names/
+cities/niches and video summaries. No phones, emails or revenue (other gate checks held). Both
+revoked and re-granted service_role-only; anon 401, service_role 200. **Runbook rule now: after a
+DROP, granting is not enough — REVOKE from public/anon/authenticated too.** Andy's call whether the
+window needs any disclosure.
+
+**Named remainders:** 10 of the 108 roster carry no fit_reason — all MDS Team or no member record ·
+28 digest functions are anon-executable (24 trigger-only or pure helpers, 4 callable maintenance
+writes: `fb_link_content`, `olivia_touch`, `rebuild_question_map`, `zoom_resolve_attendance`) —
+pre-existing, #62's lane · the 50-question follow-up eval set is deliberately deferred to after this
+promote, since building the instrument mid-change bakes in today's behaviour (#76 owns the rebuild).
+
+---
 
 ### #79 · Olivia's intro goes stale as we ship features — keep it current, don't auto-generate it
 **🔵 S3 · size S — filed 2026-08-10 (Andy)**

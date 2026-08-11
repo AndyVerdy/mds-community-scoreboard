@@ -6,6 +6,64 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-11 (late night) — #81 CLOSED (staged `670fdc57`) + a leak I introduced and closed
+
+**Andy's protocol: systematic-debugging → findings → writing-plans → executing-plans.**
+Plan: `docs/superpowers/plans/2026-08-11-81-people-and-stats-lanes.md`.
+
+### 🚨 READ THIS FIRST — the trap that bit twice today
+**`DROP FUNCTION` discards the ACL, and Postgres re-grants EXECUTE to PUBLIC on every fresh
+CREATE FUNCTION.** Both DROP+CREATE migrations today therefore shipped an anon-callable RPC —
+`event_who` (minutes) and **`video_search_v2` (#80, ~6 hours, ON PROD)**. The anon key is public
+by definition. Exposed: roster names/cities/niches, video summaries. NOT exposed: phones, emails,
+revenue (the other gate checks held). Both revoked from public/anon/authenticated and re-granted
+service_role-only; anon 401, service_role 200, verified. **The leak gate caught it; my review did
+not.** Runbook rule added: after a DROP, `grant` alone is not enough — `revoke` from
+public/anon/authenticated in the SAME migration. Andy's call on disclosure.
+
+### The diagnosis (two live sessions, screenshots)
+"who is the best match to me?" → *"I can't rank or single out one person… that's not something I
+can judge"* + a list by country. "3 people I must talk to" → *"I really can't rank people."*
+"break down this 20% M vs W" → *"isn't something I can split by gender"*, plus a third repetition
+of a refusal he had moved on from. **None of it was policy** — no rule forbids ranking members.
+`event_who` returned `full_name` + `state` only (98 of the 108 roster carry a live topic profile),
+and `form_stats` had no gender dimension though the split is one join away. She was describing
+missing JOINS as personal limits.
+
+### What shipped
+- **`event_who`** (`89a86a6`): per-asker `fit_reason` + niche/city/channels. Two drafts measured
+  and rejected — raw overlap fires on all 108, kind-splitting still qualified 90+. Final
+  discriminator is weight RELATIVE TO THE ROSTER (percent_rank, top quartile), self-normalising.
+- **`form_stats`** (`84cec95`, `97ba9a6`): `p_group_by=gender`; choice rows now carry `n`. **That
+  second fix explains the wrong 20% in Andy's screenshot** — two questions ask about kids, one
+  with n=20 (false=20%) and one with n=550 (no-kids=32%), and choice rows carried no n at all, so
+  the model could not tell them apart.
+- **Answer Seed** (`3e94bb0` + amendment): six rules — WHO SHOULD I TALK TO · NEVER CALL A DATA GAP
+  A LIMIT · DECLINE ONCE · LONG ROSTERS · CROSS-CUT STATS · ANSWER IN THE FRAME ASKED.
+- **Gate 246 → 247** (`740a41e`): event_who allowlist widened to the green-list fields and made a
+  CLOSED set; new check that `fit_reason` is a reason not a score (shape test — a no-digits test
+  false-fires on "3PL").
+
+### Proven on staging
+"best match" → **Alex Bonilla, named, with the reason** (#31005) · 3-people → three names each
+with a reason, no disclaimer (#31007) · gender split → women 25% / men 32% (#31025) · roster reply
+12 names not 108 (#31003) · decline survives once and is not repeated (#31037 → #31033) · #80 offer
+binding and #79 help copy both intact. 30 names carry a DIFFERENT reason for Ian than for Andy —
+the proof that fit is per-asker, not a static label.
+
+### Three self-inflicted check failures worth remembering
+An idempotence marker (`fit_reason`) that already existed in four other tool descriptions, so the
+patch silently skipped. An apostrophe checker that counted the JS string delimiters instead of the
+text inside them. A "no digits" assertion that false-fired on the topic name "3PL". **A check that
+greps the whole artifact will match the thing you just wrote about the thing you removed.**
+
+### Next
+Andy: promote (`OLIVIA_GATE_PHONE=16196077048 python3 scripts/olivia_wf.py promote`), then re-probe
+the two sequences on prod. Deferred by design: the 50-question follow-up eval set (#76 owns it) —
+building the instrument mid-change would bake in today's behaviour.
+
+---
+
 ## 2026-08-11 (night) — #80 AND #79 PROMOTED · prod `c59fd3ff`
 
 **Promoted 20:09 UTC on Andy's order:** prod `e5d57236` → **`c59fd3ff`**, two nodes
