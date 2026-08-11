@@ -52,7 +52,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
-| **#75** | Reactions raw store + canary + alarms | 🔴 S1 | S | ✅ proven `289a9656` | ⏳ **awaiting promote** (then run the canary) |
+| **#75** | Reactions raw store + canary + alarms | 🔴 S1 | S | ✅ proven `289a9656` | ✅ **LIVE** `e5d57236` (prod canary exit 0) |
 | **#77** | Identity: active member usable without a WA chat row (559→732 reachable) | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-10** `b227682` |
 | **#54** | Country dim + regions + geo lists | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` (holding-delay fix still Andy's to run) |
 | **#56** | Partner ranking asks read a sample (Ian) | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` |
@@ -1564,7 +1564,11 @@ the payload outlives a throwing parse) + `scripts/olivia_reaction_canary.py` + h
 **Before → after:** a dropped reaction left no trace anywhere → every message event is on disk
 before parsing, a gap pages within the hour, arrival silence pages at 14 days.
 Staging `289a9656` (69 nodes, +`Extract Raw Event`+`Store Raw Event`, diff vs prod = exactly these).
-**Andy's step: lock → promote, then `python3 scripts/olivia_reaction_canary.py` (prod) — expect exit 0.**
+**PROMOTED 2026-08-11 15:07 UTC (Andy's order, run via me): prod `ebe7244b` → `e5d57236`**, 2 nodes,
+gate green inside the promote (as Ian via `OLIVIA_GATE_PHONE`), snapshots either side in
+`olivia_snapshots/`. Prod verified: fan-out `['Extract Raw Event', 'Log Inbound', 'Parse Delivery
+Status', 'Parse Reaction']` · **prod canary exit 0** (raw + feedback rows, self-cleaned) · health
+pings since promote stored **0 rows** (statuses excluded, live-confirmed).
 
 ---
 

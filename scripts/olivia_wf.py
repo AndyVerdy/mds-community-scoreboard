@@ -369,7 +369,13 @@ def bounce(workflow_id):
 
 def run_gate():
     print("running leak gate…")
-    res = subprocess.run([sys.executable, GATE], capture_output=True, text=True)
+    cmd = [sys.executable, GATE]
+    # 2026-08-11: the default probe (Andy) lost channels_present upstream, which aborts the
+    # gate before any check runs. OLIVIA_GATE_PHONE picks another active probe member so the
+    # promote keeps its built-in gate instead of anyone reaching for --skip-gate.
+    if os.environ.get("OLIVIA_GATE_PHONE"):
+        cmd += ["--phone", os.environ["OLIVIA_GATE_PHONE"]]
+    res = subprocess.run(cmd, capture_output=True, text=True)
     tail = res.stdout.strip().splitlines()[-2:] if res.stdout else []
     print("  " + "\n  ".join(tail))
     if res.returncode != 0:

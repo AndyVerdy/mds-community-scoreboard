@@ -6,6 +6,24 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-11 (later) — #75 PROMOTED · prod `e5d57236` · prod canary GREEN
+
+**Andy ordered the promote in chat; ran via me under the lock.** Prod `ebe7244b` → **`e5d57236`**
+(69 nodes, the 2 raw-store nodes, graph byte-matches staging), gate GREEN inside the promote,
+pre/post snapshots in `olivia_snapshots/`. The gate runs as Ian via new env knob
+`OLIVIA_GATE_PHONE` (3-line `olivia_wf.py` edit — kept the promote self-gating instead of anyone
+reaching for `--skip-gate`; the default probe still aborts on Andy's channels_present row).
+
+**Verified on prod, not assumed:** fan-out order `['Extract Raw Event', 'Log Inbound', 'Parse
+Delivery Status', 'Parse Reaction']` read back from the prod graph · `olivia_reaction_canary.py`
+against PROD: **exit 0** — raw row OK, feedback row OK, cleanup OK · store holds **0 rows** after
+cleanup with 5-min health pings firing since 15:07 = statuses excluded, live-confirmed.
+
+#75 is now fully LIVE: every inbound message event persisted pre-parse · parse-gap pages within
+the hour (signal 7) · arrival silence pages at 14 days (signal 8, arms after 14d of history).
+
+---
+
 ## 2026-08-11 — #75 CLOSED (staged, awaiting promote) — the reaction path now leaves a trace
 
 **The question the ticket asked — broken or quiet? — answered with live checks, not theory.**

@@ -19,7 +19,16 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-11: SPRINT 3 OPEN · PROD `ebe7244b` — #75 STAGED, AWAITING PROMOTE
+## STATE 2026-08-11 (later): SPRINT 3 OPEN · PROD `e5d57236` — #75 IS LIVE
+
+**PROMOTED 15:07 UTC (Andy's chat order, run via me):** prod `ebe7244b` → **`e5d57236`** (69
+nodes, +`Extract Raw Event`+`Store Raw Event` as the FIRST webhook branch). Gate ran INSIDE the
+promote as Ian (`OLIVIA_GATE_PHONE=16196077048` — new env knob in `olivia_wf.py`, added because
+the default probe aborts on Andy's channels_present row). **Prod canary exit 0** (raw + feedback
+rows landed, self-cleaned); health pings store 0 rows. Raw store now records ALL prod message
+events — signal 8 arms itself once 14 days of history exist.
+
+## STATE 2026-08-11 (earlier, superseded): #75 STAGED, AWAITING PROMOTE
 
 **#75 (reactions) is BUILT + STAGED + PROVEN, prod has none of it.** Staging `289a9656` carries
 two new nodes (`Extract Raw Event` → `Store Raw Event`) as the FIRST webhook branch; diff vs prod
