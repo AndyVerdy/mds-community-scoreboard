@@ -40,6 +40,17 @@ restriction lifted upstream); count answer still closes with a drill-down offer 
 named remainder: the offer RATE is re-measured on a week of prod traffic after promote,
 baseline 26%. Gate **246 exit-0** (as Ian). Probes cleaned.
 
+### Andy asked "did you prove it?" — the honest answer, then the battery
+n=2 was thin and the BEFORE side of the exact shape had only prod evidence, so: **12 sequences /
+19 follow-ups fired at staging `dcc75770`** (msgs #30884–30957, cleaned after). Result: **8/8
+accepted video offers delivered the bound video** (sources flipped to `video_search` on every
+one; the two exact prod failures #28130/#28132 replayed as SEQ3/SEQ4 and delivered), ordinal
+binding correct ("summarize the first one" → the first listed video AND the first listed
+partner), no hijack on non-video follow-ups (events filter, tariffs→retail chat scope, UK
+drill-down). Mechanism, not luck: `p_video_id` present in the tool args of the inspected accept
+executions (75346/75349). Remainder: either/or offer tails in ~3 of 12 closes — the rule killed
+the redundant re-offer class, not every either/or; traffic-rate re-measure stands.
+
 ### Next
 Andy: promote (`OLIVIA_GATE_PHONE=16196077048 python3 scripts/olivia_wf.py promote` or order it
 here), then one prod spot-probe of offer→Yes. Remaining open S1: #78 (verify-close) · #61 ·

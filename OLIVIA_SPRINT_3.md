@@ -1533,7 +1533,14 @@ WHAT YOU OFFERED · OFFER SPARINGLY. Commits `1d2ce03` + `1825ce4`.
 | no class traded, gate green, verified in prod node | ✅ "last mogul call" still date-correct (Dorian Aug 5) and its "yes" summarizes THAT call (#30875/#30877; the video is now `public` — restriction lifted upstream, restricted path untouched) · gate **246 exit-0** (as Ian) · prod-node verify = the promote step |
 
 **Before → after** on the failing class: 3/3 accepted video offers delivered thread chatter
-(week of Aug 4–11) → **0/2 failing on the same shapes replayed** (staging `dcc75770`).
+(week of Aug 4–11) → **0 failures in a 12-sequence / 19-follow-up battery** (staging `dcc75770`,
+msgs #30884–30957): all 8 accepted video offers delivered the bound video via `video_search`
+(incl. the two exact prod-failure shapes #28130/#28132 replayed — SEQ3/SEQ4), ordinal binding
+("summarize the first one") correct on videos AND partners, "and the UK specifically?" drill-down
+not hijacked, chat-scope + events follow-ups clean. Mechanism confirmed in the execution args:
+`p_video_id` present on the inspected accepts (execs 75346/75349). Named remainder: either/or
+offer tails still appear (~3 of 12 closes) — OFFER SPARINGLY killed the redundant re-offer class,
+the rate itself is re-measured on a week of prod traffic.
 **Andy's step: promote (gate runs inside as Ian via `OLIVIA_GATE_PHONE=16196077048`), then one
 prod spot-probe of offer→Yes.**
 
