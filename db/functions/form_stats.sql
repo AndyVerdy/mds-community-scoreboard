@@ -83,9 +83,11 @@ begin
              g.grp
       from w w2
       left join digest.member_attributes ma on ma.at_member_id = w2.member_at_id
+      left join digest.member_profiles mpg on mpg.at_member_id = w2.member_at_id
       cross join lateral (
         select case p_group_by when 'country' then ma.country when 'state' then ma.state
                                when 'niche' then ma.main_niche when 'rev_band' then ma.rev_band
+                               when 'gender' then case when lower(coalesce(nullif(trim(mpg.at_fields->>'Gender'),''),'unspecified')) in ('male','female') then lower(trim(mpg.at_fields->>'Gender')) else 'unspecified' end
                                else 'all' end grp
         where coalesce(p_group_by,'') <> 'chapter'
         union all
