@@ -36,7 +36,6 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#72** | 🚦 LOAD TEST before the Mille demo (~100 concurrent users) | 🔴 S1 | M | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#76** | New eval bank — 150 questions from real member traffic | 🔴 S1 | M | — | — |
-| **#80** | Olivia over-suggests a next step and doesn't deliver what it teases | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
@@ -52,6 +51,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#80** | Offer binding: accepted offers deliver the teased video (+ offer rules) | 🔴 S1 | M | ✅ proven `dcc75770` | ⏳ **awaiting promote** |
 | **#75** | Reactions raw store + canary + alarms | 🔴 S1 | S | ✅ proven `289a9656` | ✅ **LIVE** `e5d57236` (prod canary exit 0) |
 | **#77** | Identity: active member usable without a WA chat row (559→732 reachable) | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-10** `b227682` |
 | **#54** | Country dim + regions + geo lists | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` (holding-delay fix still Andy's to run) |
@@ -969,28 +969,6 @@ remainder is stated in writing rather than chased.
 
 ---
 
-### #80 · Olivia over-suggests a next step — and doesn't deliver what it teases
-**🔴 S1 · size M — filed 2026-08-10 (Andy, from his own digest.mds.co session)**
-
-> **In plain words:** Almost every reply ends with "Want a quick summary?" / "Want me to…?" — and
-> when you say yes, you get something generic, not the thing it teased. The constant suggesting is
-> annoying, and the follow-through doesn't match the offer.
-
-*As a member, Olivia only offers a next step when it's genuinely useful — and when I accept, she
-delivers exactly what she offered, not a different or generic answer.*
-
-**From Andy's session:** she offered a summary of a specific SEO library video ("Want a quick summary
-of it?"); on "Yes" she summarised the community thread's aspect-ratio debate instead of the video —
-teased X, delivered Y. Two problems to separate: (1) the follow-up prompt fires too often
-(cut it back to when it adds value), and (2) when accepted, the answer must resolve the exact thing
-offered (bind the "Yes" to the teased subject, not the last topic in context).
-
-**Accept when**
-- The follow-up suggestion appears only when it genuinely helps, not on every turn.
-- Accepting an offer delivers the offered thing (the video summary, not the thread) — measured on the
-  cases that failed.
-- No class traded: normal answers don't get worse. Gate green; verified in the prod node.
-
 ### #76 · New eval bank — 150 questions from real member traffic
 **🔴 S1 · size M — filed 2026-08-10 (Andy: "we def. need to create a new bank of 150 questions based on real users")**
 
@@ -1514,6 +1492,52 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #80 · Olivia over-suggests a next step — and doesn't deliver what it teases
+**🔴 S1 · size M — filed 2026-08-10 (Andy, from his own digest.mds.co session)**
+
+> **In plain words:** Almost every reply ends with "Want a quick summary?" / "Want me to…?" — and
+> when you say yes, you get something generic, not the thing it teased. The constant suggesting is
+> annoying, and the follow-through doesn't match the offer.
+
+*As a member, Olivia only offers a next step when it's genuinely useful — and when I accept, she
+delivers exactly what she offered, not a different or generic answer.*
+
+**From Andy's session:** she offered a summary of a specific SEO library video ("Want a quick summary
+of it?"); on "Yes" she summarised the community thread's aspect-ratio debate instead of the video —
+teased X, delivered Y. Two problems to separate: (1) the follow-up prompt fires too often
+(cut it back to when it adds value), and (2) when accepted, the answer must resolve the exact thing
+offered (bind the "Yes" to the teased subject, not the last topic in context).
+
+**Accept when**
+- The follow-up suggestion appears only when it genuinely helps, not on every turn.
+- Accepting an offer delivers the offered thing (the video summary, not the thread) — measured on the
+  cases that failed.
+- No class traded: normal answers don't get worse. Gate green; verified in the prod node.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-11 — awaiting Andy's promote
+**The fix:** offer binding made deterministic. ① `video_search_v2` — the RPC the loop's
+`video_search` tool actually executes — gained `p_video_id` (exact-row fetch) and a `summary`
+return column: **it returned NO summary before, so an accepted offer could never be delivered
+from the video itself** (migration `video_search_v2_p_video_id_summary_80`, generator
+`scripts/sql/gen_video_search_v2_80.py`). ② Answer Seed only (apply script
+`scripts/olivia_loop/apply_80_offer_binding.py`): deterministic OFFER ACCEPTED detection (prev
+turn ends in an offer + links `app.mds.co/videos/<id>` + member accepts → binding injected at
+the head of the preload evidence), `p_video_id` in the tool schema, and two rules — DELIVER
+WHAT YOU OFFERED · OFFER SPARINGLY. Commits `1d2ce03` + `1825ce4`.
+
+| AC | result |
+|---|---|
+| accepting delivers the offered thing, measured on the failed cases | ✅ BEFORE (staging, same graph as prod): bare-Yes re-ran the thread, `sources=['content_search']` (#30847) · AFTER: offer→"Yes" → **summary of the teased SEO call, `sources=['video_search']`** (#30871); offer→"Can you summarize key points" → same binding (#30865) — both of the week's failing variants (#28131/#28133/#29905 · #29907) now deliver |
+| follow-up suggestion only when it genuinely helps | ✅ the redundant/either-or class is dead in probes: the "just-delivered summary re-offered as an either/or" shape (#30853 BEFORE) did not recur; closes now offer only a NOT-yet-delivered next step (#30865 offers the full video). ⚠️ honest remainder: a self-contained count answer still closed with a drill-down offer (#30881) — the offer RATE is a traffic statistic; baseline 26% of llm answers, re-measure on a week of prod traffic after promote |
+| no class traded, gate green, verified in prod node | ✅ "last mogul call" still date-correct (Dorian Aug 5) and its "yes" summarizes THAT call (#30875/#30877; the video is now `public` — restriction lifted upstream, restricted path untouched) · gate **246 exit-0** (as Ian) · prod-node verify = the promote step |
+
+**Before → after** on the failing class: 3/3 accepted video offers delivered thread chatter
+(week of Aug 4–11) → **0/2 failing on the same shapes replayed** (staging `dcc75770`).
+**Andy's step: promote (gate runs inside as Ian via `OLIVIA_GATE_PHONE=16196077048`), then one
+prod spot-probe of offer→Yes.**
+
+---
 
 ### #75 · Reactions may be silently dead — nothing logs one before it is parsed
 **🔴 S1 · size S — filed 2026-08-10**

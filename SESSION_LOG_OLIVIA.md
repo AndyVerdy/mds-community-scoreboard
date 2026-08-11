@@ -6,6 +6,47 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-11 (evening) — #80 CLOSED (staged `dcc75770`, awaiting promote) — accepted offers deliver the teased video
+
+**Andy's protocol for this one: systematic-debugging → findings report → writing-plans →
+executing-plans.** Plan: `docs/superpowers/plans/2026-08-11-80-offer-binding.md`.
+
+### The diagnosis (a week of real traffic, 413 turns / 56 follow-up pairs read one by one)
+Three accepted "Want a quick summary?" offers of a specific library video were answered with
+community-thread chatter instead (ans #28131/#28133 Andy-WA · #29905 Andy via the test window;
+#29907 the "summarize key points" variant). `plan.sources_used` proves the miss —
+`['content_search']` only — while the one working accept (#27225, SOS call) ran `video_search`.
+**All three teased videos carried transcript-sourced summaries in `videos_catalog.summary`** —
+and the deeper find: **`video_search_v2` (what the tool actually executes via the EXEC map) did
+not RETURN the summary column at all.** Offer rate: 52 of 195 llm answers (26%) end in an
+explicit offer; 44% end in a question.
+
+### What shipped
+- Migration `video_search_v2_p_video_id_summary_80` (`1d2ce03`): `p_video_id` exact-row fetch +
+  `summary` appended to the return set (null when restricted). DROP+CREATE → pgrst reload
+  notified and hammered; by-id returns the 472-char summary; query mode / recent-mogul ordering
+  regression-proven; db/ re-exported, 122 files byte-match.
+- `apply_80_offer_binding.py` (`1825ce4`), Answer Seed only: OFFER ACCEPTED deterministic
+  detection (offer tail + video link + acceptance regex) injected at the preload head; tool
+  schema gains `p_video_id`; rules DELIVER WHAT YOU OFFERED + OFFER SPARINGLY. node --check
+  green; markers read back; staging `dcc75770`.
+
+### Proof (staging probes, BEFORE on the pre-patch graph = prod's)
+BEFORE: bare-Yes re-ran the thread (`content_search`, #30847); a delivered summary was
+immediately re-offered as an either/or (#30853). AFTER: offer→"Yes" → **the teased SEO call
+summarized from `video_search`** (#30871); "Can you summarize key points" → same binding
+(#30865); "last mogul call"→"yes" regression intact (#30875/#30877 — Dorian video now `public`,
+restriction lifted upstream); count answer still closes with a drill-down offer (#30881) —
+named remainder: the offer RATE is re-measured on a week of prod traffic after promote,
+baseline 26%. Gate **246 exit-0** (as Ian). Probes cleaned.
+
+### Next
+Andy: promote (`OLIVIA_GATE_PHONE=16196077048 python3 scripts/olivia_wf.py promote` or order it
+here), then one prod spot-probe of offer→Yes. Remaining open S1: #78 (verify-close) · #61 ·
+#64 · #66 · #72 · #73 · #76.
+
+---
+
 ## 2026-08-11 (later) — #75 PROMOTED · prod `e5d57236` · prod canary GREEN
 
 **Andy ordered the promote in chat; ran via me under the lock.** Prod `ebe7244b` → **`e5d57236`**

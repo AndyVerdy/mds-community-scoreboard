@@ -19,7 +19,17 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-11 (later): SPRINT 3 OPEN · PROD `e5d57236` — #75 IS LIVE
+## STATE 2026-08-11 (evening): SPRINT 3 OPEN · PROD `e5d57236` — #75 LIVE · #80 STAGED
+
+**#80 (offer binding) is BUILT + STAGED + PROVEN on `dcc75770`; prod has the SQL half only.**
+The migration (`video_search_v2` + `p_video_id` + `summary` column) is live in the DB; the
+Answer Seed changes (OFFER ACCEPTED binding + DELIVER WHAT YOU OFFERED + OFFER SPARINGLY) wait
+on the promote. Staging diff vs prod = Answer Seed only. Gate 246 exit-0 (as Ian).
+**Andy: promote, then one prod spot-probe of offer→Yes. After promote, re-measure the offer
+rate on a week of traffic (baseline 26% of llm answers).** Plan + full evidence:
+`docs/superpowers/plans/2026-08-11-80-offer-binding.md` · board ticket #80.
+
+## STATE 2026-08-11 (later, superseded): PROD `e5d57236` — #75 IS LIVE
 
 **PROMOTED 15:07 UTC (Andy's chat order, run via me):** prod `ebe7244b` → **`e5d57236`** (69
 nodes, +`Extract Raw Event`+`Store Raw Event` as the FIRST webhook branch). Gate ran INSIDE the
