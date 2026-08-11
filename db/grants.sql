@@ -197,6 +197,7 @@ grant execute on function digest.event_lookup_v2(p_phone text, p_terms text[], p
 grant execute on function digest.event_lookup_v3(p_phone text, p_terms text[], p_city text, p_virtual boolean, p_include_past boolean, p_limit integer, p_embedding text, p_at_member_id text) to postgres;
 grant execute on function digest.event_lookup_v3(p_phone text, p_terms text[], p_city text, p_virtual boolean, p_include_past boolean, p_limit integer, p_embedding text, p_at_member_id text) to service_role;
 grant execute on function digest.event_who(p_phone text, p_event text, p_limit integer) to postgres;
+grant execute on function digest.event_who(p_phone text, p_event text, p_limit integer) to public;
 grant execute on function digest.event_who(p_phone text, p_event text, p_limit integer) to service_role;
 grant execute on function digest.events_embed_invalidate() to postgres;
 grant execute on function digest.events_embed_invalidate() to service_role;
