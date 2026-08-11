@@ -36,7 +36,20 @@ edits = [
      "                               when 'gender' then " + GENDER_EXPR + "\n"
      "                               else 'all' end grp"),
 ]
+# choice rows carried NO n, so the model could not tell a 20-respondent question from a
+# 550-respondent one and quoted "20% have no kids" from "Do you have kids?" (n=20) while
+# "How many kids do you have?" (n=550) says 32%. That wrong number reached a member.
+# n stays INTERNAL — the same wording the numeric branch already uses.
+edits.append((
+    "           'PERCENT of members who answered this question (no-answers excluded from the base) - speak %, never counts'",
+    "           'PERCENT of members who answered this question (no-answers excluded from the base) - speak %, never counts'"
+    " || ' · n=' || c.base || ' (n INTERNAL - never say how many answered; PREFER the question with the larger n when two ask the same thing)'"))
+
+# Idempotent: this generator reads db/functions/form_stats.sql, which is re-exported from
+# live after every migration — so an edit already shipped is ALREADY in the source it reads.
 for old, new in edits:
+    if new in body:
+        continue
     assert body.count(old) == 1, f"anchor not unique ({body.count(old)}x): {old[:70]!r}"
     body = body.replace(old, new)
 

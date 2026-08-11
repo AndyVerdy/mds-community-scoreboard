@@ -134,7 +134,7 @@ begin
     union all
     select c.q || ' — ' || c.opt,
            round(100.0 * c.n / c.base, 1),
-           'PERCENT of members who answered this question (no-answers excluded from the base) - speak %, never counts'
+           'PERCENT of members who answered this question (no-answers excluded from the base) - speak %, never counts' || ' · n=' || c.base || ' (n INTERNAL - never say how many answered; PREFER the question with the larger n when two ask the same thing)'
     from chos c
   ) u
   order by 2 desc
