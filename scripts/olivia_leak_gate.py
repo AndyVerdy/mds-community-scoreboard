@@ -532,9 +532,17 @@ def main():
         check("event_who emits no emails/phones/bands/tickets",
               "@" not in blob and "rev_band" not in blob and "ticket" not in blob.lower()
               and "email" not in blob.lower())
-        ok_shape = all(set(w.keys()) == {"event_name", "starts_at", "full_name", "state",
-                                         "is_me", "total_going"} for w in (who or []))
-        check("event_who rows carry ONLY event/name/state/is_me/total_going", ok_shape)
+        # #81 widened this deliberately: city, niche and channels are 🟢 SHARE in
+        # OLIVIA_SHAREABLE_FIELDS.md (name · city · state · country · sales channels ·
+        # product categories), and fit_reason/shared_topics are derived from the SAME
+        # topic profile the asker already sees about themselves. The allowlist stays a
+        # CLOSED set — anything not named here is a leak and fails this check.
+        ALLOWED = {"event_name", "starts_at", "full_name", "state", "is_me", "total_going",
+                   "city", "niche", "channels", "fit_reason", "shared_topics"}
+        ok_shape = all(set(w.keys()) <= ALLOWED for w in (who or []))
+        extra = sorted({k for w in (who or []) for k in w.keys()} - ALLOWED)
+        check("event_who rows carry ONLY allow-listed shareable fields", ok_shape,
+              f"unexpected: {extra}" if extra else "")
 
         print("— member_card (Eugene's public-fields ruling) —")
         # probe target must be an ACTIVE member (the card correctly excludes staff/removed —
@@ -1201,6 +1209,18 @@ def main():
             st, body = curl("GET", f"{BASE}/{tbl}?select={col}&limit=1", ANON_KEY,
                             profile_hdr=["Accept-Profile: digest"])
             check(f"anon key denied on {tbl}", st in (401, 403, 404), f"status {st}")
+
+        # #81: event_who now carries fit_reason. Fit is a REASON in words; the weight,
+        # rank and percentile stay inside the function (standing rule: score never shown).
+        # NOTE: a naive "no digits" test false-fires on real topic names like "3PL" — the
+        # honest check is the SHAPE: a known opener, no percentage, no decimal score.
+        st, rows = rpc("event_who", {"p_phone": phone, "p_event": "Singapore", "p_limit": 40}, key)
+        frs = [r.get("fit_reason") or "" for r in (rows or [])] if isinstance(rows, list) else []
+        OPENERS = ("can help you with ", "you both know ", "shares your interest in ")
+        bad = [f for f in frs if f and (not f.startswith(OPENERS) or "%" in f
+                                        or re.search(r"\d+\.\d+", f))]
+        check("event_who fit_reason is a reason, never a score (#81)", not bad,
+              f"{len(bad)} malformed of {sum(1 for f in frs if f)}")
 
         # #75 RAW WEBHOOK STORE. Every inbound member event is persisted verbatim —
         # phone numbers, message text, reaction targets. Strictly service-role.
