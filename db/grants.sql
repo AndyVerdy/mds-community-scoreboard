@@ -203,6 +203,9 @@ grant execute on function digest.expertise_search(p_phone text, p_query text, p_
 grant execute on function digest.expertise_search(p_phone text, p_query text, p_limit integer, p_embedding text) to service_role;
 grant execute on function digest.fb_catchup(p_phone text, p_since date, p_limit integer) to postgres;
 grant execute on function digest.fb_catchup(p_phone text, p_since date, p_limit integer) to service_role;
+grant execute on function digest.fb_link_content() to postgres;
+grant execute on function digest.fb_link_content() to public;
+grant execute on function digest.fb_link_content() to service_role;
 grant execute on function digest.fb_thread(p_phone text, p_author text, p_terms text[], p_post_id text, p_limit_comments integer) to postgres;
 grant execute on function digest.fb_thread(p_phone text, p_author text, p_terms text[], p_post_id text, p_limit_comments integer) to service_role;
 grant execute on function digest.fill_member_chapter() to postgres;
