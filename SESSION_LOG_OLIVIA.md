@@ -6,6 +6,59 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-11 — #75 CLOSED (staged, awaiting promote) — the reaction path now leaves a trace
+
+**The question the ticket asked — broken or quiet? — answered with live checks, not theory.**
+A synthetic reaction fired at the PROD webhook (silent by design: reactions never generate a
+reply) produced its `olivia_feedback` row in seconds → the parse path is ALIVE. Delivery
+statuses land in `digest.olivia_sends` every day through today on the same webhook + `messages`
+field → the Meta subscription is ALIVE. Real outbound volume since Aug 4 ≈ 40 answers → at the
+observed 3.7% reaction rate the expectation is ~1.5 reactions; zero observed is plausible
+quiet. **Verdict: genuinely quiet — but unprovable historically, because nothing recorded raw
+inbounds. That defect is what shipped.**
+
+### What shipped (commit `02cf62d`)
+- **`digest.olivia_webhook_events`** — every inbound MESSAGE event (text/interactive/reaction/
+  media) persisted verbatim BEFORE any parse. Statuses excluded: `olivia_sends` already has
+  them, and the 5-min health ping is statuses-only, so the store stays ping-free.
+- **Two staging nodes** (`Extract Raw Event` → `Store Raw Event`), wired as the **FIRST** branch
+  of the `WA Inbound (POST)` fan-out — v1 runs branches depth-first in order, so the payload is
+  on disk before any parse can throw. Apply script
+  `scripts/olivia_loop/apply_75_raw_webhook_store.py`; staging `289a9656` (69 nodes); diff vs
+  prod = exactly the two nodes. **Prod has NONE of it until Andy promotes.**
+- **`scripts/olivia_reaction_canary.py`** — round-trip proof + self-cleanup. Staging run:
+  raw OK · feedback OK · cleanup OK · exit 0.
+- **Health signals 7+8**: `reaction-parse-gap` (raw row with no feedback row after a 15-min
+  grace) and `reaction-silence-14d` (no member reaction ARRIVED in 14 days; quiet until the
+  store carries 14 days of history, so the fresh deploy cannot page).
+- **Gate 245 → 246 exit-0** (anon denied on the raw table — payloads carry member phones and
+  message text). db/ re-exported, 122 files byte-match live.
+
+### Verified, not assumed
+- Staging probes: reaction stored ✓ · text stored ✓ · status-shape payload NOT stored ✓ ·
+  feedback row still written by the untouched parse ✓.
+- Signal 7's join proven to bite: 0 gaps with the real join, 1 with the phone deliberately
+  broken. Signal 8's two guards read false/false today → quiet through rollout.
+- All test residue deleted and counted zero after (`olivia_feedback` back to the 10 real rows).
+
+### Found alongside — flagged, not chased
+- **#77 had already shipped, unlogged** — commit `b227682` (Aug 10 00:43): identity separated
+  from chat presence, 559 → 732 reachable, 173 unblocked, 0 regressed, gate 245 green then.
+  The board said "not started"; it now carries the close with the commit as evidence. The
+  08-08..10 sessions (nightly evals, #62 close, #63 move-out, #78 Typeform recovery, #77) wrote
+  commits but no stream-log entries — this entry is the catch-up marker.
+- **Andy's `digest.members` row lost `channels_present` between Aug 10 00:43 and today** — his
+  digest lanes see 0 chats and the leak gate's DEFAULT probe aborts on it (this session's gate
+  ran as Ian, staff, 18 channels). 49 rows sit empty, incl. 2 real members. The writer is the
+  upstream digest/roster sync — WA digest project, not Olivia. In the board's open questions.
+
+### Next
+Andy: `lock` → `promote`, then `python3 scripts/olivia_reaction_canary.py` (prod) — expect
+exit 0 with BOTH rows. Board's open S1 after that: #78 · #61 · #64 · #66 · #72 · #73 · #76 ·
+#80 · #68.
+
+---
+
 ## 2026-08-07 (later) — #65 CLOSED: the SQL layer is in git, and drift now has an alarm
 
 ### Prod moved again at 23:09 UTC — Andy's own promote (not part of #65)

@@ -1,6 +1,8 @@
 > 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
 
 ## How we work — Andy's rules <!-- ANDY-WORKING-RULES -->
+- **Start every session by invoking `/caveman`.** It is the default output mode — governs style, never content.
+- **Working a task, invoke `/using-superpowers` first.** The relevant skill goes BEFORE any action — even clarifying questions, exploring, or reading files. Process skills lead (brainstorming · systematic-debugging), implementation follows; announce it and follow it exactly.
 - **Short replies: 1-4 paragraphs.** Lead with the answer. He asks for detail if he wants it.
 - **No "done, but...".** Say what shipped. If it is not shipped, say it is not. Never bury a list of caveats behind a "but".
 - **One ticket at a time.** No jumping between tasks. Rapid delivery.
@@ -28,47 +30,48 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
-| **#70** | 🚀 New data source — ZOOM CALLS (attendance · transcripts · schedule) | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `7fe60761` |
-| **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `955ed56f` |
-| **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
-| **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
-| **#20** | Census into the warehouse | 🟡 S2 | L | ✅ proven | ✅ **LIVE** `7fe60761` (only P2 exposure ruling open) |
-| **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
-| **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
-| **#71** | "Virtual event" vs "call" vs "recording" — two contradicting "latest" answers | 🔵 S3 | M | — | — |
+| **#61** | 🏗️ Schema audit: tables with no declared connections *(violation #3 FB-linker CLOSED `5fff683` + autopilot; ERD/orphan-audit/FK-rulings remain)* | 🔴 S1 | M | — | — |
+| **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
+| **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#72** | 🚦 LOAD TEST before the Mille demo (~100 concurrent users) | 🔴 S1 | M | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
-| **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
-| **#75** | Reactions may be silently dead — nothing logs one pre-parse | 🔴 S1 | S | — | — |
 | **#76** | New eval bank — 150 questions from real member traffic | 🔴 S1 | M | — | — |
-| **#77** | 183 members unreachable — AT has the phone, WA layer does not (demo blocker) | 🔴 S1 | S | — | — |
+| **#80** | Olivia over-suggests a next step and doesn't deliver what it teases | 🔴 S1 | M | — | — |
+| **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
+| **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
+| **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
+| **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
+| **#79** | Olivia's intro message goes stale as we ship features — keep it current | 🔵 S3 | S | — | — |
+| **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
+| **#71** | "Virtual event" vs "call" vs "recording" — two contradicting "latest" answers | 🔵 S3 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
+| **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
+| **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
 | **#36** | New data source — CIRCLEBACK | 🚀 S4 | L | — | — |
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
-| — | *— closed, evidence at the bottom —* | | | | |
+| — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#75** | Reactions raw store + canary + alarms | 🔴 S1 | S | ✅ proven `289a9656` | ⏳ **awaiting promote** (then run the canary) |
+| **#77** | Identity: active member usable without a WA chat row (559→732 reachable) | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-10** `b227682` |
+| **#54** | Country dim + regions + geo lists | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` (holding-delay fix still Andy's to run) |
+| **#56** | Partner ranking asks read a sample (Ian) | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` |
 | **#58** | Cancelled registrations count as attendance | 🔴 S1 | S | n/a (SQL) | ✅ **LIVE** — one chokepoint view |
+| **#62** | 🏗️ Resolve the 17 Security Advisor warnings | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-10** — 18 WARN → 2 accepted survivors |
+| **#63** | 🏗️ Airtable-formula injection in the Make member-match (census + app v3) | 🔴 S1 | S | — | ➡️ **MOVED to the TF mapping/matching set (Andy 2026-08-10)** — not an Olivia task |
+| **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
+| **#55** | MDS credits into the billing lane (WA→AT→Supa) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** (shared billing fn; Andy's WhatsApp test) |
+| **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
+| **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
+| **#57** | Live-test trio: empty reports · wrong-turn Yes · "reply YES" wording | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `955ed56f` |
+| **#65** | 🚨 SQL functions exist ONLY in the live DB — no file in git | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED** — 118 files in `db/`, daily drift check proven |
+| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | ✅ all 4 lanes | ✅ **LIVE** `7f7b932f` (all four) |
+| **#29** | THE DOSSIER + PERSONALIZATION LAYER (v1: 5 lanes) | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `01a94c1a` |
+| **#70** | 🚀 New data source — ZOOM CALLS (attendance · transcripts · schedule) | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `7fe60761` |
 | **#59** | Same event listed twice (events + partners) | 🟡 S2 | S | n/a (SQL) | ✅ **LIVE** — dossier joins on the row, not the name |
 | **#60** | Cancelled side-event wore the Summit's name (app-event mis-link) | 🟡 S2 | S | n/a (sync+SQL) | ✅ **LIVE** — sync dedupe + 5-min alarm |
-| — | ⭐ *— architecture & audit: START HERE, before feature work —* | | | | |
-| **#61** | 🏗️ Schema audit: tables with no declared connections | 🔴 S1 | M | — | — |
-| **#62** | 🏗️ Resolve the 17 Security Advisor warnings | 🔴 S1 | S | — | — |
-| **#63** | 🏗️ Airtable-formula injection in the Make member-match (census + app v3) | 🔴 S1 | S | — | — |
-| **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
-| **#65** | 🚨 SQL functions exist ONLY in the live DB — no file in git | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED** — 118 files in `db/`, daily drift check proven |
-| **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
-| **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
-| **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
-| **#52** | Follow-ups bind to the wrong topic (the 👎) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** `01a94c1a` |
-| **#53** | Fact-gate false clamp (grounded answer binned) | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
-| **#51** | Members-lane fabrication + over-refusal | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `01a94c1a` |
-| **#54** | Country dim + regions + geo lists | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` (holding-delay fix still Andy's to run) |
-| **#55** | MDS credits into the billing lane (WA→AT→Supa) | 🔴 S1 | S-M | ✅ proven | ✅ **LIVE** (shared billing fn; Andy's WhatsApp test) |
-| **#56** | Partner ranking asks read a sample (Ian) | 🔴 S1 | S | ✅ proven | ✅ **LIVE** `01a94c1a` |
-| **#29** | THE DOSSIER + PERSONALIZATION LAYER (v1: 5 lanes) | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `01a94c1a` |
-| **#50** | ENTITY DOSSIERS | 🔴 S1 | M-L | ✅ all 4 lanes | ✅ **LIVE** `7f7b932f` (all four) |
 | **#38** | Interactive buttons (CTAs) for offers + links | 🟡 S2 | M | ✅ proven (report confirm-step open) | ✅ **LIVE** `01a94c1a` |
+| **#20** | Census into the warehouse | 🟡 S2 | L | ✅ proven | ✅ **LIVE** `7fe60761` (only P2 exposure ruling open) |
 
 **Staging/Prod key:** ✅ proven = built + probed on that surface · — = not there yet ·
 **PROMOTED 2026-08-04 22:35 UTC** — prod `01a94c1a` (was `89ee3632`), 12 nodes. **Second promote 23:13 UTC → prod `65958b77`** (Answer Seed: Andy's live-test fixes — grouping-retry rule + credit-never-links-Stripe). Pre/post snapshots kept in `olivia_snapshots/`. The holding-ladder fix (30s + recheck) is live in `X1vzrW9Avqff3qRa`, which has no staging twin.
@@ -266,6 +269,18 @@ reason, and jobs whose failure mode is silence.
    the INSERT that moves those rows into `content_items` — the thing that makes them searchable — is
    raw SQL typed by hand each run. It **silently never ran once**, hiding four days of data. Same
    class #65 fixed for the other 104 functions; this one is not even in the database to export.
+
+#### ✅ 2026-08-11 — violation #3 CLOSED (violations #1 & #2 route to #68)
+FB linker is now the committed DB function `digest.fb_link_content()` (`db/functions/fb_link_content.sql`,
+commit `5fff683`): links posts/comments → `content_items`, stamps image `storage_path`, folds image
+OCR/description → `search_extra`. Runs every load via `load_feed.py` AND wired into the autopilot
+`auto_import.py:process_feed()` (feed+comments+images→embed on every `~/Downloads` drop, launchd
+`com.mds.scorecard.autoimport`). Proven searchable: `content_search_v2(['TACOS'])` returns posts whose
+"TACOS" lives only inside a spreadsheet screenshot (`body_has_tacos=false`). SOP
+`mds-scorecard-tools/FB_PIPELINE.md`; full write-up `SESSION_LOG_SCORECARD.md` 2026-08-11.
+**Remaining #61 = the schema-audit deliverable** (full-digest ERD, orphan audit per relation, safe-FK
+rulings, dual-key spine documented as table COMMENTs + handbook) — untouched.
+
 **🔴 S1 · size M — filed 2026-08-06 from Andy's Schema Visualizer review (do not act; research first)**
 
 > **In plain words:** Open the Supabase schema map and most tables float alone — no lines. Are the relationships real and just undeclared, or are some tables genuinely orphaned?
@@ -346,9 +361,39 @@ acceptance is written down where the next person will look.*
   portal/app login flows.
 - Gate GREEN.
 
+#### ✅ CLOSED 2026-08-10 — prod `39009a6`
+**Live advisor was 18 WARN, not 17** (`pct_from_answer` was added since filing). **18 → 2.**
+
+| Class | Was | Now | How |
+|---|---|---|---|
+| Function Search Path Mutable | 13 | **0** | `ALTER FUNCTION … SET search_path='digest','pg_temp'` on all 13 (migration `olivia_62_pin_function_search_path`). ALTER not REPLACE → IMMUTABLE + generated columns preserved. |
+| SECURITY DEFINER anon-executable | 2 | **0** | `REVOKE EXECUTE … FROM public` on `auth_org_ids` + `rls_auto_enable`. Role-level revoke was a no-op — the grant was the default PUBLIC grant. |
+| SECURITY DEFINER authenticated-executable | 2 | **1 (accepted)** | `rls_auto_enable` cleared; `auth_org_ids` kept for `authenticated` — RLS policy `self_read_org_members` needs it. |
+| Leaked Password Protection | 1 | **1 (Andy's toggle)** | Auth dashboard setting, belongs to the password-based public app. |
+
+**AC checklist:** ✅ 0 warnings *or written acceptance* — 16 fixed, **2 accepted in handbook §12** ·
+✅ 13 pinned functions proven live (497 partner + 1032 video tsv rows, 0 nulls; both embed-invalidate
+triggers fired on a live self-update, no embedding wiped; all 13 called directly, resolve) · ✅
+`public.*` origin identified (shared-app multi-tenant RLS helper + an event-trigger fn) **before**
+revoke; revoke verified not to break the RLS policy (authenticated kept) · ✅ **leak gate 246 exit 0**
+before and after · ✅ `db/` re-exported, 121 files byte-match, drift IN SYNC.
+
+**Left for Andy (both accepted, not blockers):** enable Leaked-Password-Protection in the Auth
+dashboard if the public-schema app should have it · the 28 INFO `rls_enabled_no_policy` are the
+secure state (service_role-only, anon denied) — *why* RLS is on them is #61/#64, not this ticket.
+
 ---
 
 ### #63 · Injection audit verdict — SQL clean; ONE real injection found in the Make member-match
+
+> ➡️ **MOVED OFF THE OLIVIA BOARD 2026-08-10 (Andy).** This is a **Typeform mapping/matching**
+> task, not Olivia — it belongs with the TF field-mapping set (#68 canonical dictionary, #74 form
+> identity), where "how we match members" is the actual subject. Olivia only inherits the result.
+> **Read-only findings captured, nothing acted on:** the injection reproduces live (payload
+> `" & {Preferred Email} & "` makes the filter always-true and returns a real member); a sweep of
+> all 171 Make scenarios found **68 interpolated query sites** (110 unread on 429s), so the fix is a
+> pipeline-wide sweep, not two modules. A fix script + blueprint backups exist locally
+> (`scripts/fix_make_formula_injection.py`, `scripts/make_backups/`) but were never applied.
 **🔴 S1 · size S — filed 2026-08-06 from Andy's "double check for SQL injection" (audited, not fixed)**
 
 > **In plain words:** The database itself is injection-clean. But the form-to-Airtable member
@@ -924,37 +969,27 @@ remainder is stated in writing rather than chased.
 
 ---
 
-### #75 · Reactions may be silently dead — nothing logs one before it is parsed
-**🔴 S1 · size S — filed 2026-08-10**
+### #80 · Olivia over-suggests a next step — and doesn't deliver what it teases
+**🔴 S1 · size M — filed 2026-08-10 (Andy, from his own digest.mds.co session)**
 
-> **In plain words:** 👍/👎 is the only signal a member gives us for free, and we cannot tell whether we are still receiving them.
+> **In plain words:** Almost every reply ends with "Want a quick summary?" / "Want me to…?" — and
+> when you say yes, you get something generic, not the thing it teased. The constant suggesting is
+> annoying, and the follow-through doesn't match the offer.
 
-*As the team, a member's thumbs-down always reaches the review queue — and if the path breaks we find out that day, not six weeks later.*
+*As a member, Olivia only offers a next step when it's genuinely useful — and when I accept, she
+delivers exactly what she offered, not a different or generic answer.*
 
-**Measured 2026-08-10:** `digest.olivia_feedback` holds **10 reactions all-time — 6 👎, 4 👍**, spanning
-2026-07-24 → **2026-08-04**. **Zero in the six days since.** Prod was promoted twice on Aug 4
-(22:35, 23:13 UTC) and twice more after. At the observed 3.7% reaction rate over ~78 answers since,
-roughly 3 were expected. Zero is not proof, but "reactions stop the same day as a promote, silence
-ever after" is the shape of a broken parse.
+**From Andy's session:** she offered a summary of a specific SEO library video ("Want a quick summary
+of it?"); on "Yes" she summarised the community thread's aspect-ratio debate instead of the video —
+teased X, delivered Y. Two problems to separate: (1) the follow-up prompt fires too often
+(cut it back to when it adds value), and (2) when accepted, the answer must resolve the exact thing
+offered (bind the "Yes" to the teased subject, not the last topic in context).
 
-**Why we cannot answer it today — the actual defect.** Nothing records a reaction before the
-Parse Reaction node handles it: no rows in `olivia_messages`, no raw inbound webhook store on the
-Olivia side (`wa_messages` is the digest/Whapi system). **A dropped reaction leaves no trace
-anywhere**, so the count can never be verified. Same class as the heartbeat that never stamped and
-the linker that never ran: the failure mode is silence.
-
-**Shape of the fix**
-- Persist every inbound Meta webhook payload (or at minimum every `reaction` event) before parsing,
-  so a parse failure is visible as a gap between raw and parsed.
-- One canary: react from a test number, assert `olivia_feedback` gains the row. **Never against a
-  real member's number.**
-- Heartbeat/alarm on the reaction path — "0 reactions in 14 days" should page, not pass quietly.
-
-**Accept when** a raw store exists and is gate-checked · the canary proves round-trip · the 6-day
-gap is explained as either broken (fixed, with a reaction landing after) or genuinely quiet (with
-the raw log showing zero arrived) · no claim of "working" without one of those two.
-
----
+**Accept when**
+- The follow-up suggestion appears only when it genuinely helps, not on every turn.
+- Accepting an offer delivers the offered thing (the video summary, not the thread) — measured on the
+  cases that failed.
+- No class traded: normal answers don't get worse. Gate green; verified in the prod node.
 
 ### #76 · New eval bank — 150 questions from real member traffic
 **🔴 S1 · size M — filed 2026-08-10 (Andy: "we def. need to create a new bank of 150 questions based on real users")**
@@ -985,40 +1020,6 @@ in `olivia_feedback` are the highest-value rows in the whole dataset.
 every uncleared 👎 included · ground truth written from the warehouse, not from Olivia's answer ·
 class distribution matches real traffic rather than the old bank's shape · the retired set named
 with its reason · one baseline run on the new bank, its rate recorded as the new starting number.
-
----
-
-### #77 · 183 members are unreachable by Olivia for no good reason — AT has their phone, the WA layer does not
-**🔴 S1 · size S — filed 2026-08-10 · DEMO BLOCKER for #72**
-
-> **In plain words:** One in four active members would get "I don't know you", and we already have their phone number.
-
-*As a member at the Mille announcement, I message Olivia and she knows who I am.*
-
-**Measured 2026-08-10:** 751 active members · **559 reachable** (phone in `digest.members`) ·
-**192 not**. Of those 192, **183 already carry a Preferred Phone Number in Airtable** — the number
-never reached the WA layer that `is_active_member_status()` and every RPC resolve against. Only
-**9 genuinely have no phone anywhere** (2 New Members, 7 Staff). So this is a sync gap, not a
-collection problem, and it is ~25% of the room at any member event.
-
-**Two traps for whoever builds it:**
-- **AT phone formats are inconsistent** — `3852166681`, `+13602596458`, `12053442149` all present,
-  plus junk (`"0"`). Normalise to the WA format Olivia matches on; drop junk rather than insert it.
-- **`digest.members` is the identity layer.** A wrong number there means one member reads another
-  member's data — the worst failure this system has. Scripted backfill with a dry run Andy reads,
-  never an ad-hoc insert. `members.airtable_id` is NOT NULL.
-
-**⛔ Access gating rides on this table.** Every gated RPC calls
-`is_active_member_status(m.membership_status)` against `digest.members` — a COPY of the roster, not
-the live status. Verified 2026-08-10: 596 matched rows, **0 mismatches**, so nothing leaks today.
-Backfilling 183 rows means 183 more copies: each inserted row must carry the correct
-`membership_status` and stay synced, or the backfill manufactures the exact stale-access leak that
-does not currently exist. Andy 2026-08-10: **only active members may use Olivia.** The four active
-statuses are Current Member · New Member · Current Member- Not Renewing · Staff.
-
-**Accept when** reachable rises from 559 with the before/after counted · every inserted number
-normalised and no junk written · a spot-check proves 5 backfilled members resolve to themselves and
-not to anyone else · the 9 with no phone are listed for the team to chase · gate GREEN.
 
 ---
 
@@ -1076,6 +1077,31 @@ content_items / member_events / embeddings, verifiable) · retention number stat
 ---
 
 # 🔵 S3 — PLANNED
+
+### #79 · Olivia's intro goes stale as we ship features — keep it current, don't auto-generate it
+**🔵 S3 · size S — filed 2026-08-10 (Andy)**
+
+> **In plain words:** Olivia's first hello lists what she can do. We keep adding capabilities
+> (census, calls, events, partners…) and the intro doesn't move — so a new member's first
+> impression is already out of date.
+
+*As a member messaging Olivia for the first time, her intro reflects what she can actually do
+today — not a frozen list from launch.*
+
+**Design call (Andy asked: dynamic, or overdesign?): keep it CURATED, don't auto-generate it.**
+An intro is warm, deliberate copy with a voice; generating it from whatever features exist produces
+a changelog, leaks internal or half-shipped capabilities into a member's first impression, and loses
+the tone. The fix is a **cadence, not a generator**: the intro is hand-written against a short list
+of member-facing capabilities, and that list is reviewed whenever a member-facing feature ships
+(fold it into the sprint-close / release-notes step). A middle option — a tiny hand-maintained
+capability list the message renders from — stays available if we ever want it, but full
+auto-generation is ruled **overdesign** unless Andy decides otherwise.
+
+**Accept when**
+- The intro reflects the current member-facing capabilities — nothing stale, nothing missing.
+- The dynamic-vs-curated decision is recorded (default: curated + a review cadence).
+- A cadence exists so it can't silently drift again (a line in the sprint-close ritual or release notes).
+- Shipped in the prod workflow, gate green, verified in the prod node.
 
 ### #71 · "Virtual event", "call", "recording" — three words, three systems, two contradicting answers
 **🔵 S3 · size M — filed 2026-08-07 from Andy's own WhatsApp session (18:11–18:13 local)**
@@ -1461,6 +1487,13 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 # ❓ Open questions for Andy
 
+- **(2026-08-11, found working #75 — flagged, not chased) Your `digest.members` row lost
+  `channels_present` sometime after Aug 10 00:43** (the #77 gate ran green on it then; today it is
+  `[]`, which both empties your own digest lanes and aborts the leak gate's default probe — this
+  session's gate ran as Ian instead, 246 exit-0). 49 rows total sit empty, incl. 2 real members.
+  The writer is the upstream digest/roster sync (WA digest project, not Olivia). Who should fix it,
+  and is a ticket wanted here or there?
+
 | Question | Why it matters |
 |---|---|
 | **#70 — how sensitive is a call transcript?** `public` to members like the video already is, or does some class need `restricted`? | **Blocks #70's build.** Members speak candidly about their businesses on these calls; the access rule decides what `content_search_v2` may return. Same shape as #20's exposure ruling. |
@@ -1481,6 +1514,109 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #75 · Reactions may be silently dead — nothing logs one before it is parsed
+**🔴 S1 · size S — filed 2026-08-10**
+
+> **In plain words:** 👍/👎 is the only signal a member gives us for free, and we cannot tell whether we are still receiving them.
+
+*As the team, a member's thumbs-down always reaches the review queue — and if the path breaks we find out that day, not six weeks later.*
+
+**Measured 2026-08-10:** `digest.olivia_feedback` holds **10 reactions all-time — 6 👎, 4 👍**, spanning
+2026-07-24 → **2026-08-04**. **Zero in the six days since.** Prod was promoted twice on Aug 4
+(22:35, 23:13 UTC) and twice more after. At the observed 3.7% reaction rate over ~78 answers since,
+roughly 3 were expected. Zero is not proof, but "reactions stop the same day as a promote, silence
+ever after" is the shape of a broken parse.
+
+**Why we cannot answer it today — the actual defect.** Nothing records a reaction before the
+Parse Reaction node handles it: no rows in `olivia_messages`, no raw inbound webhook store on the
+Olivia side (`wa_messages` is the digest/Whapi system). **A dropped reaction leaves no trace
+anywhere**, so the count can never be verified. Same class as the heartbeat that never stamped and
+the linker that never ran: the failure mode is silence.
+
+**Shape of the fix**
+- Persist every inbound Meta webhook payload (or at minimum every `reaction` event) before parsing,
+  so a parse failure is visible as a gap between raw and parsed.
+- One canary: react from a test number, assert `olivia_feedback` gains the row. **Never against a
+  real member's number.**
+- Heartbeat/alarm on the reaction path — "0 reactions in 14 days" should page, not pass quietly.
+
+**Accept when** a raw store exists and is gate-checked · the canary proves round-trip · the 6-day
+gap is explained as either broken (fixed, with a reaction landing after) or genuinely quiet (with
+the raw log showing zero arrived) · no claim of "working" without one of those two.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-11 — awaiting Andy's promote
+**The fix:** raw store `digest.olivia_webhook_events` (every inbound MESSAGE event persisted
+verbatim BEFORE any parse; statuses excluded — `olivia_sends` has them, and the 5-min health ping
+is statuses-only) + two staging nodes wired as the FIRST webhook branch (v1 depth-first order, so
+the payload outlives a throwing parse) + `scripts/olivia_reaction_canary.py` + health signals 7
+(reaction-parse-gap) and 8 (reaction-silence-14d). Commit `02cf62d`; apply script
+`scripts/olivia_loop/apply_75_raw_webhook_store.py`.
+
+| AC | result |
+|---|---|
+| a raw store exists and is gate-checked | ✅ table live; gate 245 → **246 exit-0**, `anon key denied on olivia_webhook_events (#75)` PASS |
+| the canary proves round-trip | ✅ staging canary exit 0: raw row OK + feedback row OK + cleanup OK (silent — a reaction never generates a reply) |
+| the 6-day gap explained, broken or quiet | ✅ **quiet, with live proof of both hops**: a synthetic reaction at the PROD webhook landed in `olivia_feedback` in seconds (parse alive) · delivery statuses arrive daily on the same webhook+field (subscription alive) · ~40 real answers since Aug 4 ⇒ expectation ≈1.5 reactions, zero observed is plausible. The raw log starts today — the historical week itself is unrecoverable, which is precisely the defect this ticket removes |
+| alarm on the path | ✅ signal 7 fires on raw-without-feedback after 15 min (join proven to bite: 0 real / 1 broken); signal 8 pages on 14-day arrival silence, quiet until the store has 14 days of history |
+| no "working" claim without proof | ✅ every claim above cites a live check from this session |
+
+**Before → after:** a dropped reaction left no trace anywhere → every message event is on disk
+before parsing, a gap pages within the hour, arrival silence pages at 14 days.
+Staging `289a9656` (69 nodes, +`Extract Raw Event`+`Store Raw Event`, diff vs prod = exactly these).
+**Andy's step: lock → promote, then `python3 scripts/olivia_reaction_canary.py` (prod) — expect exit 0.**
+
+---
+
+### #77 · 183 members are unreachable by Olivia for no good reason — AT has their phone, the WA layer does not
+**🔴 S1 · size S — filed 2026-08-10 · DEMO BLOCKER for #72**
+
+> **In plain words:** One in four active members would get "I don't know you", and we already have their phone number.
+
+*As a member at the Mille announcement, I message Olivia and she knows who I am.*
+
+**Measured 2026-08-10:** 751 active members · **559 reachable** (phone in `digest.members`) ·
+**192 not**. Of those 192, **183 already carry a Preferred Phone Number in Airtable** — the number
+never reached the WA layer that `is_active_member_status()` and every RPC resolve against. Only
+**9 genuinely have no phone anywhere** (2 New Members, 7 Staff). So this is a sync gap, not a
+collection problem, and it is ~25% of the room at any member event.
+
+**Two traps for whoever builds it:**
+- **AT phone formats are inconsistent** — `3852166681`, `+13602596458`, `12053442149` all present,
+  plus junk (`"0"`). Normalise to the WA format Olivia matches on; drop junk rather than insert it.
+- **`digest.members` is the identity layer.** A wrong number there means one member reads another
+  member's data — the worst failure this system has. Scripted backfill with a dry run Andy reads,
+  never an ad-hoc insert. `members.airtable_id` is NOT NULL.
+
+**⛔ Access gating rides on this table.** Every gated RPC calls
+`is_active_member_status(m.membership_status)` against `digest.members` — a COPY of the roster, not
+the live status. Verified 2026-08-10: 596 matched rows, **0 mismatches**, so nothing leaks today.
+Backfilling 183 rows means 183 more copies: each inserted row must carry the correct
+`membership_status` and stay synced, or the backfill manufactures the exact stale-access leak that
+does not currently exist. Andy 2026-08-10: **only active members may use Olivia.** The four active
+statuses are Current Member · New Member · Current Member- Not Renewing · Staff.
+
+**Accept when** reachable rises from 559 with the before/after counted · every inserted number
+normalised and no junk written · a spot-check proves 5 backfilled members resolve to themselves and
+not to anyone else · the 9 with no phone are listed for the team to chase · gate GREEN.
+
+#### ✅ CLOSED — shipped 2026-08-10 00:43 in commit `b227682` (session went unlogged; board caught up 2026-08-11)
+**The fix (bigger than the backfill):** identity separated from chat presence — `member_phones`
+(every known phone per member, normalised) · `member_phone_index` (materialised, pg_cron every
+15 min, 544 ms) · `resolve_asker()` (indexed, status read LIVE from `member_attributes`) ·
+`member_identity` (members + a synthetic row per active member with no WA row — identified, not
+admitted). 53 retrieval functions repointed; two rewrite passes (first missed aliases `mz`/`r`;
+end-state assertion now alias-agnostic). Health signal 6 pages if the refresher stops.
+
+| AC | result |
+|---|---|
+| reachable rises from 559, counted | ✅ **559 → 732** of 751 active · newly unblocked **173** · regressed **0** |
+| numbers normalised, no junk | ✅ normalised to last-10; junk dropped |
+| spot-check resolves to self | ✅ Keith Gipson (active, no WA row): member_card 1 · events 5 · partners 3 · chat 0; WA member unchanged; unknown number 0. Ambiguity judged over ACTIVE only — zero phones with >1 active owner |
+| the phone-less listed | ✅ 19 with no phone anywhere (commit body) |
+| gate GREEN | ✅ 245/245 exit-0 · db/ re-exported, 121 files byte-match |
+
+---
 
 ### #65 · 🚨 THE SQL LAYER IS NOT IN VERSION CONTROL — single point of failure
 **🔴 S1 · size M — filed 2026-08-06 · CLOSED 2026-08-07**

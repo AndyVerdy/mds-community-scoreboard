@@ -19,7 +19,30 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-07: SPRINT 3 OPEN · PROD `ebe7244b` — #20, #70 AND #70c ARE LIVE
+## STATE 2026-08-11: SPRINT 3 OPEN · PROD `ebe7244b` — #75 STAGED, AWAITING PROMOTE
+
+**#75 (reactions) is BUILT + STAGED + PROVEN, prod has none of it.** Staging `289a9656` carries
+two new nodes (`Extract Raw Event` → `Store Raw Event`) as the FIRST webhook branch; diff vs prod
+= exactly those two. Raw store `digest.olivia_webhook_events` + health signals 7/8 + canary
+script are live (SQL side ships without promote). Gate **246 exit-0**. Commit `02cf62d`.
+**Andy: `lock` → `promote`, then `python3 scripts/olivia_reaction_canary.py` (prod), expect exit 0.**
+
+**Board caught up 2026-08-11:** #77 shipped UNLOGGED on Aug 10 (`b227682` — identity separated
+from chat presence, 559 → 732 reachable, 0 regressed); #62 closed, #63 moved out, #78 filed —
+the 08-08..10 sessions wrote commits but no stream-log entries.
+
+⚠️ **Gate default probe currently ABORTS: Andy's `digest.members` row lost `channels_present`**
+(was populated Aug 10 00:43 when #77's gate ran green; `[]` today; 49 rows empty incl. 2 real
+members). Run the gate as `--phone 16196077048` (Ian) until the upstream digest/roster sync is
+fixed — that writer is the WA digest project's, not Olivia's. Flagged in the board's open
+questions; Andy to rule where it gets fixed.
+
+**Open S1 after the promote:** #78 · #61 · #64 · #66 · #72 · #73 · #76 · #80 · #68. Nightly eval
+2026-08-10: 220 judged, 7.7% fail (Andy: acceptable for now — #76's new bank is the priority).
+
+---
+
+## STATE 2026-08-07 (superseded): SPRINT 3 OPEN · PROD `ebe7244b` — #20, #70 AND #70c ARE LIVE
 
 > **Prod moved twice on 2026-08-07.** 20:44 UTC `f6b54620` → `7fe60761` (#20 + #70). Then **23:09
 > UTC `7fe60761` → `ebe7244b`** — Andy's own promote, label `70c-recency-and-buttons`, two nodes
