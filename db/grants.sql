@@ -334,8 +334,9 @@ grant execute on function digest.video_file_for_send(p_phone text, p_file_key te
 grant execute on function digest.video_file_for_send(p_phone text, p_file_key text) to service_role;
 grant execute on function digest.video_search(p_phone text, p_query text, p_limit integer, p_embedding text, p_at_member_id text, p_call_type text, p_order text) to postgres;
 grant execute on function digest.video_search(p_phone text, p_query text, p_limit integer, p_embedding text, p_at_member_id text, p_call_type text, p_order text) to service_role;
-grant execute on function digest.video_search_v2(p_phone text, p_query text, p_limit integer, p_embedding text, p_at_member_id text, p_call_type text, p_order text) to postgres;
-grant execute on function digest.video_search_v2(p_phone text, p_query text, p_limit integer, p_embedding text, p_at_member_id text, p_call_type text, p_order text) to service_role;
+grant execute on function digest.video_search_v2(p_phone text, p_query text, p_limit integer, p_embedding text, p_at_member_id text, p_call_type text, p_order text, p_video_id text) to postgres;
+grant execute on function digest.video_search_v2(p_phone text, p_query text, p_limit integer, p_embedding text, p_at_member_id text, p_call_type text, p_order text, p_video_id text) to public;
+grant execute on function digest.video_search_v2(p_phone text, p_query text, p_limit integer, p_embedding text, p_at_member_id text, p_call_type text, p_order text, p_video_id text) to service_role;
 grant execute on function digest.zoom_resolve_attendance() to postgres;
 grant execute on function digest.zoom_resolve_attendance() to public;
 grant insert on digest.at_field_catalog to postgres;
