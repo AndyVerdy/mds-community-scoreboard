@@ -13,6 +13,8 @@
 > 📌 **Andy: keep answers short — 1–4 paragraphs** (not too short, not too long). He asks for details if needed. <!-- ANDY-PREF -->
 
 ## How we work — Andy's rules <!-- ANDY-WORKING-RULES -->
+- **Start every session by invoking `/caveman`.** It is the default output mode — governs style, never content.
+- **Working a task, invoke `/using-superpowers` first.** The relevant skill goes BEFORE any action — even clarifying questions, exploring, or reading files. Process skills lead (brainstorming · systematic-debugging), implementation follows; announce it and follow it exactly.
 - **Short replies: 1-4 paragraphs.** Lead with the answer. He asks for detail if he wants it.
 - **No "done, but...".** Say what shipped. If it is not shipped, say it is not. Never bury a list of caveats behind a "but".
 - **One ticket at a time.** No jumping between tasks. Rapid delivery.

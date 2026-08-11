@@ -6,6 +6,44 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-11 — #61 FB conversation+image leg WIRED into the autopilot (was hand-run, stalled 4 days). Image content now searchable by Olivia. Committed + documented.
+
+**Root cause (#61):** `auto_import.py` (launchd `com.mds.scorecard.autoimport`, WatchPaths `~/Downloads`)
+only ran **Leg A** (scorecard Insights xlsx). **Leg B** — `load_feed.py` → `fb_posts`/`fb_comments` →
+`content_items` → embed, plus the whole **image chain** — was never wired in and was run by hand, so it
+silently stalled after Aug 7 while the leaderboard kept updating. The `content_items` linker was
+raw SQL typed each run; the day it got skipped, the search layer lagged the raw tables.
+
+**Fix (shipped):**
+- `process_feed()` added to `auto_import.py` (call site line 194, after the lock). Runs the FULL leg on
+  every fire: `load_feed.py` → `download_images.py <manual>` → `upload_images.py` → `vision_decode.py`
+  → re-call `fb_link_content()` → `embed_backfill.py`. Idempotent + state-guarded (`last_feed`).
+- The linker is now a **DB function** `digest.fb_link_content()` (in git), extended this session to do
+  three things in one idempotent call: link posts/comments into `content_items`, stamp `storage_path`
+  on uploaded images, and **fold each image's Claude-vision description+OCR into the parent post's
+  `search_extra`** (nulling its embedding so `embed_backfill` re-vectorizes). `search_tsv` is a
+  generated col over `tl_dr||body||search_extra`, and `embed_backfill.py:68` embeds `search_extra`
+  too — so image text is live on BOTH the keyword and vector paths.
+- One-time catch-up run: 12 new + ~718 historical image-posts downloaded, transcribed, folded in,
+  **1,050 rows re-embedded**.
+
+**Verified (live):**
+- Olivia's real RPC `content_search_v2(p_terms => ARRAY['TACOS'])` returned posts `25507096442300516`
+  and `26213128778363942` — both have "TACOS" **only in the image** (a PPC-spreadsheet column header),
+  confirmed `body_has_tacos=false` / `image_has_tacos=true`. So a member asking about TACOS surfaces
+  posts where the word exists only inside a screenshot. (First probe "QSBS" was discarded — that term
+  was also in the post body; systematic check caught it.)
+- Autopilot armed: `launchctl list` shows `com.mds.scorecard.autoimport` (last exit 0); plist runs
+  `auto_import.py`, WatchPaths `/Users/Born/Downloads`. `auto_import.py --dry-run` reaches `process_feed`.
+
+**Committed:** `5fff683` (Scorecard `db/functions/fb_link_content.sql` + `db/grants.sql`, re-exported via
+`db_export_schema.py`). SOP rewritten: `mds-scorecard-tools/FB_PIPELINE.md` (images now automated).
+`auto_import.py`, `load_feed.py`, the image scripts, FB_PIPELINE.md all live in `mds-scorecard-tools`
+(**NO git** — not committable). **Next:** first unattended Thursday run is the real proof; Andy just
+drops `mds_feed*.json` + `mds_manual_recovered*.json` in Downloads (capture stays the manual Chrome step).
+
+---
+
 ## 2026-07-27 (LATE NIGHT) — INCIDENT: 745 duplicate FB-Engagement rows → 200-ghost card. Cleaned, guarded, corrected card posted.
 
 **Andy's report:** weekly-review Slack card listed **200 "ghosts"** incl. obvious members (Fabio HD,
