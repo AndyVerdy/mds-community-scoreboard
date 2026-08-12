@@ -176,6 +176,18 @@ CREATE INDEX event_registrations_event_idx ON digest.event_registrations USING b
 CREATE INDEX event_registrations_member_idx ON digest.event_registrations USING btree (member_at_id);
 CREATE UNIQUE INDEX event_registrations_pkey ON digest.event_registrations USING btree (roster_record_id);
 
+-- digest.event_series_profile
+--   series                             text not null
+--   match_pattern                      text not null
+--   what_it_is                         text not null
+--   format_notes                       text[] not null default '{}'::text[]
+--   audience                           text
+--   source_url                         text
+--   refreshed_at                       timestamp with time zone not null default now()
+--   exclude_pattern                    text
+alter table digest.event_series_profile add constraint event_series_profile_pkey PRIMARY KEY (series);
+CREATE UNIQUE INDEX event_series_profile_pkey ON digest.event_series_profile USING btree (series);
+
 -- digest.events_catalog
 --   at_record_id                       text not null
 --   name                               text not null

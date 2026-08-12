@@ -10,6 +10,7 @@ alter table digest.content_items enable row level security;
 -- digest.deck_metric: row level security DISABLED
 -- digest.entity_dossier: row level security DISABLED
 alter table digest.event_registrations enable row level security;
+-- digest.event_series_profile: row level security DISABLED
 alter table digest.events_catalog enable row level security;
 -- digest.expertise_topics: row level security DISABLED
 alter table digest.fb_comments enable row level security;
