@@ -18,7 +18,6 @@ begin
     from vids vd cross join digest.expertise_topics t
     where vd.search_tsv @@ digest.expertise_query(array_to_string(t.terms,' '))
   ), transcript_hits as (
-    -- what was actually SAID, weighted above what the video was announced as
     select ci.meta->>'video_id' as video_id, t.topic,
            2.0 * sum(ts_rank(ci.search_tsv, digest.expertise_query(array_to_string(t.terms,' ')))) rnk
     from digest.content_items ci
@@ -112,7 +111,6 @@ begin
   ), draw as (
     select r.eid, count(*) regs from reg r group by r.eid
   ), comm as (
-    -- community baseline per topic (members with a real score)
     select e.topic, avg(e.score) base from digest.member_expertise e
     where coalesce(e.weakness_score,0) = 0 and e.score > 0 group by e.topic
   ), att as (
@@ -121,7 +119,6 @@ begin
     where coalesce(e.weakness_score,0) = 0 and e.score > 0
     group by r.eid, e.topic
   ), lifted as (
-    -- topic kept ONLY on lift over baseline, ONLY for selective rooms
     select a.eid, a.topic, round(least(1.0, (a.ascore/c.base)/3.0)::numeric, 3) w,
            (a.ascore/c.base) lift
     from att a join comm c on c.topic = a.topic join draw d on d.eid = a.eid
@@ -130,6 +127,52 @@ begin
     select l.eid, jsonb_object_agg(l.topic, l.w order by l.lift desc) tp
     from (select *, row_number() over (partition by eid order by lift desc) rn from lifted) l
     where l.rn <= 5 group by l.eid
+  ), flagship as (
+    select r.eid,
+           jsonb_build_object(
+             'topics', coalesce((
+                select jsonb_agg(jsonb_build_object('topic', x.topic, 'members', x.n)
+                                 order by x.n desc)
+                from (select e.topic, count(distinct r2.mid) n
+                        from reg r2 join digest.member_expertise e on e.at_member_id = r2.mid
+                       where r2.eid = r.eid and coalesce(e.weakness_score,0) = 0 and e.score > 0
+                       group by e.topic having count(distinct r2.mid) >= 3
+                       order by count(distinct r2.mid) desc limit 8) x), '[]'::jsonb),
+             'niches', coalesce((
+                select jsonb_agg(jsonb_build_object('niche', y.label, 'members', y.n)
+                                 order by y.n desc)
+                from (select (array_agg(cc.label order by length(cc.label)))[1] label,
+                             count(distinct cc.mid) n
+                        from (select r3.mid,
+                                     regexp_replace(lower(trim(cat)), '[^a-z0-9]|and', '', 'g') key,
+                                     trim(cat) label
+                                from reg r3
+                                join digest.member_attributes ma on ma.at_member_id = r3.mid
+                                cross join lateral unnest(coalesce(ma.categories,'{}'::text[])) cat
+                               where r3.eid = r.eid and nullif(trim(cat),'') is not null) cc
+                       group by cc.key having count(distinct cc.mid) >= 3
+                       order by count(distinct cc.mid) desc limit 6) y), '[]'::jsonb),
+             'rev_bands', coalesce((
+                select jsonb_object_agg(z.band, z.n)
+                from (select ma.rev_band band, count(*) n
+                        from reg r4 join digest.member_attributes ma on ma.at_member_id = r4.mid
+                       where r4.eid = r.eid and ma.rev_band is not null
+                       group by 1 having count(*) >= 3) z), '{}'::jsonb),
+             'countries', coalesce((
+                select jsonb_agg(jsonb_build_object('country', q.country, 'members', q.n)
+                                 order by q.n desc)
+                from (select initcap(digest.country_fold(ma.country)) country, count(*) n
+                        from reg r5 join digest.member_attributes ma on ma.at_member_id = r5.mid
+                       where r5.eid = r.eid and ma.country is not null
+                         and digest.country_fold(ma.country) is not null
+                       group by 1 having count(*) >= 3
+                       order by count(*) desc limit 6) q), '[]'::jsonb)
+           ) room
+    from (select distinct eid from reg) r
+    join digest.events_catalog c2 on c2.at_record_id = r.eid
+    join digest.event_series_profile sp
+      on coalesce(c2.app_title, c2.name) ~* sp.match_pattern
+     and coalesce(c2.app_title, c2.name) !~* coalesce(sp.exclude_pattern, '$^')
   ), namehits as (
     select e2.eid, t.topic, ts_rank(e2.tsv, digest.expertise_query(array_to_string(t.terms,' '))) rnk
     from ev e2 cross join digest.expertise_topics t
@@ -142,15 +185,18 @@ begin
   select 'event', e3.eid, e3.ename,
          coalesce(np.tp, '{}'::jsonb) || coalesce(ap.tp, '{}'::jsonb),
          jsonb_build_object('member_registrations', coalesce(d.regs,0),
-                            'audience', case when coalesce(d.regs,0) > 150 then 'flagship - draws the whole community, no topic skew'
+                            'audience', case when fl.room is not null then 'flagship - a room, not a topic: describe who is in it, never what it is about'
+                                             when coalesce(d.regs,0) > 150 then 'flagship - draws the whole community, no topic skew'
                                              when ap.tp is not null then 'selective room - topics are lift over the community baseline'
-                                             end),
+                                             end)
+           || case when fl.room is not null then jsonb_build_object('room', fl.room) else '{}'::jsonb end,
          case when coalesce(d.regs,0) > 150 then 'a flagship - genuinely for everyone'
               when coalesce(d.regs,0) >= 40 then 'draws a strong member crowd'
               end,
          null,
          now()
   from ev e3 left join attprof ap on ap.eid = e3.eid
+  left join flagship fl on fl.eid = e3.eid
   left join nameprof np on np.eid = e3.eid
   left join draw d on d.eid = e3.eid
   on conflict (kind, entity_id) do update
