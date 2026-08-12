@@ -30,7 +30,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
-| **#61** | 🏗️ Schema audit: tables with no declared connections *(violation #3 FB-linker CLOSED `5fff683` + autopilot; ERD/orphan-audit/FK-rulings remain)* | 🔴 S1 | M | — | — |
+| **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#72** | 🚦 LOAD TEST before the Mille demo (~100 concurrent users) | 🔴 S1 | M | — | — |
@@ -331,6 +331,34 @@ billing_nudges…), `event_at_id` → events_catalog, `chat_id/chat_name` → ch
 - FKs added only where the sync jobs provably tolerate them; everything else carries a written
   reason in a table COMMENT.
 - Gate GREEN; no sync job broken (next scheduled runs all succeed).
+
+#### ✅ 2026-08-12 — research done, orphan audit measured, 30 COMMENTs shipped; FK-adding filed as follow-up
+
+**Result: zero true orphans found.** Every implicit relation checked (18 `at_member_id` joins + 7
+other high-fan-out relations) came back 0 orphans against its correct parent. The audit's real find
+was a wrong assumption, not missing data: **`member_profiles.at_member_id` is the true root, not
+`member_attributes`** — checking against `member_attributes` throws false positives (187/134/29/11
+across four tables) because `member_attributes` is a derived, narrower persona subset
+(0 `member_attributes` rows fall outside `member_profiles`, confirmed). Non-zero counts elsewhere
+(`fb_comments`/`fb_posts.author_uid` 248/207, `olivia_sends.wamid` 317, `olivia_seen.wamid` 59) are
+not orphans — non-member FB authors and proactive/broadcast sends legitimately have no parent row,
+now written down as the reason.
+
+The `members`↔`member_profiles` crosswalk (research question 4) already exists as
+`digest.member_identity` (#77) — no new object needed, just cited.
+
+**Shipped:** `FORMS_ERD.md` §3 (full digest schema — 58 tables, 13 declared FKs + 30 audited
+implicit columns, orphan table, polymorphic-key rulings) · migration
+`digest_schema_audit_comments_20260812` (30 `COMMENT ON COLUMN`, metadata only, no lock) · gate
+253 exit-0 before and after.
+
+**Deliberately not shipped:** FK constraints. 25 relations are orphan-clean today (18 at_member_id
++ 7 others) but "safe" needs each loader read for insert order, not just a point-in-time count —
+that's follow-up work, named explicitly in FORMS_ERD.md §3.5, not silently dropped.
+
+**AC checklist:** every table in the ERD with edges — met · orphans measured per relation with a
+ruling — met, 0 true orphans · FKs added only where provably safe — not met by design, candidates
+named for a follow-up · gate green, no sync job broken — met (COMMENT-only migration).
 
 ---
 

@@ -6,6 +6,42 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-12 (night) — #61 schema audit: research done, 0 true orphans, 30 COMMENTs shipped
+
+**Ticket #61 (🔴 S1, "do not act, research first")** picked up as the next open S1 item after
+#82 went live. Verified the leak gate green (253) before starting, live matched the handoff.
+
+**Finding: `member_profiles.at_member_id` is the true root of the dual-key spine, not
+`member_attributes`.** All 18 tables keying on `at_member_id` came back **0 orphans** against
+`member_profiles` (5,931 rows); checking against `member_attributes` (5,744 rows) throws false
+positives (187/134/29/11 across four tables) because `member_attributes` is a derived, narrower
+persona/matching subset — confirmed 0 `member_attributes` rows fall outside `member_profiles`. The
+`members`↔`member_profiles` crosswalk (research question 4) already exists as
+`digest.member_identity` (shipped with #77) — cited, not rebuilt.
+
+**Measured 25 more implicit relations live:** 7 came back 0 orphans (safe-FK candidates —
+`event_registrations.event_at_id`, `member_edges.a_id/b_id`, `wa_messages.chat_id`,
+`summaries.chat_id`, `fb_post_images.post_id`, `olivia_feedback.wamid`). 4 threw non-zero counts
+that are **not orphans** — legitimate partial keys: `fb_comments`/`fb_posts.author_uid` (248/207,
+non-member FB authors), `olivia_sends.wamid` (317, all `conversation_origin IS NULL` — proactive/
+broadcast sends), `olivia_seen.wamid` (59, webhook events filtered before landing). 2 polymorphic
+keys (`entity_dossier.entity_id` by kind, `content_items.source_id` by source) documented as
+genuinely not FK-able. **Zero true orphans found across the whole audit.**
+
+**Shipped:** `FORMS_ERD.md` §3 (58-table schema audit — declared FKs, orphan table, rulings) ·
+migration `digest_schema_audit_comments_20260812` (30 `COMMENT ON COLUMN`, metadata only) · gate
+253 exit-0 before and after · ticket #61 body + board row updated in `OLIVIA_SPRINT_3.md`.
+
+**Deliberately not shipped:** FK constraints. 25 relations are orphan-clean today but adding a real
+constraint needs each loader read for insert order first (batch/retry safety), not just a
+point-in-time count — named as a follow-up in `FORMS_ERD.md` §3.5, not silently dropped.
+
+**Next:** remaining S1 open tickets are #64 (runtime inventory), #66 (forms warehouse gaps), #72
+(load test), #73 (connect forms to Olivia), #76 (new eval bank), #68 (canonical question
+dictionary) — none started this session.
+
+---
+
 ## 2026-08-12 (later) — #82 PROMOTED · prod `e988a6a3` · four anon-callable job functions revoked
 
 **Promoted 20:51 UTC on Andy’s order:** `fd957034` to **`e988a6a3`**, Answer Seed only, gate green

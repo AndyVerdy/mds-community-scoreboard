@@ -19,7 +19,22 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-12 (later): SPRINT 3 OPEN · PROD `e988a6a3` — #82 IS LIVE
+## STATE 2026-08-12 (night): SPRINT 3 OPEN · PROD `e988a6a3` — #61 SCHEMA AUDIT SHIPPED
+
+**#61 (schema audit) is DONE except FK-constraint addition (deliberately deferred, see below).**
+`member_profiles.at_member_id` confirmed as the true dual-key spine root — NOT `member_attributes`,
+which is a derived, narrower persona subset (0 rows outside `member_profiles`). All 18
+`at_member_id`-keyed tables + 7 other high-fan-out relations measured live: **0 true orphans**.
+Shipped `FORMS_ERD.md` §3 (full 58-table audit) + 30 `COMMENT ON COLUMN` (migration
+`digest_schema_audit_comments_20260812`, metadata only). Gate 253 exit-0 before and after — pure
+SQL, nothing to promote. **Follow-up filed, not started:** actually adding the 25 safe-FK
+candidates needs each loader read for insert-order safety first (`FORMS_ERD.md` §3.5).
+
+**Next open S1 tickets, none started:** #64 (runtime inventory) · #66 (forms warehouse gaps) · #72
+(load test before Mille demo) · #73 (connect forms to Olivia, reads 5 of 161) · #76 (new eval bank)
+· #68 (canonical question dictionary — #61 routed its violations #1/#2 here).
+
+## STATE 2026-08-12 (later, superseded): SPRINT 3 OPEN · PROD `e988a6a3` — #82 IS LIVE
 
 **PROMOTED 20:51 UTC:** `fd957034` to **`e988a6a3`** (Answer Seed only), gate green inside on the
 DEFAULT probe. Prod verified: *"the biggest MDS gathering of the year — a members-only, four-day
