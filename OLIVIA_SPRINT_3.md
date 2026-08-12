@@ -50,6 +50,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#82** | Flagship events (Summit, Inspire) carry what-they-are + who-is-in-the-room | 🔴 S1 | M | ✅ proven `2ecf4e62` | ⏳ **awaiting promote** |
 | **#81** | People + stats lanes answer what we have the data for (fit_reason, gender split) | 🔴 S1 | M | ✅ proven `3d5f2b1b` | ✅ **LIVE** `fd957034` (prod probe: named + reasons) |
 | **#79** | Intro message rewritten — MDS AI assistant, early beta, current capabilities | 🔵 S3 | S | ✅ proven `d839a024` | ✅ **LIVE** `c59fd3ff` (byte-identical to approved copy) |
 | **#80** | Offer binding: accepted offers deliver the teased video (+ offer rules) | 🔴 S1 | M | ✅ proven `dcc75770` | ✅ **LIVE** `c59fd3ff` (prod probe: `video_search`) |
@@ -1472,6 +1473,67 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #82 · The biggest events have no dossier — the builder asks "what is this about?" when it should ask "what is this?"
+**🔴 S1 · size M — filed 2026-08-12 (Andy: "summit is poor… missing dossier for Summit or Inspire is genuinely bad")**
+
+> **In plain words:** The Summit and Inspire are the two biggest things MDS does, and Olivia
+> knew less about them than about a one-hour call.
+
+*As a member, when I ask about the Summit or Inspire I learn what kind of event it is, what
+actually happens there, and who is in the room.*
+
+**Measured 2026-08-11:** `MDS Summit Singapore` had `topic_profile {}`, `audience null`, 116
+registrations. Topics are kept only at **lift ≥ 1.3** over the community baseline and the
+Summit's best was **Sourcing & Suppliers at 1.29** — discarding International Expansion
+(**55 members**), Amazon FBA (41), Walmart · DTC & Shopify · Hiring & Team · Logistics & 3PL
+(38 each), Supplements (36). A flagship mirrors the community by definition, so lift can never
+fire. **Andy's framing decided the design:** a Summit is not topic-specific, so the answer is
+not a better topic vector — it is a different question.
+
+**Accept when** asking what the Summit is returns members-only + four days + a real format
+element + a room fact with a count · the same for Inspire · a one-hour call still reads as a
+topic (lift model untouched) · the room reports counts, never scores · gate GREEN · verified in
+the prod node.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-12 — awaiting Andy's promote
+**The fix, in three layers:** ① `digest.event_series_profile` — curated identity + format for the
+two series, from the pages Andy linked (`scripts/seed_event_series.py`). ② `refresh_entity_dossiers`
+gains a flagship branch filling `reception->'room'` from **headcount**; lift untouched for topical
+events. ③ `event_lookup_v3` returns `what_it_is` + `room`. Plus one Answer Seed rule. Commits
+`a6f43af` · `82d0437` · `25f4ae6` · staging `2ecf4e62`.
+
+| AC | result |
+|---|---|
+| what the Summit is | ✅ *"members-only, runs four days, built for deep peer-to-peer connection rather than sit-and-listen panels… 151 registered… the room skews heavily toward International Expansion (55 members), plus Amazon FBA, Walmart, DTC & Shopify, Hiring & Team, Logistics & 3PL… mostly US, Australia, Canada, Singapore, Thailand, spanning 1-5M up through 20M+"* (#31079) |
+| the same for Inspire | ✅ *"the flagship open MDS conference — 400+ seven-to-nine-figure ecommerce founders across Amazon, TikTok Shop and DTC, now in its fifth year… open publicly (not members-only)"* (#31085) |
+| a one-hour call still reads as a topic | ✅ Pre-Event Dinner keeps its lift profile (Sourcing & Suppliers 0.654, DTC & Shopify 0.578) with `has_room=false`; last Mogul Call unchanged and its summary still binds (#31089/#31091) |
+| the room reports counts, never scores | ✅ gate **247 → 249 exit-0**: room carries only `{topic, members}` ints, and exactly ONE row of twelve carries a room |
+| verified in the prod node | ⏳ the promote step |
+
+**Before → after:** `topic_profile {}` and "draws a strong member crowd" → what it is, how it runs,
+and 55/41/38/36 members by topic with country and revenue spread.
+
+**Two data faults found while verifying and fixed before shipping:** countries were double-coded
+(`US` 29 + `United States` 23 as separate rows) → `digest.country_fold`, which `chapter_info`
+already used: **United States 52**. Niches mixed two taxonomies and fragmented (`Supplements` 3 /
+`supplements` 3 / `Health-Beauty-Supplements` 4 in a 117-person room) → categories unnested and
+folded on punctuation/spacing/"and": **Housewares 27+9 = the true 36**.
+
+**The plan's own assumption was wrong and the plan caught it:** `style='Main'` is not a flagship
+flag — it also marks the Night Out, both Pre-Event Dinners, the Women's and Speaker's Lunches,
+"Wim Hoff Experience at MDS Inspire" and the separate Centurion Summit. Headcount cannot separate
+them either (Inspire 2027 has 44 confirmed and is still filling, against the Pre-Event Dinner's
+33). The NAME does, so `exclude_pattern` is stored as data: **14 flagships kept, all 7 side events
+dropped**.
+
+**Named remainder — flagged, not chased:** one event now reports **three different counts** in
+adjacent turns — 151 (`event_lookup` registered_count, all ticket types), 117 (dossier
+`member_registrations`), 108 (`event_who` confirmed members only). Each is internally correct and
+the seed already carries a COUNT WORDING rule; putting them side by side is what made it visible.
+Worth its own ticket.
+
+---
 
 ### #81 · She declines the question she was built for — and calls missing joins "I can't"
 **🔴 S1 · size M — filed 2026-08-11 (Andy, from two live WhatsApp sessions; he rated follow-ups 3/10)**

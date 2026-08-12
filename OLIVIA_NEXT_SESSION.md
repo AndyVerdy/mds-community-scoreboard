@@ -19,7 +19,21 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-11 (late night): SPRINT 3 OPEN · PROD `c59fd3ff` · #81 STAGED `670fdc57`
+## STATE 2026-08-12: SPRINT 3 OPEN · PROD `fd957034` · #82 STAGED `2ecf4e62`
+
+**#81 is LIVE on prod `fd957034`** (people + stats lanes: named matches with reasons, gender
+cross-tabs, no "I can\'t" openers, no location in brackets).
+
+**#82 (flagship dossiers) is BUILT + STAGED + PROVEN;** the SQL half is live in the DB, the Answer
+Seed half waits on the promote. "what is the singapore summit?" now returns members-only + four
+days + the format + 55 members on international expansion. Gate **249 exit-0**.
+**Andy: `OLIVIA_GATE_PHONE=16196077048 python3 scripts/olivia_wf.py promote`, then re-probe.**
+
+**Flagged, not chased:** one event reports three different counts in adjacent turns — 151
+(`event_lookup`, all ticket types), 117 (dossier), 108 (`event_who`, confirmed members). Each is
+internally correct; worth its own ticket.
+
+## STATE 2026-08-11 (late night, superseded): PROD `c59fd3ff` · #81 STAGED
 
 **#81 (people + stats lanes) is BUILT + STAGED + PROVEN; the SQL half is already live in the DB,
 the Answer Seed half waits on the promote.** "who is the best match to me?" now names people with

@@ -1210,6 +1210,20 @@ def main():
                             profile_hdr=["Accept-Profile: digest"])
             check(f"anon key denied on {tbl}", st in (401, 403, 404), f"status {st}")
 
+        # #82: a flagship room is described in HEADCOUNTS. A score, lift or percentile in
+        # there would put an internal ranking in front of a member.
+        st, rows = rpc("event_lookup_v3",
+                       {"p_phone": phone, "p_terms": ["singapore", "summit"],
+                        "p_include_past": True}, key)
+        rooms = [r.get("room") for r in (rows or [])
+                 if isinstance(r, dict) and r.get("room")] if isinstance(rows, list) else []
+        bad = [t for rm in rooms for t in (rm.get("topics") or [])
+               if set(t.keys()) != {"topic", "members"} or not isinstance(t.get("members"), int)]
+        check("event_lookup_v3 room reports member COUNTS only (#82)", not bad,
+              f"{len(bad)} malformed of {sum(len(r.get('topics') or []) for r in rooms)}")
+        check("event_lookup_v3 room exists for the flagship, not its side events (#82)",
+              len(rooms) == 1, f"{len(rooms)} rows carry a room")
+
         # #81: event_who now carries fit_reason. Fit is a REASON in words; the weight,
         # rank and percentile stay inside the function (standing rule: score never shown).
         # NOTE: a naive "no digits" test false-fires on real topic names like "3PL" — the

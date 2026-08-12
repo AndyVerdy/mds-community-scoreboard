@@ -6,6 +6,63 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-12 — #82 CLOSED (staged `2ecf4e62`) — the biggest events finally have a dossier
+
+**Andy's framing decided the design:** "summits and Inspire are not topic-specific… missing
+dossier for Summit or Inspire is genuinely bad." Both halves were right. The answer was not a
+better topic vector — it was a different question. Plan:
+`docs/superpowers/plans/2026-08-12-82-flagship-event-dossiers.md`.
+
+### Root cause
+Event topic profiles keep a topic only at **lift ≥ 1.3** over the community baseline. A flagship
+draws a representative slice of MDS, so lift is ~1.0 on everything: the Singapore Summit's best
+was **Sourcing & Suppliers at 1.29**, and the profile computed to `{}`. Discarded in the process:
+International Expansion **55 members**, Amazon FBA 41, Walmart/DTC/Hiring/Logistics 38 each,
+Supplements 36. Lift is the right question for a Channel Call and the wrong one for a Summit.
+
+### What shipped
+- `digest.event_series_profile` (`a6f43af`) — curated identity + format for the two series, from
+  the mds.co pages Andy linked. `source_url` + `refreshed_at` make a re-check cheap.
+- `refresh_entity_dossiers` (`82d0437`) — flagship branch fills `reception->'room'` from
+  HEADCOUNT; lift untouched for topical events.
+- `event_lookup_v3` (`25f4ae6`) — returns `what_it_is` + `room`. DROP+CREATE, **with the revoke in
+  the same migration**, and anon-denial verified BEFORE anything else.
+- Answer Seed rule FLAGSHIP EVENTS ARE ROOMS + the widened tool description.
+- Gate **247 → 249 exit-0** (room carries only `{topic, members}` ints; exactly one row of twelve
+  carries a room).
+
+### Three things the verification caught that the plan had wrong or missed
+1. **`style='Main'` is not a flagship flag.** It also marks the Night Out, both Pre-Event Dinners,
+   the Women's and Speaker's Lunches, "Wim Hoff Experience at MDS Inspire" and the separate
+   Centurion Summit. Headcount cannot separate them either — Inspire 2027 has 44 confirmed and is
+   still filling, against the Pre-Event Dinner's 33. The NAME does; `exclude_pattern` is stored as
+   data. 14 flagships kept, all 7 side events dropped.
+2. **Countries were double-coded** — `US` 29 and `United States` 23 as separate rows. Fixed with
+   `digest.country_fold`, which `chapter_info` already used: United States 52.
+3. **Niches mixed two taxonomies and fragmented** — `Supplements` 3 / `supplements` 3 /
+   `Health-Beauty-Supplements` 4 in a 117-person room. Switched to categories, folded on
+   punctuation/spacing/"and": Housewares 27+9 = the true 36.
+
+### Proven on staging
+*"what is the singapore summit?"* → members-only, four days, peer-to-peer rather than panels, 55
+members on international expansion, the country and revenue spread (#31079). *"what is MDS
+Inspire?"* → the open 400+ founder conference in its fifth year (#31085). Regressions: Pre-Event
+Dinner keeps its lift profile with `has_room=false`; last Mogul Call unchanged and its summary
+still binds (#80); who-is-going still names people with reasons (#81); event browse enriched as a
+bonus.
+
+### Flagged, not chased
+One event now reports **three different counts** in adjacent turns — 151 (`event_lookup`
+registered_count, all ticket types), 117 (dossier `member_registrations`), 108 (`event_who`
+confirmed members). Each is internally correct; putting them side by side is what made it visible.
+Deserves its own ticket.
+
+### Next
+Andy: promote (`OLIVIA_GATE_PHONE=16196077048 python3 scripts/olivia_wf.py promote`), then re-probe
+"what is the singapore summit?" on prod.
+
+---
+
 ## 2026-08-11 (late night) — #81 CLOSED (staged `670fdc57`) + a leak I introduced and closed
 
 **Andy's protocol: systematic-debugging → findings → writing-plans → executing-plans.**
