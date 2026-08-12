@@ -19,7 +19,17 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-12: SPRINT 3 OPEN · PROD `fd957034` · #82 STAGED `2ecf4e62`
+## STATE 2026-08-12 (later): SPRINT 3 OPEN · PROD `e988a6a3` — #82 IS LIVE
+
+**PROMOTED 20:51 UTC:** `fd957034` to **`e988a6a3`** (Answer Seed only), gate green inside on the
+DEFAULT probe. Prod verified: *"the biggest MDS gathering of the year — a members-only, four-day
+event built for real peer-to-peer depth rather than sitting through panels… International Expansion
+(57) leads the pack… Logistics & 3PL (41)"*. Topical events unchanged (last Mogul Call correct).
+
+**Everything from this stretch is now live:** #75 reactions · #79 intro · #80 offer binding ·
+#81 people + stats lanes · #82 flagship dossiers. Gate **253 exit-0**.
+
+## STATE 2026-08-12 (earlier, superseded): PROD `fd957034` · #82 STAGED `2ecf4e62`
 
 **#81 is LIVE on prod `fd957034`** (people + stats lanes: named matches with reasons, gender
 cross-tabs, no "I can\'t" openers, no location in brackets).

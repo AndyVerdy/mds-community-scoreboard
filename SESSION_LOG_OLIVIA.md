@@ -6,6 +6,33 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-12 (later) — #82 PROMOTED · prod `e988a6a3` · four anon-callable job functions revoked
+
+**Promoted 20:51 UTC on Andy’s order:** `fd957034` to **`e988a6a3`**, Answer Seed only, gate green
+inside the promote — and on the DEFAULT probe, because Andy’s `channels_present` came back (18
+chats). The `OLIVIA_GATE_PHONE` override is now just a knob, not a requirement.
+
+**Prod verified:** *"MDS Summit Singapore is the biggest MDS gathering of the year — a members-only,
+four-day event built for real peer-to-peer depth rather than sitting through panels… International
+Expansion (57) leads the pack… Logistics & 3PL (41 members)… mostly US, plus Australia, Canada,
+Singapore and Thailand, spanning all revenue bands"*, `sources_used=[event_lookup]`. Topical
+regression clean: last Mogul Call still date-correct with its link and summary offer.
+
+**Also closed in this stretch:** four digest functions were callable with the public anon key —
+`fb_link_content`, `olivia_touch`, `rebuild_question_map`, `zoom_resolve_attendance`. No data leaked
+(void or a jsonb job summary) but each writes or runs heavy work. Revoked, service_role re-granted,
+anon 401 x4 verified and `olivia_touch` still 204 as service_role. **Gate 249 to 253**, one check per
+function so a new job function cannot arrive open unnoticed. Pure helpers left open deliberately.
+
+**Two earlier flags cleared on a fresh check:** Andy’s `channels_present` recovered; only ONE
+catalog row is named "MDS Summit Singapore" (the duplicate flag was wrong).
+
+**Open for Andy:** which count a member should hear — 151 (`event_lookup`, every ticket type), 117
+(dossier), 108 (`event_who`, confirmed members). All correct for their filter; narrowing the lookup
+drops the number on every event, so it is a product call, not a bug fix.
+
+---
+
 ## 2026-08-12 — #82 CLOSED (staged `2ecf4e62`) — the biggest events finally have a dossier
 
 **Andy's framing decided the design:** "summits and Inspire are not topic-specific… missing

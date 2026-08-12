@@ -50,7 +50,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
-| **#82** | Flagship events (Summit, Inspire) carry what-they-are + who-is-in-the-room | 🔴 S1 | M | ✅ proven `2ecf4e62` | ⏳ **awaiting promote** |
+| **#82** | Flagship events (Summit, Inspire) carry what-they-are + who-is-in-the-room | 🔴 S1 | M | ✅ proven `2ecf4e62` | ✅ **LIVE** `e988a6a3` (prod probe) |
 | **#81** | People + stats lanes answer what we have the data for (fit_reason, gender split) | 🔴 S1 | M | ✅ proven `3d5f2b1b` | ✅ **LIVE** `fd957034` (prod probe: named + reasons) |
 | **#79** | Intro message rewritten — MDS AI assistant, early beta, current capabilities | 🔵 S3 | S | ✅ proven `d839a024` | ✅ **LIVE** `c59fd3ff` (byte-identical to approved copy) |
 | **#80** | Offer binding: accepted offers deliver the teased video (+ offer rules) | 🔴 S1 | M | ✅ proven `dcc75770` | ✅ **LIVE** `c59fd3ff` (prod probe: `video_search`) |
@@ -1509,7 +1509,7 @@ events. ③ `event_lookup_v3` returns `what_it_is` + `room`. Plus one Answer See
 | the same for Inspire | ✅ *"the flagship open MDS conference — 400+ seven-to-nine-figure ecommerce founders across Amazon, TikTok Shop and DTC, now in its fifth year… open publicly (not members-only)"* (#31085) |
 | a one-hour call still reads as a topic | ✅ Pre-Event Dinner keeps its lift profile (Sourcing & Suppliers 0.654, DTC & Shopify 0.578) with `has_room=false`; last Mogul Call unchanged and its summary still binds (#31089/#31091) |
 | the room reports counts, never scores | ✅ gate **247 → 249 exit-0**: room carries only `{topic, members}` ints, and exactly ONE row of twelve carries a room |
-| verified in the prod node | ⏳ the promote step |
+| verified in the prod node | ✅ **PROMOTED 2026-08-12 20:51 UTC** `fd957034` to **`e988a6a3`**, gate green inside (DEFAULT probe). Prod: *"the biggest MDS gathering of the year — a members-only, four-day event built for real peer-to-peer depth rather than sitting through panels… International Expansion (57) leads the pack… Logistics & 3PL (41)"*, `sources_used=[event_lookup]`. Topical regression: last Mogul Call unchanged |
 
 **Before → after:** `topic_profile {}` and "draws a strong member crowd" → what it is, how it runs,
 and 55/41/38/36 members by topic with country and revenue spread.
