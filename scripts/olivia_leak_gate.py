@@ -1210,6 +1210,19 @@ def main():
                             profile_hdr=["Accept-Profile: digest"])
             check(f"anon key denied on {tbl}", st in (401, 403, 404), f"status {st}")
 
+        # #62/#82: no digest function that WRITES or runs a job may be anon-callable. The
+        # pure helpers (country_fold, en_rank, term_cover, geo_*, pct_from_answer, profile_rank,
+        # state_region_states, country_region_countries) take arguments, touch no table and are
+        # deliberately left open. Postgres grants EXECUTE to PUBLIC by default on CREATE
+        # FUNCTION, so a new job function arrives open unless its migration revokes.
+        for fn, fnbody in (("fb_link_content", {}),
+                           ("olivia_touch", {"p_phone": phone}),
+                           ("rebuild_question_map", {}),
+                           ("zoom_resolve_attendance", {})):
+            st, _b = rpc(fn, fnbody, ANON_KEY)
+            check(f"anon denied on {fn} (writes/runs a job)", st in (401, 403, 404),
+                  f"status {st}")
+
         # #82: a flagship room is described in HEADCOUNTS. A score, lift or percentile in
         # there would put an internal ranking in front of a member.
         st, rows = rpc("event_lookup_v3",

@@ -1527,6 +1527,17 @@ them either (Inspire 2027 has 44 confirmed and is still filling, against the Pre
 33). The NAME does, so `exclude_pattern` is stored as data: **14 flagships kept, all 7 side events
 dropped**.
 
+**Closed during #82 (2026-08-12):** four digest functions were anon-callable — `fb_link_content`,
+`olivia_touch`, `rebuild_question_map`, `zoom_resolve_attendance`. They read nothing back (void or
+a jsonb job summary) so it was never a leak, but each WRITES or runs heavy work, so anyone holding
+the public anon key could trigger it repeatedly. Same root cause as the two leaks of 2026-08-11:
+Postgres grants EXECUTE to PUBLIC by default and nothing had ever revoked it. Revoked, service_role
+re-granted, verified anon 401 ×4 and `olivia_touch` still 204 as service_role. **Gate 249 → 253**
+with a check per function, so a new job function cannot arrive open unnoticed. The pure helpers
+(`country_fold`, `en_rank`, `term_cover`, `geo_*`, `pct_from_answer`, `profile_rank`,
+`state_region_states`, `country_region_countries`) are deliberately left open — they take arguments,
+touch no table, return a computed value.
+
 **Named remainder — flagged, not chased:** one event now reports **three different counts** in
 adjacent turns — 151 (`event_lookup` registered_count, all ticket types), 117 (dossier
 `member_registrations`), 108 (`event_who` confirmed members only). Each is internally correct and

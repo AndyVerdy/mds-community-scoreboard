@@ -29,9 +29,20 @@ Seed half waits on the promote. "what is the singapore summit?" now returns memb
 days + the format + 55 members on international expansion. Gate **249 exit-0**.
 **Andy: `OLIVIA_GATE_PHONE=16196077048 python3 scripts/olivia_wf.py promote`, then re-probe.**
 
-**Flagged, not chased:** one event reports three different counts in adjacent turns — 151
-(`event_lookup`, all ticket types), 117 (dossier), 108 (`event_who`, confirmed members). Each is
-internally correct; worth its own ticket.
+**Two earlier flags CLEARED on a fresh check 2026-08-12:** Andy\'s `channels_present` is back
+(18 chats), so the gate runs on its DEFAULT probe again — the `OLIVIA_GATE_PHONE` override is no
+longer needed, only kept as a knob. And there is only ONE catalog row named "MDS Summit Singapore",
+so the duplicate-event flag was wrong.
+
+**Closed 2026-08-12:** four anon-callable job functions (`fb_link_content`, `olivia_touch`,
+`rebuild_question_map`, `zoom_resolve_attendance`) revoked — no data read, but each writes or runs
+heavy work. Gate **249 → 253**, one check each.
+
+**Flagged, needs ANDY\'S RULING (not a bug):** one event reports three counts — 151
+(`event_lookup`, every ticket type incl. partners/sponsors/guests), 117 (dossier), 108
+(`event_who`, confirmed members only). All three are correct for their filter. The question is
+which number a member should hear for "how many are going?" — total attendance or member
+attendance. Narrowing `event_lookup` drops the number on EVERY event, so it is a product call.
 
 ## STATE 2026-08-11 (late night, superseded): PROD `c59fd3ff` · #81 STAGED
 
