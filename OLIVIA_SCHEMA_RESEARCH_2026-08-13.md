@@ -397,8 +397,11 @@ Not speed — foreign keys and function placement do not change query time. The 
 
 Not a migration. Four moves, in order of payoff:
 
-1. **Integrity moves in** — foreign keys, CHECKs, and a Postgres domain type per `rec` space so the
-   two can never be assigned to one another. This is the §2 root cause and the §3.1 bug class.
+1. **Integrity moves in** — foreign keys and CHECKs, so a value from the wrong `rec` space is
+   rejected rather than silently matching nothing. This is the §2 root cause and the §3.1 bug
+   class. *(An earlier draft proposed a Postgres domain type per key space; that was wrong —
+   domains over the same base type stay mutually assignable through `text`. The FK is the
+   enforcement. See the design doc §3.)*
 2. **Version routing dies** — one version per lane, the `EXEC_NAME` indirection removed.
 3. **Fail-open becomes fail-loud** — the swallowed exceptions get logged and alarmed.
 4. **Presentation moves out opportunistically** — when a function is being touched anyway, not as
@@ -430,8 +433,9 @@ For the record, since the external review specifically predicted this:
    `airtable_id` and only 8 as a join key. Options: promote `at_member_id` to an enforced key with
    FKs, or demote it and make `airtable_id` canonical. The current split is the one indefensible
    state.
-2. **Do the two `rec`-shaped spaces stay indistinguishable?** A Postgres domain type per space
-   would make a wrong assignment a type error rather than a silent empty join.
+2. **Do the two `rec`-shaped spaces stay indistinguishable?** A foreign key per column is the only
+   mechanism that actually separates them — a wrong-space value fails the lookup instead of
+   matching nothing. (Domain types do not work here; see the design doc §3.)
 3. **What happens to rows that cannot be matched?** 8,036 unstamped form responses and 2,779
    unresolved Zoom attendees are honest unknowns. A NOT NULL FK would reject them. A nullable FK
    accepts them but still forbids a *wrong* value — probably the right shape, but it needs a ruling.
