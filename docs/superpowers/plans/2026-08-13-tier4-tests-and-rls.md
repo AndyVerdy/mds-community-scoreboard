@@ -254,6 +254,13 @@ So this is not a live vulnerability. It is a schema that **looks** defended in a
 
 Present these three options and get an explicit answer. Do not proceed on an assumption.
 
+> ⚠️ **Measured 2026-08-13, and it reframes this decision:** `service_role` carries `BYPASSRLS`, and
+> `anon`/`authenticated` **cannot log in at all** (`rolcanlogin = false`) and hold zero table
+> privileges. Everything in the stack runs as `service_role`. So policies added today would protect
+> **nothing** on the current architecture — they are preparation for a future in which the portal
+> connects as `authenticated`, not remediation of a present gap. Cost options (b) and (c) as
+> preparation, and weigh (a) accordingly. See risk register §3.
+
 **(a) Turn RLS off on all 26 tables.** Honest: the grant layer is the boundary, and the schema stops implying otherwise. ~0.5 session. Risk: if a future client ever connects as `authenticated` rather than `service_role`, there is no second line of defence.
 
 **(b) Write real policies on all 26.** Defence in depth: even a leaked `authenticated` token reads nothing it should not. ~2 sessions. Risk: policies that disagree with the function-level gating produce confusing double-filtering, and `service_role` bypasses them anyway so they are hard to test.

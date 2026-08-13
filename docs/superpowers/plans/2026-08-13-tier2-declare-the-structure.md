@@ -10,7 +10,13 @@
 
 ## Global Constraints
 
+> ⚠️ **READ THE RISK REGISTER FIRST:** `docs/superpowers/specs/2026-08-13-digest-schema-risk-register.md` §3.
+> Two corrections to this plan: **Task 4's loader update must happen BEFORE its foreign key**, not
+> after — the written order loses the first submission from any new form. And constraints should be
+> added outside member-active hours (the portal is live: 55 members, 102 sessions).
+
 - **Tier 1 must be complete and committed first.** Task 2 of this plan adds a foreign key on the exact column Tier 1 Task 3 backfilled; running them out of order fails the validation.
+- **Tier 1 Task 10 (fail-loud) is a HARD prerequisite for this entire tier.** A `NOT VALID` constraint rejects a bad write from the moment it exists. Without `digest.job_errors` and unswallowed exceptions, that rejection is absorbed by a trigger and the monitoring reports green — meaning the primary detection mechanism for this tier's primary risk would not exist.
 - **Supabase project id:** `nadtudwuwjhckotrngzn`. Schema: `digest`.
 - **The leak gate must exit 0 before and after every task.** `python3 scripts/olivia_leak_gate.py`, baseline 253 checks.
 - **Re-export after every DDL** — `python3 scripts/db_export_schema.py` — and commit the `db/` diff with the change.

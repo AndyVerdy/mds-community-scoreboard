@@ -10,6 +10,14 @@
 
 ## Global Constraints
 
+> ⚠️ **READ THE RISK REGISTER FIRST:** `docs/superpowers/specs/2026-08-13-digest-schema-risk-register.md` §3.
+> Task 2 carries **R1, the only risk in the whole programme whose damage cannot be rolled back**.
+> Three corrections: the visibility baseline must cover **every active member**, not 20; results must
+> be reported **per `rule_type`** so an owner-rule regression cannot hide inside a public-rule
+> majority; and because `can_see` is `SECURITY DEFINER` and takes `at_member_id` as an argument,
+> **every call site must derive that id from `resolve_asker`, never from member-supplied input** —
+> otherwise it is a direct IDOR.
+
 - **Tiers 1 and 2 must be complete.** This plan assumes foreign keys exist and the two `rec` key spaces are already separated. Building a link table on unenforced keys reproduces the original problem in a new table.
 - **Supabase project id:** `nadtudwuwjhckotrngzn`. Schema: `digest`.
 - **Gate exit 0 before and after every task**, and additionally **before and after every consumer migration inside Task 2** — that task moves the privacy boundary.

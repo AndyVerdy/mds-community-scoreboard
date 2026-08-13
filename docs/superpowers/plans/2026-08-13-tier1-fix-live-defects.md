@@ -8,6 +8,13 @@
 
 **Tech Stack:** Postgres 17 (Supabase), PL/pgSQL, `scripts/olivia_leak_gate.py`, `scripts/db_export_schema.py`, n8n (one task only).
 
+> ⚠️ **READ THE RISK REGISTER FIRST:** `docs/superpowers/specs/2026-08-13-digest-schema-risk-register.md`.
+> It corrects the task order below. **Tasks 2–5 must run consumers-first, not writers-first** — the
+> written order leaves a window in which author attribution is zero for *every* source, worse than
+> production today. Register §2 gives the corrected sequence and the transitional join. The register
+> also adds a required snapshot before Task 1's delete, and flags that Task 8's rename must grep the
+> separate `mds-digest-web` repository. Task 10 (fail-loud) is a hard prerequisite for all of Tier 2.
+
 ## Global Constraints
 
 - **Supabase project id:** `nadtudwuwjhckotrngzn`. Schema: `digest`.
