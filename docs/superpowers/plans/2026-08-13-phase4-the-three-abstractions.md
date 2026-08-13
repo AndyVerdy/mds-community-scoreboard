@@ -1,4 +1,4 @@
-# Tier 3 — The Three Abstractions Implementation Plan
+# Phase 4 — The Three Abstractions Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -18,9 +18,9 @@
 > **every call site must derive that id from `resolve_asker`, never from member-supplied input** —
 > otherwise it is a direct IDOR.
 
-- **Tiers 1 and 2 must be complete.** This plan assumes foreign keys exist and the two `rec` key spaces are already separated. Building a link table on unenforced keys reproduces the original problem in a new table.
+- **Phases 2 and 3 must be complete.** This plan assumes foreign keys exist and the two `rec` key spaces are already separated. Building a link table on unenforced keys reproduces the original problem in a new table.
 - **Supabase project id:** `nadtudwuwjhckotrngzn`. Schema: `digest`.
-- **🔴 THE PROD PULSE RUNS BEFORE AND AFTER EVERY STEP**, and inside Task 2 before and after **every individual consumer migration**. `python3 scripts/prod_pulse.py` — exit 1 means STOP. Re-baseline at the start of the tier.
+- **🔴 THE PROD PULSE RUNS BEFORE AND AFTER EVERY STEP**, and inside Task 2 before and after **every individual consumer migration**. `python3 scripts/prod_pulse.py` — exit 1 means STOP. Re-baseline at the start of the phase.
 - **Gate exit 0 before and after every task**, and additionally **before and after every consumer migration inside Task 2** — that task moves the privacy boundary.
 - **Re-export after every DDL**; commit the `db/` diff with the change.
 - **`DROP FUNCTION` re-grants EXECUTE to PUBLIC.** Every drop-and-recreate carries its `revoke all … from public, anon, authenticated`.
@@ -56,7 +56,7 @@
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier3_task1_link_table.sql
+-- tests/assertions/phase4_task1_link_table.sql
 select to_regclass('digest.member_link') is not null as exists,
        coalesce((select count(distinct source) from digest.member_link), 0) as sources;
 -- EXPECTED AFTER FIX: true, >= 5
@@ -64,7 +64,7 @@ select to_regclass('digest.member_link') is not null as exists,
 
 - [ ] **Step 2: Create the table**
 
-Migration name: `tier3_member_link_20260813`
+Migration name: `phase4_member_link_20260813`
 
 ```sql
 create table digest.member_link (
@@ -88,7 +88,7 @@ comment on table digest.member_link is
   'Every external identity that resolves to a member, in one place. A new data
    source adds ROWS here, not a new bridge table. method/confidence make fuzzy
    bindings auditable -- previously a 4-character surname stem match was
-   indistinguishable from an exact one. Tier 3 Task 1.';
+   indistinguishable from an exact one. Phase 4 Task 1.';
 ```
 
 `method` and `confidence` are the point: `zoom_resolve_attendance` currently binds on a first name plus a four-character surname stem, gated only by `count(*)=1`, and the result is stored identically to an exact phone match. After this, a fuzzy binding is visible as fuzzy.
@@ -116,7 +116,7 @@ select 'wa_airtable_id', m.airtable_id, m.at_member_id, 'exact', 1.0
 from digest.members m where m.at_member_id is not null
 on conflict (source, external_id) do nothing;
 
--- video_speakers, if Tier 1 Task 8 resolved them by email
+-- video_speakers, if Phase 2 Task 8 resolved them by email
 insert into digest.member_link (source, external_id, at_member_id, method, confidence)
 select 'groupos_user', v.groupos_user_id, v.at_member_id, 'email', 0.9
 from digest.video_speakers v where v.at_member_id is not null
@@ -180,7 +180,7 @@ Do **not** drop `fb_member_map`, `zoom_name_alias` or `member_phone_index` in th
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier3_task1_link_table.sql
+git add db/ tests/assertions/phase4_task1_link_table.sql
 git commit -m "feat: member_link -- one table for every external identity
 
 Three binding shapes (bridge table, bridge column, fuzzy stamp) across 14 keys
@@ -211,7 +211,7 @@ Gate 253 exit 0."
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier3_task2_one_access_chokepoint.sql
+-- tests/assertions/phase4_task2_one_access_chokepoint.sql
 select count(*) as functions_interpreting_access_rule
 from pg_proc where pronamespace='digest'::regnamespace
   and pg_get_functiondef(oid) like '%access_rule->>%'
@@ -228,21 +228,21 @@ Expected now: **10**. List them; they are the migration checklist.
 For a representative set of 20 members × the full content table, capture exactly what each can see today:
 
 ```sql
-create table digest._tier3_visibility_baseline as
+create table digest._phase4_visibility_baseline as
 select p.at_member_id, ci.id as content_id
 from (select at_member_id from digest.member_attributes
       where digest.is_active_member_status(membership_status) limit 20) p
 cross join digest.content_items ci
 where ci.access_rule->>'type' = 'public'
    or (ci.access_rule->>'type' = 'owner' and ci.access_rule->>'member' = p.at_member_id);
-select count(*) from digest._tier3_visibility_baseline;
+select count(*) from digest._phase4_visibility_baseline;
 ```
 
 Every migrated consumer is diffed against this. **A visibility change in either direction is a failure** — showing less breaks the product, showing more is a leak.
 
 - [ ] **Step 4: Build the rule table and the chokepoint**
 
-Migration name: `tier3_audience_rules_20260813`
+Migration name: `phase4_audience_rules_20260813`
 
 ```sql
 create table digest.audience_rule (
@@ -338,7 +338,7 @@ select count(*) from digest.content_items where audience_rule_id is null;
 
 ```sql
 select count(*) as disagreements
-from digest._tier3_visibility_baseline b
+from digest._phase4_visibility_baseline b
 where digest.can_see(b.at_member_id, b.content_id) is not true;
 -- EXPECTED: 0
 
@@ -347,7 +347,7 @@ from (select at_member_id from digest.member_attributes
       where digest.is_active_member_status(membership_status) limit 20) p
 cross join digest.content_items ci
 where digest.can_see(p.at_member_id, ci.id)
-  and not exists (select 1 from digest._tier3_visibility_baseline b
+  and not exists (select 1 from digest._phase4_visibility_baseline b
                   where b.at_member_id = p.at_member_id and b.content_id = ci.id);
 -- EXPECTED: 0. Anything above 0 is a leak. Do not proceed.
 ```
@@ -367,7 +367,7 @@ Separate commit, separate session. Keep `access_rule` in place, unread, for a we
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier3_task2_one_access_chokepoint.sql
+git add db/ tests/assertions/phase4_task2_one_access_chokepoint.sql
 git commit -m "feat: audience as data -- one can_see chokepoint replaces 10 jsonb branches
 
 A fifth access type meant 10 edits on the privacy boundary. Now it is a row.
@@ -394,7 +394,7 @@ Gate 253 exit 0."
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier3_task3_participation.sql
+-- tests/assertions/phase4_task3_participation.sql
 select to_regclass('digest.participation') is not null as exists,
        coalesce((select count(distinct role) from digest.participation), 0) as roles;
 -- EXPECTED AFTER FIX: true, >= 4
@@ -402,7 +402,7 @@ select to_regclass('digest.participation') is not null as exists,
 
 - [ ] **Step 2: Create the table**
 
-Migration name: `tier3_participation_20260813`
+Migration name: `phase4_participation_20260813`
 
 ```sql
 create table digest.participation (
@@ -426,7 +426,7 @@ grant select, insert, update, delete on table digest.participation to service_ro
 comment on table digest.participation is
   'One row per person-did-a-thing-to-an-entity. at_member_id nullable BY DESIGN --
    a speaker or attendee who is not a member is a real participant, carried by
-   person_name. Replaces five separate implementations. Tier 3 Task 3.';
+   person_name. Replaces five separate implementations. Phase 4 Task 3.';
 ```
 
 `at_member_id` nullable with `person_name` as the fallback is the direct answer to the speaker case: a non-member speaker is a first-class participant, not a failed match.
@@ -502,7 +502,7 @@ Same discipline as Task 1: stop writing them, wait seven days, confirm no job er
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier3_task3_participation.sql
+git add db/ tests/assertions/phase4_task3_participation.sql
 git commit -m "feat: participation -- one table for speaker, attendee, author, reviewer, registrant
 
 Five implementations of one idea, two of which resolved to nobody. at_member_id is
@@ -514,7 +514,7 @@ Gate 253 exit 0."
 
 ---
 
-## Definition of Done for Tier 3
+## Definition of Done for Phase 4
 
 - [ ] All three assertion queries pass.
 - [ ] `member_link` covers every source; match rate per lane is queryable and alarmed.

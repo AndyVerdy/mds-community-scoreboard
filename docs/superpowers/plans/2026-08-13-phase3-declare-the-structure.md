@@ -1,8 +1,8 @@
-# Tier 2 — Declare the Structure Implementation Plan
+# Phase 3 — Declare the Structure Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make the relationships that already hold in the data enforceable by the database, so the class of bug Tier 1 fixed becomes impossible to write again.
+**Goal:** Make the relationships that already hold in the data enforceable by the database, so the class of bug Phase 2 fixed becomes impossible to write again.
 
 **Architecture:** Foreign keys are added in two statements — `ADD CONSTRAINT … NOT VALID` (instant, no table scan, no lock held, and it protects every *new* write immediately) followed by a separate `VALIDATE CONSTRAINT` (concurrent, interruptible, checks history). Before any constraint touches a table, the loaders that write it are read for insert ordering. Everything is reversible with a single `DROP CONSTRAINT`.
 
@@ -15,10 +15,10 @@
 > after — the written order loses the first submission from any new form. And constraints should be
 > added outside member-active hours (the portal is live: 55 members, 102 sessions).
 
-- **Tier 1 must be complete and committed first.** Task 2 of this plan adds a foreign key on the exact column Tier 1 Task 3 backfilled; running them out of order fails the validation.
-- **Tier 1 Task 10 (fail-loud) is a HARD prerequisite for this entire tier.** A `NOT VALID` constraint rejects a bad write from the moment it exists. Without `digest.job_errors` and unswallowed exceptions, that rejection is absorbed by a trigger and the monitoring reports green — meaning the primary detection mechanism for this tier's primary risk would not exist.
+- **Phase 2 must be complete and committed first.** Task 2 of this plan adds a foreign key on the exact column Phase 2 Task 3 backfilled; running them out of order fails the validation.
+- **Phase 1 is a HARD prerequisite for this entire phase.** A `NOT VALID` constraint rejects a bad write from the moment it exists. Without `digest.job_errors` and unswallowed exceptions, that rejection is absorbed by a trigger and the monitoring reports green — meaning the primary detection mechanism for this phase's primary risk would not exist.
 - **Supabase project id:** `nadtudwuwjhckotrngzn`. Schema: `digest`.
-- **🔴 THE PROD PULSE RUNS BEFORE AND AFTER EVERY STEP.** `python3 scripts/prod_pulse.py` — exit 1 means STOP and roll back that step. Re-baseline with `--save-baseline` at the start of the tier. This tier's dominant risk is a constraint rejecting a live loader's write, and the pulse is how that surfaces within seconds instead of days.
+- **🔴 THE PROD PULSE RUNS BEFORE AND AFTER EVERY STEP.** `python3 scripts/prod_pulse.py` — exit 1 means STOP and roll back that step. Re-baseline with `--save-baseline` at the start of the phase. This phase's dominant risk is a constraint rejecting a live loader's write, and the pulse is how that surfaces within seconds instead of days.
 - **The leak gate must exit 0 before and after every task.** `python3 scripts/olivia_leak_gate.py`, baseline 253 checks. The gate tests refusal; the pulse tests liveness. Both, every time.
 - **Add constraints outside member-active hours.** 55 members hold live portal sessions.
 - **Re-export after every DDL** — `python3 scripts/db_export_schema.py` — and commit the `db/` diff with the change.
@@ -43,7 +43,7 @@
 | `db/views/form_reach.sql` (new) + 6 functions | `form_scope` becomes a chokepoint | 6 |
 | `db/functions/` ×10 families, n8n workflow | One version per lane | 7 |
 
-**Testing note.** Same assertion-query approach as Tier 1. Tier 4 converts these into a pgTAP suite; write each assertion so it lifts unchanged.
+**Testing note.** Same assertion-query approach as Phase 2. Phase 1 converts these into a pgTAP suite; write each assertion so it lifts unchanged.
 
 ---
 
@@ -60,7 +60,7 @@
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier2_task1_seven_fks.sql
+-- tests/assertions/phase3_task1_seven_fks.sql
 select count(*) as declared
 from pg_constraint
 where connamespace = 'digest'::regnamespace and contype = 'f'
@@ -109,7 +109,7 @@ Write one line per table in the commit message stating which script writes it an
 
 - [ ] **Step 5: Add the two unique indexes**
 
-Migration name: `tier2_unique_fk_targets_20260813`
+Migration name: `phase3_unique_fk_targets_20260813`
 
 ```sql
 create unique index concurrently if not exists chats_chat_id_key
@@ -131,7 +131,7 @@ alter table digest.olivia_messages
 
 - [ ] **Step 6: Add the seven constraints as NOT VALID**
 
-Migration name: `tier2_seven_fks_not_valid_20260813`
+Migration name: `phase3_seven_fks_not_valid_20260813`
 
 ```sql
 alter table digest.event_registrations add constraint event_registrations_event_fk
@@ -183,7 +183,7 @@ Repeat for at least one more constraint. Record both errors in the commit messag
 
 Separate statement, separate migration, so it can be interrupted without losing Step 6's protection.
 
-Migration name: `tier2_seven_fks_validate_20260813`
+Migration name: `phase3_seven_fks_validate_20260813`
 
 ```sql
 alter table digest.event_registrations validate constraint event_registrations_event_fk;
@@ -202,7 +202,7 @@ alter table digest.olivia_feedback validate constraint olivia_feedback_wamid_fk;
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier2_task1_seven_fks.sql
+git add db/ tests/assertions/phase3_task1_seven_fks.sql
 git commit -m "feat: declare the seven low-fan-out foreign keys
 
 chats.chat_id and olivia_messages.wamid needed unique constraints first -- both
@@ -227,14 +227,14 @@ Gate 253 exit 0."
 - Consumes: the two-statement pattern from Task 1
 - Produces: 18 foreign keys onto `member_profiles(at_member_id)`
 
-**Background:** this is the task that makes the Tier 1 bug class unwritable — after it, a value from the `members.airtable_id` space cannot be stored in an `at_member_id` column, because the lookup fails. These tables sit under the busiest write paths (persona rebuild, event sync, Olivia's own message log), so loader review is the real work; the constraints themselves are cheap.
+**Background:** this is the task that makes the Phase 2 bug class unwritable — after it, a value from the `members.airtable_id` space cannot be stored in an `at_member_id` column, because the lookup fails. These tables sit under the busiest write paths (persona rebuild, event sync, Olivia's own message log), so loader review is the real work; the constraints themselves are cheap.
 
 The 18: `members`, `member_attributes`, `member_expertise`, `member_niches`, `member_personas`, `member_personas_history`, `member_profile_embeddings`, `member_state_snapshot`, `member_phone_index`, `call_attendance`, `fb_member_map`, `member_events`, `olivia_billing_nudges`, `olivia_reports`, `olivia_requests`, `zoom_name_alias`, `form_responses.member_at_id`, `event_registrations.member_at_id`.
 
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier2_task2_member_fks.sql
+-- tests/assertions/phase3_task2_member_fks.sql
 select count(*) as declared
 from pg_constraint c
 join pg_class p on p.oid = c.confrelid
@@ -304,7 +304,7 @@ Record the verdict per table. Any table whose loader *can* race gets its constra
 
 - [ ] **Step 5: Add all 18 as NOT VALID**
 
-Migration name: `tier2_member_fks_not_valid_20260813`
+Migration name: `phase3_member_fks_not_valid_20260813`
 
 ```sql
 alter table digest.members add constraint members_at_member_fk
@@ -349,7 +349,7 @@ alter table digest.event_registrations add constraint event_registrations_member
 
 - [ ] **Step 6: Prove the key spaces are now separated**
 
-This is the whole point of Tier 2. Demonstrate it explicitly:
+This is the whole point of Phase 3. Demonstrate it explicitly:
 
 ```sql
 begin;
@@ -360,7 +360,7 @@ select m.airtable_id, 'canary-test', 1 from digest.members m limit 1;
 rollback;
 ```
 
-Before Tier 2 this insert succeeded silently and produced a row that joined to nothing. Paste the error into the commit message.
+Before Phase 3 this insert succeeded silently and produced a row that joined to nothing. Paste the error into the commit message.
 
 - [ ] **Step 7: Add the missing index on the busiest FK column**
 
@@ -373,7 +373,7 @@ create index concurrently if not exists olivia_messages_member_idx
 
 - [ ] **Step 8: Validate, in batches**
 
-Migration name: `tier2_member_fks_validate_20260813`
+Migration name: `phase3_member_fks_validate_20260813`
 
 Validate the small tables first, then the large ones (`member_events` 20,456 rows, `event_registrations` 17,985, `form_responses` 13,644). One `validate constraint` statement per table, in the same order as Step 5. If any fails, the orphan check in Step 3 was stale — stop and re-measure rather than deleting rows.
 
@@ -386,7 +386,7 @@ select job, last_ok_at, now() - last_ok_at as age
 from digest.olivia_job_heartbeats order by 2 desc;
 ```
 
-Any job that has not reported since the migration is the failure signal. Also confirm `digest.job_errors` (created in Tier 1 Task 10) is empty of FK violations:
+Any job that has not reported since the migration is the failure signal. Also confirm `digest.job_errors` (created in Phase 1 Task 2) is empty of FK violations:
 
 ```sql
 select source, message, count(*) from digest.job_errors
@@ -400,7 +400,7 @@ group by 1,2;
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier2_task2_member_fks.sql
+git add db/ tests/assertions/phase3_task2_member_fks.sql
 git commit -m "feat: 18 foreign keys onto member_profiles, separating the two rec key spaces
 
 members.airtable_id and member_profiles.at_member_id are both rec+14 with zero
@@ -425,12 +425,12 @@ Gate 253 exit 0."
 **Interfaces:**
 - Produces: `entity_dossier` with four typed nullable columns (`event_at_id`, `video_id`, `partner_id`, `chapter`), each with its own foreign key, plus a CHECK that exactly one is set. `kind` and `entity_id` are retained as generated columns so existing readers keep working.
 
-**Background:** Tier 1 Task 1 fixed the 51 fabricated chapter rows. This task makes them impossible to recreate. The current shape — one polymorphic `entity_id` text column — cannot carry a foreign key at all.
+**Background:** Phase 2 Task 1 fixed the 51 fabricated chapter rows. This task makes them impossible to recreate. The current shape — one polymorphic `entity_id` text column — cannot carry a foreign key at all.
 
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier2_task3_dossier_enforced.sql
+-- tests/assertions/phase3_task3_dossier_enforced.sql
 select count(*) as fks_on_dossier
 from pg_constraint where connamespace='digest'::regnamespace
   and contype='f' and conrelid='digest.entity_dossier'::regclass;
@@ -447,7 +447,7 @@ Expect 5 files. List them in the commit. Any reader using `kind`/`entity_id` kee
 
 - [ ] **Step 3: Add the typed columns and constraints**
 
-Migration name: `tier2_dossier_typed_columns_20260813`
+Migration name: `phase3_dossier_typed_columns_20260813`
 
 ```sql
 alter table digest.entity_dossier
@@ -484,11 +484,11 @@ alter table digest.entity_dossier validate constraint entity_dossier_chapter_fk;
 alter table digest.entity_dossier validate constraint entity_dossier_exactly_one_parent;
 ```
 
-If the chapter FK fails, Tier 1 Task 1 did not fully clean up — re-run its Step 5 delete.
+If the chapter FK fails, Phase 2 Task 1 did not fully clean up — re-run its Step 5 delete.
 
 - [ ] **Step 5: Rewrite the writer to populate typed columns**
 
-In `refresh_entity_dossiers`, each of the four INSERT branches sets its own column instead of `entity_id`. For the chapter branch (already corrected in Tier 1):
+In `refresh_entity_dossiers`, each of the four INSERT branches sets its own column instead of `entity_id`. For the chapter branch (already corrected in Phase 2):
 
 ```sql
   insert into digest.entity_dossier as ed
@@ -515,7 +515,7 @@ values ('chapter','New York Chapter, Women''s Chapter','New York Chapter, Women'
 rollback;
 ```
 
-This is the exact value Tier 1 deleted 51 of. It can no longer be written.
+This is the exact value Phase 2 deleted 51 of. It can no longer be written.
 
 - [ ] **Step 7: Rebuild, gate, re-export, commit**
 
@@ -526,14 +526,14 @@ select * from digest.refresh_entity_dossiers();
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier2_task3_dossier_enforced.sql
+git add db/ tests/assertions/phase3_task3_dossier_enforced.sql
 git commit -m "feat: entity_dossier gains four typed FK columns and a one-parent CHECK
 
 The polymorphic entity_id could not carry a foreign key, which is why 51
 fabricated chapter entities existed. Four nullable typed columns, one FK each, and
 a CHECK that exactly one is set. kind/entity_id retained so readers are unchanged.
 
-Proven: the exact fabricated value Tier 1 deleted is now rejected on insert.
+Proven: the exact fabricated value Phase 2 deleted is now rejected on insert.
 Gate 253 exit 0."
 ```
 
@@ -553,7 +553,7 @@ Gate 253 exit 0."
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier2_task4_forms_registry.sql
+-- tests/assertions/phase3_task4_forms_registry.sql
 select to_regclass('digest.forms') is not null as registry_exists,
        (select count(*) from pg_constraint c join pg_class p on p.oid=c.confrelid
         where c.connamespace='digest'::regnamespace and c.contype='f'
@@ -563,7 +563,7 @@ select to_regclass('digest.forms') is not null as registry_exists,
 
 - [ ] **Step 2: Create and backfill**
 
-Migration name: `tier2_forms_registry_20260813`
+Migration name: `phase3_forms_registry_20260813`
 
 ```sql
 create table digest.forms (
@@ -582,7 +582,7 @@ grant select, insert, update on table digest.forms to service_role;
 comment on table digest.forms is
   'Registry of every Typeform the warehouse has seen. Parent of form_id across
    form_responses, form_field_map, form_scope, form_question_map, form_population.
-   Created 2026-08-13, Tier 2 Task 4.';
+   Created 2026-08-13, Phase 3 Task 4.';
 
 insert into digest.forms (form_id, form_name, scope, population,
                           collects_identifier, first_submission_at, last_submission_at)
@@ -648,7 +648,7 @@ alter table digest.form_question_map validate constraint form_question_map_form_
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ scripts/sync_form_responses.py tests/assertions/tier2_task4_forms_registry.sql
+git add db/ scripts/sync_form_responses.py tests/assertions/phase3_task4_forms_registry.sql
 git commit -m "feat: a forms registry, so form_id has a parent
 
 form_id was a bare text column in 5 tables with no parent -- 161 values in
@@ -694,7 +694,7 @@ select count(*) from digest.<table> where <column> is null;
 
 - [ ] **Step 3: Apply, using NOT VALID where the table is large**
 
-Migration name: `tier2_not_null_20260813`
+Migration name: `phase3_not_null_20260813`
 
 Postgres 17 supports `alter table … add constraint … check (col is not null) not valid` followed by `validate constraint`, which avoids the full-table lock that `set not null` takes. Use that form for any table above ~10,000 rows; use plain `set not null` for the rest.
 
@@ -739,7 +739,7 @@ Gate 253 exit 0."
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier2_task6_scope_chokepoint.sql
+-- tests/assertions/phase3_task6_scope_chokepoint.sql
 select count(*) as out_of_scope_rows_reachable
 from digest.form_answers_exploded e
 where not exists (select 1 from digest.form_scope s
@@ -753,7 +753,7 @@ Expected now: ~**35,394**.
 
 - [ ] **Step 3: Create the chokepoint view**
 
-Migration name: `tier2_form_reach_view_20260813`
+Migration name: `phase3_form_reach_view_20260813`
 
 ```sql
 create or replace view digest.form_reach as
@@ -766,7 +766,7 @@ grant select on digest.form_reach to service_role;
 comment on view digest.form_reach is
   'THE form-scope wall. Every read path that serves a member reads THIS, never
    form_responses directly. Adding a consumer that bypasses it exposes all 156
-   non-scoped forms. Tier 2 Task 6; same pattern as event_registrations_live (#58).';
+   non-scoped forms. Phase 3 Task 6; same pattern as event_registrations_live (#58).';
 ```
 
 - [ ] **Step 4: Repoint the six enforcing functions**
@@ -794,7 +794,7 @@ The gate already checks that `my_form_answers` and `form_field_history` return z
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier2_task6_scope_chokepoint.sql
+git add db/ tests/assertions/phase3_task6_scope_chokepoint.sql
 git commit -m "feat: form_scope becomes one chokepoint view instead of six copies
 
 The scope wall was an identical join repeated in 6 functions and skipped in 3
@@ -813,12 +813,12 @@ Gate 253 exit 0."
 - Modify: 10 function families in `db/functions/`
 - Modify: the n8n workflow's `EXEC_NAME` map
 
-**Background:** ten families carry v1/v2/v3, and n8n rewrites the model-facing tool name onto a versioned implementation at the last inch. That indirection is a deployment mechanism standing in for a release process, and it is why `multi_source_v2` silently routed to stale versions (fixed as a symptom in Tier 1 Task 7; this task removes the cause). Several v1s are **live dependencies** of their v2s, so nothing can simply be deleted.
+**Background:** ten families carry v1/v2/v3, and n8n rewrites the model-facing tool name onto a versioned implementation at the last inch. That indirection is a deployment mechanism standing in for a release process, and it is why `multi_source_v2` silently routed to stale versions (fixed as a symptom in Phase 2 Task 7; this task removes the cause). Several v1s are **live dependencies** of their v2s, so nothing can simply be deleted.
 
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier2_task7_one_version_per_lane.sql
+-- tests/assertions/phase3_task7_one_version_per_lane.sql
 select count(*) as versioned_functions
 from pg_proc where pronamespace='digest'::regnamespace
   and proname ~ '_v[0-9]+$';
@@ -881,12 +881,12 @@ This task changes what the assistant calls for every question, so the gate is ne
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier2_task7_one_version_per_lane.sql
+git add db/ tests/assertions/phase3_task7_one_version_per_lane.sql
 git commit -m "refactor: one implementation per lane, EXEC_NAME indirection removed
 
 Ten families carried v1/v2/v3 with n8n rewriting the tool name at the last inch --
 a deployment mechanism standing in for a release process, and the cause of the
-stale routing Tier 1 fixed as a symptom. Collapsed lowest-traffic first;
+stale routing Phase 2 fixed as a symptom. Collapsed lowest-traffic first;
 content_search last. Every DROP+CREATE carries its revoke.
 
 Eval: <before>% -> <after>% on <n> questions.
@@ -895,7 +895,7 @@ Gate 253 exit 0."
 
 ---
 
-## Definition of Done for Tier 2
+## Definition of Done for Phase 3
 
 - [ ] All seven assertion queries pass.
 - [ ] **25 foreign keys declared and validated** (7 + 18), plus 4 on `entity_dossier` and 4 on `forms` = 33 total, against 13 at the start.

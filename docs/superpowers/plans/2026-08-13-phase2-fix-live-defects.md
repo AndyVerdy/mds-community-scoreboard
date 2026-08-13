@@ -1,4 +1,4 @@
-# Tier 1 — Fix Live Defects Implementation Plan
+# Phase 2 — Fix Live Defects Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -13,14 +13,14 @@
 > written order leaves a window in which author attribution is zero for *every* source, worse than
 > production today. Register §2 gives the corrected sequence and the transitional join. The register
 > also adds a required snapshot before Task 1's delete, and flags that Task 8's rename must grep the
-> separate `mds-digest-web` repository. Task 10 (fail-loud) is a hard prerequisite for all of Tier 2.
+> separate `mds-digest-web` repository. Task 10 (fail-loud) is a hard prerequisite for all of Phase 3.
 
 ## Global Constraints
 
 - **Supabase project id:** `nadtudwuwjhckotrngzn`. Schema: `digest`.
 - **🔴 THE PROD PULSE RUNS BEFORE AND AFTER EVERY SINGLE STEP THAT TOUCHES THE DATABASE.** Not per task — per **step**.
   ```bash
-  python3 scripts/prod_pulse.py --save-baseline   # once, at the start of the tier
+  python3 scripts/prod_pulse.py --save-baseline   # once, at the start of the phase
   python3 scripts/prod_pulse.py                   # before the step, and again after it
   ```
   **Exit 1 means STOP.** Do not proceed, do not "just finish this one". Roll back the step and diagnose. The pulse is read-only and takes seconds; there is no excuse to skip it. It checks that Olivia is still answering, that sends are still delivering, that no new alarm fired, that no heartbeat went backwards, that no table lost rows, and that seven read-only RPCs still return 200. Proven to fail on a forced regression (exit 1) and pass clean (exit 0), 2026-08-13.
@@ -30,7 +30,7 @@
 - **`DROP FUNCTION` re-grants EXECUTE to PUBLIC on the fresh CREATE.** Any migration that drops and recreates a function MUST include `revoke all on function digest.<fn>(<args>) from public, anon, authenticated;` in the same migration. Two live exposures shipped this way on 2026-08-12. Prefer `CREATE OR REPLACE` (which preserves the ACL) wherever the signature is unchanged.
 - **Never fire probes at production against a real member's phone number.** Use staging, or the dedicated test number.
 - **`at_member_id` is canonical.** Where this plan changes an identity key, it moves *toward* `at_member_id` (`member_profiles` PK, 5,931 rows), never toward `members.airtable_id` (659 rows).
-- **Migrations are applied via the Supabase MCP `apply_migration` tool**, named `<tier1_task_slug>_20260813`.
+- **Migrations are applied via the Supabase MCP `apply_migration` tool**, named `<phase2_task_slug>_20260813`.
 - **Commit after every task.** One task, one commit.
 
 ---
@@ -50,7 +50,7 @@
 | `db/tables.sql` (via migration) | The 31 audit COMMENTs, 4 of which are now wrong. | 9 |
 | `db/triggers.sql`, `db/functions/tg_member_event_*.sql`, `olivia_health_check.sql` | Swallow all exceptions. | 10 |
 
-**Testing note.** This codebase has no unit-test framework for SQL — the leak gate checks outputs and permissions, never logic. Tier 1 therefore uses **assertion queries** as its tests: a SELECT that returns a known-wrong value before the fix and a known-right one after. Tier 4 replaces these with pgTAP tests; each assertion query written here is designed to be liftable into that suite unchanged.
+**Testing note.** This codebase has no unit-test framework for SQL — the leak gate checks outputs and permissions, never logic. Phase 2 therefore uses **assertion queries** as its tests: a SELECT that returns a known-wrong value before the fix and a known-right one after. Phase 1 replaces these with pgTAP tests; each assertion query written here is designed to be liftable into that suite unchanged.
 
 ---
 
@@ -69,7 +69,7 @@
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier1_task1_chapter_dossier.sql
+-- tests/assertions/phase2_task1_chapter_dossier.sql
 -- Every chapter dossier must name a real chapter.
 select count(*) as orphan_chapter_dossiers
 from digest.entity_dossier d
@@ -96,7 +96,7 @@ Save the output — Step 7 compares against it. These 20 currently under-count b
 
 - [ ] **Step 4: Apply the migration**
 
-Migration name: `tier1_chapter_dossier_split_20260813`
+Migration name: `phase2_chapter_dossier_split_20260813`
 
 ```sql
 create or replace function digest.refresh_entity_dossiers()
@@ -167,7 +167,7 @@ select kind, count(*) from digest.entity_dossier group by 1 order by 1;
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier1_task1_chapter_dossier.sql
+git add db/ tests/assertions/phase2_task1_chapter_dossier.sql
 git commit -m "fix: chapter dossiers keyed on a comma-joined multi-select
 
 refresh_entity_dossiers read Chapter Affiliation with ->>, so a member in two
@@ -198,7 +198,7 @@ The posts branch of `fb_link_content` currently writes **no** `sender_member` at
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier1_task2_sender_member_one_keyspace.sql
+-- tests/assertions/phase2_task2_sender_member_one_keyspace.sql
 -- Every sender_member must resolve against the canonical member table.
 select ci.source,
        count(*) as rows_with_sender,
@@ -218,7 +218,7 @@ Expected now: `fb_comment` 14,102 rows / 14,075 resolve · `fb_post` 3,574 / 3,5
 
 - [ ] **Step 3: Rewrite `fb_link_content` so posts also carry the key**
 
-Migration name: `tier1_sender_member_canonical_writers_20260813`
+Migration name: `phase2_sender_member_canonical_writers_20260813`
 
 Replace the posts INSERT (currently `fb_link_content.sql:10-16`) with:
 
@@ -265,7 +265,7 @@ Expected: `canonical = true`. If no new message has arrived, insert and roll bac
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier1_task2_sender_member_one_keyspace.sql
+git add db/ tests/assertions/phase2_task2_sender_member_one_keyspace.sql
 git commit -m "fix: write at_member_id, not airtable_id, as content_items sender_member
 
 content_items.meta.sender_member carried two disjoint rec-shaped key spaces --
@@ -308,18 +308,18 @@ If these numbers differ from 13450/13402/48, stop — the data moved since plann
 - [ ] **Step 2: Snapshot the rows that will lose their key**
 
 ```sql
-create table if not exists digest._tier1_task3_rollback as
+create table if not exists digest._phase2_task3_rollback as
 select ci.id, ci.meta->>'sender_member' as old_sender_member
 from digest.content_items ci
 where ci.source='wa_message' and ci.meta ? 'sender_member';
-select count(*) from digest._tier1_task3_rollback;  -- EXPECTED: 13450
+select count(*) from digest._phase2_task3_rollback;  -- EXPECTED: 13450
 ```
 
 This is the rollback path. Drop it only after Task 5 verifies.
 
 - [ ] **Step 3: Apply the backfill**
 
-Migration name: `tier1_backfill_wa_sender_member_20260813`
+Migration name: `phase2_backfill_wa_sender_member_20260813`
 
 ```sql
 update digest.content_items ci
@@ -361,7 +361,7 @@ git commit -m "fix: backfill 13,402 WhatsApp content rows to the canonical membe
 13,450 wa_message rows carried members.airtable_id. 13,402 converted to
 at_member_id; 48 had no canonical key and had sender_member removed rather than
 nulled, because two readers branch on key presence. Rollback snapshot in
-digest._tier1_task3_rollback until Task 5 verifies.
+digest._phase2_task3_rollback until Task 5 verifies.
 
 Gate 253 exit 0."
 ```
@@ -382,7 +382,7 @@ Gate 253 exit 0."
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier1_task4_author_resolves.sql
+-- tests/assertions/phase2_task4_author_resolves.sql
 -- content_lookup must return an author for a Facebook post whose author is a member.
 select count(*) as fb_rows_with_resolved_author
 from digest.content_items ci
@@ -402,7 +402,7 @@ where ci.source = 'fb_post';
 
 - [ ] **Step 3: Apply the migration**
 
-Migration name: `tier1_repoint_author_joins_20260813`
+Migration name: `phase2_repoint_author_joins_20260813`
 
 In all four functions, replace every occurrence of:
 
@@ -439,7 +439,7 @@ select count(*) from digest.content_search(
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier1_task4_author_resolves.sql
+git add db/ tests/assertions/phase2_task4_author_resolves.sql
 git commit -m "fix: author attribution joins member_profiles, not the WA members table
 
 Four read paths joined members.airtable_id against a sender_member that is now
@@ -467,7 +467,7 @@ Measured: the corrected join yields **24,152 rows against today's 13,450** — a
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier1_task5_interaction_graph_exists.sql
+-- tests/assertions/phase2_task5_interaction_graph_exists.sql
 select coalesce((select count(*) from digest.member_edges
                  where edge_type = 'thread_interaction'), 0) as thread_edges;
 -- EXPECTED AFTER FIX: > 0
@@ -488,7 +488,7 @@ Record both. `with_evidence` is expected to rise; `expertise_rows` may also rise
 
 - [ ] **Step 4: Apply the migration**
 
-Migration name: `tier1_repoint_derivations_20260813`
+Migration name: `phase2_repoint_derivations_20260813`
 
 In `derive_member_expertise.sql:29`, replace:
 
@@ -547,13 +547,13 @@ Run a targeted eval (25–35 questions) on the expertise and people lanes and co
 - [ ] **Step 8: Drop the rollback table, gate, re-export, commit**
 
 ```sql
-drop table if exists digest._tier1_task3_rollback;
+drop table if exists digest._phase2_task3_rollback;
 ```
 
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier1_task5_interaction_graph_exists.sql
+git add db/ tests/assertions/phase2_task5_interaction_graph_exists.sql
 git commit -m "fix: derivations read the canonical key, restoring the FB interaction graph
 
 derive_knowledge_graph inner-joined members.airtable_id on both sides of the
@@ -583,7 +583,7 @@ Gate 253 exit 0."
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier1_task6_actives_reachable.sql
+-- tests/assertions/phase2_task6_actives_reachable.sql
 select count(*) as actives_without_phone_index
 from digest.member_attributes a
 where digest.is_active_member_status(a.membership_status)
@@ -616,7 +616,7 @@ This splits into two outcomes, and they need different fixes:
 
 - [ ] **Step 4: Apply whichever fix Step 3 indicates**
 
-If it is a code bug, the migration is named `tier1_phone_index_coverage_20260813` and uses `CREATE OR REPLACE FUNCTION` so the ACL is preserved. If it is a data gap, there is no migration — proceed to Step 6 with the finding written up.
+If it is a code bug, the migration is named `phase2_phone_index_coverage_20260813` and uses `CREATE OR REPLACE FUNCTION` so the ACL is preserved. If it is a data gap, there is no migration — proceed to Step 6 with the finding written up.
 
 - [ ] **Step 5: Re-run the index and the assertion**
 
@@ -630,7 +630,7 @@ Then re-run the Step 1 assertion. Expected: 0, or the documented residual.
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier1_task6_actives_reachable.sql
+git add db/ tests/assertions/phase2_task6_actives_reachable.sql
 git commit -m "fix: 17 active members were unreachable through resolve_asker
 
 No member_phone_index row means resolve_asker returns NULL and ~40 gated
@@ -664,7 +664,7 @@ from pg_proc p where p.pronamespace='digest'::regnamespace
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier1_task7_multi_source_routing.sql
+-- tests/assertions/phase2_task7_multi_source_routing.sql
 select count(*) as stale_calls
 from pg_proc p
 where p.pronamespace = 'digest'::regnamespace
@@ -689,7 +689,7 @@ Save it. The `room` field should be absent or empty — that is the symptom.
 
 - [ ] **Step 4: Apply the migration**
 
-Migration name: `tier1_multi_source_routing_20260813`
+Migration name: `phase2_multi_source_routing_20260813`
 
 `CREATE OR REPLACE FUNCTION digest.multi_source_v2(...)` with the body copied verbatim from `db/functions/multi_source_v2.sql`, changing only:
 - line 53: `digest.event_lookup_v2(` → `digest.event_lookup_v3(`, adjusting arguments to v3's signature as read in the warning above
@@ -711,7 +711,7 @@ python3 scripts/olivia_leak_gate.py
 
 ```bash
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier1_task7_multi_source_routing.sql
+git add db/ tests/assertions/phase2_task7_multi_source_routing.sql
 git commit -m "fix: multi_source_v2 called event_lookup_v2 and partner_lookup v1
 
 The general Q&A lane missed #82 flagship rooms and #50 partner strength_note --
@@ -729,14 +729,14 @@ Gate 253 exit 0."
 - Modify: `db/tables.sql` via migration (comment or rename)
 
 **Interfaces:**
-- Produces: either a resolvable link or an honestly-named column. Tier 3 Task 3.1 folds this into the link table; this task stops it lying in the meantime.
+- Produces: either a resolvable link or an honestly-named column. Phase 4 Task 1 folds this into the link table; this task stops it lying in the meantime.
 
 **Background:** 234 rows, 100% populated, **0 resolve** to `member_profiles` or `members`. The values are GroupOS 24-hex (`678e26c37ce7948f82af3a3f`), not `rec`-shaped. A column named *member record id* contains no member record id — the same class as the Airtable field-naming trap in `reference_at_field_names_lie`.
 
 - [ ] **Step 1: Write the failing assertion**
 
 ```sql
--- tests/assertions/tier1_task8_speaker_key_honest.sql
+-- tests/assertions/phase2_task8_speaker_key_honest.sql
 select count(*) as rec_shaped_values
 from digest.video_speakers
 where member_record_id ~ '^rec[A-Za-z0-9]{14}$';
@@ -758,7 +758,7 @@ If `email_match` is mostly 1, a resolver is achievable and worth more than a ren
 
 - [ ] **Step 3a (if the emails resolve): add a real key column**
 
-Migration name: `tier1_speaker_member_link_20260813`
+Migration name: `phase2_speaker_member_link_20260813`
 
 ```sql
 alter table digest.video_speakers rename column member_record_id to groupos_user_id;
@@ -770,9 +770,9 @@ from digest.member_profiles p
 where lower(p.email) = lower(v.email) and v.email is not null;
 
 comment on column digest.video_speakers.groupos_user_id is
-  'GroupOS 24-hex user id, NOT an Airtable record id (renamed 2026-08-13, Tier 1 Task 8).';
+  'GroupOS 24-hex user id, NOT an Airtable record id (renamed 2026-08-13, Phase 2 Task 8).';
 comment on column digest.video_speakers.at_member_id is
-  'Implicit FK -> member_profiles.at_member_id, resolved by email. Tier 3 folds this into the link table.';
+  'Implicit FK -> member_profiles.at_member_id, resolved by email. Phase 4 folds this into the link table.';
 ```
 
 - [ ] **Step 3b (if they do not resolve): rename only**
@@ -782,7 +782,7 @@ alter table digest.video_speakers rename column member_record_id to groupos_user
 comment on column digest.video_speakers.groupos_user_id is
   'GroupOS 24-hex user id, NOT an Airtable record id. 0 of 234 resolve to any
    member table (measured 2026-08-13). Renamed so the name stops promising a link
-   that does not exist. Resolver is Tier 3 Task 3.1.';
+   that does not exist. Resolver is Phase 4 Task 1.';
 ```
 
 - [ ] **Step 4: Find and fix every reader of the old name**
@@ -797,7 +797,7 @@ Every hit must be updated in the same migration or the same commit. A rename tha
 ```bash
 python3 scripts/olivia_leak_gate.py
 python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier1_task8_speaker_key_honest.sql
+git add db/ tests/assertions/phase2_task8_speaker_key_honest.sql
 git commit -m "fix: video_speakers.member_record_id held GroupOS ids, not member records
 
 234 rows, 100% populated, 0 resolving to any member table. Renamed to
@@ -831,7 +831,7 @@ order by 1,2;
 
 - [ ] **Step 2: Apply the corrections**
 
-Migration name: `tier1_correct_audit_comments_20260813`
+Migration name: `phase2_correct_audit_comments_20260813`
 
 ```sql
 comment on column digest.entity_dossier.entity_id is
@@ -840,7 +840,7 @@ comment on column digest.entity_dossier.entity_id is
    chapter->chapters_catalog.chapter. Enforceable as four typed nullable columns
    with a CHECK, or four tables -- an earlier comment called it not-FK-able, which
    was wrong: 51 of 71 chapter rows were fabricated because nothing enforced it
-   (fixed 2026-08-13, Tier 1 Task 1). Restructure is Tier 2 Task 2.3.';
+   (fixed 2026-08-13, Phase 2 Task 1). Restructure is Phase 3 Task 3.';
 
 comment on column digest.content_items.source_id is
   'Polymorphic key resolved by source. Measured 2026-08-13: fb_comment 13,999 of
@@ -886,138 +886,17 @@ no behaviour change."
 
 ---
 
-### Task 10: Fail-open becomes fail-loud
+### Task 10 has MOVED to Phase 1
 
-**Files:**
-- Modify: `db/functions/tg_member_event_olivia_turn.sql`, `tg_member_event_portal_seen.sql`, `tg_member_event_report.sql`, `olivia_health_check.sql`
-
-**Interfaces:**
-- Produces: no signature changes. `olivia_health_check` gains a signal for its own internal failures.
-
-**Background:** all three `member_events` triggers and all eight health-check signals wrap their body in `exception when others then null`. A broken health check therefore reports green, which makes every other "it's fine" in this system unfalsifiable. This is the highest-leverage task in Tier 1 and the reason it is last — the preceding tasks are safer to do while errors are still being swallowed.
-
-**Risk:** a trigger that raises instead of swallowing can fail a write that currently succeeds. The triggers fire on `olivia_messages`, `member_sessions` and `olivia_reports` inserts — a raise there would break a live member conversation. So triggers **log and continue**; only the health check **raises**.
-
-- [ ] **Step 1: Write the failing assertion**
-
-```sql
--- tests/assertions/tier1_task10_no_silent_swallow.sql
-select count(*) as functions_swallowing_all_errors
-from pg_proc p
-where p.pronamespace = 'digest'::regnamespace
-  and pg_get_functiondef(p.oid) ~* 'exception\s+when\s+others\s+then\s+null';
--- EXPECTED AFTER FIX: 0
-```
-
-- [ ] **Step 2: Run it and confirm it fails**
-
-Expected now: **11** (3 triggers + 8 health signals). Record the exact list:
-
-```sql
-select p.proname from pg_proc p
-where p.pronamespace = 'digest'::regnamespace
-  and pg_get_functiondef(p.oid) ~* 'exception\s+when\s+others\s+then\s+null'
-order by 1;
-```
-
-- [ ] **Step 3: Add a place for swallowed errors to go**
-
-Migration name: `tier1_fail_loud_20260813`
-
-```sql
-create table if not exists digest.job_errors (
-  id           bigserial primary key,
-  source       text not null,
-  sqlstate     text,
-  message      text,
-  context      jsonb,
-  occurred_at  timestamptz not null default now()
-);
-revoke all on table digest.job_errors from public, anon, authenticated;
-grant select, insert on table digest.job_errors to service_role;
-grant usage, select on sequence digest.job_errors_id_seq to service_role;
-comment on table digest.job_errors is
-  'Errors that were previously swallowed by exception-when-others-then-null.
-   Written by triggers and the health check. Tier 1 Task 10.';
-```
-
-- [ ] **Step 4: Convert the three triggers to log-and-continue**
-
-For each of `tg_member_event_olivia_turn`, `tg_member_event_portal_seen`, `tg_member_event_report`, replace the handler. Copy each function body verbatim and change only its final block:
-
-```sql
-exception when others then
-  insert into digest.job_errors (source, sqlstate, message, context)
-  values (TG_NAME, SQLSTATE, SQLERRM,
-          jsonb_build_object('table', TG_TABLE_NAME, 'op', TG_OP));
-  return coalesce(NEW, OLD);
-```
-
-This keeps the write succeeding — the member conversation is never broken — but the failure now exists somewhere a human can find.
-
-- [ ] **Step 5: Convert the eight health signals to raise**
-
-In `olivia_health_check`, each of the eight signal blocks (lines 28, 38, 58, 69, 84, 96, 113, 130) carries `exception when others then null`. Replace each with:
-
-```sql
-exception when others then
-  insert into digest.job_errors (source, sqlstate, message, context)
-  values ('olivia_health_check:<signal-name>', SQLSTATE, SQLERRM, null);
-  v_broken := v_broken + 1;
-```
-
-and declare `v_broken int := 0;` at the top. After the eighth signal, add a ninth signal that fires on `v_broken > 0`:
-
-```sql
-perform digest.olivia_alarm_fire(
-  'health-check-broken',
-  v_broken > 0,
-  format('%s of 8 health signals raised an error and could not be evaluated', v_broken));
-```
-
-A health check that cannot evaluate itself now alarms instead of reporting green.
-
-- [ ] **Step 6: Prove the new path bites**
-
-Force one signal to fail and confirm it surfaces rather than passing silently:
-
-```sql
--- temporarily point one signal at a non-existent relation, run the check,
--- then confirm BOTH of these are non-empty, and revert:
-select * from digest.job_errors order by occurred_at desc limit 5;
-select * from digest.olivia_alarm_state where alarm_key = 'health-check-broken';
-```
-
-A test that has not been seen to fail has not been seen to work.
-
-- [ ] **Step 7: Re-run the assertion**
-
-Expected: **0**.
-
-- [ ] **Step 8: Gate, re-export, commit**
-
-```bash
-python3 scripts/olivia_leak_gate.py
-python3 scripts/db_export_schema.py
-git add db/ tests/assertions/tier1_task10_no_silent_swallow.sql
-git commit -m "fix: 11 functions swallowed every error; a broken health check reported green
-
-Three member_events triggers and all eight health signals wrapped their bodies in
-exception-when-others-then-null. Triggers now log to digest.job_errors and
-continue -- a member conversation is never broken by an audit write. Health
-signals log and increment a counter, and a ninth alarm fires when any signal
-could not be evaluated.
-
-Proven by forcing a signal to fail and observing both the job_errors row and the
-health-check-broken alarm.
-
-Before: 11 functions swallowing all errors. After: 0.
-Gate 253 exit 0."
-```
+**Fail-open becomes fail-loud** now lives in
+`2026-08-13-phase1-make-failure-visible.md` as Task 2, and is a **prerequisite for this
+phase**, not a follow-up. It was moved because Phase 3's main risk is only detectable once
+errors stop being swallowed, and because running it last meant every earlier task executed
+with the monitoring blind.
 
 ---
 
-## Definition of Done for Tier 1
+## Definition of Done for Phase 2
 
 - [ ] All ten assertion queries pass.
 - [ ] `python3 scripts/olivia_leak_gate.py` exits 0 (253 checks or more).
