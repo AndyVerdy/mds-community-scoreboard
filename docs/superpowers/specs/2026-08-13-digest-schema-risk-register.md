@@ -181,10 +181,58 @@ Everything else in all four tiers is undoable by dropping a constraint or replac
 
 ---
 
+## 4b. How production is kept alive through every step
+
+Andy's point, and it was a genuine hole: the plans verified *the thing being changed* and the
+security gate, but nothing verified that **production still works** after each step. The leak gate
+proves retrieval refuses what it must refuse. It does not prove Olivia is still answering anyone.
+
+**`scripts/prod_pulse.py` closes that.** Read-only, seconds to run, and every check is
+**directional against a saved baseline** rather than absolute — production ingests continuously
+(`content_items` moved 43,877 → 44,043 in a single morning) and already carries known-firing
+alarms, so absolute thresholds would be red from the start and would train us to ignore them. A
+check fails only when something got *worse* than it was before the step.
+
+What it verifies:
+
+| check | why it is there |
+|---|---|
+| No new unanswered member messages | The single most important number — is Olivia still replying |
+| Failed sends did not increase | A 200 from Meta is not delivery (`reference_wa_send_200_is_not_delivery`) |
+| No **new** alarm firing | Pre-existing alarms do not mask a new one |
+| No heartbeat went backwards | A job that was running has stopped |
+| No new rows in `digest.job_errors` | Errors that used to be swallowed now surface here |
+| Portal sessions present | 55 members are logged in right now |
+| **No table lost rows** | 10 critical tables; a drop is data loss |
+| 7 read-only RPCs still return 200 | Spans identity, retrieval, people, events |
+
+**Usage, and it is not optional:**
+
+```bash
+python3 scripts/prod_pulse.py --save-baseline   # once at the start of a tier
+python3 scripts/prod_pulse.py                   # before EVERY step, and again after it
+```
+
+**Exit 1 means stop and roll back that step** — not "finish this one first".
+
+**Proven to work in both directions, 2026-08-13:** a forced regression (baseline claiming 500 more
+`content_items` rows) produced `PULSE FAILED — content_items did not lose rows: 44543 -> 44043`
+and **exit 1**; restoring the true baseline gave **exit 0**. A check that has never been seen to
+fail has not been seen to work.
+
+**Known gap, deliberately accepted:** the pulse cannot verify the *content* of an answer without
+sending a WhatsApp message, and the standing rule forbids probing production against a real
+member's number. It proves the machinery is alive, not that the answer is good. Answer quality is
+the eval bank's job, and Tier 1 Task 5 and Tier 2 Task 7 both require one.
+
+---
+
 ## 5. What would make me stop
 
 Stop conditions, so they are decided now rather than under pressure:
 
+- **`prod_pulse.py` exits 1.** This is the first and broadest stop condition — it fires on any of
+  the eight regressions in §4b. Roll back the step, diagnose, do not continue.
 - **Any newly-visible row** in the Tier 3 Task 2 visibility diff. Halt, do not continue to the next
   consumer.
 - **A foreign-key violation appearing in `digest.job_errors`** from a scheduled job. Halt Tier 2,

@@ -20,6 +20,7 @@
 
 - **Tiers 1 and 2 must be complete.** This plan assumes foreign keys exist and the two `rec` key spaces are already separated. Building a link table on unenforced keys reproduces the original problem in a new table.
 - **Supabase project id:** `nadtudwuwjhckotrngzn`. Schema: `digest`.
+- **🔴 THE PROD PULSE RUNS BEFORE AND AFTER EVERY STEP**, and inside Task 2 before and after **every individual consumer migration**. `python3 scripts/prod_pulse.py` — exit 1 means STOP. Re-baseline at the start of the tier.
 - **Gate exit 0 before and after every task**, and additionally **before and after every consumer migration inside Task 2** — that task moves the privacy boundary.
 - **Re-export after every DDL**; commit the `db/` diff with the change.
 - **`DROP FUNCTION` re-grants EXECUTE to PUBLIC.** Every drop-and-recreate carries its `revoke all … from public, anon, authenticated`.

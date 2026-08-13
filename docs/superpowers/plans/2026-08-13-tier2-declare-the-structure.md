@@ -18,7 +18,9 @@
 - **Tier 1 must be complete and committed first.** Task 2 of this plan adds a foreign key on the exact column Tier 1 Task 3 backfilled; running them out of order fails the validation.
 - **Tier 1 Task 10 (fail-loud) is a HARD prerequisite for this entire tier.** A `NOT VALID` constraint rejects a bad write from the moment it exists. Without `digest.job_errors` and unswallowed exceptions, that rejection is absorbed by a trigger and the monitoring reports green — meaning the primary detection mechanism for this tier's primary risk would not exist.
 - **Supabase project id:** `nadtudwuwjhckotrngzn`. Schema: `digest`.
-- **The leak gate must exit 0 before and after every task.** `python3 scripts/olivia_leak_gate.py`, baseline 253 checks.
+- **🔴 THE PROD PULSE RUNS BEFORE AND AFTER EVERY STEP.** `python3 scripts/prod_pulse.py` — exit 1 means STOP and roll back that step. Re-baseline with `--save-baseline` at the start of the tier. This tier's dominant risk is a constraint rejecting a live loader's write, and the pulse is how that surfaces within seconds instead of days.
+- **The leak gate must exit 0 before and after every task.** `python3 scripts/olivia_leak_gate.py`, baseline 253 checks. The gate tests refusal; the pulse tests liveness. Both, every time.
+- **Add constraints outside member-active hours.** 55 members hold live portal sessions.
 - **Re-export after every DDL** — `python3 scripts/db_export_schema.py` — and commit the `db/` diff with the change.
 - **`DROP FUNCTION` re-grants EXECUTE to PUBLIC.** Any drop-and-recreate must `revoke all on function digest.<fn>(<args>) from public, anon, authenticated;` in the same migration. Prefer `CREATE OR REPLACE`.
 - **A foreign key needs a unique or primary key on its target.** Two targets in this plan do not have one yet — see Task 1 Step 1.

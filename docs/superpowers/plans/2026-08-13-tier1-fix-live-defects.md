@@ -18,7 +18,14 @@
 ## Global Constraints
 
 - **Supabase project id:** `nadtudwuwjhckotrngzn`. Schema: `digest`.
-- **The leak gate must exit 0 before and after every task.** Run: `python3 scripts/olivia_leak_gate.py`. Current baseline: **253 checks, exit 0**.
+- **🔴 THE PROD PULSE RUNS BEFORE AND AFTER EVERY SINGLE STEP THAT TOUCHES THE DATABASE.** Not per task — per **step**.
+  ```bash
+  python3 scripts/prod_pulse.py --save-baseline   # once, at the start of the tier
+  python3 scripts/prod_pulse.py                   # before the step, and again after it
+  ```
+  **Exit 1 means STOP.** Do not proceed, do not "just finish this one". Roll back the step and diagnose. The pulse is read-only and takes seconds; there is no excuse to skip it. It checks that Olivia is still answering, that sends are still delivering, that no new alarm fired, that no heartbeat went backwards, that no table lost rows, and that seven read-only RPCs still return 200. Proven to fail on a forced regression (exit 1) and pass clean (exit 0), 2026-08-13.
+- **The leak gate must exit 0 before and after every task.** Run: `python3 scripts/olivia_leak_gate.py`. Current baseline: **253 checks, exit 0**. The gate proves retrieval REFUSES what it must refuse; the pulse proves production still WORKS. They answer different questions and neither substitutes for the other.
+- **Members are live while this runs.** 55 members with active portal sessions, and Olivia is answering on WhatsApp. Prefer low-traffic hours for anything that can fail a write.
 - **After any DDL or `CREATE OR REPLACE FUNCTION`, re-export the SQL layer** — `python3 scripts/db_export_schema.py` — and include the `db/` diff in the same commit. `git diff db/` is the review. (Rule from #65.)
 - **`DROP FUNCTION` re-grants EXECUTE to PUBLIC on the fresh CREATE.** Any migration that drops and recreates a function MUST include `revoke all on function digest.<fn>(<args>) from public, anon, authenticated;` in the same migration. Two live exposures shipped this way on 2026-08-12. Prefer `CREATE OR REPLACE` (which preserves the ACL) wherever the signature is unchanged.
 - **Never fire probes at production against a real member's phone number.** Use staging, or the dedicated test number.

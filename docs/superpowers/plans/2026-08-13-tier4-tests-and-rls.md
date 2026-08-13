@@ -12,6 +12,7 @@
 
 - **This tier is order-independent from Tiers 1–3, and better done early.** It is written last because it is the smallest, not because it is least important. Every finding this week — the key mismatch, the stale routing, the 51 fabricated chapters — survived because nothing below the eval bank tests logic. Running Task 1 *before* Tier 2 would make Tier 2 materially safer.
 - **Supabase project id:** `nadtudwuwjhckotrngzn`. Schema: `digest`.
+- **🔴 THE PROD PULSE RUNS BEFORE AND AFTER EVERY STEP.** `python3 scripts/prod_pulse.py` — exit 1 means STOP. Lower risk here than the other tiers, but Task 2 can break the portal if a policy is wrong, and the pulse is what catches that.
 - **Tests must never write to production data.** Every test runs inside a transaction that rolls back. A test that leaves a row behind is a failed test.
 - **The leak gate stays.** pgTAP tests logic; the gate tests the security boundary from outside, as a real anon client. They are complements, not substitutes — do not fold one into the other.
 - **`DROP FUNCTION` re-grants EXECUTE to PUBLIC.** Applies here too.
