@@ -320,7 +320,95 @@ sharing that key.
 
 ---
 
-## 7. What I got wrong, itemised
+## 7. Where the logic lives — the second concern
+
+Andy's other objection: too much logic sits in Supabase, when the convention is to keep the
+database for data and the logic in one application layer, with crons in the database.
+
+### 7.1 The premise needs correcting first
+
+Logic is not concentrated in Supabase. It is spread across **seven runtimes**: Postgres (107
+functions, 5,595 lines), n8n (the WhatsApp loop and tool calling), Make (two Typeform→Airtable
+syncs), Vercel *and* Render (one codebase, two hosts), GitHub Actions, launchd Python on a laptop,
+and pg_cron. The problem is not that one runtime holds too much — it is that **no rule says which
+runtime gets what**, so placement is historical. That is ticket #64, already ranked S1.
+
+### 7.2 The split is inverted
+
+The convention Andy describes is: database holds data, integrity and access rules; application
+holds business logic. We have close to the opposite.
+
+| | convention | here |
+|---|---|---|
+| business logic | application | **in the database** — `member_dossier_v2`, `app_member_feed`, `chapter_info` (182 lines), `member_card`, the `*_url` builders |
+| integrity | database | **largely absent** — 13 foreign keys, 10 CHECKs, and **zero RLS policies** across 26 RLS-enabled tables |
+| access rules | database (RLS) | in function bodies, 71 of them `SECURITY DEFINER` |
+
+So the corrective is not "move logic out of Supabase." It is **put the missing things in and take
+the misplaced things out.** Today we have done neither.
+
+### 7.3 What legitimately belongs in Postgres
+
+- **Retrieval.** `content_search_v2` (244 lines) runs hybrid keyword + vector ranking across 43,877
+  rows with an HNSW index that is now genuinely used (6,821 scans). Relocating it means shipping
+  candidate sets over the wire for no gain.
+- **Derivation/ETL.** The `derive_*` / `refresh_*` family are set operations over entire tables.
+- **Constraints and RLS policies** — which is exactly what is missing.
+
+Roughly a third of the 107 functions fall in this group and should stay.
+
+### 7.4 What is in the database for no good reason
+
+- **Presentation and composition.** Anything shaping output for a human reader.
+- **Version routing.** The n8n workflow keeps an `EXEC_NAME` map that rewrites the model-facing
+  tool name onto a versioned implementation "at the last inch" — `event_lookup` → `event_lookup_v2`,
+  `member_dossier` → `member_dossier_v2`. This is a deployment mechanism invented because SQL
+  functions have no release process, and it is why `multi_source_v2` silently routes to stale
+  versions (§3.6). It is the clearest signal that some of this code is in the wrong home.
+- **Fail-open error handling.** All three `member_events` triggers and all eight health-check
+  signals wrap their body in `exception when others then null`. In an application layer that is a
+  caught exception with a log line and an alert; in PL/pgSQL it is silence — which is why a broken
+  health check reports green.
+
+### 7.5 The security argument for DB-side logic is weaker than our own docs claim
+
+`OLIVIA_HANDBOOK.md` justifies keeping gating in Postgres because "app-layer filtering could be
+bypassed." Measured, that does not hold up: RLS carries **zero policies**, `service_role` is the
+only reader, and `anon`/`authenticated` have no privileges on any table. The boundary is the grant
+layer, and it would be identical with an application layer in front. Meanwhile **71 of 107
+functions are `SECURITY DEFINER`** — each one a privilege-escalation surface, and two have already
+shipped anon-callable by accident (`reference_drop_function_revokes_acl`).
+
+Security is an argument for *adding RLS policies*. It is not an argument for keeping business
+logic in SQL.
+
+### 7.6 The real costs of the current placement
+
+Not speed — foreign keys and function placement do not change query time. The costs are:
+
+- **No unit tests.** The eval bank is the only test, it is end-to-end, and it costs money per run.
+- **No type safety.** Two `rec`-shaped key spaces (§2) collide silently. In a typed application
+  layer with distinct types per key, that assignment is a compile error.
+- **Review difficulty.** 5,595 lines across 77 PL/pgSQL functions with no module boundaries.
+- **Version sprawl.** Ten function families carry v1/v2/v3 variants; v1s are frequently live
+  dependencies of v2s rather than dead, so nothing can simply be deleted.
+
+### 7.7 Recommendation
+
+Not a migration. Four moves, in order of payoff:
+
+1. **Integrity moves in** — foreign keys, CHECKs, and a Postgres domain type per `rec` space so the
+   two can never be assigned to one another. This is the §2 root cause and the §3.1 bug class.
+2. **Version routing dies** — one version per lane, the `EXEC_NAME` indirection removed.
+3. **Fail-open becomes fail-loud** — the swallowed exceptions get logged and alarmed.
+4. **Presentation moves out opportunistically** — when a function is being touched anyway, not as
+   a project.
+
+Retrieval and ETL stay where they are.
+
+---
+
+## 8. What I got wrong, itemised
 
 For the record, since the external review specifically predicted this:
 
@@ -335,7 +423,7 @@ For the record, since the external review specifically predicted this:
 
 ---
 
-## 8. Open questions the design must settle
+## 9. Open questions the design must settle
 
 1. **Which key is canonical, and is it enforced?** The 2026-08-02 audit (§5.1) asked this and never
    got a ruling. The code has already voted: 59 of 107 functions use `at_member_id`, 14 use
@@ -352,13 +440,14 @@ For the record, since the external review specifically predicted this:
    parent table; merging is only safe in the `ref` direction (§6b). Related: should `form_scope`
    become a real chokepoint view — the `#58` treatment that fixed this exact class for events —
    rather than a join repeated in six places and skipped in three?
-6. **Split logic out of Postgres, or keep it?** Andy raised this. Retrieval, gating and stats have
-   a genuine reason to be in the database (set operations over 40k rows, and the security boundary
-   the leak gate proves). Version routing, dead code and fail-open error handling do not.
+6. **Logic placement — analysed in §7, but two calls remain Andy's.** (a) Do we add RLS policies,
+   given 26 tables have RLS enabled with zero policies and the grant layer is currently the entire
+   boundary? (b) Is "presentation moves out opportunistically" acceptable, or does he want a
+   dedicated pass? §7.7 recommends opportunistic.
 
 ---
 
-## 9. Deliberately not covered
+## 10. Deliberately not covered
 
 - The **n8n workflow, Make scenarios, Vercel/Render apps and launchd jobs** — that is ticket #64's
   runtime inventory, not this pass. Andy's correction stands: the launchd jobs are Facebook-only,
