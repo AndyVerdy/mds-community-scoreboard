@@ -268,6 +268,8 @@ grant execute on function digest.name_fold(t text) to service_role;
 grant execute on function digest.olivia_alarm_fire(p_kind text, p_firing boolean, p_detail text, p_token text, p_channel text) to postgres;
 grant execute on function digest.olivia_broadcast_audience() to postgres;
 grant execute on function digest.olivia_broadcast_audience() to service_role;
+grant execute on function digest.olivia_front_door(p_phone text) to postgres;
+grant execute on function digest.olivia_front_door(p_phone text) to service_role;
 grant execute on function digest.olivia_health_check() to postgres;
 grant execute on function digest.olivia_touch(p_phone text) to postgres;
 grant execute on function digest.olivia_touch(p_phone text) to service_role;
