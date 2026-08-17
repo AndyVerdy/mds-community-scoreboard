@@ -33,9 +33,9 @@ begin
     (select count(*) from digest.member_attributes ma
       where ma.membership_status in ('Current Member','New Member','Pending Group Entrance','Current Member- Not Renewing')),
     (select count(*) from digest.chats c where c.invite_url is not null),
-    (select count(*) from digest.events_catalog c
+    (select count(*) from digest.events_catalog_live c
       where coalesce(c.app_starts_at, c.start_at) >= now()
-        and c.phase in ('Registration Open','Confirmed')),
+        and c.phase = 'Registration Open'),
     (select count(distinct mc.chapter) from member_chapters mc),
     (select coalesce(jsonb_object_agg(t.chapter, t.n order by t.n desc), '{}'::jsonb)
        from (select mc.chapter, count(*) as n from member_chapters mc group by 1) t),

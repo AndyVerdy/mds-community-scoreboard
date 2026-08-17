@@ -31,7 +31,7 @@ begin
          coalesce(c.app_title, c.name),
          to_char(coalesce(c.app_starts_at, c.start_at) at time zone 'UTC', 'YYYY-MM-DD')
   from digest.event_registrations_live r
-  join digest.events_catalog c on c.at_record_id = r.event_at_id
+  join digest.events_catalog_live c on c.at_record_id = r.event_at_id
   where (r.member_at_id = v_atid
          or (v_email_ok and lower(r.email) = v_email
              and (r.member_at_id is null
@@ -48,7 +48,7 @@ begin
            coalesce(c.app_title, c.name) as nm,
            coalesce(c.app_starts_at, c.start_at) as st
     from digest.event_registrations_live r
-    join digest.events_catalog c on c.at_record_id = r.event_at_id
+    join digest.events_catalog_live c on c.at_record_id = r.event_at_id
     where (r.member_at_id = v_atid
            or (v_email_ok and lower(r.email) = v_email
                and (r.member_at_id is null
@@ -67,7 +67,7 @@ begin
          count(distinct c.at_record_id)::text,
          null::text
   from digest.event_registrations_live r
-  join digest.events_catalog c on c.at_record_id = r.event_at_id
+  join digest.events_catalog_live c on c.at_record_id = r.event_at_id
   where (r.member_at_id = v_atid
          or (v_email_ok and lower(r.email) = v_email
              and (r.member_at_id is null

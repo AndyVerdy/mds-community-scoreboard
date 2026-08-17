@@ -54,7 +54,7 @@ begin
     select c.*,
       digest.member_event_url(c.member_reg_link, c.app_url) as safe_reg_link,
       digest.member_event_url(c.guest_reg_link, null) as safe_guest_link
-    from digest.events_catalog c
+    from digest.events_catalog_live c
   ), sel as (
   select
     coalesce(c.app_title, c.name) as o_event_name,
@@ -106,7 +106,7 @@ begin
              and coalesce(c.app_starts_at, c.start_at) >= now())
     and (p_include_past or not v_browse or coalesce(c.phase,'') not in ('Postponed','Canceled','Cancelled'))
     and (p_include_past or not v_browse
-         or c.phase in ('Registration Open','Confirmed')
+         or c.phase = 'Registration Open'
          )
     and nullif(trim(c.name),'') is not null
     and (p_include_past or not v_browse or coalesce(c.app_starts_at, c.start_at) >= now() - interval '36 hours')
@@ -141,11 +141,8 @@ begin
          r.o_guests_policy, r.o_chapter, r.o_audience_hint, r.o_is_registered, r.o_can_register,
          r.o_reg_link, r.o_guest_reg_link, r.o_spots_left, r.o_registered_count, r.o_event_url
   from ranked r
-  -- #47 eligibility by RANK, never an absolute distance: a term hit, no terms at all,
-  -- or being among the 12 nearest by meaning makes a row eligible; fusion sorts the rest.
   where p_terms is null or r.o_term_hits > 0 or coalesce(r.o_vec_rank, 999) <= 12
   order by
-    -- present-tense asks prefer the future; explicit past asks keep relevance-first
     (case when p_include_past then null else r.o_future end) desc nulls last,
     (1.0/(60 + rank() over (order by r.o_term_hits desc))
      + coalesce(case when r.o_vec_dist is not null

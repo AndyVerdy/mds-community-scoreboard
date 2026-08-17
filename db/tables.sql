@@ -217,6 +217,7 @@ CREATE UNIQUE INDEX event_series_profile_pkey ON digest.event_series_profile USI
 --   style                              text
 --   embedding                          extensions.vector(1024)
 --   thumbnail_url                      text
+--   not_a_real_event                   text
 alter table digest.events_catalog add constraint events_catalog_pkey PRIMARY KEY (at_record_id);
 CREATE INDEX events_catalog_start_idx ON digest.events_catalog USING btree (start_at);
 CREATE UNIQUE INDEX events_catalog_pkey ON digest.events_catalog USING btree (at_record_id);
