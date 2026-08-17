@@ -289,7 +289,7 @@ resolves the asker itself. The main ones:
 | `chapter_info` / `community_info` | Chapters with live stats / community numbers |
 | `partner_lookup` / `video_search` / `video_file_for_send` | Partner deals / video library / file sending |
 | `multi_source` | One-shot fan-out across all six source families |
-| `chat_info` / `chat_recommendations` | Chat metadata / which chats to join |
+| `chat_info` / `chat_recommendations` | Chat metadata / which **WhatsApp chats** to join. **A CHAPTER is not a chat** — chapter questions route to `community` (#84 D1); the router had no chapter lane at all until 2026-08-17 |
 | `report_create` | Files a member report |
 
 **Grant discipline:** `DROP FUNCTION` + `CREATE` **resets the EXECUTE grant to PUBLIC** — meaning
@@ -493,7 +493,10 @@ consumed the whole token budget and members received "Sorry — I could not gene
     functions/ (104) views/ (8) triggers.sql policies.sql grants.sql rls.sql tables.sql
   scripts/
     olivia_wf.py                        ← stage / promote / rollback / snapshot / lock
-    olivia_leak_gate.py                 ← the 245-check safety gate
+    olivia_leak_gate.py                 ← the 254-check safety gate (refusal)
+    prod_pulse.py                       ← the liveness check (does she still ANSWER?)
+                                          run BEFORE and AFTER every step; exit 1 = stop
+    run_eval_100.py                     ← fires eval_bank_100_2026-08-16.json (100, a ruling)
     db_export_schema.py                 ← DB → db/ export + the drift check (#65)
     olivia_selftest.py                  ← fire questions through a workflow
     nightly_derivations.py              ← the 8-job nightly pipeline
@@ -550,6 +553,8 @@ selects them. "Used in a calculation" is not "shareable".
 | **Hard-fail on ambiguous identity** | A wrong match means reciting another founder's business into a private DM. |
 | **The model gets tools, not a single shot** | The original one-pass router — one lane, one retrieval, no second look — was the root cause behind whole classes of failure. The loop can look again. |
 | **Fuse by rank (RRF), never blended scores** | Keyword rank and vector distance are incomparable; blending silently disables one of them. |
+| **Upcoming events = `Registration Open` ONLY** | Andy 2026-08-17. `Confirmed` is a planning state, not an offer a member can act on. PAST questions may check any status, and a NAMED ask about a Canceled/Postponed event still answers honestly with its true phase (#60). Note `phase IS NULL` is NORMAL, not junk — 292 null-phase events carry 4,019 real member registrations. |
+| **Never claim MDS does not track something** | Until the tool that would hold it has been called. Three instances shipped to members (transcripts, call schedule, gender); two were the model obeying a STALE RULE, not hallucinating. Shipping a capability means retiring the rule that denied it. |
 | **Organic eval bank only** | Generated questions can be overfitted and do not reflect what members actually ask. |
 | **One smoke test per batch, not per ticket** | The full run is slow and paid; per-ticket proof is probes plus the gate. |
 | **Coverage is a process, never an event** | Anything hand-run rots. Every derivation is a scheduled job with a heartbeat and an alarm. |
@@ -630,8 +635,17 @@ as defense-in-depth. (Why RLS is enabled on them at all, and by what, is #61/#64
 
 - **Recommendations are not personalized yet.** The ledger, graph and event log exist; no lane
   reads them.
-- **No transcripts.** Olivia finds a call and its deck, never what was said inside it.
-- **The live calls calendar** (Mogul / Expert / Channel Calls) is not connected.
+- ~~**No transcripts.**~~ **SUPERSEDED by #70 (Aug 2026) — this line was FALSE for two weeks and
+  the same stale claim sat in the Answer Seed, which is how she told a member "that capability
+  isn't live yet" (#84 D2, 2026-08-17).** Transcripts DO exist, with two hard boundaries:
+  **virtual calls from 2026 onward only** (Mogul / Channel / Expert; 71-100% coverage inside the
+  window) — **nothing before 2026-01-05** (872 of 1,033 videos, Zoom does not go back further) and
+  **nothing in-person** (Summit 0/18, Mastermind 0/23, Chapter Event 2/13, even for 2026).
+  When a gap is reported, the boundary must travel with it — never "not live", "coming" or
+  "not connected".
+- **The live calls calendar** (Mogul / Expert / Channel Calls) is not connected — no FORWARD
+  schedule exists; `digest.calls` holds past occurrences only. True, but say it as coverage, not
+  as infrastructure ("that schedule isn't connected to me yet" is the phrasing Andy rejected).
 - **Events have no description field anywhere in the pipeline** — event topic matching is inferred
   from names, attendees and post-event chatter.
 - **Tap buttons** are not built; offers are "reply YES".
