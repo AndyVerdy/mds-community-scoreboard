@@ -278,6 +278,17 @@ CREATE INDEX fb_post_images_post_id ON digest.fb_post_images USING btree (post_i
 CREATE UNIQUE INDEX fb_post_images_pkey ON digest.fb_post_images USING btree (id);
 CREATE UNIQUE INDEX fb_post_images_post_id_idx_key ON digest.fb_post_images USING btree (post_id, idx);
 
+-- digest.fb_post_links
+--   image_url                          text not null
+--   post_id                            text not null
+--   domain                             text
+--   target_url                         text
+--   first_seen                         timestamp with time zone not null default now()
+--   display_name                       text
+alter table digest.fb_post_links add constraint fb_post_links_pkey PRIMARY KEY (image_url);
+CREATE INDEX fb_post_links_post_id_idx ON digest.fb_post_links USING btree (post_id);
+CREATE UNIQUE INDEX fb_post_links_pkey ON digest.fb_post_links USING btree (image_url);
+
 -- digest.fb_posts
 --   post_id                            text not null
 --   group_slug                         text

@@ -25,14 +25,28 @@ begin
   select count(*) into c from ins;
   update digest.fb_post_images set storage_path = 'fb-images/' || regexp_replace(local_path, '^.*/', '')
    where storage_path is null and local_path is not null;
-  with img as (
-    select post_id, string_agg(nullif(trim(coalesce(description,'') ||
-        case when nullif(ocr_text,'') is not null then ' [text in image: '||ocr_text||']' else '' end),''),' | ') as t
-    from digest.fb_post_images where description is not null or nullif(ocr_text,'') is not null group by post_id),
+  -- search_extra is REBUILT here, never appended to, so every contributing source must be in this
+  -- union: image vision text (ord 1) then link-preview cards (ord 2). Cards are DISTINCT-ed because
+  -- one shared link is captured at several thumbnail sizes = several rows, one card. display_name
+  -- sits next to the domain because to_tsvector treats "theguardian.com" as one unsplittable token.
+  with parts as (
+    select post_id, 1 as ord, string_agg(nullif(trim(coalesce(description,'') ||
+        case when nullif(ocr_text,'') is not null then ' [text in image: '||ocr_text||']' else '' end),''),' | '
+        order by idx) as t
+    from digest.fb_post_images where description is not null or nullif(ocr_text,'') is not null group by post_id
+    union all
+    select post_id, 2 as ord, string_agg(card,' | ' order by card) as t
+    from (select distinct post_id,
+            '[shared link: '||coalesce(nullif(display_name,'')||' ','')||domain
+              ||coalesce(' '||target_url,'')||']' as card
+          from digest.fb_post_links where domain is not null) l
+    group by post_id),
+  agg as (
+    select post_id, string_agg(t,' | ' order by ord) as t from parts where t is not null group by post_id),
   upd as (
-    update digest.content_items ci set search_extra = img.t, embedding = null
-    from img where ci.source='fb_post' and ci.source_id = img.post_id
-      and img.t is not null and ci.search_extra is distinct from img.t returning 1)
+    update digest.content_items ci set search_extra = agg.t, embedding = null
+    from agg where ci.source='fb_post' and ci.source_id = agg.post_id
+      and agg.t is not null and ci.search_extra is distinct from agg.t returning 1)
   select count(*) into ie from upd;
   return query select p, c, ie;
 end $function$
