@@ -208,13 +208,13 @@ loaders are read, since it touches the busiest sync paths (persona rebuild, even
 
 ### 3.6 Shipped this session
 
-`COMMENT ON COLUMN` for all 30 columns audited above (parent + reason, safe-FK / not-enforceable /
+`COMMENT ON COLUMN` for all 31 columns audited above (parent + reason, safe-FK / not-enforceable /
 polymorphic), migration `digest_schema_audit_comments_20260812` — metadata only, no lock, no
-constraint, nothing for a sync job to violate. Verified via `pg_description` re-read (30/30 landed).
+constraint, nothing for a sync job to violate. Verified via `pg_description` re-read (31/31 landed).
 
 **Accept checklist**
 - Every `digest` table appears with its edges (declared or documented-implicit) — met (58 tables,
-  13 declared FKs + 30 audited implicit columns covering the highest-fan-out relations; remaining
+  13 declared FKs + 31 audited implicit columns covering the highest-fan-out relations; remaining
   columns are single-table or already covered by #65's function export).
 - Orphan counts measured per relation, each with a ruling — met, 3.2–3.4.
 - FKs added only where sync jobs provably tolerate them — **not met by design this session**;
