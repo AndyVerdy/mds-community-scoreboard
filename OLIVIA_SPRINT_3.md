@@ -35,7 +35,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#72** | 🚦 LOAD TEST before the Mille demo (~100 concurrent users) | 🔴 S1 | M | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
-| **#76** | New eval bank — 150 questions from real member traffic | 🔴 S1 | M | — | — |
+| **#76** | New eval bank — **100** questions from real member traffic *(BUILT 2026-08-16: `eval_bank_100_2026-08-16.json`)* | 🔴 S1 | M | ✅ built | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
@@ -347,9 +347,9 @@ now written down as the reason.
 The `members`↔`member_profiles` crosswalk (research question 4) already exists as
 `digest.member_identity` (#77) — no new object needed, just cited.
 
-**Shipped:** `FORMS_ERD.md` §3 (full digest schema — 58 tables, 13 declared FKs + 30 audited
+**Shipped:** `FORMS_ERD.md` §3 (full digest schema — 58 tables, 13 declared FKs + 31 audited
 implicit columns, orphan table, polymorphic-key rulings) · migration
-`digest_schema_audit_comments_20260812` (30 `COMMENT ON COLUMN`, metadata only, no lock) · gate
+`digest_schema_audit_comments_20260812` (31 `COMMENT ON COLUMN`, metadata only, no lock) · gate
 253 exit-0 before and after.
 
 **Deliberately not shipped:** FK constraints. 25 relations are orphan-clean today (18 at_member_id
@@ -1003,8 +1003,8 @@ remainder is stated in writing rather than chased.
 
 ---
 
-### #76 · New eval bank — 150 questions from real member traffic
-**🔴 S1 · size M — filed 2026-08-10 (Andy: "we def. need to create a new bank of 150 questions based on real users")**
+### #76 · New eval bank — 100 questions from real member traffic
+**🔴 S1 · size M — filed 2026-08-10 · ⚠️ RESIZED 2026-08-16 (Andy: "We need to keep our question bank at 100 relevant questions. not 30, not 220. 100"). The original 150 target is superseded — 100 is the standing number.**
 
 > **In plain words:** The bank should be what members actually ask, not what we imagined they would.
 
@@ -1028,7 +1028,7 @@ in `olivia_feedback` are the highest-value rows in the whole dataset.
 - **Class coverage preserved**: AT_PROFILE · CROSS · DECLINE · EVENT · FB · FORM · GEN · PARTNER ·
   REAL · VIDEO · WA_DIGEST · WA_RAW.
 
-**Accept when** 150 questions, every one traceable to a real member turn (phone + wamid + date) ·
+**Accept when** **100** questions, every one traceable to a real member turn (phone + wamid + date) ·
 every uncleared 👎 included · ground truth written from the warehouse, not from Olivia's answer ·
 class distribution matches real traffic rather than the old bank's shape · the retired set named
 with its reason · one baseline run on the new bank, its rate recorded as the new starting number.

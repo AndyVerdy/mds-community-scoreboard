@@ -1,3 +1,7 @@
+> ⚠️ **STANDING SIZE = 100 QUESTIONS** (Andy, 2026-08-16: "not 30, not 220. 100").
+> The current bank is `eval_bank_100_2026-08-16.json`, built by `scripts/build_eval_bank_100.py`.
+> The 212/134 snapshots below are HISTORICAL — keep them for back-comparison, do not fire them.
+
 # Eval bank snapshots
 
 `mds-scorecard-tools/` is **not a git repo**, so the canonical bank files there have no history.
