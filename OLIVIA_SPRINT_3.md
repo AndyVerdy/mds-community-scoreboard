@@ -33,7 +33,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
-| **#72** | 🚦 LOAD TEST before the Mille demo (~100 concurrent users) | 🔴 S1 | M | — | — |
+| **#72** | 🚦 LOAD TEST — **NOW the announcement, not the Mille demo. Biggest open risk; never run** | 🔴 S1 | M | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#76** | New eval bank — **100** questions from real member traffic *(BUILT 2026-08-16: `eval_bank_100_2026-08-16.json`)* | 🔴 S1 | M | ✅ built | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
@@ -50,6 +50,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#84** | Pre-announcement answer quality — chapter routing, transcript boundary, event phase rule, capability denial | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `5a12a2d1` (prod probe ×3) |
 | **#82** | Flagship events (Summit, Inspire) carry what-they-are + who-is-in-the-room | 🔴 S1 | M | ✅ proven `2ecf4e62` | ✅ **LIVE** `e988a6a3` (prod probe) |
 | **#81** | People + stats lanes answer what we have the data for (fit_reason, gender split) | 🔴 S1 | M | ✅ proven `3d5f2b1b` | ✅ **LIVE** `fd957034` (prod probe: named + reasons) |
 | **#79** | Intro message rewritten — MDS AI assistant, early beta, current capabilities | 🔵 S3 | S | ✅ proven `d839a024` | ✅ **LIVE** `c59fd3ff` (byte-identical to approved copy) |
@@ -1501,6 +1502,45 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #84 · Pre-announcement answer quality — four defects a real member could hit
+
+**🔴 S1 · size M — filed + shipped 2026-08-17 · ✅ LIVE prod `5a12a2d1`**
+
+> **In plain words:** One week before the announcement, four things she said were wrong or
+> unusable. Two of them a real member had already hit.
+
+*As a member, when she cannot answer something I want the real reason, not an invented one — and
+when she can answer, she should not tell me she cannot.*
+
+**Found by:** the 30-question smoke (`OLIVIA_SMOKE_2026-08-14_BANK.md`) and the 100-question run.
+
+| | defect | root cause | fix |
+|---|---|---|---|
+| **D1** | "what chapter should i join" answered with WhatsApp chats; the correction repeated it byte-identically | **the router had no chapter lane** — "chapter" appeared nowhere in its prompt, so the question matched `chats` ("which they could join") | CHAPTER IS NOT A CHAT rule at the top of LANE PRECEDENCE; chapters route to `community`, which already reached `chapter_info` |
+| **D2** | "full transcripts aren't something I have access to (that capability isn't live yet)" | **the Answer Seed contradicted itself** — a pre-#70 rule 38 lines from #70's own "2026 calls carry full transcripts" | replaced with the measured boundary: virtual 2026 only, none pre-2026-01-05, none in-person. "not live" banned |
+| **D3** | told a member our data holds "Untitled Event" and "for test" | 98 shells created when someone registers on the events site and no event matches | `not_a_real_event` mark, `events_catalog_live` chokepoint, **upcoming narrowed to `Registration Open` only** (Andy's rule) |
+| **F1** | "I don't have gender tracked as a census question" while citing census gender medians two questions later | #81's cross-cut rule was scoped to "breaking an existing figure down", so a standalone count never triggered | **one general rule**: never claim MDS does not track something until the tool that would hold it has been called |
+
+**Results** · 100-question run on the candidate: **98/102 clean (96%)**, all 27 regression rows
+pass, **zero `chats` routes in 102 answers**. Prior: 90% on the 30-question smoke, 7.7% fail on the
+Aug 10 nightly of 220.
+
+**AC checklist** · chapter questions route to chapters — met (8/8, prod probe) · transcript gaps
+state the real boundary — met (prod probe names Oct 2025 / 2026-onward) · no internal data
+described to a member — met (0 leaks) · she stops denying data she holds — met (89 female, and
+D2 did not over-correct) · gate green — met, exit 0 inside the promote · pulse green — met, before
+and after.
+
+**Deliberately not fixed** · **F2** she declines "how many cities have events since July 2025",
+which IS answerable — the D3 fix traded a leak for a miss. **F3** "that schedule isn't connected to
+me yet" is TRUE (no forward call schedule exists) but is the invented-infrastructure phrasing Andy
+objected to after the Dorian Gorski incident. Both pre-existing, neither caused by this work.
+
+**Open for Andy** · rule on the women's-chapter revenue cross-tab (compliant — aggregates, n=91,
+self-flags its average-vs-median mismatch — but concludes women trend lower than men).
+
+---
 
 ### #82 · The biggest events have no dossier — the builder asks "what is this about?" when it should ask "what is this?"
 **🔴 S1 · size M — filed 2026-08-12 (Andy: "summit is poor… missing dossier for Summit or Inspire is genuinely bad")**
