@@ -89,34 +89,55 @@ reaches `chapter_info`), a *chat* is a WhatsApp group. One node, staging probe, 
 **Live evidence this lane is dead weight:** `chats` has fired **4 times since Aug 8** — Andy's two
 screenshot turns and the two in this run. Zero legitimate hits in a week.
 
-## D2 · False capability claim: transcripts 🔴
+## D2+D4 · A gap is reported without the boundary that explains it 🔴
 
-> "full transcripts aren't something I have access to (that capability isn't live yet)"
+**Corrected 2026-08-16 after Andy challenged the original framing. He was right and I was wrong
+twice.** My first write-up said she denies transcripts she holds. She does not. Investigating:
 
-**Measured: 65 videos carry transcripts, 3,116 embedded chunks.** #70 shipped this. She is
-denying a capability she has. Same class as the false no-transcripts claim #79 removed from the
-intro copy — it survives in answer behaviour.
+- The video was **"Amazon Ranking Mastery — Alex Chiru and Matt Altman — Mogul Call"**
+  (`68e0286ab249fad5e038bac2`), published **2025-10-03**. It has **0 transcript chunks**.
+  **Her answer was correct.**
+- Not a timing artefact either — all 3,116 chunks landed in one batch on 2026-08-07, three days
+  *before* the member asked.
 
-## D3 · Internal test data described to a member 🟡
+**The real coverage rules, measured — there are two, and both are real:**
 
-> "what came back was mostly internal test entries (placeholders like *'Untitled Event'* and
-> *'for test'*)"
+| format | videos | of those, 2026 | with transcript |
+|---|---:|---:|---:|
+| Expert Call | 52 | 5 | **5 — 100%** |
+| Mogul Call | 201 | 28 | **23 — 82%** |
+| Channel Call | 81 | 41 | **29 — 71%** |
+| Summit | 146 | 18 | **0** |
+| Mastermind | 135 | 23 | **0** |
+| Chapter Event | 94 | 13 | 2 |
 
-Honest, and exactly the wrong kind of honest. `events_catalog` holds test rows that reach a
-member-facing answer. Data cleanup, not code.
+1. **Nothing before 2026-01-05** — 872 of 1,033 videos (84%), zero transcripts. Zoom recordings
+   do not go back further.
+2. **No in-person formats** — Summit, Mastermind and Chapter Event have **0 transcripts even for
+   2026**. Andy's point, confirmed.
 
-## D4 · Stale sources 🟡
+**So the defect is not the gap — it is how the gap is explained.** "that capability isn't live
+yet" is a false *reason* for a true gap, and it tells the member to stop asking. The same failure
+applies to Facebook: *"the most recent posts I'm seeing are from August 10"* is true, but with no
+cadence it reads as broken.
 
-| source | newest | days stale |
-|---|---|---:|
-| wa_message | 2026-08-14 | **0** |
-| fb_comment | 2026-08-11 | 3 |
-| fb_post | 2026-08-10 | **4** |
-| call_transcript | 2026-08-05 | **9** |
+Freshness swings, which is exactly why the cadence has to be said out loud. Measured 2026-08-16,
+two days after the smoke: `fb_comment` **0 days**, `fb_post` **1**, `wa_message` **1**,
+`wa_digest` **2**, `call_transcript` **12** (the weekly Zoom chain is overdue). On Aug 14 Facebook
+was 4 days behind. Same system, opposite impression, no way for the member to tell which.
 
-She reports this honestly ("the most recent posts I'm seeing are from August 10"), but at
-announcement "latest post: 4 days ago" reads as broken. FB capture is the Chrome-extension manual
-step; transcripts are the weekly Zoom chain.
+**The fix (Answer Seed, not the router):** whenever she reports a gap or a recency, the boundary
+travels with it.
+
+- Videos → *"No transcript for that one — it is from October 2025, and transcripts cover virtual
+  calls from 2026 (Mogul, Channel, Expert). In-person recordings — Summits, Masterminds, chapter
+  events — have none either. I do have 65 calls from this year if you want me to search those."*
+- Facebook → *"Facebook syncs periodically; the latest I have is <date>."*
+- WhatsApp → current, no caveat needed.
+
+**Accept when:** no answer claims a capability is "not live" when the real reason is coverage ·
+every not-found on a video states the 2026/virtual boundary · every Facebook recency states the
+sync cadence · the four `FRESHNESS` and two transcript rows in the 100-bank pass.
 
 ## What passed, and is worth protecting
 
@@ -128,7 +149,13 @@ positive/negative member feedback ✅ · TikTok/AI/inventory content answers wit
 
 ## Pre-announcement priority
 
-1. **D1 chapter routing** — highest impact; "what chapter should I join" is a top-5 new-member question.
-2. **D2 transcripts claim** — she is underselling a shipped capability, and it is untrue.
-3. **D4 refresh FB + transcripts** — before announcement day, not after.
-4. **D3 purge test rows** from `events_catalog`.
+1. **D1 chapter routing** — ✅ FIXED on staging 2026-08-16 (`21f726b`), awaiting promote.
+   Highest impact: a real member hit it on Aug 15, not only Andy.
+2. **D2+D4 coverage disclosure** — the boundary must travel with the gap. Answer Seed change.
+   She is not wrong today; she is unexplainable, which reads as broken.
+3. **D3 purge test rows** from `events_catalog` — she quoted "Untitled Event" and "for test" to a member.
+4. **Run the weekly Zoom chain** — transcripts are 12 days stale as of 2026-08-16.
+
+**Scoring note:** the original D2 row counted as a wrong answer. It was not — her answer was
+correct. The Aug 14 score is therefore **27 of 30 clean (90%)**, not 26/30, and the defect count
+is **3**, not 4. Recorded rather than quietly amended.
