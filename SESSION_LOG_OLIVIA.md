@@ -6,6 +6,87 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-17 — PRE-ANNOUNCEMENT PIVOT: D1+D2+F1 PROMOTED (prod `5a12a2d1`) · 100-bank built · schema work parked
+
+**One week to the announcement, so the sprint pivoted from schema architecture to answer quality
+and cost.** The five schema phase plans are committed and untouched; nothing was started.
+
+### PROMOTED 05:18 UTC — prod `ceefeaad` to `5a12a2d1`
+Two nodes (`Route Request`, `Answer Seed`), gate green inside the promote, bounce in the correct
+order, snapshots both sides. **Verified on prod itself**, not inherited from staging:
+- *"what chapter should i join"* to *"Ah gotcha — based in Jersey City, the **New York Chapter**"* (97 members, all three leads)
+- *"How many females are in MDS?"* to ***"89 members identify as female"*** (722 active, 112 not specifying)
+- transcript ask to *"published back in **October 2025**, transcripts only cover **virtual calls from 2026 onward**"* plus two in-window alternatives
+
+### What shipped
+| | defect | fix |
+|---|---|---|
+| **D1** | the router had NO chapter lane — "chapter" appeared nowhere in its prompt, so a chapter question matched `chats` ("which they could join") and the correction re-classified identically | CHAPTER IS NOT A CHAT rule at the top of LANE PRECEDENCE; chapters route to `community`, which already reached `chapter_info`. Prompt-only, no new intent |
+| **D2** | the Answer Seed **contradicted itself** — a pre-#70 rule said "you cannot search INSIDE call recordings yet, that capability is coming", 38 lines from #70's own "2026 calls carry full transcripts" | replaced with the measured boundary (virtual 2026 only; none pre-2026-01-05; none in-person) + a freshness rule so recency answers carry their sync cadence |
+| **D3** | she described our own dirty data to a member ("Untitled Event", "for test") | `not_a_real_event` mark on 98 shells + 10 staff tests, `events_catalog_live` chokepoint, and **upcoming narrowed to `Registration Open` only** (Andy's rule; `Confirmed` dropped) |
+| **F1** | *"I don't have gender tracked as a census question"* — 89 female / 521 male / 112 unspecified, and she cited census gender medians two questions later | one GENERAL rule: never claim MDS does not track something until the tool that would hold it has been called; an empty result is a fact about the lookup, never about our systems |
+
+### The 100-question bank (#76) — resized and built
+Andy: *"not 30, not 220. 100."* The 150 in #76 and the 212 in the snapshot README were the broken
+docs; both now say 100. `eval_bank_100_2026-08-16.json` — every question organic, traceable to a
+real member turn 07-18..08-16 across **27 members**, selected from a pool of ~330. 27 regression
+rows, 10 multi-turn sequences kept adjacent because correction handling is itself a defect class.
+
+**Run on staging: 112 turns, 0 timeouts, 102 scored, 98 clean (96%).** All 27 regressions passed;
+**zero `chats` routes in the entire run.** Aug 14 was 90% on 30; the Aug 10 nightly was 7.7% fail.
+
+### Four times I was wrong, all caught by Andy
+1. **"Zero true orphans"** — the check excluded NULL keys, and I had ruled `entity_dossier`
+   not-FK-able without measuring it. It held **51 fabricated chapter dossiers**.
+2. **D2 "she denies transcripts she holds"** — she did not. That call is from Oct 2025 and
+   genuinely has none. The defect was the *explanation*, not the answer.
+3. **"The Untitled events are test data"** — they are artefacts of a Make scenario creating an
+   event record when someone registers on the events site and none matches. Real Airtable records,
+   invisible in every view because Type/Style/Phase are empty.
+4. **"Null phase falls through the browse filter"** — it did not; `event_lookup:108` already
+   restricted browse. They reached members via `event_history` (past), where any phase is
+   legitimate — which is why the marking is still needed there.
+
+Andy also killed my "transcripts are 12 days stale" finding: **Aug 5 Dorian Gorski was the last
+member-facing call with a published video and it has its 52 chunks.** Everything after is internal.
+
+### 🚨 INCIDENT — I broke staging for ~15 minutes
+Appending a JS string to the Answer Seed array without the comma before it. Two adjacent string
+literals is a syntax error; the node stopped parsing and every LLM turn returned NOT PERSISTED.
+Only `reset` answered, because it never reaches that node. **Prod was never touched** — staging-first
+held. The guard I had written inspected apostrophes and never asked whether the result was valid
+JavaScript. **`node --check` is now a hard precondition in both apply scripts**, aborting before any
+write. The repo's own memory already said "seed edits get a node syntax check BEFORE build_loop".
+
+### New tooling
+- **`scripts/prod_pulse.py`** — the liveness check every step was missing. The leak gate proves
+  retrieval REFUSES; nothing proved Olivia still ANSWERS. Read-only, directional against a saved
+  baseline (prod ingests continuously and already carries firing alarms, so absolute thresholds
+  would be red from day one). Proven both ways: forced regression gives exit 1, clean gives 0.
+- **`scripts/run_eval_100.py`** — fires the bank with resets between classes, sequences adjacent.
+
+### Cost — answered structurally, not numerically
+$168.74 over Aug 8-14, but **Aug 9 cost $18 for ONE question and Aug 11 cost $30 for 130** — no
+correlation, so Olivia is not the driver. The console was showing All workspaces / All API keys,
+which includes Claude Code (Opus 4.8 and three Sonnet versions are in the legend; Olivia calls
+neither). Olivia is Sonnet 5 for answers (agentic loop, several calls per question) + Haiku 4.5 for
+router and fact-check. **Of 220 questions in that window, 144 (65%) were Andy's own testing.**
+The real number needs the console filtered by n8n's API key — Andy's to run.
+
+### Open
+- **Andy:** filter the Claude console by n8n's API key · rule on the women's-chapter revenue
+  cross-tab (compliant — aggregates, n=91, self-flags its own average-vs-median mismatch — but it
+  concludes women trend lower than men) · the Make scenario still creates event shells
+- **F2** declines an answerable events question (the D3 fix traded a leak for a miss) · **F3**
+  "that schedule isn't connected to me yet" is TRUE (no forward call schedule exists) but is the
+  invented-infrastructure phrasing already objected to once
+- **#72 load test** — never run, and the announcement IS the traffic event. Biggest open risk
+- **#32 cost instrumentation** — nothing logs tokens; `latency_ms` is 100% NULL
+- `event_lookup_v3` and `event_who` still read `events_catalog`, not the live view
+- Five schema phases parked: `docs/superpowers/plans/2026-08-13-phase{1..5}-*.md`
+
+---
+
 ## 2026-08-12 (night) — #61 schema audit: research done, 0 true orphans, 30 COMMENTs shipped
 
 **Ticket #61 (🔴 S1, "do not act, research first")** picked up as the next open S1 item after
@@ -29,7 +110,7 @@ keys (`entity_dossier.entity_id` by kind, `content_items.source_id` by source) d
 genuinely not FK-able. **Zero true orphans found across the whole audit.**
 
 **Shipped:** `FORMS_ERD.md` §3 (58-table schema audit — declared FKs, orphan table, rulings) ·
-migration `digest_schema_audit_comments_20260812` (30 `COMMENT ON COLUMN`, metadata only) · gate
+migration `digest_schema_audit_comments_20260812` (31 `COMMENT ON COLUMN`, metadata only) · gate
 253 exit-0 before and after · ticket #61 body + board row updated in `OLIVIA_SPRINT_3.md`.
 
 **Deliberately not shipped:** FK constraints. 25 relations are orphan-clean today but adding a real

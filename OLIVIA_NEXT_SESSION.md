@@ -19,7 +19,60 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-12 (night): SPRINT 3 OPEN · PROD `e988a6a3` — #61 SCHEMA AUDIT SHIPPED
+## STATE 2026-08-17: PROD `5a12a2d1` — D1+D2+D3+F1 LIVE · ANNOUNCEMENT IN ~1 WEEK
+
+**The sprint pivoted to answer quality + cost.** Schema architecture is PARKED — five phase plans
+committed (`docs/superpowers/plans/2026-08-13-phase{1..5}-*.md`), nothing started. Do not resume
+them before the announcement without Andy saying so.
+
+**Promoted 05:18 UTC**, `ceefeaad` to `5a12a2d1`, two nodes, gate green inside, **verified on prod**:
+chapter question answers New York Chapter · "89 members identify as female" · transcript ask names
+the October-2025 / 2026-onward boundary and offers two in-window calls.
+
+### The eval bank is now 100 questions, and that number is a ruling
+Andy 2026-08-16: *"not 30, not 220. 100."* `eval_bank_100_2026-08-16.json`, built by
+`scripts/build_eval_bank_100.py`, fired by `scripts/run_eval_100.py [--staging]`. Every question
+organic (real member turn, 07-18..08-16, 27 members). **#76's old 150 target and the snapshot
+README's 212 are superseded.** Last run: 96% clean, all 27 regressions pass.
+
+### Run the pulse, not just the gate
+`scripts/prod_pulse.py` — the leak gate proves retrieval REFUSES; it never proved Olivia still
+ANSWERS. Read-only, directional against a saved baseline. **Before AND after every step.** Exit 1
+means stop. `--save-baseline` at the start of a work block.
+
+### NEXT — in this order
+1. **#72 LOAD TEST.** Biggest open risk. Never run; the system has never seen more than a handful
+   of concurrent users and the announcement IS the traffic event.
+2. **#32 cost instrumentation.** Nothing logs tokens; `latency_ms` is 100% NULL. Cannot answer
+   "what do we pay per answer" from our own data at all.
+3. Re-run the 100 against prod for the number to announce against.
+4. **F2** — she declines "how many cities have events since July 2025", which IS answerable. The
+   D3 fix traded a leak for a miss.
+5. **F3** — "that schedule isn't connected to me yet" is TRUE (no forward call schedule exists)
+   but is the invented-infrastructure phrasing Andy objected to after the Dorian Gorski incident.
+6. `event_lookup_v3` and `event_who` still read `events_catalog`, not `events_catalog_live`.
+
+### BLOCKED ON ANDY
+- Filter the Claude console **by n8n's API key** (not workspace) for the real cost per answer.
+  All-workspaces shows $168.74/7d but Aug 9 cost $18 for ONE question — Olivia is not the driver.
+- **Ruling:** the women's-chapter revenue cross-tab is compliant (aggregates, n=91, self-flags its
+  average-vs-median mismatch) but concludes women trend lower than men. Rules may not have
+  anticipated the framing.
+- The Make scenario still creates an event shell whenever someone registers on the events site and
+  no event matches. 98 exist; more will appear.
+
+### Hard-won this session
+- **`node --check` before ANY Answer Seed write.** I shipped a missing comma between two JS string
+  literals and broke staging for ~15 minutes — every LLM turn returned NOT PERSISTED while `reset`
+  kept working, because reset never reaches that node. Prod was never touched. Both apply scripts
+  now abort before writing if the result does not parse.
+- **Capability denial is a CLASS, not incidents.** Three instances (transcripts, call schedule,
+  gender) — two of them were the model obeying a stale rule, not hallucinating. Check the Answer
+  Seed for a rule that contradicts a shipped capability before blaming the model.
+- **`phase IS NULL` is normal, not junk** — 292 null-phase events carry 4,019 real member
+  registrations. A phase-null purge would erase a third of the attendance history.
+
+## STATE 2026-08-12 (night, superseded): PROD `e988a6a3` — #61 SCHEMA AUDIT SHIPPED
 
 **#61 (schema audit) is DONE except FK-constraint addition (deliberately deferred, see below).**
 `member_profiles.at_member_id` confirmed as the true dual-key spine root — NOT `member_attributes`,
