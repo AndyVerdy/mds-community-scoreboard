@@ -1,0 +1,90 @@
+CREATE OR REPLACE FUNCTION digest.content_search(p_phone text, p_terms text[] DEFAULT '{}'::text[], p_sources text[] DEFAULT NULL::text[], p_kinds text[] DEFAULT NULL::text[], p_chat text DEFAULT NULL::text, p_since date DEFAULT NULL::date, p_limit integer DEFAULT 40, p_include_restricted boolean DEFAULT false, p_author text DEFAULT NULL::text, p_embedding text DEFAULT NULL::text, p_at_member_id text DEFAULT NULL::text)
+ RETURNS TABLE(source text, kind text, source_id text, title text, tl_dr text, body text, occurred_at timestamp with time zone, url text, sensitivity text, meta jsonb, search_extra text)
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'digest', 'pg_temp'
+AS $function$
+declare
+  v_chats text[]; v_atid text; v_n int; v_in_fb boolean; v_vec extensions.vector(1024);
+begin
+  if p_at_member_id is not null then
+    select count(*) into v_n from digest.member_attributes mz where mz.at_member_id = p_at_member_id and digest.is_active_member_status(mz.membership_status);
+  else
+    select count(*) into v_n from digest.member_identity mz where mz.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(mz.membership_status);
+  end if;
+  if v_n <> 1 then return; end if;
+  select coalesce(m.channels_present, '{}'), m.at_member_id into v_chats, v_atid
+    from digest.member_identity m where (case when p_at_member_id is not null then m.at_member_id = p_at_member_id else m.at_member_id = digest.resolve_asker(p_phone) end) and digest.is_active_member_status(m.membership_status) order by (m.phone is not null) desc, m.airtable_id limit 1;
+  if p_at_member_id is not null and v_atid is null then v_atid := p_at_member_id; end if;
+
+  v_in_fb := v_atid is not null and exists (select 1 from digest.fb_member_map f where f.at_member_id = v_atid);
+  begin
+    v_vec := nullif(trim(coalesce(p_embedding, '')), '')::extensions.vector(1024);
+  exception when others then
+    v_vec := null;
+  end;
+
+  return query
+  select s.source, s.kind, s.source_id, s.title, s.tl_dr, s.body,
+         s.occurred_at, s.url, s.sensitivity,
+         case when s.source = 'fb_comment' and (s.meta ? 'post_id') then
+           s.meta || jsonb_strip_nulls(jsonb_build_object('post_author',
+             (select pp.meta->>'author_name' from digest.content_items pp
+               where pp.source = 'fb_post' and pp.source_id = s.meta->>'post_id'
+               order by pp.id limit 1)))
+         -- has_image tells the answer loop whether this post HAS a picture to
+         -- attach. Without it the model had to guess, so award graphics, agendas
+         -- and charts were described instead of shown. source_id IS the ref for
+         -- [SEND_IMAGE: ...]; the flag is what makes using it deliberate.
+         when s.source = 'fb_post' then
+           s.meta || jsonb_build_object('has_image',
+             exists (select 1 from digest.fb_post_images fi where fi.post_id = s.source_id))
+         else s.meta end as meta,
+         s.search_extra
+  from (
+  select ci.source, ci.kind, ci.source_id, ci.title, ci.tl_dr, ci.body,
+         ci.occurred_at, case when ci.source = 'fb_comment' and ci.url is not null and ci.url not like '%comment_id=%'
+                 and ci.source_id ~ '^[0-9]+$'
+            then rtrim(ci.url, '/') || '/?comment_id=' || ci.source_id
+            else ci.url end as url, ci.sensitivity::text as sensitivity,
+         case when ci.meta ? 'sender_member'
+              then ci.meta || jsonb_strip_nulls(jsonb_build_object(
+                     'sender_name', coalesce(mm.full_name, mm.name)))
+              else ci.meta end as meta,
+         ci.search_extra,
+         (select count(*) from unnest(p_terms) t
+          where concat_ws(' ', ci.tl_dr, ci.body, ci.search_extra) ilike '%' || digest.content_like_escape(t) || '%') as _k_terms,
+         case when v_vec is not null and coalesce(array_length(p_terms,1),0) > 0 then ci.embedding OPERATOR(extensions.<=>) v_vec else 0 end as _k_vec,
+         ci.id as _k_id
+  from digest.content_items ci
+  left join digest.members mm on mm.airtable_id = ci.meta->>'sender_member'
+  where ci.sensitivity <> 'never_surface'
+    and (p_include_restricted or ci.sensitivity <> 'restricted')
+    and (
+      (ci.access_rule->>'type' = 'public')
+      or (ci.access_rule->>'type' = 'chat_member' and ci.access_rule->>'chat' = any(v_chats))
+      or (ci.access_rule->>'type' = 'owner' and v_atid is not null and ci.access_rule->>'member' = v_atid)
+      or (ci.access_rule->>'type' = 'fb_group' and v_in_fb)
+    )
+    and (p_sources is null or ci.source = any(p_sources))
+    and (p_kinds is null or ci.kind = any(p_kinds))
+    and (p_chat is null or ci.meta->>'chat_name' = p_chat or ci.meta->>'chat_name' is null)
+    and (p_since is null or (ci.occurred_at at time zone 'utc')::date >= p_since)
+    and (p_author is null
+         or digest.name_fold(coalesce(ci.meta->>'author_name', mm.full_name, mm.name)) like '%' || digest.name_fold(p_author) || '%'
+         or (ci.source = 'fb_comment' and exists (
+               select 1 from digest.content_items pp
+               where pp.source = 'fb_post' and pp.source_id = ci.meta->>'post_id'
+                 and digest.name_fold(pp.meta->>'author_name') like '%' || digest.name_fold(p_author) || '%')))
+    and (
+      v_vec is not null
+      or coalesce(cardinality(p_terms), 0) = 0
+      or exists (
+        select 1 from unnest(p_terms) t
+        where concat_ws(' ', ci.tl_dr, ci.body, ci.search_extra) ilike '%' || digest.content_like_escape(t) || '%'))
+    
+  order by _k_terms desc, _k_vec asc, ci.occurred_at desc, ci.id desc
+  limit greatest(coalesce(p_limit, 40), 0)
+  ) s
+  order by s._k_terms desc, s._k_vec asc, s.occurred_at desc, s._k_id desc;
+end $function$
