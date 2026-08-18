@@ -21,31 +21,41 @@
 
 ## STATE 2026-08-18: PROD `d6761eb4` — #85 SCHEDULE LANE LIVE · #86 REMINDERS BUILT
 
+### ⚠️ THREE SURFACES — read this before anything else
+| surface | version | carries |
+|---|---|---|
+| **n8n PROD** | `d6761eb4` | schedule lane: `agenda · next · day · where · speaker · speakers · recommend` |
+| **n8n STAGING — AHEAD, AWAITING PROMOTE** | `0c70c1c2` | **the reminder ops** (`remind · reminders · unremind`) **+ the date-first layout** |
+| **endpoint (mds-digest-web)** | `0fd0df9` deployed · `af79010` queued | all 10 ops live; the queued commit is the reminder idempotency fix |
+
+**So today, on a member's phone: the schedule answers, reminders do not exist.** One promote closes
+that gap. Nothing is half-shipped in prod — staging simply has more.
+
 **Olivia can answer the Summit schedule.** New `event` schema (15 tables, 25 FKs, no views, no
 functions — policy lives outside the DB) loaded from the GroupOS export; the lane is
 `POST /api/olivia/schedule` in **mds-digest-web**, not a Postgres RPC. `Answer Tool` routes
 `event_*` tool names there on `X-Olivia-Secret`; everything else still posts to `/rest/v1/rpc/`.
 
-Ops: `agenda · next · day · where · speaker · speakers · recommend · remind · reminders · unremind`.
 Golden tests: **plain Member day one = 6 · Women's Lunch grantee = 7.**
 
 ### DO THIS FIRST
-1. **Declare the reminder ops in the Answer Seed.** `remind`/`reminders`/`unremind` exist on the
-   endpoint and the sender is written, but the seed only knows up to `recommend` — so **Olivia
-   cannot set a reminder today**.
-2. **Verify the day-grouped layout.** `0fd0df9` (payload carries `days[]`: date heading, then
-   time / what / detail) and staging `15f47484` both carry it; the Render deploy was lagging at
-   session end, so it is committed and unverified. Probe, then promote.
+1. **Probe the date-first layout, then promote staging `0c70c1c2`.** That single promote ships both
+   the reminder ops and the layout. Probe first — the layout is committed on both sides and was
+   never verified end to end, because the Render deploy lagged at session end.
+2. **Ask Andy for the WABA id.** The template can be created from here — the token holds
+   `whatsapp_business_management` — but the system user cannot enumerate the WABA, so that one
+   value is the whole blocker. Template is drafted: `mds_summit_reminder`, UTILITY, en_US, body
+   `⏰ You asked me to remind you — *{{1}}* starts at {{2}}.` Two variables, both always populated
+   (location deliberately excluded: 14 activities have none and Meta rejects an empty variable).
 3. **Ask the dev for a fresh export** — `CÉ LA VI Singapore` is in the admin's 19 locations but not
    in our 18, so some of the 13 venue-less activities may be export gaps rather than ops gaps. Same
    dump also fixes long descriptions truncated at 201 chars.
 
 ### BLOCKED ON ANDY
-- **`mds_summit_reminder` utility template on the WABA** (two variables: what, when). Utility, so
-  the 131049 marketing cap does not apply. Approval takes days.
+- **The WABA id** (see above) — then submission and approval-polling are mine.
 - **Schedule `scripts/olivia_reminder_sender.py` every 5 minutes.**
 - **Two rosters disagree** — `event_registrations` 156 distinct members vs `event.attendees` 149.
-  Same Summit, no reconciliation, and whichever lane answers decides the number a member hears.
+  Same Summit, no reconciliation, and whichever lane answers decides the number a member hears (#89).
 
 ### Filed as tickets 2026-08-18, awaiting priority
 - **#89** 🔴 two rosters disagree — 156 registrations vs 149 attendees, same Summit, no reconciliation.
