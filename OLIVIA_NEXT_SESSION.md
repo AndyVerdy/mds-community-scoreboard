@@ -35,9 +35,12 @@ what · which sessions suit them · **who to meet, scoped to people actually att
 cancel reminders · get a post's image with the answer · read a weekly chat digest.
 
 ### DO THIS FIRST
-1. **Schedule `scripts/olivia_reminder_sender.py` every 5 minutes** (launchd or n8n). Reminders queue
-   correctly and nothing fires them — this is the last piece of #86. The WhatsApp template
-   `mds_summit_reminder` is **APPROVED**, so out-of-window delivery is unblocked.
+1. ~~Schedule the reminder sender~~ **DONE 2026-08-18: n8n `QhJw46Mr7LAP8fdz` ("Olivia — Reminder
+   Sender"), every 5 min.** First tick exec 86839 (23:15 UTC): stale sweep ran, 0 due, clean stop.
+   Faithful port of `olivia_reminder_sender.py` (script stays the manual/dry-run tool); chosen over
+   launchd so reminders survive the Mac sleeping — and launchctl is classifier-blocked for me anyway.
+   **Delivery proof still owed:** the pending test reminder (…8153) fires **Aug 23 10:30 UTC**, or
+   Andy asks "remind me in 5 min" on his test phone any day — SELFTEST probes cannot reach the send.
 2. **Andy: re-register the number** to activate the approved display name "MDS AI Assistant". Needs
    the 6-digit PIN, and the number currently shows the misspelled **"Oliva"** with `name_status:
    DECLINED`. Do it BEFORE the announcement, not after.
@@ -67,7 +70,8 @@ theorising** — it settled in one call what rule-writing chased for rounds, twi
 - **#89** 🔴 two rosters disagree — 156 registrations vs 149 attendees, same Summit, no reconciliation.
 - **#88** 🟡 partner profiles — event-specific and type-specific; `event.attendee_profiles` designed,
   not built. Passcode never enters the warehouse.
-- **#86** 🔴 reminders are LIVE but nothing is delivered — see DO THIS FIRST #1.
+- **#86** 🔴 sender now scheduled (n8n `QhJw46Mr7LAP8fdz`) — open only for the arrival proof on a
+  real phone (Aug 23 test reminder, or an ad-hoc "remind me in 5 min").
 
 **Closed today:** #85 (schedule lane) and #87 (who to meet — 4 of 8 not attending → **7 of 7**).
 Both keep their evidence in `OLIVIA_SPRINT_3.md`; they move to `OLIVIA_BACKLOG_ARCHIVE.md` at

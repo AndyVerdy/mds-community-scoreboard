@@ -52,7 +52,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#90** | The chats mirror stopped syncing — she hands out dead invite links | 🔴 S1 | S | — | — |
 | **#88** | Partner profiles — event-specific, and nowhere in the warehouse | 🟡 S2 | M | — | — |
 | **#89** | Two rosters disagree about who is at the Summit — 156 vs 149 | 🔴 S1 | M | — | — |
-| **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ proven | 🟨 **LIVE** `74f0572a` — sender not scheduled |
+| **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ proven | 🟨 **LIVE** `74f0572a` + sender n8n `QhJw46Mr7LAP8fdz` every 5 min — delivery proof needs a phone (Aug 23 test reminder) |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
 | **#87** | "Who should I meet" returns people who aren't going | 🟡 S2 | S | ✅ proven | ✅ **LIVE** `74f0572a` (7/7 attending) |
 | **#85** | 🚀 Summit schedule lane — activities, sessions, rooms, venues, audiences | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `d6761eb4` (prod probes) |
@@ -228,7 +228,7 @@ Today she computes the time correctly and then says she cannot send it — hones
 | AC | result |
 |---|---|
 | set / list / cancel in conversation | ✅ live on prod — *"I'll remind you at 6:30 pm Singapore time, 30 minutes before the Welcome Dinner"*, lists, cancels |
-| arrives before the thing starts | ⛔ **the sender is not scheduled.** Template `mds_summit_reminder` is **APPROVED** (utility), so delivery itself is unblocked — rows queue, nothing fires them |
+| arrives before the thing starts | 🟨 **sender SCHEDULED 2026-08-18** — n8n workflow `QhJw46Mr7LAP8fdz` ("Olivia — Reminder Sender"), every 5 min from the cloud (survives this Mac sleeping through Summit week; launchd was blocked for me anyway). First tick exec **86839** 23:15:07 UTC: stale sweep ran, 0 due, stopped clean in 790 ms. Template `mds_summit_reminder` **APPROVED**. **Remaining proof: a reminder landing on a phone** — the pending test reminder (…8153, fires Aug 23 10:30 UTC) is the arranged test, or Andy asks "remind me in 5 min" any time |
 | relative asks work | ✅ `in_minutes` computed server-side — **the model has no clock**: asked for "in 5 min" it sent a timestamp four hours stale and the endpoint correctly refused it as past |
 | absolute asks confirm the zone | ✅ *"I'll remind you at 8:00 PM Singapore time"* — rule live on prod |
 | nothing promised that cannot be delivered | ✅ non-attendee refused · unmatched name says so · past moment answers with the real start time · late reminders marked failed rather than sent |
@@ -236,7 +236,7 @@ Today she computes the time correctly and then says she cannot send it — hones
 
 **Proof:** `remind "welcome dinner" lead 30` → *Welcome Dinner starts Sun 23 Aug 7:00 pm, remind at 6:30 pm Singapore time*; list shows both, `unremind` drops one. Sender dry-run against a real due row: *"⏰ Welcome Dinner starts in 30 minutes — Pool, Ritz-Carlton."*
 
-**One thing left: schedule the sender every 5 minutes.** The template was submitted from here and is **APPROVED** — the WABA id (`1575708577606583`) was in the workflow's own *Subscribe App to WABA* node all along, after I asked Andy for it three times.
+**The sender is scheduled (2026-08-18):** n8n `QhJw46Mr7LAP8fdz`, a faithful port of `olivia_reminder_sender.py` (7 nodes: stale sweep → due query → 24h-window check → text-or-template send → outcome PATCH), reusing the prod workflow's own Meta + Supabase credentials. n8n over launchd because reminders must survive this Mac sleeping during Summit week; the script stays as the manual/dry-run tool. The template was submitted from here and is **APPROVED** — the WABA id (`1575708577606583`) was in the workflow's own *Subscribe App to WABA* node all along, after I asked Andy for it three times. **Left: the arrival itself** — pending test reminder fires Aug 23 10:30 UTC at …8153, or a "remind me in 5 min" ask proves it any day.
 
 ---
 

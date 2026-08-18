@@ -6,6 +6,34 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-18 (night) — #86 SENDER SCHEDULED: n8n every 5 min, first tick proven (prod `74f0572a` untouched)
+
+**The one remaining piece of #86 — nothing fired the queued reminders — is closed.** New standalone
+n8n workflow **`QhJw46Mr7LAP8fdz` "Olivia — Reminder Sender (#86, every 5 min)"**, ACTIVE, a
+faithful 7-node port of `scripts/olivia_reminder_sender.py`: stale sweep (pending older than 60 min
+→ failed, never sent late) → due query (event schema, embedded activity/session/room/location) →
+one 24h-window check for all phones → free-form text inside the window, **approved utility template
+`mds_summit_reminder` outside it** → outcome PATCH (sent + wamid, or failed + Meta error). Reuses
+the prod workflow's own credentials (Meta `XKqRew9l9061A7jG`, Supabase `QHLDE4VHvm8jrVds`); prod
+Olivia workflow untouched, nothing to promote.
+
+**Why n8n and not launchd:** reminders must survive this Mac sleeping — Summit week means Andy
+travels and the laptop shuts exactly when reminders matter. (launchctl is also classifier-blocked
+for me; the plist was written, then deleted in favour of the better architecture.) Script docstring
+now names the n8n workflow as the schedule owner; the script stays the manual/dry-run tool.
+
+**Live proof:** first scheduled tick exec **86839**, 2026-08-18 23:15:07 UTC, success in 790 ms —
+stale PATCH matched 0, `Get Due Reminders` returned 0 items, chain stopped clean, nothing sent.
+Verified before scheduling: `starts_at` is real timestamptz (UTC-offset rows shift correctly to
+Singapore wall clock), so the port renders times with `Intl` in the EVENT's zone — no repeat of the
+#85 8-hours-wrong class. Queue at activation: 3 rows, all Andy's test phone …8153 — 1 pending
+(fires **Aug 23 10:30 UTC**), 2 cancelled. Nothing was due, so nothing could fire at a member.
+
+**What #86 still owes: the arrival itself.** SELFTEST routes to `Save Conversation` and never
+reaches a real send, so the proof is the Aug 23 test reminder landing on …8153 — or Andy asking
+"remind me in 5 minutes" on the test phone any day. No unsolicited test message was sent (confirm
+before sending on shared channels).
+
 ## 2026-08-18 (evening) — SIX PROMOTES: reminders live, images fixed in code, #87 shipped (prod `74f0572a`)
 
 Andy tested on his own phone all evening and every defect below came out of that, not from probes.

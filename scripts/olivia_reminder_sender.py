@@ -5,6 +5,13 @@ Reads event.reminders where status='pending' and remind_at has arrived, sends ea
 one on WhatsApp, and records the outcome. Designed to be run on a short schedule
 (every 5 minutes is enough — a 30-minute lead has 30 minutes of slack).
 
+THE SCHEDULE LIVES IN N8N, NOT HERE (2026-08-18): workflow "Olivia — Reminder
+Sender (#86, every 5 min)" (QhJw46Mr7LAP8fdz) is a faithful port of this logic and
+fires every 5 minutes from the cloud — chosen over launchd so reminders survive
+this Mac sleeping during Summit week. This script remains the manual tool:
+--dry-run to see what is due, a plain run for one-off catch-up. If the logic
+changes, change BOTH or retire one.
+
   python3 scripts/olivia_reminder_sender.py --dry-run     # show what is due, send nothing
   python3 scripts/olivia_reminder_sender.py               # send what is due
   python3 scripts/olivia_reminder_sender.py --window 120  # widen the catch-up window
