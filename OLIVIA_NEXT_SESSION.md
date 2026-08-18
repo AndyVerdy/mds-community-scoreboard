@@ -19,6 +19,49 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
+## STATE 2026-08-18: PROD `d6761eb4` — #85 SCHEDULE LANE LIVE · #86 REMINDERS BUILT
+
+**Olivia can answer the Summit schedule.** New `event` schema (15 tables, 25 FKs, no views, no
+functions — policy lives outside the DB) loaded from the GroupOS export; the lane is
+`POST /api/olivia/schedule` in **mds-digest-web**, not a Postgres RPC. `Answer Tool` routes
+`event_*` tool names there on `X-Olivia-Secret`; everything else still posts to `/rest/v1/rpc/`.
+
+Ops: `agenda · next · day · where · speaker · speakers · recommend · remind · reminders · unremind`.
+Golden tests: **plain Member day one = 6 · Women's Lunch grantee = 7.**
+
+### DO THIS FIRST
+1. **Declare the reminder ops in the Answer Seed.** `remind`/`reminders`/`unremind` exist on the
+   endpoint and the sender is written, but the seed only knows up to `recommend` — so **Olivia
+   cannot set a reminder today**.
+2. **Verify the day-grouped layout.** `0fd0df9` (payload carries `days[]`: date heading, then
+   time / what / detail) and staging `15f47484` both carry it; the Render deploy was lagging at
+   session end, so it is committed and unverified. Probe, then promote.
+3. **Ask the dev for a fresh export** — `CÉ LA VI Singapore` is in the admin's 19 locations but not
+   in our 18, so some of the 13 venue-less activities may be export gaps rather than ops gaps. Same
+   dump also fixes long descriptions truncated at 201 chars.
+
+### BLOCKED ON ANDY
+- **`mds_summit_reminder` utility template on the WABA** (two variables: what, when). Utility, so
+  the 131049 marketing cap does not apply. Approval takes days.
+- **Schedule `scripts/olivia_reminder_sender.py` every 5 minutes.**
+- **Two rosters disagree** — `event_registrations` 156 distinct members vs `event.attendees` 149.
+  Same Summit, no reconciliation, and whichever lane answers decides the number a member hears.
+
+### Known and deliberately left
+- Brandon Himmel's Aug 26 session has no parent activity → no audience → invisible to everyone.
+- `member_match` doesn't know about `event.attendees`, so "who should I visit" returns members who
+  are not going. One join fixes it.
+- 5 of the 20 probe questions unfired: 13, 14, 15, 17, 18.
+- `test-andy-8153` is a test row in `event.people` — remove when done testing.
+- #72 load test still shelved (design only, nothing built).
+
+### Traps in the export, all handled by the loader — do not re-learn them
+- **41 of 91 activities are Milan 2025 leftovers** carrying `isDelete`. The event was cloned.
+- **The `member`/`speaker`/`partner`/`guest` booleans are stale** and all false on records whose
+  `accessRoles` grants three roles. `accessRoles` governs.
+- **`event.timeZone` is a display label**, not IANA. Times are local wall-clock with no offset —
+  which is exactly how `events_catalog.start_at` ended up 8 hours wrong.
+
 ## STATE 2026-08-17: PROD `5a12a2d1` — D1+D2+D3+F1 LIVE · ANNOUNCEMENT IN ~1 WEEK
 
 **The sprint pivoted to answer quality + cost.** Schema architecture is PARKED — five phase plans

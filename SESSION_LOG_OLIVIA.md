@@ -6,6 +6,112 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-18 — #85 SUMMIT SCHEDULE LANE SHIPPED · #86 REMINDERS BUILT (prod `d6761eb4`)
+
+**Olivia had no schedule.** Every Summit answer came from people *talking about* the event —
+Eugene's Facebook announcement, Charles's walkthrough, and `events_catalog`, whose `start_at`
+is a Singapore wall-clock stamped as UTC. So "when does the Summit start" answered **6:00 AM**,
+eight hours wrong, and "when is the first workshop" answered *"per Eugene's breakdown, Monday,
+no exact clock time"*.
+
+### The data: a new `event` schema, loaded from a GroupOS export
+Andy's dev handed over `event_graph.json` — a read-only mongosh dump of the whole event.
+**15 tables, 25 FKs (5 composite), no views, no functions.** Policy lives outside the database,
+by Andy's ruling; the schema is tables and foreign keys only.
+
+| | |
+|---|---|
+| loaded | 1 event · 50 activities · 31 sessions · 6 rooms · 18 locations · 199 people · 178 attendees · 19 FAQs |
+| migrations | `event_schema_20260817` · `event_composite_fks_and_grants_20260817` · `event_people_member_fk_20260817` · `event_reminders_20260818` |
+| loader | `scripts/load_event_graph.py`, idempotent |
+
+**Three traps the loader exists to absorb**, all real in the export:
+1. **41 of 91 activities are Milan 2025 leftovers** carrying `isDelete` — the event was cloned.
+   Import them and Olivia serves last year's Italian agenda.
+2. **The legacy `member`/`speaker`/`partner`/`guest` booleans are stale** and all false on records
+   whose `accessRoles` grants three roles. `accessRoles` governs.
+3. **`event.timeZone` is a display LABEL, not IANA** — `"(UTC+08:00) Asia/Singapore Singapore
+   Standard Time"`. Times ship as local wall-clock strings with no offset. The loader extracts and
+   validates the IANA zone, stores true instants, keeps the raw strings in `source_*` for audit.
+
+### The rule, written once, in TypeScript
+```
+visible(person, activity) =
+     (person's participant types AT THIS EVENT) ∩ (activity's audience) ≠ ∅
+  OR person is on the activity's grant list
+```
+An unchecked box means *not invited*, never *must not know* — it blocks only somebody whose
+**every** type is unchecked. Khalid Abdulla holds a Speaker row and a Member row; Focus Groups has
+Speaker unchecked and Member checked, and he gets in on Member. Attendee type is an edge on
+(event, person), never a property of the person.
+
+**Golden tests, both green end to end:** a plain Member sees exactly **6** activities on day one;
+the Women's Lunch grantee (Kimberly Cruickshanks) sees **7**.
+
+### The lane: an API route, not an RPC
+`POST /api/olivia/schedule` in **mds-digest-web**, because Olivia's other 20 tools are Postgres
+functions and that is the pattern we are moving away from (#65 was that bill arriving). Retrieval
+travels in the query; policy lives in git, reviewed, testable. n8n's `Answer Tool` gained one
+branch: `event_*` tool names post to the endpoint on `X-Olivia-Secret`, everything else keeps
+posting to `/rest/v1/rpc/`. **No new nodes.**
+
+Ops: `agenda · next · day · where · speaker · speakers · recommend · remind · reminders · unremind`.
+
+### Six bugs found by probing, five of them mine
+| | |
+|---|---|
+| tool declared with `args` instead of `input_schema` | broke the answer loop — *"Sorry, I could not generate an answer"*. `node --check` passed because it was valid JS and the wrong **shape**. |
+| `Object.assign({}, tool_args)` on a **string** | spread it into `{0:'{',1:'"'}` and destroyed `op`/`q`. The model had sent the right call all along; two rounds of prompt rules chased a symptom. **Reading the execution settled it in one call.** |
+| exact-substring name matching | `"preevent"` missed *Pre-Event Dinner*, `"checkin"` missed *Event Check-in*. Normalised both sides. |
+| a location swallowed a room query | `"Junior Ballroom 1"` matched the location *Junior Ballroom 1 + 2*. Rooms now answer before venues. |
+| string-surgery reorder | nested the venue lookup **inside** the room branch. Rewritten properly. |
+| the `q`-fallback | swallowed `remind`/`recommend`, which own their own `q`. |
+
+**The lesson, twice over: code beats instructions.** Prompt rules half-landed on op selection and
+on layout; both were fixed by making the tool forgiving and the payload pre-shaped.
+
+### Andy's rulings, now encoded
+- **THE SCHEDULE WINS.** Whatever `event_schedule` returns is the answer; other lanes only when it
+  has nothing, and say so. Never blend, never contradict.
+- **Never answer a schedule question from a Facebook post.**
+- **Timezone: never stored** — it breaks the moment someone travels. In-person answers always use
+  the venue's zone; virtual carries the content zone *and* the member's. WhatsApp sends an instant,
+  never a zone.
+- **Never invent a reason.** A recommendation cites only what the tool returned. *"Given your Exits
+  & M&A focus"* on a TikTok mastermind is a fabrication even when the event is real.
+- **A headcount is not a recommendation.** *"56 members work on International Expansion"* is true
+  for everybody who asks.
+- **Answer the question asked** — WHERE leads with the place, WHEN with the time, WHO with names.
+- **Date is main, then time, then what.**
+
+### #86 reminders — built, not delivering
+`event.reminders` (FK to person + activity or session), ops `remind` / `reminders` / `unremind`,
+and `scripts/olivia_reminder_sender.py`. Stored against the thing, never a wall-clock string.
+Refuses honestly: non-attendees can't set one, unmatched names say so, past moments say so with
+the real start time, late reminders are marked failed rather than sent — *"starts in 30 minutes"*
+two hours afterwards is worse than silence.
+
+**Blocked on two things, both Andy's:** the `mds_summit_reminder` **utility** template on the WABA
+(utility, so the 131049 marketing cap that blocked 17 of 25 in August does not apply), and a
+5-minute schedule for the sender. **And the ops are not declared in the Answer Seed yet**, so
+Olivia cannot call them.
+
+### Promotes
+`a665a39d` → `58b4ed37` → **`d6761eb4`**, gate PASSED both times, snapshots either side.
+
+### Open
+- **Two rosters disagree**: `event_registrations` says 156 distinct members, `event.attendees` says
+  149. Same Summit, no reconciliation. Bigger than any feature gap.
+- **CÉ LA VI missing from the export** (19 locations in the admin, 18 loaded) — so the other 13
+  venue-less activities may be export gaps, not ops gaps. Ask for a fresh dump.
+- Long descriptions truncated at 201 chars — the re-export unlocks richer session content.
+- Brandon Himmel's Aug 26 session has no parent activity, so no audience, so invisible.
+- `member_match` doesn't know about `event.attendees` — "who should I visit" returned people who
+  aren't going.
+- 5 of the 20 probe questions unfired (13, 14, 15, 17, 18).
+- `test-andy-8153` still in `event.people`.
+- Day-grouped layout committed both sides, unverified — Render deploy lagging.
+
 ## 2026-08-17 — PRE-ANNOUNCEMENT PIVOT: D1+D2+F1 PROMOTED (prod `5a12a2d1`) · 100-bank built · schema work parked
 
 **One week to the announcement, so the sprint pivoted from schema architecture to answer quality

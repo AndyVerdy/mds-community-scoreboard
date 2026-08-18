@@ -49,6 +49,8 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
+| **#85** | 🚀 Summit schedule lane — activities, sessions, rooms, venues, audiences | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `d6761eb4` (prod probes) |
+| **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ built | ⛔ blocked: WABA utility template + seed declaration |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
 | **#84** | Pre-announcement answer quality — chapter routing, transcript boundary, event phase rule, capability denial | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `5a12a2d1` (prod probe ×3) |
 | **#82** | Flagship events (Summit, Inspire) carry what-they-are + who-is-in-the-room | 🔴 S1 | M | ✅ proven `2ecf4e62` | ✅ **LIVE** `e988a6a3` (prod probe) |
@@ -1502,6 +1504,70 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #85 · 🚀 Summit schedule — she had no idea what happens at our own event
+**🔴 S1 · size L · SHIPPED 2026-08-18, prod `d6761eb4`**
+
+> **In plain words:** a member at the Summit asks what's next, where it is, and who's speaking —
+> and gets the real answer, in Singapore time, with a map.
+
+*As an attendee, I ask Olivia anything about the schedule and she answers from the schedule.*
+
+**Before:** she had no schedule at all. Summit answers came from Eugene's Facebook announcement,
+Charles's walkthrough video, and `events_catalog` — whose `start_at` holds a Singapore wall-clock
+stamped as UTC, so the Summit "started at 6:00 AM".
+
+**Shipped**
+- **`event` schema** — 15 tables, 25 FKs (5 composite so a child cannot point at a parent in
+  another event), no views, no functions. Policy lives outside the database (Andy's ruling).
+- **`scripts/load_event_graph.py`** — idempotent, absorbs the three export traps (Milan leftovers
+  carrying `isDelete`, stale audience booleans, a timeZone field holding a display label).
+- **`POST /api/olivia/schedule`** in mds-digest-web — the visibility rule in TypeScript, in git.
+  `Answer Tool` gained one branch; no new n8n nodes.
+- Ops: `agenda · next · day · where · speaker · speakers · recommend`.
+
+**Accept when** — all met
+- ✅ next activity, where it is, when a named person speaks, the whole day, the speaker roster
+- ✅ audience respected: a plain Member sees **6** on day one; the Women's Lunch grantee sees **7**;
+  Staff-only rows never surface
+- ✅ times are true instants rendered in the venue's zone, always named
+- ✅ addresses + exact Google Maps deep-links from the stored `place_id`
+- ✅ refuses honestly — "no activity matching that name is on this person's schedule", never a claim
+  about MDS, never an invented venue
+- ✅ recommend matches sessions on their own subject line — never a headcount, never an invented reason
+- ✅ gate PASSED at both promotes; snapshots either side
+
+**Left open:** two rosters disagree (156 registrations vs 149 attendees) · CÉ LA VI missing from the
+export · Brandon Himmel's Aug 26 session is orphaned · `member_match` doesn't know about
+`event.attendees` · 5 of 20 probe questions unfired.
+
+---
+
+### #86 · Reminders — "remind me 30 minutes before"
+**🔴 S1 · size M · BUILT 2026-08-18, NOT DELIVERING**
+
+> **In plain words:** a member asks to be reminded before something, and is.
+
+*As an attendee, I say "remind me 30 minutes before the Welcome Dinner" and a message arrives.*
+
+**Built**
+- `event.reminders` — FK to the person and to the activity **or** session, never to a wall-clock
+  string. One pending reminder per person per thing per moment, so asking twice is idempotent.
+- Ops `remind` / `reminders` / `unremind` on the schedule endpoint.
+- `scripts/olivia_reminder_sender.py` — free-form inside the 24-hour window, utility template
+  outside it; late reminders are marked failed rather than sent.
+
+**Accept when**
+- ⛔ **the `mds_summit_reminder` utility template is approved on the WABA** (Andy) — two variables,
+  what and when. Utility, so the 131049 marketing cap does not apply.
+- ⛔ **the sender is scheduled** every 5 minutes (Andy).
+- ⛔ **the ops are declared in the Answer Seed** — they exist on the endpoint but Olivia cannot
+  call them yet.
+- ✅ stores against the thing, echoes the venue's zone, refuses honestly (non-attendee, unmatched
+  name, moment already past)
+- ✅ dry-run proven: *"Welcome Dinner starts in 30 minutes — Pool, Ritz-Carlton"*
+
+---
 
 ### #84 · Pre-announcement answer quality — four defects a real member could hit
 
