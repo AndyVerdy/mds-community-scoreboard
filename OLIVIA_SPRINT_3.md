@@ -49,6 +49,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
+| **#90** | The chats mirror stopped syncing — she hands out dead invite links | 🔴 S1 | S | — | — |
 | **#87** | "Who should I visit" returns people who aren't going | 🟡 S2 | S | — | — |
 | **#88** | Partner profiles — event-specific, and nowhere in the warehouse | 🟡 S2 | M | — | — |
 | **#89** | Two rosters disagree about who is at the Summit — 156 vs 149 | 🔴 S1 | M | — | — |
@@ -163,6 +164,48 @@ A Partner attendee carries a profile the other types don't: display name, compan
 **Shape of the fix:** `event.attendee_profiles`, 1:1 on `event.attendees` — the profile hangs off the attendee row, never off `people`, because it is per event and per type.
 
 **Accept when:** partner profile loads and answers "what does X offer at this Summit" · **passcode never enters the warehouse** — it is a credential · booth staff are rows, not names typed into the description, or "which partner is Rob Torti with" stays unanswerable · gate GREEN.
+
+---
+
+### #90 · The chats mirror stopped syncing — she hands out dead invite links
+**🔴 S1 · size S — filed 2026-08-18**
+
+> **In plain words:** a member asks to join a chat, taps the link she sends, and it doesn't work.
+
+*As a member, every link Olivia gives me opens the thing it says it opens.*
+
+Live on prod 2026-08-18, closing a weekly-digest answer: *"Open the chat:*
+`https://chat.whatsapp.com/H6TszwtiJ2SEk1FRIc5pEb`*"* — dead. WhatsApp had regenerated the invite;
+the current one is `K6jLATo2YDkEspGsANv4T6?s=cl&p=i&ilr=2`, and **Airtable had it right the whole
+time.** `digest.chats` is the stale copy.
+
+**Every row in `digest.chats` still carries the same `updated_at`: 2026-07-29.** The sync has not
+run in three weeks and nothing alarms on it.
+
+Measured against the Airtable source the same day:
+
+| | |
+|---|---|
+| chats in Airtable | **29** |
+| chats in `digest.chats` | **19** — ten she cannot offer at all, incl. MDS 2026 New Members |
+| invite links wrong | **3** — AI & Automations, Resellers (both regenerated), 2026 New Members (missing) |
+
+The three were corrected by hand so the Summit demo does not hand out a dead link. That is a patch,
+not a fix — the sync is still stopped and will drift again.
+
+**Shape of the fix:** find why the chats sync stopped (not the FB pipeline — that ran to
+2026-08-17), restart it, and give it a freshness signal. A mirror whose rows all share one
+timestamp is a mirror nobody is watching.
+
+**Accept when**
+- `digest.chats` matches Airtable on count and on every `invite_url`, proven by a diff, not a glance.
+- The sync runs on a schedule and `updated_at` moves.
+- **Staleness alarms** — tools-health flags it when the newest row ages past its cadence, the way an
+  Airtable-freshness check already works elsewhere.
+- Gate GREEN.
+
+**Related:** the FB image capture has the same shape — roughly 7 posts in 10 carry no image on our
+side and nothing notices. Both are silent mirror decay; worth one freshness pattern, not two.
 
 ---
 
