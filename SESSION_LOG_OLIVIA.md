@@ -6,6 +6,38 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-18 (night, later) — #90 CLOSED: the chats sync never existed; hourly mirror built, diff 0
+
+**The diagnosis changed the ticket.** The chats sync did not stop — **it never ran.** `digest.chats`
+was a one-time hand load from the pilot's Channels .xlsx on 2026-07-29 (19 rows, one timestamp to
+the second); no workflow, script, or GitHub Action ever wrote it again. Found by elimination: the
+Whapi Sync reads/writes AIRTABLE only, the two Supabase Mirror workflows carry only members and
+summaries, no repo script writes the table, and SESSION_LOG line 3896 records the original xlsx
+load. The ticket's "29 chats in Airtable" also over-counted: 13 of those rows are inactive junk
+(Milan/Inspire event chats, dups, "Whapi test" — all linkless). True source set = **18 active**;
+the mirror even held a 19th ghost, "MDS TikTok +1M TTM", present in no Airtable row at all.
+
+**The fix: n8n `RpEbU47SpMVsbwqg` "MDS WA Digest - Supabase Mirror (Chats)"**, hourly, the exact
+sibling of the Members/Summaries mirrors: AT search `{active}=1` → map → upsert `merge-duplicates`
+→ delete-not-in-set → heartbeat. Airtable owns the LINK fields (invite, zoom, opt-in,
+verification-form URL, chat_id); `verification_required` / `requirement_text` / `call_schedule` /
+`moderators` are curated, absent from the payload, untouched — merge-duplicates cannot blank them.
+Two guards: fewer than 15 rows from AT throws before anything writes (a flaky read must never
+become a mass delete); any failure skips the heartbeat so the alarm pages.
+
+**Proof:** first tick exec **86853** (23:30:46 UTC, 3.6 s) — 18 upserted, exactly the ghost
+deleted, heartbeat `18 chats upserted, 1 stale deleted`. Field-by-field diff vs a FRESH Airtable
+pull: **18 = 18, DIFFS: 0.** The mirror's first run also fixed drift the 08-18 hand-patch missed:
+Large SKU + Resellers opt-in forms, the SEO zoom link, Under-30's new zoom. Schedule flipped
+5-min → hourly after the proof (one deactivate+activate bounce). Alarm = heartbeat row
+`chats_mirror`, `max_age_hours: 3`, under existing **signal 4** on the 5-min pg_cron alarm — one
+freshness pattern, as the ticket asked. Gate **exit 0** (checked as exit code).
+
+**Flagged, not flipped:** Accelerator and MDS 2026 New Members carry a `required_form` in Airtable
+but are ungated in the mirror — Andy's ruling queued on the board. Noticed in passing (not chased):
+`label_questions` heartbeat sits in `status=error` since Aug 17 (JSONDecodeError) — signal 4's
+lane, separate from Olivia sprint work.
+
 ## 2026-08-18 (night) — #86 SENDER SCHEDULED: n8n every 5 min, first tick proven (prod `74f0572a` untouched)
 
 **The one remaining piece of #86 — nothing fired the queued reminders — is closed.** New standalone

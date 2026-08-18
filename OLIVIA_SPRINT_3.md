@@ -49,11 +49,11 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
-| **#90** | The chats mirror stopped syncing — she hands out dead invite links | 🔴 S1 | S | — | — |
 | **#88** | Partner profiles — event-specific, and nowhere in the warehouse | 🟡 S2 | M | — | — |
 | **#89** | Two rosters disagree about who is at the Summit — 156 vs 149 | 🔴 S1 | M | — | — |
 | **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ proven | 🟨 **LIVE** `74f0572a` + sender n8n `QhJw46Mr7LAP8fdz` every 5 min — delivery proof needs a phone (Aug 23 test reminder) |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#90** | The chats mirror stopped syncing — she hands out dead invite links | 🔴 S1 | S | n/a (mirror) | ✅ **CLOSED 2026-08-18** — hourly n8n `RpEbU47SpMVsbwqg`, diff 0, 3h alarm |
 | **#87** | "Who should I meet" returns people who aren't going | 🟡 S2 | S | ✅ proven | ✅ **LIVE** `74f0572a` (7/7 attending) |
 | **#85** | 🚀 Summit schedule lane — activities, sessions, rooms, venues, audiences | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `d6761eb4` (prod probes) |
 | **#84** | Pre-announcement answer quality — chapter routing, transcript boundary, event phase rule, capability denial | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `5a12a2d1` (prod probe ×3) |
@@ -164,48 +164,6 @@ A Partner attendee carries a profile the other types don't: display name, compan
 **Shape of the fix:** `event.attendee_profiles`, 1:1 on `event.attendees` — the profile hangs off the attendee row, never off `people`, because it is per event and per type.
 
 **Accept when:** partner profile loads and answers "what does X offer at this Summit" · **passcode never enters the warehouse** — it is a credential · booth staff are rows, not names typed into the description, or "which partner is Rob Torti with" stays unanswerable · gate GREEN.
-
----
-
-### #90 · The chats mirror stopped syncing — she hands out dead invite links
-**🔴 S1 · size S — filed 2026-08-18**
-
-> **In plain words:** a member asks to join a chat, taps the link she sends, and it doesn't work.
-
-*As a member, every link Olivia gives me opens the thing it says it opens.*
-
-Live on prod 2026-08-18, closing a weekly-digest answer: *"Open the chat:*
-`https://chat.whatsapp.com/H6TszwtiJ2SEk1FRIc5pEb`*"* — dead. WhatsApp had regenerated the invite;
-the current one is `K6jLATo2YDkEspGsANv4T6?s=cl&p=i&ilr=2`, and **Airtable had it right the whole
-time.** `digest.chats` is the stale copy.
-
-**Every row in `digest.chats` still carries the same `updated_at`: 2026-07-29.** The sync has not
-run in three weeks and nothing alarms on it.
-
-Measured against the Airtable source the same day:
-
-| | |
-|---|---|
-| chats in Airtable | **29** |
-| chats in `digest.chats` | **19** — ten she cannot offer at all, incl. MDS 2026 New Members |
-| invite links wrong | **3** — AI & Automations, Resellers (both regenerated), 2026 New Members (missing) |
-
-The three were corrected by hand so the Summit demo does not hand out a dead link. That is a patch,
-not a fix — the sync is still stopped and will drift again.
-
-**Shape of the fix:** find why the chats sync stopped (not the FB pipeline — that ran to
-2026-08-17), restart it, and give it a freshness signal. A mirror whose rows all share one
-timestamp is a mirror nobody is watching.
-
-**Accept when**
-- `digest.chats` matches Airtable on count and on every `invite_url`, proven by a diff, not a glance.
-- The sync runs on a schedule and `updated_at` moves.
-- **Staleness alarms** — tools-health flags it when the newest row ages past its cadence, the way an
-  Airtable-freshness check already works elsewhere.
-- Gate GREEN.
-
-**Related:** the FB image capture has the same shape — roughly 7 posts in 10 carry no image on our
-side and nothing notices. Both are silent mirror decay; worth one freshness pattern, not two.
 
 ---
 
@@ -1593,6 +1551,7 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 | Question | Why it matters |
 |---|---|
+| **#90 — should Accelerator and MDS 2026 New Members be verification-gated?** Both carry a `required_form` in Airtable but are ungated in the mirror (curated field, deliberately not flipped by me) | If yes, Olivia currently hands their raw invite to anyone who asks instead of the form. One-word change each once ruled. |
 | **#70 — how sensitive is a call transcript?** `public` to members like the video already is, or does some class need `restricted`? | **Blocks #70's build.** Members speak candidly about their businesses on these calls; the access rule decides what `content_search_v2` may return. Same shape as #20's exposure ruling. |
 | **#70 — may Olivia say WHO attended a call?** | `event_who` sets precedent for registered events, but Zoom attendance is unregistered and name-matched at 67% confidence — a wrong name is a wrong claim about a member. |
 | **#70 — does this supersede #36 (Circleback)?** | Both are "meeting notes become a source". Zoom already gives speaker-labelled transcripts for 2026; #36 stays blocked on details we may no longer need. |
@@ -1611,6 +1570,57 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #90 · The chats mirror stopped syncing — she hands out dead invite links
+**🔴 S1 · size S — filed 2026-08-18 · closed 2026-08-18**
+
+> **In plain words:** a member asks to join a chat, taps the link she sends, and it doesn't work.
+
+*As a member, every link Olivia gives me opens the thing it says it opens.*
+
+Live on prod 2026-08-18, closing a weekly-digest answer: *"Open the chat:*
+`https://chat.whatsapp.com/H6TszwtiJ2SEk1FRIc5pEb`*"* — dead. WhatsApp had regenerated the invite;
+Airtable had the current one the whole time. Every `digest.chats` row carried `updated_at
+2026-07-29`; measured that day as 29 AT chats vs 19 mirror rows, 3 invite links wrong (those three
+hand-fixed for the demo).
+
+**Accept when**
+- `digest.chats` matches Airtable on count and on every `invite_url`, proven by a diff, not a glance.
+- The sync runs on a schedule and `updated_at` moves.
+- **Staleness alarms** — tools-health flags it when the newest row ages past its cadence, the way an
+  Airtable-freshness check already works elsewhere.
+- Gate GREEN.
+
+#### ✅ CLOSED 2026-08-18 — mirror built, first run proven, alarm wired
+**The diagnosis changed the ticket:** the sync did not stop — **it never existed.** `digest.chats`
+was a ONE-TIME hand load from the pilot's Channels .xlsx on 2026-07-29 (every row one timestamp, to
+the second); no workflow, script, or Action ever wrote it again. The "29 in Airtable" counted 13
+inactive junk rows (Milan/Inspire event chats, dups, "Whapi test" — all linkless); the true source
+set is **18 active chats**, and the mirror even held a 19th ghost ("MDS TikTok +1M TTM") that exists
+in no Airtable row at all.
+
+**The fix:** n8n **`RpEbU47SpMVsbwqg` "MDS WA Digest - Supabase Mirror (Chats)"** — hourly, the
+exact sibling of the Members/Summaries mirrors: AT search `{active}=1` → map → upsert
+`merge-duplicates` → delete rows not in the active set → heartbeat. Airtable owns the LINK fields
+(invite, zoom, opt-in, verification-form URL, chat_id); `verification_required` /
+`requirement_text` / `call_schedule` / `moderators` are curated, absent from the payload, untouched.
+Two guards: <15 rows from AT → throw (a flaky read must never become a mass delete); any failure
+skips the heartbeat so the alarm pages.
+
+| AC | result |
+|---|---|
+| matches Airtable on count + every invite_url, proven by diff | ✅ field-by-field diff vs a fresh AT pull: **18 = 18, DIFFS: 0** (invite, zoom, opt-in, verification form, chat_id all byte-equal) |
+| sync on a schedule, updated_at moves | ✅ first tick exec **86853** (23:30:46 UTC, 3.6 s): 18 upserted, ghost deleted, all 18 rows stamped — after three frozen weeks. Schedule flipped 5-min → hourly after the proof, single bounce |
+| staleness alarms | ✅ heartbeat `chats_mirror` (`max_age_hours: 3`) in `digest.olivia_job_heartbeats` — **signal 4** on the existing 5-min pg_cron alarm covers it; one freshness pattern, as filed |
+| gate GREEN | ✅ exit 0 (checked as exit code, not tail) |
+
+**Before → after:** frozen since 2026-07-29 / 19 rows incl. 1 ghost / 2 stale opt-in forms +
+1 changed SEO zoom undetected → hourly sync, 18 = 18, diff 0, 3-hour alarm.
+**Named remainders:** the mirror also FIXED live drift the hand-patch missed (Large SKU + Resellers
+opt-in forms, SEO zoom, Under-30 zoom). Flagged for Andy, deliberately not flipped by me:
+**Accelerator and MDS 2026 New Members carry a `required_form` in Airtable but are not gated in the
+mirror** — if they should verify like Centurion/TikTok, that is a one-word curated change each.
+FB image capture (the ticket's "related" note) stays open — different pipeline, not this ticket.
 
 ### #87 · "Who should I meet" returned people who aren't going
 **🟡 S2 · size S**

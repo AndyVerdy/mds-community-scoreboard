@@ -64,9 +64,11 @@ fixed in one commit each once the work moved into the tool. And **read the execu
 theorising** — it settled in one call what rule-writing chased for rounds, twice.
 
 ### Open tickets, awaiting priority
-- **#90** 🔴 the chats mirror stopped syncing 2026-07-29 — she sent a **dead WhatsApp invite**.
-  29 chats in Airtable vs 19 in the mirror, 3 wrong links; the three were corrected by hand so the
-  demo cannot hand out a dead one, but the sync is still stopped and nothing alarms on it.
+- ~~#90~~ **CLOSED 2026-08-18: the sync never existed** (one-time xlsx load 2026-07-29, nothing ever
+  wrote the table again). Now: n8n **`RpEbU47SpMVsbwqg`** hourly mirror (sibling of Members/
+  Summaries), AT `{active}=1` = 18 chats, **diff 0** field-by-field, ghost row deleted, heartbeat
+  `chats_mirror` (3h) under signal 4. Curated columns untouched. **Andy ruling queued:** Accelerator
+  + 2026 New Members carry `required_form` in AT but are ungated in the mirror.
 - **#89** 🔴 two rosters disagree — 156 registrations vs 149 attendees, same Summit, no reconciliation.
 - **#88** 🟡 partner profiles — event-specific and type-specific; `event.attendee_profiles` designed,
   not built. Passcode never enters the warehouse.
