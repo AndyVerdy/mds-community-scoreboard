@@ -364,7 +364,7 @@ OCR/description → `search_extra`. Runs every load via `load_feed.py` AND wired
 `auto_import.py:process_feed()` (feed+comments+images→embed on every `~/Downloads` drop, launchd
 `com.mds.scorecard.autoimport`). Proven searchable: `content_search_v2(['TACOS'])` returns posts whose
 "TACOS" lives only inside a spreadsheet screenshot (`body_has_tacos=false`). SOP
-`mds-scorecard-tools/FB_PIPELINE.md`; full write-up `SESSION_LOG_SCORECARD.md` 2026-08-11.
+`/Users/Born/mds-scorecard-tools/FB_PIPELINE.md`; full write-up `SESSION_LOG_SCORECARD.md` 2026-08-11.
 **Remaining #61 = the schema-audit deliverable** (full-digest ERD, orphan audit per relation, safe-FK
 rulings, dual-key spine documented as table COMMENTs + handbook) — untouched.
 

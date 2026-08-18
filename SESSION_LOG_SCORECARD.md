@@ -37,7 +37,7 @@ raw SQL typed each run; the day it got skipped, the search layer lagged the raw 
   `auto_import.py`, WatchPaths `/Users/Born/Downloads`. `auto_import.py --dry-run` reaches `process_feed`.
 
 **Committed:** `5fff683` (Scorecard `db/functions/fb_link_content.sql` + `db/grants.sql`, re-exported via
-`db_export_schema.py`). SOP rewritten: `mds-scorecard-tools/FB_PIPELINE.md` (images now automated).
+`db_export_schema.py`). SOP rewritten: `/Users/Born/mds-scorecard-tools/FB_PIPELINE.md` (images now automated).
 `auto_import.py`, `load_feed.py`, the image scripts, FB_PIPELINE.md all live in `mds-scorecard-tools`
 (**NO git** — not committable). **Next:** first unattended Thursday run is the real proof; Andy just
 drops `mds_feed*.json` + `mds_manual_recovered*.json` in Downloads (capture stays the manual Chrome step).
