@@ -49,6 +49,9 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
+| **#87** | "Who should I visit" returns people who aren't going | 🟡 S2 | S | — | — |
+| **#88** | Partner profiles — event-specific, and nowhere in the warehouse | 🟡 S2 | M | — | — |
+| **#89** | Two rosters disagree about who is at the Summit — 156 vs 149 | 🔴 S1 | M | — | — |
 | **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ built | ⛔ blocked: WABA utility template + seed declaration |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
 | **#85** | 🚀 Summit schedule lane — activities, sessions, rooms, venues, audiences | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `d6761eb4` (prod probes) |
@@ -130,6 +133,51 @@ reason in writing.
 
 **THE SMOKE runs once per sprint, never per ticket** — it is the sprint's exit exam and the formal
 instrument for every class rate. Per-ticket proof is probes plus the gate.
+
+---
+
+### #89 · Two rosters disagree about who is at our own event
+**🔴 S1 · size M — filed 2026-08-18**
+
+> **In plain words:** ask how many people are coming to the Summit and the answer depends on which lane happens to run.
+
+*As a member, whatever I ask about who is at the Summit, I get one number — the true one.*
+
+`digest.event_registrations` holds **156 distinct members** for MDS Summit Singapore. `event.attendees`, loaded from the GroupOS export, holds **149 people**. Same event, different systems, different inclusion rules, no reconciliation. `event_who` counts the first; `event_schedule` gates on the second. Whichever she reaches decides the number a member hears, and neither is labelled.
+
+**Shape of the fix:** decide which roster is authoritative for which question (tickets sold vs people in the room), reconcile the difference name by name, and make the losing one unreachable for headcount questions rather than merely deprecated.
+
+**Accept when:** the 7-person gap is explained row by row, not estimated · one roster answers "who is coming" and the other is documented as ticketing-only · a member asking the same question two ways gets the same number · gate GREEN.
+
+---
+
+### #88 · Partner profiles — event-specific, and nowhere in the warehouse
+**🟡 S2 · size M — filed 2026-08-18**
+
+> **In plain words:** partners have a rich profile at each event — offer, company, description, contact — and Olivia holds none of it.
+
+*As a member, I ask what a partner does and what they're offering at this Summit, and get their actual offer rather than silence.*
+
+A Partner attendee carries a profile the other types don't: display name, company, profession, description, **MDSOnly offer + instructions**, contact name, picture, LinkedIn. It is **event-specific** — the same person can be a Partner with an offer at one event and a plain Member at another. Singapore has no partners loaded yet (Member 116 · Speaker 29 · Staff 11 · Guest 23), so the shape is known only from another event's admin screen. Five of the fields already ride on the attendee row in the export (`description`, `offer`, `contact_name`, `partner_order`, `private_profile`); the rest don't serialise with no partner present.
+
+**Shape of the fix:** `event.attendee_profiles`, 1:1 on `event.attendees` — the profile hangs off the attendee row, never off `people`, because it is per event and per type.
+
+**Accept when:** partner profile loads and answers "what does X offer at this Summit" · **passcode never enters the warehouse** — it is a credential · booth staff are rows, not names typed into the description, or "which partner is Rob Torti with" stays unanswerable · gate GREEN.
+
+---
+
+### #87 · "Who should I visit" returns people who aren't going
+**🟡 S2 · size S — filed 2026-08-18**
+
+> **In plain words:** she recommends people to meet at the Summit who aren't attending it.
+
+*As an attendee, when I ask who to seek out at this event, everyone she names is actually there.*
+
+Live on staging 2026-08-18: asked "who should I visit", she returned Steve Parisi, Ryan Mayberry, Dan Schaefer, Garland Sullivan, Dana E. Mavros and Fernando Campos with genuine reasons — niche, city, 3PL expertise. Checked against `event.attendees`, **four of the eight are not registered.** `member_match` matches across the whole 748-member roster with no attendance filter, so it sent an attendee to go find someone in Jupiter, Florida.
+
+**Shape of the fix:** one join — when the question is scoped to an event, filter matches to people holding an attendee row for it.
+
+**Accept when:** every person named for an event question has an attendee row · a member asking with no event in mind still gets the unfiltered match · she never claims someone will be at a session, because nobody registers for sessions · gate GREEN.
 
 ---
 

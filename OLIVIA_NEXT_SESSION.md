@@ -47,10 +47,14 @@ Golden tests: **plain Member day one = 6 · Women's Lunch grantee = 7.**
 - **Two rosters disagree** — `event_registrations` 156 distinct members vs `event.attendees` 149.
   Same Summit, no reconciliation, and whichever lane answers decides the number a member hears.
 
+### Filed as tickets 2026-08-18, awaiting priority
+- **#89** 🔴 two rosters disagree — 156 registrations vs 149 attendees, same Summit, no reconciliation.
+- **#88** 🟡 partner profiles — event-specific and type-specific; `event.attendee_profiles` designed,
+  not built. Passcode never enters the warehouse.
+- **#87** 🟡 "who should I visit" returns people who aren't going — 4 of 8 checked had no attendee row.
+
 ### Known and deliberately left
 - Brandon Himmel's Aug 26 session has no parent activity → no audience → invisible to everyone.
-- `member_match` doesn't know about `event.attendees`, so "who should I visit" returns members who
-  are not going. One join fixes it.
 - 5 of the 20 probe questions unfired: 13, 14, 15, 17, 18.
 - `test-andy-8153` is a test row in `event.people` — remove when done testing.
 - #72 load test still shelved (design only, nothing built).
