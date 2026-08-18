@@ -211,6 +211,54 @@ instructions the model could ignore.
 
 ---
 
+### 4.9 The Summit schedule — the `event` schema (#85, 2026-08-18)
+
+The run-of-show for a live event: what happens, where, when, who speaks and **who may see it**.
+Loaded from a GroupOS export by `scripts/load_event_graph.py`, idempotent.
+
+```
+events ─┬─ activities ── activity_audience → participant_types
+        │       ├── activity_person_grants → people
+        │       └── sessions ── session_speakers → people
+        ├─ locations ── rooms
+        ├─ attendees (event, person, type)      ← type is PER EVENT, never a property of the person
+        ├─ reminders (#86)
+        └─ faqs · tickets · orders · check_ins
+```
+
+**Fifteen tables, 25 foreign keys, no views and no functions.** `event.people.at_member_id` is a
+real FK to `digest.member_profiles`, so an attendee resolves to an MDS member where the link holds
+and stays NULL where it does not (guests, external speakers).
+
+**The visibility rule lives OUTSIDE the database** — see §12. Written once, in the route:
+
+```
+visible(person, activity) =
+     (person's participant types AT THIS EVENT) ∩ (activity's audience) ≠ ∅
+  OR person is on the activity's grant list
+```
+
+An unchecked participant box means *not invited*, never *must not know*: it blocks only somebody
+whose **every** type is unchecked. Khalid Abdulla holds a Speaker row and a Member row; Focus Groups
+has Speaker unchecked and Member checked, and he gets in on Member.
+
+**Golden tests** (`scripts/event_lane.py --self-test`): plain Member sees **6** activities on day
+one; the Women's Lunch grantee sees **7**.
+
+**Three traps in the export the loader absorbs — do not re-learn them:**
+1. **Milan leftovers.** The event was cloned from Milan 2025; 41 of 91 activities carry `isDelete`.
+   Import them and she serves last year's Italian agenda.
+2. **The legacy audience booleans lie.** `member`/`speaker`/`partner`/`guest` are all `false` on
+   records whose `accessRoles` grants three roles. **`accessRoles` governs.**
+3. **`timeZone` is a display label, not IANA** — `"(UTC+08:00) Asia/Singapore Singapore Standard
+   Time"`. Times ship as local wall-clock strings with no offset, which is exactly how
+   `digest.events_catalog.start_at` ended up eight hours wrong. The loader extracts and validates
+   the IANA zone, stores true instants, and keeps the raw strings in `source_*` for audit only.
+
+**Timezones (Andy, 2026-08-17):** never stored — it breaks the moment someone travels. WhatsApp
+sends an instant, never a zone. In-person answers always use the venue's zone, named; a virtual
+session carries the content's zone *and* the member's saved-location zone.
+
 ## 5. Identity — one human, one key
 
 **The canonical key is `at_member_id`** (the Airtable Members-DB record id, mirrored to
@@ -548,6 +596,9 @@ selects them. "Used in a calculation" is not "shareable".
 | **Rent the model, never train one** | Training is hundreds of millions of dollars and a research team. Olivia is a Layer-2 product: rented brain + our data + our access rules. |
 | **Process at ingest, not at answer time** | Google is fast because it indexed ahead of time. Joining data live is the "five-minute treasure hunt". Organise the *data*, do not try to predict questions. |
 | **Airtable = truth, Supabase = serving** | Airtable is curated but rate-limited and cannot do per-item permission filtering at scale. |
+| **New lanes are app routes, not RPCs** (2026-08-17) | Retrieval belongs in SQL; POLICY does not. The 20 existing tools are Postgres functions, so "why did she say that" is answered by reading SQL — #65 was that bill arriving. New capabilities put tables + FKs in Supabase and the rule in `mds-digest-web`, in git, reviewed. `Answer Tool` routes `event_*` names to the endpoint via a URL expression; no new nodes. |
+| **The schedule wins** (2026-08-17) | Whatever `event_schedule` returns is the answer. Other lanes only when it has nothing, and say so. Never blend, never contradict — and never build a schedule answer from a Facebook post, which is how "Monday, Aug 24" got invented. |
+| **Never invent a reason** (2026-08-17) | A recommendation cites only what the tool returned. "Given your Exits & M&A focus" on a TikTok mastermind is a fabrication even when the event is real. A headcount is not a recommendation: "56 members work on International Expansion" is true for everybody who asks. |
 | **Security in SQL, not in prompts** | A prompt rule is a suggestion; a fail-closed function is a guarantee. Every retrieval function resolves the asker itself. |
 | **Member-initiated conversations** | Removes the template requirement, builds in consent, opens the 24h window naturally, and avoids the "unknown number DMing you" feel. |
 | **Hard-fail on ambiguous identity** | A wrong match means reciting another founder's business into a private DM. |

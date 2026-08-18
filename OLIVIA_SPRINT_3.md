@@ -49,9 +49,9 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
-| **#85** | 🚀 Summit schedule lane — activities, sessions, rooms, venues, audiences | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `d6761eb4` (prod probes) |
 | **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ built | ⛔ blocked: WABA utility template + seed declaration |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#85** | 🚀 Summit schedule lane — activities, sessions, rooms, venues, audiences | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `d6761eb4` (prod probes) |
 | **#84** | Pre-announcement answer quality — chapter routing, transcript boundary, event phase rule, capability denial | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `5a12a2d1` (prod probe ×3) |
 | **#82** | Flagship events (Summit, Inspire) carry what-they-are + who-is-in-the-room | 🔴 S1 | M | ✅ proven `2ecf4e62` | ✅ **LIVE** `e988a6a3` (prod probe) |
 | **#81** | People + stats lanes answer what we have the data for (fit_reason, gender split) | 🔴 S1 | M | ✅ proven `3d5f2b1b` | ✅ **LIVE** `fd957034` (prod probe: named + reasons) |
@@ -130,6 +130,36 @@ reason in writing.
 
 **THE SMOKE runs once per sprint, never per ticket** — it is the sprint's exit exam and the formal
 instrument for every class rate. Per-ticket proof is probes plus the gate.
+
+---
+
+### #86 · Reminders — "remind me 30 minutes before"
+**🔴 S1 · size M — built 2026-08-18, NOT DELIVERING**
+
+> **In plain words:** a member asks to be reminded before something, and is.
+
+*As an attendee, I say "remind me 30 minutes before the Welcome Dinner" and a message arrives in time to walk there.*
+
+Today she computes the time correctly and then says she cannot send it — honest, but the capability is missing. GroupOS has a per-activity "Notify reminder to user" toggle, so ours must not double up with it.
+
+**Shape of the fix:** store the reminder against the person and the thing, never against a wall-clock string; a scheduled sender reads what is due.
+
+**Accept when:** a member can set, list and cancel a reminder in conversation · it arrives before the thing starts · absolute asks confirm the zone back · nothing is promised that cannot be delivered · gate GREEN.
+
+#### 🟨 BUILT 2026-08-18 — blocked, not shipped
+**The build:** `event.reminders` (migration `event_reminders_20260818`) — FK to the person and to the activity **or** session, one pending reminder per person per thing per moment so asking twice is idempotent. Ops `remind` / `reminders` / `unremind` on the schedule endpoint. `scripts/olivia_reminder_sender.py` — free-form inside the member's 24-hour window, utility template outside it.
+
+| AC | result |
+|---|---|
+| set / list / cancel in conversation | 🟨 endpoint proven, **not declared in the Answer Seed** — Olivia cannot call them yet |
+| arrives before the thing starts | ⛔ **blocked**: `mds_summit_reminder` utility template not submitted; sender not scheduled |
+| absolute asks confirm the zone | ✅ *"I'll remind you at 8:00 PM Singapore time"* — rule live on prod |
+| nothing promised that cannot be delivered | ✅ non-attendee refused · unmatched name says so · past moment answers with the real start time · late reminders marked failed rather than sent |
+| gate GREEN | ✅ passed inside the `d6761eb4` promote (schema only; no retrieval change) |
+
+**Proof:** `remind "welcome dinner" lead 30` → *Welcome Dinner starts Sun 23 Aug 7:00 pm, remind at 6:30 pm Singapore time*; list shows both, `unremind` drops one. Sender dry-run against a real due row: *"⏰ Welcome Dinner starts in 30 minutes — Pool, Ritz-Carlton."*
+
+**Three things to finish, two are Andy's:** declare the ops in the Answer Seed (mine, ~10 min) · submit `mds_summit_reminder` as a **utility** template on the WABA — utility, so the 131049 marketing cap that blocked 17 of 25 in August does not apply — · schedule the sender every 5 minutes. **The template is the only item with a hard clock: approval takes days and the Summit is on the 22nd.**
 
 ---
 
@@ -1506,66 +1536,41 @@ the release is actually safe to ship, not just that the tickets are marked done.
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
 
 ### #85 · 🚀 Summit schedule — she had no idea what happens at our own event
-**🔴 S1 · size L · SHIPPED 2026-08-18, prod `d6761eb4`**
+**🔴 S1 · size L**
 
-> **In plain words:** a member at the Summit asks what's next, where it is, and who's speaking —
-> and gets the real answer, in Singapore time, with a map.
+> **In plain words:** a member at the Summit asks what's next, where it is and who's speaking, and gets the real answer — in Singapore time, with a map.
 
 *As an attendee, I ask Olivia anything about the schedule and she answers from the schedule.*
 
-**Before:** she had no schedule at all. Summit answers came from Eugene's Facebook announcement,
-Charles's walkthrough video, and `events_catalog` — whose `start_at` holds a Singapore wall-clock
-stamped as UTC, so the Summit "started at 6:00 AM".
+She had **no schedule at all**. Every Summit answer came from people talking *about* the event — Eugene Khayman's Facebook announcement, Charles Chakkalo's walkthrough — or from `events_catalog`, whose `start_at` holds a Singapore wall-clock stamped as UTC. Live on prod 2026-08-17: *"The main Summit kicks off Sunday, Aug 23 at **6:00 AM** local time"* (eight hours wrong) and *"the first standalone activity I can see is the **Women's Lunch**"* — which is Staff-only and should never have been offered to a member.
 
-**Shipped**
-- **`event` schema** — 15 tables, 25 FKs (5 composite so a child cannot point at a parent in
-  another event), no views, no functions. Policy lives outside the database (Andy's ruling).
-- **`scripts/load_event_graph.py`** — idempotent, absorbs the three export traps (Milan leftovers
-  carrying `isDelete`, stale audience booleans, a timeZone field holding a display label).
-- **`POST /api/olivia/schedule`** in mds-digest-web — the visibility rule in TypeScript, in git.
-  `Answer Tool` gained one branch; no new n8n nodes.
-- Ops: `agenda · next · day · where · speaker · speakers · recommend`.
+**Shape of the fix:** a real schedule in the warehouse, and the visibility rule written once outside the database.
 
-**Accept when** — all met
-- ✅ next activity, where it is, when a named person speaks, the whole day, the speaker roster
-- ✅ audience respected: a plain Member sees **6** on day one; the Women's Lunch grantee sees **7**;
-  Staff-only rows never surface
-- ✅ times are true instants rendered in the venue's zone, always named
-- ✅ addresses + exact Google Maps deep-links from the stored `place_id`
-- ✅ refuses honestly — "no activity matching that name is on this person's schedule", never a claim
-  about MDS, never an invented venue
-- ✅ recommend matches sessions on their own subject line — never a headcount, never an invented reason
-- ✅ gate PASSED at both promotes; snapshots either side
+**Accept when:** next / where / who speaks / whole day / speaker roster all answer from the schedule · audience respected per member · times are true instants in the venue's zone · addresses + map links · refuses honestly · gate GREEN.
 
-**Left open:** two rosters disagree (156 registrations vs 149 attendees) · CÉ LA VI missing from the
-export · Brandon Himmel's Aug 26 session is orphaned · `member_match` doesn't know about
-`event.attendees` · 5 of 20 probe questions unfired.
+#### ✅ BUILT + PROVEN + PROMOTED 2026-08-18 — prod `d6761eb4`
+**The fix:** new **`event` schema** — 15 tables, 25 FKs (5 composite so a child can never point at a parent in another event), **no views, no functions**; policy lives outside the DB (Andy's ruling). Loaded from the GroupOS export by `scripts/load_event_graph.py`. The lane is **`POST /api/olivia/schedule` in mds-digest-web**, not an RPC — `Answer Tool` gained one URL branch for `event_*` tool names, no new nodes. Migrations `event_schema_20260817`, `event_composite_fks_and_grants_20260817`, `event_people_member_fk_20260817`.
 
----
+| AC | result |
+|---|---|
+| next / where / who speaks / whole day / roster answer from the schedule | ✅ 10 ops live: `agenda · next · day · where · speaker · speakers · recommend` (+3 reminder ops in #86) |
+| audience respected per member | ✅ **plain Member day one = 6** (Brian Williams); **Women's Lunch grantee = 7** (Kimberly Cruickshanks); Staff-only rows never surfaced |
+| times are true instants, rendered in the venue's zone | ✅ *"Welcome Dinner — Sun 23 Aug, 7:00 pm Singapore time"*; loader stores instants, keeps raw strings in `source_*` for audit |
+| addresses + exact map links | ✅ 18/18 locations carry address + lat/lng + `place_id`; links are place deep-links, not text searches |
+| refuses honestly | ✅ *"no activity matching that name is on this person's schedule"* · Pre-Event Dinner (Staff + 36 grantees) correctly withheld · *"I don't have a distance figure — the schedule tool gives addresses and map links, not travel distances"* |
+| recommend by subject, never popularity | ✅ *"TikTok"* → 3 sessions with their own subject lines and speakers; **31/31 sessions carry a complete `short_description`**, 30/31 have every speaker resolved to a real member |
+| gate GREEN | ✅ PASSED inside both promotes (`58b4ed37`, `d6761eb4`), snapshots either side |
 
-### #86 · Reminders — "remind me 30 minutes before"
-**🔴 S1 · size M · BUILT 2026-08-18, NOT DELIVERING**
+**Before → after**, same question, same phone:
+| | before (prod `5a12a2d1`) | after (prod `d6761eb4`) |
+|---|---|---|
+| *when is the first workshop* | *"Per Eugene's breakdown, deep dives fall on Monday — I don't have an exact clock time"* | *Deep, Dive, & Dash & Workshops — Mon 24 Aug, 10:20 am Singapore time, Grand Ballroom · Alex Bonilla, Brandon Himmel, Jonathan Jewett* |
+| *where is the Welcome Dinner* | not found | *Pool, Ritz-Carlton · Sun 23 Aug 7:00 pm · address + map* |
+| *where is Junior Ballroom 1* | *"doesn't show up on your schedule"* | *the Ritz-Carlton, Marina Bay — 8 sessions run in there* |
 
-> **In plain words:** a member asks to be reminded before something, and is.
+**Six bugs found by probing, five of them mine:** a tool declared with `args` instead of `input_schema` (broke the answer loop — `node --check` passes because it is valid JS and the wrong *shape*) · `Object.assign` on a JSON **string**, which destroyed `op`/`q` and made the model look wrong when it had sent the right call all along · exact-substring matching that missed *Pre-Event* and *Check-in* on a hyphen · a location swallowing a room query · a string-surgery reorder that nested the venue branch inside the room branch · the `q`-fallback swallowing ops that own their own `q`. **The lesson twice over: code beats instructions** — two rounds of prompt rules chased a symptom that reading the execution settled in one call.
 
-*As an attendee, I say "remind me 30 minutes before the Welcome Dinner" and a message arrives.*
-
-**Built**
-- `event.reminders` — FK to the person and to the activity **or** session, never to a wall-clock
-  string. One pending reminder per person per thing per moment, so asking twice is idempotent.
-- Ops `remind` / `reminders` / `unremind` on the schedule endpoint.
-- `scripts/olivia_reminder_sender.py` — free-form inside the 24-hour window, utility template
-  outside it; late reminders are marked failed rather than sent.
-
-**Accept when**
-- ⛔ **the `mds_summit_reminder` utility template is approved on the WABA** (Andy) — two variables,
-  what and when. Utility, so the 131049 marketing cap does not apply.
-- ⛔ **the sender is scheduled** every 5 minutes (Andy).
-- ⛔ **the ops are declared in the Answer Seed** — they exist on the endpoint but Olivia cannot
-  call them yet.
-- ✅ stores against the thing, echoes the venue's zone, refuses honestly (non-attendee, unmatched
-  name, moment already past)
-- ✅ dry-run proven: *"Welcome Dinner starts in 30 minutes — Pool, Ritz-Carlton"*
+**Remainders, named not buried:** two rosters disagree (156 registrations vs 149 attendees) · CÉ LA VI missing from the export, so some of the 13 venue-less activities may be export gaps · long descriptions truncated at 201 chars · Brandon Himmel's Aug 26 session is orphaned, so invisible to everyone · `member_match` doesn't know about `event.attendees` · 5 of 20 probe questions unfired (13, 14, 15, 17, 18) · the date-first layout is committed both sides and unverified.
 
 ---
 
