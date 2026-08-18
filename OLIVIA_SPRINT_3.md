@@ -50,11 +50,11 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | **#90** | The chats mirror stopped syncing — she hands out dead invite links | 🔴 S1 | S | — | — |
-| **#87** | "Who should I meet" returns people who aren't going | 🟡 S2 | S | ✅ proven | ✅ **LIVE** `74f0572a` (7/7 attending) |
 | **#88** | Partner profiles — event-specific, and nowhere in the warehouse | 🟡 S2 | M | — | — |
 | **#89** | Two rosters disagree about who is at the Summit — 156 vs 149 | 🔴 S1 | M | — | — |
 | **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ proven | 🟨 **LIVE** `74f0572a` — sender not scheduled |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#87** | "Who should I meet" returns people who aren't going | 🟡 S2 | S | ✅ proven | ✅ **LIVE** `74f0572a` (7/7 attending) |
 | **#85** | 🚀 Summit schedule lane — activities, sessions, rooms, venues, audiences | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `d6761eb4` (prod probes) |
 | **#84** | Pre-announcement answer quality — chapter routing, transcript boundary, event phase rule, capability denial | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `5a12a2d1` (prod probe ×3) |
 | **#82** | Flagship events (Summit, Inspire) carry what-they-are + who-is-in-the-room | 🔴 S1 | M | ✅ proven `2ecf4e62` | ✅ **LIVE** `e988a6a3` (prod probe) |
