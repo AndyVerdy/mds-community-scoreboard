@@ -60,11 +60,18 @@ I meet (#87). Buttons need a complaint she has **not** already handled — she w
 fixed in one commit each once the work moved into the tool. And **read the execution before
 theorising** — it settled in one call what rule-writing chased for rounds, twice.
 
-### Filed as tickets 2026-08-18, awaiting priority
+### Open tickets, awaiting priority
+- **#90** 🔴 the chats mirror stopped syncing 2026-07-29 — she sent a **dead WhatsApp invite**.
+  29 chats in Airtable vs 19 in the mirror, 3 wrong links; the three were corrected by hand so the
+  demo cannot hand out a dead one, but the sync is still stopped and nothing alarms on it.
 - **#89** 🔴 two rosters disagree — 156 registrations vs 149 attendees, same Summit, no reconciliation.
 - **#88** 🟡 partner profiles — event-specific and type-specific; `event.attendee_profiles` designed,
   not built. Passcode never enters the warehouse.
-- **#87** 🟡 "who should I visit" returns people who aren't going — 4 of 8 checked had no attendee row.
+- **#86** 🔴 reminders are LIVE but nothing is delivered — see DO THIS FIRST #1.
+
+**Closed today:** #85 (schedule lane) and #87 (who to meet — 4 of 8 not attending → **7 of 7**).
+Both keep their evidence in `OLIVIA_SPRINT_3.md`; they move to `OLIVIA_BACKLOG_ARCHIVE.md` at
+SPRINT close, not session close.
 
 ### Known and deliberately left
 - Brandon Himmel's Aug 26 session has no parent activity → no audience → invisible to everyone.
