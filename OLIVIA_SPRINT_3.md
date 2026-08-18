@@ -50,10 +50,10 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | **#90** | The chats mirror stopped syncing — she hands out dead invite links | 🔴 S1 | S | — | — |
-| **#87** | "Who should I visit" returns people who aren't going | 🟡 S2 | S | — | — |
+| **#87** | "Who should I meet" returns people who aren't going | 🟡 S2 | S | ✅ proven | ✅ **LIVE** `74f0572a` (7/7 attending) |
 | **#88** | Partner profiles — event-specific, and nowhere in the warehouse | 🟡 S2 | M | — | — |
 | **#89** | Two rosters disagree about who is at the Summit — 156 vs 149 | 🔴 S1 | M | — | — |
-| **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ built | ⛔ blocked: WABA utility template + seed declaration |
+| **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ proven | 🟨 **LIVE** `74f0572a` — sender not scheduled |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
 | **#85** | 🚀 Summit schedule lane — activities, sessions, rooms, venues, audiences | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `d6761eb4` (prod probes) |
 | **#84** | Pre-announcement answer quality — chapter routing, transcript boundary, event phase rule, capability denial | 🔴 S1 | M | ✅ proven | ✅ **LIVE** `5a12a2d1` (prod probe ×3) |
@@ -209,21 +209,6 @@ side and nothing notices. Both are silent mirror decay; worth one freshness patt
 
 ---
 
-### #87 · "Who should I visit" returns people who aren't going
-**🟡 S2 · size S — filed 2026-08-18**
-
-> **In plain words:** she recommends people to meet at the Summit who aren't attending it.
-
-*As an attendee, when I ask who to seek out at this event, everyone she names is actually there.*
-
-Live on staging 2026-08-18: asked "who should I visit", she returned Steve Parisi, Ryan Mayberry, Dan Schaefer, Garland Sullivan, Dana E. Mavros and Fernando Campos with genuine reasons — niche, city, 3PL expertise. Checked against `event.attendees`, **four of the eight are not registered.** `member_match` matches across the whole 748-member roster with no attendance filter, so it sent an attendee to go find someone in Jupiter, Florida.
-
-**Shape of the fix:** one join — when the question is scoped to an event, filter matches to people holding an attendee row for it.
-
-**Accept when:** every person named for an event question has an attendee row · a member asking with no event in mind still gets the unfiltered match · she never claims someone will be at a session, because nobody registers for sessions · gate GREEN.
-
----
-
 ### #86 · Reminders — "remind me 30 minutes before"
 **🔴 S1 · size M — built 2026-08-18, NOT DELIVERING**
 
@@ -237,20 +222,21 @@ Today she computes the time correctly and then says she cannot send it — hones
 
 **Accept when:** a member can set, list and cancel a reminder in conversation · it arrives before the thing starts · absolute asks confirm the zone back · nothing is promised that cannot be delivered · gate GREEN.
 
-#### 🟨 BUILT 2026-08-18 — blocked, not shipped
+#### 🟨 LIVE 2026-08-18 — prod `74f0572a`, but nothing is delivered yet
 **The build:** `event.reminders` (migration `event_reminders_20260818`) — FK to the person and to the activity **or** session, one pending reminder per person per thing per moment so asking twice is idempotent. Ops `remind` / `reminders` / `unremind` on the schedule endpoint. `scripts/olivia_reminder_sender.py` — free-form inside the member's 24-hour window, utility template outside it.
 
 | AC | result |
 |---|---|
-| set / list / cancel in conversation | 🟨 endpoint proven, **not declared in the Answer Seed** — Olivia cannot call them yet |
-| arrives before the thing starts | ⛔ **blocked**: `mds_summit_reminder` utility template not submitted; sender not scheduled |
+| set / list / cancel in conversation | ✅ live on prod — *"I'll remind you at 6:30 pm Singapore time, 30 minutes before the Welcome Dinner"*, lists, cancels |
+| arrives before the thing starts | ⛔ **the sender is not scheduled.** Template `mds_summit_reminder` is **APPROVED** (utility), so delivery itself is unblocked — rows queue, nothing fires them |
+| relative asks work | ✅ `in_minutes` computed server-side — **the model has no clock**: asked for "in 5 min" it sent a timestamp four hours stale and the endpoint correctly refused it as past |
 | absolute asks confirm the zone | ✅ *"I'll remind you at 8:00 PM Singapore time"* — rule live on prod |
 | nothing promised that cannot be delivered | ✅ non-attendee refused · unmatched name says so · past moment answers with the real start time · late reminders marked failed rather than sent |
 | gate GREEN | ✅ passed inside the `d6761eb4` promote (schema only; no retrieval change) |
 
 **Proof:** `remind "welcome dinner" lead 30` → *Welcome Dinner starts Sun 23 Aug 7:00 pm, remind at 6:30 pm Singapore time*; list shows both, `unremind` drops one. Sender dry-run against a real due row: *"⏰ Welcome Dinner starts in 30 minutes — Pool, Ritz-Carlton."*
 
-**Three things to finish, two are Andy's:** declare the ops in the Answer Seed (mine, ~10 min) · submit `mds_summit_reminder` as a **utility** template on the WABA — utility, so the 131049 marketing cap that blocked 17 of 25 in August does not apply — · schedule the sender every 5 minutes. **The template is the only item with a hard clock: approval takes days and the Summit is on the 22nd.**
+**One thing left: schedule the sender every 5 minutes.** The template was submitted from here and is **APPROVED** — the WABA id (`1575708577606583`) was in the workflow's own *Subscribe App to WABA* node all along, after I asked Andy for it three times.
 
 ---
 
@@ -1625,6 +1611,42 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #87 · "Who should I meet" returned people who aren't going
+**🟡 S2 · size S**
+
+> **In plain words:** she recommends people to seek out at the Summit who aren't attending it.
+
+*As an attendee, when I ask who to seek out at this event, everyone she names is actually there.*
+
+Twice, on Andy's own phone. First: Steve Parisi, Ryan Mayberry, Dan Schaefer, Garland Sullivan and
+others with genuine reasons — **4 of the 8 checked had no attendee row.** Then, worse: asked *"who
+should I meet on summit?"* she opened with *"nobody registers for a session, so I can't tell you
+who'll be in a given room"* and answered a **people** question with a **list of sessions**.
+
+#### ✅ BUILT + PROVEN + PROMOTED 2026-08-18 — prod `74f0572a`
+**The fix:** a `people` op on the schedule endpoint. Everyone returned holds an attendee row for
+THIS event; matching is on the asker's own expertise and categories (or topics passed in `q`), and
+the reason is the overlap itself. Commits `ccdf31b`, `8fcae8e`.
+
+| AC | result |
+|---|---|
+| every person named has an attendee row | ✅ **7 of 7** — Alex Bonilla, Neeme Roos, Brandon Himmel, Daniel Meredith, Louisa Li, David Stark, Mo Kuhail, checked against `event.attendees` |
+| a member asking with no event in mind still gets the unfiltered match | ✅ the members lane is untouched |
+| never claims someone will be at a session | ✅ the response carries it explicitly, and it is a footnote not an opener |
+| no "I can't" opener | ✅ leads with names |
+| gate GREEN | ✅ passed inside the promote |
+
+**Before → after**, same question, same phone: **4 of 8 not attending → 7 of 7 attending.**
+
+**Two flaws caught in testing:** Alex Bonilla appeared twice because he holds a Speaker row *and* a
+Member row (now merged, shown as "Member + Speaker"), and splitting topics on `&` and `/` shattered
+*"Health/ Beauty/ & Supplements (Consumables)"* into three fragments that read like debris.
+
+**Remainder:** 143 of the attendees resolve to a member record and 101 carry expertise, so a
+newcomer with a thin profile matches on little. Not fixed, and not worth fixing until it bites.
+
+---
 
 ### #85 · 🚀 Summit schedule — she had no idea what happens at our own event
 **🔴 S1 · size L**

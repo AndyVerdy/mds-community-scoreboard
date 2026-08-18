@@ -19,43 +19,46 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-18: PROD `d6761eb4` — #85 SCHEDULE LANE LIVE · #86 REMINDERS BUILT
+## STATE 2026-08-18 (evening): PROD `74f0572a` — schedule, reminders, images, people all live
 
 ### ⚠️ THREE SURFACES — read this before anything else
-| surface | version | carries |
+| surface | version | note |
 |---|---|---|
-| **n8n PROD** | `d6761eb4` | schedule lane: `agenda · next · day · where · speaker · speakers · recommend` |
-| **n8n STAGING — AHEAD, AWAITING PROMOTE** | `0c70c1c2` | **the reminder ops** (`remind · reminders · unremind`) **+ the date-first layout** |
-| **endpoint (mds-digest-web)** | `0fd0df9` deployed · `af79010` queued | all 10 ops live; the queued commit is the reminder idempotency fix |
+| **n8n PROD** | `74f0572a` | everything below is live here |
+| **n8n STAGING** | `6e573dce` | same graph — nothing waiting |
+| **endpoint (mds-digest-web)** | `8fcae8e` | in sync |
 
-**So today, on a member's phone: the schedule answers, reminders do not exist.** One promote closes
-that gap. Nothing is half-shipped in prod — staging simply has more.
+**Nothing is awaiting promotion.** Six promotes today, gate passed every time.
 
-**Olivia can answer the Summit schedule.** New `event` schema (15 tables, 25 FKs, no views, no
-functions — policy lives outside the DB) loaded from the GroupOS export; the lane is
-`POST /api/olivia/schedule` in **mds-digest-web**, not a Postgres RPC. `Answer Tool` routes
-`event_*` tool names there on `X-Olivia-Secret`; everything else still posts to `/rest/v1/rpc/`.
-
-Golden tests: **plain Member day one = 6 · Women's Lunch grantee = 7.**
+**What a member can do now:** ask what's on and when · where it is, with a map · who speaks and about
+what · which sessions suit them · **who to meet, scoped to people actually attending** · set, list and
+cancel reminders · get a post's image with the answer · read a weekly chat digest.
 
 ### DO THIS FIRST
-1. **Probe the date-first layout, then promote staging `0c70c1c2`.** That single promote ships both
-   the reminder ops and the layout. Probe first — the layout is committed on both sides and was
-   never verified end to end, because the Render deploy lagged at session end.
-2. **Ask Andy for the WABA id.** The template can be created from here — the token holds
-   `whatsapp_business_management` — but the system user cannot enumerate the WABA, so that one
-   value is the whole blocker. Template is drafted: `mds_summit_reminder`, UTILITY, en_US, body
-   `⏰ You asked me to remind you — *{{1}}* starts at {{2}}.` Two variables, both always populated
-   (location deliberately excluded: 14 activities have none and Meta rejects an empty variable).
-3. **Ask the dev for a fresh export** — `CÉ LA VI Singapore` is in the admin's 19 locations but not
-   in our 18, so some of the 13 venue-less activities may be export gaps rather than ops gaps. Same
-   dump also fixes long descriptions truncated at 201 chars.
+1. **Schedule `scripts/olivia_reminder_sender.py` every 5 minutes** (launchd or n8n). Reminders queue
+   correctly and nothing fires them — this is the last piece of #86. The WhatsApp template
+   `mds_summit_reminder` is **APPROVED**, so out-of-window delivery is unblocked.
+2. **Andy: re-register the number** to activate the approved display name "MDS AI Assistant". Needs
+   the 6-digit PIN, and the number currently shows the misspelled **"Oliva"** with `name_status:
+   DECLINED`. Do it BEFORE the announcement, not after.
+3. **Ask the dev for a fresh export** — CÉ LA VI is in the admin's 19 locations but not our 18, so
+   some of the 13 venue-less activities may be export gaps. Same dump un-truncates long descriptions.
 
-### BLOCKED ON ANDY
-- **The WABA id** (see above) — then submission and approval-polling are mine.
-- **Schedule `scripts/olivia_reminder_sender.py` every 5 minutes.**
-- **Two rosters disagree** — `event_registrations` 156 distinct members vs `event.attendees` 149.
-  Same Summit, no reconciliation, and whichever lane answers decides the number a member hears (#89).
+### Two things NO probe can verify — test on a phone
+`Eval (silent)?` routes SELFTEST traffic to `Save Conversation` and never reaches `Send Reply (Meta)`,
+and both the image and reminder-delivery branches hang off that send. So:
+- **images** — "show me the Summit theme post Eugene shared" must be tried on a real phone
+- **reminder delivery** — likewise, once the sender is scheduled
+
+### The demo set (nine questions, verified on prod)
+Broad reading recs · full day one · which sessions suit me · who speaks Monday · where is X + map ·
+show me the theme post (image) · weekly digest (summaries) · remind me (set/list/cancel) · who should
+I meet (#87). Buttons need a complaint she has **not** already handled — she will not re-offer.
+
+### The lesson this session kept teaching
+**Code beats instructions.** Three prompt rules failed on images, four on reminder timing. Both were
+fixed in one commit each once the work moved into the tool. And **read the execution before
+theorising** — it settled in one call what rule-writing chased for rounds, twice.
 
 ### Filed as tickets 2026-08-18, awaiting priority
 - **#89** 🔴 two rosters disagree — 156 registrations vs 149 attendees, same Summit, no reconciliation.

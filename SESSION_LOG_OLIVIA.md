@@ -6,6 +6,75 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-18 (evening) — SIX PROMOTES: reminders live, images fixed in code, #87 shipped (prod `74f0572a`)
+
+Andy tested on his own phone all evening and every defect below came out of that, not from probes.
+**Five of the six fixes are code, not prompt rules** — the lesson of the day, learned three times.
+
+### What shipped, in order
+| | fix | why a rule could not do it |
+|---|---|---|
+| `017bb121` | **images** — `Format Reply` derives the post id from the Facebook link already in the answer | three prompt rules failed; she judged text sufficient and skipped the graphic |
+| `0f28b018` | **reminders** — `in_minutes` computed server-side | **the model has no clock.** Asked for "in 5 min" it sent 17:23 UTC when now was 21:40 UTC, so the endpoint correctly refused a past moment and she narrated it as a story about Night Out |
+| `74f0572a` | **#87 people op** — who to meet, scoped to `event.attendees` | matching ran across the whole 748-member roster |
+| earlier | `a9c8739c` reminder ops + date-first layout · `81890cfa` has_image | |
+
+### The image chain, end to end — three separate faults
+1. `content_search` never returned whether a post had an image. The tool description **promised**
+   an image ref that the function did not provide, so she had to guess and mostly didn't.
+2. I patched `content_search` — **but the loop calls `content_search_v2`.** Only reading the
+   execution showed which. Both now carry `meta.has_image`.
+3. With the flag AND the rule live she still skipped it. So `Format Reply` now derives the id from
+   the post URL in her own reply. Safe by construction: `Fetch Post Images` returns nothing for a
+   post without images.
+
+**Both migrations were `CREATE OR REPLACE`, never DROP** — for v2 I had Postgres rewrite its own
+definition via `pg_get_functiondef` rather than re-pasting 244 lines. ACL verified `service_role`
+only, before and after. [[reference_drop_function_revokes_acl]].
+
+### #87 — before and after, same question, same phone
+| | |
+|---|---|
+| morning | Steve Parisi · Ryan Mayberry · Dan Schaefer · Garland Sullivan… — **4 of 8 not attending** |
+| tonight | Alex Bonilla · Neeme Roos · Brandon Himmel · Daniel Meredith · Louisa Li · David Stark · Mo Kuhail — **7 of 7 attending**, each with the overlap as the reason |
+
+Also killed the "I can't" opener: she led with *"nobody registers for a session, so I can't tell you
+who'll be in a room"* and then answered a **people** question with a **session list**.
+
+### Meta — template APPROVED, name approved but not switched on
+- **`mds_summit_reminder` · UTILITY · APPROVED.** Submitted from here after Andy pointed out I had
+  the API all along; the WABA id (`1575708577606583`, "Mille AI") was sitting in the workflow's own
+  *Subscribe App to WABA* node. I asked him for it three times first.
+  Meta rejected the first draft — *"Variables can't be at the start or end of the template."*
+- **Display name "MDS AI Assistant" APPROVED**, but the number still shows **"Oliva"** (misspelled,
+  and `name_status: DECLINED`). Activation needs a **re-register with the 6-digit PIN** — Andy's,
+  deliberately, before the announcement rather than after.
+
+### Found by using it, filed not fixed
+- **#90 🔴 the chats mirror stopped syncing.** She sent a dead WhatsApp invite. Airtable had the
+  right link all along; every `digest.chats` row still carried `updated_at 2026-07-29`. Measured:
+  **29 chats in Airtable, 19 in the mirror, 3 wrong invite links.** Corrected the three by hand so
+  the demo cannot hand out a dead link; the sync is still stopped.
+- **FB image capture**: only ~28-31% of posts carry an image on our side, 21% in August. June's
+  Member of the Month has none, which is why that answer had no graphic — nothing to send.
+- Both are the same shape: **silent mirror decay that nothing alarms on.**
+
+### The demo set — nine questions, all verified on prod
+Broad reading recs (Europe) · full day one · which sessions suit me · who speaks Monday · where is X
++ map · **show me the theme post** (image) · **weekly digest** (summaries) · **remind me** (set,
+list, cancel) · **who should I meet** (#87).
+
+Two cannot be proven from here: **images and reminder delivery both need a real phone**, because
+SELFTEST routes to `Save Conversation` and never reaches `Send Reply (Meta)`. Buttons need a
+complaint she has not already handled.
+
+### Still open
+- **The sender is not scheduled** — reminders queue, nothing fires them. Last piece of #86.
+- #88 partner profiles · #89 two rosters (156 vs 149) · #90 chats sync.
+- `test-andy-8153` still in `event.people`.
+- `node --check` earned its keep again: caught an unescaped apostrophe in a tool description before
+  any write. Staging untouched.
+
 ## 2026-08-18 — #85 SUMMIT SCHEDULE LANE SHIPPED · #86 REMINDERS BUILT (prod `d6761eb4`)
 
 **Olivia had no schedule.** Every Summit answer came from people *talking about* the event —

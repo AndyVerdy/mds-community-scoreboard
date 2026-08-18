@@ -255,6 +255,17 @@ one; the Women's Lunch grantee sees **7**.
    `digest.events_catalog.start_at` ended up eight hours wrong. The loader extracts and validates
    the IANA zone, stores true instants, and keeps the raw strings in `source_*` for audit only.
 
+**Reminders (#86).** `event.reminders` hangs off the person and the activity or session, never a
+wall-clock string. Three ways to say when, and only two can be trusted to the model:
+`in_minutes` (computed server-side), `lead` (minutes before the start) and `at` (a resolved
+instant). **The model does not know the current time** — asked for "in 5 minutes" it produced a
+timestamp four hours stale, so anything relative is computed here. Delivery: free-form inside the
+member's 24-hour window, the approved `mds_summit_reminder` UTILITY template outside it.
+
+**Who to meet (#87).** The `people` op matches the asker against **`event.attendees`**, never the
+whole member roster — matching across all 748 sent an attendee to find somebody in Florida. It says
+nothing about which room anyone will be in, because nobody registers for a session.
+
 **Timezones (Andy, 2026-08-17):** never stored — it breaks the moment someone travels. WhatsApp
 sends an instant, never a zone. In-person answers always use the venue's zone, named; a virtual
 session carries the content's zone *and* the member's saved-location zone.
@@ -681,6 +692,38 @@ as defense-in-depth. (Why RLS is enabled on them at all, and by what, is #61/#64
   after the entire first branch. Wire the fast branch first; prove it with per-node start times.
 
 ---
+
+### Silent mirror decay (2026-08-18)
+
+Two mirrors were found rotting the same day, both discovered only because a member saw a bad answer:
+
+- **`digest.chats`** had not synced since 2026-07-29. She sent a **dead WhatsApp invite** while
+  Airtable held the correct one. 29 chats in the source, 19 in the mirror, 3 wrong links (#90).
+- **FB post images**: only ~28-31% of posts carry an image on our side, 21% in August. June's
+  Member of the Month has none, which is why that answer had no graphic.
+
+**The pattern:** a mirror whose rows all share one `updated_at` is a mirror nobody is watching.
+Every mirror needs a freshness signal, not just a loader.
+
+### A tool description that promises what the function does not return (2026-08-18)
+
+`content_search`'s description told the model it returns "an image ref usable as [SEND_IMAGE: ref]".
+It did not. So the model had to guess a post id and mostly declined — award graphics and agendas got
+described instead of shown. **Three prompt rules failed before anyone checked the actual return
+shape.** Both `content_search` and `content_search_v2` now return `meta.has_image`.
+
+Two corollaries, both cost time:
+- **The loop calls `content_search_v2`, not `content_search`.** Patching the wrong one looks
+  identical to the fix not working. Read the execution's tool call.
+- **Read the execution before theorising.** It settled in one call what rule-writing chased for
+  rounds — twice in one session.
+
+### The model has no clock (2026-08-18)
+
+Asked to set a reminder "in 5 minutes", the model sent `at=17:23 UTC` when the true time was
+21:40 UTC. The endpoint correctly refused a moment in the past, and she narrated the refusal as a
+story about the event being a week away. **Never let the model compute an absolute time from a
+relative ask** — pass the offset and do the arithmetic server-side.
 
 ## 14. Known limits (2026-08-03)
 
