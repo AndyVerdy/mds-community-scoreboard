@@ -6,6 +6,21 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (close) — #86 CLOSED on a real arrival · #76 closed · #92 filed · sender every minute
+
+**The #86 story completed on Andy's phone:** *"singapore remind me about the welcome dinner in 5
+minutes"* → booked now+5 (idempotency MOVED his existing Welcome-Dinner reminder — one pending per
+person per thing), sender tick 05:55:08 sent it, `digest.olivia_sends` shows **`read` at
+05:55:11**, screenshot: *"⏰ Welcome Dinner starts at 7:00 PM Singapore time — Pool, Ritz-Carlton"*
+— honest wording days before the event. Total lag ~10 min (+5 due, one 10-second tick miss, +5
+next tick); Andy called it → **sender `QhJw46Mr7LAP8fdz` now ticks EVERY MINUTE** (renamed to
+match). Reminders stay SCHEDULE-ANCHORED by design — her refusal of freestanding "remind me to
+check fb" is correct; freestanding = a future ticket if wanted. **#76 closed** — done since
+08-16/17, the row was never flipped (Andy caught it): 100 organic verified by direct count,
+asker+date on every row, 11-class traffic-shaped distribution, baseline **96% clean, 27/27
+regressions** (2026-08-17). **#92 filed** (event selection for a multi-event world, S2/S, parked
+until event #2's export). Multi-event readiness noted in the handoff.
+
 ## 2026-08-19 (final) — "answer is not full": how-does-X-work now pairs the docs; prod `3f2ec8f0`
 
 Andy re-tested the broad chapter question on his phone: rich answer, but no assignment rules —

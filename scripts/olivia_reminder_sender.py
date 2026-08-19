@@ -6,8 +6,8 @@ one on WhatsApp, and records the outcome. Designed to be run on a short schedule
 (the n8n schedule runs EVERY MINUTE since 2026-08-19; a due reminder waits at most ~1 min).
 
 THE SCHEDULE LIVES IN N8N, NOT HERE (2026-08-18): workflow "Olivia — Reminder
-Sender (#86, every 5 min)" (QhJw46Mr7LAP8fdz) is a faithful port of this logic and
-fires every 5 minutes from the cloud — chosen over launchd so reminders survive
+Sender (#86, every minute)" (QhJw46Mr7LAP8fdz) is a faithful port of this logic and
+fires every minute from the cloud — chosen over launchd so reminders survive
 this Mac sleeping during Summit week. This script remains the manual tool:
 --dry-run to see what is due, a plain run for one-off catch-up. If the logic
 changes, change BOTH or retire one.
