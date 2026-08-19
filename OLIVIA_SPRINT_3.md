@@ -172,10 +172,28 @@ one routing rule (event asks = op=partners; `partner_lookup` stays the year-roun
 
 **Before → after:** partner questions about the Summit had NOTHING (0 rows anywhere) → 11
 companies, 20 people, list + full-profile + person-lookup all proven on staging `4ca0b46d`.
+
+**Directory link (Andy 2026-08-19):** every Summit partner that exists in the year-round directory
+is LINKED — `directory_partner_id` FK to `partners_catalog` (migration
+`event_partner_directory_link_20260819`), **11 of 11 matched**, loader re-derives it on every run
+(normalized names; Live + most-claimed wins on catalog dups), and the op returns `partner_page`
+(mds-digest-web `6188b9e`, verified on prod endpoint after a PostgREST schema reload).
+
+**Path-separation probe matrix (Andy's ask, all four on staging, quotes verbatim):**
+| ask | lane | answer |
+|---|---|---|
+| "is there a deal from StoreClaw?" (general) | `partner_lookup` directory | *"1 month free + 20% + 5% off Ultra"* + directory link — **no Summit offer** |
+| "what does StoreClaw offer at the summit?" | `event_schedule op=partners` | *"Summit-only offer: 2 months free… (standing MDS deal outside the event is 1 month free + 25% off ULTRA)"* + team + partner page |
+| "what special offers do partners have at the summit?" | event lane, list | all 11, each with its event offer |
+| chain follow-up "tell me more about Hector" | event context held | *"Summit-only offer: … free for 1 month"* + *"Standing MDS deal"* labeled apart + on-site people |
+| "tell me about StoreClaw" (general about-ask) | content sources | answered from the July 22 Mogul Call — **zero Summit-offer bleed** |
+
+She labels *"Summit-only offer"* vs *"standing MDS deal"* unprompted — the separation Andy asked
+to verify holds in both directions. Gate exit 0 after every pass.
 **Named remainders:** categories missing on CrediLinq (absent in the view) · Trellis has no contact
-block in the CSV · when the GroupOS export gains partner attendees, link `partner_people` to
-`event.attendees` by email (follow-up, not blocking). **Promote carries #91 + #88 together** —
-staging holds both.
+block in the CSV · when the GroupOS export gains partner attendees (Andy: likely a "partner's team"
+attendee type), link `partner_people` to `event.attendees` by email — 11 of 20 already appear there
+as manual Speaker/Guest adds, 9 do not. **Promote carries #91 + #88 together** — staging holds both.
 
 ---
 

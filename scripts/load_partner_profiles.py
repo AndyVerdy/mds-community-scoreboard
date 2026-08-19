@@ -113,6 +113,31 @@ def main():
     assert len(companies) >= 8, f"only {len(companies)} companies parsed — wrong file? refusing"
     print(f"parsed: {len(companies)} companies · {len(people)} people")
 
+    # Same partner in the year-round directory gets LINKED (Andy 2026-08-19) —
+    # matched on normalized name (suffixes like ".Ai"/" Ai"/legal tails dropped);
+    # Live + most-claimed wins when the catalog holds duplicates. NULL is fine:
+    # an event can bring a partner the directory has never seen.
+    def norm(s):
+        s = re.sub(r"\b(a\.?i\.?|pte\.?|ltd\.?|inc\.?|llc)\b\.?", "", (s or "").lower())
+        return re.sub(r"[^a-z0-9]", "", s)
+    catalog = supa("GET", "partners_catalog?select=partner_id,name,status,claim_count"
+                          "&limit=1000", key)
+    # partners_catalog lives in the digest schema — reuse the REST helper with an override
+    if isinstance(catalog, dict):
+        catalog = []
+    if not catalog:
+        cmd_out = subprocess.run(
+            ["curl", "-s", f"{SUPA}/partners_catalog?select=partner_id,name,status,claim_count&limit=1000",
+             "-H", f"Authorization: Bearer {key}", "-H", f"apikey: {key}",
+             "-H", "Accept-Profile: digest"], capture_output=True, text=True).stdout
+        try:
+            catalog = json.loads(cmd_out or "[]")
+        except json.JSONDecodeError:
+            catalog = []
+    by_norm = {}
+    for p in sorted(catalog, key=lambda p: ((p.get("status") == "Live"), p.get("claim_count") or 0), reverse=True):
+        by_norm.setdefault(norm(p["name"]), p["partner_id"])
+
     prof_rows = []
     for company, c in sorted(companies.items()):
         name, email, phone = parse_contact(c.pop("_contact", None))
@@ -121,7 +146,8 @@ def main():
                           "mds_offer": c.get("mds_offer"), "event_offer": c.get("event_offer"),
                           "offer_instructions": c.get("offer_instructions"),
                           "contact_name": name, "contact_email": email, "contact_phone": phone,
-                          "categories": c.get("categories")})
+                          "categories": c.get("categories"),
+                          "directory_partner_id": by_norm.get(norm(company))})
     if args.dry_run:
         for p in prof_rows:
             print(f"  {p['company']}: offer={'Y' if p['mds_offer'] or p['event_offer'] else '-'} "

@@ -27,6 +27,18 @@ Zhou."* Gate **exit 0**, probe rows cleaned. No passcode/QR/ops fields anywhere 
 **Prod: endpoint + data already live; the SEED waits on Andy's promote, which now carries #91 +
 #88 together.**
 
+**Directory link + path-separation matrix (Andy's two asks, same night):** all 11 Summit partners
+exist in the year-round directory too — now LINKED (`directory_partner_id` FK, migration
+`event_partner_directory_link_20260819`, 11/11; loader re-derives on every run; op returns
+`partner_page`, mds-digest-web `6188b9e`; needed the standing `NOTIFY pgrst` after the new
+column). **Probe matrix proves the lanes never bleed:** general "is there a deal from StoreClaw?"
+→ DIRECTORY offer *"1 month free + 20% + 5% off Ultra"*, no Summit offer · Summit ask → *"Summit-
+only offer: 2 months free"* with the standing deal labeled apart · Summit list → 11 event offers ·
+chain follow-up (Hector) stays in event context · general about-ask answered from the Mogul Call
+with zero bleed. She labels *"Summit-only offer"* vs *"standing MDS deal"* unprompted. Attendee
+note: 11 of the 20 partner people are in `event.attendees` (manual Speaker/Guest adds), 9 are not
+— Andy: fresh export will likely add a "partner's team" attendee type; link by email then.
+
 ## 2026-08-18 (night, latest) — #89 CLOSED · the number is "MDS AI Assistant"
 
 **Display name fixed (Andy ran the register, guided from here).** The approved name sat as
