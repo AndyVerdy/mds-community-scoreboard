@@ -19,14 +19,14 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-18 (evening): PROD `74f0572a` — schedule, reminders, images, people all live
+## STATE 2026-08-19 (deep night): PROD `f3850dd7` — Mille identity, partners, org docs all live
 
 ### ⚠️ THREE SURFACES — read this before anything else
 | surface | version | note |
 |---|---|---|
-| **n8n PROD** | `74f0572a` | everything below is live here |
-| **n8n STAGING** | `6e573dce` | same graph — nothing waiting |
-| **endpoint (mds-digest-web)** | `8fcae8e` | in sync |
+| **n8n PROD** | `f3850dd7` | Mille (#91) + partners (#88) + org_docs (#18) live |
+| **n8n STAGING** | `6581548e` | same graph — nothing waiting |
+| **endpoint (mds-digest-web)** | `91eef30` | partners op + attendee gate + kb lane + 0.45 floor |
 
 **PROMOTED 2026-08-19 04:42 UTC: #18 org_docs wiring — prod `aec2db47` → `f3850dd7`**, gate green
 inside, prod-probed (refund cited per the FAQ; chapter ask honestly doc-less). Nothing awaits
