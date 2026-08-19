@@ -50,6 +50,11 @@ cancel reminders · get a post's image with the answer · read a weekly chat dig
    When it approves there are **14 days to re-register** (same `POST /register` + Andy's PIN) or the
    approval lapses and must be resubmitted. Check `new_name_status` at session start:
    `GET /1306956855827812?fields=verified_name,name_status,new_display_name,new_name_status`.
+   **Watcher live:** n8n `a1ViYr5FT7iePdN9` (hourly, TEMPORARY) — WhatsApps Andy's test number on
+   APPROVED/DECLINED, nags hourly until re-registered, silent while pending. Limit: free-form send
+   needs Andy's 24h window on …8153 open. **DELETE the watcher once Mille is live.** When the name
+   flips, queue Andy's rewording pass on the intro/self-references (#79 curated copy says "the MDS
+   AI assistant").
 3. **Ask the dev for a fresh export** — CÉ LA VI is in the admin's 19 locations but not our 18, so
    some of the 13 venue-less activities may be export gaps. Same dump un-truncates long descriptions.
 
