@@ -24,11 +24,11 @@
 ### ⚠️ THREE SURFACES — read this before anything else
 | surface | version | note |
 |---|---|---|
-| **n8n PROD** | `4725e6f1` | Mille (#91) + partners (#88) + org_docs + chapter FAQ (#18) live |
-| **n8n STAGING** | `6860eb44` | same graph — nothing waiting |
+| **n8n PROD** | `3f2ec8f0` | Mille · partners · org_docs + pairing rule · chapter FAQ live |
+| **n8n STAGING** | `2f3a4dd4` | same graph — nothing waiting |
 | **endpoint (mds-digest-web)** | `91eef30` | partners op + attendee gate + kb lane + 0.45 floor |
 
-**PROMOTED 2026-08-19 04:52 UTC: chapter FAQ + no-invented-offer rule — prod `4725e6f1`** (Andy's
+**PROMOTED 2026-08-19 05:0x UTC: how-does-X-work now PAIRS org_docs with the topical tool — prod `3f2ec8f0`** (Andy: broad chapter answer was "not full" — execution showed sources_used=[chapter_info] only; the pairing rule folds the written rules in, prod-probed with the FAQ citation + $1,200 detail). Before that same night: chapter FAQ + no-invented-offer `4725e6f1` (Andy's
 phone test caught the chapter miss; curated member FAQ in git `docs/org_docs/`, Andy-approved; the
 SOP stays staff-dark). Earlier same night: org_docs wiring `f3850dd7`. Nothing awaits promotion. The library itself is LIVE regardless: 3 docs · 47 entries
 (`org_docs_library_20260819` + `load_org_docs.py`), `/api/olivia/kb` deployed with measured 0.45

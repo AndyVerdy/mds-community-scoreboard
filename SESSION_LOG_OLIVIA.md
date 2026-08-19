@@ -6,6 +6,17 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (final) — "answer is not full": how-does-X-work now pairs the docs; prod `3f2ec8f0`
+
+Andy re-tested the broad chapter question on his phone: rich answer, but no assignment rules —
+**the saved plan showed `sources_used: ["chapter_info"]`, org_docs never called.** The topical tool
+knows what a thing IS; only the documents know the RULES. New seed rule (the #70 alongside
+pattern): how-does-X-work / what-are-the-rules asks call org_docs ALONGSIDE the topical tool and
+fold the written policy in. Staging probe: one answer now carries structure + "based on your
+address… Per the Chapter assignment — member FAQ" + reassignment offer + $1,200/yr. Gate exit 0,
+promoted `4725e6f1` → **`3f2ec8f0`**, prod-probed with the same content, probes cleaned, lock
+released.
+
 ## 2026-08-19 (last) — Andy's phone test → chapter FAQ curated, invented-offer rule; prod `4725e6f1`
 
 **Andy asked "how does mds chapters works" on his real phone and called it failed.** Two defects

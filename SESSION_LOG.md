@@ -2,6 +2,7 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-19 (final) · **Olivia** · **"answer is not full" → how-does-X-work PAIRS org_docs** (plan showed `sources_used=[chapter_info]` only; #70-style alongside rule; prod **`3f2ec8f0`** probed: structure + by-address + $1,200 in ONE answer) → `SESSION_LOG_OLIVIA.md`
 - 2026-08-19 (last) · **Olivia** · **Andy phone-test fail → fixed live**: chapter ask had said "no written documentation" then offered to explain anyway — ① seed rule: empty org_docs forbids invented offers ② member-safe half of the staff SOP curated into git (`docs/org_docs/chapter_assignment_member_faq.md`, Andy-approved) and loaded as member FAQ · promote → **prod `4725e6f1`**, prod-probed: "per the Chapter assignment FAQ… based on your address… $1,200/year… chapter@mds.co", SOP never named · **the standing pattern: SOPs load staff, curated member digests live in git** → `SESSION_LOG_OLIVIA.md`
 
 - 2026-08-18 (later) · **Scorecard/FB ext** · **v0.86**: dead feed-loop (button 3) DELETED (~43KB), scheduler weekly→DAILY + re-armed from storage on worker start (was silently dead after every extension reload while toggle showed ON), 5 copy drifts fixed (4c says 6 days now, footer = autopilot) · node --check green, ids cross-checked · NEEDS: Andy reload extension → `SESSION_LOG_SCORECARD.md`
