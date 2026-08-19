@@ -24,8 +24,8 @@
 ### ⚠️ THREE SURFACES — read this before anything else
 | surface | version | note |
 |---|---|---|
-| **n8n PROD** | `3d8202d0` | + count-then-stop · silent withholding · MEET lane = novelty-first |
-| **n8n STAGING** | `9318daaf` | same graph — nothing waiting |
+| **n8n PROD** | `060701be` | + whole-community catch-up · images only on single-post lookups |
+| **n8n STAGING** | `18038948` | same graph — nothing waiting |
 | **endpoint (mds-digest-web)** | `c279982` | + no denominator (awaits count ruling) · meet=novelty-first |
 
 **PROMOTED 2026-08-19 05:0x UTC: how-does-X-work now PAIRS org_docs with the topical tool — prod `3f2ec8f0`** (Andy: broad chapter answer was "not full" — execution showed sources_used=[chapter_info] only; the pairing rule folds the written rules in, prod-probed with the FAQ citation + $1,200 detail). Before that same night: chapter FAQ + no-invented-offer `4725e6f1` (Andy's

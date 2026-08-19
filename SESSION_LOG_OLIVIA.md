@@ -6,6 +6,21 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (day 2f) — the whole-community catch-up + the context-less image bug (prod `060701be`)
+
+Andy defined the right general catch-up: *"prioritize discussions — fb, chats im in, and check
+content, new videos, partners, events."* New orchestration rule: source-unnamed recaps cover, in
+order, ① discussions (FB threads + the member's chat digests) ② new videos of the period ③ fresh
+partner deals ④ what's ahead for them; 2–4 items per section, quiet sources get one honest line.
+**And his screenshot caught a second context-less image** (a warehouse photo on the recap; earlier,
+review-stars): the 2026-08-18 image fix derived a post image from ANY Facebook link in her reply —
+correct for "show me the post", wrong for recaps that CITE threads. Now the derivation fires only
+on single-post lookups (`op=content_lookup` AND exactly one link); the explicit `[SEND_IMAGE:]`
+marker is untouched. **Execution-level proof:** pre-fix catch-up carried `image_post_id`
+26858595… (Zaid's post = the review-stars image), post-fix catch-up carries `''`, and "show me the
+Summit theme post Eugene shared" still attaches (26773085…). Gate exit 0, promoted `3d8202d0` →
+**`060701be`**.
+
 ## 2026-08-19 (day 2e) — the FB-only catch-up: 750 "No activity" stubs were the whole story
 
 Andy: *"Why its FB only."* The router was INNOCENT this time — the plan showed both halves fired
