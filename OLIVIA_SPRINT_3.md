@@ -190,6 +190,16 @@ is LINKED — `directory_partner_id` FK to `partners_catalog` (migration
 
 She labels *"Summit-only offer"* vs *"standing MDS deal"* unprompted — the separation Andy asked
 to verify holds in both directions. Gate exit 0 after every pass.
+
+**ATTENDEE-ONLY (Andy's ruling, 2026-08-19, LIVE `e55d991`):** event-specific offers are for
+people ON the roster — a non-attendee member gets the company, the standing directory offer and
+the partner page, with *"the event-specific offer is reserved for registered attendees"*; the
+Summit offer, redeem path and on-site contact are stripped in the ROUTE, not by a prompt rule.
+Proven both sides on the deployed endpoint. My first cut read the wrong variable (the browse
+fallback grants every non-attendee a Member VIEW, so `myTypes` is never empty) — caught because
+the "slow deploy" was actually the gate never firing; `/api/version` told the truth. Same build:
+**12 reserved activities now carry `reservation_required` + the booking URL** (`1024014`) — the
+flags were loaded since #85 and never surfaced.
 **Named remainders:** categories missing on CrediLinq (absent in the view) · Trellis has no contact
 block in the CSV · when the GroupOS export gains partner attendees (Andy: likely a "partner's team"
 attendee type), link `partner_people` to `event.attendees` by email — 11 of 20 already appear there
