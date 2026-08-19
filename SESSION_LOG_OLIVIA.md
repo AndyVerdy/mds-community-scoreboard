@@ -6,6 +6,20 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (day 2c) — "who is from APAC" claimed nobody; truth was 30 · counts shipped, names parked
+
+Andy's screenshot: *"I don't see anyone based in Asia Pacific itself in the roster I can pull"* —
+for a SINGAPORE summit. Live check: **30 registered members carry the Asia Pacific chapter** (of
+122 registered). Root: no tool answered region/chapter presence; she generalized ABSENCE from the
+topic-matcher's sample cities and offered a "fresh APAC-filtered check" no tool can run. Fix, per
+Andy ("go with 1, names will wait for eugene"): ① the people op takes `chapter` — count from
+`event_registrations_live` (the #89 authority; `app_event_id → at_record_id` mapping) against
+`member_attributes.chapter_affiliation`; names deliberately withheld pending the disclosure ruling
+② seed: the op declares the param + standing rule **"A MATCHER SAMPLE IS NEVER A CENSUS — never
+conclude absence from it."** Prod `3661eb9f` probed: *"30 members registered … out of 122 — I
+can't share the name list by region yet, but I can match you…"* Honest count, honest withholding,
+real offers only. Endpoint `808c48f`, gate exit 0 twice.
+
 ## 2026-08-19 (day 2b) — Andy's correction: the WRITTEN logic + the equalizer, proven live
 
 Andy: *"proficiency is more important than weight, but with several matches, use weight. Need to
