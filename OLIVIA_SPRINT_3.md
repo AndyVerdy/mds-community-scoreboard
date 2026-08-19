@@ -35,7 +35,6 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#72** | 🚦 LOAD TEST — **NOW the announcement, not the Mille demo. Biggest open risk; never run** | 🔴 S1 | M | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
-| **#76** | New eval bank — **100** questions from real member traffic *(BUILT 2026-08-16: `eval_bank_100_2026-08-16.json`)* | 🔴 S1 | M | ✅ built | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
@@ -51,6 +50,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ proven | 🟨 **LIVE** `74f0572a` + sender n8n `QhJw46Mr7LAP8fdz` every 5 min — delivery proof needs a phone (Aug 23 test reminder) |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#76** | New eval bank — 100 organic questions | 🔴 S1 | M | ✅ built | ✅ **CLOSED 2026-08-19** (built 08-16, baseline 96% recorded 08-17; row never flipped) |
 | **#88** | Partner profiles — event-specific, linked to the directory | 🟡 S2 | M | ✅ proven `4ca0b46d` | ✅ **LIVE** `aec2db47` (prod probe: Summit offer + partner page) |
 | **#91** | She is Mille — identity across all five reply surfaces | 🔴 S1 | S | ✅ proven `273253bc` | ✅ **LIVE** `aec2db47` (prod probe: intro leads with Mille) |
 | **#89** | Two rosters disagree about who is at the Summit | 🔴 S1 | M | n/a (loader+SQL) | ✅ **CLOSED 2026-08-18** — gap = identity, ledger complete; matched 124→170; single count source documented |
@@ -1140,6 +1140,25 @@ in `olivia_feedback` are the highest-value rows in the whole dataset.
 every uncleared 👎 included · ground truth written from the warehouse, not from Olivia's answer ·
 class distribution matches real traffic rather than the old bank's shape · the retired set named
 with its reason · one baseline run on the new bank, its rate recorded as the new starting number.
+
+#### ✅ CLOSED 2026-08-19 — done since 08-16/17, the board row was never flipped (Andy caught it)
+**The build (2026-08-16):** `eval_bank_100_2026-08-16.json` — in GIT at the repo root (stronger
+than the snapshot rule it replaced; a copy now also sits in `eval_bank_snapshots/`), built by
+`scripts/build_eval_bank_100.py`, fired by `scripts/run_eval_100.py [--staging]`.
+
+| AC | result |
+|---|---|
+| exactly 100 questions | ✅ 100 (verified today by direct count) |
+| traceable to a real member turn | ✅ every row carries `asker` + `first_asked` (27 members, 07-18..08-16); the wamid join lives in the builder via `olivia_question_labels` — names+dates on rows, not raw wamids |
+| every uncleared 👎 included | ✅ per the 08-16 build; the 27 regression rows all pass |
+| ground truth from the warehouse | ✅ `expect` written from live facts (08-16 session: "facts verified live") |
+| class distribution matches real traffic | ✅ 11 classes from the labels taxonomy (PEOPLE 18 · SAFETY 14 · CONTENT 12 · VIDEOS 9 · STATS 9 · CHAPTERS 8 · CAPABILITY 8 · EVENTS 7 · PARTNERS 7 · FRESHNESS 4 · PROFILE 4) |
+| retired set named | ✅ retirement mechanized (`retired: true`); the superseded 150/212 banks named in the snapshot README |
+| baseline run recorded | ✅ 2026-08-17: **96% clean, 27/27 regressions pass** — the standing start number |
+
+**Before → after:** 220-question inherited bank at 7.7% fail → 100 organic questions, baseline 96%
+clean. **Note kept separate:** the pre-announcement re-run of the 100 against prod is
+announcement prep / sprint-close, not this ticket.
 
 ---
 
