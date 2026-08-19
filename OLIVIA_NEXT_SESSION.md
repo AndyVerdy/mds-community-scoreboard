@@ -22,10 +22,13 @@
 ## STATE 2026-08-19 (close): PROD `060701be` — nothing awaits promotion (verified live at close)
 
 ### NEXT SESSION OPENS HERE
-1. **Execute #94** — plan attached to the ticket: `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md` (Andy approved the spec
+**🎯 STANDING ORDER (Andy): Eugene's FOUR beta cases lead the queue, ALL S1, in this order —
+#94 (his item 2) → #95 (his item 3) → #96 (his item 1, on the confirm) → #97 (his item 4, on the
+ruling). Each ticket carries his exact quotes.**
+1. **Execute #94** (Eugene item 2: *"it needs to prioritize newer members… instead of older members because it's sending older members here and I know all of them"*) — plan attached to the ticket: `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md` (Andy approved the spec
    AND the taxonomy; he still owes the execution-mode pick — subagent-driven vs inline). 4 tasks:
    taxonomy migration · derive v2 (decay+floor+forms+engagement) · verify script · consumer probes.
-2. **#95 — extend the equalizer to `member_match`** — Eugene's Moe dozen lived in the general members
+2. **#95** (Eugene item 3: *"they've mentioned Moe to me at least a dozen times in my chat… make sure the AI isn't over-recommending the same person"*) — extend the equalizer to `member_match` — Eugene's Moe dozen lived in the general members
    lane; the event lane is covered (`olivia_recommendations` log).
 3. **Andy's desk:** #96 name-cap confirm · #97 intros ruling ·
    THE COUNT RULING (recommendation: 98 active members, one `event_registered_members` view) ·

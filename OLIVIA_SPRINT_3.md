@@ -26,6 +26,11 @@ recommendations and matches specific to the member asking — and closes the las
 (173 judged, from 3.6%) · **architecture 8/10** (from 6) · retrieval, identity, event log, graph
 and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 
+## 🎯 STANDING ORDER (Andy 2026-08-19): Eugene's four beta cases are the FRONT of the queue — all S1
+Work them in this order: **#94** (his item 2 — newer members) → **#95** (his item 3 — "Moe ×12") →
+**#96** (his item 1 — the ≤10-names cap, unblocks on Andy+Eugene's confirm) → **#97** (his item 4 —
+intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as its origin.
+
 ## 📋 At a glance
 
 | # | Ticket | Priority | Size | Staging | Prod |
@@ -39,8 +44,8 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
 | **#94** | 🧠 Expertise Ledger v2 — the living skill sheet (Eugene #2 finale) | 🔴 S1 | M | — | 📋 **PLANNED** — plan approved, execution-mode pick pending |
 | **#95** | Equalizer for the members lane (`member_match`) — Eugene's "Moe ×12" lived here | 🔴 S1 | S | — | — |
-| **#96** | Attendee-name disclosure — Eugene's ≤10-names cap | 🟡 S2 | S | — | ⛔ Andy confirming with Eugene |
-| **#97** | Brokered intros — "message the person she recommends", consent-first | 🟡 S2 | M | — | ⛔ Andy's ruling + utility template |
+| **#96** | Attendee-name disclosure — Eugene's ≤10-names cap | 🔴 S1 | S | — | ⛔ Andy confirming with Eugene |
+| **#97** | Brokered intros — "message the person she recommends", consent-first | 🔴 S1 | M | — | ⛔ Andy's ruling + utility template |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -997,6 +1002,8 @@ slice of his item 3.
 
 *As a member, "who knows X" and "who should I meet" see the REAL me — what I declared, what I spoke about, what my posts earned — not just how loudly I chat.*
 
+Eugene, verbatim (his item 2, the origin of this ticket): *"it needs to prioritize newer members, giving you newer members that you haven't met instead of older members because it's sending older members here and I know all of them. I feel like it's gonna do the same for others."* #93 shipped the ranking half; this ticket is the data half — without real scores for silent and new members, novelty ranking has nothing honest to rank.
+
 Andy's rulings, binding: activity keeps its teeth · speaking strongest (3.0×) · engagement bonus `1+ln(1+reactions)/4` · forms floor ×1.2 · decay half-lives 12mo activity / 24mo speaking · **floor = 40% of all-time peak** · taxonomy 18 parents + 34 corpus-born subtopics (Claude-vs-GPT merged; Real Estate Investing + Credit Cards & Travel Hacks added) · subtopics graduate via quarterly density re-checks.
 
 **Accept when:** the plan's 4 tasks land · verify script all-PASS (silent members gain; floor holds; Andy top-quartile Intl Expansion; speaker outranks same-profile non-speaker) · who-to-meet matches on a subtopic with zero code changes · gate GREEN · before/after: distinct scoreable members recorded.
@@ -1017,7 +1024,7 @@ The `olivia_recommendations` log + equalizer (hard 30d per-asker no-repeat, soft
 ---
 
 ### #96 · Attendee-name disclosure — the ≤10-names cap
-**🟡 S2 · size S — filed 2026-08-19 · ⛔ BLOCKED: Andy confirming the rule with Eugene**
+**🔴 S1 · size S — filed 2026-08-19 · ⛔ BLOCKED: Andy confirming the rule with Eugene**
 
 > **In plain words:** Eugene proposed she may name up to ~10 attendees of an event; today she gives counts only.
 
@@ -1030,7 +1037,7 @@ Eugene, verbatim: *"the AI will not share more than 10 names of who's attending 
 ---
 
 ### #97 · Brokered intros — message the person she recommends
-**🟡 S2 · size M — filed 2026-08-19 · ⛔ BLOCKED: Andy's ruling ("lets think of it") + utility template**
+**🔴 S1 · size M — filed 2026-08-19 · ⛔ BLOCKED: Andy's ruling ("lets think of it") + utility template**
 
 > **In plain words:** after "you should meet X", one tap should start that conversation — without ever handing out phone numbers.
 
