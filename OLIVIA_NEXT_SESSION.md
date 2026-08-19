@@ -43,9 +43,13 @@ cancel reminders · get a post's image with the answer · read a weekly chat dig
    Andy asks "remind me in 5 min" on his test phone any day — SELFTEST probes cannot reach the send.
 2. ~~Re-register the number~~ **DONE 2026-08-18 (Andy ran it): the number is "MDS AI Assistant".**
    `POST /register` with the two-step PIN returned success; live API now shows `verified_name:
-   "MDS AI Assistant"`, `name_status: APPROVED`, `new_name_status: NONE`, CONNECTED/GREEN. "Oliva"
-   is gone. Existing threads may show the cached old name for a while; new threads are correct.
-   Andy holds the PIN (password manager — deliberately not written down here).
+   "MDS AI Assistant"`, `name_status: APPROVED`, CONNECTED/GREEN. "Oliva" is gone. Existing threads
+   may show the cached old name for a while; new threads are correct. Andy holds the PIN (password
+   manager — deliberately not written down here).
+   **→ NEXT NAME ALREADY SUBMITTED (Andy's call, same night): "MDS Mille" is `PENDING_REVIEW`.**
+   When it approves there are **14 days to re-register** (same `POST /register` + Andy's PIN) or the
+   approval lapses and must be resubmitted. Check `new_name_status` at session start:
+   `GET /1306956855827812?fields=verified_name,name_status,new_display_name,new_name_status`.
 3. **Ask the dev for a fresh export** — CÉ LA VI is in the admin's 19 locations but not our 18, so
    some of the 13 venue-less activities may be export gaps. Same dump un-truncates long descriptions.
 

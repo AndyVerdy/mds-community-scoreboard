@@ -17,6 +17,11 @@ Meta got broken JSON, returned #100, and the PIN was never evaluated; the clean 
 `new_name_status: NONE`, CONNECTED, quality GREEN. "Oliva" is gone; cached old name may linger in
 existing threads. The PIN stays with Andy only — deliberately unrecorded.
 
+**Then Andy renamed the product the same night: "MDS Mille" submitted** (`POST
+/{id}?new_display_name`, per the display-names doc — 10 changes allowed per 30 days) →
+`new_name_status: PENDING_REVIEW`, current name stays "MDS AI Assistant" meanwhile. **On approval:
+14 days to re-register or the approval lapses** — handoff carries the check.
+
 ## 2026-08-18 (night, latest) — #89 CLOSED: the roster gap was identity, not attendance
 
 **The diagnosis changed the ticket twice.** ① The feared two-number split is structurally absent:
