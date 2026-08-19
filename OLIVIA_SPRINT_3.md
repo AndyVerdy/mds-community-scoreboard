@@ -1168,9 +1168,17 @@ Andy** (it had never existed there; only Mac scripts and n8n ever called Voyage)
 kids answered *"per the event FAQ"* · chapter ask → *"no written team document"* — the staff SOP
 correctly invisible + honest-empty rule live. Off-corpus canary ("what colour is the moon") →
 honest empty. Gate exit 0.
+**Andy's phone test found the shape of the next problem (2026-08-19):** the chapter question got
+"no written documentation" + an OFFER to "explain the assignment process in detail" — an offer she
+could only fill by inventing. Fixed both ways, promoted `4725e6f1`, prod-verified: ① seed rule —
+an empty org_docs result forbids offering a detailed explanation (report offer only); ② the
+member-safe half of the staff SOP became a CURATED doc — `docs/org_docs/chapter_assignment_member_faq.md`
+(in git, Andy-approved), loaded as member FAQ #4 (3 qa). Prod now answers "per the Chapter
+assignment FAQ": by-address assignment · $1,200/yr additional chapters + criteria + chapter@mds.co
+· Women's Chapter non-geographic. The SOP itself stays staff-dark and unnamed. **The pattern for
+every future SOP: internal doc loads staff, a curated member digest goes in git, Andy approves.**
 **Remaining for full close:** more team docs as they arrive (the ACs want EVERY recurring
-question covered) · promote (org_docs wiring rides the next one) · "they stop arriving as support
-requests" is measured over time, not tonight.
+question covered) · "they stop arriving as support requests" is measured over time, not tonight.
 
 > **In plain words:** She can answer “how does MDS work” questions — policies, processes, what's included — instead of passing them to the team.
 

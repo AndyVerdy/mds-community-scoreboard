@@ -61,6 +61,8 @@ def voyage_embed(texts, key):
 
 
 def extract_text(path):
+    if not path.lower().endswith(".pdf"):
+        return open(path, encoding="utf-8").read()
     r = subprocess.run(["pdftotext", "-layout", path, "-"], capture_output=True, text=True)
     if r.returncode == 0 and r.stdout.strip():
         return r.stdout

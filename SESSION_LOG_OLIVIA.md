@@ -6,6 +6,19 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (last) — Andy's phone test → chapter FAQ curated, invented-offer rule; prod `4725e6f1`
+
+**Andy asked "how does mds chapters works" on his real phone and called it failed.** Two defects
+in one screenshot: she said "no written documentation on the exact assignment mechanics" (true —
+the SOP is staff-dark) and then OFFERED to "explain the assignment process in detail" — fillable
+only by inventing. Fix ①: seed rule — empty org_docs forbids offering the detailed explanation;
+report offer only. Fix ② (the pattern for every SOP from now on): the member-safe half of the
+staff SOP became a CURATED doc in git (`docs/org_docs/chapter_assignment_member_faq.md`,
+Andy-approved in chat), loaded as member FAQ (3 qa; loader now takes .md/.txt too). Staging probe,
+gate exit 0, promote `f3850dd7` → **`4725e6f1`**, prod-verified: "per the Chapter assignment FAQ —
+your chapter is automatically based on your address… $1,200/year per additional chapter…
+chapter@mds.co"; the SOP never named. Probe rows cleaned, lock released.
+
 ## 2026-08-19 (deep night) — #18 UNBLOCKED: the org knowledge library (3 docs · 47 entries), lane + wiring proven
 
 **Andy delivered the first three team documents and #18 went from BLOCKED to a proven first
