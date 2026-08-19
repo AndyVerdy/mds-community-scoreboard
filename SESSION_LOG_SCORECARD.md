@@ -6,6 +6,42 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-18 — FB capture: per-post hashtags + REAL reactions/views, and a silent-post Slack card
+
+**Andy's asks:** (1) store hashtags per post so we can query "first / total / most-engaged #valueadd",
+(2) fire a Slack card for posts still at zero comments 24h+ after posting.
+
+**Shipped (all in `mds-scorecard-tools`, no git — plus the Scorecard `db/` export, commit `8e94a99`):**
+- **`digest.fb_posts` + `hashtags text[]` (GIN), `reactions int`, `views int`.** Tags are derived from
+  post text in the loaders (`load_feed.hashtags()`), not taken from the capture's own array, so
+  manual-only posts get them and the backfill used the identical rule. Backfilled all **4,058** posts
+  (**313** carry tags).
+- **`load_manual_meta.py`** (new): folds the manual scroll capture into `fb_posts` — inserts posts the
+  feed pass never saw (it only opens posts that HAVE comments) and refreshes text/hashtags only when
+  the manual text is longer.
+- **`load_insights_posts.py`** (new): reads the Insights export's **"Top posts (last 28 days)"** sheet
+  (99-100 rows of FB's own Comments/Reactions/Views + post link) into `reactions`/`views`, max-wins.
+  Backfilled 23 exports → **319 posts** with true counts, max **142**.
+- **`no_comment_alert.py`** (new): >24h old, within 7 days, zero comments → ONE Slack card to
+  `#automation-tests`; silent when there are none; re-lists a still-empty post each run (Andy's rule).
+- **`auto_import.py`** wired: `META` (manual meta) before the image chain, `SILENT` (the card) at the
+  end of `process_feed()`, `TOPPOSTS` after a successful xlsx import.
+
+**The catch worth remembering:** the extension DOES capture a post reaction count
+(`feedback.reactors.count` off the Story) and it is **wrong** — 0 on a post with 9 comments, while the
+same export's Daily-numbers sheet shows ~72 reactions/day group-wide. Loading it was reverted; the
+Insights Top-posts sheet is the authority. `reactions IS NULL` = "never made a Top-posts sheet" (low
+engagement), NOT zero. The extension itself needed **no change** for either feature.
+
+**Verified (live):** top `#valueadd` post = Jasim Eisa, **110 reactions / 581 views / 15 comments**
+(Jun 30). Slack card posted to `#automation-tests`, ts **1787110600.332079**, 10 silent posts listed
+(Keith Mander 6d 12h … Kevin Tao 2d 7h) — read back from the channel, renders correctly.
+`auto_import.py --dry-run` clean. SOP updated: `/Users/Born/mds-scorecard-tools/FB_PIPELINE.md`.
+
+**Next:** first unattended daily run is the real proof of the wiring (the card fired here by hand).
+
+---
+
 ## 2026-08-11 — #61 FB conversation+image leg WIRED into the autopilot (was hand-run, stalled 4 days). Image content now searchable by Olivia. Committed + documented.
 
 **Root cause (#61):** `auto_import.py` (launchd `com.mds.scorecard.autoimport`, WatchPaths `~/Downloads`)
