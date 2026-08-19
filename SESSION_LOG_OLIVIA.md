@@ -8,7 +8,7 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ## 2026-08-19 (sprint close) — SPRINT 3 CLOSED: 34 shipped, SPRINT 4 open, notes drafted
 
-Ritual executed: **34 closed tickets archived** (evidence intact, newest first) to
+Ritual executed: **34 board tickets archived** (plus **37 earlier Release 1–3 items** found glued inside the old doc — 71 closed items total, now two labelled sections) (evidence intact, newest first) to
 `OLIVIA_BACKLOG_ARCHIVE.md` · **`OLIVIA_SPRINT_4.md` opened** with the 23 open tickets carried
 whole + the full header (rules · 🎯 Eugene standing order · ritual/DoD) · `OLIVIA_SPRINT_3.md`
 compressed to a stub · handoff repointed. **Release notes drafted**

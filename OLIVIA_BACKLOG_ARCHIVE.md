@@ -2080,6 +2080,8 @@ Moved out of `OLIVIA_BACKLOG.md` 2026-08-03 after the Release-2 prod promote (ve
 
 ---
 
+## ═══ RELEASES 1–3 (Jul 28 – Aug 3, 2026) — 37 items shipped BEFORE the Sprint 3 board was renumbered; they lived inside the old doc and are preserved here verbatim ═══
+
 # RELEASE 3 — ARCHITECTURE (shipped 2026-08-03)
 
 **Prod `89ee3632`** · **smoke 3.6% → 1.7%** (173 judged: 164 pass / 6 partial / 3 fail) ·
@@ -3755,4 +3757,3 @@ run", which is false, because the node is set to continue on error.
 reply — so anything filtering her replies reports **eval traffic as production** (367 of 636 recent rows).
 And the turn log records the delivery path, not which sources answered, so cross-source coverage can only
 be estimated. One cheap fix closes both.
-

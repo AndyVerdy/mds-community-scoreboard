@@ -13,7 +13,9 @@
 
 # Olivia — SPRINT 3 · ✅ CLOSED 2026-08-19
 
-**34 tickets shipped.** Evidence lives, intact, in `OLIVIA_BACKLOG_ARCHIVE.md` (Sprint 3 section).
+**34 board tickets shipped** (#20–#93), plus the **37 earlier Release 1–3 items** (#1–#49, Jul 28 –
+Aug 3) that lived in the same document — **71 closed items total**. Evidence lives, intact, in
+`OLIVIA_BACKLOG_ARCHIVE.md` in two sections: *Sprint 3* and *Releases 1–3*.
 Open tickets carried whole to **`OLIVIA_SPRINT_4.md`** (23, Eugene's four cases in front).
 Exit exam: the smoke run on the 100-question bank is PROPOSED and awaiting Andy's go — the sprint's
 formal class-rate instrument. Release notes drafted: `OLIVIA_RELEASE_NOTES_2026-08-19.md`
