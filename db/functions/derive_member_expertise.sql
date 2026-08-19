@@ -4,37 +4,50 @@ CREATE OR REPLACE FUNCTION digest.derive_member_expertise()
  LANGUAGE plpgsql
  SECURITY DEFINER
  SET search_path TO 'digest', 'pg_temp'
+ SET statement_timeout TO '180s'
 AS $function$
-declare v_rows int; v_members int;
+declare v_rows int; v_members int; v_floored int;
 begin
+  -- peaks must survive the rebuild below
+  drop table if exists _me_peaks;
+  create temp table _me_peaks on commit drop as
+    select at_member_id, topic,
+           greatest(coalesce(peak_score, 0), coalesce(score, 0)) as peak
+    from digest.member_expertise;
+
   delete from digest.member_expertise where true;
 
   insert into digest.member_expertise
-    (at_member_id, topic, score, weakness_score, evidence, refreshed_at, rank_in_topic, pct)
+    (at_member_id, topic, score, weakness_score, evidence, refreshed_at, peak_score, rank_in_topic, pct)
   with actives as (
     select ma.at_member_id, ma.rev_band, ma.main_niche, ma.business_model,
            ma.categories, ma.channel_mix
     from digest.member_attributes ma
     where digest.is_active_member_status(ma.membership_status)
   ),
-  term_q as (
+  term_q as materialized (
     select t.topic, x.term, phraseto_tsquery('english', x.term) as q
     from digest.expertise_topics t, unnest(t.terms) as x(term)
     where numnode(phraseto_tsquery('english', x.term)) > 0
   ),
   content_hits as (
     select m.at_member_id, tq.topic, ci.id,
-           bool_or(ci.source in ('fb_post') or ci.kind = 'post') as is_post
+           bool_or(ci.source in ('fb_post') or ci.kind = 'post') as is_post,
+           -- 12-month half-life on every conversation item (17.312 = 12/ln(2) months)
+           max(exp( -(extract(epoch from (now() - ci.occurred_at)) / (86400.0 * 365.25/12.0)) / 17.312 )) as decay_w,
+           -- reactions make a post count for more: 1 + ln(1+reactions)/4
+           max(1 + ln(1 + coalesce(fp.reactions, 0)) / 4.0) as engage_w
     from digest.content_items ci
     join digest.members m on m.airtable_id = coalesce(ci.meta->>'sender_member', ci.meta->>'member')
+    left join digest.fb_posts fp on ci.source = 'fb_post' and fp.post_id = ci.source_id
     join term_q tq on ci.search_tsv @@ tq.q
     where m.at_member_id is not null
     group by m.at_member_id, tq.topic, ci.id
   ),
   content_agg as (
     select ch.at_member_id, ch.topic,
-           count(*) filter (where ch.is_post) as posts,
-           count(*) filter (where not ch.is_post) as comments
+           sum(ch.decay_w * ch.engage_w) filter (where ch.is_post)     as posts,
+           sum(ch.decay_w)               filter (where not ch.is_post) as comments
     from content_hits ch group by 1, 2
   ),
   spk_emails as (
@@ -53,11 +66,31 @@ begin
     join spk_emails e on coalesce(vs.email,'') <> '' and e.em = lower(vs.email) and e.n = 1
   ),
   video_agg as (
-    select s.at_member_id, tq.topic, count(distinct v.video_id) as vids
+    -- speaking decays slower: 24-month half-life (34.624 = 24/ln(2) months)
+    select s.at_member_id, tq.topic,
+           sum( exp( -(extract(epoch from (now() - coalesce(v.app_created_at, now()))) / (86400.0 * 365.25/12.0)) / 34.624 ) ) as vids
     from digest.videos_catalog v
     join term_q tq on v.search_tsv @@ tq.q
     join spk s on v.speaker_ids @> array[s.user_id]
     where v.deleted_at is null
+    group by 1, 2
+  ),
+  form_rows as materialized (
+    select fa.member_at_id, fa.ref, coalesce(fa.value #>> '{}', '') as val
+    from digest.form_answers_latest fa
+    where fa.answer_type in ('text','textarea','choice','choices')
+      and fa.member_at_id is not null
+  ),
+  form_vals as materialized (
+    select distinct val, to_tsvector('english', val) as tsv from form_rows
+  ),
+  form_val_topics as materialized (
+    -- tsquery matching only, never bare ilike ('ai' in 'Em(ai)l')
+    select v.val, tq.topic from form_vals v join term_q tq on v.tsv @@ tq.q group by 1, 2
+  ),
+  forms_agg as (
+    select fr.member_at_id as at_member_id, vt.topic, count(distinct fr.ref) as form_hits
+    from form_rows fr join form_val_topics vt on vt.val = fr.val
     group by 1, 2
   ),
   biz as (
@@ -88,14 +121,16 @@ begin
              + 0.7 * ln(1 + coalesce(c.comments, 0))
              + 3.0 * least(coalesce(v.vids, 0), 5)
              + 1.5 * (case when b.at_member_id is not null then 1 else 0 end)
-             + 1.0 * ln(1 + coalesce(p.gives, 0)))
+             + 1.0 * ln(1 + coalesce(p.gives, 0))
+             + 1.2 * ln(1 + coalesce(f.form_hits, 0)))
         * case a.rev_band when '20M+' then 1.5 when '10-20M' then 1.3
                           when '5-10M' then 1.15 else 1.0 end)::numeric, 3) as score,
       round(ln(1 + coalesce(p.asks, 0))::numeric, 3) as weakness,
       jsonb_strip_nulls(jsonb_build_object(
-        'posts', nullif(coalesce(c.posts, 0), 0),
-        'comments', nullif(coalesce(c.comments, 0), 0),
-        'videos_spoken', nullif(coalesce(v.vids, 0), 0),
+        'posts', nullif(round(coalesce(c.posts, 0)::numeric, 2), 0),
+        'comments', nullif(round(coalesce(c.comments, 0)::numeric, 2), 0),
+        'videos_spoken', nullif(round(coalesce(v.vids, 0)::numeric, 2), 0),
+        'form_hits', nullif(coalesce(f.form_hits, 0), 0),
         'biz_affinity', case when b.at_member_id is not null then true end,
         'persona_gives_hits', nullif(coalesce(p.gives, 0), 0),
         'persona_asks_hits', nullif(coalesce(p.asks, 0), 0),
@@ -107,14 +142,28 @@ begin
     left join video_agg v on v.at_member_id = a.at_member_id and v.topic = t.topic
     left join biz b on b.at_member_id = a.at_member_id and b.topic = t.topic
     left join persona_agg p on p.at_member_id = a.at_member_id and p.topic = t.topic
+    left join forms_agg f on f.at_member_id = a.at_member_id and f.topic = t.topic
+  ),
+  floored as (
+    -- proven expertise never rots to zero: the live score floors at 40% of the all-time peak
+    select s.at_member_id, s.topic, s.score as raw_score, s.weakness, s.evidence,
+           greatest(s.score, round(0.4 * coalesce(pk.peak, 0), 3)) as score,
+           greatest(coalesce(pk.peak, 0), s.score)                 as peak_score
+    from scored s
+    left join _me_peaks pk on pk.at_member_id = s.at_member_id and pk.topic = s.topic
   )
-  select s.at_member_id, s.topic, s.score, s.weakness, s.evidence, now(),
-         case when s.score > 0 then rank() over (partition by s.topic order by s.score desc) end,
-         case when s.score > 0 then round((1 - percent_rank() over (partition by s.topic order by s.score desc))::numeric, 4) end
-  from scored s
-  where s.score > 0 or s.weakness > 0;
+  select f.at_member_id, f.topic, f.score, f.weakness,
+         f.evidence || jsonb_strip_nulls(jsonb_build_object(
+           'peak_floor_applied', case when f.score > f.raw_score then true end)),
+         now(), f.peak_score,
+         case when f.score > 0 then rank() over (partition by f.topic order by f.score desc) end,
+         case when f.score > 0 then round((1 - percent_rank() over (partition by f.topic order by f.score desc))::numeric, 4) end
+  from floored f
+  where f.score > 0 or f.weakness > 0;
 
   get diagnostics v_rows = row_count;
   select count(distinct at_member_id) into v_members from digest.member_expertise;
-  return jsonb_build_object('rows', v_rows, 'members', v_members);
+  select count(*) into v_floored from digest.member_expertise
+    where evidence ? 'peak_floor_applied';
+  return jsonb_build_object('rows', v_rows, 'members', v_members, 'floored_rows', v_floored);
 end $function$
