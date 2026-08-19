@@ -50,9 +50,9 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | **#88** | Partner profiles — event-specific, and nowhere in the warehouse | 🟡 S2 | M | — | — |
-| **#89** | Two rosters disagree about who is at the Summit — 156 vs 149 | 🔴 S1 | M | — | — |
 | **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ proven | 🟨 **LIVE** `74f0572a` + sender n8n `QhJw46Mr7LAP8fdz` every 5 min — delivery proof needs a phone (Aug 23 test reminder) |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#89** | Two rosters disagree about who is at the Summit | 🔴 S1 | M | n/a (loader+SQL) | ✅ **CLOSED 2026-08-18** — gap = identity, ledger complete; matched 124→170; single count source documented |
 | **#90** | The chats mirror stopped syncing — she hands out dead invite links | 🔴 S1 | S | n/a (mirror) | ✅ **CLOSED 2026-08-18** — hourly n8n `RpEbU47SpMVsbwqg`, diff 0, 3h alarm |
 | **#87** | "Who should I meet" returns people who aren't going | 🟡 S2 | S | ✅ proven | ✅ **LIVE** `74f0572a` (7/7 attending) |
 | **#85** | 🚀 Summit schedule lane — activities, sessions, rooms, venues, audiences | 🔴 S1 | L | ✅ proven | ✅ **LIVE** `d6761eb4` (prod probes) |
@@ -134,21 +134,6 @@ reason in writing.
 
 **THE SMOKE runs once per sprint, never per ticket** — it is the sprint's exit exam and the formal
 instrument for every class rate. Per-ticket proof is probes plus the gate.
-
----
-
-### #89 · Two rosters disagree about who is at our own event
-**🔴 S1 · size M — filed 2026-08-18**
-
-> **In plain words:** ask how many people are coming to the Summit and the answer depends on which lane happens to run.
-
-*As a member, whatever I ask about who is at the Summit, I get one number — the true one.*
-
-`digest.event_registrations` holds **156 distinct members** for MDS Summit Singapore. `event.attendees`, loaded from the GroupOS export, holds **149 people**. Same event, different systems, different inclusion rules, no reconciliation. `event_who` counts the first; `event_schedule` gates on the second. Whichever she reaches decides the number a member hears, and neither is labelled.
-
-**Shape of the fix:** decide which roster is authoritative for which question (tickets sold vs people in the room), reconcile the difference name by name, and make the losing one unreachable for headcount questions rather than merely deprecated.
-
-**Accept when:** the 7-person gap is explained row by row, not estimated · one roster answers "who is coming" and the other is documented as ticketing-only · a member asking the same question two ways gets the same number · gate GREEN.
 
 ---
 
@@ -1551,6 +1536,7 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 | Question | Why it matters |
 |---|---|
+| **#89 — Airtable data only you can fix:** ① 4 speaker roster rows link to **Max Mikhaylenko's** member record (Ephraim Ausch, Meher Patel, Jeremy Allen, Scott Deetz) ② dup member-record pairs: Brian Williams, Henrik Fjerdingen, Rebeca Rosas, Ryan Bastuba, **Eugene ×9** ③ the standing 151-vs-108 ruling (all tickets vs confirmed members — which number does a member hear?) | ① mis-attributes four speakers' registrations ② each dup splits one person across two ids in every join ③ the last "same question, same number" gap — single SOURCE is now enforced, the FILTER is a product call |
 | **#90 — should Accelerator and MDS 2026 New Members be verification-gated?** Both carry a `required_form` in Airtable but are ungated in the mirror (curated field, deliberately not flipped by me) | If yes, Olivia currently hands their raw invite to anyone who asks instead of the form. One-word change each once ruled. |
 | **#70 — how sensitive is a call transcript?** `public` to members like the video already is, or does some class need `restricted`? | **Blocks #70's build.** Members speak candidly about their businesses on these calls; the access rule decides what `content_search_v2` may return. Same shape as #20's exposure ruling. |
 | **#70 — may Olivia say WHO attended a call?** | `event_who` sets precedent for registered events, but Zoom attendance is unregistered and name-matched at 67% confidence — a wrong name is a wrong claim about a member. |
@@ -1570,6 +1556,65 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 **All nine shipped and LIVE on prod `01a94c1a`** (promoted 2026-08-04). Newest first; each keeps
 its story, ACs and evidence block. At sprint close these move to `OLIVIA_BACKLOG_ARCHIVE.md`.
+
+### #89 · Two rosters disagree about who is at our own event
+**🔴 S1 · size M — filed 2026-08-18 · closed 2026-08-18**
+
+> **In plain words:** ask how many people are coming to the Summit and the answer depends on which lane happens to run.
+
+*As a member, whatever I ask about who is at the Summit, I get one number — the true one.*
+
+**Accept when:** the 7-person gap is explained row by row, not estimated · one roster answers "who is
+coming" and the other is documented as ticketing-only · a member asking the same question two ways
+gets the same number · gate GREEN.
+
+#### ✅ CLOSED 2026-08-18 — gap explained to the last name; single count source verified + documented; loader matching rebuilt
+**The diagnosis changed the ticket twice.** ① The feared two-number split does not exist
+structurally: **zero `digest.*` functions read `event.attendees`** — every member-facing count
+already comes from the registrations ledger; the schedule endpoint only gates rooms and matches
+people, it emits no headcount. ② The gap is not attendance — it is **identity**: the same humans
+sit on both rosters under different member records.
+
+**The row-by-row ledger** (156-vs-149 compared live-ticket ROWS to distinct PEOPLE; the real
+member-level diff was 121 vs 124, overlap 109):
+- **4 speaker registrations mislinked to Max Mikhaylenko's member record** in the AT roster
+  (Ephraim Ausch, Meher Patel, Jeremy Allen, Scott Deetz) — one bad link, five people wrong.
+- **4 duplicate member-record pairs**: Brian Williams, Henrik Fjerdingen, Rebeca/Rebecca Rosas,
+  Ryan Bastuba — registrations link one record, the export the other. **Eugene is a nine-record
+  cluster** ("Eugene Khayman" ×2, "Yevgeniy Khayman" ×2, "Euge khay"…).
+- **Courtney Lee's export row was linked to a Members-DB record named "Test Test"** (it owns
+  courtney@mds.co).
+- **26 attendee-people carried no member link at all** — GroupOS emails differ from Members-DB
+  emails (Eugene, Jonathan Jesper, Lee Lim, Ryan Bastuba, Steven Zhou, Kal twice…).
+- True absences from the Aug-17 export: **Sheng Zheng + Ginny Lo ordered after the cut**, six more
+  (Mayank, Fahim, Vincent, Krishna, Shaurya, Brianna) await the fresh export already asked of the dev.
+- Att-only legits: manually-added speakers/guests/staff without member tickets, plus junk
+  identities ("Andy (test)", "MDS Community", "TK DecodeUp").
+
+**The fix:** `load_event_graph.py` member matching rebuilt as a conservative three-rung ladder —
+exact profile email → registration-ledger email bridge (rejected when several emails claim one
+member id: the Max signature, or on a name-token mismatch) → unique full-name; a rung-1 hit whose
+profile names someone else falls through instead of linking (the Test-Test class); suspects logged,
+never guessed. Two of my own bugs caught in dry-run: the profile fetch trusted one request
+(PostgREST hard-caps 1000 rows — the memory literally warns this) and the name guard vetoed
+NULL-named profiles. Authority documented **in the schema itself**: migration
+`event_roster_authority_comments_20260818` stamps `event.attendees` "ROOM ROSTER, NEVER A
+HEADCOUNT", `event_registrations_live` "THE member-facing attendance source". `db/` re-exported.
+
+| AC | result |
+|---|---|
+| gap explained row by row | ✅ every name accounted for (ledger above) — identity faults, export lag, manual adds; nothing estimated |
+| one roster answers "who is coming", the other documented | ✅ inverted from the filing but true: registrations_live = counts (verified: 0 digest fns read attendees), attendees = gating/matching — stamped as table comments |
+| same question two ways = same number | 🟨 single SOURCE now guaranteed + documented. The remaining split is one FILTER ruling inside registrations — `event_lookup` 151 all tickets vs `event_who` 108 confirmed members — **Andy's product call, flagged since 2026-08-12, re-flagged below** |
+| gate GREEN | ✅ exit 0 |
+
+**Before → after:** people matched to a member 124 → **170 of 199** (email 165 + registration
+bridge 2 + unique name 3); attendee-members 124 → 127; overlap 109 → 110; Courtney freed from
+"Test Test"; unlinked attendee-people 26 → 23 (orgs/vendors + nickname cases Kat/Chip + Eugene's
+dup cluster — all named, none guessed).
+**Andy's list (data he owns):** re-link the 4 speaker roster rows off Max's record · merge or mark
+the dup pairs (Brian, Henrik, Rebeca, Ryan, Eugene ×9 — NEVER deleted by me, rule) · the 151-vs-108
+ruling · fresh export covers the last 6 + late orders.
 
 ### #90 · The chats mirror stopped syncing — she hands out dead invite links
 **🔴 S1 · size S — filed 2026-08-18 · closed 2026-08-18**

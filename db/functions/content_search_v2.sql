@@ -224,6 +224,11 @@ begin
                       (select coalesce(m3.full_name, m3.name) from digest.members m3
                         where m3.airtable_id = fin.meta->>'sender_member' limit 1)))
                else fin.meta end)
+         || (case when fin.source = 'fb_post'
+               then jsonb_build_object('has_image',
+                      exists (select 1 from digest.fb_post_images fi
+                               where fi.post_id = fin.source_id))
+               else '{}'::jsonb end)
          || (case when fin.source = 'fb_comment' and fin.post_author is not null
                then jsonb_build_object('post_author', fin.post_author)
                else '{}'::jsonb end),

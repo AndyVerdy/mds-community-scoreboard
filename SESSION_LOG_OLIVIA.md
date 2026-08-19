@@ -6,6 +6,40 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-18 (night, latest) — #89 CLOSED: the roster gap was identity, not attendance
+
+**The diagnosis changed the ticket twice.** ① The feared two-number split is structurally absent:
+**zero `digest.*` functions read `event.attendees`** — every member-facing count already reads the
+registrations ledger; the schedule endpoint gates rooms and matches people, it emits no headcount.
+② The 156-vs-149 was rows-vs-people; the real member diff was 121 vs 124 with 109 shared, and
+nearly all of it is **the same humans under different member records**.
+
+**The ledger, row by row:** 4 speaker registrations (Ephraim Ausch, Meher Patel, Jeremy Allen,
+Scott Deetz) all linked to **Max Mikhaylenko's** member record in the AT roster — one bad link,
+five people wrong · dup member-record pairs Brian Williams, Henrik Fjerdingen, Rebeca/Rebecca
+Rosas, Ryan Bastuba, and **Eugene as a nine-record cluster** · Courtney Lee's export row linked to
+a Members-DB record literally named **"Test Test"** (it owns courtney@mds.co) · 26 attendee-people
+unlinked because GroupOS emails differ from Members-DB emails · true export absences: Sheng Zheng +
+Ginny Lo ordered after the Aug-17 cut, six more await the fresh export · att-only legits: manual
+speakers/guests/staff + junk identities ("Andy (test)", "MDS Community", "TK DecodeUp").
+
+**Shipped:** `load_event_graph.py` matching rebuilt as a conservative three-rung ladder (profile
+email → registration-email bridge → unique full name) with two guards — several emails claiming one
+member id (the Max signature) and a name-token mismatch (the Test-Test class) both refuse to link;
+suspects print, never guess. Dry-run caught two of MY bugs before any write: the profile fetch
+trusted a single request (PostgREST hard-caps 1000 rows — the standing memory warns exactly this)
+and the name guard vetoed NULL-named profiles. Live rerun: **matched 124 → 170 of 199** (email 165
++ bridge 2 + name 3), attendee-members 124 → 127, Courtney on her real record, unlinked 26 → 23
+(all named: orgs/vendors, nickname cases Kat/Chip, Eugene's cluster). Authority stamped in the
+schema: migration `event_roster_authority_comments_20260818` (attendees = "ROOM ROSTER, NEVER A
+HEADCOUNT"; `event_registrations_live` = THE member-facing source) + handbook §4 + `db/`
+re-exported (also picked up yesterday's `has_image` function defs the export had lagged). Gate
+**exit 0**. Nothing to promote — loader + SQL comments only.
+
+**Left with Andy (board ❓):** the 4 mislinked roster rows · the dup pairs (never deleted by me) ·
+the standing 151-vs-108 filter ruling — single SOURCE is now enforced, the filter is his product
+call. AC3 closes fully when he rules.
+
 ## 2026-08-18 (night, later) — #90 CLOSED: the chats sync never existed; hourly mirror built, diff 0
 
 **The diagnosis changed the ticket.** The chats sync did not stop — **it never ran.** `digest.chats`

@@ -266,6 +266,16 @@ member's 24-hour window, the approved `mds_summit_reminder` UTILITY template out
 whole member roster — matching across all 748 sent an attendee to find somebody in Florida. It says
 nothing about which room anyone will be in, because nobody registers for a session.
 
+**One roster per question (#89).** **Headcounts and "who is coming" read
+`digest.event_registrations_live`** — the live-synced ticket ledger — and nothing else;
+**`event.attendees` is the ROOM roster**, used only to gate audiences and match people, refreshed
+only when a new GroupOS export is loaded, and never a headcount source (as of 2026-08-18 zero
+`digest.*` functions read it — both facts stamped as table comments in migration
+`event_roster_authority_comments_20260818`). `event.people.at_member_id` is resolved by the
+loader's three-rung ladder (profile email → registration-email bridge → unique name, conservative;
+suspects logged, never guessed) — 170 of 199 Summit people linked; the remainder are orgs, vendors,
+nickname cases and Members-DB duplicate records, listed on the #89 ticket for Andy.
+
 **Timezones (Andy, 2026-08-17):** never stored — it breaks the moment someone travels. WhatsApp
 sends an instant, never a zone. In-person answers always use the venue's zone, named; a virtual
 session carries the content's zone *and* the member's saved-location zone.

@@ -157,21 +157,96 @@ def main():
     for uid, u in users.items():
         add_person(uid, u.get("name"), u.get("email"), u.get("city"), u.get("country"))
 
-    # resolve MDS membership by registration email, in batches
-    emails = list(people)
-    matched = 0
-    for i in range(0, len(emails), 60):
-        batch = emails[i:i + 60]
-        quoted = ",".join('"%s"' % e.replace('"', '') for e in batch)
-        code, raw = rest("GET", f"member_profiles?select=at_member_id,email&email=in.({quoted})",
+    # resolve MDS membership — three rungs, all conservative (#89: 26 attendees were
+    # unlinked because GroupOS emails differ from Members-DB emails):
+    #   1. exact email against member_profiles.email
+    #   2. exact email against digest.event_registrations (the ticket ledger maps
+    #      registration emails to member records). Rejected when several fetched
+    #      emails claim ONE member id — four speakers carried Max Mikhaylenko's id
+    #      on a mis-linked AT roster row (found 2026-08-18) — or when the profile
+    #      name shares no token with the person's.
+    #   3. unique full-name match in member_profiles.
+    # A rung-1 hit whose profile name shares NO token with the person's falls
+    # through instead of linking (the courtney@mds.co profile is literally named
+    # "Test Test").
+    def toks(s):
+        return {w for w in (s or "").lower().replace("(", " ").replace(")", " ").split() if len(w) > 2}
+
+    def name_ok(person_name, profile_name):
+        """Share a token, or one token contains the other at >=4 chars ("prue" in
+        "prudence", "millsap" in "tweedie-millsap"). A profile with NO name cannot
+        veto an email match — email is the identity, the guard only exists to catch
+        a profile that plainly names someone ELSE."""
+        a, b = toks(person_name), toks(profile_name)
+        if not b:
+            return True
+        if a & b:
+            return True
+        return any(len(x) >= 4 and len(y) >= 4 and (x in y or y in x) for x in a for y in b)
+
+    profiles, off = [], 0
+    while True:  # PostgREST hard-caps 1000 rows per request — page, never trust one fetch
+        code, raw = rest("GET", "member_profiles?select=at_member_id,full_name,email,status"
+                                f"&order=at_member_id&limit=1000&offset={off}",
+                         key, url, profile="digest")
+        page = json.loads(raw or "[]") if code == 200 else []
+        profiles += page
+        if len(page) < 1000:
+            break
+        off += 1000
+    prof_by_id = {p["at_member_id"]: p for p in profiles}
+    prof_by_email = {(p.get("email") or "").lower(): p for p in profiles if p.get("email")}
+    prof_by_name = {}
+    for p in profiles:
+        prof_by_name.setdefault((p.get("full_name") or "").strip().lower(), []).append(p)
+
+    matched = {"email": 0, "registration": 0, "name": 0}
+    suspects = []
+    for e, person in people.items():
+        hit = prof_by_email.get(e)
+        if hit:
+            if name_ok(person["name"], hit.get("full_name")):
+                person["at_member_id"] = hit["at_member_id"]
+                matched["email"] += 1
+            else:
+                suspects.append(f"{person['name']} <{e}> email-matches profile "
+                                f"'{hit.get('full_name')}' — held for name match")
+
+    unhit = [e for e, p in people.items() if not p["at_member_id"]]
+    reg_map, reg_claims = {}, {}
+    for i in range(0, len(unhit), 60):
+        quoted = ",".join('"%s"' % e.replace('"', '') for e in unhit[i:i + 60])
+        code, raw = rest("GET", "event_registrations?select=email,member_at_id"
+                                f"&email=in.({quoted})&member_at_id=not.is.null",
                          key, url, profile="digest")
         if code == 200:
             for row in json.loads(raw or "[]"):
-                e = (row.get("email") or "").lower()
-                if e in people:
-                    people[e]["at_member_id"] = row["at_member_id"]
-                    matched += 1
-    print(f"people {len(people)} · matched to an MDS member {matched} · unmatched {len(people)-matched}")
+                e, m = (row.get("email") or "").lower(), row["member_at_id"]
+                reg_map.setdefault(e, set()).add(m)
+                reg_claims.setdefault(m, set()).add(e)
+    for e in unhit:
+        ids = reg_map.get(e) or set()
+        if len(ids) == 1:
+            m = next(iter(ids))
+            prof = prof_by_id.get(m)
+            if len(reg_claims.get(m, ())) == 1 and prof and name_ok(people[e]["name"], prof.get("full_name")):
+                people[e]["at_member_id"] = m
+                matched["registration"] += 1
+
+    for e, person in people.items():
+        if person["at_member_id"]:
+            continue
+        cands = prof_by_name.get((person["name"] or "").strip().lower()) or []
+        if len(cands) == 1:
+            person["at_member_id"] = cands[0]["at_member_id"]
+            matched["name"] += 1
+
+    n_matched = sum(matched.values())
+    print(f"people {len(people)} · matched {n_matched} "
+          f"(email {matched['email']} + registration {matched['registration']} + name {matched['name']}) "
+          f"· unmatched {len(people) - n_matched}")
+    for s in suspects:
+        print(f"  ⚠ {s}")
 
     # ------------------------------------------------- participant types
     used = {oid(r) for a in acts for r in (a.get("accessRoles") or [])}

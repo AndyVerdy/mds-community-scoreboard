@@ -33,6 +33,13 @@ begin
              (select pp.meta->>'author_name' from digest.content_items pp
                where pp.source = 'fb_post' and pp.source_id = s.meta->>'post_id'
                order by pp.id limit 1)))
+         -- has_image tells the answer loop whether this post HAS a picture to
+         -- attach. Without it the model had to guess, so award graphics, agendas
+         -- and charts were described instead of shown. source_id IS the ref for
+         -- [SEND_IMAGE: ...]; the flag is what makes using it deliberate.
+         when s.source = 'fb_post' then
+           s.meta || jsonb_build_object('has_image',
+             exists (select 1 from digest.fb_post_images fi where fi.post_id = s.source_id))
          else s.meta end as meta,
          s.search_extra
   from (

@@ -69,7 +69,13 @@ theorising** — it settled in one call what rule-writing chased for rounds, twi
   Summaries), AT `{active}=1` = 18 chats, **diff 0** field-by-field, ghost row deleted, heartbeat
   `chats_mirror` (3h) under signal 4. Curated columns untouched. **Andy ruling queued:** Accelerator
   + 2026 New Members carry `required_form` in AT but are ungated in the mirror.
-- **#89** 🔴 two rosters disagree — 156 registrations vs 149 attendees, same Summit, no reconciliation.
+- ~~#89~~ **CLOSED 2026-08-18: the gap was IDENTITY, not attendance.** Zero digest fns read
+  `event.attendees` (counts were single-sourced all along — now stamped as table comments,
+  migration `event_roster_authority_comments_20260818`). Loader matching rebuilt (3-rung ladder):
+  people matched 124→**170 of 199**, Courtney freed from a "Test Test" record. **Andy's list on the
+  board:** 4 speaker roster rows linked to Max Mikhaylenko's record · dup member pairs (Brian,
+  Henrik, Rebeca, Ryan, Eugene ×9) · the 151-vs-108 filter ruling. Fresh export covers the last 6
+  absentees + late orders.
 - **#88** 🟡 partner profiles — event-specific and type-specific; `event.attendee_profiles` designed,
   not built. Passcode never enters the warehouse.
 - **#86** 🔴 sender now scheduled (n8n `QhJw46Mr7LAP8fdz`) — open only for the arrival proof on a
