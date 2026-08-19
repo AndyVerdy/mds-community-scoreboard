@@ -6,6 +6,48 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 — FULL AUTOPILOT SHIPPED (ext v0.87→v0.90): one-button/scheduled daily chain — insights + humanized auto-scroll + comment pass; roster demoted to weekly
+
+**Andy's ask:** "full autopilot option. auto scroll, auto capture comments, process images, everything."
+
+**Shipped (extension, `.bak-v085` kept · autopilot scripts):**
+- **v0.87:** `autoFeedCapture` (auto feed harvest reusing the untouched passive `manualCaptureMain`) +
+  scheduled chain roster→insights→feed→comments; `commentsForManual` seeds = tab localStorage **∪
+  seed_ids.json**, newest-first, **CAP 40/run**; `load_manual_meta.write_seed` now writes **ALL DB posts
+  <7d** (not just the capture's) — this is how 3-6d-old posts keep getting comment checks daily, which
+  is what keeps the silent-post card honest across its whole 7d window; `auto_import.newest()` variadic
+  (auto harvest saves `mds_manual_capture.json`, human Recover saves `_recovered`); popup "Run full
+  capture now".
+- **v0.88 (bugfix, from the worker's own persisted status in Chrome's LevelDB):** phase 3 died on
+  `No tab with id` — it queried for any group tab and grabbed one that closed mid-settle. Chain now
+  CREATES AND OWNS ONE TAB end-to-end (`chainTab()`), every phase navigates it (members→insights→feed);
+  phase toasts 1/4…4/4 (Andy: "no clue what stage I'm in").
+- **v0.89 (bugfix):** roster gate read a storage stamp only v0.88 writes → re-ran a roster captured 3h
+  earlier. Gate now reads **Chrome's download history** (`downloads.search` for `mds_roster_full`),
+  stamp = fallback. **Roster runs at most every 7d** (Andy: deep members scroll = bad FB signal; a
+  joiner only surfaces via weekly reconcile anyway, so mapping lag ≤7d is the accepted cost).
+- **v0.90 (Andy watched the scroll):** humanized + worker-side stepper — depth mix 60% normal
+  700-1700px / 15% shallow / 15% deep / 10% BACK-UP scroll; pauses 2.2-5.5s + 15% "reading" 6-12s;
+  ≤9 steps; stops on window-edge (oldest >48h) / 2-step stall / shelled (≤2 posts after 3 steps →
+  abort + toast, comment pass skipped) / Stop. Loop lives in the WORKER (one `feedScrollStep` injection
+  per step — a single long in-page script risks the MV3 30s idle reaper); per-step status line.
+
+**Proven live (one button, v0.89 driver):** roster skipped ✓ → insights 15:09 (99 top posts → TOPPOSTS
+21 updated) → harvest 16 posts / 8 image URLs, stopped at 48h edge ✓ → comment pass **40/40 seeded,
+166 comments** (by day 19th:11 · 18th:11 · 17th:10 · 16th:3 · 15th:5 — the 3-6d tail is the DB-seed
+refresh working; every Aug-19 post came from the harvest = new-post discovery works with zero human
+scroll) → autopilot 15:48: 4 images OCR'd, 1 link card, 215 embedded, seed → 61 posts, **SILENT card
+5 posts (was 7 — two got comments and correctly dropped off)**, Slack ts 1787172567.001709.
+
+**Traps for next time:** worker status lines are readable from
+`~/Library/.../Local Extension Settings/<ext-id>/*.log` via `strings` — that's how the No-tab-with-id
+root cause was found without touching the user's Chrome. Comment-pass cap 40 starves the oldest tail
+if a week ever holds >40 posts — raise cap or rotate if a card ever looks stale.
+
+**Next:** tomorrow's scheduled fire = first true zero-touch day on v0.90 (humanized scroll's first live run).
+
+---
+
 ## 2026-08-18 (later) — Extension v0.86: dead feed-loop removed, scheduler now DAILY + self-healing, drifted copy fixed
 
 **Andy's ask:** review the popup — descriptions drifting, unneeded features, check the scheduler.
