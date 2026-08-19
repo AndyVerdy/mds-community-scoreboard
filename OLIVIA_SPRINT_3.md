@@ -37,6 +37,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
+| **#93** | Who-to-meet favors NEW faces — novelty beats familiarity (Eugene) | 🔴 S1 | S | — | 🔨 in build |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -926,6 +927,28 @@ same webhook.
 - Units/period declared and sweep-asserted.
 - Lag documented or removed.
 - QA sweep + gate GREEN after each.
+
+---
+
+### #93 · Who-to-meet favors NEW faces — novelty beats familiarity
+**🔴 S1 · size S — filed 2026-08-19 from Eugene's beta report (Andy: "agree, we can do it")**
+
+> **In plain words:** "who should I meet" was handing an OG his oldest friends; it should hand him people he has NOT met — especially newer members.
+
+*As a long-time member, "who should I meet at the Summit" surfaces people I don't already know — newer members first — because meeting my old friends needs no assistant.*
+
+Eugene, verbatim: *"it needs to prioritize newer members, giving you newer members that you
+haven't met instead of older members because it's sending older members here and I know all of
+them. I feel like it's gonna do the same for others."*
+
+**Shape of the fix:** two REAL signals into the `people` op ranking — `digest.member_edges`
+(observed co-engagement asker↔candidate, 141k edges: heavy tie = downrank, no edge = boost) and
+`member_profiles.join_date` (joined ≤12 months = boost). Reasons quote the signals; never invented.
+
+**Accept when:** an asker with heavy ties sees new faces ranked above old friends · rows carry
+honest labels ("joined <month year>", "no shared chats or events on record") · a new member's
+results stay sensible (their whole world is new faces) · gate GREEN · before/after on Eugene-class
+asker recorded.
 
 ---
 
