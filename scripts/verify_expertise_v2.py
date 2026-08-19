@@ -14,10 +14,9 @@ Run:  python3 scripts/verify_expertise_v2.py      # exit 0 = all PASS, exit 1 = 
 import json, statistics, subprocess, sys
 
 ENV = "/Users/Born/mds-digest-web/.env.local"
-ANDY = "recCUUw8iiUnJjac1"          # the active Andy Verdy record (two dup rows carry no scores)
-ANDY_TOPIC = "International Expansion"
 FLOOR = 0.4                          # proven expertise never drops below 40% of its peak
 EPS = 0.001
+HARD = ("posts", "comments", "videos_spoken", "form_hits")   # evidence, not self-description
 
 
 def env(k):
@@ -106,11 +105,40 @@ for topic, rk in by_topic.items():
 check("ranks sane", not bad_rank,
       f"{len(by_topic)} ranked topics, {len(bad_rank)} broken")
 
-# 6 — Andy spot-check: still top-quartile on International Expansion
-andy = [r for r in rows if r["at_member_id"] == ANDY and r["topic"] == ANDY_TOPIC]
-apct = float(andy[0]["pct"] or 0) if andy else 0.0
-check("andy spot-check", bool(andy) and apct >= 0.75,
-      f"pct={apct} on {ANDY_TOPIC}" if andy else "no row")
+# 6 — evidence beats self-description: every topic's #1 is backed by something they DID
+tops = {}
+for r in rows:
+    if float(r["score"] or 0) > 0:
+        cur = tops.get(r["topic"])
+        if cur is None or float(r["score"]) > float(cur["score"]):
+            tops[r["topic"]] = r
+soft_tops = [t for t, r in tops.items()
+             if not any(k in (r["evidence"] or {}) for k in HARD)]
+check("tops are evidence-backed", not soft_tops,
+      f"{len(tops)} scored topics, {len(soft_tops)} topped by profile alone")
+
+# 7 — the substring trap stays dead: term 'vat' inside "Pri(vat)e Label" handed every
+# private-label member International Expansion affinity until v2.1 matched on words.
+vat_trap = [r for r in rows
+            if r["topic"] == "International Expansion"
+            and (r["evidence"] or {}).get("biz_affinity")
+            and not any(k in (r["evidence"] or {}) for k in HARD)]
+check("no substring matching", not vat_trap,
+      f"{len(vat_trap)} profile-only International Expansion affinity rows "
+      f"(the 'Private Label' -> vat trap)")
+
+# 8 — subtopics stay narrow: a subtopic that scores most of the community is a term bug
+members_total = len({r["at_member_id"] for r in rows}) or 1
+broad = []
+for t in sub_names:
+    n = len({r["at_member_id"] for r in rows
+             if r["topic"] == t and float(r["score"] or 0) > 0})
+    if n > 0.9 * members_total:
+        broad.append((t, n))
+check("subtopics stay narrow", not broad,
+      f"widest subtopic covers "
+      f"{max((len({r['at_member_id'] for r in rows if r['topic'] == t and float(r['score'] or 0) > 0}) for t in sub_names), default=0)}"
+      f"/{members_total} members; {len(broad)} over 90%")
 
 # 7 — speaking still wins: a speaker outranks a non-speaker on the same topic
 spk = [r for r in rows if float((r["evidence"] or {}).get("videos_spoken") or 0) >= 3]

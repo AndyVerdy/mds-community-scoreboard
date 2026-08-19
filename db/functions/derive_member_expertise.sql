@@ -85,7 +85,6 @@ begin
     select distinct val, to_tsvector('english', val) as tsv from form_rows
   ),
   form_val_topics as materialized (
-    -- tsquery matching only, never bare ilike ('ai' in 'Em(ai)l')
     select v.val, tq.topic from form_vals v join term_q tq on v.tsv @@ tq.q group by 1, 2
   ),
   forms_agg as (
@@ -93,27 +92,33 @@ begin
     from form_rows fr join form_val_topics vt on vt.val = fr.val
     group by 1, 2
   ),
-  biz as (
-    select a.at_member_id, t.topic
+  biz_txt as materialized (
+    select a.at_member_id,
+           to_tsvector('english', concat_ws(' ', a.main_niche,
+             array_to_string(coalesce(a.business_model, '{}'::text[]), ' '),
+             array_to_string(coalesce(a.categories, '{}'::text[]), ' '),
+             array_to_string(coalesce(a.channel_mix, '{}'::text[]), ' '))) as tsv
     from actives a
-    join digest.expertise_topics t on exists (
-      select 1 from unnest(t.terms) term
-      where a.main_niche ilike '%'||term||'%'
-         or exists (select 1 from unnest(coalesce(a.business_model, '{}'::text[])) bm where bm ilike '%'||term||'%')
-         or exists (select 1 from unnest(coalesce(a.categories, '{}'::text[])) c where c ilike '%'||term||'%')
-         or exists (select 1 from unnest(coalesce(a.channel_mix, '{}'::text[])) ch where ch ilike '%'||term||'%'))
+  ),
+  biz as (
+    select distinct bt.at_member_id, tq.topic
+    from biz_txt bt join term_q tq on bt.tsv @@ tq.q
+  ),
+  persona_txt as materialized (
+    select p.at_member_id,
+           to_tsvector('english', concat_ws(' ', p.persona->>'gives', p.persona->>'focus',
+                                                 p.persona->>'business')) as gives_tsv,
+           to_tsvector('english', concat_ws(' ', p.persona->>'asks',
+                                                 p.persona->>'challenges_now')) as asks_tsv
+    from digest.member_personas p
   ),
   persona_agg as (
-    select p.at_member_id, t.topic,
-      (select count(*) from unnest(t.terms) term
-        where coalesce(p.persona->>'gives','') ilike '%'||term||'%'
-           or coalesce(p.persona->>'focus','') ilike '%'||term||'%'
-           or coalesce(p.persona->>'business','') ilike '%'||term||'%') as gives,
-      (select count(*) from unnest(t.terms) term
-        where coalesce(p.persona->>'asks','') ilike '%'||term||'%'
-           or coalesce(p.persona->>'challenges_now','') ilike '%'||term||'%') as asks
-    from digest.member_personas p
-    cross join digest.expertise_topics t
+    select pt.at_member_id, tq.topic,
+           count(distinct tq.term) filter (where pt.gives_tsv @@ tq.q) as gives,
+           count(distinct tq.term) filter (where pt.asks_tsv  @@ tq.q) as asks
+    from persona_txt pt
+    join term_q tq on pt.gives_tsv @@ tq.q or pt.asks_tsv @@ tq.q
+    group by 1, 2
   ),
   scored as (
     select a.at_member_id, t.topic,

@@ -761,8 +761,9 @@ def main():
             outside = [r.get("full_name") for r in v2rows if r.get("full_name") not in pnames]
             check("member_match_v2 rows ⊆ v1 eligible pool", not outside, f"outside: {outside[:3]}")
             blob2 = json.dumps(v2rows)
+            # word-boundary match: "Franklin Lakes" (a member's city) contains "rank"
             check("member_match_v2 reasons carry no scores/ranks",
-                  "score" not in blob2 and "rank" not in blob2 and "weakness" not in blob2)
+                  not re.search(r"\b(score|rank|ranked|weakness)\b", blob2, re.I))
         else:
             check("member_match_v2 subset check ran", False, f"status {st}/{st2}")
         st, pool = rpc("event_lookup", {"p_phone": phone, "p_limit": 30}, key)
