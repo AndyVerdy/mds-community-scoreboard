@@ -37,6 +37,10 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
+| **#94** | 🧠 Expertise Ledger v2 — the living skill sheet (Eugene #2 finale) | 🔴 S1 | M | — | 📋 **PLANNED** — plan approved, execution-mode pick pending |
+| **#95** | Equalizer for the members lane (`member_match`) — Eugene's "Moe ×12" lived here | 🔴 S1 | S | — | — |
+| **#96** | Attendee-name disclosure — Eugene's ≤10-names cap | 🟡 S2 | S | — | ⛔ Andy confirming with Eugene |
+| **#97** | Brokered intros — "message the person she recommends", consent-first | 🟡 S2 | M | — | ⛔ Andy's ruling + utility template |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -983,6 +987,58 @@ run 1 (Wei Lin, Igor Chernyavskiy, Sam Uloho…) logged, run 2 fully reshuffled.
 **Named remainder:** the log + equalizer cover the EVENT people lane; Eugene's Moe repeats came
 mostly from the general members lane (`member_match`) — extending the equalizer there is the next
 slice of his item 3.
+
+---
+
+### #94 · Expertise Ledger v2 — the living skill sheet
+**🔴 S1 · size M — filed 2026-08-19 · spec + taxonomy Andy-APPROVED · 📋 PLAN: `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md`**
+
+> **In plain words:** every member — new, silent, or loud — gets an honest per-skill score, on skills the community actually discusses, and proven expertise never rots to zero.
+
+*As a member, "who knows X" and "who should I meet" see the REAL me — what I declared, what I spoke about, what my posts earned — not just how loudly I chat.*
+
+Andy's rulings, binding: activity keeps its teeth · speaking strongest (3.0×) · engagement bonus `1+ln(1+reactions)/4` · forms floor ×1.2 · decay half-lives 12mo activity / 24mo speaking · **floor = 40% of all-time peak** · taxonomy 18 parents + 34 corpus-born subtopics (Claude-vs-GPT merged; Real Estate Investing + Credit Cards & Travel Hacks added) · subtopics graduate via quarterly density re-checks.
+
+**Accept when:** the plan's 4 tasks land · verify script all-PASS (silent members gain; floor holds; Andy top-quartile Intl Expansion; speaker outranks same-profile non-speaker) · who-to-meet matches on a subtopic with zero code changes · gate GREEN · before/after: distinct scoreable members recorded.
+
+---
+
+### #95 · Equalizer for the members lane — "Moe ×12" lived in `member_match`
+**🔴 S1 · size S — filed 2026-08-19 (Eugene: "they've mentioned Moe to me at least a dozen times")**
+
+> **In plain words:** the general "who should I talk to" lane still recommends the same person forever; the event lane already stopped.
+
+*As a member, I don't get the same name every time — and our most active members don't get buried in DMs because every answer points at them.*
+
+The `olivia_recommendations` log + equalizer (hard 30d per-asker no-repeat, soft 7d global spread) shipped on the EVENT people op with zero-overlap proof. `member_match` — where Eugene's dozen actually happened — still ranks statically.
+
+**Accept when:** member_match reads AND writes the recommendation log · two identical member-lane asks return different names · the log carries lane='member_match' rows · gate GREEN.
+
+---
+
+### #96 · Attendee-name disclosure — the ≤10-names cap
+**🟡 S2 · size S — filed 2026-08-19 · ⛔ BLOCKED: Andy confirming the rule with Eugene**
+
+> **In plain words:** Eugene proposed she may name up to ~10 attendees of an event; today she gives counts only.
+
+*As a member, "who from APAC is at the Summit" gets a short named list, not just a number.*
+
+Eugene, verbatim: *"the AI will not share more than 10 names of who's attending an event but it could share information like who's attending. It just needs to be limited."* This reverses the July aggregates-only ruling (gate asserts `full_name` ABSENT from `event_who`), so it ships only on the confirmed ruling. The chapter-count code path (`people` op, `chapter` param) is already built to return the capped list the day the ruling lands — members-only, no numbers attached, gate check flipped accordingly.
+
+**Accept when:** Andy+Eugene's rule recorded on this ticket · capped named list on chapter/roster asks · cap enforced in CODE · gate updated + GREEN.
+
+---
+
+### #97 · Brokered intros — message the person she recommends
+**🟡 S2 · size M — filed 2026-08-19 · ⛔ BLOCKED: Andy's ruling ("lets think of it") + utility template**
+
+> **In plain words:** after "you should meet X", one tap should start that conversation — without ever handing out phone numbers.
+
+*As a member, when Mille recommends someone, I can say "connect us" — she asks THEM first, and only a yes opens the thread.*
+
+Eugene, verbatim: *"It might be also cool to just have an ability to message the person that it recommends… it can just open up a WhatsApp thread with their number."* A wa.me link IS the number — never. The buildable shape: consent-first broker — Mille messages the target ("Eugene would like to connect about 3PL — ok?"), a yes shares the link both ways; outside the 24h window this needs ONE approved utility template.
+
+**Accept when:** Andy's ruling recorded · consent flow live (no number leaves without the target's yes) · out-of-window template approved · declines are final and polite · gate GREEN.
 
 ---
 

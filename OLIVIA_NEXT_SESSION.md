@@ -22,12 +22,12 @@
 ## STATE 2026-08-19 (close): PROD `060701be` — nothing awaits promotion (verified live at close)
 
 ### NEXT SESSION OPENS HERE
-1. **Execute `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md`** (Andy approved the spec
+1. **Execute #94** — plan attached to the ticket: `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md` (Andy approved the spec
    AND the taxonomy; he still owes the execution-mode pick — subagent-driven vs inline). 4 tasks:
    taxonomy migration · derive v2 (decay+floor+forms+engagement) · verify script · consumer probes.
-2. **Extend the equalizer to `member_match`** — Eugene's Moe dozen lived in the general members
+2. **#95 — extend the equalizer to `member_match`** — Eugene's Moe dozen lived in the general members
    lane; the event lane is covered (`olivia_recommendations` log).
-3. **Andy's desk:** Eugene name-cap confirm (#94-to-be) · brokered-intros ruling (item 4) ·
+3. **Andy's desk:** #96 name-cap confirm · #97 intros ruling ·
    THE COUNT RULING (recommendation: 98 active members, one `event_registered_members` view) ·
    Eugene's Members-DB record pin (9-record cluster) · "MDS Mille" re-register when the watcher
    fires (PIN, 14-day window) · #72 LOAD TEST before the announcement.

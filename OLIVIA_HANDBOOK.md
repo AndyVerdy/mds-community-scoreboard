@@ -405,6 +405,17 @@ triggers: an event-logging failure must never break the member's answer.
 surfaced to a member, never used to rank members publicly. A weak area may only ever be used to
 help that member, never disclosed to another.
 
+**Recommendation model (Andy, 2026-08-19):** the written logic is proficiency FIRST (ledger
+percentile on the matched topics, deciles = tiers), member VALUE (`engagement_score`) only among
+tier-equals — **on the ADVICE lane** (`member_match`: "who can help me with X"). The **MEET lane**
+(event `people` op: "who should I meet") inverts: novelty + the equalizer first, proficiency
+tiebreaks. The **equalizer** = `digest.olivia_recommendations` (every recommended name logged):
+hard 30-day per-asker no-repeat + soft 7-day global spread, so no member gets buried in DMs for
+being excellent. A matcher sample is never a census — presence counts come from the registrations
+ledger via the `chapter` param. **Ledger v2 is planned and Andy-approved** (decay 12/24mo
+half-lives, 40%-of-peak floor, forms ×1.2, engagement bonus, 18+34 corpus-born taxonomy):
+`docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md` — update this section when it ships.
+
 ### 7.4 The consumers (#29) — one dossier, five personalized lanes
 
 `digest.member_topic_profile(atid)` (internal, no REST grant) turns a member's ledger rows into
