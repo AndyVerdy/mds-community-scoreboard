@@ -6,6 +6,33 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-18 (later) — Extension v0.86: dead feed-loop removed, scheduler now DAILY + self-healing, drifted copy fixed
+
+**Andy's ask:** review the popup — descriptions drifting, unneeded features, check the scheduler.
+
+**Review verdicts:** button 3 "Capture Conversations" was the dead automated feed loop (every
+`mds_feed*.json` since Aug 7 says `_diag.source: manual-seeded-url-pass` — the 4+4c workflow); 5 copy
+drifts (Mon/Thu cadence ×2, "last 4 days" on a 6-day button, footer's "run process_fb.py"); scheduler
+had a real trap — **Chrome clears alarms on every extension update/reload but the toggle kept reading
+`scheduled: true` from storage, so it showed armed while dead** — and was weekly-only against daily runs.
+
+**Shipped (v0.85 → v0.86, `mds-scorecard-tools/extension/`, no git — `.bak-v085` copies kept):**
+- **Deleted** `captureFeedMain` + `captureConversations` + their 3 message routes (~43KB, 120KB→77KB);
+  popup button 3 removed, buttons renumbered 4/4b/4c/5 → 3/3b/3c/4. The 4c/URL-pass path they shared
+  (`capturePostMain`, cap_inject) is untouched.
+- **Scheduler: weekly → DAILY** (`scheduleDaily`, alarm `dailyCapture`, time-only picker) and
+  **re-armed from storage on every worker start** (`rearmSchedule` on onInstalled/onStartup/load — fixes
+  the silent-death trap; also clears the pre-0.86 `weeklyCapture` ghost). Still roster + insights only.
+- Copy fixes: 4c label now "Get comments (last 6 days)" (it always ran days=6), footer now says the
+  autopilot ingests files, CONV_DAYS comment de-Mon/Thu'd.
+
+**Verified:** `node --check` green on background.js + popup.js · manifest JSON valid @ 0.86 · every
+popup.js id ↔ popup.html id cross-checked (zero orphans both directions) · zero remaining refs to the
+deleted functions (only the two intentional `weeklyCapture` clears). **Not yet live: Andy must reload
+the extension** (chrome://extensions → ↻); the daily toggle is OFF by default, flip + pick a time to arm.
+
+---
+
 ## 2026-08-18 — FB capture: per-post hashtags + REAL reactions/views, and a silent-post Slack card
 
 **Andy's asks:** (1) store hashtags per post so we can query "first / total / most-engaged #valueadd",
