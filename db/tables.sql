@@ -263,6 +263,7 @@ CREATE UNIQUE INDEX events_catalog_pkey ON digest.events_catalog USING btree (at
 -- digest.expertise_topics
 --   topic                              text not null
 --   terms                              text[] not null
+--   parent                             text
 alter table digest.expertise_topics add constraint expertise_topics_pkey PRIMARY KEY (topic);
 CREATE UNIQUE INDEX expertise_topics_pkey ON digest.expertise_topics USING btree (topic);
 
@@ -477,6 +478,7 @@ CREATE UNIQUE INDEX member_events_pkey ON digest.member_events USING btree (id);
 --   weakness_score                     numeric not null default 0
 --   evidence                           jsonb not null default '{}'::jsonb
 --   refreshed_at                       timestamp with time zone not null default now()
+--   peak_score                         numeric
 alter table digest.member_expertise add constraint member_expertise_pkey PRIMARY KEY (at_member_id, topic);
 CREATE INDEX member_expertise_topic_rank_idx ON digest.member_expertise USING btree (topic, rank_in_topic);
 CREATE UNIQUE INDEX member_expertise_pkey ON digest.member_expertise USING btree (at_member_id, topic);
