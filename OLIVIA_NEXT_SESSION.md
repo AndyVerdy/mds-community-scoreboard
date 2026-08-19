@@ -41,9 +41,11 @@ cancel reminders · get a post's image with the answer · read a weekly chat dig
    launchd so reminders survive the Mac sleeping — and launchctl is classifier-blocked for me anyway.
    **Delivery proof still owed:** the pending test reminder (…8153) fires **Aug 23 10:30 UTC**, or
    Andy asks "remind me in 5 min" on his test phone any day — SELFTEST probes cannot reach the send.
-2. **Andy: re-register the number** to activate the approved display name "MDS AI Assistant". Needs
-   the 6-digit PIN, and the number currently shows the misspelled **"Oliva"** with `name_status:
-   DECLINED`. Do it BEFORE the announcement, not after.
+2. ~~Re-register the number~~ **DONE 2026-08-18 (Andy ran it): the number is "MDS AI Assistant".**
+   `POST /register` with the two-step PIN returned success; live API now shows `verified_name:
+   "MDS AI Assistant"`, `name_status: APPROVED`, `new_name_status: NONE`, CONNECTED/GREEN. "Oliva"
+   is gone. Existing threads may show the cached old name for a while; new threads are correct.
+   Andy holds the PIN (password manager — deliberately not written down here).
 3. **Ask the dev for a fresh export** — CÉ LA VI is in the admin's 19 locations but not our 18, so
    some of the 13 venue-less activities may be export gaps. Same dump un-truncates long descriptions.
 

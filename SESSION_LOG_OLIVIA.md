@@ -6,6 +6,17 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-18 (night, latest) — #89 CLOSED · the number is "MDS AI Assistant"
+
+**Display name fixed (Andy ran the register, guided from here).** The approved name sat as
+`new_name_status: APPROVED` and Meta's registration doc is explicit: *"After approval, re-register
+your phone number."* No UI button exists for a CONNECTED Cloud API number — it is API-only. Andy
+ran `POST /1306956855827812/register` with the two-step PIN (first paste doubled in his terminal —
+Meta got broken JSON, returned #100, and the PIN was never evaluated; the clean rerun returned
+`{"success":true}`). Live verify: `verified_name: "MDS AI Assistant"`, `name_status: APPROVED`,
+`new_name_status: NONE`, CONNECTED, quality GREEN. "Oliva" is gone; cached old name may linger in
+existing threads. The PIN stays with Andy only — deliberately unrecorded.
+
 ## 2026-08-18 (night, latest) — #89 CLOSED: the roster gap was identity, not attendance
 
 **The diagnosis changed the ticket twice.** ① The feared two-number split is structurally absent:
