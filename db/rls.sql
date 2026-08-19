@@ -8,6 +8,8 @@ alter table digest.chapters_catalog enable row level security;
 -- digest.concept_rule: row level security DISABLED
 alter table digest.content_items enable row level security;
 -- digest.deck_metric: row level security DISABLED
+-- digest.doc_entries: row level security DISABLED
+-- digest.docs: row level security DISABLED
 -- digest.entity_dossier: row level security DISABLED
 alter table digest.event_registrations enable row level security;
 -- digest.event_series_profile: row level security DISABLED

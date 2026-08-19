@@ -144,6 +144,44 @@ alter table digest.deck_metric add constraint deck_metric_pkey PRIMARY KEY (metr
 alter table digest.deck_metric add constraint deck_metric_precision_check CHECK (("precision" = ANY (ARRAY['all'::text, 'exact_only'::text])));
 CREATE UNIQUE INDEX deck_metric_pkey ON digest.deck_metric USING btree (metric_id);
 
+-- digest.doc_entries
+--   id                                 bigint not null
+--   doc_id                             bigint not null
+--   kind                               text not null
+--   question                           text
+--   body                               text not null
+--   section_path                       text
+--   order_idx                          integer not null default 0
+--   embedding                          extensions.vector(1024)
+--   search_tsv                         tsvector default to_tsvector('english'::regconfig, ((COALESCE(question, ''::text) || ' '::text) || body))
+alter table digest.doc_entries add constraint doc_entries_doc_id_fkey FOREIGN KEY (doc_id) REFERENCES digest.docs(id) ON DELETE CASCADE;
+alter table digest.doc_entries add constraint doc_entries_kind_check CHECK ((kind = ANY (ARRAY['qa'::text, 'section'::text])));
+alter table digest.doc_entries add constraint doc_entries_pkey PRIMARY KEY (id);
+CREATE INDEX doc_entries_doc_idx ON digest.doc_entries USING btree (doc_id);
+CREATE INDEX doc_entries_tsv_idx ON digest.doc_entries USING gin (search_tsv);
+CREATE UNIQUE INDEX doc_entries_pkey ON digest.doc_entries USING btree (id);
+
+-- digest.docs
+--   id                                 bigint not null
+--   title                              text not null
+--   doc_type                           text not null
+--   audience                           text not null default 'staff'::text
+--   event_id                           text
+--   topics                             text[]
+--   source_file                        text not null
+--   effective_from                     date
+--   effective_until                    date
+--   superseded_by                      bigint
+--   loaded_at                          timestamp with time zone not null default now()
+alter table digest.docs add constraint docs_audience_check CHECK ((audience = ANY (ARRAY['member'::text, 'staff'::text])));
+alter table digest.docs add constraint docs_doc_type_check CHECK ((doc_type = ANY (ARRAY['faq'::text, 'sop'::text, 'policy'::text, 'guide'::text, 'other'::text])));
+alter table digest.docs add constraint docs_event_id_fkey FOREIGN KEY (event_id) REFERENCES event.events(id);
+alter table digest.docs add constraint docs_pkey PRIMARY KEY (id);
+alter table digest.docs add constraint docs_superseded_by_fkey FOREIGN KEY (superseded_by) REFERENCES digest.docs(id);
+alter table digest.docs add constraint docs_title_key UNIQUE (title);
+CREATE UNIQUE INDEX docs_pkey ON digest.docs USING btree (id);
+CREATE UNIQUE INDEX docs_title_key ON digest.docs USING btree (title);
+
 -- digest.entity_dossier
 --   kind                               text not null
 --   entity_id                          text not null
@@ -301,9 +339,11 @@ CREATE UNIQUE INDEX fb_post_links_pkey ON digest.fb_post_links USING btree (imag
 --   last_seen                          timestamp with time zone not null default now()
 --   comment_checked_at                 timestamp with time zone
 --   reactions                          integer
+--   hashtags                           text[]
 alter table digest.fb_posts add constraint fb_posts_pkey PRIMARY KEY (post_id);
 CREATE INDEX fb_posts_author_idx ON digest.fb_posts USING btree (author_uid);
 CREATE INDEX fb_posts_created_idx ON digest.fb_posts USING btree (created_time);
+CREATE INDEX fb_posts_hashtags_gin ON digest.fb_posts USING gin (hashtags);
 CREATE UNIQUE INDEX fb_posts_pkey ON digest.fb_posts USING btree (post_id);
 
 -- digest.form_concept
