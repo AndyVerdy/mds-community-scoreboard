@@ -28,6 +28,15 @@
 | **n8n STAGING** | `6e573dce` | same graph — nothing waiting |
 | **endpoint (mds-digest-web)** | `8fcae8e` | in sync |
 
+**AWAITING PROMOTE: #18 org_docs wiring — staging `6581548e`** (Answer Tool dispatch branch +
+seed tool/rule). The library itself is LIVE regardless: 3 docs · 47 entries
+(`org_docs_library_20260819` + `load_org_docs.py`), `/api/olivia/kb` deployed with measured 0.45
+floor, VOYAGE_API_KEY now in the Render env (Andy added it — manual redeploy done). Staging probes
+through Mille: refund cited from the FAQ · kids per the FAQ · chapter ask honestly says no written
+document (staff SOP dark) · moon canary honest-empty. Gate exit 0. **More docs load with
+`load_org_docs.py <pdf> --title ... --type faq|sop --audience member|staff [--event ...]` — always
+`--dry-run` first.**
+
 **PROMOTED 2026-08-19 02:55 UTC (Andy's order, run from here): prod `74f0572a` → `aec2db47`** —
 4 nodes (Answer Seed, Build Generic, Build Prompt, Build Verbatim Digest), gate green inside,
 snapshots both sides, graph matches staging. **#91 Mille identity + #88 partner profiles both

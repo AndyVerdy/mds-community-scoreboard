@@ -37,7 +37,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#76** | New eval bank — **100** questions from real member traffic *(BUILT 2026-08-16: `eval_bank_100_2026-08-16.json`)* | 🔴 S1 | M | ✅ built | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
-| **#18** | How-MDS-works answers | 🟡 S2 | M | ⛔ BLOCKED — no data (Andy 2026-08-05) | — |
+| **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ⏳ **awaiting promote** — library live (3 docs · 47 entries) |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
@@ -1146,11 +1146,31 @@ with its reason · one baseline run on the new bank, its rate recorded as the ne
 # 🟡 S2 — NEXT
 
 ### #18 · How-MDS-works answers
-**🟡 S2 · size M · ⛔ BLOCKED (Andy 2026-08-05: "we dont have data for #18")**
+**🟡 S2 · size M · ⏳ UNBLOCKED 2026-08-19 — first slice BUILT + STAGED + PROVEN, awaiting promote**
 
-> The ACs below already said it: *the work is someone writing the answers.* Those written answers
-> do not exist, so there is nothing to load. **Unblocks when the team writes them** — or when #35
-> (GroupOS documents) lands and the answers turn out to live in there.
+> Was blocked 2026-08-05 ("we dont have data"). **Andy delivered the first three team documents
+> 2026-08-19** and the org knowledge library shipped around them.
+
+#### ⏳ FIRST SLICE 2026-08-19 — library + lane + wiring proven on staging `6581548e`; promote pending
+**The build:** `digest.docs` + `doc_entries` (migration `org_docs_library_20260819`) — audience
+FAIL-CLOSED to staff, event scoping, supersession, tsv GIN, voyage-3.5-lite/1024 · loader
+`scripts/load_org_docs.py` (heading FAQs, three-column table FAQs with measured column bands, SOP
+sections; dry-run review; dedup keeps longest) · **first load: Summit FAQ 20 qa (member) · Ticket
+Requests FAQ 18 qa (member) · Chapter Assignment SOP 9 sections (STAFF — dark to members)** ·
+`/api/olivia/kb` lane (hybrid RRF: cosine + tsv-with-OR-fallback; **similarity floor 0.45,
+measured**: legit 0.55–0.69, strays 0.41, off-corpus 0.37; degradation is loud; empty is honest) ·
+`org_docs` tool wired into `Answer Tool` dispatch + seed rule (policy from documents, numbers from
+structured tools, cite the document).
+**Fixed on the way:** empty-corpus 5-min cache poisoning (stale PostgREST worker) · websearch AND
+missing natural questions · silent vector-lane death — **VOYAGE_API_KEY added to the Render env by
+Andy** (it had never existed there; only Mac scripts and n8n ever called Voyage).
+**Probes through Mille (staging):** refund policy quoted + cited *"straight from the event FAQ"* ·
+kids answered *"per the event FAQ"* · chapter ask → *"no written team document"* — the staff SOP
+correctly invisible + honest-empty rule live. Off-corpus canary ("what colour is the moon") →
+honest empty. Gate exit 0.
+**Remaining for full close:** more team docs as they arrive (the ACs want EVERY recurring
+question covered) · promote (org_docs wiring rides the next one) · "they stop arriving as support
+requests" is measured over time, not tonight.
 
 > **In plain words:** She can answer “how does MDS work” questions — policies, processes, what's included — instead of passing them to the team.
 

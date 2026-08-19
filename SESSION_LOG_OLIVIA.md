@@ -6,6 +6,36 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (deep night) — #18 UNBLOCKED: the org knowledge library (3 docs · 47 entries), lane + wiring proven
+
+**Andy delivered the first three team documents and #18 went from BLOCKED to a proven first
+slice.** Store: `digest.docs` + `doc_entries` (migration `org_docs_library_20260819`) — audience
+FAIL-CLOSED to staff, event scoping, supersession, tsv GIN, voyage-3.5-lite/1024 (the house
+embedder). Loader `load_org_docs.py` parses three shapes — heading FAQs, three-column TABLE FAQs
+(the header row is CENTERED and lies about column offsets; bands measured from data: 0/26/77;
+row boundaries = question ends in '?' OR a fresh non-comma category), SOP paragraph sections —
+with dry-run review and dedup-keep-longest. Loaded: Summit FAQ 20 qa (member) · Ticket Requests
+FAQ 18 qa (member) · **Chapter Assignment SOP 9 sections STAFF — dark to member answers**.
+
+**Lane `/api/olivia/kb`** (policy in git): hybrid RRF over cosine + tsv keyword with OR-fallback
+(websearch AND-semantics missed natural questions), **similarity floor 0.45 measured on live
+cosines** (legit 0.55–0.69, wrong-topic strays 0.41, off-corpus 0.37), honest-empty when nothing
+clears it, loud `degraded` flag when a lane is dark. **Three real bugs found by hammering:** an
+empty corpus got cached 5 min per instance (stale PostgREST pool worker right after DDL — the
+standing NOTIFY memory, now also guarded in code) · websearch AND too strict · **the vector lane
+was silently dead in production — VOYAGE_API_KEY had NEVER existed on the Render host** (only Mac
+scripts and n8n ever called Voyage; Andy created a fresh prod key, validated from here, added it +
+manual redeploy). Wiring: `Answer Tool` gained the org_docs dispatch branch; seed declares the
+tool + the policy rule (answers FROM written entries, cite the document, numbers stay with
+structured tools, empty = say no written answer exists).
+
+**Probes through Mille (staging `6581548e`):** refund policy quoted with *"straight from the
+event FAQ"* · kids *"per the event FAQ"* + #MDSONLY nuance · **chapter ask → "no written team
+document spelling out an exact assignment formula"** — the staff SOP invisible AND stated
+honestly, graceful fallback + ticket offer · moon canary → honest empty. Gate **exit 0**.
+Remaining for #18 full close: more docs as the team writes them, the promote, and the
+support-requests-stop measure over time.
+
 ## 2026-08-19 — PROMOTED: #91 MILLE + #88 PARTNERS LIVE (prod `74f0572a` → `aec2db47`)
 
 **Andy ordered the promote from chat; lock + promote ran from here** (the classifier allowed both
