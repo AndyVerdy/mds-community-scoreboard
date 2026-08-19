@@ -50,6 +50,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | **#88** | Partner profiles — event-specific, and nowhere in the warehouse | 🟡 S2 | M | — | — |
+| **#91** | She is Mille — identity across all five reply surfaces | 🔴 S1 | S | ✅ proven `273253bc` | ⏳ **awaiting Andy's promote** |
 | **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ proven | 🟨 **LIVE** `74f0572a` + sender n8n `QhJw46Mr7LAP8fdz` every 5 min — delivery proof needs a phone (Aug 23 test reminder) |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
 | **#89** | Two rosters disagree about who is at the Summit | 🔴 S1 | M | n/a (loader+SQL) | ✅ **CLOSED 2026-08-18** — gap = identity, ledger complete; matched 124→170; single count source documented |
@@ -1518,10 +1519,41 @@ the release is actually safe to ship, not just that the tickets are marked done.
 
 ---
 
----
+### #91 · She is Mille — identity across all five reply surfaces
+**🔴 S1 · size S — filed AND built 2026-08-18 (Andy: "make her reply to Mille")**
 
+> **In plain words:** the assistant got a name the same night its number did — she introduces herself as Mille and answers when you call her that.
 
+*As a member, the assistant I talk to is Mille — she says so, and she responds when I address her by name.*
 
+The product was named tonight: display name "MDS Mille" submitted to Meta (PENDING_REVIEW, watcher
+`a1ViYr5FT7iePdN9` alerts on the ruling). Five surfaces carried "the MDS AI Assistant": the system
+identity line (`Build Prompt` + `Answer Seed`), the three unidentified/inactive greetings
+(`Build Generic`), and the #79 curated intro + beta blurb (`Build Verbatim Digest`).
+
+**Accept when:** the intro leads with Mille · "who are you"/"are you Mille" answer as Mille on both
+the help and LLM lanes · the say-you-are-an-AI honesty clause survives · NO-member-names rule
+survives (renamed from "no names" — she has one now) · `node --check` on every changed node ·
+gate GREEN.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-18 — awaiting Andy's promote
+**The fix:** `scripts/olivia_loop/apply_91_mille_identity.py` — exact-string replacements on the
+five surfaces, apostrophe-free additions, `node --check` per node, one PUT, one bounce.
+
+| AC | result |
+|---|---|
+| intro leads with Mille | ✅ staging probe (help route): *"Hi 👋 I'm \*Mille\* — the MDS AI assistant."* |
+| answers to the name on the LLM lane | ✅ "mille, are you there? whats your name?" → *"Hey Andy, yep I'm here! 👋 I'm Mille — your MDS AI assistant."* |
+| AI-honesty clause survives | ✅ identity line keeps "If asked, say plainly that you are an AI assistant" verbatim |
+| no-member-names rule survives | ✅ comment renamed to "NO MEMBER names"; member-name rules untouched |
+| node --check every changed node | ✅ 4 nodes, all OK before the PUT |
+| gate GREEN | ✅ exit 0 · probe rows cleaned |
+
+**Before → after:** "I'm the MDS AI assistant" (nameless) → named Mille on all five surfaces;
+old identity string verified gone on re-read. Staging `273253bc`; prod untouched.
+**Andy: promote when ready** (`python3 scripts/olivia_wf.py lock` → `promote`). Note: until Meta
+approves "MDS Mille", the WhatsApp header still shows "MDS AI Assistant" next to her saying Mille —
+promote now or after the name flips, your call.
 
 ---
 

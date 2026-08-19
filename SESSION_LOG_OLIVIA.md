@@ -20,7 +20,17 @@ existing threads. The PIN stays with Andy only — deliberately unrecorded.
 **Then Andy renamed the product the same night: "MDS Mille" submitted** (`POST
 /{id}?new_display_name`, per the display-names doc — 10 changes allowed per 30 days) →
 `new_name_status: PENDING_REVIEW`, current name stays "MDS AI Assistant" meanwhile. **On approval:
-14 days to re-register or the approval lapses** — handoff carries the check.
+14 days to re-register or the approval lapses** — handoff carries the check, and the temporary
+watcher `a1ViYr5FT7iePdN9` (hourly) WhatsApps the test number when the review concludes.
+
+**#91 BUILT + STAGED + PROVEN — she is Mille (staging `273253bc`, awaiting promote).** Five
+surfaces carried the nameless identity: the system identity line (Build Prompt + Answer Seed), the
+three Build Generic greetings, the #79 intro + beta blurb (Build Verbatim Digest). One apply script
+(`apply_91_mille_identity.py`), exact-string replacements, apostrophe-free, `node --check` ×4, one
+bounce. Probes: help → *"Hi 👋 I'm \*Mille\* — the MDS AI assistant."* · LLM → *"Hey Andy, yep I'm
+here! 👋 I'm Mille — your MDS AI assistant."* AI-honesty clause and NO-MEMBER-names rule survive.
+Gate exit 0, probe rows cleaned. Prod untouched — Andy's promote, now or after Meta approves the
+display name.
 
 ## 2026-08-18 (night, latest) — #89 CLOSED: the roster gap was identity, not attendance
 

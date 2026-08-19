@@ -28,7 +28,11 @@
 | **n8n STAGING** | `6e573dce` | same graph — nothing waiting |
 | **endpoint (mds-digest-web)** | `8fcae8e` | in sync |
 
-**Nothing is awaiting promotion.** Six promotes today, gate passed every time.
+**AWAITING PROMOTE: #91 (Mille identity) — staging `273253bc`, prod `74f0572a` has none of it.**
+Five surfaces renamed (system identity ×2, generic greetings ×3-in-one-node, intro + beta blurb);
+probes prove intro + answers-to-name; gate exit 0. Andy promotes (`lock` → `promote`), now or after
+Meta approves the "MDS Mille" display name — until then the WhatsApp header still reads "MDS AI
+Assistant" beside her saying Mille.
 
 **What a member can do now:** ask what's on and when · where it is, with a map · who speaks and about
 what · which sessions suit them · **who to meet, scoped to people actually attending** · set, list and
