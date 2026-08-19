@@ -6,6 +6,27 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (past midnight) — #88 PARTNER PROFILES built + staged + proven
+
+**Andy fed the data himself** — the GroupOS export carries no partners (24h behind), so the AT
+partners "APP" view CSV became the source: **11 companies · 20 people**, full member-facing
+profiles (description, snapshot, standing MDS offer, event-unique offer, redeem instructions,
+contact). Shipped in four pieces: migration `event_partner_profiles_20260819` (`partner_profiles`
+per company per event + `partner_people` as ROWS — booth staff queryable, ticket AC), loader
+`scripts/load_partner_profiles.py` (idempotent, richest-value merge, categories enriched from the
+view dump, refuses <8 companies so a wrong file cannot half-load), **`partners` op** on
+`/api/olivia/schedule` (mds-digest-web `d1924be`, deployed and verified live: list with teasers,
+company match, PERSON match), and the Answer Seed declaration + one routing rule (event asks =
+op=partners; `partner_lookup` stays the year-round directory).
+
+**Probes (staging `4ca0b46d`):** "who are the partners at the summit?" → all 11, each with its
+offer · "what does StoreClaw offer at the summit?" → *"2 months free if you sign up while you're
+there — on top of their standing MDS deal of 1 month free + 25% off ULTRA"* + exact redeem path ·
+"which partner is Emily Wang with?" → *"StoreClaw.Ai — BD Manager, alongside Oc Dai and Steven
+Zhou."* Gate **exit 0**, probe rows cleaned. No passcode/QR/ops fields anywhere in the warehouse.
+**Prod: endpoint + data already live; the SEED waits on Andy's promote, which now carries #91 +
+#88 together.**
+
 ## 2026-08-18 (night, latest) — #89 CLOSED · the number is "MDS AI Assistant"
 
 **Display name fixed (Andy ran the register, guided from here).** The approved name sat as

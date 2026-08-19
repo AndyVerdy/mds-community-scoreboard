@@ -2,6 +2,8 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-19 · **Olivia** · **#88 PARTNER PROFILES built + staged + proven — awaiting promote (stacked with #91)**: GroupOS export has no partners, so Andy's AT "APP" CSV is the source — **11 companies · 20 people** into `event.partner_profiles` + `partner_people` (migration `event_partner_profiles_20260819`, loader refuses <8 companies; booth staff are ROWS) · `partners` op live on the prod endpoint (mds-digest-web `d1924be`: list/company/person match) · seed declares op + routing rule (event asks ≠ `partner_lookup` directory) · probes: 11-partner list, StoreClaw event offer + redeem, "which partner is Emily Wang with" → StoreClaw · gate exit 0 · no passcode/QR fields ever ingested → `SESSION_LOG_OLIVIA.md`
+
 **Split 2026-07-30 (Andy):** full entries live in the stream logs — `SESSION_LOG_OLIVIA.md` ·
 `SESSION_LOG_SCORECARD.md` (leaderboard + FB capture/scraper/scoring) · `SESSION_LOG_MISC.md`
 (Tools-health, WA DB, Member360, GroupOS sync, Membership Health, one-offs). **Every session close:

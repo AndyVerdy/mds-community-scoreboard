@@ -49,7 +49,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
-| **#88** | Partner profiles — event-specific, and nowhere in the warehouse | 🟡 S2 | M | — | — |
+| **#88** | Partner profiles — event-specific, and nowhere in the warehouse | 🟡 S2 | M | ✅ proven `4ca0b46d` | ⏳ **awaiting promote** (endpoint + data already live) |
 | **#91** | She is Mille — identity across all five reply surfaces | 🔴 S1 | S | ✅ proven `273253bc` | ⏳ **awaiting Andy's promote** |
 | **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ proven | 🟨 **LIVE** `74f0572a` + sender n8n `QhJw46Mr7LAP8fdz` every 5 min — delivery proof needs a phone (Aug 23 test reminder) |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
@@ -150,6 +150,32 @@ A Partner attendee carries a profile the other types don't: display name, compan
 **Shape of the fix:** `event.attendee_profiles`, 1:1 on `event.attendees` — the profile hangs off the attendee row, never off `people`, because it is per event and per type.
 
 **Accept when:** partner profile loads and answers "what does X offer at this Summit" · **passcode never enters the warehouse** — it is a credential · booth staff are rows, not names typed into the description, or "which partner is Rob Torti with" stays unanswerable · gate GREEN.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-18/19 — awaiting Andy's promote (seed only; endpoint + data already live)
+**The source moved:** the GroupOS export still carries no partners (24h behind), so Andy fed the
+AT "APP" view CSV directly — **11 companies · 20 people**, full member-facing profiles.
+
+**The build:** migration `event_partner_profiles_20260819` — `event.partner_profiles` (one row per
+company per event: description, snapshot, both offers, redeem instructions, contact, categories) +
+`event.partner_people` (people as ROWS: name, role, ticket type) · loader
+`scripts/load_partner_profiles.py` (idempotent, richest-value merge per company, categories
+enriched from the view dump, refuses <8 companies) · **`partners` op** on `/api/olivia/schedule`
+(mds-digest-web `d1924be`, deployed + verified on prod endpoint) · Answer Seed declares the op +
+one routing rule (event asks = op=partners; `partner_lookup` stays the year-round directory).
+
+| AC | result |
+|---|---|
+| answers "what does X offer at this Summit" | ✅ staging probe: StoreClaw → *"2 months free if you sign up while you're there — on top of their standing MDS deal"* + what they do + exact redeem path |
+| passcode never enters the warehouse | ✅ loader ingests only the member-facing columns — no passcode, QR, form-URL, or ops fields exist in either table |
+| booth staff are rows | ✅ `partner_people` 20 rows; probe *"which partner is Emily Wang with?"* → *"StoreClaw.Ai — BD Manager, alongside Oc Dai and Steven Zhou"* |
+| gate GREEN | ✅ exit 0 · probe rows cleaned |
+
+**Before → after:** partner questions about the Summit had NOTHING (0 rows anywhere) → 11
+companies, 20 people, list + full-profile + person-lookup all proven on staging `4ca0b46d`.
+**Named remainders:** categories missing on CrediLinq (absent in the view) · Trellis has no contact
+block in the CSV · when the GroupOS export gains partner attendees, link `partner_people` to
+`event.attendees` by email (follow-up, not blocking). **Promote carries #91 + #88 together** —
+staging holds both.
 
 ---
 
