@@ -721,6 +721,17 @@ CREATE UNIQUE INDEX olivia_question_labels_pkey ON digest.olivia_question_labels
 alter table digest.olivia_question_topics add constraint olivia_question_topics_pkey PRIMARY KEY (id);
 CREATE UNIQUE INDEX olivia_question_topics_pkey ON digest.olivia_question_topics USING btree (id);
 
+-- digest.olivia_recommendations
+--   id                                 bigint not null
+--   asker_at_id                        text not null
+--   recommended_at_id                  text not null
+--   lane                               text not null default 'event_people'::text
+--   created_at                         timestamp with time zone not null default now()
+alter table digest.olivia_recommendations add constraint olivia_recommendations_pkey PRIMARY KEY (id);
+CREATE INDEX olivia_recs_asker_idx ON digest.olivia_recommendations USING btree (asker_at_id, created_at);
+CREATE INDEX olivia_recs_target_idx ON digest.olivia_recommendations USING btree (recommended_at_id, created_at);
+CREATE UNIQUE INDEX olivia_recommendations_pkey ON digest.olivia_recommendations USING btree (id);
+
 -- digest.olivia_reports
 --   id                                 bigint not null
 --   phone                              text not null

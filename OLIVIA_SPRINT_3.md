@@ -969,6 +969,21 @@ already-connected — led the list → three genuine strangers + a June-2026 joi
 labeled. **Watch at scale:** join-date coverage is 977 of the roster; attendee sets skew veteran,
 so the newer_member label appears only when real.
 
+#### ✅ REVISED same day to the WRITTEN recommendation logic (Andy's correction) — `3ce77c7`
+My first cut could rank a weak-match stranger above a strong-match expert — violating
+proficiency-first. Now aligned with handbook §7.1: **PRIMARY = expertise-ledger percentile** on
+the matched topics (mapped via `expertise_topics.terms` curated aliases; ledger-uncovered
+candidates cap at a mid-low tier), **tiers = deciles** ("several matches" = same decile), and only
+inside a tier: **member value** (`engagement_score`) ± **the EQUALIZER** (new
+`digest.olivia_recommendations` log — every recommendation recorded fire-and-forget; hard 30-day
+per-asker no-repeat, soft 7-day global exposure spread) ± the #93 novelty terms. Scores stay
+internal (§7.3).
+**Equalizer proven live:** two identical asks seconds apart returned **zero overlapping names** —
+run 1 (Wei Lin, Igor Chernyavskiy, Sam Uloho…) logged, run 2 fully reshuffled. Gate exit 0.
+**Named remainder:** the log + equalizer cover the EVENT people lane; Eugene's Moe repeats came
+mostly from the general members lane (`member_match`) — extending the equalizer there is the next
+slice of his item 3.
+
 ---
 
 ### #92 · Event selection for a multi-event world — she must pick the RIGHT schedule

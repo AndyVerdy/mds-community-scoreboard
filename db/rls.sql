@@ -47,6 +47,7 @@ alter table digest.olivia_job_heartbeats enable row level security;
 -- digest.olivia_messages: row level security DISABLED
 -- digest.olivia_question_labels: row level security DISABLED
 alter table digest.olivia_question_topics enable row level security;
+-- digest.olivia_recommendations: row level security DISABLED
 -- digest.olivia_reports: row level security DISABLED
 alter table digest.olivia_requests enable row level security;
 -- digest.olivia_seen: row level security DISABLED

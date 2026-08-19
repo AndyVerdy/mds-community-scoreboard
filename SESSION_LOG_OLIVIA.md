@@ -6,6 +6,20 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (day 2b) — Andy's correction: the WRITTEN logic + the equalizer, proven live
+
+Andy: *"proficiency is more important than weight, but with several matches, use weight. Need to
+add an equalizer — check how often we recommended one person, and balance it."* My #93 cut could
+flip that (flat novelty boosts beat topic hits) — rebuilt against handbook §7.1: primary =
+expertise-ledger percentile on matched topics (via `expertise_topics.terms` aliases — the curated
+mapping, no substrings), tiers = deciles, and only among tier-equals: `engagement_score` ± the
+EQUALIZER ± novelty. New table `digest.olivia_recommendations` (append-only, service-role) logs
+every name she hands out; ranking reads it back — hard 30-day per-asker no-repeat, soft 7-day
+global spread (protects the Moes of the community from inbox floods). **Proof: two identical asks
+seconds apart returned ZERO overlapping names** — run 1 logged, run 2 reshuffled. Endpoint
+`3ce77c7`, no n8n change, gate exit 0. Remainder named: the general members lane (`member_match`)
+still lacks the equalizer — that is where Eugene's Moe dozen actually lived; next slice.
+
 ## 2026-08-19 (day 2) — #93: who-to-meet favors new faces (Eugene's report, item 2 of 4)
 
 Eugene, verbatim: *"it needs to prioritize newer members, giving you newer members that you

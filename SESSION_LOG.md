@@ -2,6 +2,8 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-19 (day 2b) · **Olivia** · **who-to-meet re-aligned to the WRITTEN logic (Andy's correction) + EQUALIZER live**: proficiency first (expertise-ledger pct deciles via `expertise_topics.terms`), value (`engagement_score`) only among tier-equals, **new `olivia_recommendations` log** — hard 30d per-asker no-repeat + soft 7d global spread · **proof: two identical asks seconds apart → ZERO overlapping names** · endpoint `3ce77c7` · gate exit 0 · remainder: extend equalizer to `member_match` (Moe repeats live mostly there) → `SESSION_LOG_OLIVIA.md`
+
 - 2026-08-19 (day 2) · **Olivia** · **#93 CLOSED — who-to-meet favors NEW faces (Eugene's report, Andy: "agree")**: `member_edges` co-engagement downranks old friends, `join_date` boosts ≤12-month members, labels honest ("joined Jun 2026" · "no shared chats or events on record") · endpoint `1316c9c`, nothing to promote · probe: *"Michelle Xu — newer to MDS (joined this June) and you don't have crossover yet"* · before/after: 3 strangers replaced the old-friends top-3, Neeme Roos #2→7th · gate exit 0 → `SESSION_LOG_OLIVIA.md`
 
 - 2026-08-19 (day) · **Olivia** · **"good, not great" fixed — chapter profiles CARRY their numbers**: plan ledger proved every turn called the same `chapter_info` (payload had the stats; the model withheld until "gimme data") · answer-shape rule · prod **`bae7e0e5`** probed: 59 members · $918M combined · $17.7M avg in the FIRST answer → `SESSION_LOG_OLIVIA.md`
