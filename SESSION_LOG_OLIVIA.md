@@ -6,6 +6,18 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (sprint close) — SPRINT 3 CLOSED: 34 shipped, SPRINT 4 open, notes drafted
+
+Ritual executed: **34 closed tickets archived** (evidence intact, newest first) to
+`OLIVIA_BACKLOG_ARCHIVE.md` · **`OLIVIA_SPRINT_4.md` opened** with the 23 open tickets carried
+whole + the full header (rules · 🎯 Eugene standing order · ritual/DoD) · `OLIVIA_SPRINT_3.md`
+compressed to a stub · handoff repointed. **Release notes drafted**
+(`OLIVIA_RELEASE_NOTES_2026-08-19.md`, WhatsApp + ClickUp syntaxes, "Meet Mille" — Andy validates
+and posts; the sprint is not closed until they exist, and now they do). **The smoke run on the
+100-question bank is PROPOSED as the exit exam — the run is Andy's call** (propose-and-wait tier).
+ClickUp handbook copy refresh: still queued (standing Andy item). Prod `060701be` · gate exit 0 ·
+nothing awaiting promotion.
+
 ## 2026-08-19 (session close) — Eugene's arc landed; expertise ledger v2 planned and approved
 
 **Session totals across the two days:** #86 · #89 · #90 · #76 · #93 CLOSED · #91 Mille + #88

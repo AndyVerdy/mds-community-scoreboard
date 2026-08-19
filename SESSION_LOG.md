@@ -2,6 +2,8 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-19 (sprint close) · **Olivia** · **SPRINT 3 CLOSED — 34 tickets archived, SPRINT 4 opened** (23 carried whole, Eugene's four S1 in front per the standing order; ritual/DoD header travels) · board compressed: `OLIVIA_SPRINT_3.md` → 21-line stub, evidence intact in `OLIVIA_BACKLOG_ARCHIVE.md` · **release notes drafted** `OLIVIA_RELEASE_NOTES_2026-08-19.md` (Andy validates + posts) · **smoke run PROPOSED as the exit exam — Andy's go** · prod `060701be`, nothing awaiting promotion → `SESSION_LOG_OLIVIA.md`
+
 - 2026-08-19 (close) · **Olivia** · **SESSION CLOSE — Eugene arc landed, expertise ledger v2 planned**: #93 closed (novelty + equalizer, meet-lane novelty-first) · 6 member-visible defects fixed live off Andy's testing · **expertise v2 spec Andy-approved** (decay 12/24mo half-lives + 40%-peak floor · forms floor · engagement bonus · 18 parents + 34 corpus-born subtopics) → plan `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md`, execution-mode pick pending · **prod `060701be` = staging, nothing awaits promotion (verified live)** · open on Andy: Eugene name-cap · item-4 intros · count ruling (98 rec) · Mille name review → `SESSION_LOG_OLIVIA.md`
 
 - 2026-08-19 · **Scorecard/FB ext** · **FULL AUTOPILOT (v0.87→0.90)**: one owned tab, daily insights + humanized auto-scroll (≤9 jittered steps, 48h edge/stall/shell stops) + comment pass (localStorage ∪ DB-seed <7d, cap 40) — roster demoted to WEEKLY via download-history gate · proven one-button: 16-post harvest, 40/40 posts + 166 comments, images OCR'd, SILENT card 5 (2 dropped off correctly) · 2 bugs root-caused from worker status in LevelDB (No-tab-with-id; stamp-only roster gate) → `SESSION_LOG_SCORECARD.md`

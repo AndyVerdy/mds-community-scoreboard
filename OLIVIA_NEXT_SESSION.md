@@ -21,6 +21,11 @@
 
 ## STATE 2026-08-19 (close): PROD `060701be` — nothing awaits promotion (verified live at close)
 
+### ⚠️ SPRINT 3 CLOSED 2026-08-19 → the board is now **`OLIVIA_SPRINT_4.md`** (23 open tickets,
+Eugene's four in front). 34 closed tickets archived to `OLIVIA_BACKLOG_ARCHIVE.md`. **Two sprint-
+close items await Andy:** ① the SMOKE RUN on the 100-bank (the exit exam — proposed, his go) ②
+validate + post `OLIVIA_RELEASE_NOTES_2026-08-19.md`.
+
 ### NEXT SESSION OPENS HERE
 **🎯 STANDING ORDER (Andy): Eugene's FOUR beta cases lead the queue, ALL S1, in this order —
 #94 (his item 2) → #95 (his item 3) → #96 (his item 1, on the confirm) → #97 (his item 4, on the
