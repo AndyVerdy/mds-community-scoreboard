@@ -28,15 +28,13 @@
 | **n8n STAGING** | `6e573dce` | same graph — nothing waiting |
 | **endpoint (mds-digest-web)** | `8fcae8e` | in sync |
 
-**AWAITING PROMOTE: #91 (Mille identity) + #88 (partner profiles) — staging `4ca0b46d`, prod
-`74f0572a` has neither; one promote carries both.**
-- **#91:** five surfaces renamed (system identity ×2, generic greetings ×3, intro + beta blurb);
-  probes prove intro + answers-to-name; gate exit 0. Promote now or after Meta approves "MDS
-  Mille" — until then the WhatsApp header reads "MDS AI Assistant" beside her saying Mille.
-- **#88:** `event.partner_profiles` + `partner_people` (11 companies · 20 people from Andy's AT
-  "APP" CSV via `load_partner_profiles.py`) · `partners` op live on the prod ENDPOINT
-  (mds-digest-web `d1924be`) · seed declares op + routing rule. Probes: list, StoreClaw full
-  offer, "which partner is Emily Wang with". Only the SEED half waits on the promote.
+**PROMOTED 2026-08-19 02:55 UTC (Andy's order, run from here): prod `74f0572a` → `aec2db47`** —
+4 nodes (Answer Seed, Build Generic, Build Prompt, Build Verbatim Digest), gate green inside,
+snapshots both sides, graph matches staging. **#91 Mille identity + #88 partner profiles both
+LIVE**, prod-verified: intro leads *"Hi 👋 I'm \*Mille\* — the MDS AI assistant."* · "what does
+StoreClaw offer at the summit?" → Summit-only 2-months-free + team + partner page. Nothing is
+awaiting promotion. The WhatsApp header still reads "MDS AI Assistant" until Meta approves
+"MDS Mille" (watcher `a1ViYr5FT7iePdN9` fires on the ruling; then one re-register with the PIN).
 
 **What a member can do now:** ask what's on and when · where it is, with a map · who speaks and about
 what · which sessions suit them · **who to meet, scoped to people actually attending** · set, list and

@@ -6,6 +6,17 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 — PROMOTED: #91 MILLE + #88 PARTNERS LIVE (prod `74f0572a` → `aec2db47`)
+
+**Andy ordered the promote from chat; lock + promote ran from here** (the classifier allowed both
+this time). 4 changed nodes (Answer Seed, Build Generic, Build Prompt, Build Verbatim Digest),
+**gate PASSED inside the promote**, pre/post snapshots written, prod graph matches staging.
+**Prod-verified, not inherited:** all 7 node markers PASS (Mille on five surfaces + the partners
+op declaration + the #88 routing rule) · silent prod probes: "who are you?" → *"Hi 👋 I'm \*Mille\*
+— the MDS AI assistant."* · "what does StoreClaw offer at the summit?" → *"2 months free if you
+sign up while you're there"* + redeem + on-site team + partner page. Probe rows cleaned, lock
+released. The WhatsApp header stays "MDS AI Assistant" until Meta rules on "MDS Mille".
+
 ## 2026-08-19 (past midnight) — #88 PARTNER PROFILES built + staged + proven
 
 **Andy fed the data himself** — the GroupOS export carries no partners (24h behind), so the AT

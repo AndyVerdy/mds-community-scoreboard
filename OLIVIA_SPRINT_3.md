@@ -49,10 +49,10 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
-| **#88** | Partner profiles — event-specific, and nowhere in the warehouse | 🟡 S2 | M | ✅ proven `4ca0b46d` | ⏳ **awaiting promote** (endpoint + data already live) |
-| **#91** | She is Mille — identity across all five reply surfaces | 🔴 S1 | S | ✅ proven `273253bc` | ⏳ **awaiting Andy's promote** |
 | **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ proven | 🟨 **LIVE** `74f0572a` + sender n8n `QhJw46Mr7LAP8fdz` every 5 min — delivery proof needs a phone (Aug 23 test reminder) |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#88** | Partner profiles — event-specific, linked to the directory | 🟡 S2 | M | ✅ proven `4ca0b46d` | ✅ **LIVE** `aec2db47` (prod probe: Summit offer + partner page) |
+| **#91** | She is Mille — identity across all five reply surfaces | 🔴 S1 | S | ✅ proven `273253bc` | ✅ **LIVE** `aec2db47` (prod probe: intro leads with Mille) |
 | **#89** | Two rosters disagree about who is at the Summit | 🔴 S1 | M | n/a (loader+SQL) | ✅ **CLOSED 2026-08-18** — gap = identity, ledger complete; matched 124→170; single count source documented |
 | **#90** | The chats mirror stopped syncing — she hands out dead invite links | 🔴 S1 | S | n/a (mirror) | ✅ **CLOSED 2026-08-18** — hourly n8n `RpEbU47SpMVsbwqg`, diff 0, 3h alarm |
 | **#87** | "Who should I meet" returns people who aren't going | 🟡 S2 | S | ✅ proven | ✅ **LIVE** `74f0572a` (7/7 attending) |
@@ -151,7 +151,7 @@ A Partner attendee carries a profile the other types don't: display name, compan
 
 **Accept when:** partner profile loads and answers "what does X offer at this Summit" · **passcode never enters the warehouse** — it is a credential · booth staff are rows, not names typed into the description, or "which partner is Rob Torti with" stays unanswerable · gate GREEN.
 
-#### ✅ BUILT + STAGED + PROVEN 2026-08-18/19 — awaiting Andy's promote (seed only; endpoint + data already live)
+#### ✅ LIVE 2026-08-19 — prod `aec2db47` (promoted with #91, gate green inside; prod probe: Summit offer + team + partner page)
 **The source moved:** the GroupOS export still carries no partners (24h behind), so Andy fed the
 AT "APP" view CSV directly — **11 companies · 20 people**, full member-facing profiles.
 
@@ -1580,7 +1580,7 @@ the help and LLM lanes · the say-you-are-an-AI honesty clause survives · NO-me
 survives (renamed from "no names" — she has one now) · `node --check` on every changed node ·
 gate GREEN.
 
-#### ✅ BUILT + STAGED + PROVEN 2026-08-18 — awaiting Andy's promote
+#### ✅ LIVE 2026-08-19 — prod `aec2db47` (promoted with #88; prod probe: intro leads *"Hi 👋 I'm \*Mille\* — the MDS AI assistant."*)
 **The fix:** `scripts/olivia_loop/apply_91_mille_identity.py` — exact-string replacements on the
 five surfaces, apostrophe-free additions, `node --check` per node, one PUT, one bounce.
 

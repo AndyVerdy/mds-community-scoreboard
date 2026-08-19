@@ -2,6 +2,7 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-19 (later) · **Olivia** · **PROMOTED — #91 MILLE + #88 PARTNERS LIVE, prod `74f0572a` → `aec2db47`** (Andy's order, run from here; gate green inside; snapshots both sides; graph matches staging) · prod-verified: 7/7 node markers + silent probes — intro *"I'm \*Mille\*"*, StoreClaw Summit-only offer + partner page · lock released · header flips to "MDS Mille" when Meta rules (watcher armed) → `SESSION_LOG_OLIVIA.md`
 - 2026-08-19 · **Olivia** · **#88 PARTNER PROFILES built + staged + proven — awaiting promote (stacked with #91)**: GroupOS export has no partners, so Andy's AT "APP" CSV is the source — **11 companies · 20 people** into `event.partner_profiles` + `partner_people` (migration `event_partner_profiles_20260819`, loader refuses <8 companies; booth staff are ROWS) · `partners` op live on the prod endpoint (mds-digest-web `d1924be`: list/company/person match) · seed declares op + routing rule (event asks ≠ `partner_lookup` directory) · probes: 11-partner list, StoreClaw event offer + redeem, Emily Wang → StoreClaw · **directory LINKED 11/11** (`directory_partner_id` FK + `partner_page` in the op, `6188b9e`) · **path-separation matrix proven**: general ask = directory offer, Summit ask = Summit-only offer labeled apart, chain holds event context, zero bleed either way · gate exit 0 ×2 · no passcode/QR fields ever ingested → `SESSION_LOG_OLIVIA.md`
 
 **Split 2026-07-30 (Andy):** full entries live in the stream logs — `SESSION_LOG_OLIVIA.md` ·
