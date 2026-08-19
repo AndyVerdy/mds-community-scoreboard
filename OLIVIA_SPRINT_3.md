@@ -37,7 +37,6 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
-| **#93** | Who-to-meet favors NEW faces — novelty beats familiarity (Eugene) | 🔴 S1 | S | — | 🔨 in build |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -51,6 +50,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#93** | Who-to-meet favors NEW faces (Eugene) | 🔴 S1 | S | n/a (endpoint) | ✅ **CLOSED 2026-08-19** — `1316c9c`; probe: "newer to MDS (joined this June), no crossover yet" |
 | **#86** | Reminders — remind / reminders / unremind + sender + DELIVERY | 🔴 S1 | M | ✅ proven | ✅ **CLOSED 2026-08-19** — story proven on Andy's phone: sent 05:55:08, read 05:55:11; sender now every minute |
 | **#76** | New eval bank — 100 organic questions | 🔴 S1 | M | ✅ built | ✅ **CLOSED 2026-08-19** (built 08-16, baseline 96% recorded 08-17; row never flipped) |
 | **#88** | Partner profiles — event-specific, linked to the directory | 🟡 S2 | M | ✅ proven `4ca0b46d` | ✅ **LIVE** `aec2db47` (prod probe: Summit offer + partner page) |
@@ -949,6 +949,25 @@ them. I feel like it's gonna do the same for others."*
 honest labels ("joined <month year>", "no shared chats or events on record") · a new member's
 results stay sensible (their whole world is new faces) · gate GREEN · before/after on Eugene-class
 asker recorded.
+
+#### ✅ CLOSED 2026-08-19 — endpoint `1316c9c`, nothing to promote (no n8n change)
+**The fix:** the `people` op ranks with two real signals on top of topic overlap —
+`member_edges` co-engagement with the asker (heavy tie = log-damped downrank; NO edge = boost) and
+`join_date` (≤12 months = boost). Every row carries its honest label; the note tells the model the
+ranking philosophy.
+
+| AC | result |
+|---|---|
+| new faces above old friends | ✅ direct op check (test asker with heavy ties): three no-edge strangers lead; Neeme Roos — the morning's #2 — dropped to 7th |
+| honest labels on rows | ✅ `newer_member: "joined Jun 2026"` (only when true) · `connection: "no shared chats or events on record"` / `"you two already share activity"` |
+| full loop verbalizes the reasons | ✅ Mille: *"Michelle Xu — newer to MDS (joined this June) and you don't have crossover yet — a good chance to make a fresh connection"* |
+| new member's results stay sensible | ✅ structural: for a no-edge asker every candidate gets the same +1, ranking falls back to overlap |
+| gate GREEN | ✅ exit 0 |
+
+**Before → after (same asker, same day):** Alex Bonilla / Neeme Roos / Brandon Himmel — all
+already-connected — led the list → three genuine strangers + a June-2026 joiner lead, connections
+labeled. **Watch at scale:** join-date coverage is 977 of the roster; attendee sets skew veteran,
+so the newer_member label appears only when real.
 
 ---
 

@@ -6,6 +6,19 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (day 2) — #93: who-to-meet favors new faces (Eugene's report, item 2 of 4)
+
+Eugene, verbatim: *"it needs to prioritize newer members, giving you newer members that you
+haven't met instead of older members because it's sending older members here and I know all of
+them."* Root: topic overlap alone favors the asker's oldest friends. Fix in the `people` op
+(endpoint `1316c9c`, no n8n change): `member_edges` co-engagement with the asker (log-damped
+downrank on heavy ties, boost on NO edge) + `join_date` ≤12 months boost; rows carry honest labels
+and the model verbalizes them — probe: *"Michelle Xu — newer to MDS (joined this June) and you
+don't have crossover yet."* Before/after same asker same day: already-connected top-3 → three
+genuine strangers, Neeme Roos #2→7th. Gate exit 0. Eugene's other items: #1 attendee-name cap —
+Andy confirming with Eugene · #3 over-recommending one person (Moe ×12) — next up · #4 tap-to-
+message — thinking (broker-intro shape, needs ruling).
+
 ## 2026-08-19 (day) — "good, not great": chapter profiles now carry their numbers; prod `bae7e0e5`
 
 Andy's morning test: "tell me about Asia pacific chapter" → rich prose, NO numbers; "gimme some
