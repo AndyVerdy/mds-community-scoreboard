@@ -37,7 +37,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#76** | New eval bank — **100** questions from real member traffic *(BUILT 2026-08-16: `eval_bank_100_2026-08-16.json`)* | 🔴 S1 | M | ✅ built | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
-| **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ⏳ **awaiting promote** — library live (3 docs · 47 entries) |
+| **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
@@ -1151,7 +1151,7 @@ with its reason · one baseline run on the new bank, its rate recorded as the ne
 > Was blocked 2026-08-05 ("we dont have data"). **Andy delivered the first three team documents
 > 2026-08-19** and the org knowledge library shipped around them.
 
-#### ⏳ FIRST SLICE 2026-08-19 — library + lane + wiring proven on staging `6581548e`; promote pending
+#### ✅ FIRST SLICE LIVE 2026-08-19 — prod `f3850dd7` (promoted on Andy's order; prod probes: refund cited per the FAQ, chapter ask honestly doc-less)
 **The build:** `digest.docs` + `doc_entries` (migration `org_docs_library_20260819`) — audience
 FAIL-CLOSED to staff, event scoping, supersession, tsv GIN, voyage-3.5-lite/1024 · loader
 `scripts/load_org_docs.py` (heading FAQs, three-column table FAQs with measured column bands, SOP

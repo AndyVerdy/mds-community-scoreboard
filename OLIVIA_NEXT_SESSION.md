@@ -28,8 +28,9 @@
 | **n8n STAGING** | `6e573dce` | same graph — nothing waiting |
 | **endpoint (mds-digest-web)** | `8fcae8e` | in sync |
 
-**AWAITING PROMOTE: #18 org_docs wiring — staging `6581548e`** (Answer Tool dispatch branch +
-seed tool/rule). The library itself is LIVE regardless: 3 docs · 47 entries
+**PROMOTED 2026-08-19 04:42 UTC: #18 org_docs wiring — prod `aec2db47` → `f3850dd7`**, gate green
+inside, prod-probed (refund cited per the FAQ; chapter ask honestly doc-less). Nothing awaits
+promotion. The library itself is LIVE regardless: 3 docs · 47 entries
 (`org_docs_library_20260819` + `load_org_docs.py`), `/api/olivia/kb` deployed with measured 0.45
 floor, VOYAGE_API_KEY now in the Render env (Andy added it — manual redeploy done). Staging probes
 through Mille: refund cited from the FAQ · kids per the FAQ · chapter ask honestly says no written
