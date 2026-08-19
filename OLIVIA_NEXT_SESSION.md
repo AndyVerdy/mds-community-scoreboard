@@ -71,7 +71,14 @@ cancel reminders · get a post's image with the answer · read a weekly chat dig
    needs Andy's 24h window on …8153 open. **DELETE the watcher once Mille is live.** When the name
    flips, queue Andy's rewording pass on the intro/self-references (#79 curated copy says "the MDS
    AI assistant").
-3. **Ask the dev for a fresh export** — CÉ LA VI is in the admin's 19 locations but not our 18, so
+3. **Multi-event note (Andy 2026-08-19: "we will have more" schedules):** the event schema and all
+   lanes are already multi-event (everything keys on `event_id`; the loader loads any export
+   alongside). ONE decision waits for event #2: the lane's no-event-named default is
+   latest-starting — switch to nearest-upcoming or asker's-registration when a second event loads.
+   Nothing to build until then. Reminders stay schedule-anchored BY DESIGN (her refusal of
+   freestanding "remind me to check fb" is correct behavior); freestanding reminders = a new
+   ticket if Andy ever wants them.
+4. **Ask the dev for a fresh export** — CÉ LA VI is in the admin's 19 locations but not our 18, so
    some of the 13 venue-less activities may be export gaps. Same dump un-truncates long descriptions.
 
 ### Two things NO probe can verify — test on a phone
