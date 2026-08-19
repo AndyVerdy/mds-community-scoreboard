@@ -37,6 +37,7 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
+| **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
@@ -913,6 +914,26 @@ same webhook.
 - Units/period declared and sweep-asserted.
 - Lag documented or removed.
 - QA sweep + gate GREEN after each.
+
+---
+
+### #92 · Event selection for a multi-event world — she must pick the RIGHT schedule
+**🟡 S2 · size S — filed 2026-08-19 (Andy: "we connected singapore, but we will have more") · ⏸ builds when event #2's export exists**
+
+> **In plain words:** with two events loaded, "what's on?" must answer about the right one — today she can't choose at all.
+
+*As a member, my schedule, reminder and partner questions land on the event I mean — named or implied — never on whichever event happens to sort last.*
+
+The whole event schema is already multi-event (everything keys on `event_id`; the loader loads any
+export alongside). What is missing is CHOICE: the lane defaults to the latest-starting event and
+the model never passes an event id, so a second export would silently steal every default answer.
+
+**Shape of the fix:** resolve the event from the question when named (match against `event.events`
+titles), else a default rule — nearest-upcoming, or the event the asker is registered for (Andy
+picks which); reminders inherit the same resolution.
+
+**Accept when:** a named ask answers about that event · an unnamed ask follows the ruled default ·
+reminders anchor to the resolved event · Singapore behavior unchanged with one event loaded · gate GREEN.
 
 ---
 
