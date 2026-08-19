@@ -6,6 +6,12 @@ CREATE OR REPLACE FUNCTION digest.content_ingest_summary()
  SET search_path TO 'digest', 'pg_temp'
 AS $function$
 begin
+  -- Quiet-period stubs never enter the search index; if an earlier version of
+  -- this summary DID get indexed, evict it.
+  if coalesce(new.msg_count, 0) = 0 or new.tl_dr ilike 'no activity%' then
+    delete from digest.content_items where source = 'wa_digest' and source_id = new.airtable_id;
+    return new;
+  end if;
   insert into digest.content_items
     (source, kind, source_id, title, tl_dr, body, occurred_at, url,
      access_rule, sensitivity, search_extra, meta)

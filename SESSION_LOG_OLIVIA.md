@@ -6,6 +6,19 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (day 2e) — the FB-only catch-up: 750 "No activity" stubs were the whole story
+
+Andy: *"Why its FB only."* The router was INNOCENT this time — the plan showed both halves fired
+(fb_catchup + content_search over wa_digest, the general-catch-up fix from 2026-07-27 held). The WA
+half returned 40 rows — dominated by *"No activity — no messages this period"* daily stubs. **750
+of 1,924 wa_digest rows in the search index were stubs (39%)**; recency-ordered, they buried the 56
+real WA items of the week, and the model honestly reported the inputs it saw: Facebook only. Fix:
+`content_ingest_summary()` (the summaries→content_items trigger) now returns early on
+`msg_count=0` / tl_dr "No activity…" AND evicts a previously-indexed stub (CREATE OR REPLACE, same
+signature — ACL intact per the DROP-function lesson); the 750 purged (index 1,924→1,174). Re-probe:
+*"Here's the roundup of the past week — plenty going on both on Facebook and in your chats"* with
+both sections real. Pure SQL — nothing to promote. Gate exit 0.
+
 ## 2026-08-19 (day 2d) — Andy's three hits on the APAC answer, fixed live (prod `3d8202d0`)
 
 ① *"We don't have 122 registered"* — true: 122 was distinct member-linked live tickets, one of
