@@ -24,8 +24,8 @@
 ### ⚠️ THREE SURFACES — read this before anything else
 | surface | version | note |
 |---|---|---|
-| **n8n PROD** | `3f2ec8f0` | Mille · partners · org_docs + pairing rule · chapter FAQ live |
-| **n8n STAGING** | `2f3a4dd4` | same graph — nothing waiting |
+| **n8n PROD** | `bae7e0e5` | Mille · partners · org_docs · chapter FAQ · **profiles carry numbers** |
+| **n8n STAGING** | `c7785194` | same graph — nothing waiting |
 | **endpoint (mds-digest-web)** | `91eef30` | partners op + attendee gate + kb lane + 0.45 floor |
 
 **PROMOTED 2026-08-19 05:0x UTC: how-does-X-work now PAIRS org_docs with the topical tool — prod `3f2ec8f0`** (Andy: broad chapter answer was "not full" — execution showed sources_used=[chapter_info] only; the pairing rule folds the written rules in, prod-probed with the FAQ citation + $1,200 detail). Before that same night: chapter FAQ + no-invented-offer `4725e6f1` (Andy's

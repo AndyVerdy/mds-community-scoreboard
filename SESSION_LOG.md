@@ -2,6 +2,8 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-19 (day) · **Olivia** · **"good, not great" fixed — chapter profiles CARRY their numbers**: plan ledger proved every turn called the same `chapter_info` (payload had the stats; the model withheld until "gimme data") · answer-shape rule · prod **`bae7e0e5`** probed: 59 members · $918M combined · $17.7M avg in the FIRST answer → `SESSION_LOG_OLIVIA.md`
+
 - 2026-08-19 (close) · **Olivia** · **#86 CLOSED — the story arrived on Andy's phone** ("remind me about the welcome dinner in 5 minutes" → sent 05:55:08, **`read` 05:55:11**, honest wording days before the event; total lag ~10 min → **sender cadence now EVERY MINUTE**) · **#76 CLOSED** (done since 08-16/17, row never flipped — 100 organic verified by count, baseline 96%) · **#92 filed** (multi-event selection, parked for event #2) · reminders stay schedule-anchored BY DESIGN → `SESSION_LOG_OLIVIA.md`
 
 - 2026-08-19 (final) · **Olivia** · **"answer is not full" → how-does-X-work PAIRS org_docs** (plan showed `sources_used=[chapter_info]` only; #70-style alongside rule; prod **`3f2ec8f0`** probed: structure + by-address + $1,200 in ONE answer) → `SESSION_LOG_OLIVIA.md`

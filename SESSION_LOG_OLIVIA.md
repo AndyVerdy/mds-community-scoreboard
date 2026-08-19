@@ -6,6 +6,16 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (day) — "good, not great": chapter profiles now carry their numbers; prod `bae7e0e5`
+
+Andy's morning test: "tell me about Asia pacific chapter" → rich prose, NO numbers; "gimme some
+data on TTM" → the full stats. **The plan ledger showed every turn called the SAME `chapter_info`
+tool — the numbers were in the payload each time; the model withheld them until explicitly asked.**
+Answer-shape rule (first offense for this behavior): a chapter profile CARRIES its headline
+numbers — member count, avg + combined TTM, top niches, main channels — deeper cuts on request.
+Staging probe: one answer now holds 59 members · $918M combined · $17.7M avg · niches · channels ·
+leads. Gate exit 0, promoted `3f2ec8f0` → **`bae7e0e5`**, prod-probed with the same content.
+
 ## 2026-08-19 (close) — #86 CLOSED on a real arrival · #76 closed · #92 filed · sender every minute
 
 **The #86 story completed on Andy's phone:** *"singapore remind me about the welcome dinner in 5
