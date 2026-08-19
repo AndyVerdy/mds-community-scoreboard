@@ -6,6 +6,19 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (day 2d) — Andy's three hits on the APAC answer, fixed live (prod `3d8202d0`)
+
+① *"We don't have 122 registered"* — true: 122 was distinct member-linked live tickets, one of
+FIVE live variants (157 rows · 122 member-linked · **98 active members** · legacy 108/151). The
+denominator is REMOVED from chapter answers until Andy rules the one number. ② *"pending on our
+end"* — my model-facing note leaked to the member; notes now command silence (count, one offer,
+decline names in one plain sentence if pushed, no internals ever). ③ Mo-first + unasked examples —
+she chained a second matching call and volunteered names; new rule: count-then-STOP; and the MEET
+lane now sorts **novelty + equalizer first, proficiency as tiebreaker** (Mo = top-decile Logistics
+legitimately topped advice-ordering; advice stays proficiency-first in `member_match`). Prod probe:
+*"30 members from APAC are registered for the Singapore Summit. Want me to match you up with a few
+of them based on your niche or focus areas?"* Endpoint `c279982`, gate exit 0.
+
 ## 2026-08-19 (day 2c) — "who is from APAC" claimed nobody; truth was 30 · counts shipped, names parked
 
 Andy's screenshot: *"I don't see anyone based in Asia Pacific itself in the roster I can pull"* —
