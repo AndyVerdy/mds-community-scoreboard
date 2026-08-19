@@ -378,16 +378,34 @@ same execution-layer swap as `content_search_v2`) decides which runs, so prod fl
 promote.
 
 ### 7.1 Expertise ledger — `member_expertise`
-Every active member scored across 16 topics (topics live in the `expertise_topics` **table** — a
-new topic is an INSERT, not a code change). Score formula, v1:
+Every active member scored across **18 parent topics + 33 subtopics** (topics live in the
+`expertise_topics` **table** — a new topic is an INSERT, not a code change; a subtopic is a row
+with `parent` set, and it flows into every consumer automatically because they all read
+`expertise_topics.terms`). Subtopics graduate via the quarterly evidence-density check (Andy
+2026-08-19): a subtopic exists only when real members can be ranked on it. Score formula, **v2
+(shipped 2026-08-19, #94)**:
 
 ```
 (2.0·ln(1+posts) + 0.7·ln(1+comments) + 3.0·min(videos_spoken,5)
-  + 1.5·business_affinity + 1.0·ln(1+persona_gives))
+  + 1.5·business_affinity + 1.0·ln(1+persona_gives) + 1.2·ln(1+form_hits))
   × revenue band multiplier (1-5M 1.0 · 5-10M 1.15 · 10-20M 1.3 · 20M+ 1.5)
 ```
+where **activity decays** (each conversation item weighs `exp(-age/17.312mo)` — 12-month
+half-life), **speaking decays slower** (each video weighs by a 24-month half-life),
+**reactions amplify a post** (`posts` counts each post as `1 + ln(1+reactions)/4`),
+**forms are the floor for silent members** (`form_hits` = distinct latest-form answers matching
+the topic's terms — 594 members are scoreable on forms alone), and the final score
+**floors at 40% of the member's all-time `peak_score`** — decayed activity fades rank, never
+erases proven expertise (`peak_floor_applied` appears in evidence when the floor holds a row up).
 Weakness score = `ln(1 + persona asks/challenges hits)`. Every row carries an `evidence` jsonb so
 any score can be explained. Rank and percentile are computed per topic.
+
+**Matching rule (the substring trap, twice now):** every component — content, videos, forms, biz
+affinity, persona — matches through `phraseto_tsquery` on `expertise_topics.terms`. Never bare
+`ilike '%term%'`: `'ai' in Em(ai)l` (2026-08-07) and `'vat' in Pri(vat)e Label` + `'str' in
+industrial/strategy` (2026-08-19, caught same-day: 722/748 members scored on Real Estate
+Investing) are the two class incidents. Verifier: `scripts/verify_expertise_v2.py` (9 checks,
+exit 1 on any fail).
 
 ### 7.2 Knowledge graph — `member_edges`
 Typed weighted member↔member edges: `co_attended`, `same_chat`, `same_chapter` (each weighted
@@ -412,9 +430,8 @@ tier-equals — **on the ADVICE lane** (`member_match`: "who can help me with X"
 tiebreaks. The **equalizer** = `digest.olivia_recommendations` (every recommended name logged):
 hard 30-day per-asker no-repeat + soft 7-day global spread, so no member gets buried in DMs for
 being excellent. A matcher sample is never a census — presence counts come from the registrations
-ledger via the `chapter` param. **Ledger v2 is planned and Andy-approved** (decay 12/24mo
-half-lives, 40%-of-peak floor, forms ×1.2, engagement bonus, 18+34 corpus-born taxonomy):
-`docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md` — update this section when it ships.
+ledger via the `chapter` param. **Ledger v2 SHIPPED 2026-08-19** (§7.1 above is the live
+formula); plan preserved at `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md`.
 
 ### 7.4 The consumers (#29) — one dossier, five personalized lanes
 

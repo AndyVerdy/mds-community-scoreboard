@@ -56,6 +56,10 @@ index on top; frozen archive below). Auto-memory index: `MEMORY.md`, loaded ever
 3. **VERIFY against LIVE before any new work — never trust the docs alone.** Check the systems that
    project actually touches (its n8n workflow / Supabase / Airtable / API / gate). **If the docs disagree
    with live, FIX the drift THIS session** before new work — a doc can't stay wrong for more than one session.
+4. **⛔ ASK BEFORE WORKING (Andy 2026-08-19): a new session never starts a ticket on its own.**
+   After steps 1-3, present the next ticket (NUMBER + NAME + STORY) and WAIT for Andy's go.
+   A vague opener ("continue working on X") is a request for the briefing, NOT the go. Standing
+   orders and approved plans set the ORDER of the queue — they are never the trigger to start.
 
 ## CLOSE — before ending (the `Stop` hook reminds once)
 Update the docs for **whatever project(s) you worked on** — do NOT claim "done" until the repo reflects what shipped + was verified:

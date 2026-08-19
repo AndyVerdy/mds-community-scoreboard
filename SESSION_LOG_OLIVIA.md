@@ -2,6 +2,41 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+- **2026-08-19 (late) · Olivia · #94 Expertise Ledger v2 CLOSED — and a new session-start rule.**
+  **Shipped (warehouse only, nothing to promote):** migration `expertise_taxonomy_v2_20260819`
+  (16→18 parents + 33 subtopics, `parent` col, `peak_score` col; 18/33/0-orphans asserted) ·
+  `derive_member_expertise` v2 (`derive_member_expertise_v2_20260819`: 12mo half-life on
+  conversation, 24mo on speaking, engagement `1+ln(1+reactions)/4`, forms ×1.2 from
+  `form_answers_latest` via tsquery, 40%-of-peak floor with peaks surviving the rebuild in a temp
+  table; CREATE OR REPLACE, ACL verified unchanged before/after) · **v2.1 same session**
+  (`derive_member_expertise_v2_1_word_matching_20260819`): the new short terms re-opened the
+  substring class — `'str'` matched strategy/industrial/distribution, `'vat'` matched
+  "Pri(vat)e Label" → 722/748 members scored on Real Estate Investing, 809 got Intl-Expansion
+  affinity — biz + persona CTEs now match via `phraseto_tsquery` like every other component; run
+  34s→11s. Commits `0ce7ebe` · `a1250eb` · `8d70f10`.
+  **Verified:** `scripts/verify_expertise_v2.py` (new) **9/9 PASS** — 594 members scoreable on
+  forms alone (v1: 0) · 0 floor violations · every topic's #1 evidence-backed · no subtopic covers
+  >90% of members · 36/36 speakers outrank every non-speaker on their topic. Floor proven LIVE:
+  peak inflated ×10 → score floored to exactly 0.4×peak with `peak_floor_applied`, restored after.
+  Nightly path re-run end-to-end: `olivia_graph_nightly.py` EXIT 0 (ledger 15,377 rows / 739
+  members + graph 141,861 edges). Staging probe: "who should I meet… deep into customs and
+  tariffs" → Mo Kuhail (Supply Chain & Logistics) via NEW subtopic `Customs & duties` — consumers
+  pick subs up with zero code changes. Gate EXIT 0 (one gate fix: `rank` inside city "Franklin
+  Lakes" false-failed member_match_v2's substring scan — now word-bounded `\b(score|rank|ranked|weakness)\b`).
+  **Before→after:** topics 16→51 · rows 7,199→15,377 · rows≥1 5,133→10,648 · forms-only members
+  0→594 · scored subtopics 0→31.
+  **Process correction (Andy, mid-session): sessions must not start work without asking.** I
+  started #94 off the standing order + approved plan; Andy's ruling now written down — new
+  session = briefing (ticket NUMBER + NAME + STORY) then WAIT for the go; vague opener = request
+  for briefing, never the go. Landed in CLAUDE.md OPEN step 4 + the handoff's standing tiers +
+  memory `feedback_session_start_ask_first`.
+  **Note for #95:** verify's replaced Andy-pct check exposed that persona self-description happily
+  outranks members with real activity inside a topic (his Intl-Expansion pct moved 0.755→0.641
+  once 'vat' died); not a defect of this ticket — the ADVICE lane orders by ledger percentile,
+  worth an eye when #95 touches member_match.
+  **Next:** #95 members-lane equalizer (brief first) · Andy: smoke-run go · release notes ·
+  #96 confirm · #97 ruling · count ruling · Mille watcher.
+
 Newest first. **Every session close: prepend the full entry here + ONE index line to `SESSION_LOG.md`.**
 
 ---

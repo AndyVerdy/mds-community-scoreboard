@@ -35,7 +35,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
-| **#94** | 🧠 Expertise Ledger v2 — the living skill sheet (Eugene #2 finale) | 🔴 S1 | M | — | 📋 **PLANNED** — plan approved, execution-mode pick pending |
+| **#94** | 🧠 Expertise Ledger v2 — the living skill sheet (Eugene #2 finale) | 🔴 S1 | M | ✅ probed | ✅ **CLOSED 2026-08-19** — 51 topics live, verify 9/9, gate 0 |
 | **#95** | Equalizer for the members lane (`member_match`) — Eugene's "Moe ×12" lived here | 🔴 S1 | S | — | — |
 | **#96** | Attendee-name disclosure — Eugene's ≤10-names cap | 🔴 S1 | S | — | ⛔ Andy confirming with Eugene |
 | **#97** | Brokered intros — "message the person she recommends", consent-first | 🔴 S1 | M | — | ⛔ Andy's ruling + utility template |
@@ -61,21 +61,6 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 - **The smoke runs ONCE per sprint, at completion — never per ticket.** Eval runs are propose-and-wait; the leak gate is free and mandatory.
 - Close = archive to `OLIVIA_BACKLOG_ARCHIVE.md` → next sprint carries open tickets whole → ClickUp handbook copy refresh if changed → **release notes are the FINAL stage** (drafted by me, validated + posted by Andy).
 
-
-### #94 · Expertise Ledger v2 — the living skill sheet
-**🔴 S1 · size M — filed 2026-08-19 · spec + taxonomy Andy-APPROVED · 📋 PLAN: `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md`**
-
-> **In plain words:** every member — new, silent, or loud — gets an honest per-skill score, on skills the community actually discusses, and proven expertise never rots to zero.
-
-*As a member, "who knows X" and "who should I meet" see the REAL me — what I declared, what I spoke about, what my posts earned — not just how loudly I chat.*
-
-Eugene, verbatim (his item 2, the origin of this ticket): *"it needs to prioritize newer members, giving you newer members that you haven't met instead of older members because it's sending older members here and I know all of them. I feel like it's gonna do the same for others."* #93 shipped the ranking half; this ticket is the data half — without real scores for silent and new members, novelty ranking has nothing honest to rank.
-
-Andy's rulings, binding: activity keeps its teeth · speaking strongest (3.0×) · engagement bonus `1+ln(1+reactions)/4` · forms floor ×1.2 · decay half-lives 12mo activity / 24mo speaking · **floor = 40% of all-time peak** · taxonomy 18 parents + 34 corpus-born subtopics (Claude-vs-GPT merged; Real Estate Investing + Credit Cards & Travel Hacks added) · subtopics graduate via quarterly density re-checks.
-
-**Accept when:** the plan's 4 tasks land · verify script all-PASS (silent members gain; floor holds; Andy top-quartile Intl Expansion; speaker outranks same-profile non-speaker) · who-to-meet matches on a subtopic with zero code changes · gate GREEN · before/after: distinct scoreable members recorded.
-
----
 
 ### #95 · Equalizer for the members lane — "Moe ×12" lived in `member_match`
 **🔴 S1 · size S — filed 2026-08-19 (Eugene: "they've mentioned Moe to me at least a dozen times")**
@@ -993,3 +978,46 @@ the release is actually safe to ship, not just that the tickets are marked done.
 | `member_match` 'Apparel' vs 'Clothing & Accessories' | Category vocabulary mismatch. |
 
 ---
+
+## ✅ CLOSED (Sprint 4)
+
+### #94 · Expertise Ledger v2 — the living skill sheet
+**🔴 S1 · size M — filed 2026-08-19 · ✅ CLOSED 2026-08-19 (shipped to the live warehouse; plan `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md`)**
+
+> **In plain words:** every member — new, silent, or loud — gets an honest per-skill score, on skills the community actually discusses, and proven expertise never rots to zero.
+
+*As a member, "who knows X" and "who should I meet" see the REAL me — what I declared, what I spoke about, what my posts earned — not just how loudly I chat.*
+
+Eugene, verbatim (his item 2, the origin of this ticket): *"it needs to prioritize newer members, giving you newer members that you haven't met instead of older members because it's sending older members here and I know all of them. I feel like it's gonna do the same for others."* #93 shipped the ranking half; this ticket is the data half — without real scores for silent and new members, novelty ranking has nothing honest to rank.
+
+Andy's rulings, binding: activity keeps its teeth · speaking strongest (3.0×) · engagement bonus `1+ln(1+reactions)/4` · forms floor ×1.2 · decay half-lives 12mo activity / 24mo speaking · **floor = 40% of all-time peak** · taxonomy 18 parents + 34 corpus-born subtopics (Claude-vs-GPT merged; Real Estate Investing + Credit Cards & Travel Hacks added) · subtopics graduate via quarterly density re-checks.
+
+**Accept when:** the plan's 4 tasks land · verify script all-PASS (silent members gain; floor holds; Andy top-quartile Intl Expansion; speaker outranks same-profile non-speaker) · who-to-meet matches on a subtopic with zero code changes · gate GREEN · before/after: distinct scoreable members recorded.
+
+**CLOSE (2026-08-19).** Shipped in 3 migrations + 1 script (commits `0ce7ebe` · `a1250eb` · `8d70f10`):
+taxonomy 16 → **18 parents + 33 subtopics** (`expertise_taxonomy_v2_20260819`; 34th sub was the
+Claude-vs-GPT merge, already folded into `AI tooling & agents`), `derive_member_expertise` v2
+(decay 12/24mo half-lives · engagement `1+ln(1+reactions)/4` · forms ×1.2 · 40%-of-peak floor;
+CREATE OR REPLACE, ACL unchanged `{postgres,service_role}`), and v2.1 same-day: the taxonomy's
+short terms re-opened the substring class — `'str'`/`'vat'` inside strategy/Pri(vat)e-Label scored
+722/748 members on Real Estate Investing — biz+persona CTEs now match via `phraseto_tsquery` like
+every other component. Recompute runs on the real nightly RPC path (`olivia_graph_nightly.py`,
+EXIT 0, 11s). Floor proven live: inflated a peak ×10 → score floored to exactly 0.4×peak with
+`peak_floor_applied` in evidence, then restored.
+
+**AC checklist:** plan's 4 tasks land ✅ (T1 taxonomy · T2 derive v2 · T3 verify · T4 probes+docs) ·
+verify all-PASS ✅ (`scripts/verify_expertise_v2.py` **9/9**, incl. floor-holds, silent-members-gain,
+speaker-outranks; the Andy-pct spot-check was replaced by structural checks — persona
+self-description moved his rank, not a defect — speaker check kept: 36/36 speakers outrank every
+non-speaker on their topic, worst pct 0.984) · who-to-meet matches a subtopic with zero code
+changes ✅ (staging probe "deep into customs and tariffs" → Mo Kuhail, Supply Chain & Logistics,
+via the new `Customs & duties` sub) · gate GREEN ✅ (EXIT 0; one gate fix: `rank` inside city
+"Franklin Lakes" false-failed the scan — now word-bounded) · before/after ✅ below.
+
+**Before → after:** topics 16 → **51** (18+33) · ledger rows 7,199 → **15,377** · rows ≥1
+5,133 → **10,648** · members scoreable on FORMS ALONE 0 → **594** (impossible under v1: forms
+weren't a component) · scored subtopics 0 → **31** (7,706 rows) · floor violations **0** ·
+derive runtime 34s → **11s** (v1 34s; v2.0 32s; v2.1 word-matched 11s).
+
+---
+

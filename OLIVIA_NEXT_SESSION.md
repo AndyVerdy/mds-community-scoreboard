@@ -13,29 +13,35 @@
 
 > ⛔ **Standing tiers (Andy 2026-07-29/31): Fine without asking** = read-only diagnosis · the LEAK
 > GATE (`scripts/olivia_leak_gate.py`, free) · staging edits under the `olivia_wf.py` lock ·
-> single-question staging probes. **Propose + WAIT** = any eval RUN (TEST ≤50 / FULL). **Andy
+> single-question staging probes. **Propose + WAIT** = any eval RUN (TEST ≤50 / FULL) · **and
+> STARTING ANY TICKET (Andy 2026-08-19): a new session opens with the briefing — next ticket
+> NUMBER + NAME + STORY — and waits for the go. "Continue working on Olivia" = show the briefing,
+> not start. Standing orders/approved plans order the queue; they never start it.** **Andy
 > runs** = `promote` · prod edits (emergency rollback excepted). The session classifier blocks
 > lock/promote for me — Andy runs both in his terminal (proven 2026-08-03; `lock` worked again
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-19 (close): PROD `060701be` — nothing awaits promotion (verified live at close)
+## STATE 2026-08-19 (late session): PROD `060701be` — nothing awaits promotion. **#94 CLOSED.**
 
-### ⚠️ SPRINT 3 CLOSED 2026-08-19 → the board is now **`OLIVIA_SPRINT_4.md`** (23 open tickets,
-Eugene's four in front). 34 closed tickets archived to `OLIVIA_BACKLOG_ARCHIVE.md`. **Two sprint-
-close items await Andy:** ① the SMOKE RUN on the 100-bank (the exit exam — proposed, his go) ②
-validate + post `OLIVIA_RELEASE_NOTES_2026-08-19.md`.
+### ⚠️ Board: **`OLIVIA_SPRINT_4.md`** (22 open tickets). **Two sprint-close items still await
+Andy:** ① the SMOKE RUN on the 100-bank (the exit exam — proposed, his go) ② validate + post
+`OLIVIA_RELEASE_NOTES_2026-08-19.md`.
 
-### NEXT SESSION OPENS HERE
-**🎯 STANDING ORDER (Andy): Eugene's FOUR beta cases lead the queue, ALL S1, in this order —
-#94 (his item 2) → #95 (his item 3) → #96 (his item 1, on the confirm) → #97 (his item 4, on the
-ruling). Each ticket carries his exact quotes.**
-1. **Execute #94** (Eugene item 2: *"it needs to prioritize newer members… instead of older members because it's sending older members here and I know all of them"*) — plan attached to the ticket: `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md` (Andy approved the spec
-   AND the taxonomy; he still owes the execution-mode pick — subagent-driven vs inline). 4 tasks:
-   taxonomy migration · derive v2 (decay+floor+forms+engagement) · verify script · consumer probes.
-2. **#95** (Eugene item 3: *"they've mentioned Moe to me at least a dozen times in my chat… make sure the AI isn't over-recommending the same person"*) — extend the equalizer to `member_match` — Eugene's Moe dozen lived in the general members
+### ✅ #94 Expertise Ledger v2 — CLOSED 2026-08-19 (this session)
+Warehouse-side only (no prod workflow edit, nothing to promote): taxonomy 16→**51 topics**
+(18 parents + 33 subs), derive v2.1 live (decay 12/24mo · engagement bonus · forms ×1.2 ·
+40%-peak floor — floor proven by live inflate/restore), **594 members scoreable on forms alone**,
+verify `scripts/verify_expertise_v2.py` **9/9 PASS**, gate EXIT 0, nightly RPC path re-run clean
+(11s). Same-day catch: the substring trap re-opened by short terms (`'vat'`/`'str'`) — biz+persona
+CTEs now tsquery-match. Full close block on the board. Commits `0ce7ebe`·`a1250eb`·`8d70f10`.
+
+### NEXT SESSION OPENS HERE — brief Andy, WAIT for his go (the new ⛔ rule above)
+**🎯 STANDING ORDER (Andy): Eugene's remaining THREE, in order — #95 (his item 3) → #96 (his
+item 1, on the confirm) → #97 (his item 4, on the ruling). Quotes on each ticket.**
+1. **#95** (Eugene item 3: *"they've mentioned Moe to me at least a dozen times in my chat… make sure the AI isn't over-recommending the same person"*) — extend the equalizer to `member_match` — Eugene's Moe dozen lived in the general members
    lane; the event lane is covered (`olivia_recommendations` log).
-3. **Andy's desk:** #96 name-cap confirm · #97 intros ruling ·
+2. **Andy's desk:** #96 name-cap confirm · #97 intros ruling ·
    THE COUNT RULING (recommendation: 98 active members, one `event_registered_members` view) ·
    Eugene's Members-DB record pin (9-record cluster) · "MDS Mille" re-register when the watcher
    fires (PIN, 14-day window) · #72 LOAD TEST before the announcement.
