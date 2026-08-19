@@ -3,7 +3,7 @@
 
 Reads event.reminders where status='pending' and remind_at has arrived, sends each
 one on WhatsApp, and records the outcome. Designed to be run on a short schedule
-(every 5 minutes is enough — a 30-minute lead has 30 minutes of slack).
+(the n8n schedule runs EVERY MINUTE since 2026-08-19; a due reminder waits at most ~1 min).
 
 THE SCHEDULE LIVES IN N8N, NOT HERE (2026-08-18): workflow "Olivia — Reminder
 Sender (#86, every 5 min)" (QhJw46Mr7LAP8fdz) is a faithful port of this logic and

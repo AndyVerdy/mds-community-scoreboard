@@ -49,8 +49,8 @@ and the expertise ledger all live · handbook shipped and mirrored to ClickUp.
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
-| **#86** | Reminders — remind / reminders / unremind + sender | 🔴 S1 | M | ✅ proven | 🟨 **LIVE** `74f0572a` + sender n8n `QhJw46Mr7LAP8fdz` every 5 min — delivery proof needs a phone (Aug 23 test reminder) |
 | — | *— CLOSED / LIVE / MOVED — evidence in the ticket bodies below —* | | | | |
+| **#86** | Reminders — remind / reminders / unremind + sender + DELIVERY | 🔴 S1 | M | ✅ proven | ✅ **CLOSED 2026-08-19** — story proven on Andy's phone: sent 05:55:08, read 05:55:11; sender now every minute |
 | **#76** | New eval bank — 100 organic questions | 🔴 S1 | M | ✅ built | ✅ **CLOSED 2026-08-19** (built 08-16, baseline 96% recorded 08-17; row never flipped) |
 | **#88** | Partner profiles — event-specific, linked to the directory | 🟡 S2 | M | ✅ proven `4ca0b46d` | ✅ **LIVE** `aec2db47` (prod probe: Summit offer + partner page) |
 | **#91** | She is Mille — identity across all five reply surfaces | 🔴 S1 | S | ✅ proven `273253bc` | ✅ **LIVE** `aec2db47` (prod probe: intro leads with Mille) |
@@ -234,6 +234,18 @@ Today she computes the time correctly and then says she cannot send it — hones
 | gate GREEN | ✅ passed inside the `d6761eb4` promote (schema only; no retrieval change) |
 
 **Proof:** `remind "welcome dinner" lead 30` → *Welcome Dinner starts Sun 23 Aug 7:00 pm, remind at 6:30 pm Singapore time*; list shows both, `unremind` drops one. Sender dry-run against a real due row: *"⏰ Welcome Dinner starts in 30 minutes — Pool, Ritz-Carlton."*
+
+#### ✅ STORY PROVEN 2026-08-19 05:55 UTC — the reminder ARRIVED on Andy's phone
+Andy asked *"singapore remind me about the welcome dinner in 5 minutes"* (12:44 AM CDT). She booked
+now+5 (the idempotency MOVED his existing Welcome-Dinner reminder to the new moment — one pending
+per person per thing, as designed). The sender's 05:55:08 tick sent it; the ledger shows the wamid
+and **delivery status `read` at 05:55:11 — three seconds after send**; his screenshot shows
+*"⏰ Welcome Dinner starts at 7:00 PM Singapore time — Pool, Ritz-Carlton."* Honest wording, real
+start time, days before the event (the never-refuse-a-valid-time rule doing its job).
+**Total latency was ~10 min** (+5 to the due moment, one 10-second tick miss, +5 to the next tick)
+— Andy called it, so the sender now runs **EVERY MINUTE** (`QhJw46Mr7LAP8fdz` renamed to match):
+worst case after due ≈ 1 min. Reminders remain SCHEDULE-ANCHORED by design — her refusal of
+freestanding "remind me to check fb" is correct behavior (new ticket if ever wanted).
 
 **The sender is scheduled (2026-08-18):** n8n `QhJw46Mr7LAP8fdz`, a faithful port of `olivia_reminder_sender.py` (7 nodes: stale sweep → due query → 24h-window check → text-or-template send → outcome PATCH), reusing the prod workflow's own Meta + Supabase credentials. n8n over launchd because reminders must survive this Mac sleeping during Summit week; the script stays as the manual/dry-run tool. The template was submitted from here and is **APPROVED** — the WABA id (`1575708577606583`) was in the workflow's own *Subscribe App to WABA* node all along, after I asked Andy for it three times. **Left: the arrival itself** — pending test reminder fires Aug 23 10:30 UTC at …8153, or a "remind me in 5 min" ask proves it any day.
 

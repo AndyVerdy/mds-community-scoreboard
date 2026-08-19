@@ -55,8 +55,9 @@ cancel reminders · get a post's image with the answer · read a weekly chat dig
    Sender"), every 5 min.** First tick exec 86839 (23:15 UTC): stale sweep ran, 0 due, clean stop.
    Faithful port of `olivia_reminder_sender.py` (script stays the manual/dry-run tool); chosen over
    launchd so reminders survive the Mac sleeping — and launchctl is classifier-blocked for me anyway.
-   **Delivery proof still owed:** the pending test reminder (…8153) fires **Aug 23 10:30 UTC**, or
-   Andy asks "remind me in 5 min" on his test phone any day — SELFTEST probes cannot reach the send.
+   **DELIVERY PROVEN 2026-08-19 05:55 UTC:** Andy's live ask arrived on his phone — sent 05:55:08,
+   `read` 05:55:11 in `olivia_sends`. Sender cadence now **EVERY MINUTE** (Andy: 10-min total lag
+   too long for minute-level asks). #86 CLOSED.
 2. ~~Re-register the number~~ **DONE 2026-08-18 (Andy ran it): the number is "MDS AI Assistant".**
    `POST /register` with the two-step PIN returned success; live API now shows `verified_name:
    "MDS AI Assistant"`, `name_status: APPROVED`, CONNECTED/GREEN. "Oliva" is gone. Existing threads
