@@ -6,6 +6,26 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-19 (session close) — Eugene's arc landed; expertise ledger v2 planned and approved
+
+**Session totals across the two days:** #86 · #89 · #90 · #76 · #93 CLOSED · #91 Mille + #88
+partners + #18 first slice LIVE · #92 filed (parked for event #2) · the number renamed ("Oliva" →
+"MDS AI Assistant", "MDS Mille" in review, watcher armed) · reminder sender every minute with a
+proven phone arrival · knowledge library (4 docs · 50 entries) · six member-visible defects fixed
+live off Andy's phone testing (chapter numbers · APAC census · count-then-stop · Mo-first ·
+FB-only catch-up · context-less images).
+
+**The Eugene #2 conversation became a full spec, Andy-approved:** activity keeps its teeth ·
+speaking strongest · engagement bonus (1+ln(1+reactions)/4) · forms floor (×1.2) · decay
+half-lives 12/24 months with a 40%-of-peak floor ("proven expertise never drops to zero") ·
+taxonomy 16→18 parents + 34 subtopics BORN FROM THE CORPUS (bottom-up density study; Claude-vs-GPT
+merged — tools are flavor, not skills; Real Estate Investing + Credit Cards & Travel Hacks added
+as new parents). Corpus truth recorded: FB comments ≈ 8 months, posts ≈ 13, WA 4 — pre-2025 is 47
+rows of dust; decay is future-proofing, the forms floor fixes the present (Andy's own sheet scores
+ZERO on activity). **Plan: `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md`** — 4 tasks,
+awaiting Andy's execution-mode pick. **Prod `060701be` = staging `18038948`, NOTHING awaits
+promotion** (verified live at close). Gate green at last run.
+
 ## 2026-08-19 (day 2f) — the whole-community catch-up + the context-less image bug (prod `060701be`)
 
 Andy defined the right general catch-up: *"prioritize discussions — fb, chats im in, and check

@@ -19,6 +19,19 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
+## STATE 2026-08-19 (close): PROD `060701be` — nothing awaits promotion (verified live at close)
+
+### NEXT SESSION OPENS HERE
+1. **Execute `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md`** (Andy approved the spec
+   AND the taxonomy; he still owes the execution-mode pick — subagent-driven vs inline). 4 tasks:
+   taxonomy migration · derive v2 (decay+floor+forms+engagement) · verify script · consumer probes.
+2. **Extend the equalizer to `member_match`** — Eugene's Moe dozen lived in the general members
+   lane; the event lane is covered (`olivia_recommendations` log).
+3. **Andy's desk:** Eugene name-cap confirm (#94-to-be) · brokered-intros ruling (item 4) ·
+   THE COUNT RULING (recommendation: 98 active members, one `event_registered_members` view) ·
+   Eugene's Members-DB record pin (9-record cluster) · "MDS Mille" re-register when the watcher
+   fires (PIN, 14-day window) · #72 LOAD TEST before the announcement.
+
 ## STATE 2026-08-19 (deep night): PROD `f3850dd7` — Mille identity, partners, org docs all live
 
 ### ⚠️ THREE SURFACES — read this before anything else
