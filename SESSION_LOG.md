@@ -2,6 +2,7 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-20 (fix-it) · **Olivia** · smoke fails fixed: **#98 CLOSED** (who-to-meet gated on registrations ledger, re-probed clean) · #99 code shipped (continuation note in-tool, E2E waits on a registered asker) · ⚠️ Andy's who-to-meet demos OFF until he registers for the Summit → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (smoke) · **Olivia** · **Eugene-arc smoke 47/50** (A 18/18 · B 12/12 after 2 live #95 fixes: audit-header + LRU cycling · C 12/14 · D 5/6) — new: #98 (event.people test row leaked names) · #99 (show-me-the-rest) · count-drift 157v113 live · **Ian Sells accepted the first real intro** → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (late-4) · **Olivia** · **#97 POC proven E2E** — consent template APPROVED as UTILITY, full loop on Andy's number (ledger pending → delivered → Accept tap → accepted → links both ways, all delivered) · findings: button taps not in olivia_messages (raw store only), plus-is-space trap · full ship waits on Andy's flow rulings → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (late-3) · **Olivia** · **#96 CLOSED — attendee names cap at 10, attendee-gated** (Andy ruled live: display cap never processing cap; non-attendees counts only) — event_who 60→10 + registration gate, route chapter slice ≤10 names for attendees, matched_total census · live catch: event.people test row leaked names → re-keyed to registrations ledger · gate +3 checks EXIT 0, E2E both sides → `SESSION_LOG_OLIVIA.md`

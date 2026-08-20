@@ -103,3 +103,11 @@ withholding. Attendee-side = RPC/route checks.*
 **Wording flags (fold into #14):** Q35/Q36/Q38 narrate inability ("I can't hand out / don't have a tool / don't check per person") — data-safe but the quiet-decline rule says never mention withholding.
 
 **Tickets filed from failures:** #98 (people-op attendee gate — event.people vs registrations ledger + the test row), #99 (re-call rule for the people op's "show me the rest").
+
+**POST-RUN FIXES (same session, Andy: "fix it"):** Q37 → **#98 CLOSED** (`179f6c0`: who-to-meet
+requires the asker in the registrations ledger, both branches now share the #89 authority;
+re-probe: zero attendee names for Andy, registered member unchanged 30/8). Q49 → **#99 code
+shipped** (continuation instruction travels in the op's note; E2E proof waits on a registered
+asker — Andy locked himself out by fixing #98, registering for the Summit restores his demos AND
+proves #99). Final standing: **49/50 addressed** — only Q30's recalibrated dominance bar stays a
+watch item.

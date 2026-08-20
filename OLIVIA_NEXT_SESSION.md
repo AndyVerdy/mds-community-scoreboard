@@ -27,9 +27,10 @@
 ### 🔬 Eugene-arc smoke (50 Qs, RUN on Andy's go) — `OLIVIA_SMOKE_EUGENE_ARC.md` has the full table
 47/50 · A 18/18 · B 12/12 after TWO in-run #95 fixes (audit header `36e1d7d` — the p_limit
 heuristic had silenced logging on the plan lane; LRU cycling `0b4b418` — exhausted pools froze) ·
-C 12/14 · D 5/6. **New tickets: #98** (who-to-meet admits `event.people` test rows — named
-attendees reached a non-attendee; fix = registrations-ledger authority + Andy's demo-row ruling)
-· **#99** ("show me the rest" doesn't re-call the people op). Wording flags → #14. Count drift
+C 12/14 · D 5/6. **#98 CLOSED same session** (`179f6c0` — registrations-ledger authority on BOTH people branches;
+re-probed clean). **#99 code shipped** (note-in-tool), OPEN for E2E proof — needs a registered
+asker. **⚠️ Andy: who-to-meet is now OFF for your phone until you register for the Summit** —
+registering restores your demos and proves #99 in one stroke. Wording flags → #14. Count drift
 157-vs-113 = THE COUNT RULING resurfaced live. **Ian Sells ACCEPTED the real intro** (#3
 accepted, links both ways); Eugene's still pending — the sweep/expiry rules are in the #97 plan.
 

@@ -2,6 +2,17 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+- **2026-08-20 (fix-it) · Olivia · smoke fails fixed on Andy's "fix it" — #98 CLOSED, #99 code shipped.**
+  `179f6c0` (mds-digest-web): who-to-meet access = asker present in `event_registrations_live`
+  for THAT event (event.people demoted to data on BOTH branches; registered-but-unexported
+  members still served via their member record; self-excluded by member id). Live proof: Andy
+  (test-row holder) → "not registered" refusal; registered member → matched_total 30 / 8 shown;
+  staging E2E re-probe of Q37: zero attendee names, community-lane pivot only. #99: the
+  REVEALING-THE-REST gap fixed in CODE — the continuation instruction now rides in the people
+  op's own note; E2E proof pending a registered asker (Andy's own registration is the unlock —
+  his who-to-meet demos are OFF until then, accepted with "fix it"). Gate EXIT 0. Smoke standing:
+  49/50 addressed, Q30's bar recalibrated to a watch item.
+
 - **2026-08-20 (smoke) · Olivia · EUGENE-ARC SMOKE: 47/50 — and the run fixed what it caught.**
   50 Qs across #94/#95/#96 (`OLIVIA_SMOKE_EUGENE_ARC.md`, results table inside), staging, Andy's
   go, run start 04:38:13Z. **A 18/18** (subtopics resolve; new parents answer; Q7 regression trap
