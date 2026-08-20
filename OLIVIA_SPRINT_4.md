@@ -37,7 +37,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
 | **#94** | 🧠 Expertise Ledger v2 — the living skill sheet (Eugene #2 finale) | 🔴 S1 | M | ✅ probed | ✅ **CLOSED 2026-08-19** — 51 topics live, verify 9/9, gate 0 |
 | **#95** | Equalizer for the members lane — BOTH advice lanes wired | 🔴 S1 | S | ✅ probed ×2 | ✅ **CLOSED 2026-08-19** — repeat asks 8/8→0/8 shared, gate 0 |
-| **#96** | Attendee-name disclosure — Eugene's ≤10-names cap | 🔴 S1 | S | — | ⛔ Andy confirming with Eugene |
+| **#96** | Attendee-name disclosure — Eugene's ≤10-names cap | 🔴 S1 | S | ✅ E2E probed | ✅ **CLOSED 2026-08-20** — cap 10 in code, attendee-gated, gate 0 |
 | **#97** | Brokered intros — "message the person she recommends", consent-first | 🔴 S1 | M | — | ⛔ Andy's ruling + utility template |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
@@ -61,19 +61,6 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 - **The smoke runs ONCE per sprint, at completion — never per ticket.** Eval runs are propose-and-wait; the leak gate is free and mandatory.
 - Close = archive to `OLIVIA_BACKLOG_ARCHIVE.md` → next sprint carries open tickets whole → ClickUp handbook copy refresh if changed → **release notes are the FINAL stage** (drafted by me, validated + posted by Andy).
 
-
-### #96 · Attendee-name disclosure — the ≤10-names cap
-**🔴 S1 · size S — filed 2026-08-19 · ⛔ BLOCKED: Andy confirming the rule with Eugene**
-
-> **In plain words:** Eugene proposed she may name up to ~10 attendees of an event; today she gives counts only.
-
-*As a member, "who from APAC is at the Summit" gets a short named list, not just a number.*
-
-Eugene, verbatim: *"the AI will not share more than 10 names of who's attending an event but it could share information like who's attending. It just needs to be limited."* This reverses the July aggregates-only ruling (gate asserts `full_name` ABSENT from `event_who`), so it ships only on the confirmed ruling. The chapter-count code path (`people` op, `chapter` param) is already built to return the capped list the day the ruling lands — members-only, no numbers attached, gate check flipped accordingly.
-
-**Accept when:** Andy+Eugene's rule recorded on this ticket · capped named list on chapter/roster asks · cap enforced in CODE · gate updated + GREEN.
-
----
 
 ### #97 · Brokered intros — message the person she recommends
 **🔴 S1 · size M — filed 2026-08-19 · ⛔ BLOCKED: Andy's ruling ("lets think of it") + utility template**
@@ -967,6 +954,52 @@ the release is actually safe to ship, not just that the tickets are marked done.
 ---
 
 ## ✅ CLOSED (Sprint 4)
+
+### #96 · Attendee-name disclosure — the ≤10-names cap
+**🔴 S1 · size S — filed 2026-08-19 · ✅ CLOSED 2026-08-20 (ruling recorded + shipped same session)**
+
+> **In plain words:** Eugene proposed she may name up to ~10 attendees of an event; today she gives counts only.
+
+**THE RULING (Andy + Eugene, 2026-08-20, recorded verbatim from Andy's session):** *"Agree with
+Eugene. BUT we need to make sure i can process the data as attendee, not just 10 people — if i ask
+about who in supplements, who in DTC i will get proper info. Need to identify who is asking, if
+this is an attendee of this event or not. Attendees can get all the info, we just don't want to
+list all the people in one message."* → cap 10 = DISPLAY cap, never a processing cap; asker's own
+registration gates names; non-attendees keep counts/aggregates only (recorded assumption, Andy
+saw the recommendation and did not veto). Supersedes 2026-07-20 any-member-sees-names.
+
+*As a member, "who from APAC is at the Summit" gets a short named list, not just a number.*
+
+Eugene, verbatim: *"the AI will not share more than 10 names of who's attending an event but it could share information like who's attending. It just needs to be limited."* This reverses the July aggregates-only ruling (gate asserts `full_name` ABSENT from `event_who`), so it ships only on the confirmed ruling. The chapter-count code path (`people` op, `chapter` param) is already built to return the capped list the day the ruling lands — members-only, no numbers attached, gate check flipped accordingly.
+
+**Accept when:** Andy+Eugene's rule recorded on this ticket · capped named list on chapter/roster asks · cap enforced in CODE · gate updated + GREEN.
+
+**CLOSE (2026-08-20).** Two surfaces, one rule. `event_who` (migration
+`event_who_cap10_attendee_gate_20260820`): default+clamp 60→**10** (display cap — ordering stays
+fit-based so the 10 are the best 10; `total_going` stays the true census), and NAMES now require
+the asker's own registration in `event_registrations_live` — a non-attendee gets the aggregate
+row (event · when · true count · null names). Route chapter slice (mds-digest-web `3e77774` +
+fix `08d42fc`): a REGISTERED asker gets ≤10 matched names (engagement-ordered internally) beside
+the count; non-attendees keep count-only with the quiet-decline note; who-to-meet now returns
+`matched_total` (the census travels with the capped 8-sample) and logs only names actually shown.
+**Live catch during ship:** the first gate keyed on `event.people` and Andy's `test-andy-8153`
+test row was granted names on the live route — re-keyed to the registrations ledger (the #89
+authority, same source as the count). Deploy raced one staging probe (old build listed names);
+re-probe after the fix went live is the evidence below.
+
+**AC checklist:** ruling recorded on the ticket ✅ (Andy verbatim, this session) · capped named
+list on chapter/roster asks ✅ (live route: registered attendee → count 30 + exactly 10 names) ·
+cap enforced in CODE ✅ (SQL clamp + route slice(0,10); asked event_who for 60 → got ≤10,
+gate-asserted) · gate updated + GREEN ✅ (3 new checks: cap · non-attendee-count-only ·
+attendee-names; EXIT 0).
+
+**Before → after:** roster names to ANY member 60 → **attendees only, 10** · non-attendee roster
+ask: 60 names → **count only** (live: Andy asked the Summit roster for 60 → 1 aggregate row,
+total_going 113, zero names) · chapter slice for attendees: 0 names → **10 + census** (count 30 +
+10 names live) · E2E staging (Andy, non-attendee): "30 members from Asia Pacific are registered…
+Want me to match you up?" — count, zero names, no withholding mention.
+
+---
 
 ### #95 · Equalizer for the members lane — "Moe ×12" lived in `member_match`
 **🔴 S1 · size S — filed 2026-08-19 · ✅ CLOSED 2026-08-19 (Eugene: "they've mentioned Moe to me at least a dozen times")**

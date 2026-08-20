@@ -22,7 +22,7 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-19 (late session): PROD `060701be` — nothing awaits promotion. **#94 CLOSED.**
+## STATE 2026-08-20 (late session): PROD `060701be` — nothing awaits promotion. **#94 + #95 + #96 CLOSED.**
 
 ### ⚠️ Board: **`OLIVIA_SPRINT_4.md`** (22 open tickets). **Two sprint-close items still await
 Andy:** ① the SMOKE RUN on the 100-bank (the exit exam — proposed, his go) ② validate + post
@@ -44,10 +44,17 @@ the staging workflow path; log carries member_match + expertise_search lanes; ga
 Commit `a31a45b`, close block on the board. ⚠️ Andy's asker row carries the probe history — his
 own next real "who knows X" rotates past those names for up to 30d (correct, remember at demos).
 
+### ✅ #96 Attendee-name disclosure — CLOSED 2026-08-20 (Andy ruled it live in-session)
+**The rule now in force:** attendee-name lists cap at **10** (display cap — filters/counts always
+run over the whole ledger); NAMES require the asker's own registration for THAT event
+(registrations ledger = the authority, never `event.people` — Andy's test row exposed that trap
+on the live route, fixed same hour); non-attendees get counts/aggregates only. `event_who`
+migration + route `3e77774`/`08d42fc`, gate +3 checks EXIT 0, E2E probed both sides. Supersedes
+2026-07-20 any-member-sees-names.
+
 ### NEXT SESSION OPENS HERE — brief Andy, WAIT for his go (the new ⛔ rule above)
-**🎯 STANDING ORDER (Andy): Eugene's remaining TWO — #96 (his item 1, on the confirm) → #97
-(his item 4, on the ruling). Quotes on each ticket.**
-1. **Andy's desk:** #96 name-cap confirm · #97 intros ruling ·
+**🎯 STANDING ORDER (Andy): Eugene's LAST one — #97 (his item 4, on the ruling).**
+1. **Andy's desk:** #97 intros ruling + utility template ·
    THE COUNT RULING (recommendation: 98 active members, one `event_registered_members` view) ·
    Eugene's Members-DB record pin (9-record cluster) · "MDS Mille" re-register when the watcher
    fires (PIN, 14-day window) · #72 LOAD TEST before the announcement.

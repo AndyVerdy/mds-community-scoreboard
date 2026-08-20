@@ -2,6 +2,28 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+- **2026-08-20 (late-3) · Olivia · #96 CLOSED — attendee-name disclosure, the 10-cap ruling (Eugene item 1).**
+  **Andy ruled it live in-session (verbatim on the ticket):** agree with Eugene's ≤10 — but as a
+  DISPLAY cap, never a processing cap ("if i ask who in supplements, who in DTC i will get proper
+  info"); identify the asker — attendees get everything, chunked; non-attendees = counts only
+  (recorded assumption, recommendation not vetoed). Supersedes 2026-07-20 any-member-sees-names.
+  **Shipped:** `event_who_cap10_attendee_gate_20260820` (default+clamp 60→10, fit-ordered so the
+  10 are the best 10; total_going stays the census; names now require the asker's registration in
+  event_registrations_live — non-attendee gets the aggregate row) · route chapter slice
+  (mds-digest-web `3e77774`): registered asker gets ≤10 matched names (engagement-ordered,
+  name/city/niche) beside the count; non-attendee wording unchanged · who-to-meet gains
+  matched_total (census travels with the capped 8-sample), logs only names shown.
+  **The live catch (`08d42fc`):** first gate keyed on event.people — Andy's test-andy-8153 row
+  was granted names ON THE LIVE ROUTE; re-keyed to the registrations ledger (the #89 authority,
+  same source as the count). One staging probe raced the deploy and listed names from the old
+  build — re-probed after the fix: clean.
+  **Proof:** live route both sides (Andy non-attendee: count 30, zero names · registered
+  attendee: count 30 + exactly 10 names) · event_who real-event check (Andy asked Summit roster
+  for 60 → 1 aggregate row, total_going 113, zero names) · E2E staging reply: "30 members from
+  Asia Pacific are registered… Want me to match you up?" — count, no names, no withholding
+  mention · gate +3 checks (cap · non-attendee count-only · attendee names) EXIT 0 · tsc clean.
+  **Next:** #97 brokered intros (Andy's ruling + utility template) — the last of Eugene's four.
+
 - **2026-08-19/20 (late-2) · Olivia · #95 CLOSED — the equalizer reaches BOTH advice lanes (Eugene item 3, "Moe ×12").**
   **The scope grew for the right reason:** the concentration audit (Andy's ask) showed top-20
   members hold 45% of all 487 top-10 expertise slots; then the staging EXECUTION showed
