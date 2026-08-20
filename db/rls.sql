@@ -43,6 +43,7 @@ alter table digest.olivia_alarm_config enable row level security;
 alter table digest.olivia_alarm_state enable row level security;
 alter table digest.olivia_billing_nudges enable row level security;
 -- digest.olivia_feedback: row level security DISABLED
+alter table digest.olivia_intros enable row level security;
 alter table digest.olivia_job_heartbeats enable row level security;
 -- digest.olivia_messages: row level security DISABLED
 -- digest.olivia_question_labels: row level security DISABLED

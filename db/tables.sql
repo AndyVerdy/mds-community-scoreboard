@@ -672,6 +672,21 @@ CREATE UNIQUE INDEX olivia_billing_nudges_pkey ON digest.olivia_billing_nudges U
 alter table digest.olivia_feedback add constraint olivia_feedback_pkey PRIMARY KEY (wamid, phone);
 CREATE UNIQUE INDEX olivia_feedback_pkey ON digest.olivia_feedback USING btree (wamid, phone);
 
+-- digest.olivia_intros
+--   id                                 bigint not null
+--   requester_at_id                    text not null
+--   target_at_id                       text not null
+--   topic                              text
+--   status                             text not null default 'pending'::text
+--   consent_wamid                      text
+--   created_at                         timestamp with time zone not null default now()
+--   decided_at                         timestamp with time zone
+alter table digest.olivia_intros add constraint olivia_intros_pkey PRIMARY KEY (id);
+alter table digest.olivia_intros add constraint olivia_intros_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'accepted'::text, 'declined'::text, 'expired'::text])));
+CREATE INDEX olivia_intros_target_idx ON digest.olivia_intros USING btree (target_at_id, created_at);
+CREATE UNIQUE INDEX olivia_intros_one_pending ON digest.olivia_intros USING btree (requester_at_id, target_at_id) WHERE (status = 'pending'::text);
+CREATE UNIQUE INDEX olivia_intros_pkey ON digest.olivia_intros USING btree (id);
+
 -- digest.olivia_job_heartbeats
 --   job                                text not null
 --   last_run_at                        timestamp with time zone
