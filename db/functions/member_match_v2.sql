@@ -12,7 +12,7 @@ declare
   tgt_city text; tgt_channel text; tgt_category text;
   tgt_states text[]; tgt_state_label text;
   tgt_countries text[]; tgt_country_label text;
-  target_mode boolean; trait_mode boolean;
+  target_mode boolean; trait_mode boolean; v_audit boolean;
 begin
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
   if v_n <> 1 then return; end if;
@@ -20,6 +20,9 @@ begin
   if v_atid is null then return; end if;
   select * into me from digest.member_attributes ma where ma.at_member_id = v_atid;
   if me is null then return; end if;
+
+  -- audits (the leak gate) announce themselves; everything else is a real lane
+  v_audit := coalesce((current_setting('request.headers', true))::json->>'x-olivia-audit','') <> '';
 
   tgt_city := digest.place_city(p_city);
   tgt_states := digest.geo_state_set(p_state);
@@ -51,8 +54,6 @@ begin
     join my_gaps g on g.topic = e.topic
     where coalesce(e.weakness_score, 0) = 0 and e.score > 0
   ), recent as (
-    -- the equalizer's memory: what the log already gave THIS asker (30d, hard
-    -- downrank) and how exposed each member is community-wide (7d, soft spread)
     select r.recommended_at_id,
            bool_or(r.asker_at_id = v_atid and r.created_at >= now() - interval '30 days') as asker_repeat,
            count(*) filter (where r.created_at >= now() - interval '7 days') as global_7d
@@ -109,11 +110,7 @@ begin
       (target_mode and (ma.categories && me.categories)) desc,
       (target_mode and ma.rev_band is not null and ma.rev_band = me.rev_band) desc,
       (lower(coalesce(ma.city, '')) = lower(coalesce(me.city, ''))) desc,
-      -- EQUALIZER (#95): a name this asker already got in the last 30 days sinks
-      -- below every fresh name of the same match tier...
       coalesce(rc.asker_repeat, false) asc,
-      -- ...and community-wide exposure (7d) softly damps proficiency, so the
-      -- top expert isn't every member's answer in the same week.
       (coalesce((select max(c.score) from comp c where c.at_member_id = ma.at_member_id), 0)
          - 0.5 * ln(1 + coalesce(rc.global_7d, 0))) desc,
       ma.full_name) as ord
@@ -141,11 +138,14 @@ begin
   order by ord
   limit greatest(coalesce(p_limit, 10), 0);
 
-  -- WRITE the memory: every name returned is remembered (lane='member_match').
-  -- Audits/bulk pools (gate subset check, p_limit 60+) must not write.
-  if coalesce(p_limit, 10) <= 30 then
+  -- every real lane writes the memory; only announced audits skip it
+  if not v_audit then
     insert into digest.olivia_recommendations (asker_at_id, recommended_at_id, lane)
-    select v_atid, o.at_member_id, 'member_match' from _mm_out o;
+    select v_atid, o.at_member_id, 'member_match' from _mm_out o
+    where not exists (
+      select 1 from digest.olivia_recommendations r
+      where r.asker_at_id = v_atid and r.recommended_at_id = o.at_member_id
+        and r.lane = 'member_match' and r.created_at >= now() - interval '24 hours');
   end if;
 
   return query

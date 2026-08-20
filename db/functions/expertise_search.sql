@@ -6,13 +6,15 @@ CREATE OR REPLACE FUNCTION digest.expertise_search(p_phone text, p_query text, p
  SET search_path TO 'digest', 'pg_temp'
 AS $function$
 declare
-  v_n int; v_atid text; v_q tsquery; v_vec extensions.vector(1024);
+  v_n int; v_atid text; v_q tsquery; v_vec extensions.vector(1024); v_audit boolean;
 begin
   if nullif(trim(coalesce(p_query,'')),'') is null then return; end if;
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
   if v_n <> 1 then return; end if;
   select digest.resolve_asker(p_phone) into v_atid;
   if v_atid is null then return; end if;
+
+  v_audit := coalesce((current_setting('request.headers', true))::json->>'x-olivia-audit','') <> '';
 
   v_q := digest.expertise_query(p_query);
   begin
@@ -66,7 +68,6 @@ begin
     from kw k full outer join vec v on v.at_member_id = k.at_member_id
   ),
   recent as (
-    -- the equalizer's memory (#95): 30d per-asker repeats + 7d global exposure
     select r.recommended_at_id,
            bool_or(r.asker_at_id = v_atid and r.created_at >= now() - interval '30 days') as asker_repeat,
            count(*) filter (where r.created_at >= now() - interval '7 days') as global_7d
@@ -92,10 +93,7 @@ begin
              v_q)
          else 0::real end) as matched_rank,
          row_number() over (order by
-           -- relevance first, always: RRF demoted x0.6 on a 30d per-asker repeat,
-           -- so only a clearly dominant match keeps its slot two asks in a row
            (m.rrf * case when coalesce(rc.asker_repeat, false) then 0.6 else 1.0 end) desc,
-           -- engagement tiebreak damped by 7d community-wide exposure
            (coalesce(p.engagement_score, 0) - 15 * ln(1 + coalesce(rc.global_7d, 0))) desc,
            p.full_name) as ord
   from merged m
@@ -104,14 +102,14 @@ begin
   order by ord
   limit least(greatest(coalesce(p_limit, 12), 1), 30);
 
-  -- remember what was shown (lane='expertise_search'); 24h per-pair dedupe keeps
-  -- repeated audit runs (the leak gate probes this fn) from inflating the log
-  insert into digest.olivia_recommendations (asker_at_id, recommended_at_id, lane)
-  select v_atid, o.at_member_id, 'expertise_search' from _es_out o
-  where not exists (
-    select 1 from digest.olivia_recommendations r
-    where r.asker_at_id = v_atid and r.recommended_at_id = o.at_member_id
-      and r.lane = 'expertise_search' and r.created_at >= now() - interval '24 hours');
+  if not v_audit then
+    insert into digest.olivia_recommendations (asker_at_id, recommended_at_id, lane)
+    select v_atid, o.at_member_id, 'expertise_search' from _es_out o
+    where not exists (
+      select 1 from digest.olivia_recommendations r
+      where r.asker_at_id = v_atid and r.recommended_at_id = o.at_member_id
+        and r.lane = 'expertise_search' and r.created_at >= now() - interval '24 hours');
+  end if;
 
   return query
   select o.full_name, o.city, o.state, o.expertise, o.niche, o.matched_text, o.matched_rank

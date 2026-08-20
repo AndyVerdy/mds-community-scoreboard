@@ -114,8 +114,12 @@ def curl(method, url, key, body=None, profile_hdr=None):
 
 
 def rpc(fn, params, key):
+    # X-Olivia-Audit: the equalizer lanes (member_match_v2, expertise_search) skip
+    # their olivia_recommendations write when an audit announces itself — the gate
+    # must never rotate the probe member's real recommendation state (2026-08-20:
+    # the old p_limit<=30 heuristic silently disabled logging on the plan lane).
     return curl("POST", f"{BASE}/rpc/{fn}", key, body=params,
-                profile_hdr=["Content-Profile: digest"])
+                profile_hdr=["Content-Profile: digest", "X-Olivia-Audit: leak-gate"])
 
 
 def main():
