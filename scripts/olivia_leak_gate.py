@@ -515,11 +515,32 @@ def main():
 
         st, who = rpc("event_who", {"p_phone": phone, "p_event": f"REDTEAM Normal {MARKER}"}, key)
         blob = json.dumps(who)
-        # EUGENE'S REFINED RULING (2026-07-20): member lists are public-in-app => names OK.
-        # Live-joined name, guests still structurally excluded, nothing beyond name/state.
+        # #96 RULING (Andy+Eugene 2026-08-20, supersedes 2026-07-20 "names for any member"):
+        # names go to ATTENDEES of that event only, capped at 10 per answer (display cap —
+        # ordering is fit-based so the 10 are the best 10); non-attendees get the aggregate
+        # row (true count, no names). The probe member IS registered in the seeded event.
         check("event_who returns the member registration (live-joined name)",
               isinstance(who, list) and len(who) == 1 and who[0]["is_me"] is True
               and who[0]["full_name"] == my_name, f"status {st}, got {who}")
+        st, who_cap = rpc("event_who", {"p_phone": phone, "p_event": f"REDTEAM Normal {MARKER}",
+                                        "p_limit": 60}, key)
+        check("event_who never exceeds 10 names even when asked for 60 (#96 cap)",
+              isinstance(who_cap, list) and len(who_cap) <= 10, f"got {len(who_cap or [])} rows")
+        # #96: an asker NOT registered for the event gets the aggregate row only —
+        # true count, every name field null. Any member other than the seeded probe works.
+        st, other = curl("GET", f"{BASE}/members?select=phone,at_member_id"
+                         f"&at_member_id=neq.{my_id}&phone=not.is.null&limit=1", key,
+                         profile_hdr=["Accept-Profile: digest"])
+        other_phone = (other or [{}])[0].get("phone") if st == 200 else None
+        if other_phone:
+            st, who_na = rpc("event_who", {"p_phone": other_phone,
+                                           "p_event": f"REDTEAM Normal {MARKER}"}, key)
+            check("non-attendee gets count only, zero names (#96)",
+                  isinstance(who_na, list) and len(who_na) == 1
+                  and who_na[0].get("full_name") is None
+                  and who_na[0].get("total_going") == 2, f"status {st}, got {who_na}")
+        else:
+            check("non-attendee probe member found (#96)", False, f"status {st}")
         check("guest registrations structurally excluded", "REDTEAM GUEST" not in blob)
         # Confirmed-only + 2026-07-24 amendment: Unconfirmed members and Partner tickets are
         # excluded from names AND total; the Confirmed MDS Team row COUNTS in the total
