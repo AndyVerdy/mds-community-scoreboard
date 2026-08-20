@@ -2,7 +2,7 @@
 CREATE OR REPLACE FUNCTION digest.member_match_v2(p_phone text, p_dims text[] DEFAULT ARRAY['state'::text, 'category'::text, 'band'::text], p_limit integer DEFAULT 10, p_city text DEFAULT NULL::text, p_state text DEFAULT NULL::text, p_channel text DEFAULT NULL::text, p_category text DEFAULT NULL::text, p_country text DEFAULT NULL::text)
  RETURNS TABLE(full_name text, city text, state text, reasons text[])
  LANGUAGE plpgsql
- STABLE SECURITY DEFINER
+ SECURITY DEFINER
  SET search_path TO 'digest', 'pg_temp'
 AS $function$
 declare
@@ -22,7 +22,6 @@ begin
   if me is null then return; end if;
 
   tgt_city := digest.place_city(p_city);
-  -- #54e: single value, region keyword, or comma list — one resolver each
   tgt_states := digest.geo_state_set(p_state);
   tgt_state_label := case when tgt_states is not null and cardinality(tgt_states) > 1
                           then initcap(trim(p_state)) end;
@@ -41,7 +40,8 @@ begin
   use_channel := not target_mode and tgt_channel is null and 'channel' = any(p_dims) and cardinality(me.channel_mix) > 0;
   if not (target_mode or trait_mode or use_city or use_state or use_cat or use_band or use_model or use_channel) then return; end if;
 
-  return query
+  drop table if exists _mm_out;
+  create temp table _mm_out on commit drop as
   with my_gaps as (
     select tp.topic, tp.sort_score from digest.member_topic_profile(v_atid) tp
     where tp.is_working_on
@@ -50,8 +50,17 @@ begin
     from digest.member_expertise e
     join my_gaps g on g.topic = e.topic
     where coalesce(e.weakness_score, 0) = 0 and e.score > 0
+  ), recent as (
+    -- the equalizer's memory: what the log already gave THIS asker (30d, hard
+    -- downrank) and how exposed each member is community-wide (7d, soft spread)
+    select r.recommended_at_id,
+           bool_or(r.asker_at_id = v_atid and r.created_at >= now() - interval '30 days') as asker_repeat,
+           count(*) filter (where r.created_at >= now() - interval '7 days') as global_7d
+    from digest.olivia_recommendations r
+    where r.created_at >= now() - interval '30 days'
+    group by 1
   )
-  select ma.full_name, ma.city, ma.state,
+  select ma.at_member_id, ma.full_name, ma.city, ma.state,
     array_remove(array[
       case when target_mode and tgt_city is not null and ma.city ilike tgt_city
            then 'in ' || ma.city end,
@@ -92,8 +101,24 @@ begin
       (select 'knows ' || c.topic from comp c
         where c.at_member_id = ma.at_member_id
         order by c.score desc limit 1)
-    ], null) as reasons
+    ], null) as reasons,
+    row_number() over (order by
+      (target_mode and tgt_city is not null and ma.city ilike tgt_city) desc,
+      (target_mode and tgt_states is not null and ma.state = any(tgt_states)) desc,
+      (target_mode and tgt_countries is not null and digest.country_fold(ma.country) = any(tgt_countries)) desc,
+      (target_mode and (ma.categories && me.categories)) desc,
+      (target_mode and ma.rev_band is not null and ma.rev_band = me.rev_band) desc,
+      (lower(coalesce(ma.city, '')) = lower(coalesce(me.city, ''))) desc,
+      -- EQUALIZER (#95): a name this asker already got in the last 30 days sinks
+      -- below every fresh name of the same match tier...
+      coalesce(rc.asker_repeat, false) asc,
+      -- ...and community-wide exposure (7d) softly damps proficiency, so the
+      -- top expert isn't every member's answer in the same week.
+      (coalesce((select max(c.score) from comp c where c.at_member_id = ma.at_member_id), 0)
+         - 0.5 * ln(1 + coalesce(rc.global_7d, 0))) desc,
+      ma.full_name) as ord
   from digest.member_attributes ma
+  left join recent rc on rc.recommended_at_id = ma.at_member_id
   where ma.at_member_id <> v_atid
     and ma.full_name is not null
     and ma.membership_status in ('Current Member','New Member','Pending Group Entrance','Current Member- Not Renewing')
@@ -113,14 +138,16 @@ begin
     and (not use_band    or ma.rev_band = me.rev_band)
     and (not use_model   or ma.business_model && me.business_model)
     and (not use_channel or ma.channel_mix && me.channel_mix)
-  order by
-    (target_mode and tgt_city is not null and ma.city ilike tgt_city) desc,
-    (target_mode and tgt_states is not null and ma.state = any(tgt_states)) desc,
-    (target_mode and tgt_countries is not null and digest.country_fold(ma.country) = any(tgt_countries)) desc,
-    (target_mode and (ma.categories && me.categories)) desc,
-    (target_mode and ma.rev_band is not null and ma.rev_band = me.rev_band) desc,
-    (lower(coalesce(ma.city, '')) = lower(coalesce(me.city, ''))) desc,
-    coalesce((select max(c.score) from comp c where c.at_member_id = ma.at_member_id), 0) desc,
-    ma.full_name
+  order by ord
   limit greatest(coalesce(p_limit, 10), 0);
+
+  -- WRITE the memory: every name returned is remembered (lane='member_match').
+  -- Audits/bulk pools (gate subset check, p_limit 60+) must not write.
+  if coalesce(p_limit, 10) <= 30 then
+    insert into digest.olivia_recommendations (asker_at_id, recommended_at_id, lane)
+    select v_atid, o.at_member_id, 'member_match' from _mm_out o;
+  end if;
+
+  return query
+  select o.full_name, o.city, o.state, o.reasons from _mm_out o order by o.ord;
 end $function$

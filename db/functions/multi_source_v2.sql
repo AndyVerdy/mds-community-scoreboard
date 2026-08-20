@@ -2,7 +2,7 @@
 CREATE OR REPLACE FUNCTION digest.multi_source_v2(p_phone text, p_query text DEFAULT NULL::text, p_terms text[] DEFAULT '{}'::text[], p_city text DEFAULT NULL::text, p_want text[] DEFAULT ARRAY['partners'::text, 'members'::text, 'events'::text, 'chats'::text, 'fb'::text, 'videos'::text])
  RETURNS jsonb
  LANGUAGE plpgsql
- STABLE SECURITY DEFINER
+ SECURITY DEFINER
  SET search_path TO 'digest', 'pg_temp'
 AS $function$
 declare v_n int; v_atid text; result jsonb := '{}'::jsonb; v_q text;

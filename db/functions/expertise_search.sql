@@ -2,7 +2,7 @@
 CREATE OR REPLACE FUNCTION digest.expertise_search(p_phone text, p_query text, p_limit integer DEFAULT 12, p_embedding text DEFAULT NULL::text)
  RETURNS TABLE(full_name text, city text, state text, expertise text, niche text, matched_text text, matched_rank real)
  LANGUAGE plpgsql
- STABLE SECURITY DEFINER
+ SECURITY DEFINER
  SET search_path TO 'digest', 'pg_temp'
 AS $function$
 declare
@@ -23,7 +23,8 @@ begin
   end;
   if v_q is null and v_vec is null then return; end if;
 
-  return query
+  drop table if exists _es_out;
+  create temp table _es_out on commit drop as
   with pool as (
     select ma.at_member_id, ma.full_name, ma.city, ma.state, ma.categories,
            mp.at_fields, mp.engagement_score
@@ -63,16 +64,25 @@ begin
     select coalesce(k.at_member_id, v.at_member_id) as id,
            coalesce(1.0/(60+k.rk), 0) + coalesce(1.0/(60+v.rk), 0) as rrf
     from kw k full outer join vec v on v.at_member_id = k.at_member_id
+  ),
+  recent as (
+    -- the equalizer's memory (#95): 30d per-asker repeats + 7d global exposure
+    select r.recommended_at_id,
+           bool_or(r.asker_at_id = v_atid and r.created_at >= now() - interval '30 days') as asker_repeat,
+           count(*) filter (where r.created_at >= now() - interval '7 days') as global_7d
+    from digest.olivia_recommendations r
+    where r.created_at >= now() - interval '30 days'
+    group by 1
   )
-  select p.full_name, p.city, p.state,
-         digest.attr_clean(p.at_fields->>'Area of Expertise'),
-         digest.attr_clean(p.at_fields->>'Main Niche'),
+  select p.at_member_id, p.full_name, p.city, p.state,
+         digest.attr_clean(p.at_fields->>'Area of Expertise') as expertise,
+         digest.attr_clean(p.at_fields->>'Main Niche') as niche,
          left(concat_ws(' | ',
            case when digest.attr_clean(p.at_fields->>'About Me') is not null
                 then 'about: ' || digest.attr_clean(p.at_fields->>'About Me') end,
            case when digest.attr_clean(p.at_fields->>'Interesting / Fun fact') is not null
-                then 'fun fact: ' || digest.attr_clean(p.at_fields->>'Interesting / Fun fact') end), 500),
-         case when v_q is not null then
+                then 'fun fact: ' || digest.attr_clean(p.at_fields->>'Interesting / Fun fact') end), 500) as matched_text,
+         (case when v_q is not null then
            ts_rank(
              to_tsvector('english',
                coalesce(digest.attr_clean(p.at_fields->>'Area of Expertise'),'') || ' ' ||
@@ -80,9 +90,30 @@ begin
                coalesce(digest.attr_clean(p.at_fields->>'Main Niche'),'') || ' ' ||
                coalesce(digest.attr_clean(p.at_fields->>'Interesting / Fun fact'),'')),
              v_q)
-         else 0::real end as matched_rank
+         else 0::real end) as matched_rank,
+         row_number() over (order by
+           -- relevance first, always: RRF demoted x0.6 on a 30d per-asker repeat,
+           -- so only a clearly dominant match keeps its slot two asks in a row
+           (m.rrf * case when coalesce(rc.asker_repeat, false) then 0.6 else 1.0 end) desc,
+           -- engagement tiebreak damped by 7d community-wide exposure
+           (coalesce(p.engagement_score, 0) - 15 * ln(1 + coalesce(rc.global_7d, 0))) desc,
+           p.full_name) as ord
   from merged m
   join pool p on p.at_member_id = m.id
-  order by m.rrf desc, coalesce(p.engagement_score, 0) desc, p.full_name
+  left join recent rc on rc.recommended_at_id = p.at_member_id
+  order by ord
   limit least(greatest(coalesce(p_limit, 12), 1), 30);
+
+  -- remember what was shown (lane='expertise_search'); 24h per-pair dedupe keeps
+  -- repeated audit runs (the leak gate probes this fn) from inflating the log
+  insert into digest.olivia_recommendations (asker_at_id, recommended_at_id, lane)
+  select v_atid, o.at_member_id, 'expertise_search' from _es_out o
+  where not exists (
+    select 1 from digest.olivia_recommendations r
+    where r.asker_at_id = v_atid and r.recommended_at_id = o.at_member_id
+      and r.lane = 'expertise_search' and r.created_at >= now() - interval '24 hours');
+
+  return query
+  select o.full_name, o.city, o.state, o.expertise, o.niche, o.matched_text, o.matched_rank
+  from _es_out o order by o.ord;
 end $function$
