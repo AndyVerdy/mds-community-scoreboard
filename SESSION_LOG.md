@@ -2,6 +2,7 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-20 (fix-it 2) · **Olivia** · **#99 CLOSED** — show-me-the-rest proven E2E (canary registration on the real Summit, deleted after; fresh re-call served Wei Lin/Sam Hewitt, zero logistics) · trap logged: TWO Summit-named catalog rows, Night Out ≠ Summit → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (fix-it) · **Olivia** · smoke fails fixed: **#98 CLOSED** (who-to-meet gated on registrations ledger, re-probed clean) · #99 code shipped (continuation note in-tool, E2E waits on a registered asker) · ⚠️ Andy's who-to-meet demos OFF until he registers for the Summit → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (smoke) · **Olivia** · **Eugene-arc smoke 47/50** (A 18/18 · B 12/12 after 2 live #95 fixes: audit-header + LRU cycling · C 12/14 · D 5/6) — new: #98 (event.people test row leaked names) · #99 (show-me-the-rest) · count-drift 157v113 live · **Ian Sells accepted the first real intro** → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (late-4) · **Olivia** · **#97 POC proven E2E** — consent template APPROVED as UTILITY, full loop on Andy's number (ledger pending → delivered → Accept tap → accepted → links both ways, all delivered) · findings: button taps not in olivia_messages (raw store only), plus-is-space trap · full ship waits on Andy's flow rulings → `SESSION_LOG_OLIVIA.md`

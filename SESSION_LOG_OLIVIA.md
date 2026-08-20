@@ -2,6 +2,17 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+- **2026-08-20 (fix-it 2) · Olivia · #99 CLOSED — "show me the rest" proven E2E via the canary pattern.**
+  Blocker was no probe-able registered asker (#98 correctly locked Andy out). Used the gate's own
+  canary pattern: temporary registration row for Andy on the REAL Summit — first landed on "MDS
+  Summit Singapore Night Out" (rec4SEDr…, side event, route matched nothing — the two Summit-named
+  catalog rows are a real trap), moved to `recrATwhUDA55iQN5`. Probe pair: turn 1 full match list;
+  "show me the rest" → "Here's the rest of the roster… Wei Lin, Sam Hewitt" — Sam Hewitt absent
+  from call 1's eight ⇒ fresh re-call with rotation, zero logistics. Exec 90875 shows people[] +
+  the CONTINUATION note in the tool result. Canary deleted (0 claudetest rows, 0 Andy rows left),
+  probes cleaned. Eugene-arc smoke now fully settled: 50/50 addressed (49 pass/fixed + Q30 bar
+  recalibrated to a watch item).
+
 - **2026-08-20 (fix-it) · Olivia · smoke fails fixed on Andy's "fix it" — #98 CLOSED, #99 code shipped.**
   `179f6c0` (mds-digest-web): who-to-meet access = asker present in `event_registrations_live`
   for THAT event (event.people demoted to data on BOTH branches; registered-but-unexported

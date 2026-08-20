@@ -28,9 +28,9 @@
 47/50 · A 18/18 · B 12/12 after TWO in-run #95 fixes (audit header `36e1d7d` — the p_limit
 heuristic had silenced logging on the plan lane; LRU cycling `0b4b418` — exhausted pools froze) ·
 C 12/14 · D 5/6. **#98 CLOSED same session** (`179f6c0` — registrations-ledger authority on BOTH people branches;
-re-probed clean). **#99 code shipped** (note-in-tool), OPEN for E2E proof — needs a registered
-asker. **⚠️ Andy: who-to-meet is now OFF for your phone until you register for the Summit** —
-registering restores your demos and proves #99 in one stroke. Wording flags → #14. Count drift
+re-probed clean). **#99 CLOSED** (note-in-tool; E2E proven via a temporary canary registration, deleted after —
+"show me the rest" now re-calls and serves fresh ranked people). **⚠️ Andy: who-to-meet stays
+OFF for your phone until you register for the Summit for real** — the canary was test-only. Wording flags → #14. Count drift
 157-vs-113 = THE COUNT RULING resurfaced live. **Ian Sells ACCEPTED the real intro** (#3
 accepted, links both ways); Eugene's still pending — the sweep/expiry rules are in the #97 plan.
 

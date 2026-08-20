@@ -40,7 +40,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#96** | Attendee-name disclosure — Eugene's ≤10-names cap | 🔴 S1 | S | ✅ E2E probed | ✅ **CLOSED 2026-08-20** — cap 10 in code, attendee-gated, gate 0 |
 | **#97** | Brokered intros — "message the person she recommends", consent-first | 🔴 S1 | M | — | ⛔ Andy's ruling + utility template |
 | **#98** | Who-to-meet gates on registrations ledger (smoke Q37) | 🔴 S1 | S | ✅ E2E re-probed | ✅ **CLOSED 2026-08-20** — ledger authority both branches |
-| **#99** | "Show me the rest" for who-to-meet (smoke Q49) | 🟡 S2 | S | code shipped `179f6c0` | 🔶 note-in-tool live; E2E verify needs a registered asker (post Andy-registration) |
+| **#99** | "Show me the rest" for who-to-meet (smoke Q49) | 🟡 S2 | S | ✅ E2E via canary | ✅ **CLOSED 2026-08-20** — continuation note in-tool, fresh re-call proven |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -403,25 +403,6 @@ forms are all queued to load. Each adds 40–85 questions. Hand-curation is O(n)
   concept like staff location or pay bands doing the same).
 - Form-design rule written into the census/forms docs so the next form ships WITH its mappings.
 - QA sweep extended to assert units/period; gate GREEN.
-
----
-
-### #99 · "Show me the rest" is broken for who-to-meet
-**🟡 S2 · size S — filed 2026-08-20 · 🔶 CODE SHIPPED `179f6c0` — the continuation instruction now
-travels in the op's own note (code beats prompt rules). OPEN only for E2E proof: needs a
-registered asker (Andy post-registration) since #98 correctly locked Andy out of the op.**
-
-> **In plain words:** after a who-to-meet list, "show me the rest" must RE-CALL the people op and
-> chunk onward — she lost the referent and answered about arrival times.
-
-*As a member, "show me the rest" continues the list I was just given.*
-
-The seed's REVEALING-THE-REST rule names event_who/member_match but the people op result arrives
-via the event_ tool route — the rule doesn't bind it. Now that #96 ships `matched_total`, the
-continuation has a census to chunk against.
-
-**Accept when:** who-to-meet → "show me the rest" re-calls the same op and serves the next chunk
-(≤10) · staging probe proves it · no memory-recalled names · gate GREEN.
 
 ---
 
@@ -999,6 +980,35 @@ the release is actually safe to ship, not just that the tickets are marked done.
 ---
 
 ## ✅ CLOSED (Sprint 4)
+
+### #99 · "Show me the rest" is broken for who-to-meet
+**🟡 S2 · size S — filed 2026-08-20 · ✅ CLOSED 2026-08-20 same session (code `179f6c0`, E2E via canary)**
+
+> **In plain words:** after a who-to-meet list, "show me the rest" must RE-CALL the people op and
+> chunk onward — she lost the referent and answered about arrival times.
+
+*As a member, "show me the rest" continues the list I was just given.*
+
+The seed's REVEALING-THE-REST rule names event_who/member_match but the people op result arrives
+via the event_ tool route — the rule doesn't bind it. Now that #96 ships `matched_total`, the
+continuation has a census to chunk against.
+
+**Accept when:** who-to-meet → "show me the rest" re-calls the same op and serves the next chunk
+(≤10) · staging probe proves it · no memory-recalled names · gate GREEN.
+
+**CLOSE (2026-08-20).** Fix = the continuation instruction travels in the op's own note
+(code beats prompt rules): "if the member asks for more/the rest, CALL THIS OP AGAIN — the
+ranking rotates; never recite from an earlier turn; never answer with schedule logistics."
+E2E proof used the gate's canary pattern: a TEMPORARY registration row for Andy on the real
+Summit (`claudetest99_andy_temp` — first landed on the "Night Out" side event by mistake, the
+route matched nothing; moved to `recrATwhUDA55iQN5`, the actual Summit), then the probe pair.
+**AC checklist:** re-calls the same op ✅ (exec 90875: full people[] + note; the "rest" reply
+carried Sam Hewitt — absent from call 1's eight, impossible without a fresh call) · next chunk
+served ✅ ("Here's the rest of the roster… Wei Lin, Sam Hewitt") · no memory-recalled names ✅ ·
+no logistics answer ✅ · canary deleted, zero residue (0 claudetest rows, 0 Andy rows) · gate
+GREEN ✅. **Before → after:** "show me the rest" → arrival times ➜ fresh ranked people.
+
+---
 
 ### #98 · Who-to-meet must gate on the registrations ledger — the test row leaked names
 **🔴 S1 · size S — filed 2026-08-20 · ✅ CLOSED 2026-08-20 same session (Andy: "fix it")**
