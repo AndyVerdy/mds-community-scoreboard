@@ -22,7 +22,16 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-20 (late session): PROD `060701be` — nothing awaits promotion. **#94 + #95 + #96 CLOSED · #97 POC PROVEN.**
+## STATE 2026-08-20 (close): PROD `060701be` — nothing awaits promotion. **#94+#95+#96 CLOSED · #97 POC + plan · EUGENE-ARC SMOKE RUN: 47/50.**
+
+### 🔬 Eugene-arc smoke (50 Qs, RUN on Andy's go) — `OLIVIA_SMOKE_EUGENE_ARC.md` has the full table
+47/50 · A 18/18 · B 12/12 after TWO in-run #95 fixes (audit header `36e1d7d` — the p_limit
+heuristic had silenced logging on the plan lane; LRU cycling `0b4b418` — exhausted pools froze) ·
+C 12/14 · D 5/6. **New tickets: #98** (who-to-meet admits `event.people` test rows — named
+attendees reached a non-attendee; fix = registrations-ledger authority + Andy's demo-row ruling)
+· **#99** ("show me the rest" doesn't re-call the people op). Wording flags → #14. Count drift
+157-vs-113 = THE COUNT RULING resurfaced live. **Ian Sells ACCEPTED the real intro** (#3
+accepted, links both ways); Eugene's still pending — the sweep/expiry rules are in the #97 plan.
 
 ### ⚠️ Board: **`OLIVIA_SPRINT_4.md`** (22 open tickets). **Two sprint-close items still await
 Andy:** ① the SMOKE RUN on the 100-bank (the exit exam — proposed, his go) ② validate + post

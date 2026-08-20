@@ -39,6 +39,8 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#95** | Equalizer for the members lane — BOTH advice lanes wired | 🔴 S1 | S | ✅ probed ×2 | ✅ **CLOSED 2026-08-19** — repeat asks 8/8→0/8 shared, gate 0 |
 | **#96** | Attendee-name disclosure — Eugene's ≤10-names cap | 🔴 S1 | S | ✅ E2E probed | ✅ **CLOSED 2026-08-20** — cap 10 in code, attendee-gated, gate 0 |
 | **#97** | Brokered intros — "message the person she recommends", consent-first | 🔴 S1 | M | — | ⛔ Andy's ruling + utility template |
+| **#98** | Who-to-meet gates on registrations ledger — test row leaked names (smoke Q37) | 🔴 S1 | S | — | — |
+| **#99** | "Show me the rest" for who-to-meet — re-call rule gap (smoke Q49) | 🟡 S2 | S | — | — |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -401,6 +403,43 @@ forms are all queued to load. Each adds 40–85 questions. Hand-curation is O(n)
   concept like staff location or pay bands doing the same).
 - Form-design rule written into the census/forms docs so the next form ships WITH its mappings.
 - QA sweep extended to assert units/period; gate GREEN.
+
+---
+
+### #98 · Who-to-meet must gate on the registrations ledger — the test row leaked names
+**🔴 S1 · size S — filed 2026-08-20 (smoke Q37: attendee names reached a non-attendee)**
+
+> **In plain words:** the topic-matched who-to-meet branch admits anyone with an `event.people`
+> row — Andy's `test-andy-8153` test row got him real attendee names after #96 closed that door
+> on the chapter branch.
+
+*As a non-attendee, I get counts and offers — never attendee names, through any branch.*
+
+The chapter branch already keys on `event_registrations_live` (the #89 authority, fixed at #96
+ship). The topic branch still keys `personId` on `event.people`. Fix: same authority for both.
+Decision folded in: **Andy's test row** — delete it, or register Andy properly (his demos need
+who-to-meet to work on his phone; recommendation: register him for real).
+
+**Accept when:** non-attendee "who in X is attending" gets count/offer only (smoke Q37 re-run
+passes) · attendee behavior unchanged · Andy's demo path ruled (registered or accepted loss) ·
+gate GREEN.
+
+---
+
+### #99 · "Show me the rest" is broken for who-to-meet
+**🟡 S2 · size S — filed 2026-08-20 (smoke Q49: she answered with schedule logistics instead)**
+
+> **In plain words:** after a who-to-meet list, "show me the rest" must RE-CALL the people op and
+> chunk onward — she lost the referent and answered about arrival times.
+
+*As a member, "show me the rest" continues the list I was just given.*
+
+The seed's REVEALING-THE-REST rule names event_who/member_match but the people op result arrives
+via the event_ tool route — the rule doesn't bind it. Now that #96 ships `matched_total`, the
+continuation has a census to chunk against.
+
+**Accept when:** who-to-meet → "show me the rest" re-calls the same op and serves the next chunk
+(≤10) · staging probe proves it · no memory-recalled names · gate GREEN.
 
 ---
 

@@ -2,6 +2,28 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+- **2026-08-20 (smoke) · Olivia · EUGENE-ARC SMOKE: 47/50 — and the run fixed what it caught.**
+  50 Qs across #94/#95/#96 (`OLIVIA_SMOKE_EUGENE_ARC.md`, results table inside), staging, Andy's
+  go, run start 04:38:13Z. **A 18/18** (subtopics resolve; new parents answer; Q7 regression trap
+  held — "real estate investing" stayed a handful, not 723; forms-only floor 594). **B 12/12
+  after two live fixes:** revenue pair repeated → read exec 90494 → plan lane calls member_match_v2
+  with p_limit 60 and the ≤30 "audit" heuristic had silenced the equalizer WRITE → **X-Olivia-Audit
+  header replaces the heuristic** (gate rpc() sends it; audited call left log at exactly 49 rows)
+  `36e1d7d`; re-fire still froze → all 26 pool candidates repeat-flagged, deterministic order →
+  **LRU cycling** (last_rec_at asc among repeats; dedupe dropped so repeats refresh the cycle)
+  `0b4b418`; 3 identical exhausted-pool calls → 3 disjoint pages; workflow re-fire PASS.
+  **C 12/14:** counts-only held for the non-attendee everywhere incl. "give me 60 names"; RPC:
+  cap 10 · aggregate row · chapter 30+10 · matched_total 30/8. FAIL Q37: who-to-meet named
+  attendees to Andy via his `test-andy-8153` event.people row (topic branch still keys on
+  event.people; chapter branch was fixed at #96) → **#98 filed**. Q39 exposed 157-vs-113 count
+  drift = THE COUNT RULING, live. **D 5/6:** scores denied as designed · phone refusal clean ·
+  honest pre-#97 intro answer · honest "what changed"; FAIL Q49 "show me the rest" (people op not
+  covered by the re-call rule) → **#99 filed**. Wording flags (Q35/36/38 narrate inability) → #14.
+  Dominance guard 9 vs ≤3 bar = torture-run artifact (26-person pool, ~15 asks incl RPC proofs) —
+  watch in prod. Gate EXIT 0 ×3 during the run. Cleanup done.
+  **Also: Ian Sells ACCEPTED the real brokered intro** (ledger #3 accepted, links both ways,
+  delivered) — first real member connection through the flow. Eugene pending.
+
 - **2026-08-20 (late-4) · Olivia · #97 POC proven end-to-end — brokered intros are REAL (Eugene item 4).**
   Andy: "lets try to make a POC and then decide on the rest." **Template `mds_intro_request`
   submitted and APPROVED as UTILITY** (id 1413344637359224; allow_category_change=true; the
