@@ -2,6 +2,31 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+- **2026-08-19/20 (late-2) · Olivia · #95 CLOSED — the equalizer reaches BOTH advice lanes (Eugene item 3, "Moe ×12").**
+  **The scope grew for the right reason:** the concentration audit (Andy's ask) showed top-20
+  members hold 45% of all 487 top-10 expertise slots; then the staging EXECUTION showed
+  Eugene-shaped topic asks ("who should I talk to about supplements") fire **expertise_search**,
+  not member_match — read-the-execution settled it again. So both lanes shipped:
+  **Shipped (4 migrations, commit `a31a45b`):** `member_match_v2` reads the log (30d per-asker
+  hard downrank below the match tier · 7d global spread damps the expertise tiebreak) and writes
+  lane='member_match' (audit-size calls p_limit>30 skip the write — the gate's subset check uses
+  60) · `expertise_search` same memory, relevance PRIMARY (RRF ×0.6 on repeat — the hybrid-search
+  rule holds; exposure damps only the engagement tiebreak) + 24h per-pair insert dedupe ·
+  `multi_source`/`_v2` STABLE→VOLATILE, byte-identical bodies (a STABLE fn can't call a writing
+  fn — the gate caught it live as a 405 on multi_source). Signatures unchanged everywhere (added
+  param = PostgREST overload ambiguity); ACLs verified unchanged; NOTIFY pgrst each time.
+  **Proof:** REST ×2 identical member_match asks → 8+8 disjoint names, 16 log rows · ×3 identical
+  expertise asks → 18 distinct on-topic names · WORKFLOW path (staging selftest, same supplements
+  question twice) → Jay Hunter/Richard Lo/Yuriy Rubin set then Sam McInerney/Jason Pratt set, zero
+  overlap, log rows written by the run (00:32:51Z) · gate EXIT 0. Before/after: repeat-ask shared
+  names 8/8→0/8 · 6/6→0/6.
+  **Standing:** Andy's asker row carries probe history — his own real "who knows X" rotates past
+  those names ≤30d (correct; remember before demos). Board glance + close block updated; handbook
+  §7.3 equalizer note; handoff queue now #96/#97 (both on Andy).
+  **Also this stretch:** #94 artifact for Andy (expertise-ledger-v2 page: weights ladder · real
+  member bar anatomy · decay/floor curves · the three Eugene mechanisms · table) — published
+  private, verified light+dark headless.
+
 - **2026-08-19 (late) · Olivia · #94 Expertise Ledger v2 CLOSED — and a new session-start rule.**
   **Shipped (warehouse only, nothing to promote):** migration `expertise_taxonomy_v2_20260819`
   (16→18 parents + 33 subtopics, `parent` col, `peak_score` col; 18/33/0-orphans asserted) ·

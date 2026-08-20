@@ -36,7 +36,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
 | **#94** | 🧠 Expertise Ledger v2 — the living skill sheet (Eugene #2 finale) | 🔴 S1 | M | ✅ probed | ✅ **CLOSED 2026-08-19** — 51 topics live, verify 9/9, gate 0 |
-| **#95** | Equalizer for the members lane (`member_match`) — Eugene's "Moe ×12" lived here | 🔴 S1 | S | — | — |
+| **#95** | Equalizer for the members lane — BOTH advice lanes wired | 🔴 S1 | S | ✅ probed ×2 | ✅ **CLOSED 2026-08-19** — repeat asks 8/8→0/8 shared, gate 0 |
 | **#96** | Attendee-name disclosure — Eugene's ≤10-names cap | 🔴 S1 | S | — | ⛔ Andy confirming with Eugene |
 | **#97** | Brokered intros — "message the person she recommends", consent-first | 🔴 S1 | M | — | ⛔ Andy's ruling + utility template |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
@@ -61,19 +61,6 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 - **The smoke runs ONCE per sprint, at completion — never per ticket.** Eval runs are propose-and-wait; the leak gate is free and mandatory.
 - Close = archive to `OLIVIA_BACKLOG_ARCHIVE.md` → next sprint carries open tickets whole → ClickUp handbook copy refresh if changed → **release notes are the FINAL stage** (drafted by me, validated + posted by Andy).
 
-
-### #95 · Equalizer for the members lane — "Moe ×12" lived in `member_match`
-**🔴 S1 · size S — filed 2026-08-19 (Eugene: "they've mentioned Moe to me at least a dozen times")**
-
-> **In plain words:** the general "who should I talk to" lane still recommends the same person forever; the event lane already stopped.
-
-*As a member, I don't get the same name every time — and our most active members don't get buried in DMs because every answer points at them.*
-
-The `olivia_recommendations` log + equalizer (hard 30d per-asker no-repeat, soft 7d global spread) shipped on the EVENT people op with zero-overlap proof. `member_match` — where Eugene's dozen actually happened — still ranks statically.
-
-**Accept when:** member_match reads AND writes the recommendation log · two identical member-lane asks return different names · the log carries lane='member_match' rows · gate GREEN.
-
----
 
 ### #96 · Attendee-name disclosure — the ≤10-names cap
 **🔴 S1 · size S — filed 2026-08-19 · ⛔ BLOCKED: Andy confirming the rule with Eugene**
@@ -980,6 +967,46 @@ the release is actually safe to ship, not just that the tickets are marked done.
 ---
 
 ## ✅ CLOSED (Sprint 4)
+
+### #95 · Equalizer for the members lane — "Moe ×12" lived in `member_match`
+**🔴 S1 · size S — filed 2026-08-19 · ✅ CLOSED 2026-08-19 (Eugene: "they've mentioned Moe to me at least a dozen times")**
+
+> **In plain words:** the general "who should I talk to" lane still recommends the same person forever; the event lane already stopped.
+
+*As a member, I don't get the same name every time — and our most active members don't get buried in DMs because every answer points at them.*
+
+The `olivia_recommendations` log + equalizer (hard 30d per-asker no-repeat, soft 7d global spread) shipped on the EVENT people op with zero-overlap proof. `member_match` — where Eugene's dozen actually happened — still ranks statically.
+
+**Accept when:** member_match reads AND writes the recommendation log · two identical member-lane asks return different names · the log carries lane='member_match' rows · gate GREEN.
+
+**CLOSE (2026-08-19).** Shipped as 4 migrations, one commit (`a31a45b`). The execution log
+showed Eugene-shaped topic asks ("who should I talk to about supplements") route to
+**expertise_search**, not member_match — so BOTH advice lanes got the equalizer:
+`member_match_v2` (repeats sink below every fresh name of their match tier; audit-size calls
+p_limit>30 never write the log — the gate's subset check uses 60) and `expertise_search`
+(relevance stays primary: RRF ×0.6 on a 30d repeat, 7d community exposure damps only the
+engagement tiebreak; 24h per-pair insert dedupe so gate runs don't inflate the log).
+`multi_source`/`_v2` dropped STABLE→VOLATILE (a STABLE fn can't call the now-writing fns — the
+gate caught that as a 405 mid-ship) so their members sections inherit rotation. Signatures
+unchanged (new param = PostgREST overload ambiguity) · ACLs verified unchanged · NOTIFY pgrst
+after every RPC change.
+
+**AC checklist:** member_match reads AND writes the log ✅ (16 lane='member_match' rows from the
+proof calls) · two identical member-lane asks return different names ✅ (REST: 8+8 fully disjoint;
+workflow path on staging, same supplements question twice: Jay Hunter/Richard Lo/Yuriy Rubin set
+→ Sam McInerney/Jason Pratt set, zero overlap) · log carries lane='member_match' rows ✅ (+
+lane='expertise_search', beyond the AC) · gate GREEN ✅ EXIT 0.
+
+**Before → after:** identical repeated ask, names shared between ask 1 and ask 2: **8/8 → 0/8**
+(member_match) and **6/6 → 0/6** (expertise_search, three asks = 18 distinct on-topic names).
+Concentration context (the before-pattern): top-20 members held 45% of all 487 top-10 expertise
+slots — static ranking would have served them forever.
+
+**Standing note:** Andy's own asker row now carries the probe history — HIS next real
+"who knows supplements" rotates past the probe names for up to 30d. Correct behavior, worth
+remembering before a demo.
+
+---
 
 ### #94 · Expertise Ledger v2 — the living skill sheet
 **🔴 S1 · size M — filed 2026-08-19 · ✅ CLOSED 2026-08-19 (shipped to the live warehouse; plan `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md`)**

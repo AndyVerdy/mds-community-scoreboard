@@ -429,7 +429,12 @@ tier-equals — **on the ADVICE lane** (`member_match`: "who can help me with X"
 (event `people` op: "who should I meet") inverts: novelty + the equalizer first, proficiency
 tiebreaks. The **equalizer** = `digest.olivia_recommendations` (every recommended name logged):
 hard 30-day per-asker no-repeat + soft 7-day global spread, so no member gets buried in DMs for
-being excellent. A matcher sample is never a census — presence counts come from the registrations
+being excellent. **Since #95 (2026-08-19) the equalizer covers the ADVICE lanes too:**
+`member_match_v2` (repeats sink below fresh names of the same match tier; audit-size calls with
+`p_limit>30` never write the log) and `expertise_search` (relevance stays primary — RRF ×0.6 on a
+30d repeat, 7d exposure damps only the engagement tiebreak; 24h per-pair insert dedupe).
+`multi_source`/`_v2` are VOLATILE so their members sections inherit rotation. All four write
+`olivia_recommendations` with their lane name. A matcher sample is never a census — presence counts come from the registrations
 ledger via the `chapter` param. **Ledger v2 SHIPPED 2026-08-19** (§7.1 above is the live
 formula); plan preserved at `docs/superpowers/plans/2026-08-19-expertise-ledger-v2.md`.
 

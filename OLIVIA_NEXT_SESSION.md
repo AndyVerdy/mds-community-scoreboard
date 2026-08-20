@@ -36,12 +36,18 @@ verify `scripts/verify_expertise_v2.py` **9/9 PASS**, gate EXIT 0, nightly RPC p
 (11s). Same-day catch: the substring trap re-opened by short terms (`'vat'`/`'str'`) — biz+persona
 CTEs now tsquery-match. Full close block on the board. Commits `0ce7ebe`·`a1250eb`·`8d70f10`.
 
+### ✅ #95 Equalizer for the advice lanes — CLOSED 2026-08-19 (same session, Andy's go)
+The execution log showed Eugene-shaped topic asks route to **expertise_search**, so BOTH advice
+lanes got the equalizer (member_match_v2 + expertise_search; multi_source/_v2 went VOLATILE to
+inherit it). Proof: identical repeated asks 8/8 → 0/8 shared names (REST) and disjoint sets on
+the staging workflow path; log carries member_match + expertise_search lanes; gate EXIT 0.
+Commit `a31a45b`, close block on the board. ⚠️ Andy's asker row carries the probe history — his
+own next real "who knows X" rotates past those names for up to 30d (correct, remember at demos).
+
 ### NEXT SESSION OPENS HERE — brief Andy, WAIT for his go (the new ⛔ rule above)
-**🎯 STANDING ORDER (Andy): Eugene's remaining THREE, in order — #95 (his item 3) → #96 (his
-item 1, on the confirm) → #97 (his item 4, on the ruling). Quotes on each ticket.**
-1. **#95** (Eugene item 3: *"they've mentioned Moe to me at least a dozen times in my chat… make sure the AI isn't over-recommending the same person"*) — extend the equalizer to `member_match` — Eugene's Moe dozen lived in the general members
-   lane; the event lane is covered (`olivia_recommendations` log).
-2. **Andy's desk:** #96 name-cap confirm · #97 intros ruling ·
+**🎯 STANDING ORDER (Andy): Eugene's remaining TWO — #96 (his item 1, on the confirm) → #97
+(his item 4, on the ruling). Quotes on each ticket.**
+1. **Andy's desk:** #96 name-cap confirm · #97 intros ruling ·
    THE COUNT RULING (recommendation: 98 active members, one `event_registered_members` view) ·
    Eugene's Members-DB record pin (9-record cluster) · "MDS Mille" re-register when the watcher
    fires (PIN, 14-day window) · #72 LOAD TEST before the announcement.
