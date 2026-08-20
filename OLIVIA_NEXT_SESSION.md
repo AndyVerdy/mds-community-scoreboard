@@ -22,7 +22,7 @@
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
 
-## STATE 2026-08-20 (late session): PROD `060701be` — nothing awaits promotion. **#94 + #95 + #96 CLOSED.**
+## STATE 2026-08-20 (late session): PROD `060701be` — nothing awaits promotion. **#94 + #95 + #96 CLOSED · #97 POC PROVEN.**
 
 ### ⚠️ Board: **`OLIVIA_SPRINT_4.md`** (22 open tickets). **Two sprint-close items still await
 Andy:** ① the SMOKE RUN on the 100-bank (the exit exam — proposed, his go) ② validate + post
@@ -52,9 +52,20 @@ on the live route, fixed same hour); non-attendees get counts/aggregates only. `
 migration + route `3e77774`/`08d42fc`, gate +3 checks EXIT 0, E2E probed both sides. Supersedes
 2026-07-20 any-member-sees-names.
 
+### 🔨 #97 Brokered intros — POC PROVEN E2E 2026-08-20 (Andy: "lets try to make a POC and then decide")
+Template `mds_intro_request` **APPROVED as UTILITY** (no marketing cap on consent asks). Full
+loop ran on Andy's number: `olivia_intros` pending → template delivered → Andy tapped **Accept
+intro** → watcher flipped the ledger → links both ways, all `delivered` in `olivia_sends`.
+Tools: `scripts/olivia_intro_template.py` (create/status) · `scripts/olivia_intro_poc.py`
+(request/watch/status, HARD-LIMITED to the test number). **Findings for the real build:**
+template button taps = `msg_type='button'`, NOT persisted to `olivia_messages` (only
+`olivia_webhook_events` has them; Mille also answers the tap text as a message — the workflow
+needs an intro-tap branch) · plus-is-space on ledger timestamps. **Full ship waits on Andy's
+rulings:** conversation intent ("connect us") + workflow branch · per-target rate cap · expiry ·
+decline wording · seed copy.
+
 ### NEXT SESSION OPENS HERE — brief Andy, WAIT for his go (the new ⛔ rule above)
-**🎯 STANDING ORDER (Andy): Eugene's LAST one — #97 (his item 4, on the ruling).**
-1. **Andy's desk:** #97 intros ruling + utility template ·
+1. **Andy's desk:** #97 full-flow rulings (above) ·
    THE COUNT RULING (recommendation: 98 active members, one `event_registered_members` view) ·
    Eugene's Members-DB record pin (9-record cluster) · "MDS Mille" re-register when the watcher
    fires (PIN, 14-day window) · #72 LOAD TEST before the announcement.

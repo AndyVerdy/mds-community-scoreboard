@@ -65,7 +65,19 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 ### #97 · Brokered intros — message the person she recommends
 **🔴 S1 · size M — filed 2026-08-19 · 🔨 POC RUNNING (Andy 2026-08-20: "lets try to make a POC and then decide on the rest")**
 
-**POC step 1 DONE 2026-08-20 — the consent template is in Meta review:** `mds_intro_request`
+**POC PROVEN END-TO-END 2026-08-20 (commit `68fa789`):** template **APPROVED as UTILITY** (no
+marketing cap on consent asks — the make-or-break unknown, settled). Full loop on the test
+number: `olivia_intros` ledger row pending → template delivered (olivia_sends `delivered`) →
+Andy tapped **Accept intro** on his phone → watcher caught the tap → ledger `accepted` → wa.me
+links sent both ways (`delivered`). Findings the real build must carry: ① template quick-reply
+taps arrive as `msg_type='button'` and are NOT persisted to `olivia_messages` — the workflow
+branch must handle type='button' (today only the raw webhook store sees them, and Mille answers
+the tap text as if it were a message) ② the plus-is-space trap on ledger timestamps.
+**Remaining for the full ship (Andy's rulings):** who may request (member asks "connect us" in
+conversation → workflow branch) · per-target rate cap · expiry · decline wording · seed intent.
+POC guard stays: the script can only message the test number.
+
+**POC step 1 (superseded by the above) — the consent template was submitted:** `mds_intro_request`
 (id `1413344637359224`), submitted **UTILITY**, status **PENDING**, `allow_category_change=true`
 (approve-as-marketing beats a rejection — either verdict is the POC's answer). Body: "Hi {{1}},
 fellow MDS member {{2}} asked for an introduction to you about {{3}}. Should I connect you two?

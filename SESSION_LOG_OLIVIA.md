@@ -2,6 +2,21 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+- **2026-08-20 (late-4) · Olivia · #97 POC proven end-to-end — brokered intros are REAL (Eugene item 4).**
+  Andy: "lets try to make a POC and then decide on the rest." **Template `mds_intro_request`
+  submitted and APPROVED as UTILITY** (id 1413344637359224; allow_category_change=true; the
+  marketing-cap fear did not materialize). **Full loop on Andy's number:** `digest.olivia_intros`
+  ledger (migration `olivia_intros_ledger_20260820`; pending/accepted/declined/expired, one
+  pending per pair, anon 401-verified) → consent template delivered (`olivia_sends` delivered,
+  never the 200) → Andy tapped **Accept intro** → watcher caught the tap → ledger accepted →
+  wa.me links both ways, delivered. Commits `42b03b1` (template) · `68fa789` (POC loop).
+  **Findings for the real build:** ① template quick-reply taps arrive `msg_type='button'` and
+  are NOT persisted to olivia_messages — only `olivia_webhook_events` holds them, and Mille
+  answers the tap text as a normal message (workflow needs an intro-tap branch) ② ledger
+  timestamps hit the PostgREST plus-is-space trap (Z-suffix in the script now).
+  **Open for the full ship (Andy):** "connect us" conversation intent + workflow branch ·
+  per-target rate cap · expiry · decline wording. POC guard: script messages ONLY the test number.
+
 - **2026-08-20 (late-3) · Olivia · #96 CLOSED — attendee-name disclosure, the 10-cap ruling (Eugene item 1).**
   **Andy ruled it live in-session (verbatim on the ticket):** agree with Eugene's ≤10 — but as a
   DISPLAY cap, never a processing cap ("if i ask who in supplements, who in DTC i will get proper
