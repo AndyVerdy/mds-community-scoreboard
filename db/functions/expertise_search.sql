@@ -21,7 +21,7 @@ begin
     if p_embedding is not null and left(trim(p_embedding),1) = '[' then
       v_vec := p_embedding::extensions.vector(1024);
     end if;
-  exception when others then v_vec := null;  -- malformed vector degrades to keyword
+  exception when others then v_vec := null;
   end;
   if v_q is null and v_vec is null then return; end if;
 
@@ -70,6 +70,7 @@ begin
   recent as (
     select r.recommended_at_id,
            bool_or(r.asker_at_id = v_atid and r.created_at >= now() - interval '30 days') as asker_repeat,
+           max(r.created_at) filter (where r.asker_at_id = v_atid) as last_rec_at,
            count(*) filter (where r.created_at >= now() - interval '7 days') as global_7d
     from digest.olivia_recommendations r
     where r.created_at >= now() - interval '30 days'
@@ -95,6 +96,7 @@ begin
          row_number() over (order by
            (m.rrf * case when coalesce(rc.asker_repeat, false) then 0.6 else 1.0 end) desc,
            (coalesce(p.engagement_score, 0) - 15 * ln(1 + coalesce(rc.global_7d, 0))) desc,
+           rc.last_rec_at asc nulls first,
            p.full_name) as ord
   from merged m
   join pool p on p.at_member_id = m.id
@@ -104,11 +106,7 @@ begin
 
   if not v_audit then
     insert into digest.olivia_recommendations (asker_at_id, recommended_at_id, lane)
-    select v_atid, o.at_member_id, 'expertise_search' from _es_out o
-    where not exists (
-      select 1 from digest.olivia_recommendations r
-      where r.asker_at_id = v_atid and r.recommended_at_id = o.at_member_id
-        and r.lane = 'expertise_search' and r.created_at >= now() - interval '24 hours');
+    select v_atid, o.at_member_id, 'expertise_search' from _es_out o;
   end if;
 
   return query

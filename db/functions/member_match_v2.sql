@@ -21,7 +21,6 @@ begin
   select * into me from digest.member_attributes ma where ma.at_member_id = v_atid;
   if me is null then return; end if;
 
-  -- audits (the leak gate) announce themselves; everything else is a real lane
   v_audit := coalesce((current_setting('request.headers', true))::json->>'x-olivia-audit','') <> '';
 
   tgt_city := digest.place_city(p_city);
@@ -56,6 +55,7 @@ begin
   ), recent as (
     select r.recommended_at_id,
            bool_or(r.asker_at_id = v_atid and r.created_at >= now() - interval '30 days') as asker_repeat,
+           max(r.created_at) filter (where r.asker_at_id = v_atid) as last_rec_at,
            count(*) filter (where r.created_at >= now() - interval '7 days') as global_7d
     from digest.olivia_recommendations r
     where r.created_at >= now() - interval '30 days'
@@ -111,6 +111,9 @@ begin
       (target_mode and ma.rev_band is not null and ma.rev_band = me.rev_band) desc,
       (lower(coalesce(ma.city, '')) = lower(coalesce(me.city, ''))) desc,
       coalesce(rc.asker_repeat, false) asc,
+      -- LRU CYCLING (#95 catch 2): among repeats, the LONGEST-unseen name leads —
+      -- an exhausted pool rotates instead of freezing
+      rc.last_rec_at asc nulls first,
       (coalesce((select max(c.score) from comp c where c.at_member_id = ma.at_member_id), 0)
          - 0.5 * ln(1 + coalesce(rc.global_7d, 0))) desc,
       ma.full_name) as ord
@@ -138,14 +141,12 @@ begin
   order by ord
   limit greatest(coalesce(p_limit, 10), 0);
 
-  -- every real lane writes the memory; only announced audits skip it
   if not v_audit then
+    -- log EVERY shown name's exposure moment; a repeat refreshes last_rec_at so
+    -- the LRU cycle advances (the 24h dedupe would freeze the cycle - dropped
+    -- here; gate/audits no longer write at all, so dedupe lost its job)
     insert into digest.olivia_recommendations (asker_at_id, recommended_at_id, lane)
-    select v_atid, o.at_member_id, 'member_match' from _mm_out o
-    where not exists (
-      select 1 from digest.olivia_recommendations r
-      where r.asker_at_id = v_atid and r.recommended_at_id = o.at_member_id
-        and r.lane = 'member_match' and r.created_at >= now() - interval '24 hours');
+    select v_atid, o.at_member_id, 'member_match' from _mm_out o;
   end if;
 
   return query
