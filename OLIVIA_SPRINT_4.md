@@ -63,7 +63,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 
 
 ### #97 · Brokered intros — message the person she recommends
-**🔴 S1 · size M — filed 2026-08-19 · 🔨 POC RUNNING (Andy 2026-08-20: "lets try to make a POC and then decide on the rest")**
+**🔴 S1 · size M — filed 2026-08-19 · 🔨 POC PROVEN · rulings LOCKED · 📋 PLAN: `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`**
 
 **POC PROVEN END-TO-END 2026-08-20 (commit `68fa789`):** template **APPROVED as UTILITY** (no
 marketing cap on consent asks — the make-or-break unknown, settled). Full loop on the test
