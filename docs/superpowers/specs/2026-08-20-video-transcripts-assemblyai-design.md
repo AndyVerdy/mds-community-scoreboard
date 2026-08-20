@@ -8,9 +8,11 @@ Inspire sessions, the Hack Contest, hybrid rooms — has no spoken-word record a
 covers filling that hole with AssemblyAI transcripts, reusing #70's machinery rather than building
 alongside it.
 
-**Nothing in the retrieval layer changes.** No migration, no DDL, no new RPC, no prompt or seed
-edit, no workflow change. This is a data load into tables and columns that already exist, using a
-chunker and loader that already run.
+**Almost nothing in the retrieval layer changes.** No migration, no new table or column, no new RPC,
+no prompt or seed edit, no workflow change. The load itself writes into tables and columns that
+already exist, using a chunker and loader that already run. The one exception is a
+`CREATE OR REPLACE` on `digest.video_search` and the matching leak-gate checks, required by Andy's
+ruling in §3.6 on how restricted videos are answered.
 
 ## 1. What already exists (verified live 2026-08-20)
 
@@ -56,6 +58,14 @@ Of those 161: **65 already have Zoom chunks, 96 do not.** The same 96 are the vi
    metered API call, so `video_summaries.py`'s Haiku path is bypassed for this load.
 5. **Precompute, never generate at query time.** Transcript, summary and TLDR are all stored, so a
    member asking twice costs nothing the second time.
+6. **Restricted videos are answered from their summary, never their transcript.** Olivia reads the
+   material, answers, and suggests the video with a short summary and a line saying the video may be
+   restricted and the member may not have access. She never returns a passage or quote from one.
+7. **Until the restriction rules are readable, every asker is assumed to have access.** We cannot
+   compute who may see a given video (§7), so the system stops implying that it can: the caveat
+   moves into the wording instead of the gate. **Andy's explicit ruling, and explicitly temporary.**
+8. **Restricted summaries are written in the normal format** — names and specifics included. A
+   topic-level redacted variant was proposed and ruled out, since assuming access makes it moot.
 
 ## 4. Evidence: Zoom versus AssemblyAI on the 65 videos where both exist
 
@@ -141,10 +151,57 @@ gain from this load is 26 videos and 21.8 hours**, not 96 and 55. The other 70 a
 and ready the day their access rules become resolvable per member, which is its own ticket.
 
 `content_search` excludes `restricted` unless the caller passes the explicit flag, and the leak gate
-has covered that path since #70. Nothing here is enforced by prompt.
+has covered that path since #70. **Transcript passages from restricted videos therefore remain
+unreachable, and that does not change.** Nothing here is enforced by prompt.
 
-The restricted-recording principle from #71 still holds and is unaffected: a restricted recording
-must not hide its event. The video stays listed by title and date; only its content is withheld.
+### 7.1 What we can and cannot see about a restriction (verified live 2026-08-20)
+
+We see **that** a video is restricted. We never see **who may view it**. Three probes:
+
+| Probe | Result |
+|---|---|
+| GroupOS `videos_get` (MDS-bound PAT), restricted Rockies Hybrid Boardroom | `restriction_access: "restricted"` and nothing else. No group, tier, tag, user or event restriction field in the payload. |
+| GroupOS `access_resources_list` | 6 rows — Events, Videos, News, Chats, Partners, Documents. Platform-wide permission categories, not per-video rules. |
+| Andy's Mongo export | The only place `restrictedAccess{Group,MembershipPlan,Tag,Event,Tier,User}Id` exists — but `01_export_mds_videos.js` flattens them to `"tiers: 1; named users: 15"`. Event and tag *names* survive; tier and user **ids do not**. |
+
+Even with the ids, resolving them to a member needs work that does not exist: event ids resolve
+through `events_catalog.app_event_id` → `event_registrations_live` but reach only **8 of 76**
+restricted 2026 videos; named users need a GroupOS-user → MDS-member bridge that today covers just
+234 speaker records.
+
+### 7.2 The temporary posture (Andy's ruling, §3.7)
+
+Because access cannot be computed, it is not faked. Every asker is treated as having access, and the
+uncertainty is disclosed in the answer instead:
+
+- Restricted video matches → Olivia names it, gives the **short summary**, and says the video may be
+  restricted and the member may not have access.
+- Restricted video transcript → **never returned**, no quote, no passage, no timestamp jump.
+- `video_search` is changed by `CREATE OR REPLACE` (never `DROP` — that resets EXECUTE to PUBLIC) to
+  return `summary` for restricted rows, replacing today's hard-coded
+  `"Never describe, summarize or guess its content."` instruction string with the new wording.
+- The leak-gate checks that currently assert *restricted returns no summary* are inverted to assert
+  *restricted returns the summary and no transcript passage*. The rule keeps living in the gate.
+
+**Accepted exposure, recorded deliberately:** a member without access can receive a summary of a room
+they were not in — 70 of these 96 videos, plus the 6 restricted Zoom videos already loaded. Andy was
+shown this and ruled it acceptable as a temporary state.
+
+**Reversal condition:** when the export carries the raw rule ids and the resolvers exist,
+`video_search` gates on real access and the warning line is removed. **Nothing in this load is
+redone at that point** — the transcripts and summaries stay exactly as written; only the gate
+changes.
+
+The restricted-recording principle from #71 still holds: a restricted recording must not hide its
+event. The video stays listed by title and date regardless.
+
+### 7.3 To verify during the build, not assume
+
+The keyword branch of `video_search` scores restricted rows on a `safe_tsv` built only from title,
+speakers, categories and tags. The vector branch scores them on `videos_catalog.embedding` with no
+equivalent gate. If that embedding was built from description or summary text, restricted videos are
+already semantically matchable on their content. This is not a text leak, and it is pre-existing, but
+it should be confirmed rather than trusted while this ticket is touching the same function.
 
 ## 8. Speaker labels
 
@@ -164,6 +221,10 @@ The 96 missing summaries are written from the transcripts in Andy's #70 format �
 4–5 labelled bullets, WhatsApp bold — and stored on `videos_catalog.summary` with
 `summary_source='transcript'`. The existing 65 are not regenerated.
 
+**One format for all 96, restricted or not** (§3.8). For the 70 restricted ones this summary is the
+*only* thing a member can receive about the content, which raises its importance: it must stand on
+its own without the transcript behind it.
+
 `videos_catalog.search_tsv` already indexes the summary at weight B, so filling this column also
 improves video-level search independently of the chunks.
 
@@ -182,8 +243,14 @@ improves video-level search independently of the chunks.
 6. **A probe returns a passage from a non-Zoom video with its video link** — e.g. a Chapter
    Boardroom question that no Zoom transcript could have answered before.
 7. **A restricted video's passage is not returned to a default search**, and its title still is.
-8. **96 summaries written**, `summary_source='transcript'`, none of the existing 65 modified.
-9. **Leak gate GREEN** (`python3 scripts/olivia_leak_gate.py`, exit 0).
+8. **A restricted video returns its summary plus the may-be-restricted wording**, proven on a real
+   probe, and returns no transcript passage in the same answer.
+9. **`video_search` was replaced, not dropped** — `CREATE OR REPLACE`, EXECUTE still granted only to
+   `service_role` and not to PUBLIC, verified after the change.
+10. **The vector-branch question in §7.3 is answered in writing** — either the embedding excludes
+    restricted content text, or it is recorded as a known pre-existing behaviour with a ticket.
+11. **96 summaries written**, `summary_source='transcript'`, none of the existing 65 modified.
+12. **Leak gate GREEN** (`python3 scripts/olivia_leak_gate.py`, exit 0).
 
 ## 11. Non-goals
 
@@ -191,8 +258,10 @@ improves video-level search independently of the chunks.
 - Naming the `A`/`B`/`C` speakers.
 - Chapters or auto-highlights.
 - Re-transcribing anything Zoom already covered.
-- Any change to `content_search_v2`, `video_search`, `multi_source`, the prompt layer or the
-  production workflow.
+- Any change to `content_search_v2`, `multi_source`, the prompt layer or the production workflow.
+  (`video_search` **is** changed — see §7.2 — but only in what it returns for restricted rows.)
+- Resolving who may see a restricted video. That needs the export change in §7.1 and is its own
+  ticket; this spec deliberately ships the temporary posture instead.
 - Hosting the videos on Mux — separate idea, separate ticket.
 
 ## 12. Risks
@@ -201,7 +270,9 @@ improves video-level search independently of the chunks.
 |---|---|
 | A load bug damages the 65 Zoom rows | The loader filters to video_ids with zero existing chunks and never issues an UPDATE. AC 1 checksums the untouched set. |
 | Anonymous speakers read as low quality | Stated plainly in the body as `Speaker A`, never guessed. Named attribution is its own ticket. |
-| A restricted transcript leaks | `sensitivity` is set from the catalog per row, not from a list; AC 3 proves it by join; the gate covers the retrieval path. |
+| A restricted transcript leaks | `sensitivity` is set from the catalog per row, not from a list; AC 3 proves it by join; the gate covers the retrieval path. Passages stay unreachable under the temporary posture too. |
+| A member without access reads a summary of a room they were not in | **Accepted, temporarily** (§3.7, §7.2). Andy was shown the exposure and ruled it. Bounded to summaries — never passages — and reversed the day the rule ids land. |
+| The temporary posture becomes permanent by forgetting | The reversal condition is written into §7.2, the warning wording is user-visible on every restricted answer, and the gate checks name it as temporary. |
 | `source='call_transcript'` misleads a future reader | `meta.provenance` distinguishes them, and this spec records why. |
 | Presigned links expire 2026-08-27 | Irrelevant to this load — the transcripts already exist as local JSON. Only a re-transcription would need fresh links. |
 
@@ -211,3 +282,7 @@ Every row this load writes is identifiable by `source='call_transcript'` plus
 `meta->>'provenance' = 'assemblyai'`. Rollback is one DELETE on that predicate plus reverting
 `summary` to NULL where `summary_source='transcript'` on the 96. Nothing else in the system holds a
 reference to these rows.
+
+The `video_search` change rolls back separately and independently: re-apply the previous body with
+`CREATE OR REPLACE` and re-run the gate. The current definition is captured in the plan before the
+change is made, so the revert is a paste rather than a reconstruction.
