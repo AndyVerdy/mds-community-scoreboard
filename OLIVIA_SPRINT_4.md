@@ -63,7 +63,16 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 
 
 ### #97 · Brokered intros — message the person she recommends
-**🔴 S1 · size M — filed 2026-08-19 · ⛔ BLOCKED: Andy's ruling ("lets think of it") + utility template**
+**🔴 S1 · size M — filed 2026-08-19 · 🔨 POC RUNNING (Andy 2026-08-20: "lets try to make a POC and then decide on the rest")**
+
+**POC step 1 DONE 2026-08-20 — the consent template is in Meta review:** `mds_intro_request`
+(id `1413344637359224`), submitted **UTILITY**, status **PENDING**, `allow_category_change=true`
+(approve-as-marketing beats a rejection — either verdict is the POC's answer). Body: "Hi {{1}},
+fellow MDS member {{2}} asked for an introduction to you about {{3}}. Should I connect you two?
+Your contact details are shared only if you accept." + Accept intro / Decline buttons. Check:
+`python3 scripts/olivia_intro_template.py status`. **If it approves as MARKETING, the 131049
+per-user cap applies to consent asks — decision point for Andy.** No send path exists on purpose;
+nothing messages anyone until the flow is ruled.
 
 > **In plain words:** after "you should meet X", one tap should start that conversation — without ever handing out phone numbers.
 
