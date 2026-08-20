@@ -39,8 +39,8 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#95** | Equalizer for the members lane — BOTH advice lanes wired | 🔴 S1 | S | ✅ probed ×2 | ✅ **CLOSED 2026-08-19** — repeat asks 8/8→0/8 shared, gate 0 |
 | **#96** | Attendee-name disclosure — Eugene's ≤10-names cap | 🔴 S1 | S | ✅ E2E probed | ✅ **CLOSED 2026-08-20** — cap 10 in code, attendee-gated, gate 0 |
 | **#97** | Brokered intros — "message the person she recommends", consent-first | 🔴 S1 | M | — | ⛔ Andy's ruling + utility template |
-| **#98** | Who-to-meet gates on registrations ledger — test row leaked names (smoke Q37) | 🔴 S1 | S | — | — |
-| **#99** | "Show me the rest" for who-to-meet — re-call rule gap (smoke Q49) | 🟡 S2 | S | — | — |
+| **#98** | Who-to-meet gates on registrations ledger (smoke Q37) | 🔴 S1 | S | ✅ E2E re-probed | ✅ **CLOSED 2026-08-20** — ledger authority both branches |
+| **#99** | "Show me the rest" for who-to-meet (smoke Q49) | 🟡 S2 | S | code shipped `179f6c0` | 🔶 note-in-tool live; E2E verify needs a registered asker (post Andy-registration) |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -406,28 +406,10 @@ forms are all queued to load. Each adds 40–85 questions. Hand-curation is O(n)
 
 ---
 
-### #98 · Who-to-meet must gate on the registrations ledger — the test row leaked names
-**🔴 S1 · size S — filed 2026-08-20 (smoke Q37: attendee names reached a non-attendee)**
-
-> **In plain words:** the topic-matched who-to-meet branch admits anyone with an `event.people`
-> row — Andy's `test-andy-8153` test row got him real attendee names after #96 closed that door
-> on the chapter branch.
-
-*As a non-attendee, I get counts and offers — never attendee names, through any branch.*
-
-The chapter branch already keys on `event_registrations_live` (the #89 authority, fixed at #96
-ship). The topic branch still keys `personId` on `event.people`. Fix: same authority for both.
-Decision folded in: **Andy's test row** — delete it, or register Andy properly (his demos need
-who-to-meet to work on his phone; recommendation: register him for real).
-
-**Accept when:** non-attendee "who in X is attending" gets count/offer only (smoke Q37 re-run
-passes) · attendee behavior unchanged · Andy's demo path ruled (registered or accepted loss) ·
-gate GREEN.
-
----
-
 ### #99 · "Show me the rest" is broken for who-to-meet
-**🟡 S2 · size S — filed 2026-08-20 (smoke Q49: she answered with schedule logistics instead)**
+**🟡 S2 · size S — filed 2026-08-20 · 🔶 CODE SHIPPED `179f6c0` — the continuation instruction now
+travels in the op's own note (code beats prompt rules). OPEN only for E2E proof: needs a
+registered asker (Andy post-registration) since #98 correctly locked Andy out of the op.**
 
 > **In plain words:** after a who-to-meet list, "show me the rest" must RE-CALL the people op and
 > chunk onward — she lost the referent and answered about arrival times.
@@ -1017,6 +999,38 @@ the release is actually safe to ship, not just that the tickets are marked done.
 ---
 
 ## ✅ CLOSED (Sprint 4)
+
+### #98 · Who-to-meet must gate on the registrations ledger — the test row leaked names
+**🔴 S1 · size S — filed 2026-08-20 · ✅ CLOSED 2026-08-20 same session (Andy: "fix it")**
+
+> **In plain words:** the topic-matched who-to-meet branch admits anyone with an `event.people`
+> row — Andy's `test-andy-8153` test row got him real attendee names after #96 closed that door
+> on the chapter branch.
+
+*As a non-attendee, I get counts and offers — never attendee names, through any branch.*
+
+The chapter branch already keys on `event_registrations_live` (the #89 authority, fixed at #96
+ship). The topic branch still keys `personId` on `event.people`. Fix: same authority for both.
+Decision folded in: **Andy's test row** — delete it, or register Andy properly (his demos need
+who-to-meet to work on his phone; recommendation: register him for real).
+
+**Accept when:** non-attendee "who in X is attending" gets count/offer only (smoke Q37 re-run
+passes) · attendee behavior unchanged · Andy's demo path ruled (registered or accepted loss) ·
+gate GREEN.
+
+**CLOSE (2026-08-20, commit mds-digest-web `179f6c0`).** The topic-matched people branch now
+requires the asker in `event_registrations_live` for THAT event — the same authority as every
+count; `event.people` is data, never an access key. Registered members absent from the export
+still work (member record supplies topics; self-exclusion by member id).
+**AC checklist:** Q37 re-run passes ✅ (live route: Andy refused with the standard note; staging
+E2E: zero attendee names, pivot to community-wide members — allowed lane) · attendee behavior
+unchanged ✅ (registered member: matched_total 30, 8 shown, note intact) · Andy's demo path ruled
+✅ (consequence accepted with "fix it": who-to-meet is OFF for Andy's phone until he registers
+for the Summit — his action item) · gate GREEN ✅ EXIT 0.
+**Before → after:** test-row holder got attendee names → refused; access authority event.people →
+registrations ledger on BOTH branches.
+
+---
 
 ### #96 · Attendee-name disclosure — the ≤10-names cap
 **🔴 S1 · size S — filed 2026-08-19 · ✅ CLOSED 2026-08-20 (ruling recorded + shipped same session)**
