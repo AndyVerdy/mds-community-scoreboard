@@ -2,6 +2,14 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+- **2026-08-20 (SESSION CLOSE) · Olivia · the Eugene night wrapped.** One session: #94 ledger v2 ·
+  #95 equalizer (+2 smoke-caught fixes) · #96 disclosure ruling shipped · #97 POC proven E2E
+  (template APPROVED UTILITY, Ian Sells accepted the first real intro; Eugene pending) + full-build
+  plan pinned · Eugene-arc smoke 50 Qs → 50/50 addressed (#98 #99 filed AND closed) · artifact
+  "Expertise Ledger v2" published. Prod wf untouched (`060701be`) — every ship lives in SQL fns +
+  the digest.mds.co route; nothing awaits promotion. Docs: board/handoff/handbook/memory refreshed.
+  Next: #97 build (Andy: Vercel META_WA_* env + mode pick) → #72 LOAD TEST.
+
 - **2026-08-20 (fix-it 2) · Olivia · #99 CLOSED — "show me the rest" proven E2E via the canary pattern.**
   Blocker was no probe-able registered asker (#98 correctly locked Andy out). Used the gate's own
   canary pattern: temporary registration row for Andy on the REAL Summit — first landed on "MDS

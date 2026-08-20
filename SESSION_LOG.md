@@ -2,6 +2,7 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-20 (CLOSE) · **Olivia** · session wrapped: Eugene's four DONE (#94-96,98,99 closed · #97 POC+plan, first real intro accepted) · smoke 50/50 · prod untouched `060701be` · next: #97 build (Andy: Vercel env) → #72 load test → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (fix-it 2) · **Olivia** · **#99 CLOSED** — show-me-the-rest proven E2E (canary registration on the real Summit, deleted after; fresh re-call served Wei Lin/Sam Hewitt, zero logistics) · trap logged: TWO Summit-named catalog rows, Night Out ≠ Summit → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (fix-it) · **Olivia** · smoke fails fixed: **#98 CLOSED** (who-to-meet gated on registrations ledger, re-probed clean) · #99 code shipped (continuation note in-tool, E2E waits on a registered asker) · ⚠️ Andy's who-to-meet demos OFF until he registers for the Summit → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (smoke) · **Olivia** · **Eugene-arc smoke 47/50** (A 18/18 · B 12/12 after 2 live #95 fixes: audit-header + LRU cycling · C 12/14 · D 5/6) — new: #98 (event.people test row leaked names) · #99 (show-me-the-rest) · count-drift 157v113 live · **Ian Sells accepted the first real intro** → `SESSION_LOG_OLIVIA.md`

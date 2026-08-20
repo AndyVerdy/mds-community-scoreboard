@@ -2,45 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "scorecard",
+      "name": "scratchpad-preview",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8080"],
-      "port": 8080
-    },
-    {
-      "name": "digest-web",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "/Users/Born/mds-digest-web", "run", "dev"],
-      "port": 3000
-    },
-    {
-      "name": "digest-web-attach",
-      "url": "http://localhost:3000",
-      "port": 3000
-    },
-    {
-      "name": "founders-deck",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8090", "-d", "/Users/Born/groupos-founders-club"],
-      "port": 8090
-    },
-    {
-      "name": "david-ghiyam-deck",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8091", "-d", "/Users/Born/groupos-david-ghiyam"],
-      "port": 8091
-    },
-    {
-      "name": "trend-report",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8093", "-d", "/private/tmp/claude-501/-Users-Born-Scorecard/e5a4adaa-79b8-4641-9eb5-c7ac1100377c/scratchpad"],
-      "port": 8093
-    },
-    {
-      "name": "hampton-deck",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8092", "-d", "/Users/Born/groupos-hampton"],
-      "port": 8092
+      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "/private/tmp/claude-501/-Users-Born-Scorecard/aef09a79-2acf-4342-895d-1c6d5cfb6e3d/scratchpad"],
+      "port": 8765
     }
   ]
 }

@@ -21,8 +21,16 @@
 > lock/promote for me — Andy runs both in his terminal (proven 2026-08-03; `lock` worked again
 > later that day — try it, fall back to Andy if blocked).
 > **Vocabulary: "gate 202" = 202 safety CHECKS (free) · RUN = firing the eval bank · PROBE = one question.**
+> **New standing traps (2026-08-20):** ① TWO Summit-named catalog rows — "MDS Summit Singapore
+> **Night Out**" (side event) vs the real `recrATwhUDA55iQN5`; naive name-matching grabs the wrong
+> one ② template quick-reply taps arrive `msg_type='button'` and are NOT in `olivia_messages` —
+> only `olivia_webhook_events` has them ③ audits opt out of equalizer logging via the
+> `X-Olivia-Audit` header (never a p_limit heuristic — that silenced a real lane) ④ the E2E
+> canary pattern: temp registration row, probe, DELETE same session.
 
-## STATE 2026-08-20 (close): PROD `060701be` — nothing awaits promotion. **#94+#95+#96 CLOSED · #97 POC + plan · EUGENE-ARC SMOKE RUN: 47/50.**
+## STATE 2026-08-20 (SESSION CLOSED): PROD `060701be` — nothing awaits promotion; all of tonight's
+## ships live in SQL functions + the digest.mds.co route (no workflow nodes touched).
+**Eugene's four: #94 #95 #96 #98 #99 CLOSED · #97 POC proven + plan pinned · smoke 50/50 addressed.**
 
 ### 🔬 Eugene-arc smoke (50 Qs, RUN on Andy's go) — `OLIVIA_SMOKE_EUGENE_ARC.md` has the full table
 47/50 · A 18/18 · B 12/12 after TWO in-run #95 fixes (audit header `36e1d7d` — the p_limit
@@ -74,8 +82,16 @@ needs an intro-tap branch) · plus-is-space on ledger timestamps. **Full ship wa
 rulings:** conversation intent ("connect us") + workflow branch · per-target rate cap · expiry ·
 decline wording · seed copy.
 
-### NEXT SESSION OPENS HERE — brief Andy, WAIT for his go (the new ⛔ rule above)
-1. **Andy's desk:** #97 full-flow rulings (above) ·
+### NEXT SESSION OPENS HERE — brief Andy, WAIT for his go (the ⛔ rule above)
+**Queue front: #97 BUILD** (plan `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`,
+rulings locked, POC proven, Ian's real accept on record) — **blocked on Andy's Vercel env prereq**
+(META_WA_TOKEN + META_WA_PHONE_NUMBER_ID onto mds-digest-web, then redeploy) + execution-mode pick.
+**Next unblocked: #72 LOAD TEST** (sprint goal: it runs BEFORE the announcement; never run).
+1. **Andy's desk:** #97 Vercel env + execution-mode pick · **register himself for the Summit**
+   (restores his who-to-meet demos — canary was test-only) · THE COUNT RULING (157-vs-113 shown
+   live in one conversation) · sprint-close pair still open: 100-bank exit exam (his go) + post
+   `OLIVIA_RELEASE_NOTES_2026-08-19.md` · Eugene's intro tap still pending (ledger #2; check
+   `python3 scripts/olivia_intro_poc.py status`) · Mille name watcher (`a1ViYr5FT7iePdN9`) ·
    THE COUNT RULING (recommendation: 98 active members, one `event_registered_members` view) ·
    Eugene's Members-DB record pin (9-record cluster) · "MDS Mille" re-register when the watcher
    fires (PIN, 14-day window) · #72 LOAD TEST before the announcement.
