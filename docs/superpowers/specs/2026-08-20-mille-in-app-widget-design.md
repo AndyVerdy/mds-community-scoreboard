@@ -4,8 +4,14 @@
 
 Andy's reference is Intercom's in-app messenger: a launcher inside the app, a panel that slides up
 over it, one continuous thread, close and you are back where you were. The goal of this POC is to
-prove Mille answers inside the MDS mobile app (Flutter, and the existing Swift test app) **without
-building a chat**. The app integrates one widget; every chat behaviour lives on our side.
+prove Mille answers inside a mobile app **without building a chat**. The app integrates one widget;
+every chat behaviour lives on our side.
+
+**Nothing in Mille changes.** No workflow edit, no migration, no prompt or seed change, no new
+retrieval path — the widget is a new surface on the pipe that is already live. **The POC target is
+the Swift app** (`mds-ios-app`, source in hand, distributable via Andy's Apple developer account).
+The Flutter app is the destination once the POC earns it, and needs nothing different: the same URL
+in the same kind of WebView.
 
 ## 1. What already exists (verified live 2026-08-20)
 
@@ -83,7 +89,8 @@ holding-message ladder, no fake streaming — the answer arrives whole.
 - The thinking state is visible for the whole wait; a `504` offers Retry and the retry succeeds.
 - **Nothing reaches WhatsApp:** for every widget `wamid`, `digest.olivia_sends` has no row.
 - An invalid or missing token gets `401` and no page.
-- Same URL works unchanged in the Swift test app and the Flutter app.
+- Proven in the Swift app first, on a TestFlight build. Flutter is not a POC acceptance criterion —
+  the same URL in the same kind of WebView is all it will need.
 - Leak gate `scripts/olivia_leak_gate.py` EXIT 0 (the widget adds a surface, not a retrieval path).
 
 ## 7. Explicitly out of scope
