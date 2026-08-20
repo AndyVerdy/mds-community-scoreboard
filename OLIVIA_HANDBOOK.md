@@ -16,7 +16,7 @@
 > **Written for a developer with no prior context and no AI assistant.** If something here is not
 > enough to act on, that is a bug in this document — fix it in the same commit as your change.
 >
-> **Last verified against live systems: 2026-08-03.** Every number in here was queried, not
+> **Last verified against live systems: 2026-08-20.** Every number in here was queried, not
 > remembered. Re-verify before trusting anything older than a few weeks.
 
 ---
@@ -25,7 +25,7 @@
 
 1. **Verify against live systems, never against docs.** Including this one. Every "it works" claim
    needs an execution id, a SQL result, or gate output.
-2. **The safety gate is not optional.** `python3 scripts/olivia_leak_gate.py` (202 checks, free,
+2. **The safety gate is not optional.** `python3 scripts/olivia_leak_gate.py` (255 checks, free,
    ~3 min) must be GREEN before anything ships. It runs after *every* change to a retrieval
    function.
 3. **Never edit the production workflow directly.** Edit staging → test → promote. The promote
@@ -59,8 +59,8 @@ link.
 
 | Layer | Technology | Specifics |
 |---|---|---|
-| **Orchestration** | **n8n Cloud** (`mdsco.app.n8n.cloud`) | 4 workflows: production `12wj6h1TWqb0d4Dq` (67 nodes) · staging `bqHstPDi84uOhTCJ` · holding ladder `X1vzrW9Avqff3qRa` · daily review `xkX7wnIwxJLU7YgY`. Edited via the public API (`N8N_API_KEY`), never the UI, so changes are diffable and snapshotable. |
-| **Database** | **Supabase Postgres 15**, project `nadtudwuwjhckotrngzn`, schema `digest` | 43 tables, **104 functions** (exported to `db/`, see #65). Extensions in use: **`vector` 0.8.0** (pgvector/HNSW), **`pg_cron` 1.6.4** (the health alarm, every 5 min), **`pg_net` 0.20.0** (Slack calls from inside Postgres), **`pg_trgm` 1.6** (fuzzy name matching), `pgcrypto`, `uuid-ossp`. |
+| **Orchestration** | **n8n Cloud** (`mdsco.app.n8n.cloud`) | 5 workflows: production `12wj6h1TWqb0d4Dq` (69 nodes) · staging `bqHstPDi84uOhTCJ` · holding ladder `X1vzrW9Avqff3qRa` · daily review `xkX7wnIwxJLU7YgY` · reminder sender (every minute; also the future intro-expiry tick). Edited via the public API (`N8N_API_KEY`), never the UI, so changes are diffable and snapshotable. |
+| **Database** | **Supabase Postgres 15**, project `nadtudwuwjhckotrngzn`, schema `digest` | 63 tables in `digest` + 18 in `event`, **108 functions** (exported to `db/`, see #65). Extensions in use: **`vector` 0.8.0** (pgvector/HNSW), **`pg_cron` 1.6.4** (the health alarm, every 5 min), **`pg_net` 0.20.0** (Slack calls from inside Postgres), **`pg_trgm` 1.6** (fuzzy name matching), `pgcrypto`, `uuid-ossp`. |
 | **API surface** | **PostgREST** (Supabase REST) | Everything is `POST /rest/v1/rpc/<function>` with the `service_role` key and `Content-Profile: digest`. No ORM, no direct Postgres connections from n8n. |
 | **Answer model** | **Anthropic `claude-sonnet-5`** | The answering loop, tool-calling, thinking **disabled**, 3 prompt-cache breakpoints (tools, system, moving message mark). |
 | **Router + fact gate** | **Anthropic `claude-haiku-4-5`** | Intent routing (cached ~6.2K-token prompt) and the evidence check. Cheap, fast, replaceable. |
@@ -73,7 +73,7 @@ link.
 | **Scheduling** | **launchd** on Andy's Mac | 5 jobs (§8.4). Not a server — the staleness alarms exist precisely because this machine can be asleep. |
 | **Alerting** | **Slack** `#automation-tests` (`C0AQ8USNQK0`) via the MDS-Verifier bot | Alarm fires from pg_cron→pg_net (independent of n8n), plus a launchd watchdog outside Supabase. |
 | **Sync jobs** | **GitHub Actions** | `member-profiles-sync` (daily), `events-catalog-hourly` (hourly, self-healing). |
-| **Facebook capture** | **Chrome extension** (v0.82) | Manual scroll + comments pass — the one irreducibly human step (§8.5). |
+| **Facebook capture** | **Chrome extension** (v0.90, full autopilot) | Manual scroll + comments pass — the one irreducibly human step (§8.5). |
 | **File storage** | **Supabase Storage** | `fb-images` (public bucket, for image sends), `video-files` (private, signed URLs valid 1h). |
 | **Scripting** | **Python 3, stdlib only**, shelling out to `curl` | No virtualenv, no dependencies, no ORM — deliberately. Scheduled scripts must run under **Apple's `/usr/bin/python3` (3.9)**, which is why no modern syntax is used. |
 | **Version control** | **git** (this repo) + workflow snapshots | `olivia_snapshots/` holds pre/post-promote JSON of the production graph. |
@@ -107,7 +107,12 @@ Consequences, all deliberate:
   template needed, consent is built in, and the window opens naturally.
 - Members are onboarded with a click-to-chat link (`wa.me/<number>?text=Hi`).
 - **The proactive weekly push needs templates** — that is the real blocker on Side A, not the code.
-- Marketing-style cold templates were rejected by Meta (error 131049). Simulated inbound messages
+- **Approved templates so far:** `mds_summit_reminder` (UTILITY, #86 reminders) ·
+  `mds_intro_request` (UTILITY, #97 consent asks — approved 2026-08-20; submit templates as
+  UTILITY with `allow_category_change=true`: approve-as-marketing beats a rejection) ·
+  `mds_assistant_whats_new_aug2026` (MARKETING, the release broadcast).
+- Marketing-category sends hit Meta's per-user cap (error 131049 — 17 of 25 broadcast sends
+  dropped 2026-08-04 AFTER the API said 200). Simulated inbound messages
   (the eval harness) do **not** open a real 24h window (error 131047).
 
 ---
@@ -171,7 +176,7 @@ access-tagged. An undefined source does not exist to her.* No crawling raw bases
 
 ### 4.2 Where everything lives
 
-- **Supabase project `nadtudwuwjhckotrngzn`, schema `digest`** — 43 tables, ~75 functions.
+- **Supabase project `nadtudwuwjhckotrngzn`** — schema `digest` (63 tables) + schema `event` (18 tables, the Summit run-of-show), 108 functions.
 - **Airtable Members DB `appou5JVr0WIrioWS`** — the member system of record.
 - **Airtable Events base `appYa7blqkHazLMYf`** — events catalog + Event Roster (`tblfTLRfAqBhBZlc4`).
 - **GroupOS** — videos, partners, app events (read via MCP today; a `GROUPOS_PAT` would make it a
@@ -179,19 +184,23 @@ access-tagged. An undefined source does not exist to her.* No crawling raw bases
 
 ### 4.3 The core tables
 
-| Table | Rows (2026-08-03) | What it is |
+| Table | Rows (2026-08-20) | What it is |
 |---|---|---|
-| `content_items` | 38,711 | **The unified search index.** Every searchable thing — WhatsApp messages, chat digests, Facebook posts and comments, application answers — one row each, with `access_rule`, `sensitivity`, a full-text vector and a 1024-dim embedding. |
-| `member_edges` | 159,940 | The knowledge graph: typed, weighted member↔member connections. |
-| `event_registrations` | 17,802 | The raw registration ledger, keyed to members. **Only the sync + `stamp_event_registrations()` may read it.** |
+| `content_items` | 44,813 | **The unified search index.** Every searchable thing — WhatsApp messages, chat digests, Facebook posts and comments, application answers — one row each, with `access_rule`, `sensitivity`, a full-text vector and a 1024-dim embedding. |
+| `member_edges` | 141,861 | The knowledge graph: typed, weighted member↔member connections. |
+| `event_registrations` | 18,077 | The raw registration ledger, keyed to members. **Only the sync + `stamp_event_registrations()` may read it.** |
 | `event_registrations_live` (view) | 13,995 | **#58 chokepoint — every reader uses this.** Drops `ticket_status` **Unconfirmed** (Airtable's fold of Canceled / Pending Approval / Not Going / Unpaid / Waitlist) and **No Show**. Unknown/NULL statuses stay visible on purpose: silently dropping a real registration is the worse failure. |
-| `member_events` | 15,071 | **Append-only** behaviour log (see §7.3). |
-| `member_expertise` | 5,822 | The expertise ledger: member × topic scores with evidence. |
-| `member_attributes` | 5,740 | The derived member profile — the canonical member population. |
+| `member_events` | 24,319 | **Append-only** behaviour log (see §7.3). |
+| `member_expertise` | 15,377 | The expertise ledger: member × topic scores with evidence. |
+| `member_attributes` | 5,745 | The derived member profile — the canonical member population. |
 | `member_profiles` | 5,840 | Raw Airtable field mirror (`at_fields` jsonb). |
-| `members` | 646 | **The WhatsApp channel layer** — phone → member. Not the population. |
-| `events_catalog` / `videos_catalog` / `partners_catalog` | 1,420 / 1,022 / 492 | Source catalogs. |
-| `olivia_messages` | 2,424 | Conversation history, stamped with the member record. |
+| `members` | 664 | **The WhatsApp channel layer** — phone → member. Not the population. |
+| `events_catalog` / `videos_catalog` / `partners_catalog` | 1,4xx / 1,03x / ~500 | Source catalogs (weekly refresh). |
+| `olivia_webhook_events` | 4,312 | **#75:** every inbound MESSAGE event persisted verbatim BEFORE any parse (text/interactive/reaction/media; statuses excluded). The only place template quick-reply **button** taps land — the workflow does not persist `msg_type='button'` into `olivia_messages`. |
+| `olivia_recommendations` | 609 | **The equalizer's memory (#93/#95):** every name she recommends, per asker + lane. Read by all recommendation lanes (30d per-asker downrank · 7d global spread · LRU cycling). |
+| `olivia_intros` | 3 | **#97 consent ledger (POC):** pending → accepted / declined / expired / unreachable; no number moves before `accepted`. |
+| `docs` / `doc_entries` | 4 / 50 | **#18 org knowledge library** — team documents (FAQs, SOPs), audience fail-closed to staff, served by the `/api/olivia/kb` route. |
+| `olivia_messages` | 4,653 | Conversation history, stamped with the member record. |
 
 > ⚠️ **`digest.members` is the WhatsApp layer; `digest.member_attributes` is the member
 > population.** Confusing the two has caused repeated bugs — most notably staff counts. Anything
@@ -429,10 +438,14 @@ tier-equals — **on the ADVICE lane** (`member_match`: "who can help me with X"
 (event `people` op: "who should I meet") inverts: novelty + the equalizer first, proficiency
 tiebreaks. The **equalizer** = `digest.olivia_recommendations` (every recommended name logged):
 hard 30-day per-asker no-repeat + soft 7-day global spread, so no member gets buried in DMs for
-being excellent. **Since #95 (2026-08-19) the equalizer covers the ADVICE lanes too:**
-`member_match_v2` (repeats sink below fresh names of the same match tier; audit-size calls with
-`p_limit>30` never write the log) and `expertise_search` (relevance stays primary — RRF ×0.6 on a
-30d repeat, 7d exposure damps only the engagement tiebreak; 24h per-pair insert dedupe).
+being excellent. **Since #95 (2026-08-19/20) the equalizer covers the ADVICE lanes too:**
+`member_match_v2` (repeats sink below fresh names of the same match tier) and `expertise_search`
+(relevance stays primary — RRF ×0.6 on a 30d repeat, 7d exposure damps only the engagement
+tiebreak). Two smoke-caught refinements (2026-08-20): **audits opt out via the `X-Olivia-Audit`
+header** (read from PostgREST `request.headers` — the earlier `p_limit>30` heuristic silenced
+logging on the real plan lane, which calls with limit 60) and **LRU cycling** — among repeats the
+least-recently-recommended name leads, so an exhausted pool rotates instead of freezing (every
+shown name re-logs to advance the cycle; the gate's rpc() sends the audit header and never writes).
 `multi_source`/`_v2` are VOLATILE so their members sections inherit rotation. All four write
 `olivia_recommendations` with their lane name. A matcher sample is never a census — presence counts come from the registrations
 ledger via the `chapter` param. **Ledger v2 SHIPPED 2026-08-19** (§7.1 above is the live
@@ -491,7 +504,7 @@ python3 scripts/olivia_wf.py unlock
 ### 8.2 The safety gate
 
 ```bash
-python3 scripts/olivia_leak_gate.py     # 245 checks, ~3 min, free
+python3 scripts/olivia_leak_gate.py     # 255 checks, ~3 min, free
 ```
 It inserts canary rows with every access rule and sensitivity, asks the real RPCs for them as
 several different members, and asserts what must *not* come back. It also verifies anon lockout,
@@ -768,30 +781,32 @@ Asked to set a reminder "in 5 minutes", the model sent `at=17:23 UTC` when the t
 story about the event being a week away. **Never let the model compute an absolute time from a
 relative ask** — pass the offset and do the arithmetic server-side.
 
-## 14. Known limits (2026-08-03)
+## 14. Known limits (2026-08-20)
 
-- **Recommendations are not personalized yet.** The ledger, graph and event log exist; no lane
-  reads them.
-- ~~**No transcripts.**~~ **SUPERSEDED by #70 (Aug 2026) — this line was FALSE for two weeks and
-  the same stale claim sat in the Answer Seed, which is how she told a member "that capability
-  isn't live yet" (#84 D2, 2026-08-17).** Transcripts DO exist, with two hard boundaries:
-  **virtual calls from 2026 onward only** (Mogul / Channel / Expert; 71-100% coverage inside the
-  window) — **nothing before 2026-01-05** (872 of 1,033 videos, Zoom does not go back further) and
-  **nothing in-person** (Summit 0/18, Mastermind 0/23, Chapter Event 2/13, even for 2026).
-  When a gap is reported, the boundary must travel with it — never "not live", "coming" or
-  "not connected".
-- **The live calls calendar** (Mogul / Expert / Channel Calls) is not connected — no FORWARD
-  schedule exists; `digest.calls` holds past occurrences only. True, but say it as coverage, not
-  as infrastructure ("that schedule isn't connected to me yet" is the phrasing Andy rejected).
-- **Events have no description field anywhere in the pipeline** — event topic matching is inferred
-  from names, attendees and post-event chatter.
-- **Tap buttons** are not built; offers are "reply YES".
-- **The proactive weekly push** needs Meta templates.
-- **Facebook capture is manual** (platform limitation).
-- **Portal login OTP shares Olivia's number** — if that number is ever blocked, logins break too.
-  Splitting login onto its own number is standing hygiene work.
-- **The nightly jobs run on a Mac via launchd** — they need that machine awake. The staleness
-  alarms are the backstop.
+- ~~**Recommendations are not personalized yet.**~~ **SUPERSEDED** — #29 wired five lanes into the
+  personalization layer (2026-08-03), #93-#95 added novelty + the equalizer, #94 rebuilt the
+  ledger (v2). Personalization is live end-to-end.
+- ~~**Tap buttons are not built.**~~ **SUPERSEDED by #38 (2026-08-04)** — yes/no offers are tap
+  buttons. Remaining nuance: template quick-reply taps arrive as `msg_type='button'` and are NOT
+  persisted to `olivia_messages` (only `olivia_webhook_events` holds them); the #97 build adds the
+  workflow branch that swallows intro taps before the LLM lane.
+- **Transcripts have hard boundaries** (#70): virtual calls from 2026 onward only (nothing before
+  2026-01-05, nothing in-person). When a gap is reported the boundary travels with it — never
+  "not live" or "coming".
+- **No forward calls calendar** — `digest.calls` holds past occurrences only. Say it as coverage,
+  never as infrastructure.
+- **Events have no description field anywhere in the pipeline** — topic matching is inferred from
+  names, attendees and chatter.
+- **The proactive weekly push** still needs its Meta template set (the reminder + intro templates
+  are approved; the weekly-push one is not designed yet).
+- **THE COUNT RULING is open (Andy):** one Summit question can surface 157 (all tickets) vs 113
+  (confirmed member classes) vs 98 (active members) depending on surface — seen live in one
+  conversation 2026-08-20. Until ruled, chapter answers carry no denominator.
+- **#72 load test has never run** — and the announcement is the traffic event. Biggest open risk.
+- **#32 cost instrumentation absent** — nothing logs tokens; `latency_ms` is unreliable.
+- **Facebook capture is manual** (platform limitation; extension v0.90 autopilots the routine).
+- **Portal login OTP shares Olivia's number** — a block would break logins too.
+- **The nightly jobs run on a Mac via launchd** — staleness alarms are the backstop.
 
 ---
 
@@ -799,7 +814,7 @@ relative ask** — pass the offset and do the arithmetic server-side.
 
 | Term | Meaning |
 |---|---|
-| **The gate** | `olivia_leak_gate.py`, 202 automated safety checks. "Gate 202" means 202 *checks*, not questions. |
+| **The gate** | `olivia_leak_gate.py`, 255 automated safety checks (count grows with every ship — say "gate green", the number moves). Checks, never questions. |
 | **Probe** | One question fired through a workflow. Free-ish, no approval needed. |
 | **Run** | Firing the eval bank (dozens to hundreds of questions). Costs money; needs approval. |
 | **The smoke** | The full 169-question run used as a release exit exam. |
@@ -826,8 +841,8 @@ zero rows. `access_rule` and `sensitivity` filters are applied inside every cont
 | `fb_catchup` | `p_phone, p_since date, p_limit` | same shape as `content_search_v2` | Facebook recency browse ranked by **discussion volume**, not pure recency. |
 | `fb_thread` | `p_phone, p_author, p_terms text[], p_post_id, p_limit_comments` | `TABLE(kind, author, body, occurred_at, url, image_text, post_id)` | Whole-thread pull (post + ≤60 replies). Public FB rows only. Carries the `[→ to X]` marker. |
 | `member_card` | `p_phone, p_member` | `TABLE(full_name, city, state, country, revenue_tier, niche, expertise, about_me, hobbies, fun_fact, facebook_link, chapter, channels[], business_model[], categories[], shared_chats[], membership_state, joined, left_date)` | **The shareable-fields allowlist in code form** — the gate pins this column list. Revenue is a *tier*, never a figure. Fuzzy name resolution (pg_trgm, word_similarity > 0.62). |
-| `member_match` | `p_phone, p_dims text[], p_limit, p_city, p_state, p_channel, p_category` | `TABLE(full_name, city, state, reasons text[])` | Attribute matching. Returns **coarse reasons only** — never raw values. City comparisons go through `place_city()`. |
-| `expertise_search` | `p_phone, p_query, p_limit, p_embedding` | `TABLE(full_name, city, state, expertise, niche, matched_text, matched_rank)` | Keyword + embedding fused by **RRF** (the in-house precedent for `content_search_v2`). `matched_text` is the public profile snippet that matched. Ordered by engagement score after relevance. |
+| `member_match` | `p_phone, p_dims text[], p_limit, p_city, p_state, p_channel, p_category` | `TABLE(full_name, city, state, reasons text[])` | Attribute matching. Returns **coarse reasons only** — never raw values. City comparisons go through `place_city()`. v2 adds the complementary-topic boost + the #95 equalizer (30d hard downrank · 7d spread · LRU cycling · X-Olivia-Audit opt-out · logs to `olivia_recommendations`). |
+| `expertise_search` | `p_phone, p_query, p_limit, p_embedding` | `TABLE(full_name, city, state, expertise, niche, matched_text, matched_rank)` | Keyword + embedding fused by **RRF**. `matched_text` is the public profile snippet that matched. **Equalizer (#95):** RRF ×0.6 on a 30d per-asker repeat; 7d exposure damps the engagement tiebreak; LRU cycling among repeats; logs every shown name to `olivia_recommendations` unless the caller sends `X-Olivia-Audit`. |
 | `member_count` | `p_phone, p_niche, p_city, p_state, p_chapter, p_band, p_main_only, p_group_by, p_at_member_id` | `TABLE(total bigint, breakdown jsonb, breakdown_sum bigint, population bigint, note)` | Counting only — never names. `breakdown_sum` exists because members hold several chapters/niches, so the parts legitimately exceed the whole. |
 | `member_dossier` | `p_phone` | `TABLE(kind, label, detail)` | **Self only.** Profile + active chats + recent own messages + event registrations. Reads personas; does **not** yet read the expertise ledger, graph or event log. |
 | `member_billing` | `p_phone` | `TABLE(membership_status, plan_name, plan_price, subscription_status, billing_interval, monthly_amount, annual_payment, member_since, year_joined, next_renewal, chapter, next_invoice_date, next_invoice_amount, payment_frequency, membership_fee, billing_portal)` | **Self only.** The only status-emitting function; every state maps to plain member-facing words inside it, so raw system codes are structurally unemittable. |
@@ -961,7 +976,7 @@ event_registrations_live = event_registrations
 
 ## Appendix C — The production workflow, node by node
 
-`12wj6h1TWqb0d4Dq`, 67 nodes. Grouped by role:
+`12wj6h1TWqb0d4Dq`, 69 nodes. Grouped by role:
 
 | Group | Nodes | Notes |
 |---|---|---|
@@ -973,13 +988,13 @@ event_registrations_live = event_registrations
 | **Routing** | `Touch Olivia Stats`, `Route Request` (Haiku), `Fetch Chat Links`, `Plan Request` | `Plan Request` is the deterministic brain: ~40 overrides that outrank the router. |
 | **Retrieval** | `Embed Query` (Voyage) → `Fetch Summaries` → `Fetch Raw Matches` → `Verbatim?` | The "zeroth fetch", preloaded as guaranteed evidence. Both fetch nodes map `content_search` → `content_search_v2` at the last inch. |
 | **Canned lanes** | `Build Verbatim Digest` | Greeting, help, chats, opt-in/out, reset, ticket offer/create, contact refusal, verbatim digests — **no model call at all**. |
-| **The loop** | `Answer Seed` → `Answer Claude` → `Answer Parse` → `Answer Done?` → (`Voyage Embed` → `Attach Embedding` → `Answer Tool` → `Answer Merge` → back) | Max 5 rounds. `Answer Parse` injects `p_phone`; `Attach Embedding` swaps the execution name to v2. |
+| **The loop** | `Answer Seed` → `Answer Claude` → `Answer Parse` → `Answer Done?` → (`Voyage Embed` → `Attach Embedding` → `Answer Tool` → `Answer Merge` → back) | Max 5 rounds. `Answer Parse` injects `p_phone`; `Attach Embedding` swaps the execution name to v2. **`Answer Tool` dispatches by name:** `event_*` → the schedule route, `org_docs` → the kb route (both on digest.mds.co, policy in git), everything else → the Supabase RPC of the same name. |
 | **Fact gate** | `Claims?` → `Fact Check` (Haiku) → `Gate Verdict` → `Gate OK?` | Claim-free replies skip it. One regeneration allowed, then an honest refusal. Deterministic link gate + post-filters run inside `Gate Verdict`. |
 | **Delivery** | `Format Reply` → `Billing Nudge` → `Apply Nudge` → `Eval (silent)?` → `Send Reply (Meta)` | The eval branch skips Meta entirely. `Format Reply` converts markdown to WhatsApp formatting and extracts `[SEND_IMAGE:]` / `[SEND_FILE:]` markers. |
 | **Persistence** | `Save Conversation`, `Mark Welcomed`, `Set Olivia Opt-State` | Both turns saved with plan + member stamp. |
 | **Attachments** | `Image To Send?` → `Fetch Post Images` → `Build Image Sends` → `Send Image (Meta)`; `File To Send?` → `Fetch Sendable File` → `Sign File URL` → `Send Document (Meta)` | File keys are re-validated server-side before any send. |
 | **Team actions** | `Action?` → `Log Request (Supabase)` → `Notify Team (Slack)` | Only fires for genuine action requests, with conversation context and a member-log link. |
-| **Side channels** | `Parse Delivery Status` → `Save Delivery Status`; `Parse Reaction` → `Save Feedback (Supabase)` | Meta reports delivery once and never lets you query it back — dropping these is how "delivered" beliefs go wrong. 👍/👎 reactions are the teaching signal. |
+| **Side channels** | `Extract Raw Event` → `Store Raw Event (Supabase)` (#75, wired FIRST — payload on disk before any parse can throw); `Parse Delivery Status` → `Save Delivery Status`; `Parse Reaction` → `Save Feedback (Supabase)` | Meta reports delivery once and never lets you query it back — dropping these is how "delivered" beliefs go wrong. 👍/👎 reactions are the teaching signal. |
 | **Manual utilities** | `Send Test (Manual)`, `Config`, `Send Message (Meta)`, `Fix Subscription (Manual)`, `Subscribe App to WABA`, `Check WABA Subscription` | Operator tools, not part of the answer path. |
 | **Legacy** | `Build Prompt`, `Ask Claude`, `Build Generic` | The pre-loop single-shot path. `Build Prompt` still owns the **single global STYLE block** that `build_loop.py` harvests into the loop seed — edit style there, not in two places. |
 
