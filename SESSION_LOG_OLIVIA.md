@@ -2,6 +2,25 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+- **2026-08-20 (CU doc revision) · Olivia · the ClickUp handbook copy (`2531q-103317`) fully regenerated — all 20 pages.**
+  Andy: "it's very outdated. Revise every single page in detail. Check all session logs from
+  sprint 2 onward." Done: read the full stream log (Jul 21 → today, headers + load-bearing
+  bodies), re-verified the repo handbook against LIVE first (fresh counts: 63+18 tables · 108
+  fns · 255 gate checks · 69 nodes · content 44,813 · ledger 15,377 · members layer 664) and
+  fixed ITS stale spots in the same pass (commit `05be335`: superseded limits — buttons #38,
+  personalization #29/#93-95 — the p_limit→X-Olivia-Audit equalizer wording, templates table,
+  raw-event store, kb/schedule dispatch, new tables). Then rewrote every CU page from it:
+  00 contents+current-state (consolidated to one 2026-08-20 state: sprint-3 close, the Eugene
+  arc #94-#99, #97 POC + Ian's accept, Andy's desk, the queue) · 01 rules+tiers · 02 concept ·
+  03 stack · 04 channel (templates, Mille, button-tap trap) · 05 pipeline (69 nodes, raw-first,
+  dispatch) · 06 data layer (new tables, event schema, Night-Out trap) · 07 identity (+#98
+  registration-based access) · 08 retrieval · 09 personalization (ledger v2 formula, equalizer
+  30d/7d/LRU/audit-header, intros ledger) · 10 runbooks (+canary pattern, route-ship care) ·
+  11 env+repo · 12 privacy (+#96 ruling verbatim, consent-first intros) · 13 decisions (+6 new
+  rulings) · 14 traps (+7 new) · 15 limits+glossary (rewritten; superseded limits struck) ·
+  16 RPC reference (+route lanes) · 17 DB reference (+new tables/indexes) · 18 workflow 69
+  nodes · 00a stub. Page 99 archive untouched. Spot-verified rendered content (page 09).
+
 - **2026-08-20 (SESSION CLOSE) · Olivia · the Eugene night wrapped.** One session: #94 ledger v2 ·
   #95 equalizer (+2 smoke-caught fixes) · #96 disclosure ruling shipped · #97 POC proven E2E
   (template APPROVED UTILITY, Ian Sells accepted the first real intro; Eugene pending) + full-build
