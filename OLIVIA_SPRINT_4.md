@@ -73,9 +73,12 @@ links sent both ways (`delivered`). Findings the real build must carry: ① temp
 taps arrive as `msg_type='button'` and are NOT persisted to `olivia_messages` — the workflow
 branch must handle type='button' (today only the raw webhook store sees them, and Mille answers
 the tap text as if it were a message) ② the plus-is-space trap on ledger timestamps.
-**Remaining for the full ship (Andy's rulings):** who may request (member asks "connect us" in
-conversation → workflow branch) · per-target rate cap · expiry · decline wording · seed intent.
-POC guard stays: the script can only message the test number.
+**RULINGS LOCKED + PLAN WRITTEN 2026-08-20:** `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`
+— caps 3-pending/requester + 3-pings/target/7d · decline FINAL never revealed · silence = 7d expiry,
+retryable, zero reminders · unreachable = honest line + team-escalation offer · targets only from
+the asker's 30d recommendation log · exact member-facing wording verbatim in the plan · tap branch
+before the LLM lane · `member_intro` seed tool · sweep on the Reminder Sender tick.
+**Prereq (Andy): META_WA_TOKEN + META_WA_PHONE_NUMBER_ID onto Vercel, then execution-mode pick.**
 
 **POC step 1 (superseded by the above) — the consent template was submitted:** `mds_intro_request`
 (id `1413344637359224`), submitted **UTILITY**, status **PENDING**, `allow_category_change=true`
