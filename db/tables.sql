@@ -947,6 +947,19 @@ alter table digest.video_partner_links add constraint video_partner_links_pkey P
 CREATE INDEX video_partner_links_partner_idx ON digest.video_partner_links USING btree (partner_id);
 CREATE UNIQUE INDEX video_partner_links_pkey ON digest.video_partner_links USING btree (video_id, partner_id);
 
+-- digest.video_speaker_letters
+--   video_id                           text not null
+--   letter                             text not null
+--   speaker_id                         bigint not null
+--   confidence                         text not null
+--   evidence                           text
+--   created_at                         timestamp with time zone not null default now()
+alter table digest.video_speaker_letters add constraint video_speaker_letters_confidence_check CHECK ((confidence = ANY (ARRAY['self_intro'::text, 'first_name_unique'::text, 'solo_dominant'::text])));
+alter table digest.video_speaker_letters add constraint video_speaker_letters_pkey PRIMARY KEY (video_id, letter);
+alter table digest.video_speaker_letters add constraint video_speaker_letters_speaker_id_fkey FOREIGN KEY (speaker_id) REFERENCES digest.speakers(speaker_id);
+CREATE INDEX video_speaker_letters_speaker_idx ON digest.video_speaker_letters USING btree (speaker_id);
+CREATE UNIQUE INDEX video_speaker_letters_pkey ON digest.video_speaker_letters USING btree (video_id, letter);
+
 -- digest.video_speaker_links
 --   video_id                           text not null
 --   speaker_id                         bigint not null

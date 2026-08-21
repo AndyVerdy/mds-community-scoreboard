@@ -117,6 +117,10 @@ def main():
                   [os.path.join(ROOT, "scripts", "load_participants.py")]
                   + (["--dry-run"] if dry else []))
     ok_all &= ok
+    ok, out = run("speakers: AAI letter mapping (self-intro / solo-dominant)",
+                  [os.path.join(ROOT, "scripts", "load_letter_map.py")]
+                  + (["--dry-run"] if dry else []))
+    ok_all &= ok
 
     # 5. embed what is new. TWO corpora, and the video one was in no schedule at all — so a
     #    summary written last week was keyword-searchable but semantically invisible.

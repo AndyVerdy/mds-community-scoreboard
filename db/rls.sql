@@ -63,6 +63,7 @@ alter table digest.summaries enable row level security;
 alter table digest.video_access enable row level security;
 alter table digest.video_files enable row level security;
 -- digest.video_partner_links: row level security DISABLED
+-- digest.video_speaker_letters: row level security DISABLED
 -- digest.video_speaker_links: row level security DISABLED
 alter table digest.video_speakers enable row level security;
 alter table digest.videos_catalog enable row level security;
