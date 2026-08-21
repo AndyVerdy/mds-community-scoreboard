@@ -117,7 +117,19 @@ is done):**
 test → then this ticket** (exact values after processing done). Overlaps queue item ② (cold-start
 ranking probe) and #71 vocabulary — read both before build.
 
-### ✅ #103 · Speaker matching — CLOSED 2026-08-21 (same night it was filed)
+### 🔴 #103 · Speaker matching — **REOPENED 2026-08-21 (closed prematurely — my error)**
+> **Why reopened (Andy caught it):** I scoped the build to ONE field (`speaker_names`) and closed on
+> "413/413 linked", a metric that measures the FIELD, not the library. Real coverage: 2025 44/233,
+> 2026 62/161. Four sources ignored: **`speaker_ids`** (452 videos, 285 ids, **234 join exactly to
+> the GroupOS mirror's `user_id`** — an ID join existed while I did name-string matching),
+> **`description_text`** (1,032/1,033 videos), **titles** (dash-pattern, deferred then forgotten),
+> **`thumbnail_url`** (626 videos; "Ershad & Prue" is readable on the card). Also missed: the
+> PARTNER dimension entirely (speaker→org and video→partner: Atom11, Riverbend Consulting both in
+> `partners_catalog`) and preferred names (Prue = Prudence Tweedie-Millsap) though
+> `speaker_aliases` was built for exactly that and left empty.
+
+### (previous close block — evidence stands for what it covered)
+### ✅ #103 Phase 1 · Speaker matching — closed 2026-08-21
 **Story:** speakers become LINKED ENTITIES, not strings — members to their record, partners to
 theirs, guests recorded; "same means same" across every appearance (Andy, in-session).
 **Results:** `digest.speakers` (239 entities) + `digest.speaker_aliases` + `digest.video_speaker_links`
