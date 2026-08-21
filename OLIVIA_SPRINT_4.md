@@ -32,6 +32,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#100** | 🔑 Identity aliases — one member, all their known emails | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED 2026-08-20** — 5,763 aliases, resolver live, 12/12 verify, gate 0 |
+| **#101** | 🎬 Video transcripts + real access gating — the 96 Zoom never reached | 🔴 S1 | L | — | — |
 | **#72** | 🚦 LOAD TEST — **NOW the announcement, not the Mille demo. Biggest open risk; never run** | 🔴 S1 | M | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
@@ -1069,6 +1070,31 @@ alone would ship the 10 wrongful denials on day one.
 **Found alongside, not this ticket:** `digest.member_identity` holds **57 rows with a NULL
 `at_member_id`** — no name, no membership status, several sitting in WhatsApp channels, and one with
 `phone = 'sam'`. Same disease from the other end; wants its own look.
+
+---
+
+### #101 · Video transcripts + real access gating — the 96 videos Zoom never reached
+**🔴 S1 · size L — filed 2026-08-20 · spec `docs/superpowers/specs/2026-08-20-video-transcripts-assemblyai-design.md` (approved, rules-arrived revision)**
+
+> **In plain words:** 96 of the 161 2026 videos — the in-person boardrooms, masterminds, Inspire
+> sessions — have no transcript anywhere. AssemblyAI already transcribed all 161 for $26.23; this
+> loads the 96 into the search index, writes their 96 missing summaries, and gates restricted
+> content on the real per-member audience lists instead of hiding it from everyone.
+
+*As a member, when I ask "best TikTok cold start videos", Olivia searches what was actually SAID in
+every 2026 video — and if the best answer sits in a room I was in, she quotes me the moment with a
+timestamp; if it sits in a room I wasn't, she names the video and tells me it's restricted.*
+
+**Accept when**
+1. 96 videos gain chunks; the 65 Zoom videos byte-identical before/after (checksum).
+2. Every new chunk carries `meta.provenance='assemblyai'` and a real `start_sec`.
+3. Public chunks `{"type":"public"}`/`normal`; restricted chunks `{"type":"video_access"}`/`restricted`, zero mismatches vs `videos_catalog` by join.
+4. `digest.video_access` loaded from `real_match` rows only — the 63-account panel phantom pool provably absent; grants resolve via `resolve_member_by_email`; unresolved stored with NULL member + reported.
+5. An ENTITLED member's probe returns a restricted passage with timestamp + library link; an UNENTITLED member gets title/date/restricted marker and no content; an entitled-but-INACTIVE member gets nothing; anon gets nothing. All four in the gate.
+6. 96 summaries written (#70 format), `summary_source='transcript'`, existing 65 untouched.
+7. All new rows embedded (nightly `embed_backfill.py` path), 0 unembedded after the run.
+8. `video_search` and `content_search_v2` changed by CREATE OR REPLACE only; prior defs captured; EXECUTE stays service_role-only.
+9. Gate GREEN · `db/` re-exported · Eugene's cold-start question re-probed as the before/after.
 
 ---
 
