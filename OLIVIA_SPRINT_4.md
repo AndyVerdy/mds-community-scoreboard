@@ -128,6 +128,15 @@ title/metadata with high confidence; panels/roundtables need a letter→name map
 (title order · self-intros · host introductions) with a confidence floor — below it, stay
 "the speaker"/"a member". Never guess from voice.
 
+**SCOPE EXTENSION (Andy 2026-08-21, same night): speakers become LINKED ENTITIES, not strings.**
+"Same means same": one speaker identity across every appearance. Member speakers link to their
+`at_member_id`; non-member speakers (guest speakers with repeat presences — e.g. Brandon Young —
+and Partners) get a dedicated speaker/guest identity space. The same person must never be treated
+as two people across videos. **Baseline measured 2026-08-21:** `videos_catalog.speaker_names` =
+raw strings only — 413/1,033 videos carry names, 239 distinct raw names, 185 exact-match a member
+record by full name, 54 don't (guests/partners/spelling drift); zero links exist today. The other
+620 videos carry speakers only inside title/description text.
+
 ### #97 · Brokered intros — message the person she recommends
 **🔴 S1 · size M — filed 2026-08-19 · 🔨 POC PROVEN · rulings LOCKED · 📋 PLAN: `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`**
 
