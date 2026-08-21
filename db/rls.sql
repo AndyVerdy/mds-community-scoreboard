@@ -28,6 +28,7 @@ alter table digest.fb_posts enable row level security;
 -- digest.form_scope: row level security DISABLED
 alter table digest.member_attributes enable row level security;
 -- digest.member_edges: row level security DISABLED
+alter table digest.member_email_alias enable row level security;
 alter table digest.member_events enable row level security;
 -- digest.member_expertise: row level security DISABLED
 -- digest.member_niches: row level security DISABLED

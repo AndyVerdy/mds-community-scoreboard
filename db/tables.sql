@@ -452,6 +452,15 @@ alter table digest.member_edges add constraint member_edges_pkey PRIMARY KEY (a_
 CREATE INDEX member_edges_b_idx ON digest.member_edges USING btree (b_id);
 CREATE UNIQUE INDEX member_edges_pkey ON digest.member_edges USING btree (a_id, b_id, edge_type);
 
+-- digest.member_email_alias
+--   at_member_id                       text not null
+--   email                              text not null
+--   source                             text not null
+--   added_at                           timestamp with time zone not null default now()
+alter table digest.member_email_alias add constraint member_email_alias_source_check CHECK ((source = ANY (ARRAY['preferred'::text, 'stripe'::text, 'admin_field'::text, 'name_match_approved'::text])));
+CREATE INDEX member_email_alias_email_idx ON digest.member_email_alias USING btree (lower(btrim(email)));
+CREATE UNIQUE INDEX member_email_alias_uq ON digest.member_email_alias USING btree (at_member_id, lower(btrim(email)));
+
 -- digest.member_events
 --   id                                 bigint not null
 --   member                             text

@@ -5,5 +5,6 @@ CREATE OR REPLACE FUNCTION digest.is_active_member_status(p_status text)
  IMMUTABLE
  SET search_path TO 'digest', 'pg_temp'
 AS $function$
-  select p_status in ('Current Member', 'New Member', 'Current Member- Not Renewing', 'Staff')
+  select p_status in ('Current Member', 'New Member', 'Current Member- Not Renewing',
+                      'Staff', 'Pending Group Entrance')
 $function$
