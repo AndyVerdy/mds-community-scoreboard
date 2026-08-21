@@ -92,6 +92,9 @@ Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at
 ### #102 · Video recommendation ranking — how she picks WHICH videos to serve
 **🟡 S2 · size M — filed 2026-08-21 from Andy's Slack ruling to Eugene · ⏸ sequenced AFTER the big smoke test**
 
+> ⛔ **CAPTURED, NOT LOCKED (Andy 2026-08-21): confirm with Andy before applying ANY of this —
+> the criteria below may change and the ticket starts with a BRAINSTORM session, not a build.**
+
 **Story:** Eugene asked how transcripts are prioritized; Andy ruled the criteria. Ranking today is
 relevance-only — the Eugene cold-start case showed a thin title-match outranking the
 transcript-rich Beginners Panel. Recommendation order must reflect VALUE, not just match.
@@ -113,7 +116,8 @@ ranking probe) and #71 vocabulary — read both before build.
 ### #97 · Brokered intros — message the person she recommends
 **🔴 S1 · size M — filed 2026-08-19 · 🔨 POC PROVEN · rulings LOCKED · 📋 PLAN: `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`**
 
-**⚖️ MATCHING RESTRICTIONS LOCKED (Andy + Eugene, Slack 2026-08-21) — the build honors these:**
+**⚖️ MATCHING RESTRICTIONS CAPTURED (Andy + Eugene, Slack 2026-08-21) — ⛔ confirm with Andy
+before applying: things may change; brainstorm first (Andy 2026-08-21):**
 - **Both sides must be Millie users** (Eugene: "We shouldn't match members unless both are using
   Millie"; Andy's lock: "If I see that a person is in WA but he never uses Millie, he is out").
 - **Sandbox first: Summit-locked** — introductions only between people attending the Summit
