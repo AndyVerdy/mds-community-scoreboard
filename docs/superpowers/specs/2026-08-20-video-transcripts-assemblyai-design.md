@@ -8,11 +8,12 @@ Inspire sessions, the Hack Contest, hybrid rooms — has no spoken-word record a
 covers filling that hole with AssemblyAI transcripts, reusing #70's machinery rather than building
 alongside it.
 
-**Almost nothing in the retrieval layer changes.** No migration, no new table or column, no new RPC,
-no prompt or seed edit, no workflow change. The load itself writes into tables and columns that
-already exist, using a chunker and loader that already run. The one exception is a
-`CREATE OR REPLACE` on `digest.video_search` and the matching leak-gate checks, required by Andy's
-ruling in §3.6 on how restricted videos are answered.
+**The retrieval layer changes in three named places and nowhere else.** ① a new table
+`digest.video_access` (who may see which restricted video, §7.2) · ② `CREATE OR REPLACE` on
+`digest.video_search` to gate per asker · ③ `content_search_v2`'s access filter learns exactly one
+new `access_rule` type, `video_access`. No prompt or seed edit, no workflow change, no new lane. The
+transcript load itself writes into tables and columns that already exist, using a chunker and loader
+that already run.
 
 ## 1. What already exists (verified live 2026-08-20)
 
@@ -58,14 +59,15 @@ Of those 161: **65 already have Zoom chunks, 96 do not.** The same 96 are the vi
    metered API call, so `video_summaries.py`'s Haiku path is bypassed for this load.
 5. **Precompute, never generate at query time.** Transcript, summary and TLDR are all stored, so a
    member asking twice costs nothing the second time.
-6. **Restricted videos are answered from their summary, never their transcript.** Olivia reads the
-   material, answers, and suggests the video with a short summary and a line saying the video may be
-   restricted and the member may not have access. She never returns a passage or quote from one.
-7. **Until the restriction rules are readable, every asker is assumed to have access.** We cannot
-   compute who may see a given video (§7), so the system stops implying that it can: the caveat
-   moves into the wording instead of the gate. **Andy's explicit ruling, and explicitly temporary.**
-8. **Restricted summaries are written in the normal format** — names and specifics included. A
-   topic-level redacted variant was proposed and ruled out, since assuming access makes it moot.
+6. ~~Assume access until the rules are readable~~ **SUPERSEDED same day** — the rules arrived and
+   verified (§7.2). Access is computed per asker via `digest.video_access` + the #100 resolver.
+7. **Entitlement decides what a restricted video returns** (Andy: *"If I can see videos, then I can
+   search through transcripts"*): entitled → full treatment including transcript search, quotes,
+   summary, TLDR, exact-words follow-ups; not entitled → title, speakers, date, link, restricted
+   marker — never content. **Nobody ever receives a full transcript** — the ~1,400-char chunk is the
+   largest retrievable unit and no lane concatenates chunks.
+8. **Summaries are written in the normal format** — names and specifics included — because only
+   entitled members ever see a restricted video's summary.
 
 ## 4. Evidence: Zoom versus AssemblyAI on the 65 videos where both exist
 
@@ -128,7 +130,7 @@ Identical to what #70 writes, with one added `meta` key:
 | `body` | speaker-prefixed text, `Speaker A: …` (see §8) |
 | `occurred_at` | the video's `app_created_at` |
 | `url` | `https://app.mds.co/videos/<video_id>` — the library video, never a source file (#70 ruling ①) |
-| `access_rule` | `{"type": "public"}` |
+| `access_rule` | `{"type": "public"}` for public videos; `{"type": "video_access", "video_id": "<id>"}` for restricted ones (§7.2) — unknown to every reader except the taught branch of `content_search_v2`, so everything else fails closed on them |
 | `sensitivity` | `normal` when the video is public, `restricted` when it is restricted |
 | `embedding` | voyage-3.5-lite, 1024 dims, as every other row |
 | `meta` | `{chunk, start_sec, end_sec, timestamp, video_id, provenance: "assemblyai"}` |
