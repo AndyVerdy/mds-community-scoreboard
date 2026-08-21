@@ -62,10 +62,12 @@
    accepted end-to-end, wa.me links both ways, POC list-picker rounds "Pick a member" working). Plan pinned:
    `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`. Still blocked on Andy's Vercel env
    (META_WA_* onto mds-digest-web) + execution-mode pick.
-4. **Rename the bot to "Millie"** (Andy's wording at close). ⚠️ The name submitted to Meta is **"MDS Mille"**
-   (`PENDING_REVIEW`; watcher n8n `a1ViYr5FT7iePdN9` hourly). If Andy wants "Millie" specifically, the Meta
-   submission may need to change — confirm spelling with him BEFORE the 14-day re-register window burns.
-   When live: DELETE the watcher, queue the #79 copy rewording pass.
+4. ~~Rename the bot to "Millie"~~ **CLOSED 2026-08-21** (close block on the board). Spelling ruled
+   **"MDS Millie"**; staging says Millie everywhere (12 strings, 4 nodes) + fact-check veto fixed
+   (RULE ONE + community_info.assistant_name — the checker had silently stripped the name). Meta:
+   "MDS Millie" can't submit while "MDS Mille" is PENDING_REVIEW (no cancel API) — **when the
+   watcher (`a1ViYr5FT7iePdN9`) fires: do NOT re-register Mille; submit "MDS Millie" instead**,
+   then Andy re-registers (PIN), promote staging, DELETE the watcher.
 
 ### Standing next-session rules (unchanged)
 Open with the briefing (ticket NUMBER + NAME + STORY) and WAIT for the go. Verify against live before new

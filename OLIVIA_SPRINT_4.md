@@ -24,7 +24,7 @@ Work them in this order: **#94** (his item 2 — newer members) → **#95** (his
 **#96** (his item 1 — the ≤10-names cap, unblocks on Andy+Eugene's confirm) → **#97** (his item 4 —
 intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as its origin.
 
-## 🎯 QUEUE (Andy 2026-08-20 close): ① 2025 transcript batch (~233 vids ≈$33; needs fresh presigned export — links die 08-27) → ② smoke batch focused on the EUGENE cold-start case (ranking, intent-vs-title, maybe multi-video answers; read #71 first) → ③ #97 brokered-intros build (POC proven on screen: accept → wa.me both ways → list-picker rounds) → ④ rename bot to "Millie" (⚠️ Meta submission says "MDS Mille" — confirm spelling before the 14-day re-register window).
+## 🎯 QUEUE (Andy 2026-08-20 close): ① 2025 transcript batch **IN FLIGHT 2026-08-21** (no fresh export needed — `mds_videos_all_signed.csv` covers 2025, links alive to 08-27; AAI batch running via `scripts/aai_submit.py`; video_access 2025 already loaded 131/131) → ② smoke batch focused on the EUGENE cold-start case (ranking, intent-vs-title, maybe multi-video answers; read #71 first) → ③ #97 brokered-intros build (POC proven on screen: accept → wa.me both ways → list-picker rounds) → ~~④ rename bot to "Millie"~~ **④ CLOSED 2026-08-21** (see close block below the ticket sections — staging says Millie, checker knows the name; Meta flip rides the watcher).
 
 ## 📋 At a glance
 
@@ -67,6 +67,26 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 - **The smoke runs ONCE per sprint, at completion — never per ticket.** Eval runs are propose-and-wait; the leak gate is free and mandatory.
 - Close = archive to `OLIVIA_BACKLOG_ARCHIVE.md` → next sprint carries open tickets whole → ClickUp handbook copy refresh if changed → **release notes are the FINAL stage** (drafted by me, validated + posted by Andy).
 
+
+### ✅ Queue item ④ · Rename the bot to "Millie" — CLOSED 2026-08-21
+**Story:** Andy's close order 2026-08-20 — the bot becomes "Millie"; the Meta submission said
+"MDS Mille", spelling had to be confirmed before the 14-day re-register window burned.
+**Results:** spelling ruled **"MDS Millie"** (Andy, in-session) · staging respell Mille→Millie
+across all 4 nodes / 12 strings (`apply_millie_respell.py`, node --check ×4, one bounce) · on the
+way, a real bug: "what is your name?" answered NAMELESS because the **Fact Check lane vetoed the
+name as an unsupported claim** (exec 93640: model said "I'm Millie", Haiku verdict
+`unsupported: ["name is 'Millie'"] → fail`, retry dropped it — the same veto silently applied to
+"Mille" before). Fixed code-first: checker RULE ONE now names her + `community_info` RPC returns
+`assistant_name` (DROP+CREATE migration `community_info_assistant_name_millie_20260821`, ACL
+verified postgres+service_role only). **Meta submission of "MDS Millie" is BLOCKED while "MDS
+Mille" sits PENDING_REVIEW** (error 2388362, no cancel API) — standing plan: when the watcher
+(`a1ViYr5FT7iePdN9`) fires on Mille's verdict, do NOT re-register — submit "MDS Millie" then
+(10 changes/30d; unused approval lapses harmlessly). Watcher stays armed; delete only after
+Millie is live.
+**ACs:** spelling confirmed before window ✅ · self-intro copy says Millie ✅ (staging; prod =
+Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at Meta ⏳ watcher-gated.
+**Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
+**"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
 
 ### #97 · Brokered intros — message the person she recommends
 **🔴 S1 · size M — filed 2026-08-19 · 🔨 POC PROVEN · rulings LOCKED · 📋 PLAN: `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`**
