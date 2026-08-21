@@ -690,8 +690,9 @@ CREATE UNIQUE INDEX olivia_feedback_pkey ON digest.olivia_feedback USING btree (
 --   consent_wamid                      text
 --   created_at                         timestamp with time zone not null default now()
 --   decided_at                         timestamp with time zone
+--   decided_reason                     text
 alter table digest.olivia_intros add constraint olivia_intros_pkey PRIMARY KEY (id);
-alter table digest.olivia_intros add constraint olivia_intros_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'accepted'::text, 'declined'::text, 'expired'::text])));
+alter table digest.olivia_intros add constraint olivia_intros_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'accepted'::text, 'declined'::text, 'expired'::text, 'unreachable'::text])));
 CREATE INDEX olivia_intros_target_idx ON digest.olivia_intros USING btree (target_at_id, created_at);
 CREATE UNIQUE INDEX olivia_intros_one_pending ON digest.olivia_intros USING btree (requester_at_id, target_at_id) WHERE (status = 'pending'::text);
 CREATE UNIQUE INDEX olivia_intros_pkey ON digest.olivia_intros USING btree (id);
