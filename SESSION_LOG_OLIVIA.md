@@ -174,6 +174,25 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+
+## 2026-08-21 (OVERNIGHT RUN — Andy asleep, order: "all green by morning") · 2025 transcripts + Millie + v2 entitlement catch + speaker sync + THE BIG SMOKE
+
+**Projects:** Olivia. **Gate GREEN at every step (263 checks, exit 0, 6+ runs). PROD untouched — everything staged/warehouse; ONE promote covers the night.**
+
+**Queue ① 2025 transcripts DONE.** 232/233 ($33.42, 144.8hr; 1 skip = 10s silent teaser) → 6,429 chunks / 0 mismatches / Zoom untouched → 232 summaries in-session (8 parallel subagents, zero API) → embedded (restricted = metadata-only) → dossiers refreshed (direct SQL; PostgREST timed out) → entitlement proven both ways. New persistent runner `aai_submit.py` (curl — urllib cert-store trap; HEAD on presigned = 403 by design, test with ranged GET). ARG_MAX trap fixed in aai_transcripts.py (stdin); one half-loaded video caught by file-vs-DB diff, backfilled 41/41. **video_access already covered 2025 (131/131) — the handoff "needs fresh export" prereq was stale; links live to 08-27.**
+
+**Queue ④ Millie CLOSED.** Respell 12 strings/4 nodes + THE FIND: "what is your name?" answered nameless because **Fact Check vetoed the name as unsupported** (exec 93640) — RULE ONE now names her + community_info returns assistant_name (DROP+CREATE, ACL re-granted, hammered). Meta blocks "MDS Millie" while "MDS Mille" PENDING_REVIEW (2388362, no cancel API) — watcher plan: on verdict submit Millie, never re-register Mille.
+
+**THE NIGHT'S BIGGEST CATCH:** the workflow remaps video_search→**video_search_v2** (three nodes) and **#101 never patched v2** — entitled members still got blanket [RESTRICTED] E2E while v1 probes passed. Diagnosed by reading the execution (tool result carried fit_reason — a column v1 doesn't return). Fixed: grant-bounded restricted, attachments pinned public-only, is_restricted = video's flag. First migration attempt hand-reconstructed a CTE (42P01) — lesson: paste the export-faithful text, never rebuild from memory. Both sides re-proven E2E.
+
+**Prompt truth pass:** 4 stale "no transcripts" denials purged (the capability-denial class, 4th instance); boundary now "2025+2026 transcribed, pre-2025 not"; + timestamp-citation rule (probe: "At 00:16:37" + verbatim quote).
+
+**#103 speaker sync FILED + BUILT + CLOSED (Andy: "run a plan… and implement").** Discovery: digest.video_speakers already existed = GroupOS speaker-USER mirror (234 rows, all email; member_record_id is GroupOS-internal, 0 AT matches — email is the key). Ladder → 239 entities / 480 links / 413/413 videos: **212 members EMAIL-evidenced** (#100 resolver; "is or was a member → linked" incl. Brandon Young by his own email), 24 guests, 3 unresolved → review CSV, partners mechanism live (0 exact matches). Tables speakers/speaker_aliases/video_speaker_links; verify_speakers.py 7/7.
+
+**THE BIG SMOKE (`OLIVIA_SMOKE_2026-08-21.md`).** Bank 100: 89/7/4 → **90 effective** (4072 "fail" = CORRECT #96 behavior, bank truth stale; 3 real fails = ONE defect → **#104 adjacent-turn topic lag**, filed S1; pairing skew ruled out by timestamp re-pair). Slice v1 (name-anchored) KILLED by Andy — "BS Qs; I have no clue who was speaking where" — slice v2 problem-first: **11/11 right videos unprompted**, speakers+roles, multi-source (fees = 3 videos + 3 partners; ratings = FB + Centurion + X), zero transcript denials. Eugene cold-start case dead (4 ranked videos incl. Beginners Panel).
+
+**Tickets filed:** #102 video ranking (decay/speaker-weight/event-bonus/equalization — CAPTURED-NOT-LOCKED, brainstorm first) · #103 extension (same-means-same entity linking — built) · #104 lag. **Morning desk:** Millie promote (one promote = rename + fact-check + boundary + timestamps) · #104 priority · review CSV (3) · <2024 decision (~$137) · sprint-close pair.
+
 ## 2026-08-20 (VIDEO PIPELINE DAY — #100 + #101 BOTH SHIPPED) · AssemblyAI transcripts + identity aliases + real per-member video access
 
 **Projects:** Olivia (#100, #101) · GroupOS video library. **Everything below verified live; gate GREEN 6× (exit 0), 263 checks at close.**

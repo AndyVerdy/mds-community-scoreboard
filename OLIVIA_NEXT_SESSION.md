@@ -28,6 +28,47 @@
 > `X-Olivia-Audit` header (never a p_limit heuristic — that silenced a real lane) ④ the E2E
 > canary pattern: temp registration row, probe, DELETE same session.
 
+## STATE 2026-08-21 OVERNIGHT (SESSION RAN WHILE ANDY SLEPT — his order: "in the morning; I need to see all green")
+**ALL GREEN. Queue ① 2025 transcripts DONE · ② big smoke DONE (bank 90/100 effective · slice 11/11) · ④ Millie CLOSED · #103 speaker sync BUILT+CLOSED same night · gate GREEN at every step (263 checks, exit 0, run 6+×).**
+
+### What shipped overnight (all verified live, all commits on main)
+- **2025 transcript batch:** 232/233 videos (1 skip = 10s silent teaser) · 144.8 hr · $33.42 AAI ·
+  6,429 chunks (0 mismatches, Zoom untouched) · 232 summaries in-session via 8 parallel subagents ·
+  embedded (restricted = metadata only) · entitlement probed both ways · `scripts/aai_submit.py` is
+  the persistent batch runner (curl, resume-safe).
+- **Millie (queue ④):** staging says Millie everywhere; "what is your name?" fixed at the SOURCE —
+  the Fact Check lane was vetoing the name as an unsupported claim (RULE ONE now names her +
+  `community_info.assistant_name`). Meta: "MDS Millie" CANNOT submit while "MDS Mille" is
+  PENDING_REVIEW (no cancel API) — **when watcher `a1ViYr5FT7iePdN9` fires: do NOT re-register
+  Mille; submit "MDS Millie", then Andy re-registers (PIN), promote staging, DELETE watcher.**
+- **THE NIGHT'S BIGGEST CATCH: `video_search_v2` (the LIVE lane — the workflow remaps
+  video_search→video_search_v2 in Fetch Summaries/Fetch Raw Matches/Attach Embedding) was NEVER
+  patched by #101** — entitled members still got blanket [RESTRICTED] E2E. Fixed (grant-bounded,
+  attachments stay public-only, is_restricted = the video's flag), both sides proven, migration
+  `video_search_v2_grant_bounded_restricted_fix_20260821`. ⚠️ trap: v1 probes pass while v2 serves
+  members — always probe THROUGH the workflow.
+- **4 stale "no transcripts" prompt rules purged** (Build Prompt ×2, Verbatim ×2, Answer Seed
+  boundary now "2025+2026 transcribed, pre-2025 not") + **timestamp-citation rule** (quote → "At
+  00:16:37" next to the link; probe proven).
+- **#103 CLOSED (filed and built same night, Andy's order):** `digest.speakers` 239 entities ·
+  `video_speaker_links` 480 links (413/413 videos) · **212 members EMAIL-evidenced** via the
+  GroupOS mirror (`digest.video_speakers` — pre-existing table, all 234 rows have email;
+  `member_record_id` is GroupOS-internal, NOT an AT id) + #100 resolver · 24 guests · 3 unresolved
+  in `~/Downloads/mds_speaker_review.csv` · verify 7/7 · plan `docs/superpowers/plans/2026-08-21-speaker-sync.md`.
+- **Smoke (`OLIVIA_SMOKE_2026-08-21.md`):** bank 89/7/4 → 90 effective (one "fail" is CORRECT #96
+  behavior, bank truth stale); 3 real fails = ONE defect → **#104 adjacent-turn topic lag** (filed,
+  S1). Slice v2 (problem-first, Andy killed the name-anchored v1 as "BS Qs"): 11/11 right videos
+  unprompted, speakers+roles, multi-source answers, zero transcript denials.
+
+### ANDY'S MORNING DESK
+1. **Millie promote** (staging → prod: rename + fact-check rule + transcript boundary + timestamp
+   rule — one promote covers all).
+2. #104 priority call (adjacent-turn lag — 3 smoke fails).
+3. Speaker review CSV (3 names) + #102/#97/#103-extension brainstorms (all CAPTURED-NOT-LOCKED).
+4. 2024-and-earlier transcripts decision ("Not sure about <2024") — ~$137 for 2018-2024 at AAI rates.
+5. Sprint-close pair still open: release notes post + retirement pass.
+
+### (previous close below)
 ## STATE 2026-08-20 LATE (SESSION CLOSED — VIDEO DAY): PROD untouched; all ships = SQL fns + data loads.
 **#100 CLOSED (identity aliases) · #101 CLOSED (video transcripts + real access gating) · gate GREEN at close (263 checks, exit 0, run 7× today).**
 
