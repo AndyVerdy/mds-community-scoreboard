@@ -32,7 +32,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#100** | 🔑 Identity aliases — one member, all their known emails | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED 2026-08-20** — 5,763 aliases, resolver live, 12/12 verify, gate 0 |
-| **#101** | 🎬 Video transcripts + real access gating — the 96 Zoom never reached | 🔴 S1 | L | — | — |
+| **#101** | 🎬 Video transcripts + real access gating | 🔴 S1 | L | n/a (SQL+data) | ✅ **CLOSED 2026-08-20** — 2,730 chunks, video_access live, gate 263/0 · NEXT: 2025 batch |
 | **#72** | 🚦 LOAD TEST — **NOW the announcement, not the Mille demo. Biggest open risk; never run** | 🔴 S1 | M | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
@@ -1074,7 +1074,52 @@ alone would ship the 10 wrongful denials on day one.
 ---
 
 ### #101 · Video transcripts + real access gating — the 96 videos Zoom never reached
-**🔴 S1 · size L — filed 2026-08-20 · spec `docs/superpowers/specs/2026-08-20-video-transcripts-assemblyai-design.md` (approved, rules-arrived revision)**
+**🔴 S1 · size L — filed 2026-08-20 · ✅ CLOSED 2026-08-20 same session · spec `docs/superpowers/specs/2026-08-20-video-transcripts-assemblyai-design.md`**
+
+#### ✅ Close block (2026-08-20)
+
+**Results.** All 161 2026 videos transcribed (AssemblyAI, $26.23, diarized) → **2,730 new chunks
+across the 96 videos Zoom never reached**, loaded into `content_items` in #70's exact shape with
+`meta.provenance='assemblyai'`; the 65 Zoom videos untouched (checksum `74552c6a` identical
+before/after). **`digest.video_access` live: 34,236 real grants** (real_match only — the 63-account
+panel-phantom pool provably absent), resolved via the #100 resolver. `content_search_v2` learned ONE
+access_rule type (`video_access`, all three branches + the sensitivity line — the consent flag alone
+no longer exposes a video chunk); `video_search` gates its restricted treatment per asker. **96
+summaries written in-session** (#70 format, zero API spend) — 161/161 now carry
+`summary_source='transcript'`; all chunks + all 96 videos embedded.
+
+| AC | result |
+|---|---|
+| 96 gain chunks · 65 Zoom byte-identical | ✅ 2,730 chunks / 96 videos · checksum identical |
+| provenance + real start_sec on every chunk | ✅ meta carries provenance/start_sec/timestamp |
+| access_rule/sensitivity match catalog | ✅ join mismatches: 0 (26 public / 70 restricted) |
+| video_access = real_match only, resolver-keyed | ✅ 34,236 rows · 3 panel-only probes = 0 rows · 1,038/1,171 resolve |
+| entitled sees / unentitled walled / inactive+anon nothing | ✅ probed both ways + 8 gate checks (grant → visible → revoke → gone) |
+| 96 summaries, 65 untouched | ✅ 161/161, source=transcript |
+| all rows embedded | ✅ embed_backfill + embed_videos, 0 unembedded |
+| CREATE OR REPLACE only, ACLs held | ✅ defs captured; EXECUTE service_role-only verified |
+| gate GREEN | ✅ **263 checks, exit 0** — incl. the rewritten #101 invariant: restricted transcript chunks ONLY for granted videos |
+
+**The Eugene probe (honest):** keyword-only `video_search` still ranks the thin Milan title-match
+above the Beginners Panel — ranking is #71-adjacent work, not transcript work. BUT the real fix
+shipped underneath: `content_search_v2` now returns the **restricted TikTok Mastermind passage at
+00:05:01 saying "run the cold start playbook"** to an entitled asker, timestamped, provenance-marked.
+The content exists to be found; intent-vs-title ranking is its own ticket.
+
+**Spec §7.3 answered by the machinery itself:** `embed_videos.py` prints "70 restricted → metadata
+only" — restricted videos embed METADATA ONLY, so the vector branch cannot leak content semantically.
+
+**Traps burned in this build:** PostgREST pages are UNSTABLE without `order=` (an unordered walk
+returned 3,116 rows but 43 of 65 distinct videos) · the #70-era gate check asserting blanket
+restricted-exclusion was rewritten to the grant-bounded invariant · attachments stay a PUBLIC-video
+feature even for entitled askers (surfacing them leaked the raw file_key; `video_file_for_send` is
+public-only anyway).
+
+**NEXT: 2025 videos** — Andy's ruling: same machinery, next batch (~233 videos / 145.6 hr ≈ $33 AAI).
+
+---
+
+**Original filing:**
 
 > **In plain words:** 96 of the 161 2026 videos — the in-person boardrooms, masterminds, Inspire
 > sessions — have no transcript anywhere. AssemblyAI already transcribed all 161 for $26.23; this

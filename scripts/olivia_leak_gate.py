@@ -1358,15 +1358,23 @@ def main():
         check("no transcript row exposes who attended",
               not any(("attend" in str(r.get("meta") or "").lower()) for r in tr))
 
-        # a restricted video's transcript must be excluded by default, like any restricted row
+        # #101: a restricted video's transcript returns ONLY to an asker who holds a
+        # digest.video_access grant for that exact video (Andy 2026-08-20: "if I can see
+        # videos, I can search through transcripts"). Blanket exclusion is the pre-#101
+        # rule; the invariant now is grant-bounded, per video, never broader.
+        st, my_grants = curl("GET", f"{BASE}/video_access?select=video_id"
+                                    f"&at_member_id=eq.{my_id}&limit=10000", key,
+                             profile_hdr=["Accept-Profile: digest"])
+        granted = {g["video_id"] for g in (my_grants or [])} if isinstance(my_grants, list) else set()
         st, rows = rpc("content_search_v2",
                        {"p_phone": phone, "p_terms": ["mogul", "call"],
                         "p_sources": ["call_transcript"], "p_limit": 60}, key)
-        check("restricted-video transcript chunks are excluded by default",
-              isinstance(rows, list)
-              and not any(r.get("sensitivity") == "restricted" for r in rows),
-              str([r.get("title") for r in (rows or [])
-                   if r.get("sensitivity") == "restricted"])[:160])
+        offenders = [r.get("title") for r in (rows or [])
+                     if r.get("sensitivity") == "restricted"
+                     and (r.get("meta") or {}).get("video_id") not in granted]
+        check("restricted transcript chunks only for granted videos (#101)",
+              isinstance(rows, list) and not offenders,
+              f"{len(granted)} grants held; ungranted restricted rows: {str(offenders)[:140]}")
 
         # form_responses: the raw form ledger is OWNER-ONLY by rule (2026-08-05) — the anon key
         # must bounce off the table, the view, AND the two #20 doors.

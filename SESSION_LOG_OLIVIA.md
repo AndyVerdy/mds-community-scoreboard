@@ -174,6 +174,21 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-20 (VIDEO PIPELINE DAY — #100 + #101 BOTH SHIPPED) · AssemblyAI transcripts + identity aliases + real per-member video access
+
+**Projects:** Olivia (#100, #101) · GroupOS video library. **Everything below verified live; gate GREEN 6× (exit 0), 263 checks at close.**
+
+**The arc.** Andy asked about Mux costs for 100 videos → AssemblyAI vs Mux head-to-head (Mux: free Whisper captions but no speakers, GroupOS videos aren't in Mux; AAI: $0.23/hr diarized, pulls straight from presigned S3) → one-video test PASSED (3 speakers, 31s) → **2026 batch: 161/161 videos, 114.8 hr, $26.23, zero failures** (~/mds_transcripts/2026/) → Andy's dev delivered the REAL access rules (read-path mirror export) same day → assume-access posture superseded before it shipped.
+
+**#100 CLOSED (identity aliases).** `member_email_alias` 5,763 rows (preferred/stripe/admin_field/name_match_approved; CHECK vocabulary makes a bare name match uninsertable) · `resolve_member_by_email()` active-record-preferring (49 addresses sit on >1 member record — duplicate humans) · 29 approvals written to AIRTABLE FIRST (base appou5JVr0WIrioWS/tblfwOSROSHfuYUxv — the env's AIRTABLE_BASE_ID points at the WhatsApp DB, trap noted in-script) then mirrored · verify 12/12 · audience resolution 634→704 active, the 10 known mismatch cases 0/10→10/10. Also shipped: **Pending Group Entrance counts as active** (753→754; Current+New+Pending = 718 = Andy's export exactly).
+
+**#101 CLOSED (transcripts + gating).** `video_access` 34,236 real grants (real_match only; 3 panel-only probes = 0 rows) · `content_search_v2` learned the `video_access` rule type (3 branches + sensitivity line; consent flag alone exposes nothing) · `video_search` per-asker restricted treatment (attachments stay public-only — file_key leak caught by the gate) · `aai_transcripts.py` reusing #70's chunk() verbatim → **2,730 chunks / 96 videos, Zoom checksum identical** · **96 summaries written in-session, zero API spend** (161/161 summary_source='transcript') · everything embedded (embed_videos: "70 restricted → metadata only" — answers spec §7.3, vector branch can't leak). Proof row: entitled asker gets the RESTRICTED TikTok-Mastermind passage at 00:05:01 ("run the cold start playbook"), timestamped.
+
+**Traps for the file:** PostgREST pages UNSTABLE without order= (3,116 rows walked → 43/65 distinct) · expression indexes can't ON CONFLICT via PostgREST (diff-before-insert, twice) · two verify-harness lies fixed (equal error dicts pass equality; "exactly one row" wrong when duplicate records are legitimate) · #70-era gate check rewritten to the grant-bounded invariant · member_profiles lags Airtable writes (verify against AT directly) · 57 member_identity rows have NULL at_member_id (one phone='sam') — recorded, not chased.
+
+**Next:** 2025 videos (~233, ≈$33, same machinery — Andy's ruling: right after 2026) · ranking (intent-vs-title, Eugene's cold-start case) stays #71-adjacent · speaker naming its own ticket · alias write-back file archived at ~/mds_transcripts/summaries/.
+
+
 ## 2026-08-19 (sprint close) — SPRINT 3 CLOSED: 34 shipped, SPRINT 4 open, notes drafted
 
 Ritual executed: **34 board tickets archived** (plus **37 earlier Release 1–3 items** found glued inside the old doc — 71 closed items total, now two labelled sections) (evidence intact, newest first) to

@@ -195,7 +195,8 @@ access-tagged. An undefined source does not exist to her.* No crawling raw bases
 | `member_attributes` | 5,745 | The derived member profile — the canonical member population. |
 | `member_profiles` | 5,840 | Raw Airtable field mirror (`at_fields` jsonb). |
 | `members` | 664 | **The WhatsApp channel layer** — phone → member. Not the population. |
-| `events_catalog` / `videos_catalog` / `partners_catalog` | 1,4xx / 1,03x / ~500 | Source catalogs (weekly refresh). |
+| `events_catalog` / `videos_catalog` / `partners_catalog` | 1,4xx / 1,03x / ~500 | Source catalogs (weekly refresh). All 161 2026 videos carry a transcript-derived `summary`. |
+| `video_access` | 34,236 | **#101: who may see each RESTRICTED GroupOS video** — loaded from the dev's read-path mirror export, `real_match` rows only (panel-only rows are admin-panel phantoms). `at_member_id` via `resolve_member_by_email()`; NULL = unresolvable, kept so the grant activates when the alias lands. |
 | `olivia_webhook_events` | 4,312 | **#75:** every inbound MESSAGE event persisted verbatim BEFORE any parse (text/interactive/reaction/media; statuses excluded). The only place template quick-reply **button** taps land — the workflow does not persist `msg_type='button'` into `olivia_messages`. |
 | `olivia_recommendations` | 609 | **The equalizer's memory (#93/#95):** every name she recommends, per asker + lane. Read by all recommendation lanes (30d per-asker downrank · 7d global spread · LRU cycling). |
 | `olivia_intros` | 3 | **#97 consent ledger (POC):** pending → accepted / declined / expired / unreachable; no number moves before `accepted`. |
@@ -394,6 +395,21 @@ drop+create. `CREATE OR REPLACE` preserves grants; prefer it. The leak gate chec
 
 **After any RPC DDL:** `notify pgrst, 'reload schema'` and then hammer the REST path — stale
 connection-pool caches produce *intermittent* 404s that look exactly like a quality regression.
+
+**The `video_access` rule type (#101, 2026-08-20).** Transcript chunks from a RESTRICTED video carry
+`access_rule = {"type":"video_access","video_id":…}` with `sensitivity='restricted'`.
+`content_search_v2` returns them ONLY when `digest.video_access` grants that video to the resolved
+asker — the consent flag alone does not expose them, and every other reader fails closed on the
+unknown type. `video_search` gates the same way: entitled → full treatment (description, cliff
+notes, summary, full-tsv matching, no downrank); not entitled → title/speakers/date/link + the
+restricted marker. Attachments stay a PUBLIC-video feature even for entitled askers
+(`video_file_for_send` validates public-only, and surfacing them leaked the raw `file_key`).
+Andy's quote ruling: quote, summarize, TLDR, answer "what exactly did he say" — never a full
+transcript; the ~1,400-char chunk is the largest retrievable unit and no lane concatenates.
+Restricted videos embed METADATA ONLY (`embed_videos.py`), so the vector branch cannot leak content.
+Transcript coverage: Zoom (#70) where Zoom hosted; AssemblyAI (`meta.provenance='assemblyai'`,
+`scripts/aai_transcripts.py`) for the 96 in-person/hybrid 2026 videos it never reached — speakers
+stay `Speaker A/B/C`, never guessed names.
 
 ---
 
@@ -808,9 +824,10 @@ relative ask** — pass the offset and do the arithmetic server-side.
   buttons. Remaining nuance: template quick-reply taps arrive as `msg_type='button'` and are NOT
   persisted to `olivia_messages` (only `olivia_webhook_events` holds them); the #97 build adds the
   workflow branch that swallows intro taps before the LLM lane.
-- **Transcripts have hard boundaries** (#70): virtual calls from 2026 onward only (nothing before
-  2026-01-05, nothing in-person). When a gap is reported the boundary travels with it — never
-  "not live" or "coming".
+- **Transcripts have hard boundaries** (#70/#101): ALL 161 videos of 2026 now carry transcripts —
+  Zoom for the 65 calls it hosted, AssemblyAI for the 96 in-person/hybrid rooms (#101). Nothing
+  before 2026-01-01 yet; the 2025 batch is next (Andy's ruling). When a gap is reported the boundary
+  travels with it — never "not live" or "coming".
 - **No forward calls calendar** — `digest.calls` holds past occurrences only. Say it as coverage,
   never as infrastructure.
 - **Events have no description field anywhere in the pipeline** — topic matching is inferred from

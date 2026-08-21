@@ -6,6 +6,50 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-13 — Application v3: verification cards went missing in Slack (fixed + both recovered)
+
+**Trigger:** Sashani in `#memebers-verification`, "Has this notification stopped? The latest one
+didn't come through — Benjamin Pearson."
+
+**Not Make, not n8n.** Make `4784286` ran clean for that submission (exec `ead36343…`, status 1,
+9 ops, 2026-08-11T19:58:05Z) and the validator ran too — Airtable row `rec2AIe8RG2XM0mEK` already
+had `(NEW) Revenue Verdict = needs_review` + Status `Pending`. Only the Slack card was missing.
+
+**Root cause: a fixed 4s wait for Slack to process the applicant photo.** `postApplicationCard`
+uploaded the photo, slept 4s, then referenced it in a `slack_file` image block. Slack processes
+images asynchronously and **the time scales with size — measured live: 17 KB → 0.5s, 411 KB → 1.8s,
+1.9 MB → 4.9s, 4.5 MB → 6.8s.** Over ~1.5 MB the block was rejected, `chat.postMessage` failed, and
+`verify/route.ts` swallowed the throw into a `console.error`. The verdict was already in Airtable,
+so every system looked healthy and the applicant silently left the review queue.
+
+**Two victims, not one** — Sashani only noticed the second: **Ginny Lo `recF1LGTTFFjH4aST`
+(Aug 5, 1.9 MB photo)** and **Benjamin Pearson `rec2AIe8RG2XM0mEK` (Aug 11, 4.5 MB)**. Found by
+listing Forms rows with a verdict set and diffing against the cards in `C0BFVA01AJ0`.
+
+**Shipped (mds-digest-web, Render):**
+- `a8dec73` — poll `files.info` until `thumb_360`/`thumb_720` exists (20s cap) instead of sleeping;
+  post the card WITHOUT the image block if the photo isn't ready or the post is rejected anyway.
+  A card must outrank its own thumbnail.
+- `add8115` — **`files.info` only accepts form-urlencoded args**; the first poll went through the
+  shared JSON helper and got `invalid_arguments` every time, so it burned the full 20s and dropped
+  every photo. Caught on the first re-fire (both cards posted photo-less), then fixed. Also bails
+  out immediately on a hard error instead of waiting out the timeout.
+
+**Verified live:** prod `/api/version` = `add8115f13…`; re-fire through the deployed endpoint returns
+`attachmentErrors: []`; both applicants now have exactly one card each in `C0BFVA01AJ0` **with the
+photo** (ts `1786651574.906399` Ginny, `1786651605.585819` Ben) plus the revenue screenshot in
+thread. Interim photo-less cards are gone (already deleted by the time I went to remove them —
+`message_not_found`); the duplicate posted for the prod check was deleted along with its orphaned
+attachment. Mechanism proof: the 4.5 MB photo polls ready at 8.0s and the block is accepted.
+`APPLICATION_V3_VALIDATOR.md` gotcha #2 rewritten with the measurements + the `files.info` trap.
+
+**Left open (flagged, not chased): nothing detects a missing card.** The only alarm today is a human
+noticing a quiet channel — which is why the Aug 5 loss went unseen for 8 days. The audit query is
+cheap: any Forms row with `(NEW) Revenue Verdict` set and no card in `C0BFVA01AJ0` was lost. Belongs
+on the tools-health dashboard; Andy to rule on priority.
+
+---
+
 ## 2026-08-06 (night) — MRR: LIFETIME PAID (membership dues) shipped — AT + Supabase + nightly sync
 
 **Andy's ask:** a field for "how much a member paid over time", Stripe + Wild Apricot, with a rough

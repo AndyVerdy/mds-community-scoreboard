@@ -2,6 +2,8 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-20 (video day) · **Olivia** · **#100 + #101 CLOSED**: AAI transcripts for all 161 2026 videos ($26.23) · identity aliases (5,763; 10/10 mismatches fixed) · video_access 34,236 real grants · content_search_v2/video_search entitlement · 2,730 chunks · 96 in-session summaries · gate 263/exit 0 → `SESSION_LOG_OLIVIA.md`
+
 - 2026-08-20 (CU revision) · **Olivia** · ClickUp handbook copy `2531q-103317` fully regenerated — 20 pages rewritten from the live-verified repo handbook (handbook's own stale spots fixed first, `05be335`); logs Jul-21→today swept; page 99 archive kept → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (CLOSE) · **Olivia** · session wrapped: Eugene's four DONE (#94-96,98,99 closed · #97 POC+plan, first real intro accepted) · smoke 50/50 · prod untouched `060701be` · next: #97 build (Andy: Vercel env) → #72 load test → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (fix-it 2) · **Olivia** · **#99 CLOSED** — show-me-the-rest proven E2E (canary registration on the real Summit, deleted after; fresh re-call served Wei Lin/Sam Hewitt, zero logistics) · trap logged: TWO Summit-named catalog rows, Night Out ≠ Summit → `SESSION_LOG_OLIVIA.md`

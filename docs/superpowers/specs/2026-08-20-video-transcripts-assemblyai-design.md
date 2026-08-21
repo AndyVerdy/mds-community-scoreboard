@@ -1,6 +1,6 @@
 # AssemblyAI transcripts for the 96 videos Zoom never reached
 
-**Date:** 2026-08-20 · **Status:** design, awaiting Andy's review · **Scope:** the 2026 GroupOS video library only (161 videos), of which 96 are net-new
+**Date:** 2026-08-20 · **Status:** ✅ SHIPPED 2026-08-20 (#101 closed — gate 263/exit 0) · **Scope:** the 2026 GroupOS video library (161 videos), 96 net-new · **Next:** the 2025 batch on the same machinery
 
 #70 put transcripts into Olivia on 2026-08-07, sourced from Zoom. Zoom only transcribes calls Zoom
 hosted, and only from around January 2026. Everything else in the library — Chapter Boardrooms,
