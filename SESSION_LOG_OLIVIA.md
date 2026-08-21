@@ -175,6 +175,23 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 ---
 
 
+
+## 2026-08-21 (DAY — Andy driving) · smoke settled 95/100 · #104 fixed · #103 reopened + rebuilt to 81% · participants + partner dimension + Zoom-quote fix
+
+**Projects:** Olivia. **Gate GREEN at every checkpoint (263 checks, exit 0). PROD untouched — Millie promote still carries the whole staging set.**
+
+**Smoke settled.** Andy challenged the overnight "done" at 90/100 — correct: the run was done, the exam FAILED against the <1% bar. Rerun of the 10 non-PASS (with recreated seq adjacency): 5 flipped → **95/100 effective, 0 fails**. #104 root-caused by reading the executions: model continues previous topic on rapid follow-ups, Fact Check CAUGHT all 3, **Gate Verdict pass-postfilter neutralized the catch** (topic-mismatch verdict has no filterable fact entities). Fix: FC rubric `off_topic` field + Gate Verdict treats it as non-filterable (regenerate, cap 2). Reproduced the exact failing chain clean; off_topic live in FC output. Remaining 5 partials enumerated (2 data-side, 3 behavioral) — not chased.
+
+**#103 REOPENED — Andy caught the false close.** "413/413 linked" measured the speaker_names FIELD, not the LIBRARY (real: 2025 19%, 2026 39%). Ignored sources: `speaker_ids` (an ID JOIN to the GroupOS mirror sat unused while I name-matched), description_text (1,032/1,033), titles, thumbnails; no partner dimension; empty aliases. Same error class as "phone is a channel, never the population."
+
+**#103 REBUILT (rungs A–E): library 40% → 81%** (2026 91% · 2025 78%). A: speaker_ids→GroupOS-id→email (12 dup-human conflicts active-preferred, reported) · B: names · C: title/description (known-people dictionary + positional parse; lessons: repeat speakers''' names must not become topic tokens — Dorian/Ian misses; junk profile row donated '''tiktok shop''' tokens → 70 stale partner links purged; 5 junk entities quarantined + guarded in B and C) · D: **partner sessions** — `video_partner_links` (129/123 videos) + `affiliation_partner_id` · E: **PARTICIPANTS from Zoom cues** (Andy'''s ruling: group calls have participants, not headline speakers; moderator ≠ speaker) — `role`+`talk_seconds` on links, 298 participant links / 65 videos. Alex Bonilla: speaker×11 · participant×3 · 194 talk-min. Verify v2 = LIBRARY floors, 10/10.
+
+**Zoom quotes E2E (Andy'''s "Mo Kuhail said this @34:25").** Zoom cues carry REAL NAMES; chunks embedded; proven: granted asker retrieves "Prue: I'''ll brainstorm around it… @00:12:10" from a restricted Centurion group call; truly-ungranted blocked. On the way: **418 pre-#101 Zoom chunks (8 restricted videos) were unreachable even for ENTITLED members** (sensitivity=restricted + rule=public) — migrated to {video_access,video_id}, both sides proven. Debug detours worth remembering: a "granted" probe is invalid if the grantee'''s phone doesn'''t resolve_asker; phraseto_tsquery dies on cross-cue phrases; generic terms lose the top-200 rank window — test with distinctive bigrams.
+
+**Weekly chain carries the logic (Andy'''s Q3):** `zoom_weekly.py` step 4.5 = ladder + `--rescan` guest→member promotion + participants, every run, dry-supported; full chain dry-run green E2E. Handbook data-layer updated same commit. Review CSVs for Andy: speaker (60) + participant (12).
+
+**Commits:** `343c17b` reopen · `34f4821`+`48362bf`+`4e8b052`(phase 1) · `e374d6d` rebuild · `c2f6b8e` participants · `6de7e34` Zoom-fix + weekly · `7ab64ec` rerun · `df45872` #104. **Next queue:** #103 open rungs (AAI letter-mapping · frame-OCR · moderator · affiliation) · #102 brainstorm · Millie promote (Andy) · 5 partials + bank truths · <2024 decision.
+
 ## 2026-08-21 (OVERNIGHT RUN — Andy asleep, order: "all green by morning") · 2025 transcripts + Millie + v2 entitlement catch + speaker sync + THE BIG SMOKE
 
 **Projects:** Olivia. **Gate GREEN at every step (263 checks, exit 0, 6+ runs). PROD untouched — everything staged/warehouse; ONE promote covers the night.**

@@ -28,6 +28,36 @@
 > `X-Olivia-Audit` header (never a p_limit heuristic — that silenced a real lane) ④ the E2E
 > canary pattern: temp registration row, probe, DELETE same session.
 
+## STATE 2026-08-21 DAY (SESSION CLOSED — Andy drove speaker work; smoke settled at 95/100)
+**Smoke rerun: 5 of 10 non-PASS flipped → 95/100 effective, 0 fails** (#104 fixed at the enforcement
+layer: FC `off_topic` field + Gate Verdict non-filterable; all 3 original fail-chains reproduced
+clean with recreated adjacency). Remaining 5 partials: 2 data-side (4070 women-events catalog gap ·
+4038 links-grading) + 3 behavioral (4095 3-day window serves latest daily · 4010 wording shades to
+denial · 4100 staff-vs-member distinction) — each ticket-size, none chased.
+
+**#103 REOPENED (I closed it on a field-scoped metric — 413/413 measured the FIELD; Andy caught it)
+then REBUILT: library coverage 40% → 81%** (2026 **91%**, 2025 78%). Full state on the board block.
+The load-bearing facts: identity space = `speakers`/`speaker_aliases`/`video_speaker_links`
+(+`video_partner_links`); evidence rungs A `speaker_ids`→GroupOS-id→email · B names · C
+title/description · D partner sessions · E Zoom cues→PARTICIPANTS (`role`+`talk_seconds` — group
+calls have participants, not headline speakers, Andy's ruling; moderator ≠ speaker, inference open).
+**Zoom transcripts carry REAL NAMES per cue** (quote+name+timestamp proven E2E for entitled asker);
+AAI = letters (letter-mapping + frame-OCR open). **418 pre-#101 Zoom chunks were unreachable even
+for ENTITLED members** (sensitivity=restricted + rule=public) — migrated, proven both ways.
+**Weekly `zoom_weekly.py` now runs the ladder + guest-promotion + participants every run** (step
+4.5, full dry-run green). Review CSVs on Andy's desk: `mds_speaker_review.csv` (60 unresolved) +
+`mds_participant_review.csv` (12).
+
+### NEXT SESSION QUEUE (brief Andy, WAIT for go)
+1. **#103 open rungs** — AAI letter→name mapping · frame-OCR name tags · moderator inference ·
+   affiliation backfill · review-CSV triage with Andy.
+2. **#102 brainstorm** (ranking: decay · speaker weight · Summit bonus · WA/FB/Video equalization ·
+   dossier weighting speaker>participant>FB-post) — CAPTURED-NOT-LOCKED, starts as brainstorm.
+3. **Millie promote still on Andy's desk** (one promote = rename + fact-check + boundary +
+   timestamps + #104 net). Meta watcher plan unchanged (submit "MDS Millie" on verdict, never
+   re-register Mille).
+4. 5 smoke partials + 2 bank-truth fixes · <2024 transcripts decision (~$137) · sprint-close pair.
+
 ## STATE 2026-08-21 OVERNIGHT (SESSION RAN WHILE ANDY SLEPT — his order: "in the morning; I need to see all green")
 **ALL GREEN. Queue ① 2025 transcripts DONE · ② big smoke DONE (bank 90/100 effective · slice 11/11) · ④ Millie CLOSED · #103 speaker sync BUILT+CLOSED same night · gate GREEN at every step (263 checks, exit 0, run 6+×).**
 

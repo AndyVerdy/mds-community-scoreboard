@@ -117,6 +117,22 @@ is done):**
 test → then this ticket** (exact values after processing done). Overlaps queue item ② (cold-start
 ranking probe) and #71 vocabulary — read both before build.
 
+### 🟡 #103 · Speaker matching — REOPENED then REBUILT 2026-08-21 (day session, Andy driving)
+**State at close: library coverage 40% → 81%** (2025 78% · 2026 **91%**) · 471 entities (274 members
+email-evidenced · 134 guests · 3 partners · 60 unresolved→review CSVs) · ~1,250 speaker links ·
+**participants modeled** (`role`+`talk_seconds` from Zoom cues — 298 links, 65 videos; Alex Bonilla:
+speaker×11, participant×3, 194 talk-min) · **partner dimension live** (`video_partner_links` 129 across
+123 videos + `affiliation_partner_id` column, backfill open) · **418 pre-#101 Zoom chunks fixed**
+(restricted+public-rule = unreachable even entitled; migrated, both sides proven: "Prue: I'll
+brainstorm…" @00:12:10) · **weekly chain wired** (`zoom_weekly.py` step 4.5: ladder + rescan +
+participants, dry-run green E2E). Extractor lessons: repeat speakers' names must not become topic
+tokens (Dorian/Ian class) · junk profile rows must not donate name tokens ("tiktok shop", 70 stale
+partner links purged) · 5 junk entities quarantined+guarded.
+**OPEN rungs:** AAI letter→name mapping (2025 group calls) · frame-OCR name tags (Ershad & Prue case) ·
+moderator inference · affiliation backfill (person→org, Riverbend trio) · dossier weighting
+speaker>participant>FB-post (#102, confirm-first) · 60 unresolved + 12 cue-ambiguous in review CSVs.
+
+### (original reopen note)
 ### 🔴 #103 · Speaker matching — **REOPENED 2026-08-21 (closed prematurely — my error)**
 > **Why reopened (Andy caught it):** I scoped the build to ONE field (`speaker_names`) and closed on
 > "413/413 linked", a metric that measures the FIELD, not the library. Real coverage: 2025 44/233,
