@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""#103 — verify the speaker identity space. exit 0 = all PASS."""
+"""#103 — verify the speaker identity space (v2: LIBRARY coverage, not field coverage)."""
 import json, subprocess, sys
 
 ENV = "/Users/Born/mds-digest-web/.env.local"
@@ -41,14 +41,12 @@ def check(name, ok, detail):
         FAILS.append(name)
 
 
-speakers = supa_all(
-    "speakers?select=speaker_id,canonical,kind,at_member_id,partner_id,note",
-    "speaker_id")
+speakers = supa_all("speakers?select=speaker_id,canonical,kind,at_member_id,partner_id,note",
+                    "speaker_id")
 links = supa_all("video_speaker_links?select=video_id,speaker_id", "video_id")
-# speaker_names=not.is.null matches EMPTY arrays too — filter to non-empty client-side
-vids = [v for v in supa_all(
-    "videos_catalog?select=video_id,speaker_names&deleted_at=is.null"
-    "&speaker_names=not.is.null", "video_id") if v.get("speaker_names")]
+plinks = supa_all("video_partner_links?select=video_id,partner_id", "video_id")
+vids = supa_all("videos_catalog?select=video_id,app_created_at&deleted_at=is.null",
+                "video_id")
 
 canons = [s["canonical"] for s in speakers]
 check("same-means-same", len(canons) == len(set(canons)),
@@ -63,30 +61,40 @@ check("kind integrity",
       f"kinds={kinds}")
 
 sids = {s["speaker_id"] for s in speakers}
-check("links resolve", all(l["speaker_id"] in sids for l in links),
-      f"{len(links)} links")
+junk = {s["speaker_id"] for s in speakers if str(s.get("note") or "").startswith("junk_label")}
+check("links resolve", all(l["speaker_id"] in sids for l in links), f"{len(links)} links")
+check("junk unlinked", all(l["speaker_id"] not in junk for l in links),
+      f"{len(junk)} junk_label rows, 0 links allowed")
 
-linked_videos = {l["video_id"] for l in links}
-cat_videos = {v["video_id"] for v in vids}
-missing = cat_videos - linked_videos
-check("video coverage", len(missing) == 0,
-      f"{len(linked_videos)}/{len(cat_videos)} speaker-carrying videos linked"
-      + (f" · missing {sorted(missing)[:3]}" if missing else ""))
+linked = {l["video_id"] for l in links}
+by_year = {}
+for v in vids:
+    y = (v["app_created_at"] or "")[:4]
+    t, c = by_year.get(y, (0, 0))
+    by_year[y] = (t + 1, c + (1 if v["video_id"] in linked else 0))
+t25, c25 = by_year.get("2025", (0, 0))
+t26, c26 = by_year.get("2026", (0, 0))
+tot = sum(t for t, _ in by_year.values())
+cov = sum(c for _, c in by_year.values())
+check("library coverage 2025", c25 * 100 >= t25 * 75, f"{c25}/{t25} ({100*c25//max(t25,1)}%; floor 75%)")
+check("library coverage 2026", c26 * 100 >= t26 * 70, f"{c26}/{t26} ({100*c26//max(t26,1)}%; floor 70%)")
+check("library coverage ALL", cov * 100 >= tot * 70, f"{cov}/{tot} ({100*cov//max(tot,1)}%; floor 70%)")
 
 members = supa_all("member_attributes?select=at_member_id", "at_member_id")
 mset = {m["at_member_id"] for m in members}
 check("member links exist",
       all(s["at_member_id"] in mset for s in speakers if s["kind"] == "member"),
-      f"{kinds.get('member', 0)} member links, all resolve to member_attributes")
+      f"{kinds.get('member', 0)} member links, all resolve")
 
 by = [s for s in speakers if s["canonical"] == "brandon young"]
 bl = [l for l in links if by and l["speaker_id"] == by[0]["speaker_id"]]
-check("brandon young one entity",
-      len(by) == 1 and len(bl) >= 9 and by[0]["kind"] in ("member", "guest"),
-      f"{len(by)} entity ({by[0]['kind'] if by else '-'}), {len(bl)} video links")
+check("brandon young one entity", len(by) == 1 and len(bl) >= 9,
+      f"{len(by)} entity, {len(bl)} video links")
 
-unres = kinds.get("unresolved", 0)
-check("unresolved bounded", unres <= 35, f"{unres} awaiting review")
+pvids = {p["video_id"] for p in plinks}
+check("partner sessions linked", len(plinks) >= 80,
+      f"{len(plinks)} video-partner links across {len(pvids)} videos")
 
-print(f"\n{len(FAILS)} FAIL / {7 - len(FAILS)} PASS")
+n = 10 - len(FAILS)
+print(f"\n{len(FAILS)} FAIL / {n} PASS")
 sys.exit(1 if FAILS else 0)

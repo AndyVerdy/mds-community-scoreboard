@@ -877,6 +877,7 @@ CREATE UNIQUE INDEX speaker_aliases_pkey ON digest.speaker_aliases USING btree (
 --   groupos_user_id                    text
 --   note                               text
 --   created_at                         timestamp with time zone not null default now()
+--   affiliation_partner_id             text
 alter table digest.speakers add constraint speakers_canonical_key UNIQUE (canonical);
 alter table digest.speakers add constraint speakers_kind_check CHECK ((kind = ANY (ARRAY['member'::text, 'partner'::text, 'guest'::text, 'unresolved'::text])));
 alter table digest.speakers add constraint speakers_member_has_id CHECK (((kind <> 'member'::text) OR (at_member_id IS NOT NULL)));
@@ -937,6 +938,14 @@ alter table digest.video_files add constraint video_files_pkey PRIMARY KEY (file
 alter table digest.video_files add constraint video_files_video_id_fkey FOREIGN KEY (video_id) REFERENCES digest.videos_catalog(video_id) ON DELETE CASCADE;
 CREATE INDEX video_files_video_idx ON digest.video_files USING btree (video_id);
 CREATE UNIQUE INDEX video_files_pkey ON digest.video_files USING btree (file_key);
+
+-- digest.video_partner_links
+--   video_id                           text not null
+--   partner_id                         text not null
+--   source                             text not null default 'title'::text
+alter table digest.video_partner_links add constraint video_partner_links_pkey PRIMARY KEY (video_id, partner_id);
+CREATE INDEX video_partner_links_partner_idx ON digest.video_partner_links USING btree (partner_id);
+CREATE UNIQUE INDEX video_partner_links_pkey ON digest.video_partner_links USING btree (video_id, partner_id);
 
 -- digest.video_speaker_links
 --   video_id                           text not null
