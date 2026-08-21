@@ -952,7 +952,10 @@ CREATE UNIQUE INDEX video_partner_links_pkey ON digest.video_partner_links USING
 --   speaker_id                         bigint not null
 --   source                             text not null default 'catalog'::text
 --   ordinal                            integer
+--   role                               text not null default 'speaker'::text
+--   talk_seconds                       integer
 alter table digest.video_speaker_links add constraint video_speaker_links_pkey PRIMARY KEY (video_id, speaker_id);
+alter table digest.video_speaker_links add constraint video_speaker_links_role_check CHECK ((role = ANY (ARRAY['speaker'::text, 'participant'::text, 'moderator'::text])));
 alter table digest.video_speaker_links add constraint video_speaker_links_speaker_id_fkey FOREIGN KEY (speaker_id) REFERENCES digest.speakers(speaker_id);
 CREATE INDEX video_speaker_links_speaker_idx ON digest.video_speaker_links USING btree (speaker_id);
 CREATE UNIQUE INDEX video_speaker_links_pkey ON digest.video_speaker_links USING btree (video_id, speaker_id);

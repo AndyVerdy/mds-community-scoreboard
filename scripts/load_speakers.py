@@ -169,6 +169,16 @@ class World:
         # preferred names + GroupOS speaker accounts. Two-token minimum with every
         # token >= 2 chars — the Members DB holds junk rows like "A A".
         bad = {"mds community", "mds only", "mds member", "test test"}
+        # the identity space itself is part of the dictionary — a repeat speaker
+        # (Dorian Gorski, non-member, not in the mirror) must match on sight
+        for sp in self.speakers.values():
+            if not str(sp.get("note") or "").startswith("junk_label"):
+                self.by_name.setdefault(sp["canonical"], set())
+        # the identity space itself is part of the dictionary — a repeat speaker
+        # (Dorian Gorski, non-member, not in the mirror) must match on sight
+        for sp in self.speakers.values():
+            if not str(sp.get("note") or "").startswith("junk_label"):
+                self.by_name.setdefault(sp["canonical"], set())
         # junk_label speakers stay as rows (annotated) but never link again
         self.junk = {s["canonical"] for s in supa_all(
             "speakers?select=canonical,note&note=like.junk_label*", "speaker_id")}
@@ -182,7 +192,22 @@ class World:
             for t in set(re.findall(r"[A-Za-z][A-Za-z'’\-]+",
                                     (v.get("title") or "").lower())):
                 tok[t] = tok.get(t, 0) + 1
-        self.topic_tokens = {t for t, c in tok.items() if c >= 6}
+        # a token that is part of any KNOWN person's name is never a topic word —
+        # frequent speakers made their own names "topics" (dorian, gorski, ian…)
+        name_tokens = set()
+        for nm in list(self.by_name) + list(self.go_by_name) +                   [sp["canonical"] for sp in self.speakers.values()]:
+            name_tokens.update(nm.split())
+        # a token that is part of any KNOWN person's name is never a topic word —
+        # frequent speakers made their own names "topics" (dorian, gorski, ian…)
+        # donors are CLEAN names only — a junk profile row ("ᴇʀɴᴜʀ | tiktok shop
+        # seller") once un-topiced 'tiktok shop' and let it through as a partner
+        name_tokens = set()
+        for nm in list(self.people) + [sp["canonical"] for sp in self.speakers.values()
+                                       if sp["canonical"] not in self.junk]:
+            toks = nm.split()
+            if len(toks) >= 2 and all(t.isalpha() and len(t) >= 2 for t in toks):
+                name_tokens.update(toks)
+        self.topic_tokens = {t for t, c in tok.items() if c >= 6} - name_tokens - name_tokens
         # Partner mentions: a partner whose NAME is built from topic words ("TikTok
         # Shop", "Amazon Freight") can never be evidence of a partner session, and a
         # single-word partner name ("Process") only counts when it appears in its own
@@ -325,7 +350,7 @@ def main():
         used_names = False
         if not used_ids:
             for ordn, nm in enumerate(v.get("speaker_names") or []):
-                if not canon(nm):
+                if not canon(nm) or canon(nm) in w.junk:
                     continue
                 kind, at, pid, note = w.classify_from_name(nm)
                 sp = upsert_speaker(w, nm, kind, at, pid, note, None,
