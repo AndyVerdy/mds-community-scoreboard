@@ -79,10 +79,52 @@ def canon(name):
     return re.sub(r"\s+", " ", n).strip().lower()
 
 
+def rescan(dry):
+    """Yesterday's guest becomes today's member: re-run the evidence ladder over
+    guest/unresolved speakers and promote IN PLACE (same speaker_id, links intact)."""
+    import datetime
+    spk = supa_all("speakers?select=speaker_id,display_name,canonical,kind,note"
+                   "&kind=in.(guest,unresolved)", "speaker_id")
+    gos = supa_all("video_speakers?select=display_name,email", "user_id")
+    go_email = {canon(g["display_name"] or ""): g.get("email") for g in gos}
+    members = supa_all("member_profiles?select=at_member_id,at_fields", "at_member_id")
+    statuses = {r["at_member_id"]: r["membership_status"] for r in supa_all(
+        "member_attributes?select=at_member_id,membership_status", "at_member_id")}
+    by_name = {}
+    for m in members:
+        fn = canon((m.get("at_fields") or {}).get("Full Name")
+                   or (m.get("at_fields") or {}).get("Name") or "")
+        if fn:
+            by_name.setdefault(fn, []).append(m["at_member_id"])
+    promoted = 0
+    for s in spk:
+        at = rpc_resolve(go_email.get(s["canonical"]))
+        if not at:
+            active = [a for a in by_name.get(s["canonical"], [])
+                      if statuses.get(a) in ACTIVE]
+            at = active[0] if len(active) == 1 else None
+        if at:
+            promoted += 1
+            print(f"  promote {s['display_name']} ({s['kind']} -> member, {at})")
+            if not dry:
+                supa("PATCH", f"speakers?speaker_id=eq.{s['speaker_id']}",
+                     {"kind": "member", "at_member_id": at,
+                      "note": (s.get("note") or "") +
+                              f"; promoted {datetime.date.today()}"},
+                     prefer="return=minimal")
+    print(f"rescan: {len(spk)} guest/unresolved checked · {promoted} promoted"
+          + (" (DRY RUN)" if dry else ""))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--rescan", action="store_true",
+                    help="re-run the ladder over guest/unresolved, promote in place")
     args = ap.parse_args()
+    if args.rescan:
+        rescan(args.dry_run)
+        return
 
     vids = supa_all("videos_catalog?select=video_id,speaker_names&deleted_at=is.null"
                     "&speaker_names=not.is.null", "video_id")
