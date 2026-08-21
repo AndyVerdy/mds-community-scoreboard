@@ -286,3 +286,58 @@ reference to these rows.
 The `video_search` change rolls back separately and independently: re-apply the previous body with
 `CREATE OR REPLACE` and re-run the gate. The current definition is captured in the plan before the
 change is made, so the revert is a paste rather than a reconstruction.
+
+## 14. When the rules arrive — the plug-in path
+
+Andy expects to supply the restriction rules directly: a list of videos and, per video, the people
+who may see it. This section exists so that lands as a load rather than a redesign.
+
+### 14.1 The format that works first time
+
+One row per person per video, as CSV:
+
+```
+video_id,email
+697379ce17d8f8116b1f96d4,someone@example.com
+```
+
+**Email is the identifier that matters.** `digest.member_profiles` and the Members DB key on it, so
+an email list resolves cleanly and unambiguously. A list of *names* resolves at roughly the rate #89
+measured on Zoom attendance — 170 of 199 after a three-rung matching ladder — and every miss is a
+member wrongly denied their own content. Names are usable as a fallback; email avoids the problem
+entirely.
+
+`video_id` is the Mongo ObjectId already used everywhere here — the same value in the catalog, the
+export CSV and every transcript's `_mds` block.
+
+Expected volume is modest even at the top end: the flattened rule strings show named-user counts
+from 1 to 621 per video, so the whole 2026 set lands in the low tens of thousands of rows.
+
+### 14.2 What gets built
+
+1. **`digest.video_access`** — `(video_id, at_member_id, source, granted_at)`, one row per entitled
+   member per video, loaded idempotently from the CSV via an email → `at_member_id` resolve. Rows
+   that fail to resolve are reported, never silently dropped.
+2. **`video_search` gates on it.** A restricted video the asker is entitled to returns its full
+   treatment; one they are not returns today's summary-plus-warning. The `p_phone` → asker
+   resolution already exists in the function.
+3. **`content_search_v2` becomes able to return restricted passages to entitled askers** — this is
+   the actual payoff: quotes with timestamps from the rooms a member was in.
+4. **The warning line comes out** for entitled members and stays for everyone else.
+
+### 14.3 What is NOT redone
+
+The transcripts, the chunks, the embeddings and the summaries are all unaffected — `access_rule` and
+`sensitivity` are metadata on rows that already exist, so the flip is an `UPDATE`, not a reload. No
+re-chunking, no re-embedding, no re-transcription, no cost.
+
+The 6 restricted Zoom videos already in `content_items` flip in exactly the same `UPDATE`, since
+they carry the same shape. That is the reason §6 keeps the new rows' `access_rule` and `sensitivity`
+identical to the existing ones rather than inventing a second mechanism for the same idea.
+
+### 14.4 The one thing to decide then, not now
+
+Whether an entitled member may receive a **quote** from a restricted room, or only the summary. The
+access list answers "may they see this video" — it does not by itself answer "may Olivia repeat what
+was said in it to them." Today's answer is no quotes for anyone; §14.2 step 3 assumes yes for
+entitled members. **Andy's ruling, when the list arrives.**
