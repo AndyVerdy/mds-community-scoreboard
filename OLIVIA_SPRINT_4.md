@@ -45,6 +45,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#97** | Brokered intros — "message the person she recommends", consent-first | 🔴 S1 | M | — | ⛔ Andy's ruling + utility template |
 | **#98** | Who-to-meet gates on registrations ledger (smoke Q37) | 🔴 S1 | S | ✅ E2E re-probed | ✅ **CLOSED 2026-08-20** — ledger authority both branches |
 | **#99** | "Show me the rest" for who-to-meet (smoke Q49) | 🟡 S2 | S | ✅ E2E via canary | ✅ **CLOSED 2026-08-20** — continuation note in-tool, fresh re-call proven |
+| **#102** | 🎬 Video recommendation ranking — time decay · speaker weight · event bonus (Andy/Eugene Slack 2026-08-21) | 🟡 S2 | M | — | ⏸ AFTER the big smoke test |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -88,8 +89,39 @@ Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
 
+### #102 · Video recommendation ranking — how she picks WHICH videos to serve
+**🟡 S2 · size M — filed 2026-08-21 from Andy's Slack ruling to Eugene · ⏸ sequenced AFTER the big smoke test**
+
+**Story:** Eugene asked how transcripts are prioritized; Andy ruled the criteria. Ranking today is
+relevance-only — the Eugene cold-start case showed a thin title-match outranking the
+transcript-rich Beginners Panel. Recommendation order must reflect VALUE, not just match.
+
+**Andy's criteria (Slack 2026-08-21, verbatim intent — exact values he decides after processing
+is done):**
+1. **Time decay, 100% of videos** — "videos should be valued less over time"; curve TBD after he
+   sees the data.
+2. **Speaker weight** — the dynamic score we already have (#94 expertise ledger: many criteria,
+   itself decays over time).
+3. **Bonus points for Summits and Inspires** (event-tier bonus).
+4. *"Require more TF connections"* + *"Bonus points for counting during these events"* (Andy's
+   words — Typeform-connection signal + event-window activity bonus; values with the rest).
+
+**Sequencing (Andy):** 2026 processed · 2025 in progress · <2024 undecided · **then big smoke
+test → then this ticket** (exact values after processing done). Overlaps queue item ② (cold-start
+ranking probe) and #71 vocabulary — read both before build.
+
 ### #97 · Brokered intros — message the person she recommends
 **🔴 S1 · size M — filed 2026-08-19 · 🔨 POC PROVEN · rulings LOCKED · 📋 PLAN: `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`**
+
+**⚖️ MATCHING RESTRICTIONS LOCKED (Andy + Eugene, Slack 2026-08-21) — the build honors these:**
+- **Both sides must be Millie users** (Eugene: "We shouldn't match members unless both are using
+  Millie"; Andy's lock: "If I see that a person is in WA but he never uses Millie, he is out").
+- **Sandbox first: Summit-locked** — introductions only between people attending the Summit
+  (Eugene: sandbox to summit attendees; Andy: "yes. Possible to lock to Summit").
+- **Parked criterion:** last-used <30d — "irrelevant for now, but might be relevant later" (Andy).
+- **POC postscript:** Eugene tapped REJECT after the POC window — expected, no live listener
+  (Andy in-thread); ledger row #2 still reads `pending`. The real build's tap watcher must run
+  continuously and flip taps whenever they arrive (taps live only in `olivia_webhook_events`).
 
 **POC PROVEN END-TO-END 2026-08-20 (commit `68fa789`):** template **APPROVED as UTILITY** (no
 marketing cap on consent asks — the make-or-break unknown, settled). Full loop on the test
