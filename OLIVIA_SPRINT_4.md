@@ -189,8 +189,7 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 ### #97 · Brokered intros — message the person she recommends
 **🔴 S1 · size M — filed 2026-08-19 · 🔨 POC PROVEN · rulings LOCKED · 📋 PLAN: `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`**
 
-**⚖️ MATCHING RESTRICTIONS CAPTURED (Andy + Eugene, Slack 2026-08-21) — ⛔ confirm with Andy
-before applying: things may change; brainstorm first (Andy 2026-08-21):**
+**⚖️ MATCHING RESTRICTIONS — ✅ LOCKED AS-IS (Andy 2026-08-21: "lock them as-is, go"; build started same session, in the plan as the ELIGIBILITY Global Constraint):**
 - **Both sides must be Millie users** (Eugene: "We shouldn't match members unless both are using
   Millie"; Andy's lock: "If I see that a person is in WA but he never uses Millie, he is out").
 - **Sandbox first: Summit-locked** — introductions only between people attending the Summit
@@ -213,7 +212,7 @@ the tap text as if it were a message) ② the plus-is-space trap on ledger times
 retryable, zero reminders · unreachable = honest line + team-escalation offer · targets only from
 the asker's 30d recommendation log · exact member-facing wording verbatim in the plan · tap branch
 before the LLM lane · `member_intro` seed tool · sweep on the Reminder Sender tick.
-**Prereq (Andy): META_WA_TOKEN + META_WA_PHONE_NUMBER_ID onto Vercel, then execution-mode pick.**
+**Prereq (Andy): META_WA_TOKEN + META_WA_PHONE_NUMBER_ID onto RENDER (service `mds-digest-web`, Environment tab + Manual Deploy — the plan said Vercel, wrong: digest.mds.co is Render-origin, verified 2026-08-21), then execution-mode pick.**
 
 **POC step 1 (superseded by the above) — the consent template was submitted:** `mds_intro_request`
 (id `1413344637359224`), submitted **UTILITY**, status **PENDING**, `allow_category_change=true`

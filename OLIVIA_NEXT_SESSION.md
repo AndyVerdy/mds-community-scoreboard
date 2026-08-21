@@ -131,7 +131,7 @@ for ENTITLED members** (sensitivity=restricted + rule=public) — migrated, prov
    work — read #71 before touching ranking.
 3. **Members' connection tasks — #97 brokered intros build** (screenshot proof on file: template intro
    accepted end-to-end, wa.me links both ways, POC list-picker rounds "Pick a member" working). Plan pinned:
-   `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`. Still blocked on Andy's Vercel env
+   `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`. Still blocked on Andy's RENDER env (plan said Vercel — wrong; digest.mds.co = Render, verified 2026-08-21)
    (META_WA_* onto mds-digest-web) + execution-mode pick.
 4. ~~Rename the bot to "Millie"~~ **CLOSED 2026-08-21** (close block on the board). Spelling ruled
    **"MDS Millie"**; staging says Millie everywhere (12 strings, 4 nodes) + fact-check veto fixed
@@ -212,10 +212,10 @@ decline wording · seed copy.
 
 ### NEXT SESSION OPENS HERE — brief Andy, WAIT for his go (the ⛔ rule above)
 **Queue front: #97 BUILD** (plan `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`,
-rulings locked, POC proven, Ian's real accept on record) — **blocked on Andy's Vercel env prereq**
+rulings locked, POC proven, Ian's real accept on record) — **blocked on Andy's RENDER env prereq (service `mds-digest-web`, NOT Vercel)**
 (META_WA_TOKEN + META_WA_PHONE_NUMBER_ID onto mds-digest-web, then redeploy) + execution-mode pick.
 **Next unblocked: #72 LOAD TEST** (sprint goal: it runs BEFORE the announcement; never run).
-1. **Andy's desk:** #97 Vercel env + execution-mode pick · **register himself for the Summit**
+1. **Andy's desk:** #97 RENDER env + execution-mode pick · **register himself for the Summit**
    (restores his who-to-meet demos — canary was test-only) · THE COUNT RULING (157-vs-113 shown
    live in one conversation) · sprint-close pair still open: 100-bank exit exam (his go) + post
    `OLIVIA_RELEASE_NOTES_2026-08-19.md` · Eugene's intro tap still pending (ledger #2; check

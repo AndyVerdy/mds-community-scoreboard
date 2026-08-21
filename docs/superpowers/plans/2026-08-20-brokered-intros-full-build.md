@@ -6,7 +6,7 @@
 
 **Architecture:** One new app route (`/api/olivia/intro`) owns ALL intro policy — request, pick-resolution, tap-resolution, expiry sweep — per the "new lanes are app routes, not RPCs" rule (retrieval in SQL, POLICY in git). The gated main workflow gains one early branch that swallows intro taps before the LLM lane sees them (the POC's screenshot bug). The seed gains one tool (`member_intro`) so "connect us" resolves against the asker's own recommendation log. `digest.olivia_intros` (exists, POC-built) stays the single ledger.
 
-**Tech Stack:** Next.js route (mds-digest-web, Vercel) · Meta WhatsApp Cloud API v22.0 (approved template `mds_intro_request` + interactive list + free-form) · Supabase `digest` schema · n8n (main workflow branch via `olivia_wf.py` staging; Reminder Sender for the sweep tick) · leak gate.
+**Tech Stack:** Next.js route (mds-digest-web, **Render** — digest.mds.co, manual redeploy on env change) · Meta WhatsApp Cloud API v22.0 (approved template `mds_intro_request` + interactive list + free-form) · Supabase `digest` schema · n8n (main workflow branch via `olivia_wf.py` staging; Reminder Sender for the sweep tick) · leak gate.
 
 ## Global Constraints — ANDY'S RULINGS, LOCKED 2026-08-20 (verbatim where quoted)
 
@@ -18,6 +18,7 @@
 - **Silence = 7-day expiry, retryable, ZERO reminders to the target.** Requester line, verbatim: *"I didn't get a response from {first} this week, so I've let it rest. Want me to try again later — or introduce you to someone else on {topic}?"*
 - **Unreachable (no phone on record, or Meta 131026 not-on-WhatsApp):** requester line, verbatim: *"I can't reach {first} on WhatsApp. Want me to suggest someone else on {topic} — or I can pass your request to the MDS team to make the intro by email?"* Team escalation = the existing Slack `Notify Team` path. Target population is ALL actives — phone-less members are `unreachable`, never silently skipped (every-member-always).
 - **Accept messages, verbatim:** target: *"Great — you're connected with {requester_full}. Start the conversation: wa.me/{requester_phone}"* · requester: *"{target_first} accepted your intro request — start the conversation: wa.me/{target_phone}"*.
+- **ELIGIBILITY — LOCKED 2026-08-21 (Andy: "lock them as-is"; Eugene's Slack rules):** intros run ONLY when BOTH sides are (a) **Millie users** — ≥1 real inbound member turn in `digest.olivia_messages` (SELFTEST/eval traffic excluded) — and (b) **Summit-registered** — present in the registrations ledger (`event_registrations_live`) for the REAL Summit `recrATwhUDA55iQN5` (never name-match the catalog — the "Night Out" row is the trap). Requester ineligible → *"Intros are a Summit-attendee feature for now — once you're registered for the Summit I can set them up."* Target ineligible → *"I can't set that one up — intros are Summit-locked for now and {first} isn't on my Summit intro list. Want me to suggest another attendee on {topic}?"* (wording adjustable by Andy at close). **Parked, do not implement:** last-used <30d. Probes under this lock use the CANARY pattern — temp registration row for the probe identity, DELETE same session — Andy's real registration does not exist yet.
 - Template: **`mds_intro_request`, APPROVED, UTILITY** (id 1413344637359224) — vars {{1}} target first name, {{2}} requester full name, {{3}} topic. Never resubmit/rename it.
 - **POC findings baked in:** template button taps arrive `msg_type='button'` and are NOT in `olivia_messages` (raw store only) · list taps arrive `type='interactive'` with `list_reply.id` · PostgREST plus-is-space (Z-suffix all timestamps in URLs) · the intro branch must run BEFORE the LLM lane (screenshot bug 2026-08-20).
 - **A 200 from Meta is NOT delivery** — every send verified via `digest.olivia_sends`.
@@ -25,7 +26,7 @@
 
 ## Prerequisites (Andy runs)
 
-1. **Vercel env** for mds-digest-web: add `META_WA_TOKEN` + `META_WA_PHONE_NUMBER_ID` (values = the same names in `/Users/Born/mds-digest-web/.env.local`; bare values). The intro route sends WhatsApp itself — today only n8n holds these. Then redeploy (env changes do not auto-redeploy).
+1. **RENDER env** (NOT Vercel — verified 2026-08-21: digest.mds.co serves `x-render-origin-server: Render`; README confirms service `mds-digest-web`) — Render dashboard → service `mds-digest-web` → Environment tab: add `META_WA_TOKEN` + `META_WA_PHONE_NUMBER_ID` (values = the same names in `/Users/Born/mds-digest-web/.env.local`; bare values). The intro route sends WhatsApp itself — today only n8n holds these. Then **Manual Deploy** (Render does not redeploy on env-only changes).
 2. `promote` for the workflow edit (Task 4) and the seed edit (Task 5) after staging probes pass.
 
 ---
@@ -281,6 +282,8 @@ export async function POST(req: NextRequest) {
 ```
 Adapt imports to whatever the schedule route actually uses (read it first — `sbRequest` may live inline there; copy the same pattern rather than inventing a lib).
 
+- [ ] **Step 1b (ELIGIBILITY, locked 2026-08-21 — the skeleton above predates it):** weave the eligibility constraint into `op:'request'`: requester check immediately after `me` resolves (fail → the requester-ineligible verbatim line); target check immediately after `targetId` resolves, BEFORE caps (fail → the target-ineligible verbatim line, no ledger row). Also filter the PICKER candidate list to eligible targets only — the list must never offer someone the request would then refuse. Helper `isEligible(atId)` = Millie-user AND Summit-registered per the Global Constraint; take exact table/column names from the Scorecard repo's `db/` schema export — verify, never guess. The `op:'tap'` consent path needs NO eligibility re-check (a pending row only exists if both passed at request time).
+
 - [ ] **Step 2: Typecheck**
 
 Run: `cd /Users/Born/mds-digest-web && npx tsc --noEmit -p tsconfig.json`
@@ -303,7 +306,8 @@ cd /Users/Born/mds-digest-web && git add src/app/api/olivia/intro/route.ts \
 **Interfaces:**
 - Consumes: Task 2 route, deployed (poll until live). PREREQUISITE: Andy added the Meta env vars + redeployed — verify first with the dry-run case; a 500 "secret not configured"-style miss means the env is absent.
 
-- [ ] **Step 1: Picker case** — Andy's phone, no target: `{op:'request', phone:'17866578153'}` → expect `pick:[...]` rows (≤10, ids `intro_pick_rec…`), NO phone digits anywhere in the response.
+- [ ] **Step 0: Eligibility canary** — Andy is NOT Summit-registered (his canary was deleted): first call `{op:'request', phone:'17866578153'}` → expect the requester-ineligible line (this IS the requester-filter test). Then insert the CANARY registration row for Andy on `recrATwhUDA55iQN5` (same SQL shape as the #99 canary) — steps 1-6 run under it — and DELETE it at matrix end, same session.
+- [ ] **Step 1: Picker case** — Andy's phone, no target: `{op:'request', phone:'17866578153'}` → expect `pick:[...]` rows (≤10, ids `intro_pick_rec…`, eligible targets only), NO phone digits anywhere in the response.
 - [ ] **Step 2: Dry-run named case** — `{op:'request', phone:'17866578153', target_name:'<a name from the picker>', topic:'plan test', dry_run:true}` → `{ok:true, dry_run:true}` and NOTHING sent (verify no new `olivia_sends` row).
 - [ ] **Step 3: Cap case** — insert 3 pending rows for Andy via SQL, re-run step 2 without dry_run → expect the "3 intro requests out already" note, no send. Delete the 3 rows after.
 - [ ] **Step 4: Decline-permanence case** — insert a `declined` row for Andy→(picker member) via SQL, request that member → expect the verbatim "No connection with … yet" note. Delete after.
@@ -349,7 +353,7 @@ cd /Users/Born/mds-digest-web && git add src/app/api/olivia/intro/route.ts \
 - [ ] **Step 2: Answer Seed** — add the tool + two rules, exact text:
   - Tool: `{ name: 'member_intro', description: 'CONSENT-FIRST INTRO: when the member asks to be connected/introduced to someone I recommended ("connect us", "intro me to X", "can you message them"). NEVER share numbers or wa.me links yourself - this tool asks the OTHER member for consent first. target_name optional: omit it and the tool returns a pick list to send as an interactive LIST message.', input_schema: S({ target_name: str('who, from my recent recommendations'), topic: str('what the intro is about') }) }`
   - Rule: `'- INTROS ARE CONSENT-FIRST (#97): on "connect us / intro me / message them for me" call member_intro. Never output a phone number or wa.me link from memory or any other tool - only the intro flow may share contact, and only after the other member accepts. One person per request; "connect me with all of them" gets a friendly no + the pick list.'`
-- [ ] **Step 3: Staging probes** (single-question tier, free): `"reset"`, `"connect me with <name from Andy's picker>"` → expect a member_intro tool call in the execution + the route's note as her reply, dry-run NOT set (staging probe = real template to that target — so probe with **Andy as the named target**: he is in his own rec log? If not, first ask staging "who should I meet…" to seed the log, then request a listed member with `dry_run` forced ON via a temporary route guard? NO — simpler: temporarily set `MAX_PINGS…` aside and probe with target = Andy by inserting `recCUUw8iiUnJjac1` into his own rec log via SQL, so the template goes to Andy's phone only). Verify: her reply says she asked for the ok; `olivia_intros` has the pending row; nothing went to any other member.
+- [ ] **Step 3: Staging probes** (single-question tier, free): `"reset"`, `"connect me with <name from Andy's picker>"` → expect a member_intro tool call in the execution + the route's note as her reply, dry-run NOT set (staging probe = real template to that target — so probe with **Andy as the named target**: he is in his own rec log? If not, first ask staging "who should I meet…" to seed the log, then request a listed member with `dry_run` forced ON via a temporary route guard? NO — simpler: temporarily set `MAX_PINGS…` aside and probe with target = Andy by inserting `recCUUw8iiUnJjac1` into his own rec log via SQL, so the template goes to Andy's phone only). **Eligibility (locked 2026-08-21): the canary registration row for Andy on `recrATwhUDA55iQN5` must exist for this probe (both sides = Andy) — insert before, DELETE after, same session.** Verify: her reply says she asked for the ok; `olivia_intros` has the pending row; nothing went to any other member.
 - [ ] **Step 4: Gate EXIT 0 · snapshot · Andy promotes** (with Task 4 if staged together).
 
 ---
