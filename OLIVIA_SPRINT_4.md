@@ -108,10 +108,25 @@ is done):**
 3. **Bonus points for Summits and Inspires** (event-tier bonus).
 4. *"Require more TF connections"* + *"Bonus points for counting during these events"* (Andy's
    words — Typeform-connection signal + event-window activity bonus; values with the rest).
+5. **Source equalization (Andy 2026-08-21): suggestions must weigh WA, FB and VIDEOS as peers** —
+   "videos are potentially the strongest content we have"; when a video contains the exact answer,
+   recommend it and say WHERE it happened (chunk timestamps exist) and WHO was speaking (→ #103).
 
 **Sequencing (Andy):** 2026 processed · 2025 in progress · <2024 undecided · **then big smoke
 test → then this ticket** (exact values after processing done). Overlaps queue item ② (cold-start
 ranking probe) and #71 vocabulary — read both before build.
+
+### #103 · Speaker matching — name who is talking inside a transcript
+**🟡 S2 · size M — filed 2026-08-21 (Andy: "it's important to mention who was speaking… another task: to match the speaker") · ⏸ after smoke; brainstorm first**
+
+**The honest data picture (verified):** transcripts do NOT carry names — AssemblyAI returns
+diarized letters (`Speaker A/B/C`, avg 5.2 voices/video; #101 kept letters deliberately so a quote
+is never misattributed to a member). Names live in: the video TITLE (most sessions), description,
+`videos_catalog.speaker_names`, event metadata, and occasional in-transcript self-introductions
+("As Ian said… I've been a member since 2017"). So: single-presenter videos can be named from
+title/metadata with high confidence; panels/roundtables need a letter→name mapping ladder
+(title order · self-intros · host introductions) with a confidence floor — below it, stay
+"the speaker"/"a member". Never guess from voice.
 
 ### #97 · Brokered intros — message the person she recommends
 **🔴 S1 · size M — filed 2026-08-19 · 🔨 POC PROVEN · rulings LOCKED · 📋 PLAN: `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`**
