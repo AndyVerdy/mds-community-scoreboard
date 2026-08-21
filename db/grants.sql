@@ -322,6 +322,8 @@ grant execute on function digest.report_create(p_phone text, p_text text, p_cont
 grant execute on function digest.report_create(p_phone text, p_text text, p_context text) to service_role;
 grant execute on function digest.resolve_asker(p_phone text) to postgres;
 grant execute on function digest.resolve_asker(p_phone text) to service_role;
+grant execute on function digest.resolve_member_by_email(p_email text) to postgres;
+grant execute on function digest.resolve_member_by_email(p_email text) to service_role;
 grant execute on function digest.schema_source() to postgres;
 grant execute on function digest.schema_source() to service_role;
 grant execute on function digest.session_rollup() to postgres;

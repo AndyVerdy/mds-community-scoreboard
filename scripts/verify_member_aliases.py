@@ -107,16 +107,32 @@ check("preferred rung loaded", by_source.get("preferred", 0) >= 5700,
       f"{by_source.get('preferred', 0)} rows")
 check("stripe rung loaded", by_source.get("stripe", 0) >= 10,
       f"{by_source.get('stripe', 0)} rows")
-check("admin_field rung loaded", by_source.get("admin_field", 0) >= 8,
-      f"{by_source.get('admin_field', 0)} rows")
+# 8 profiles have "Associated Emails (Admin)" populated, but Jay Hunter's and Ramon
+# Gonzalez's values repeat their own Preferred Email, so they dedupe into the preferred
+# rung. Six are genuinely additional addresses.
+check("admin_field rung loaded", by_source.get("admin_field", 0) >= 6,
+      f"{by_source.get('admin_field', 0)} rows (8 populated, 2 repeat the preferred address)")
 
+# AC2: these two resolve with NO human approval step. Both addresses sit on more than one
+# member record because MDS holds duplicate records for the same human — Ryan Bastuba and
+# Michael Corrigan each exist twice, one record per address. So the assertion is not "one
+# row" but "the evidence is present AND the address resolves to the active member".
 ryan = get("member_email_alias?select=at_member_id,source&email=eq.ryan@bastuba.com")
 check("stripe alias, no approval",
-      len(ryan) == 1 and ryan[0]["source"] == "stripe", f"{ryan}")
+      any(r["source"] == "stripe" for r in ryan)
+      and rpc("resolve_member_by_email", {"p_email": "ryan@bastuba.com"})
+          == rpc("resolve_member_by_email", {"p_email": "ryan@varify.com"}) is not None,
+      f"{len(ryan)} records share the address; resolves to "
+      f"{rpc('resolve_member_by_email', {'p_email': 'ryan@bastuba.com'})}")
 
 mc = get("member_email_alias?select=at_member_id,source&email=eq.michael@trtl.co.uk")
 check("admin alias, no approval",
-      len(mc) == 1 and mc[0]["source"] == "admin_field", f"{mc}")
+      any(r["source"] == "admin_field" for r in mc)
+      and rpc("resolve_member_by_email", {"p_email": "michael@trtl.co.uk"})
+          == rpc("resolve_member_by_email", {"p_email": "michael.gerard.corrigan@gmail.com"})
+      and rpc("resolve_member_by_email", {"p_email": "michael@trtl.co.uk"}) is not None,
+      f"{len(mc)} records share the address; resolves to "
+      f"{rpc('resolve_member_by_email', {'p_email': 'michael@trtl.co.uk'})}")
 
 check("no bare name grants",
       all(r["source"] != "name_match" for r in alias),
