@@ -101,6 +101,23 @@ def main():
                   [os.path.join(ROOT, "scripts", "video_summaries.py")] + ([] if dry else ["--apply"]))
     ok_all &= ok
 
+    # 4.5 speaker identity (#103, 2026-08-21): every new video gets its speakers linked
+    #     (id join -> names -> title/description -> partner sessions), yesterday's guests
+    #     get promoted if they joined, and Zoom-named cues become participant links with
+    #     talk_seconds. All three are idempotent diff-before-insert loaders.
+    ok, out = run("speakers: link new videos (rungs A-D)",
+                  [os.path.join(ROOT, "scripts", "load_speakers.py")]
+                  + (["--dry-run"] if dry else []))
+    ok_all &= ok
+    ok, out = run("speakers: promote guests who became members",
+                  [os.path.join(ROOT, "scripts", "load_speakers.py"), "--rescan"]
+                  + (["--dry-run"] if dry else []))
+    ok_all &= ok
+    ok, out = run("speakers: Zoom cue participants + talk time",
+                  [os.path.join(ROOT, "scripts", "load_participants.py")]
+                  + (["--dry-run"] if dry else []))
+    ok_all &= ok
+
     # 5. embed what is new. TWO corpora, and the video one was in no schedule at all — so a
     #    summary written last week was keyword-searchable but semantically invisible.
     if dry:
