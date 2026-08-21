@@ -31,6 +31,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
+| **#100** | 🔑 Identity aliases — one member, all their known emails *(blocks the video-access load)* | 🔴 S1 | M | — | — |
 | **#72** | 🚦 LOAD TEST — **NOW the announcement, not the Mille demo. Biggest open risk; never run** | 🔴 S1 | M | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
@@ -976,6 +977,63 @@ the release is actually safe to ship, not just that the tickets are marked done.
 | "Oliva" display name still shows on the WhatsApp number | Cosmetic but member-visible. |
 | 👎 reactions → Slack? | Today they land in the dashboard only. |
 | `member_match` 'Apparel' vs 'Clothing & Accessories' | Category vocabulary mismatch. |
+
+---
+
+### #100 · Identity aliases — one member, all their known emails
+**🔴 S1 · size M — filed 2026-08-20 from the GroupOS video-access reconciliation**
+
+> **In plain words:** A member whose Airtable email differs from the one GroupOS knows is invisible to
+> every email match we run. We found ten of them, and five were people someone had *personally named*
+> on a restricted video.
+
+*As a member, the systems recognise me by any address I have ever used with MDS — so a video I was
+explicitly granted, a registration I made under a work address, or a payment under a personal one all
+resolve to the same me.*
+
+**What we found (measured 2026-08-20, GroupOS audience export vs the Members DB):**
+- 1,171 people hold real access to restricted videos. **650 are current or new members**, 384 resolve
+  to a lapsed/removed/staff record, 137 resolve to nothing.
+- Of the 718 current+new members, **68 appear in no restricted audience at all**. Name matching shows
+  **10 of those 68 are the same person under a second address** — Michelle Xu, Michael Corrigan,
+  Ryan Bastuba, Guido Reyes, Jason Ko, Michael Hartman, Kyle Goguen, June Lai, David Ghiyam, Justin Cao.
+- **5 of the 10 are on the 15-person named-user list of one MDS9 Mastermind video.** Email-only
+  matching would deny them a video a human granted them by hand.
+
+**The field already exists and is unused.** Airtable has `Associated Emails (Admin)` (multilineText).
+It is populated on **8 of 5,972** profiles — and one of those 8 is Michael Corrigan's
+`michael@trtl.co.uk`, exactly the alias the name match found. So the concept is proven; nobody fills it.
+In Supabase it survives only as a jsonb key on `member_profiles.at_fields`, read by nothing.
+
+**Second evidence source, free:** `Stripe Customer Email` is populated on 827 profiles and differs from
+Preferred Email on 10. One of those is Ryan Bastuba (`ryan@varify.com` vs `ryan@bastuba.com`) — a
+payment record, so it needs no human approval.
+
+**Shape of the fix**
+- `digest.member_email_alias` — `at_member_id`, `email`, `source` (`preferred` | `stripe` |
+  `admin_field` | `name_match_approved`), `added_at`. Unique on (`at_member_id`, lower(`email`)).
+- Backfill from all three rungs. Name matches are **proposed, never auto-granted** — `andy test`
+  matched a real member record, which is exactly the false positive that rule prevents.
+- Approved aliases are written back to Airtable's `Associated Emails (Admin)`, which stays the human
+  source of record; the table is its mirror, refreshed like every other member field.
+- One resolver used everywhere an email is matched to a person, so this fixes identity generally and
+  not just for videos.
+
+**Accept when**
+- The 10 known cases resolve to their member record through the alias table.
+- Ryan Bastuba (stripe) and Michael Corrigan (admin field) resolve with **no human approval step**.
+- A name match never grants on its own — it produces a review row, and `andy test` does not become a grant.
+- Airtable and the mirror agree after a write-back, verified by re-reading the field.
+- Re-running the backfill changes zero rows.
+- Gate GREEN.
+
+**Blocks:** the GroupOS video-access load
+(`docs/superpowers/specs/2026-08-20-video-transcripts-assemblyai-design.md` §14). Gating on email
+alone would ship the 10 wrongful denials on day one.
+
+**Found alongside, not this ticket:** `digest.member_identity` holds **57 rows with a NULL
+`at_member_id`** — no name, no membership status, several sitting in WhatsApp channels, and one with
+`phone = 'sam'`. Same disease from the other end; wants its own look.
 
 ---
 
