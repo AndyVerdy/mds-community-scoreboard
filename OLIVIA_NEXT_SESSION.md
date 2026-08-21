@@ -28,6 +28,61 @@
 > `X-Olivia-Audit` header (never a p_limit heuristic — that silenced a real lane) ④ the E2E
 > canary pattern: temp registration row, probe, DELETE same session.
 
+## STATE 2026-08-20 LATE (SESSION CLOSED — VIDEO DAY): PROD untouched; all ships = SQL fns + data loads.
+**#100 CLOSED (identity aliases) · #101 CLOSED (video transcripts + real access gating) · gate GREEN at close (263 checks, exit 0, run 7× today).**
+
+### What shipped tonight (all verified live)
+- **#100:** `digest.member_email_alias` (5,763 rows; sources preferred/stripe/admin_field/name_match_approved)
+  + `resolve_member_by_email()` (active-record-preferring; NULL on ambiguity). 29 approved aliases written to
+  **Airtable FIRST** (Members DB `appou5JVr0WIrioWS`/`tblfwOSROSHfuYUxv` — ⚠️ the env's AIRTABLE_BASE_ID is the
+  WhatsApp DB, wrong base for this), then mirrored. Audience resolution 634→704 active; the 10 known email
+  mismatches 0/10→10/10. **`Pending Group Entrance` now counts as active** (753→754; Current+New+Pending = 718
+  = Andy's export exactly).
+- **#101:** AssemblyAI transcripts for **ALL 161 videos of 2026** ($26.23, `~/mds_transcripts/2026/`) →
+  **2,730 chunks across the 96 videos Zoom never reached** (`meta.provenance='assemblyai'`; #70's 65 Zoom
+  videos untouched, checksum identical). **`digest.video_access` = 34,236 REAL grants** (real_match only —
+  panel rows are phantoms, 42 yopmail). `content_search_v2` learned the `video_access` access_rule type;
+  `video_search` gates restricted treatment per asker (attachments stay PUBLIC-only — file_key leak caught).
+  **96 summaries written in-session** (161/161 `summary_source='transcript'`), everything embedded
+  (restricted videos embed METADATA ONLY — vector branch cannot leak). Proof: entitled asker retrieved a
+  RESTRICTED TikTok-Mastermind passage at 00:05:01, timestamped. Quote ruling (Andy): quote/summarize/TLDR/
+  exact-words yes — **full transcripts never**.
+
+### THE QUEUE (Andy 2026-08-20, session close — in this order)
+1. **2025 transcript batch** — same machinery (`scripts/aai_transcripts.py` + `apply_video_summaries.py`).
+   ~233 videos / 145.6 hr ≈ **$33 AAI**. **Prereq: fresh presigned export from Andy's dev** (current links
+   expire 2026-08-27; `04_presign.py --days 7 --year 2025`). Load video_access for 2025 restricted from the
+   same pairs file (already covers all years — 375 videos). Summaries in-session again, no API.
+2. **Smoke-test batch of questions, focused on the EUGENE CASE** — "best TikTok cold start videos" served the
+   thin Milan title-match over the transcript-rich Beginners Panel. Content now exists (transcript chunks
+   reachable); the remaining gap is intent-vs-title RANKING in `video_search` + whether the answering layer
+   should show more than one video (Eugene: "maybe it should show more than one"). Overlaps #71's vocabulary
+   work — read #71 before touching ranking.
+3. **Members' connection tasks — #97 brokered intros build** (screenshot proof on file: template intro
+   accepted end-to-end, wa.me links both ways, POC list-picker rounds "Pick a member" working). Plan pinned:
+   `docs/superpowers/plans/2026-08-20-brokered-intros-full-build.md`. Still blocked on Andy's Vercel env
+   (META_WA_* onto mds-digest-web) + execution-mode pick.
+4. **Rename the bot to "Millie"** (Andy's wording at close). ⚠️ The name submitted to Meta is **"MDS Mille"**
+   (`PENDING_REVIEW`; watcher n8n `a1ViYr5FT7iePdN9` hourly). If Andy wants "Millie" specifically, the Meta
+   submission may need to change — confirm spelling with him BEFORE the 14-day re-register window burns.
+   When live: DELETE the watcher, queue the #79 copy rewording pass.
+
+### Standing next-session rules (unchanged)
+Open with the briefing (ticket NUMBER + NAME + STORY) and WAIT for the go. Verify against live before new
+work. Gate before any ship. #72 LOAD TEST still never run — it remains the biggest open risk before any
+announcement.
+
+### New traps from tonight (do not relearn)
+- **PostgREST pages are UNSTABLE without `order=`** — an unordered limit/offset walk returned 3,116 rows but
+  only 43 of 65 distinct videos. Every pagination gets an order key.
+- **Expression indexes can't ON CONFLICT via PostgREST** — loaders diff-before-insert (twice today).
+- **Verify Airtable writes against Airtable itself** — `member_profiles` mirrors on its own schedule and lags.
+- **The gate's restricted-transcript check is now GRANT-BOUNDED** (restricted chunks only for granted videos),
+  not blanket exclusion — that is the #101 invariant, don't "fix" it back.
+- **`member_identity` holds 57 NULL-`at_member_id` rows** (one `phone='sam'`) — recorded, not chased.
+
+---
+### (previous close, for context)
 ## STATE 2026-08-20 (SESSION CLOSED): PROD `060701be` — nothing awaits promotion; all of tonight's
 ## ships live in SQL functions + the digest.mds.co route (no workflow nodes touched).
 **Eugene's four: #94 #95 #96 #98 #99 CLOSED · #97 POC proven + plan pinned · smoke 50/50 addressed.**

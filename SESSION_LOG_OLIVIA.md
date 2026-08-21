@@ -186,7 +186,7 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 **Traps for the file:** PostgREST pages UNSTABLE without order= (3,116 rows walked → 43/65 distinct) · expression indexes can't ON CONFLICT via PostgREST (diff-before-insert, twice) · two verify-harness lies fixed (equal error dicts pass equality; "exactly one row" wrong when duplicate records are legitimate) · #70-era gate check rewritten to the grant-bounded invariant · member_profiles lags Airtable writes (verify against AT directly) · 57 member_identity rows have NULL at_member_id (one phone='sam') — recorded, not chased.
 
-**Next:** 2025 videos (~233, ≈$33, same machinery — Andy's ruling: right after 2026) · ranking (intent-vs-title, Eugene's cold-start case) stays #71-adjacent · speaker naming its own ticket · alias write-back file archived at ~/mds_transcripts/summaries/.
+**Next (Andy's close order):** ① 2025 transcript batch (~233 ≈$33; needs fresh presigned export, links die 08-27) ② smoke batch focused on the Eugene cold-start case (ranking/intent-vs-title, maybe multi-video answers; #71-adjacent) ③ #97 brokered-intros build (POC proven on screen: accept → wa.me both ways → list-picker rounds) ④ rename bot to "Millie" (⚠️ Meta submission says "MDS Mille" — confirm spelling before the 14-day window). Speaker naming stays its own ticket; summaries archived ~/mds_transcripts/summaries/.
 
 
 ## 2026-08-19 (sprint close) — SPRINT 3 CLOSED: 34 shipped, SPRINT 4 open, notes drafted

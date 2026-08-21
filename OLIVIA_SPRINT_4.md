@@ -24,6 +24,8 @@ Work them in this order: **#94** (his item 2 — newer members) → **#95** (his
 **#96** (his item 1 — the ≤10-names cap, unblocks on Andy+Eugene's confirm) → **#97** (his item 4 —
 intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as its origin.
 
+## 🎯 QUEUE (Andy 2026-08-20 close): ① 2025 transcript batch (~233 vids ≈$33; needs fresh presigned export — links die 08-27) → ② smoke batch focused on the EUGENE cold-start case (ranking, intent-vs-title, maybe multi-video answers; read #71 first) → ③ #97 brokered-intros build (POC proven on screen: accept → wa.me both ways → list-picker rounds) → ④ rename bot to "Millie" (⚠️ Meta submission says "MDS Mille" — confirm spelling before the 14-day re-register window).
+
 ## 📋 At a glance
 
 | # | Ticket | Priority | Size | Staging | Prod |
