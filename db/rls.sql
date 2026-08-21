@@ -57,9 +57,12 @@ alter table digest.olivia_requests enable row level security;
 -- digest.olivia_webhook_events: row level security DISABLED
 alter table digest.partner_reviews enable row level security;
 alter table digest.partners_catalog enable row level security;
+-- digest.speaker_aliases: row level security DISABLED
+-- digest.speakers: row level security DISABLED
 alter table digest.summaries enable row level security;
 alter table digest.video_access enable row level security;
 alter table digest.video_files enable row level security;
+-- digest.video_speaker_links: row level security DISABLED
 alter table digest.video_speakers enable row level security;
 alter table digest.videos_catalog enable row level security;
 alter table digest.wa_messages enable row level security;

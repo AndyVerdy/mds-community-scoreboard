@@ -860,6 +860,31 @@ alter table digest.partners_catalog add constraint partners_catalog_pkey PRIMARY
 CREATE INDEX partners_catalog_tsv_idx ON digest.partners_catalog USING gin (search_tsv);
 CREATE UNIQUE INDEX partners_catalog_pkey ON digest.partners_catalog USING btree (partner_id);
 
+-- digest.speaker_aliases
+--   alias_canonical                    text not null
+--   speaker_id                         bigint not null
+alter table digest.speaker_aliases add constraint speaker_aliases_pkey PRIMARY KEY (alias_canonical);
+alter table digest.speaker_aliases add constraint speaker_aliases_speaker_id_fkey FOREIGN KEY (speaker_id) REFERENCES digest.speakers(speaker_id);
+CREATE UNIQUE INDEX speaker_aliases_pkey ON digest.speaker_aliases USING btree (alias_canonical);
+
+-- digest.speakers
+--   speaker_id                         bigint not null
+--   display_name                       text not null
+--   canonical                          text not null
+--   kind                               text not null
+--   at_member_id                       text
+--   partner_id                         text
+--   groupos_user_id                    text
+--   note                               text
+--   created_at                         timestamp with time zone not null default now()
+alter table digest.speakers add constraint speakers_canonical_key UNIQUE (canonical);
+alter table digest.speakers add constraint speakers_kind_check CHECK ((kind = ANY (ARRAY['member'::text, 'partner'::text, 'guest'::text, 'unresolved'::text])));
+alter table digest.speakers add constraint speakers_member_has_id CHECK (((kind <> 'member'::text) OR (at_member_id IS NOT NULL)));
+alter table digest.speakers add constraint speakers_partner_has_id CHECK (((kind <> 'partner'::text) OR (partner_id IS NOT NULL)));
+alter table digest.speakers add constraint speakers_pkey PRIMARY KEY (speaker_id);
+CREATE UNIQUE INDEX speakers_canonical_key ON digest.speakers USING btree (canonical);
+CREATE UNIQUE INDEX speakers_pkey ON digest.speakers USING btree (speaker_id);
+
 -- digest.summaries
 --   airtable_id                        text not null
 --   summary_key                        text not null
@@ -912,6 +937,16 @@ alter table digest.video_files add constraint video_files_pkey PRIMARY KEY (file
 alter table digest.video_files add constraint video_files_video_id_fkey FOREIGN KEY (video_id) REFERENCES digest.videos_catalog(video_id) ON DELETE CASCADE;
 CREATE INDEX video_files_video_idx ON digest.video_files USING btree (video_id);
 CREATE UNIQUE INDEX video_files_pkey ON digest.video_files USING btree (file_key);
+
+-- digest.video_speaker_links
+--   video_id                           text not null
+--   speaker_id                         bigint not null
+--   source                             text not null default 'catalog'::text
+--   ordinal                            integer
+alter table digest.video_speaker_links add constraint video_speaker_links_pkey PRIMARY KEY (video_id, speaker_id);
+alter table digest.video_speaker_links add constraint video_speaker_links_speaker_id_fkey FOREIGN KEY (speaker_id) REFERENCES digest.speakers(speaker_id);
+CREATE INDEX video_speaker_links_speaker_idx ON digest.video_speaker_links USING btree (speaker_id);
+CREATE UNIQUE INDEX video_speaker_links_pkey ON digest.video_speaker_links USING btree (video_id, speaker_id);
 
 -- digest.video_speakers
 --   user_id                            text not null
