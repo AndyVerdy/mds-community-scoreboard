@@ -47,8 +47,10 @@ def supa(method, path, body=None, prefer=None):
     if prefer:
         cmd += ["-H", f"Prefer: {prefer}"]
     if body is not None:
-        cmd += ["--data-binary", json.dumps(body)]
-    out = subprocess.run(cmd, capture_output=True, text=True).stdout
+        # @- (stdin), never argv: a 200-row chunk batch can exceed ARG_MAX
+        cmd += ["--data-binary", "@-"]
+    out = subprocess.run(cmd, capture_output=True, text=True,
+                         input=json.dumps(body) if body is not None else None).stdout
     if not out.strip():
         return []
     val = json.loads(out)

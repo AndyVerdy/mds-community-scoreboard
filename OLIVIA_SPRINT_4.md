@@ -24,7 +24,7 @@ Work them in this order: **#94** (his item 2 — newer members) → **#95** (his
 **#96** (his item 1 — the ≤10-names cap, unblocks on Andy+Eugene's confirm) → **#97** (his item 4 —
 intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as its origin.
 
-## 🎯 QUEUE (Andy 2026-08-20 close): ① 2025 transcript batch **IN FLIGHT 2026-08-21** (no fresh export needed — `mds_videos_all_signed.csv` covers 2025, links alive to 08-27; AAI batch running via `scripts/aai_submit.py`; video_access 2025 already loaded 131/131) → ② smoke batch focused on the EUGENE cold-start case (ranking, intent-vs-title, maybe multi-video answers; read #71 first) → ③ #97 brokered-intros build (POC proven on screen: accept → wa.me both ways → list-picker rounds) → ~~④ rename bot to "Millie"~~ **④ CLOSED 2026-08-21** (see close block below the ticket sections — staging says Millie, checker knows the name; Meta flip rides the watcher).
+## 🎯 QUEUE (Andy 2026-08-20 close): ~~① 2025 transcript batch~~ **① DONE 2026-08-21** (232/233 videos · 144.8 hr · $33.42 AAI · 6,429 chunks · 232 in-session summaries · embedded · gate 0 · entitlement probed both ways; the 1 skip = a 10-second silent teaser; no fresh export was needed — links alive to 08-27) → ② smoke batch focused on the EUGENE cold-start case (ranking, intent-vs-title, maybe multi-video answers; read #71 first) — **Andy's Slack: "Then big smoke test"** → ③ #97 brokered-intros build (POC proven; matching restrictions LOCKED 2026-08-21 — see #97) → ~~④ rename bot to "Millie"~~ **④ CLOSED 2026-08-21** (close block below — staging says Millie, checker knows the name; Meta flip rides the watcher). **<2024 years: Andy undecided ("Not sure about <2024").**
 
 ## 📋 At a glance
 
