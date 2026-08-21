@@ -116,6 +116,26 @@ is done):**
 test → then this ticket** (exact values after processing done). Overlaps queue item ② (cold-start
 ranking probe) and #71 vocabulary — read both before build.
 
+### ✅ #103 · Speaker matching — CLOSED 2026-08-21 (same night it was filed)
+**Story:** speakers become LINKED ENTITIES, not strings — members to their record, partners to
+theirs, guests recorded; "same means same" across every appearance (Andy, in-session).
+**Results:** `digest.speakers` (239 entities) + `digest.speaker_aliases` + `digest.video_speaker_links`
+(480 links, 413/413 speaker-carrying videos). Ladder upgraded mid-build by a discovery: existing
+`digest.video_speakers` = GroupOS speaker-USER mirror (234 accounts, all with email) — so linking is
+EMAIL-evidenced through the #100 resolver, not name-guessed. **212 members linked** (Brandon Young
+resolved as a member by his own email — one entity, 9 videos) · **24 guests recorded** (Alan Kishk,
+AJ Patel, Isaac Medeiros title-derived from a "(unnamed)" row…) · **0 exact partner-name matches**
+(the 1 GroupOS CO row had no partners_catalog name match — recorded as guest, honest) · **3 unresolved**
+in `~/Downloads/mds_speaker_review.csv` (never guessed). `member_record_id` in the mirror proven
+GroupOS-internal (0 AT matches) — email is the key, as the mirror's own comment says.
+**ACs:** one entity per person ✅ (239/239 distinct canonicals) · members linked ✅ (212, all resolve
+to member_attributes) · partners linked ✅ mechanism live, 0 current exact matches · guests recorded ✅
+(24) · ambiguity to review, never guessed ✅ (3). **Before/after:** 0 links → 480 · raw strings → 
+identity space. Verify `scripts/verify_speakers.py` **7/7 PASS** · gate 263 checks EXIT 0.
+**Plan:** `docs/superpowers/plans/2026-08-21-speaker-sync.md`. Next (own tickets): letter→name
+mapping inside transcripts · title-parsing for the 620 no-array videos · answer-layer wiring (#102).
+
+### (original #103 filing, kept for the requirement text)
 ### #103 · Speaker matching — name who is talking inside a transcript
 **🟡 S2 · size M — filed 2026-08-21 (Andy: "it's important to mention who was speaking… another task: to match the speaker") · ⏸ after smoke; brainstorm first**
 
