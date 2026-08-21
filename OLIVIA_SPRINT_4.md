@@ -31,7 +31,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
-| **#100** | 🔑 Identity aliases — one member, all their known emails *(blocks the video-access load)* | 🔴 S1 | M | — | — |
+| **#100** | 🔑 Identity aliases — one member, all their known emails | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED 2026-08-20** — 5,763 aliases, resolver live, 12/12 verify, gate 0 |
 | **#72** | 🚦 LOAD TEST — **NOW the announcement, not the Mille demo. Biggest open risk; never run** | 🔴 S1 | M | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
@@ -981,7 +981,42 @@ the release is actually safe to ship, not just that the tickets are marked done.
 ---
 
 ### #100 · Identity aliases — one member, all their known emails
-**🔴 S1 · size M — filed 2026-08-20 from the GroupOS video-access reconciliation**
+**🔴 S1 · size M — filed 2026-08-20 · ✅ CLOSED 2026-08-20 same session**
+
+#### ✅ Close block (2026-08-20)
+
+**Results.** `digest.member_email_alias` live: **5,763 rows** (5,717 preferred · 29
+name_match_approved · 11 stripe · 6 admin_field). `digest.resolve_member_by_email()` is the
+single entry point — active-record-preferring: a lone record wins outright, several records
+with exactly one ACTIVE resolve to it, anything else returns NULL rather than guessing.
+Andy approved all 29 proposals; written to Airtable FIRST (base `appou5JVr0WIrioWS`, table
+`tblfwOSROSHfuYUxv`, field re-read after every PATCH), then mirrored. Verify
+`scripts/verify_member_aliases.py` **12/12 PASS** · gate **exit 0** (3 runs) · `db/` re-exported.
+
+| AC | result |
+|---|---|
+| 10 known cases resolve via the alias table | ✅ 10/10 — and to the **ACTIVE** record (was 3/10 before the write-back) |
+| Bastuba (stripe) + Corrigan (admin field) resolve with no approval step | ✅ both — each address sits on 2 records (duplicate humans); resolver picks the active one |
+| A name match never grants on its own | ✅ CHECK-constraint vocabulary has no bare `name_match`; proposer writes a CSV only |
+| Airtable and the mirror agree after write-back | ✅ 29/29 read back off the Airtable record itself (not the lagging member_profiles mirror) |
+| Re-running the backfill changes zero rows | ✅ loader diffs before insert (expression index ⇒ PostgREST can't do ON CONFLICT); 2 consecutive runs insert 0 |
+| Gate GREEN | ✅ exit 0 |
+
+**Before/after (the 1,171 GroupOS video-audience addresses):** resolve to a member
+1,034 → **1,038** · resolve to an **ACTIVE** member 634 → **704** · the 10 known mismatch
+cases 0/10 → **10/10**. Also shipped same session (Andy's ruling): `Pending Group Entrance`
+counts as active — 753 → **754**, and Current+New+Pending = **718** = Andy's export exactly.
+
+**Discovered en route, recorded not chased:** the alias table doubles as a duplicate-record
+detector — **49 addresses sit on >1 member record** (27 with exactly one active, 21 with
+none, 1 with two: `dominique@milliondollarsellers.com`). 5 addresses stay deliberately
+unresolved because two records for the same human exist and neither is clearly primary
+(Sam Simon, Mouzima Mousumi, Dominique Mohler, Shiva Tavakoli, and `tangowithw@gmail.com`
+on a second Andy record). Feeds the standing dup-member cleanup on Andy's desk (#89 list).
+
+---
+
+**Original filing (for the record):**
 
 > **In plain words:** A member whose Airtable email differs from the one GroupOS knows is invisible to
 > every email match we run. We found ten of them, and five were people someone had *personally named*

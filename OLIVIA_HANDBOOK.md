@@ -289,6 +289,24 @@ nickname cases and Members-DB duplicate records, listed on the #89 ticket for An
 sends an instant, never a zone. In-person answers always use the venue's zone, named; a virtual
 session carries the content's zone *and* the member's saved-location zone.
 
+### 4.10 Email aliases — one member, all their known addresses (#100, 2026-08-20)
+
+A member's GroupOS grants, registrations and payments do not all use the Airtable Preferred
+Email. `digest.member_email_alias` holds every address known to belong to a member, with the
+evidence in `source`: `preferred` (Members-DB Preferred Email) · `stripe` (Stripe Customer
+Email — a payment record) · `admin_field` (Airtable "Associated Emails (Admin)") ·
+`name_match_approved` (a name match a human approved). A bare name match is not in the CHECK
+vocabulary — it cannot be inserted; `scripts/propose_member_email_aliases.py` writes a review
+CSV and `scripts/writeback_member_email_aliases.py` applies approvals to **Airtable first**
+(the system of record), re-reads to confirm, then mirrors.
+
+**The single entry point is `digest.resolve_member_by_email(p_email)`.** It prefers the
+active record: one record wins outright; several records sharing the address with exactly
+one ACTIVE resolve to it; anything else returns NULL rather than guessing which human owns
+the address. That rule exists because MDS holds duplicate records for the same person — 49
+addresses sit on more than one record. Do not match emails against `member_profiles.email`
+directly in new code; go through the resolver.
+
 ## 5. Identity — one human, one key
 
 **The canonical key is `at_member_id`** (the Airtable Members-DB record id, mirrored to

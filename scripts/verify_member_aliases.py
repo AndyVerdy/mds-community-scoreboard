@@ -156,5 +156,31 @@ check("resolver: unknown is null",
       rpc("resolve_member_by_email", {"p_email": "nobody@example.invalid"}) is None,
       "unknown address")
 
+# --- Task 5: Airtable, the system of record, agrees --------------------------
+# Every name_match_approved row must be readable back out of "Associated Emails (Admin)"
+# on the member's own AIRTABLE record. Read Airtable itself, not member_profiles — that
+# mirror refreshes on its own sync schedule and lags a fresh write by design.
+AT_BASE, AT_TABLE = "appou5JVr0WIrioWS", "tblfwOSROSHfuYUxv"
+ATPAT = env("AIRTABLE_PAT")
+
+
+def at_field(rec):
+    out = subprocess.run(
+        ["curl", "-s", "-m", "60",
+         f"https://api.airtable.com/v0/{AT_BASE}/{AT_TABLE}/{rec}",
+         "-H", f"Authorization: Bearer {ATPAT}"],
+        capture_output=True, text=True).stdout
+    try:
+        return (json.loads(out).get("fields", {}).get("Associated Emails (Admin)", "") or "")
+    except Exception:
+        return ""
+
+
+approved = get("member_email_alias?select=at_member_id,email&source=eq.name_match_approved")
+missing = [a["email"] for a in approved
+           if a["email"].lower() not in at_field(a["at_member_id"]).lower()]
+check("airtable agrees", bool(approved) and not missing,
+      f"{len(approved)} approved, {len(missing)} not found on the Airtable record")
+
 print(f"\n{len(results) - len(fails)}/{len(results)} PASS")
 sys.exit(1 if fails else 0)
