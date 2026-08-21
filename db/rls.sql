@@ -58,6 +58,7 @@ alter table digest.olivia_requests enable row level security;
 alter table digest.partner_reviews enable row level security;
 alter table digest.partners_catalog enable row level security;
 alter table digest.summaries enable row level security;
+alter table digest.video_access enable row level security;
 alter table digest.video_files enable row level security;
 alter table digest.video_speakers enable row level security;
 alter table digest.videos_catalog enable row level security;

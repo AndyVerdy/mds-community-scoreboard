@@ -885,6 +885,15 @@ CREATE INDEX summaries_period_idx ON digest.summaries USING btree (period_type);
 CREATE UNIQUE INDEX summaries_pkey ON digest.summaries USING btree (airtable_id);
 CREATE UNIQUE INDEX summaries_summary_key_key ON digest.summaries USING btree (summary_key);
 
+-- digest.video_access
+--   video_id                           text not null
+--   at_member_id                       text
+--   email                              text not null
+--   source                             text not null
+--   added_at                           timestamp with time zone not null default now()
+CREATE INDEX video_access_member_idx ON digest.video_access USING btree (at_member_id) WHERE (at_member_id IS NOT NULL);
+CREATE UNIQUE INDEX video_access_uq ON digest.video_access USING btree (video_id, lower(btrim(email)));
+
 -- digest.video_files
 --   file_key                           text not null
 --   video_id                           text not null
