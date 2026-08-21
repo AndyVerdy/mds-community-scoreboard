@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION digest.content_search_v2(p_phone text, p_terms text[]
 AS $function$
 declare
   v_chats text[]; v_atid text; v_n int; v_in_fb boolean; v_vec extensions.vector(1024);
-  v_q tsquery; v_tq tsquery; v_t text; v_ann bigint[];
+  v_q tsquery; v_tq tsquery; v_t text; v_ann bigint[]; v_my_videos text[];
 begin
   -- identity gate: verbatim content_search
   if p_at_member_id is not null then
@@ -21,6 +21,11 @@ begin
   if p_at_member_id is not null and v_atid is null then v_atid := p_at_member_id; end if;
 
   v_in_fb := v_atid is not null and exists (select 1 from digest.fb_member_map f where f.at_member_id = v_atid);
+  -- #101: restricted-video entitlement. Chunks from a restricted video carry
+  -- access_rule {"type":"video_access","video_id":...}; the asker sees them only when
+  -- digest.video_access grants that video to their member id. Computed once here.
+  select coalesce(array_agg(distinct va.video_id), '{}') into v_my_videos
+    from digest.video_access va where v_atid is not null and va.at_member_id = v_atid;
   begin
     v_vec := nullif(trim(coalesce(p_embedding, '')), '')::extensions.vector(1024);
   exception when others then
@@ -63,12 +68,14 @@ begin
     from digest.content_items ci
     where v_q is not null and ci.search_tsv @@ v_q
       and ci.sensitivity <> 'never_surface'
-      and (p_include_restricted or ci.sensitivity <> 'restricted')
+      and (p_include_restricted or ci.sensitivity <> 'restricted'
+           or (ci.access_rule->>'type' = 'video_access' and ci.access_rule->>'video_id' = any(v_my_videos)))
       and (
         (ci.access_rule->>'type' = 'public')
         or (ci.access_rule->>'type' = 'chat_member' and ci.access_rule->>'chat' = any(v_chats))
         or (ci.access_rule->>'type' = 'owner' and v_atid is not null and ci.access_rule->>'member' = v_atid)
         or (ci.access_rule->>'type' = 'fb_group' and v_in_fb)
+          or (ci.access_rule->>'type' = 'video_access' and ci.access_rule->>'video_id' = any(v_my_videos))
       )
       and (p_sources is null or ci.source = any(p_sources))
       and (p_kinds is null or ci.kind = any(p_kinds))
@@ -107,12 +114,14 @@ begin
       from unnest(v_ann) with ordinality as a(id, ord)
       join digest.content_items ci on ci.id = a.id
       where ci.sensitivity <> 'never_surface'
-        and (p_include_restricted or ci.sensitivity <> 'restricted')
+        and (p_include_restricted or ci.sensitivity <> 'restricted'
+           or (ci.access_rule->>'type' = 'video_access' and ci.access_rule->>'video_id' = any(v_my_videos)))
         and (
           (ci.access_rule->>'type' = 'public')
           or (ci.access_rule->>'type' = 'chat_member' and ci.access_rule->>'chat' = any(v_chats))
           or (ci.access_rule->>'type' = 'owner' and v_atid is not null and ci.access_rule->>'member' = v_atid)
           or (ci.access_rule->>'type' = 'fb_group' and v_in_fb)
+          or (ci.access_rule->>'type' = 'video_access' and ci.access_rule->>'video_id' = any(v_my_videos))
         )
         and (p_sources is null or ci.source = any(p_sources))
         and (p_kinds is null or ci.kind = any(p_kinds))
@@ -137,12 +146,14 @@ begin
       select ci.id, ci.occurred_at as occ
       from digest.content_items ci
       where ci.sensitivity <> 'never_surface'
-        and (p_include_restricted or ci.sensitivity <> 'restricted')
+        and (p_include_restricted or ci.sensitivity <> 'restricted'
+           or (ci.access_rule->>'type' = 'video_access' and ci.access_rule->>'video_id' = any(v_my_videos)))
         and (
           (ci.access_rule->>'type' = 'public')
           or (ci.access_rule->>'type' = 'chat_member' and ci.access_rule->>'chat' = any(v_chats))
           or (ci.access_rule->>'type' = 'owner' and v_atid is not null and ci.access_rule->>'member' = v_atid)
           or (ci.access_rule->>'type' = 'fb_group' and v_in_fb)
+          or (ci.access_rule->>'type' = 'video_access' and ci.access_rule->>'video_id' = any(v_my_videos))
         )
         and (p_sources is null or ci.source = any(p_sources))
         and (p_kinds is null or ci.kind = any(p_kinds))

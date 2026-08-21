@@ -169,6 +169,8 @@ def main():
              profile_hdr=["Content-Profile: digest"])
         curl("DELETE", f"{BASE}/videos_catalog?video_id=like.feedface*", key,
              profile_hdr=["Content-Profile: digest"])
+        curl("DELETE", f"{BASE}/video_access?video_id=like.feedface*", key,
+             profile_hdr=["Content-Profile: digest"])
 
     cleanup()  # pre-clean any residue from a crashed run
     st, body = curl("POST", f"{BASE}/content_items", key, body=canaries,
@@ -1020,6 +1022,65 @@ def main():
         check("video browse never shows restricted/deleted/draft canaries",
               not ({f"REDTEAM Restricted Video {MARKER}", f"REDTEAM Deleted Video {MARKER}",
                     f"REDTEAM Draft Video {MARKER}"} & bvtitles))
+        # --- #101: per-member entitlement (digest.video_access) -----------------------
+        # Grant the probe member the restricted canary, then the SAME queries that just
+        # proved the wall must now show them the content — and only them.
+        st, _g = curl("POST", f"{BASE}/video_access", key,
+                      body=[{"video_id": "feedfacefeedfacefeed1001", "at_member_id": my_id,
+                             "email": "redteam@gate.invalid", "source": "gate"}],
+                      profile_hdr=["Content-Profile: digest", "Prefer: return=minimal"])
+        check("video_access canary grant inserted", st in (200, 201), f"status {st}")
+        st, ent = rpc("video_search", {"p_phone": phone, "p_query": MARKER, "p_limit": 20}, key)
+        erow = next((v for v in (ent or [])
+                     if v["title"] == f"REDTEAM Restricted Video {MARKER}"), None)
+        check("ENTITLED member sees restricted video content (#101)",
+              bool(erow) and str(erow.get("description_snippet") or "").startswith("video canary")
+              and erow.get("is_restricted") is True,
+              f"got {erow}")
+        # entitlement also unlocks deck-content matching for the entitled asker
+        st, edeep = rpc("video_search", {"p_phone": phone, "p_query": f"deckonly{MARKER}",
+                                         "p_limit": 20}, key)
+        check("entitled asker matches restricted contents; unentitled probe above did not",
+              any(v["title"] == f"REDTEAM Restricted Video {MARKER}" for v in (edeep or [])))
+        # a video_access-typed transcript chunk: entitled sees it, unentitled and anon never
+        chunk_canary = [{"source": CANARY_SOURCE, "kind": "chunk",
+                         "source_id": f"vidchunk_{ts}",
+                         "title": f"REDTEAM Restricted Video {MARKER}",
+                         "body": f"restricted transcript passage {MARKER} vidchunkonly",
+                         "occurred_at": "2026-01-01T00:00:00Z",
+                         "url": "https://app.mds.co/videos/feedfacefeedfacefeed1001",
+                         "access_rule": {"type": "video_access",
+                                         "video_id": "feedfacefeedfacefeed1001"},
+                         "sensitivity": "restricted",
+                         "meta": {"video_id": "feedfacefeedfacefeed1001", "chunk": 0}}]
+        st, _c = curl("POST", f"{BASE}/content_items", key, body=chunk_canary,
+                      profile_hdr=["Content-Profile: digest", "Prefer: return=minimal"])
+        check("video_access chunk canary inserted", st in (200, 201), f"status {st}")
+        st, hits = rpc("content_search_v2", {"p_phone": phone, "p_terms": [MARKER],
+                                             "p_limit": 100}, key)
+        hids = {h["source_id"] for h in (hits or [])} if isinstance(hits, list) else set()
+        check("ENTITLED member retrieves the restricted transcript chunk (#101)",
+              f"vidchunk_{ts}" in hids, f"ids {sorted(hids)[:6]}")
+        curl("DELETE", f"{BASE}/video_access?video_id=eq.feedfacefeedfacefeed1001", key,
+             profile_hdr=["Content-Profile: digest"])
+        st, hits2 = rpc("content_search_v2", {"p_phone": phone, "p_terms": [MARKER],
+                                              "p_limit": 100}, key)
+        h2 = {h["source_id"] for h in (hits2 or [])} if isinstance(hits2, list) else set()
+        check("grant revoked -> chunk gone, even with include_restricted",
+              f"vidchunk_{ts}" not in h2
+              and f"vidchunk_{ts}" not in {h["source_id"] for h in (rpc(
+                  "content_search_v2", {"p_phone": phone, "p_terms": [MARKER],
+                                        "p_limit": 100, "p_include_restricted": True},
+                  key)[1] or [])},
+              "the consent flag alone must not expose a video_access chunk")
+        st, un = rpc("video_search", {"p_phone": phone, "p_query": f"deckonly{MARKER}",
+                                      "p_limit": 20}, key)
+        check("revoked asker no longer matches restricted contents",
+              not any(v["title"] == f"REDTEAM Restricted Video {MARKER}" for v in (un or [])))
+        st, _a = rpc("content_search_v2", {"p_phone": phone, "p_terms": [MARKER]}, ANON_KEY)
+        check("anon denied on content_search_v2 (video_access era)", st in (401, 403, 404),
+              f"status {st}")
+
         st, vids = rpc("video_search", {"p_phone": "19999999999", "p_query": MARKER}, key)
         check("video_search unknown phone = zero rows", isinstance(vids, list) and not vids)
         st, _b = rpc("video_search", {"p_phone": phone, "p_query": MARKER}, ANON_KEY)

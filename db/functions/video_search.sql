@@ -7,6 +7,7 @@ CREATE OR REPLACE FUNCTION digest.video_search(p_phone text, p_query text DEFAUL
 AS $function$
 declare
   v_n int; v_atid text; v_q tsquery; v_strict tsquery; v_vec extensions.vector(1024);
+  v_my_videos text[];
 begin
   if p_at_member_id is not null then
     select count(*) into v_n from digest.member_attributes mz where mz.at_member_id = p_at_member_id and digest.is_active_member_status(mz.membership_status);
@@ -22,6 +23,10 @@ begin
   if p_at_member_id is not null and v_atid is null then v_atid := p_at_member_id; end if;
   if v_atid is null then return; end if;
 
+  -- #101: which restricted videos THIS asker may see
+  select coalesce(array_agg(distinct va.video_id), '{}') into v_my_videos
+    from digest.video_access va where va.at_member_id = v_atid;
+
   if nullif(trim(coalesce(p_query, '')), '') is not null then
     v_q := digest.expertise_query(p_query);
     v_strict := plainto_tsquery('english', p_query);
@@ -34,7 +39,8 @@ begin
   return query
   with base as (
     select v.*,
-           (v.access_restriction = 'restricted') as restricted,
+           (v.access_restriction = 'restricted'
+            and not (v.video_id = any(v_my_videos))) as restricted,
            to_tsvector('english',
              concat_ws(' ', v.title,
                             array_to_string(coalesce(v.speaker_names, '{}'), ' '),
@@ -71,7 +77,7 @@ begin
          end,
          case when f.restricted then null else left(f.cliff_notes, 2000) end,
          case when f.restricted then null else f.summary end,
-         case when f.restricted then null else
+         case when f.access_restriction = 'restricted' then null else
            (select jsonb_agg(jsonb_build_object('name', fl.file_name, 'kind', fl.file_kind, 'key', fl.file_key)
                              order by fl.ordinal)
               from digest.video_files fl
@@ -80,7 +86,7 @@ begin
          digest.member_video_url(f.video_id),
          ((case when f.kw_rank > 0 then 1.0/(60 + f.kw_pos) else 0 end)
           + (case when f.vec_dist is not null then 1.0/(60 + f.vec_pos) else 0 end))::real,
-         f.restricted
+         (f.access_restriction = 'restricted')
     from fused f
    where (v_q is null
           or f.kw_rank > 0
