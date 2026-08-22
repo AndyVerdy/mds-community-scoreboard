@@ -49,6 +49,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#104** | Adjacent-turn topic lag | 🔴 S1 | S-M | ✅ **VERIFIED: rerun of all 3 original fail-chains with recreated adjacency = 3/3 on-topic PASS** | ⛔ rides the Millie promote — **root cause: FC caught all 3, Gate Verdict pass-postfilter neutralized the catch (topic-mismatch is not a fact-claim); fix = off_topic field in FC rubric + non-filterable in Gate Verdict (regenerate, cap 2). Probe: exact failing sequence now on-topic, off_topic field live in FC output, gate 263/exit 0. Bonus same session: load_speakers.py --rescan (guest-becomes-member promotion in place, 27 checked/0 due)** |
 | **#105** | 🔐 Verify Meta's webhook signature (`X-Hub-Signature-256`) on every inbound — filed from #97's final review (Andy OK 2026-08-22) | 🟡 S2 | S | — | ⏸ next session, BEFORE any wide intros announcement |
 | **#106** | 🙈 Staff / non-member records must never surface in member-facing lists (event_who names, who-to-meet, intro picker) — Andy 2026-08-22: "make sure I'm not searchable" | 🟡 S2 | S | SQL-verified exposure map | ⏸ next session (test row already purged) |
+| **#107** | 🗣️ Millie-only self-name (Format Reply PS still says Olivia) + who-to-meet ends with "connect you with one of them?" Yes/No buttons → Yes = intro picker (Andy 2026-08-22: "Millie and only Millie — official name"; "ask if he would like to connect… if yes provide a list") | 🔴 S1 | S-M | — | 🔨 NOW (Andy's go) — staging → Andy promotes |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -187,6 +188,19 @@ as two people across videos. **Baseline measured 2026-08-21:** `videos_catalog.s
 raw strings only — 413/1,033 videos carry names, 239 distinct raw names, 185 exact-match a member
 record by full name, 54 don't (guests/partners/spelling drift); zero links exist today. The other
 620 videos carry speakers only inside title/description text.
+
+### #107 · Millie-only self-name + who-to-meet closes with a Yes/No intro offer that opens the picker
+**🔴 S1 · size S-M — filed 2026-08-22 (Andy, after seeing Aaron Biner's real reply on his phone): "She must call her Millie — Millie and only Millie, it's an official name" · "ask if he would like to connect with someone Yes/No button and if yes, then provide a list with who you would like to send a request" · "limit message if necessary".**
+
+> **In plain words:** the first-contact PS still introduces her as Olivia (prod, Format Reply), and who-to-meet answers are too long and end in a statement, so the Yes/No buttons never appear — and nothing invites the member into the intro flow.
+
+*As a member who just got who-to-meet names, I'm asked "Would you like me to connect you with one of them?" with Yes / No buttons; Yes shows me the list to pick from; Millie is the only name she ever uses for herself.*
+
+**Verified on prod 2026-08-22 (Format Reply node, post-promote snapshot `prod_2026-08-22T041121Z`):** buttons fire only when the reply is ≤1,024 chars AND ends with a short offer matching `OFFER_TAIL` (e.g. "Would you like me to … ?", ≤80 chars to the "?") AND no image/file; the first-contact PS (`_PS: I am Olivia, the MDS assistant (beta)…_`) is appended AFTER the offer, breaking the tail; Aaron's real reply = 1,180 chars + PS → text only. Other "Olivia" strings in prod nodes are internal (comments, transcript labels `Olivia:` used by Plan Request parsing, Slack notify title, router system prompt).
+
+**Build:** ① Format Reply: PS → Millie; when a reply is button-eligible, place the PS as the FIRST line (offer stays last) — never drop the buttons for the PS. ② Answer Seed: who-to-meet answers ≤ ~850 chars; when the asker is a registered attendee and ≥1 match was shown, END with exactly "Would you like me to connect you with one of them?"; never offer intros to non-attendees (pilot refusal); "Yes" after that offer → `member_intro` with no target → present the pick list + "Who would you like me to send a request to?"; a named answer → `member_intro{target_name}`. ③ Plan Request: make sure a bare "Yes" after the intro offer reaches the LLM lane (no plan replay of the people op). ④ Router system prompt "router for Olivia" → Millie; internal labels untouched (documented). Staging probes as a registered attendee (silent lane, cleanup): reply ≤1,024 + ends with the offer + `interactive.type='button'` in Format Reply output; "Yes" → member_intro picker call in the execution; name → request path (refused/dry by design, zero sends). Gate EXIT 0 · snapshot · Andy promotes.
+
+**Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
 
 ### #106 · Staff and non-member records never surface in member-facing lists
 **🟡 S2 · size S — filed 2026-08-22 (Andy, during #97's prod E2E: "I don't want people to see me as an attendee… make sure I'm not searchable. Verify in Supa, don't trust your memory")**
