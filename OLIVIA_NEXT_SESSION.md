@@ -28,6 +28,32 @@
 > `X-Olivia-Audit` header (never a p_limit heuristic — that silenced a real lane) ④ the E2E
 > canary pattern: temp registration row, probe, DELETE same session.
 
+## STATE 2026-08-22 (SESSION CLOSING — #97 BUILT + REVIEWED, READY FOR ANDY'S PROMOTE)
+**#97 brokered intros: 7/7 tasks + final whole-branch review + 2 fix waves, all re-reviewed clean.**
+LIVE on prod: route `/api/olivia/intro` (mds-digest-web `535a23a`, Render) · `olivia_intros` v2 +
+`late_taps` · `Intro Sweep` on Reminder Sender `QhJw46Mr7LAP8fdz` (minute tick, exec 96624 clean).
+STAGING `bqHstPDi84uOhTCJ` carries the tap branch (C1 binds taps to `consent_wamid`, C3 fail-open)
++ `member_intro` tool — **PROMOTE = Andy (`python3 scripts/olivia_wf.py promote`, lock RELEASED),
+T4+T5 together**, then one real tap E2E closes the ticket (Andy is NOT Summit-registered → canary
+registration for his test, or an eligible member tests). Rulings 2026-08-22: accept-is-final ·
+Eugene row 2 set `declined` (his last tap) · non-attendee wording = Summit-PILOT line, never
+"register" · #105 webhook-signature ticket filed (Andy: file + ship as own ticket, next session,
+before any wide announcement). Reports: `OLIVIA_97_BROKERED_INTROS_REPORT.md` (Andy, listenable) ·
+`OLIVIA_97_INTROS_FOR_EUGENE.md` + `_SHORT` (4,587 chars) · artifact
+https://claude.ai/code/artifact/446286fc-411e-4e78-981e-9e858efa81d2. Full close block on the board.
+SDD ledger `.superpowers/sdd/2026-08-20-brokered-intros-full-build/progress.md` (gitignored scratch;
+secrets scrubbed). ⚠️ Scorecard main has ~15 unpushed commits from 3 parallel agents (#103, MotM,
+#97) — push is Andy's/next session's call. Lesson saved: check-first before "add env var"; doc
+claims about where a credential lives get a live probe.
+
+### NEXT SESSION QUEUE (brief Andy, WAIT for go)
+1. **#97 close-out:** after Andy's promote → real tap E2E (canary reg for Andy) → close block
+   "E2E ✅", release notes line, retire the SDD workspace.
+2. **#105** webhook signature (spec on the board) — before any wide intros announcement.
+3. #103 open rungs (other agent) · #102 brainstorm · Millie promote (rides the same promote) · smoke
+   partials · <2024 transcripts decision · sprint-close pair.
+
+### (previous state below)
 ## STATE 2026-08-21 EVE (SESSION PAUSED mid-ticket — Andy: "i need to go, pause")
 **#97 BROKERED INTROS BUILD IN FLIGHT — 4.5 of 7 plan tasks done.** Eligibility LOCKED by Andy
 ("lock them as-is": both sides Millie users + Summit-registered `recrATwhUDA55iQN5`; <30d parked).

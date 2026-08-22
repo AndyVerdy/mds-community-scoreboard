@@ -2,6 +2,21 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+- **2026-08-22 (night, CLOSE) · Olivia · #97 brokered intros BUILT + REVIEWED — ready for Andy's promote.**
+  Resumed from the SDD ledger: T5 review clean (+ fallback proven with a REAL name via decline-guard,
+  execs 96305/96307) · T6 sweep tick live on `QhJw46Mr7LAP8fdz` (exec 96352, backdated row expired,
+  Andy's phone delivered; POC script retired) · T7 gate 263→266 + handbook (staging caveats after
+  review) · FINAL whole-branch review (opus): strong but NOT ready — C1 tap bound to newest-pending
+  not the tapped template · C2 Eugene's real Accept-then-Decline undefined · C3 strict IF errors when
+  route down · I1-I10 · **fix wave** (route `5878787`, migration `late_taps`, staging nodes; probes
+  96540/96554/96560/96573/96586) → re-review: all addressed, 2 NEW sweep defects → **fix wave 2**
+  (`535a23a`; failed notice keeps row pending; stale claims reclaimed) → re-review: READY. Andy's
+  rulings: accept-is-final · Eugene row 2 = declined · no "register for the Summit" invite (pilot
+  line, `938c175`) · #105 webhook signature filed. Secret leak in 3 subagent reports caught by the
+  harness → scrubbed, gitignored, never committed. Reports + artifact for Andy/Eugene written.
+  One killed agent (interrupt) re-dispatched cleanly from the ledger. Lock released. NEXT: Andy
+  `promote` (T4+T5 together) → real tap E2E (canary reg for Andy) → close.
+
 - **2026-08-21 (eve, PAUSED) · Olivia · #97 brokered-intros full build 4.5/7 tasks — resume from the SDD ledger.**
   Andy's go after locking Eugene's rules as-is (both sides Millie users + Summit `recrATwhUDA55iQN5`).
   Prereq myth killed: mds-digest-web env lives on RENDER (plan said Vercel; META_WA_* pre-existed —
