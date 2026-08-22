@@ -259,6 +259,12 @@ def upsert_speaker(w, display, kind, at_id, pid, note, go_id, dry, conflicts):
     ex = w.speakers.get(c)
     if ex:
         sid = ex["speaker_id"]
+        # MEMBER WINS, ALWAYS (Andy 2026-08-21): a speaker whose kind is member —
+        # AT DB is the authority — is never switched to partner/guest by any rung.
+        # Members may become partners and vice versa in LIFE, but the identity row
+        # keeps kind=member; partner-ness lives in affiliation_partner_id.
+        if ex["kind"] == "member" and kind != "member":
+            return sid
         # id-rung evidence outranks a name-rung guess; conflicts are reported.
         stronger = note.startswith("groupos") and not str(ex.get("note") or "").startswith("groupos")
         if ex["kind"] != kind or (at_id and ex.get("at_member_id") != at_id):
