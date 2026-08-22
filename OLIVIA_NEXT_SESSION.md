@@ -52,7 +52,7 @@ claims about where a credential lives get a live probe.
 
 ### NEXT SESSION QUEUE (brief Andy, WAIT for go)
 1. **#109** requester-side notices as templates (check `python3 scripts/olivia_intro_templates_109.py status` → APPROVED first; then route change; before any announcement).
-2. **#108** (to file) attendees ∩ chat membership / business model tool — Belen's 'resellers attending' questions were answered wrong; truth table in the 08-22 log.
+2. **#108** (filed) attendees ∩ chat membership / business model tool — Belen's 'resellers attending' questions were answered wrong; truth table in the 08-22 log.
 3. **#106** Staff/non-member records never surface in member-facing lists (staff attendees like Belen must stay usable as requesters) · **#105** webhook signature · **#110** intro-tap history.
    (#97 CLOSED: promoted + prod E2E proven; release-notes line still to post at sprint close.)
 3. #103 open rungs (other agent) · #102 brainstorm · Millie promote (rides the same promote) · smoke
