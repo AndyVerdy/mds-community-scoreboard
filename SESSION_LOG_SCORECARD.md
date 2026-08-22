@@ -6,6 +6,36 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-22 (early) — reach is NOT in the GraphQL (probe answered it), and the auto-harvest was stalling at 1 post. Both fixed in v0.93, unproven until tomorrow's run.
+
+**Two runs today (Andy stopped there — enough FB signal for one day).** Run 2 produced the evidence:
+
+**1. Reach — probe came back EMPTY.** v0.91's `reachProbe` scanned up to 400 buffered GraphQL responses
+for any `*reach*` / `impression*count` key and returned `{}`. So the per-post "N post reach" an admin
+sees is **rendered text, not data in the payload we capture** — the whole v0.91 approach was wrong.
+**v0.93 reads the DOM instead** (`readReach()` inside `manualCaptureMain`): match the `N post reach`
+label, climb ≤12 levels to the story container, take the post id from its `/posts/<id>` anchor, handle
+K/M suffixes. Read-only, no clicks; a miss just leaves that post without a number. Payload now ships
+`reach: {postId: n}` instead of `reachProbe`. **Still unproven — first real map arrives tomorrow.**
+Reminder of why this matters: Insights `views` only covers the top-99 of a 28-day window, DOM reach
+covers every post we scroll past.
+
+**2. Auto-harvest stalled at 1 post** (run 2 status: `insights + feed (1 posts, stalled) + comments`).
+Root cause: the stall rule stopped after **2** consecutive flat steps, but FB paginates the chronological
+feed slower than the driver scrolls, so early flat reads are NORMAL. Fixed: never judge before step 4,
+require **3** flat steps, never stall while holding <3 posts, in-page settle 900ms → **1800ms**, cap
+9 → **14** steps, and `shelled` now needs 6 steps at zero (was 3 steps at ≤2). The 48h window-edge is
+the intended exit again. Yesterday's 4-post harvest was the same bug, milder.
+
+**Also today:** the hollow-post outage (see entry above) — ext v0.92 reloaded and live.
+
+**Next session:** Andy reloads to v0.93 **before** the scheduled fire (the alarm runs whatever worker is
+loaded — v0.92 would repeat the thin harvest and ship no reach). Then: confirm harvest depth ≈ the day's
+real post count, read the `reach` map, and wire a `reach` column if it looks sane. Airtable ASK/GIVE
+labelling (3,824 posts joinable by post_id) still awaiting Andy's go — no Supabase writes made.
+
+---
+
 ## 2026-08-21 (late) — OUTAGE: one hollow post killed the whole daily chain. Root-caused, fixed in 3 layers, day recovered.
 
 **Symptom:** 3x Slack warning "FB feed load FAILED for `mds_feed (30).json`" on the scheduled run.
