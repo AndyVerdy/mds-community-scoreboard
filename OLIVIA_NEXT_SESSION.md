@@ -29,7 +29,7 @@
 > canary pattern: temp registration row, probe, DELETE same session.
 
 ## STATE 2026-08-22 (SESSION CLOSED — #97 PROMOTED + PROD E2E PROVEN; #105/#106 filed)
-**PROMOTED 04:11Z (Andy): prod `7e4be40a` (#97) → then #107 PROMOTED ~05:24Z (Andy): prod `8f48fdb8` — Millie-only PS, who-to-meet Yes/No intro offer → picker, no-replay flag. Belen's identity split fixed (registration + roster row → her Staff record) so she can use Summit lanes + intros. PROD E2E: exec 96653 Accept tap → row 13 accepted/tap → 2 texts delivered to Andy's phone, 0 LLM rows. Andy's visibility ask → #106 filed (SQL-verified: search lanes exclude Staff; event lanes don't; `test-andy-8153` purged). Andy's lock: `python3 scripts/olivia_wf.py unlock` when done.**
+**PROMOTED 04:11Z (Andy): prod `7e4be40a` (#97) → #107 ~05:24Z prod `8f48fdb8` → #107b/c ~07:10Z prod `25ceefe1` (79 nodes): post-Yes = WhatsApp LIST picker (route's exact ids) · suggestions NEVER filtered/shortened (Andy) · buttons always (≤1024 inline, >1024 follow-up button message) · first-contact PS first when offer present · intro-tap path silent-gated (SELFTEST). #109 templates SUBMITTED (accepted/declined/lapsed, PENDING) — route logic next session (free-form requester notices die outside 24h window). #110 filed (tap turns not saved to history). Belen's identity split fixed (registration + roster row → her Staff record) so she can use Summit lanes + intros. PROD E2E: exec 96653 Accept tap → row 13 accepted/tap → 2 texts delivered to Andy's phone, 0 LLM rows. Andy's visibility ask → #106 filed (SQL-verified: search lanes exclude Staff; event lanes don't; `test-andy-8153` purged). Andy's lock: `python3 scripts/olivia_wf.py unlock` when done.**
 
 ### (pre-promote state)
 ## STATE 2026-08-22 (pre-promote — #97 BUILT + REVIEWED)
@@ -51,8 +51,9 @@ secrets scrubbed). ⚠️ Scorecard main has ~15 unpushed commits from 3 paralle
 claims about where a credential lives get a live probe.
 
 ### NEXT SESSION QUEUE (brief Andy, WAIT for go)
-1. **#106** Staff/non-member records never surface in member-facing lists (Andy's privacy ask, SQL-verified map on the board) — small, S2.
-2. **#105** webhook signature (spec on the board) — before any wide intros announcement.
+1. **#109** requester-side notices as templates (check `python3 scripts/olivia_intro_templates_109.py status` → APPROVED first; then route change; before any announcement).
+2. **#108** (to file) attendees ∩ chat membership / business model tool — Belen's 'resellers attending' questions were answered wrong; truth table in the 08-22 log.
+3. **#106** Staff/non-member records never surface in member-facing lists (staff attendees like Belen must stay usable as requesters) · **#105** webhook signature · **#110** intro-tap history.
    (#97 CLOSED: promoted + prod E2E proven; release-notes line still to post at sprint close.)
 3. #103 open rungs (other agent) · #102 brainstorm · Millie promote (rides the same promote) · smoke
    partials · <2024 transcripts decision · sprint-close pair.
