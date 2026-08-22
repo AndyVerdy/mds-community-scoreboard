@@ -2,6 +2,8 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-21 (eve, paused) · **Olivia** · **#97 brokered intros build 4.5/7**: rulings locked · route deployed (`e6f8b48`) + matrix clean · staging tap branch (prod drops taps today!) + member_intro tool · T5 review pending, lock held, unpromoted → `SESSION_LOG_OLIVIA.md`
+
 - 2026-08-21 (day) · **Olivia** · smoke settled **95/100, 0 fails** (#104 fixed: FC off_topic + Gate Verdict non-filterable) · **#103 reopened by Andy (field-metric false close) + rebuilt 40%→81%** (2026 91%; participants role+talk_seconds from Zoom cues; partner dimension; 418 unreachable-for-entitled Zoom chunks fixed; weekly chain wired) → `SESSION_LOG_OLIVIA.md`
 - 2026-08-21 (overnight) · **Olivia** · **ALL GREEN by morning**: 2025 transcripts DONE (232 vids/$33.42/6,429 chunks/232 summaries) · Millie staged (fact-check name veto fixed) · **video_search_v2 entitlement hole caught+fixed** (live lane missed by #101) · #103 speaker sync built+closed (239 entities, 212 email-linked) · BIG SMOKE: bank 90/100 effective + slice 11/11 · #104 filed → `SESSION_LOG_OLIVIA.md`
 - 2026-08-20 (video day, CLOSE) · **Olivia** · **#100 + #101 CLOSED**: AAI transcripts for all 161 2026 videos ($26.23) · identity aliases (5,763; 10/10 mismatches fixed) · video_access 34,236 real grants · content_search_v2/video_search entitlement · 2,730 chunks · 96 in-session summaries · gate 263/exit 0 → `SESSION_LOG_OLIVIA.md`

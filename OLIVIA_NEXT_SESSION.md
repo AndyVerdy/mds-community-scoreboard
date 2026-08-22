@@ -28,6 +28,24 @@
 > `X-Olivia-Audit` header (never a p_limit heuristic — that silenced a real lane) ④ the E2E
 > canary pattern: temp registration row, probe, DELETE same session.
 
+## STATE 2026-08-21 EVE (SESSION PAUSED mid-ticket — Andy: "i need to go, pause")
+**#97 BROKERED INTROS BUILD IN FLIGHT — 4.5 of 7 plan tasks done.** Eligibility LOCKED by Andy
+("lock them as-is": both sides Millie users + Summit-registered `recrATwhUDA55iQN5`; <30d parked).
+Prereq resolved: env was on RENDER all along (plan said Vercel — wrong; both META_WA_* pre-existed).
+DONE+reviewed: T1 ledger v2 (migration `olivia_intros_v2_20260820`, commit `9f380b1`) · T2 route
+`/api/olivia/intro` (mds-digest-web `e6f8b48` DEPLOYED, 16/16 rulings, sweep isolation +
+recency picker) · T3 live matrix 9/10 PASS zero real sends, DB baseline restored, SELFTEST
+not.like proven 280==280 · T4 staging tap branch (7 nodes + Log Inbound button fix — PROD DROPS
+Accept/Decline taps TODAY incl. Eugene's POC reject; execs 96072/96082; blast radius proven safe).
+T5 implementer DONE (member_intro tool live on staging, exec 96162 chain proof, gate 264 EXIT 0)
+— **REVIEW PENDING** + 3 open concerns (Plan Request regex swallows "connect me with someone" ·
+picker renders prose not LIST · send branch live-proof deferred to post-promote tap).
+**RESUME: SDD ledger `.superpowers/sdd/2026-08-20-brokered-intros-full-build/progress.md`** —
+dispatch T5 reviewer, then T6 sweep tick, T7 close. ⚠️ staging lock HELD (claude, expires
+2026-08-22T01:25Z); staging carries T4+T5 UNPROMOTED; sweep of POC row 2 will message Andy the
+expiry line once T6 ships past 2026-08-27. Andy's promote covers T4+T5, then ONE real tap E2E.
+
+### (previous close below)
 ## STATE 2026-08-21 DAY (SESSION CLOSED — Andy drove speaker work; smoke settled at 95/100)
 **Smoke rerun: 5 of 10 non-PASS flipped → 95/100 effective, 0 fails** (#104 fixed at the enforcement
 layer: FC `off_topic` field + Gate Verdict non-filterable; all 3 original fail-chains reproduced

@@ -2,6 +2,19 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+- **2026-08-21 (eve, PAUSED) · Olivia · #97 brokered-intros full build 4.5/7 tasks — resume from the SDD ledger.**
+  Andy's go after locking Eugene's rules as-is (both sides Millie users + Summit `recrATwhUDA55iQN5`).
+  Prereq myth killed: mds-digest-web env lives on RENDER (plan said Vercel; META_WA_* pre-existed —
+  memory `feedback_render_env_check_before_add`). Shipped+reviewed: T1 migration `olivia_intros_v2_20260820`
+  (`9f380b1`) · T2 route /api/olivia/intro (`e6f8b48` deployed; eligibility woven; sweep notify-before-expire;
+  recency picker) · T3 matrix 9/10 PASS 0 real sends (SELFTEST doubled not.like proven 280==280; cap/decline/
+  canary rows cleaned to exact baseline) · T4 staging tap branch execs 96072/96082 (Log Inbound DROPPED all
+  template button taps — prod never processed Eugene's POC reject; fix scoped safe vs full payload history).
+  T5 implementer done (member_intro seed tool; exec 96162; gate 264 EXIT 0) — review pending + 3 concerns
+  (Plan Request regex steals "connect me with someone" · picker prose-not-LIST · send branch proof = Andy's
+  post-promote tap). Staging lock HELD to 08-22T01:25Z; T4+T5 unpromoted. Next: T5 review → T6 sweep tick →
+  T7 gate+docs+close → Andy promote → real tap E2E.
+
 - **2026-08-20 (CU doc revision) · Olivia · the ClickUp handbook copy (`2531q-103317`) fully regenerated — all 20 pages.**
   Andy: "it's very outdated. Revise every single page in detail. Check all session logs from
   sprint 2 onward." Done: read the full stream log (Jul 21 → today, headers + load-bearing
