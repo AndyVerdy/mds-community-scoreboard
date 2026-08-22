@@ -38,6 +38,13 @@ digest.content_lookup — the only two operations Olivia has):
      preview images (thumbnail_url / partner logo_url) MAY be stored and shown (Andy
      2026-07-30) but must be images, never content files; unknown phone = zero rows;
      anon denied on the RPC and on videos_catalog.
+ 13. Intro route (#97 Brokered Intros, digest.olivia_intros): a Next.js route
+     (mds-digest-web src/app/api/olivia/intro/route.ts), not a Supabase RPC — policy
+     lives in git, not the DB, so it gets its own three checks: the route is
+     secret-gated (X-Olivia-Secret / Bearer, same door as /schedule) and refuses an
+     unauthenticated call; an asker phone with no member match gets no `pick` and no
+     send; and a dry-run request/pick probe never lets a phone number or a wa.me link
+     reach the caller before status='accepted' — consent always comes first.
 
 Canary rows are inserted with source='redteam_canary' and always deleted afterwards
 (pre-cleaned on start too, so a crashed run can't poison the index).
@@ -57,6 +64,7 @@ import time
 
 ENV_PATH = "/Users/Born/mds-digest-web/.env.local"
 BASE = "https://nadtudwuwjhckotrngzn.supabase.co/rest/v1"
+INTRO_URL = "https://digest.mds.co/api/olivia/intro"  # #97 — policy lives in this route, not the DB
 # anon key is public by definition (ships in every browser page)
 ANON_KEY = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
             "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hZHR1ZHd1d2poY2tvdHJuZ3puIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxODM5MTQsImV4cCI6MjA5Mzc1OTkxNH0."
@@ -74,7 +82,7 @@ def check(name, ok, detail=""):
         failures.append(name)
 
 
-def load_key():
+def load_env():
     env = {}
     with open(ENV_PATH) as f:
         for line in f:
@@ -82,7 +90,22 @@ def load_key():
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
                 env[k] = v.strip().strip('"').strip("'")
-    return env["SUPABASE_SECRET_KEY"]
+    return env
+
+
+def load_key():
+    return load_env()["SUPABASE_SECRET_KEY"]
+
+
+def load_olivia_secret():
+    # mirrors src/app/api/olivia/intro/route.ts:39 — process.env.OLIVIA_SCHEDULE_SECRET
+    # || process.env.OLIVIA_IOS_SECRET. Never printed/logged — only ever placed in an
+    # Authorization header on an outbound request.
+    env = load_env()
+    secret = env.get("OLIVIA_SCHEDULE_SECRET") or env.get("OLIVIA_IOS_SECRET")
+    if not secret:
+        raise KeyError("OLIVIA_SCHEDULE_SECRET/OLIVIA_IOS_SECRET not set in " + ENV_PATH)
+    return secret
 
 
 def curl(method, url, key, body=None, profile_hdr=None):
@@ -127,6 +150,7 @@ def main():
     ap.add_argument("--phone", default="17866578153", help="a real matched member phone to probe as")
     args = ap.parse_args()
     key = load_key()
+    olivia_secret = load_olivia_secret()
     phone = args.phone
 
     # the member's real chats (via the retrieval path itself would be circular — read members)
@@ -1473,6 +1497,36 @@ def main():
                          key, profile_hdr=["Accept-Profile: digest"])
         check("video canaries cleaned up",
               isinstance(left5, list) and not left5, f"catalog left {left5}")
+
+    # 13. Intro route (#97 Brokered Intros) — a Next.js route, not a Supabase RPC, so it
+    # gets its own three checks against the LIVE route rather than the retrieval-canary
+    # apparatus above. No side effects: check 2 returns before any DB write (unknown
+    # asker), and check 3's dry_run + nonsense target_name never resolves to a single
+    # match, so it never reaches a write either — safe to run against prod every time.
+    print()
+    print("— intro route (#97) —")
+    st, body = curl("POST", INTRO_URL, "", body={"op": "request", "phone": phone})
+    check("intro route denies a request with no valid secret (401)", st == 401, f"status {st}, body {body}")
+
+    st, body = curl("POST", INTRO_URL, olivia_secret, body={"op": "request", "phone": "19999999999"})
+    has_pick = isinstance(body, dict) and "pick" in body
+    note = body.get("note", "") if isinstance(body, dict) else ""
+    check("intro request from an unrecognized phone gets no pick and no send (asker check)",
+          st == 200 and not has_pick and "asker is not a recognized member" in note,
+          f"status {st}, body {body}")
+
+    st, body = curl("POST", INTRO_URL, olivia_secret,
+                    body={"op": "request", "phone": phone, "target_name": "Zzz Nobody", "dry_run": True})
+    raw = body if isinstance(body, str) else json.dumps(body)
+    # No digit-run of 8+ (a phone number) and no wa.me link may leave the route before
+    # status='accepted' — true whichever branch answers (asker/target ineligible, no
+    # recent recommendation, picker, or the dry-run confirmation itself: none carry a
+    # full phone). Andy is not Summit-registered today (2026-08-21), so this currently
+    # returns the requester-ineligibility line — the assertion holds on that line too,
+    # and must keep holding once his eligibility flips.
+    check("intro dry-run response carries no phone digit-run and no wa.me link",
+          st == 200 and not re.search(r"\d{8,}", raw) and "wa.me" not in raw,
+          f"status {st}, body {raw[:300]}")
 
     print()
     if failures:

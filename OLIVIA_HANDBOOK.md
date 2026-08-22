@@ -511,6 +511,14 @@ persona-driven rule adds the framing constraints (tailor silently · never recit
 area weak). Loop tool calls execute the v2s via the `EXEC_NAME` map in Attach Embedding — the
 model keeps the v1 names.
 
+### 7.5 Brokered intros (#97) — a sixth consumer, outside the lane table
+
+`digest.olivia_intros` reads the **equalizer log** (`olivia_recommendations`, §7.3) as its
+candidate filter: a member can only be introduced to someone Olivia actually recommended to
+*them*, in the last 30 days — never a cold match. It is not a `_v2` RPC lane like the five above
+(it writes, has its own state machine, and its own eligibility gate on top of the recommendation
+filter), so it keeps its own runbook entry rather than a row in the table: **§8.7**.
+
 ---
 
 ## 8. Runbooks
@@ -539,7 +547,7 @@ python3 scripts/olivia_wf.py unlock
 ### 8.2 The safety gate
 
 ```bash
-python3 scripts/olivia_leak_gate.py     # 255 checks, ~3 min, free
+python3 scripts/olivia_leak_gate.py     # 266 checks, ~3 min, free
 ```
 It inserts canary rows with every access rule and sensitivity, asks the real RPCs for them as
 several different members, and asserts what must *not* come back. It also verifies anon lockout,
@@ -603,6 +611,55 @@ to a stale seed and pulls comments for the wrong days. Then:
 3. Health signals: the alarm (pg_cron, every 5 min, Slack `#automation-tests`), the watchdog
    (launchd, covers the case where Supabase itself is down), and the tools-health dashboard.
 4. Rollback is one command (§8.1) and takes seconds. Use it early.
+
+### 8.7 Brokered intros (#97)
+
+One route owns the whole flow: `POST https://digest.mds.co/api/olivia/intro`
+(`src/app/api/olivia/intro/route.ts`, mds-digest-web) — secret-gated the same door as `/schedule`
+(`X-Olivia-Secret` or `Authorization: Bearer`, `OLIVIA_SCHEDULE_SECRET` → `OLIVIA_IOS_SECRET`).
+Policy lives in the route, in git, never in the DB. State machine: `digest.olivia_intros` (`id,
+requester_at_id, target_at_id, topic, status, consent_wamid, created_at, decided_at,
+decided_reason`), `status` CHECKed to `pending/accepted/declined/expired/unreachable`, one unique
+partial index capping the table at one `pending` row per requester→target pair.
+
+Four ops, one body shape (`{op, phone, ...}`):
+
+| op | trigger | does |
+|---|---|---|
+| `request` | `member_intro` tool (the loop, via Answer Tool — Appendix C) or a typed target-name reply | resolves the target from the asker's last-30d equalizer recommendations (§7.5); no single unambiguous match → returns `pick` (≤10 rows, most-recently-recommended first) instead of sending anything |
+| `pick` | WhatsApp interactive-LIST tap, `tap_id = intro_pick_<at_member_id>` | re-enters `request` with that member as the unambiguous target — same function, same JSON contract |
+| `tap` | WhatsApp button tap, `tap_text = Accept intro / Decline` | resolves the asker's newest `pending` row where they are the target, PATCHes `status`, messages both sides the verdict |
+| `sweep` | n8n cron tick (piggybacks the every-minute `Olivia — Reminder Sender`, `QhJw46Mr7LAP8fdz`, `onError: continueRegularOutput`) | expires `pending` rows older than 7 days: notifies the requester THEN marks `expired` — never the reverse, so a mid-row throw just leaves it `pending` for the next tick to retry (worst case one duplicate notice, never a silently stranded row) |
+
+**Rulings (Andy — enforced in the route, not in prompt text):**
+- **Eligibility, both sides, LOCKED 2026-08-21:** requester AND target must each be a Millie user
+  (≥1 real inbound turn in `olivia_messages`, SELFTEST/eval traffic excluded) *and*
+  Summit-registered (`event_registrations_live`, `SUMMIT_EVENT_ID = recrATwhUDA55iQN5` — never
+  name-match the events catalog). The picker pre-filters to eligible candidates only, so a tap
+  never lands on a refusal the pick itself should have screened out.
+- **Consent-first:** no phone number and no `wa.me` link reaches either side before
+  `status='accepted'`. The request-lane half (no digits / no `wa.me` before accept) is proven
+  live on every gate run (checks 13.1–13.3, §8.2). The accept-before-link ordering in `op:'tap'`
+  is enforced in code — `route.ts`'s PATCH to `status='accepted'` runs before either of the two
+  `waSend()` calls — and is not gate-exercised.
+- **Caps:** 3 pending requests per requester · 3 pings per target per rolling 7 days.
+- **Decline is final:** a declined requester→target pair is refused forever, no retry — checked
+  before any cap or reachability logic.
+- **7-day expiry, zero reminders:** a `pending` row outstanding past 7 days is swept (`sweep`
+  above); Olivia never nags either side while a request is open.
+- **Unreachable, every-member-always:** a target with no phone on file gets a real
+  `status='unreachable'` row, never a silent skip, and the asker is told plainly with a
+  human-routed alternative offered.
+
+**Tap interception, before the LLM** (staged 2026-08-21 on `bqHstPDi84uOhTCJ` — promotion to prod
+pending Andy's `promote`; until then prod drops template button taps): two nodes ahead of
+`Find Member` in the main webhook workflow (Appendix C, new **Intro taps** row) — `Intro Tap?`
+(Code node, right after `Drop Duplicates`) flags an Accept/Decline button or an `intro_pick_*`
+list tap; `Intro Route (HTTP)` POSTs `op:'tap'` and either replies directly (`handled:true`) or
+falls through to `Find Member` unchanged (`handled:false` — an unrelated tap keeps working). Wired
+**first** in the fan-out (v1 branch-order rule, §14). The loop reaches the same route through a
+tool instead, same staging caveat: `member_intro` sits in the Answer Tool name-dispatch table next
+to `event_*` and `org_docs` (Appendix C, "The loop" row), mapped to `{op:'request', phone}`.
 
 ---
 
@@ -823,8 +880,9 @@ relative ask** — pass the offset and do the arithmetic server-side.
   ledger (v2). Personalization is live end-to-end.
 - ~~**Tap buttons are not built.**~~ **SUPERSEDED by #38 (2026-08-04)** — yes/no offers are tap
   buttons. Remaining nuance: template quick-reply taps arrive as `msg_type='button'` and are NOT
-  persisted to `olivia_messages` (only `olivia_webhook_events` holds them); the #97 build adds the
-  workflow branch that swallows intro taps before the LLM lane.
+  persisted to `olivia_messages` (only `olivia_webhook_events` holds them); **#97 adds** the
+  `Intro Tap?` → `Intro Route` branch (§8.7, Appendix C) that swallows intro taps before the LLM
+  lane.
 - **Transcripts have hard boundaries** (#70/#101): ALL 161 videos of 2026 now carry transcripts —
   Zoom for the 65 calls it hosted, AssemblyAI for the 96 in-person/hybrid rooms (#101). Nothing
   before 2026-01-01 yet; the 2025 batch is next (Andy's ruling). When a gap is reported the boundary
@@ -1018,13 +1076,14 @@ event_registrations_live = event_registrations
 |---|---|---|
 | **Entry** | `WA Verify (GET)`, `Respond Challenge`, `WA Inbound (POST)` | Meta webhook verification + the single inbound entry point. |
 | **Dedupe** | `Log Inbound` → `Claim Message (dedupe)` → `Drop Duplicates` | Non-text events branch off. Claim writes to `olivia_seen`; fails **open**. |
+| **Intro taps (#97)** | `Intro Tap?` → `Intro Route (HTTP)` | **Staged 2026-08-21 on `bqHstPDi84uOhTCJ` — promotion to prod pending Andy's `promote`; until then prod drops template button taps.** Not yet in the 69-node prod count above. Wired FIRST off `Drop Duplicates` (v1 branch-order rule, §14). Accept/Decline button taps and `intro_pick_*` list taps resolve here and reply directly — never reach the LLM loop. `handled:false` falls through to `Find Member` unchanged. Ops + rulings: §8.7. |
 | **Identity** | `Find Member` → `Resolve Member` → `Matched?` | Exactly-one-active-member or the generic path. Carries `airtable_id` (for stamping) and `at_member_id`. |
 | **Context** | `Load Recent Turns` → `Prep Context` | 24h history, cut at "reset", plus the previous retrieval plan for "yes" replay. |
 | **Fast feedback** | `Mark Read + Typing` → `Holding Trigger?` → `Fire Holding Timer` | **Wired FIRST in the fan-out on purpose** — n8n v1 runs branches depth-first, so this must precede routing or the read receipt lands *after* the answer. |
 | **Routing** | `Touch Olivia Stats`, `Route Request` (Haiku), `Fetch Chat Links`, `Plan Request` | `Plan Request` is the deterministic brain: ~40 overrides that outrank the router. |
 | **Retrieval** | `Embed Query` (Voyage) → `Fetch Summaries` → `Fetch Raw Matches` → `Verbatim?` | The "zeroth fetch", preloaded as guaranteed evidence. Both fetch nodes map `content_search` → `content_search_v2` at the last inch. |
 | **Canned lanes** | `Build Verbatim Digest` | Greeting, help, chats, opt-in/out, reset, ticket offer/create, contact refusal, verbatim digests — **no model call at all**. |
-| **The loop** | `Answer Seed` → `Answer Claude` → `Answer Parse` → `Answer Done?` → (`Voyage Embed` → `Attach Embedding` → `Answer Tool` → `Answer Merge` → back) | Max 5 rounds. `Answer Parse` injects `p_phone`; `Attach Embedding` swaps the execution name to v2. **`Answer Tool` dispatches by name:** `event_*` → the schedule route, `org_docs` → the kb route (both on digest.mds.co, policy in git), everything else → the Supabase RPC of the same name. |
+| **The loop** | `Answer Seed` → `Answer Claude` → `Answer Parse` → `Answer Done?` → (`Voyage Embed` → `Attach Embedding` → `Answer Tool` → `Answer Merge` → back) | Max 5 rounds. `Answer Parse` injects `p_phone`; `Attach Embedding` swaps the execution name to v2. **`Answer Tool` dispatches by name:** `event_*` → the schedule route, `org_docs` → the kb route, `member_intro` → the intro route (§8.7 — staged 2026-08-21 on `bqHstPDi84uOhTCJ`, promotion to prod pending Andy's `promote`; until then prod drops template button taps) — all three on digest.mds.co, policy in git — everything else → the Supabase RPC of the same name. |
 | **Fact gate** | `Claims?` → `Fact Check` (Haiku) → `Gate Verdict` → `Gate OK?` | Claim-free replies skip it. One regeneration allowed, then an honest refusal. Deterministic link gate + post-filters run inside `Gate Verdict`. |
 | **Delivery** | `Format Reply` → `Billing Nudge` → `Apply Nudge` → `Eval (silent)?` → `Send Reply (Meta)` | The eval branch skips Meta entirely. `Format Reply` converts markdown to WhatsApp formatting and extracts `[SEND_IMAGE:]` / `[SEND_FILE:]` markers. |
 | **Persistence** | `Save Conversation`, `Mark Welcomed`, `Set Olivia Opt-State` | Both turns saved with plan + member stamp. |
