@@ -2,7 +2,7 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
-- **2026-08-22 (night, CLOSE) · Olivia · #97 brokered intros BUILT + REVIEWED — ready for Andy's promote.**
+- **2026-08-22 (night, CLOSE) · Olivia · #97 brokered intros BUILT + REVIEWED + PROMOTED (Andy 04:11Z, prod `7e4be40a`) + PROD E2E PROVEN (exec 96653: Accept tap → row 13 accepted → 2 texts delivered to Andy, 0 LLM). #106 filed (Staff visibility: search lanes exclude, event lanes don't; `test-andy-8153` purged). Lock = Andy's, unlock pending.**
   Resumed from the SDD ledger: T5 review clean (+ fallback proven with a REAL name via decline-guard,
   execs 96305/96307) · T6 sweep tick live on `QhJw46Mr7LAP8fdz` (exec 96352, backdated row expired,
   Andy's phone delivered; POC script retired) · T7 gate 263→266 + handbook (staging caveats after

@@ -28,7 +28,11 @@
 > `X-Olivia-Audit` header (never a p_limit heuristic — that silenced a real lane) ④ the E2E
 > canary pattern: temp registration row, probe, DELETE same session.
 
-## STATE 2026-08-22 (SESSION CLOSING — #97 BUILT + REVIEWED, READY FOR ANDY'S PROMOTE)
+## STATE 2026-08-22 (SESSION CLOSED — #97 PROMOTED + PROD E2E PROVEN; #105/#106 filed)
+**PROMOTED 04:11Z (Andy): prod `7e4be40a`, 76 nodes, gate in-promote, bounce clean. PROD E2E: exec 96653 Accept tap → row 13 accepted/tap → 2 texts delivered to Andy's phone, 0 LLM rows. Andy's visibility ask → #106 filed (SQL-verified: search lanes exclude Staff; event lanes don't; `test-andy-8153` purged). Andy's lock: `python3 scripts/olivia_wf.py unlock` when done.**
+
+### (pre-promote state)
+## STATE 2026-08-22 (pre-promote — #97 BUILT + REVIEWED)
 **#97 brokered intros: 7/7 tasks + final whole-branch review + 2 fix waves, all re-reviewed clean.**
 LIVE on prod: route `/api/olivia/intro` (mds-digest-web `535a23a`, Render) · `olivia_intros` v2 +
 `late_taps` · `Intro Sweep` on Reminder Sender `QhJw46Mr7LAP8fdz` (minute tick, exec 96624 clean).
@@ -47,9 +51,9 @@ secrets scrubbed). ⚠️ Scorecard main has ~15 unpushed commits from 3 paralle
 claims about where a credential lives get a live probe.
 
 ### NEXT SESSION QUEUE (brief Andy, WAIT for go)
-1. **#97 close-out:** after Andy's promote → real tap E2E (canary reg for Andy) → close block
-   "E2E ✅", release notes line, retire the SDD workspace.
+1. **#106** Staff/non-member records never surface in member-facing lists (Andy's privacy ask, SQL-verified map on the board) — small, S2.
 2. **#105** webhook signature (spec on the board) — before any wide intros announcement.
+   (#97 CLOSED: promoted + prod E2E proven; release-notes line still to post at sprint close.)
 3. #103 open rungs (other agent) · #102 brainstorm · Millie promote (rides the same promote) · smoke
    partials · <2024 transcripts decision · sprint-close pair.
 
