@@ -18,6 +18,8 @@ USAGE
   python3 scripts/olivia_birthday_address_template.py preview
   python3 scripts/olivia_birthday_address_template.py create   # submit for review
   python3 scripts/olivia_birthday_address_template.py status
+  python3 scripts/olivia_birthday_address_template.py send --to 17866578153 \
+      --name Andy --address "..." --confirm SEND      # ONE test send
 """
 import json, subprocess, sys
 
@@ -70,6 +72,22 @@ def payload():
     }
 
 
+def send(tok, to, name, address, confirm):
+    """ONE test send. Nothing goes out without --confirm SEND; no --all path
+    exists in this script (a real rollout is its own build, with its own gate).
+    A 200 here is NOT delivery — read digest.olivia_sends for the truth."""
+    if confirm != "SEND":
+        sys.exit("refusing to send without --confirm SEND")
+    pnid = env("META_WA_PHONE_NUMBER_ID")
+    body = {"messaging_product": "whatsapp", "to": to, "type": "template",
+            "template": {"name": TEMPLATE_NAME, "language": {"code": LANG},
+                         "components": [{"type": "body", "parameters": [
+                             {"type": "text", "text": name},
+                             {"type": "text", "text": address}]}]}}
+    r = curl("POST", f"https://graph.facebook.com/v22.0/{pnid}/messages", tok, body)
+    print(json.dumps(r, indent=2))
+
+
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "preview"
     tok = env("META_WA_TOKEN")
@@ -90,7 +108,18 @@ def main():
                  tok)
         print(json.dumps(r, indent=2))
         return
-    sys.exit("usage: preview | create | status")
+    if cmd == "send":
+        import argparse
+        ap = argparse.ArgumentParser()
+        ap.add_argument("send")
+        ap.add_argument("--to", required=True)
+        ap.add_argument("--name", required=True)
+        ap.add_argument("--address", required=True)
+        ap.add_argument("--confirm", default="")
+        a = ap.parse_args()
+        send(tok, a.to, a.name, a.address, a.confirm)
+        return
+    sys.exit("usage: preview | create | status | send")
 
 
 if __name__ == "__main__":

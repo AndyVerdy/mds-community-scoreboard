@@ -1,0 +1,26 @@
+[
+  {
+    "i": 0,
+    "text": "reset",
+    "wamid": "wamid.SELFTEST_107e_T00_1787387596",
+    "ts": 1787387596,
+    "http": "200",
+    "persist_s": 6.3
+  },
+  {
+    "i": 1,
+    "text": "Who should I meet in Singapore?",
+    "wamid": "wamid.SELFTEST_107e_T01_1787387603",
+    "ts": 1787387603,
+    "http": "200",
+    "persist_s": 22.0
+  },
+  {
+    "i": 2,
+    "text": "Yes",
+    "wamid": "wamid.SELFTEST_107e_T02_1787387626",
+    "ts": 1787387626,
+    "http": "200",
+    "persist_s": 15.8
+  }
+]
