@@ -50,6 +50,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#105** | 🔐 Verify Meta's webhook signature (`X-Hub-Signature-256`) on every inbound — filed from #97's final review (Andy OK 2026-08-22) | 🟡 S2 | S | — | ⏸ next session, BEFORE any wide intros announcement |
 | **#106** | 🙈 Staff / non-member records must never surface in member-facing lists (event_who names, who-to-meet, intro picker) — Andy 2026-08-22: "make sure I'm not searchable" | 🟡 S2 | S | SQL-verified exposure map | ⏸ next session (test row already purged) |
 | **#107** | 🗣️ Millie-only self-name (Format Reply PS still says Olivia) + who-to-meet ends with "connect you with one of them?" Yes/No buttons → Yes = intro picker (Andy 2026-08-22: "Millie and only Millie — official name"; "ask if he would like to connect… if yes provide a list") | 🔴 S1 | S-M | — | ✅ **PROMOTED 2026-08-22 ~05:24Z (Andy) — prod `8f48fdb8`**: Millie PS (prepended when button-eligible) · who-to-meet ends with the exact offer + Yes/No buttons (96779) · Yes → member_intro, no plan replay (review caught the 500-char-trim defeat → `last_olivia_intro_offer` flag, proven 96864) · non-attendee no offer (96787) · gate 267 EXIT 0 |
+| **#109** | 📨 Requester-side intro notices must be TEMPLATES (accept / decline / 7-day lapse) — free-form text dies outside the 24h window (Meta 131047); found 2026-08-22 when Andy questioned the lapse promise | 🔴 S1 | S-M | templates `mds_intro_accepted` · `mds_intro_declined` · `mds_intro_lapsed` SUBMITTED (PENDING) | ⏸ logic next session (Andy: "keep as is, suggestions logic first") — must ship before any announcement |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -188,6 +189,21 @@ as two people across videos. **Baseline measured 2026-08-21:** `videos_catalog.s
 raw strings only — 413/1,033 videos carry names, 239 distinct raw names, 185 exact-match a member
 record by full name, 54 don't (guests/partners/spelling drift); zero links exist today. The other
 620 videos carry speakers only inside title/description text.
+
+### #109 · Requester-side intro notices as templates (accept · decline · 7-day lapse)
+**🔴 S1 · size S-M — filed 2026-08-22 (Andy: "if there's no answer in 7 days I'll let you know… I don't think it's working" — he was right).**
+
+> **In plain words:** the consent ask to the TARGET is already a template, but every notice back to the REQUESTER (accepted + link · declined · lapsed after 7 days) is sent as free-form text — which Meta only delivers inside the requester's 24-hour window. A target tapping a day later, or the 7-day sweep, lands outside it → Meta rejects with 131047 and the requester hears nothing.
+
+*As a requester, I always learn the outcome of my intro request — accepted (with the contact), declined, or lapsed — no matter when it happens.*
+
+**Evidence:** `digest.olivia_sends` 2026-08-22 06:04Z — a requester-side refusal text to a member outside her window → `status=failed`, `error_code=131047 Re-engagement message`. The T6 sweep proof (exec 96352) passed only because Andy's own window was open.
+
+**Done 2026-08-22 (Andy: "submit the templates now, logic later"):** `scripts/olivia_intro_templates_109.py create` → three UTILITY templates submitted, all **PENDING** review: `mds_intro_accepted` ("Good news: {{1}} accepted your intro request — message them on WhatsApp at {{2}} to start the conversation." — Meta forbids wa.me links in buttons AND in example params, and leading/trailing variables; the phone number is passed as text, WhatsApp auto-links it) · `mds_intro_declined` ("No connection with {{1}} yet — I'll let you know if that changes.") · `mds_intro_lapsed` ("I didn't get a response from {{1}} this week, so I've let it rest. Want me to try again later — or introduce you to someone else on {{2}} instead?"). Check: `python3 scripts/olivia_intro_templates_109.py status`.
+
+**Build (next session):** route `/api/olivia/intro` — every requester-side send (accept link, decline line, sweep lapse line) goes out as the matching template (params: target first name, phone digits / topic); keep free-form only for the TARGET's in-window replies; map 131047 → template fallback if any free-form path remains; the sweep's claim/retry logic already tolerates a failed send. Gate: add a check that no requester notice path is free-form. Probe: backdated lapse row for Andy with his window CLOSED (>24h since his last message) → template delivered.
+
+**Accept when:** templates APPROVED · accept/decline/lapse notices delivered to a requester whose window is closed (olivia_sends `delivered`) · gate GREEN · promote (route only — no workflow change).
 
 ### #107 · Millie-only self-name + who-to-meet closes with a Yes/No intro offer that opens the picker
 **🔴 S1 · size S-M — filed 2026-08-22 (Andy, after seeing Aaron Biner's real reply on his phone): "She must call her Millie — Millie and only Millie, it's an official name" · "ask if he would like to connect with someone Yes/No button and if yes, then provide a list with who you would like to send a request" · "limit message if necessary".**
