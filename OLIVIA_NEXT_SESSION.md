@@ -29,7 +29,7 @@
 > canary pattern: temp registration row, probe, DELETE same session.
 
 ## STATE 2026-08-22 (SESSION CLOSED — #97 PROMOTED + PROD E2E PROVEN; #105/#106 filed)
-**PROMOTED 04:11Z (Andy): prod `7e4be40a`, 76 nodes, gate in-promote, bounce clean. PROD E2E: exec 96653 Accept tap → row 13 accepted/tap → 2 texts delivered to Andy's phone, 0 LLM rows. Andy's visibility ask → #106 filed (SQL-verified: search lanes exclude Staff; event lanes don't; `test-andy-8153` purged). Andy's lock: `python3 scripts/olivia_wf.py unlock` when done.**
+**PROMOTED 04:11Z (Andy): prod `7e4be40a` (#97) → then #107 PROMOTED ~05:24Z (Andy): prod `8f48fdb8` — Millie-only PS, who-to-meet Yes/No intro offer → picker, no-replay flag. Belen's identity split fixed (registration + roster row → her Staff record) so she can use Summit lanes + intros. PROD E2E: exec 96653 Accept tap → row 13 accepted/tap → 2 texts delivered to Andy's phone, 0 LLM rows. Andy's visibility ask → #106 filed (SQL-verified: search lanes exclude Staff; event lanes don't; `test-andy-8153` purged). Andy's lock: `python3 scripts/olivia_wf.py unlock` when done.**
 
 ### (pre-promote state)
 ## STATE 2026-08-22 (pre-promote — #97 BUILT + REVIEWED)
