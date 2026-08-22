@@ -77,6 +77,54 @@ dispatch T5 reviewer, then T6 sweep tick, T7 close. ⚠️ staging lock HELD (cl
 expiry line once T6 ships past 2026-08-27. Andy's promote covers T4+T5, then ONE real tap E2E.
 
 ### (previous close below)
+## STATE 2026-08-22 (SESSION CLOSED — transcripts reached the ANSWERS; 5 promotes, all verified)
+**The day's theme: the 2025-26 transcripts were live in the database but the ANSWER LAYER never used
+them. Four separate causes, each found by reading executions, each fixed and promoted.**
+
+### What shipped to PROD today (5 promotes, each: diff → gate → promote → verify → snapshot)
+1. **Dead denial rule killed** — Answer Seed still said *"NO video has a transcript: what-was-SAID-in-it
+   questions get a plain 'transcripts are not available yet'"*. A FOURTH stale rule I missed on 08-21.
+   Replaced with TRANSCRIPTS ARE SEARCHABLE (2025+2026) + concept-term routing + pre-2025 boundary.
+2. **Quote/timestamp discipline** — NEVER OFFER TO FETCH WHAT YOU WERE ASKED FOR: a quote/where/what-
+   exactly question carries the verbatim line + speaker label + timestamp IN the answer.
+   Proof: Bryce Alderson's SKU-expansion passage quoted at **00:37:30**.
+3. **`call_transcript` enforced IN CODE** (`Attach Embedding`) — the tool schema listed only chat/FB
+   sources, so the model kept passing `p_sources` without transcripts; two prompt fixes failed, so the
+   third moved into code ([[feedback_code_beats_prompt_rules]]). `p_chat`-scoped asks exempt (transcripts
+   carry no chat_name and would pollute digests). + conflicting-sources rule (transcript vs chat both
+   reported and attributed).
+4. **Gate over-refusal fixed** — the `off_topic` field added for #104 blocked short affirmatives and
+   CLARIFYING QUESTIONS; "yes booth" was blocked 3× and served a canned "couldn't verify". RULE ZERO now
+   exempts both.
+5. **#108 CLOSED** — the #80 OFFER BINDING already existed; its ACCEPT_RE end-anchor made "yes booth"
+   miss. Affirmative may now carry a quantifier/typo; binding delivers EVERY offered video.
+
+### #103 speaker work (same session, warehouse-side)
+Library coverage **40% → 87%** (2025 97%, 2026 98%). Rungs: speaker_ids id-join · names · title/description ·
+partner sessions · Zoom cues (participants + talk_seconds) · **AAI letter-mapping** (270 letters,
+`video_speaker_letters`) · **frame-OCR** (ffmpeg from presigned URLs, 388 frames, 123 role-aware links,
+moderators from "Moderated by" cards). 578 entities / 321 members / 1,391 links. Review CSVs triaged with
+Andy: partner contacts resolved (Meher→Hector, Nadav→CapEc, Ben→Superfuel), 10 ASR/spelling twins merged
+via speaker_aliases, Brandon Fishman created as guest on Andy's ruling, 6 unknown names left unmapped.
+**Andy's rule codified: a MEMBER is never switched to partner/guest — partner-ness lives in
+`affiliation_partner_id`.**
+
+### Templates
+`mds_birthday_box_address` **APPROVED as UTILITY** (id 917599728064581) — sent to Andy's number, status
+`sent`. ⚠️ The test exposed bad address data: Andy's street = "street", Ian Sells = "iasi, Cimişlia,
+Moldova", Eugene Khayman has TWO records (one with a Miami address, one empty). A real send needs a
+which-record-wins rule + a "no usable address" path. Button taps do nothing yet (no workflow branch).
+
+### OPEN (next session)
+1. **Jasim-class within-video ranking** — chunks of one video share the video's date, so the tiebreak is
+   arbitrary; asked for a quote from later in a call, retrieval returns the opening minutes. `content_search_v2`
+   change, every lane uses it — Andy's go needed.
+2. **#102 answer-layer wiring** — speaker/role/talk-time/partner tables exist and NO lane reads them.
+   "How many videos is Bonilla in?" / "who spoke for Riverbend?" still unanswerable. Brainstorm first.
+3. #103 leftovers: moderator inference · ~134 pre-2025 videos (same OCR/letter rungs) · affiliation backfill.
+4. #72 LOAD TEST — still never run, still the biggest pre-announcement risk.
+5. Airtable-side dup-record merges (Andy's, never-delete rule): Meher ×2, Nadav ×3, Ben ×2, Eugene ×9.
+
 ## STATE 2026-08-21 DAY (SESSION CLOSED — Andy drove speaker work; smoke settled at 95/100)
 **Smoke rerun: 5 of 10 non-PASS flipped → 95/100 effective, 0 fails** (#104 fixed at the enforcement
 layer: FC `off_topic` field + Gate Verdict non-filterable; all 3 original fail-chains reproduced

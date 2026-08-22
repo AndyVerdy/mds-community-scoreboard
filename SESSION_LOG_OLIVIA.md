@@ -204,6 +204,29 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 
 
+
+## 2026-08-22 · Transcripts finally reached the ANSWERS — 4 root causes, 5 prod promotes, #103 to 87%, #108 closed
+
+**Projects:** Olivia. **Every promote: diff → gate GREEN → promote (auto-snapshot) → verify markers on prod. Lock respected throughout; the other session (#97/#107) held it most of the day and I stayed read-only until it cleared.**
+
+**THE DAY'S FINDING.** Andy tested prod after the 08-21 promote and the answers had no timestamps and no quotes. Reading the executions (never theorising) produced FOUR distinct causes, each fixed and shipped:
+1. **A fourth stale denial rule** survived the 08-21 purge — Answer Seed literally instructed *"NO video has a transcript: what-was-SAID-in-it questions get a plain 'transcripts are not available yet'"*. Replaced with TRANSCRIPTS ARE SEARCHABLE + concept-term routing (terms go through phraseto_tsquery, so a member SENTENCE matches nothing — 2-4 word concepts only).
+2. **She offered instead of answering** — "want me to pull the exact timestamp?". Rule: NEVER OFFER TO FETCH WHAT YOU WERE ASKED FOR; quote + speaker label + timestamp go IN the answer. Proof: Bryce Alderson at 00:37:30, verbatim.
+3. **The tool schema hid transcripts** — `content_search`'s p_sources description listed only wa_message/wa_digest/fb_post/fb_comment/application, so the model kept excluding call_transcript. TWO prompt fixes failed; the third went into CODE (`Attach Embedding` appends call_transcript when p_sources is given without it, `p_chat`-scoped asks exempt). [[feedback_code_beats_prompt_rules]] earned again.
+4. **My own #104 off_topic rule over-refused** — it blocked short affirmatives AND clarifying questions; "yes booth" was failed 3× and the member got a canned "couldn't verify". RULE ZERO now exempts both.
+
+**#108 filed and CLOSED same session.** After the gate fix, "yes booth" produced something worse than a block: a confident answer about an unrelated member. Root cause was NOT missing machinery — the #80 OFFER BINDING existed and was correct; its ACCEPT_RE end-anchor made the typo miss. Fix: affirmative may carry a quantifier/typo (both·booth·all·either·that one), a real topic word still routes normally, and the binding now delivers EVERY offered video. Probe: both breakdowns returned with durations and distinct substance.
+
+**#103 (warehouse, no workflow contact): library coverage 40% → 87%** (2025 97%, 2026 98%). New rungs today: **AAI letter-mapping** (`video_speaker_letters`, 270 letters, ASR guard so a heard name never mints an entity — "Mo Kohel"→Mo Kuhail) and **frame-OCR** (brew ffmpeg, 388 frames pulled by ranged reads straight off presigned URLs, 4 reader agents, 123 role-aware links; "Moderated by" cards → role=moderator). Review CSVs triaged WITH Andy: 3 dup-humans resolved as partner contacts with affiliation ids (Meher→Hector, Nadav→CapEc, Ben→Superfuel), 10 ASR/spelling twins merged via speaker_aliases, Brandon Fishman created as guest on Andy's ruling, 6 unknown ASR names left unmapped. **Andy's rule codified in the loader: a MEMBER is never switched to partner/guest.**
+
+**Template:** `mds_birthday_box_address` submitted and APPROVED as UTILITY, test-sent to Andy (status `sent`). It immediately exposed unusable address data (Andy's street literally "street"; Ian Sells "iasi, Cimişlia, Moldova"; Eugene ×2 records) — a real send needs a which-record-wins rule and a no-usable-address path.
+
+**Probes run:** 3 (staging, post-fix) + 9 (known-call / vague / broad) + 10 ORGANIC questions taken from 7 days of real member traffic (Andy rejected my first list as "BS Qs" — roster and ranking lookups don't exercise transcripts). Best evidence: *"From the video library (transcribed, so I can quote exact tactics)"* with Eric Hwang's bid ladder and Benlolo's TACoS 11.2%→4.65%.
+
+**Traps for the file:** a tool's own parameter schema can silently veto a prompt rule · an end-anchored regex can make a whole mechanism invisible · phraseto_tsquery needs adjacency, so sentences match nothing · reading `run['data']['main'][0][0]` reads only the FIRST tool result — I twice reported "transcripts: 0" from a 2-item result where item 1 held 20 transcript rows.
+
+**Prod versions today:** `feceef50` (code enforcement + conflicting sources) → `e3b4e171` (gate over-refusal) → `e175c5a3` (#108). Rollback snapshots beside each.
+
 ## 2026-08-21 (DAY — Andy driving) · smoke settled 95/100 · #104 fixed · #103 reopened + rebuilt to 81% · participants + partner dimension + Zoom-quote fix
 
 **Projects:** Olivia. **Gate GREEN at every checkpoint (263 checks, exit 0). PROD untouched — Millie promote still carries the whole staging set.**
