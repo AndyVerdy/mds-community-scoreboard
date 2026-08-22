@@ -6,6 +6,44 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-21 (late) — OUTAGE: one hollow post killed the whole daily chain. Root-caused, fixed in 3 layers, day recovered.
+
+**Symptom:** 3x Slack warning "FB feed load FAILED for `mds_feed (30).json`" on the scheduled run.
+
+**Root cause (not what the card implied):** the comment pass visited post `26939910595685753` and FB
+served an **empty shell** - id only, no text/author/`created_time`, zero comments. That post was NOT
+junk: it is **Alice Jennifer's Aug-19 TikTok Shop post**, already linked in `content_items`. Two failures
+compounded:
+1. `load_feed.py`'s upsert sends every key, so the shell's nulls **overwrote the real row** (body+time+author gone).
+2. `fb_link_content()` then tried to insert it into `content_items` -> `occurred_at NOT NULL` (23502) ->
+   PostgREST 400 -> loader `rc=1` -> **images, OCR, link cards, embeddings and the silent-post card never
+   ran**. Posts/comments themselves had already landed (40 posts, 220 comments), which is why only the
+   tail of the chain was missing.
+
+**Fixed (3 layers, defense in depth):**
+- **ext v0.92** - `runUrlPass` never banks a post with no text AND no comments AND no time.
+- **`load_feed.py`** - skips any post with no `created_time` (prints `skipped N hollow`), and now
+  **omits empty `text`/`author_name`/`author_uid` keys** so a thin re-capture cannot blank stored values
+  (rows grouped by key-set for PostgREST, PGRST102).
+- **`digest.fb_link_content()`** (migration `fb_link_content_skip_timeless_posts`, re-exported, EXECUTE
+  re-granted to service_role + revoked from PUBLIC/anon per [[reference_drop_function_revokes_acl]])
+  - skips posts/comments with `created_time is null`: one bad row now costs one post, not the day.
+
+**Recovery (all verified live):** Alice Jennifer's row **restored from `content_items`** (body,
+`occurred_at`, author_name; uid re-derived via `fb_member_map`) - deletion was refused by my own guard
+because the linked row existed, which is what surfaced the truth. Re-ran the day: feed 39 posts/220
+comments + `skipped 1 hollow`, linker 4 posts/79 comments, images 0 new (none in this capture),
+link-previews clean, **144 rows embedded**, silent-post card fired (1 post, Slack ts 1787374587.810419).
+Audit: `created_time is null` rows = **0**; the other 17 empty-text posts checked against `content_items`
+- genuinely image-only, **not** overwrite victims (0 recoverable), so Alice's was the only casualty.
+
+**Committed:** `db/functions/fb_link_content.sql` re-export. SOP: new "hollow-post trap" section in
+`/Users/Born/mds-scorecard-tools/FB_PIPELINE.md` with the restore-from-content_items recipe.
+
+**Next:** reload the extension to pick up v0.92 (guard is only in the file until then).
+
+---
+
 ## 2026-08-19 — FULL AUTOPILOT SHIPPED (ext v0.87→v0.90): one-button/scheduled daily chain — insights + humanized auto-scroll + comment pass; roster demoted to weekly
 
 **Andy's ask:** "full autopilot option. auto scroll, auto capture comments, process images, everything."

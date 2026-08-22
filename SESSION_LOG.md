@@ -2,6 +2,7 @@
 
 # Session Log — INDEX (all projects, one line per session, newest first)
 
+- 2026-08-21 (late) · **Scorecard/FB** · **OUTAGE fixed**: a hollow URL-pass post (FB served an empty shell) overwrote a REAL post to nulls, then broke `fb_link_content` on `occurred_at NOT NULL` -> 400 -> loader rc=1 -> images/OCR/embeddings/silent-card skipped all day · fixed in 3 layers (ext v0.92 guard · loader skips timeless + never sends empty keys · linker skips null times) · victim post restored FROM `content_items` · day re-run green (144 embedded, card ts 1787374587) -> `SESSION_LOG_SCORECARD.md`
 - 2026-08-22 (night) · **Olivia** · **#97 brokered intros BUILT + reviewed + PROMOTED (prod `7e4be40a`) + PROD E2E PROVEN (exec 96653)** · #106 filed (route `535a23a` live · staging taps/tool · accept-is-final · #105 filed · Eugene report + artifact) → `SESSION_LOG_OLIVIA.md`
 
 - 2026-08-21 (eve, paused) · **Olivia** · **#97 brokered intros build 4.5/7**: rulings locked · route deployed (`e6f8b48`) + matrix clean · staging tap branch (prod drops taps today!) + member_intro tool · T5 review pending, lock held, unpromoted → `SESSION_LOG_OLIVIA.md`

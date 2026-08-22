@@ -12,7 +12,13 @@ begin
     select 'fb_post','post',post_id,text,created_time,
       'https://www.facebook.com/groups/699138040189700/posts/'||post_id||'/',
       '{"type":"public"}'::jsonb,'normal',jsonb_build_object('author_name',author_name)
-    from digest.fb_posts on conflict (source,source_id) do nothing returning 1)
+    from digest.fb_posts
+    -- a post we cannot place in time cannot become a content_item (occurred_at is NOT NULL). Skipping
+    -- it here costs that ONE post; letting it through cost the entire day's chain on 2026-08-21 —
+    -- the insert raised 23502, load_feed.py exited rc=1, and images/OCR/links/embeddings/silent-card
+    -- were all skipped. Same reasoning for comments below.
+    where created_time is not null
+    on conflict (source,source_id) do nothing returning 1)
   select count(*) into p from ins;
   with ins as (
     insert into digest.content_items (source,kind,source_id,body,occurred_at,url,access_rule,sensitivity,meta)
@@ -21,6 +27,7 @@ begin
       '{"type":"public"}'::jsonb,'normal',
       jsonb_build_object('post_id',fc.post_id,'author_name',fc.author_name,'sender_member',m.at_member_id)
     from digest.fb_comments fc left join digest.fb_member_map m on m.fb_uid=fc.author_uid
+    where fc.created_time is not null
     on conflict (source,source_id) do nothing returning 1)
   select count(*) into c from ins;
   update digest.fb_post_images set storage_path = 'fb-images/' || regexp_replace(local_path, '^.*/', '')
