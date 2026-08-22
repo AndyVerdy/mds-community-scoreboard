@@ -96,7 +96,7 @@ them. Four separate causes, each found by reading executions, each fixed and pro
 4. **Gate over-refusal fixed** — the `off_topic` field added for #104 blocked short affirmatives and
    CLARIFYING QUESTIONS; "yes booth" was blocked 3× and served a canned "couldn't verify". RULE ZERO now
    exempts both.
-5. **#108 CLOSED** — the #80 OFFER BINDING already existed; its ACCEPT_RE end-anchor made "yes booth"
+5. **#112 CLOSED** (filed as #108, renumbered — the parallel session had already issued #105-#111) — the #80 OFFER BINDING already existed; its ACCEPT_RE end-anchor made "yes booth"
    miss. Affirmative may now carry a quantifier/typo; binding delivers EVERY offered video.
 
 ### #103 speaker work (same session, warehouse-side)
@@ -114,6 +114,13 @@ via speaker_aliases, Brandon Fishman created as guest on Andy's ruling, 6 unknow
 `sent`. ⚠️ The test exposed bad address data: Andy's street = "street", Ian Sells = "iasi, Cimişlia,
 Moldova", Eugene Khayman has TWO records (one with a Miami address, one empty). A real send needs a
 which-record-wins rule + a "no usable address" path. Button taps do nothing yet (no workflow branch).
+
+### ⚠️ TICKET NUMBERING (two sessions, one board — 2026-08-22)
+The parallel #97/#107 session issued **#105-#111** while this one was running; I filed my
+offer-binding ticket as #108 from a stale max and collided with its "attendees ∩ chat membership"
+ticket. Nothing was overwritten — both rows survived — and mine was renumbered to **#112**.
+**Rule: claim the next number from the board's CURRENT max at the moment of filing, never from
+memory or from the session's own start state.**
 
 ### OPEN (next session)
 1. **Jasim-class within-video ranking** — chunks of one video share the video's date, so the tiebreak is

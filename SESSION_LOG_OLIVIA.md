@@ -205,7 +205,7 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 
 
-## 2026-08-22 · Transcripts finally reached the ANSWERS — 4 root causes, 5 prod promotes, #103 to 87%, #108 closed
+## 2026-08-22 · Transcripts finally reached the ANSWERS — 4 root causes, 5 prod promotes, #103 to 87%, #112 closed
 
 **Projects:** Olivia. **Every promote: diff → gate GREEN → promote (auto-snapshot) → verify markers on prod. Lock respected throughout; the other session (#97/#107) held it most of the day and I stayed read-only until it cleared.**
 
@@ -215,7 +215,7 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 3. **The tool schema hid transcripts** — `content_search`'s p_sources description listed only wa_message/wa_digest/fb_post/fb_comment/application, so the model kept excluding call_transcript. TWO prompt fixes failed; the third went into CODE (`Attach Embedding` appends call_transcript when p_sources is given without it, `p_chat`-scoped asks exempt). [[feedback_code_beats_prompt_rules]] earned again.
 4. **My own #104 off_topic rule over-refused** — it blocked short affirmatives AND clarifying questions; "yes booth" was failed 3× and the member got a canned "couldn't verify". RULE ZERO now exempts both.
 
-**#108 filed and CLOSED same session.** After the gate fix, "yes booth" produced something worse than a block: a confident answer about an unrelated member. Root cause was NOT missing machinery — the #80 OFFER BINDING existed and was correct; its ACCEPT_RE end-anchor made the typo miss. Fix: affirmative may carry a quantifier/typo (both·booth·all·either·that one), a real topic word still routes normally, and the binding now delivers EVERY offered video. Probe: both breakdowns returned with durations and distinct substance.
+**#112 (filed as #108, renumbered — see below) CLOSED same session.** After the gate fix, "yes booth" produced something worse than a block: a confident answer about an unrelated member. Root cause was NOT missing machinery — the #80 OFFER BINDING existed and was correct; its ACCEPT_RE end-anchor made the typo miss. Fix: affirmative may carry a quantifier/typo (both·booth·all·either·that one), a real topic word still routes normally, and the binding now delivers EVERY offered video. Probe: both breakdowns returned with durations and distinct substance.
 
 **#103 (warehouse, no workflow contact): library coverage 40% → 87%** (2025 97%, 2026 98%). New rungs today: **AAI letter-mapping** (`video_speaker_letters`, 270 letters, ASR guard so a heard name never mints an entity — "Mo Kohel"→Mo Kuhail) and **frame-OCR** (brew ffmpeg, 388 frames pulled by ranged reads straight off presigned URLs, 4 reader agents, 123 role-aware links; "Moderated by" cards → role=moderator). Review CSVs triaged WITH Andy: 3 dup-humans resolved as partner contacts with affiliation ids (Meher→Hector, Nadav→CapEc, Ben→Superfuel), 10 ASR/spelling twins merged via speaker_aliases, Brandon Fishman created as guest on Andy's ruling, 6 unknown ASR names left unmapped. **Andy's rule codified in the loader: a MEMBER is never switched to partner/guest.**
 

@@ -46,7 +46,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#98** | Who-to-meet gates on registrations ledger (smoke Q37) | 🔴 S1 | S | ✅ E2E re-probed | ✅ **CLOSED 2026-08-20** — ledger authority both branches |
 | **#99** | "Show me the rest" for who-to-meet (smoke Q49) | 🟡 S2 | S | ✅ E2E via canary | ✅ **CLOSED 2026-08-20** — continuation note in-tool, fresh re-call proven |
 | **#102** | 🎬 Video recommendation ranking — time decay · speaker weight · event bonus (Andy/Eugene Slack 2026-08-21) | 🟡 S2 | M | — | ⏸ AFTER the big smoke test |
-| **#108** | 🔗 Offer→answer binding | 🔴 S1 | S | ✅ exact failing sequence returns BOTH summaries | ✅ **CLOSED 2026-08-22** — the #80 binding existed; its ACCEPT_RE end-anchor made "yes booth" miss. Fix: affirmative may carry a quantifier/typo (both·booth·all·either·that one) while a topic word still routes normally; binding now covers EVERY offered video, not just the last. Prod `e175c5a3`, gate 0 |
+| **#112** | 🔗 Offer→answer binding | 🔴 S1 | S | ✅ exact failing sequence returns BOTH summaries | ✅ **CLOSED 2026-08-22** — the #80 binding existed; its ACCEPT_RE end-anchor made "yes booth" miss. Fix: affirmative may carry a quantifier/typo (both·booth·all·either·that one) while a topic word still routes normally; binding now covers EVERY offered video, not just the last. Prod `e175c5a3`, gate 0 |
 | **#104** | Adjacent-turn topic lag | 🔴 S1 | S-M | ✅ **VERIFIED: rerun of all 3 original fail-chains with recreated adjacency = 3/3 on-topic PASS** | ⛔ rides the Millie promote — **root cause: FC caught all 3, Gate Verdict pass-postfilter neutralized the catch (topic-mismatch is not a fact-claim); fix = off_topic field in FC rubric + non-filterable in Gate Verdict (regenerate, cap 2). Probe: exact failing sequence now on-topic, off_topic field live in FC output, gate 263/exit 0. Bonus same session: load_speakers.py --rescan (guest-becomes-member promotion in place, 27 checked/0 due)** |
 | **#105** | 🔐 Verify Meta's webhook signature (`X-Hub-Signature-256`) on every inbound — filed from #97's final review (Andy OK 2026-08-22) | 🟡 S2 | S | — | ⏸ next session, BEFORE any wide intros announcement |
 | **#106** | 🙈 Staff / non-member records must never surface in member-facing lists (event_who names, who-to-meet, intro picker) — Andy 2026-08-22: "make sure I'm not searchable" | 🟡 S2 | S | SQL-verified exposure map | ⏸ next session (test row already purged) |
@@ -98,8 +98,8 @@ Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
 
-### #108 · Offer→answer binding — a short "yes" must land on what she just offered
-**🔴 S1 · size S-M — filed 2026-08-22 from a live prod miss**
+### #112 · Offer→answer binding — a short "yes" must land on what she just offered
+**🔴 S1 · size S — filed + CLOSED 2026-08-22 · ⚠️ renumbered from #108 on 2026-08-22: the parallel #97/#107 session had already issued #105-#111, so my #108 collided with its "attendees ∩ chat membership" ticket. Both entries survived; this one moved to the next free number. LESSON: two sessions on one board must claim numbers from the CURRENT max, not from memory.**
 
 **Story:** *As a member, when Mille offers "want a quick summary of either one?" and I reply "yes"
 (or "both", or a typo of it), I get those summaries — not a fresh search that answers something
@@ -119,7 +119,7 @@ free text in the reply; the next turn re-plans from the raw fragment.
 putting a continuation note IN THE TOOL RESULT rather than trusting the prompt. Same here: when an
 answer offers specific items, persist their ids with the turn; a short affirmative resolves
 against them in CODE (no re-search), and only falls back to a fresh plan when there is no pending
-offer. Three prompt rules have now failed on adjacent-turn behaviour (#104 ×1, this ×2) —
+offer. Three prompt rules have now failed on adjacent-turn behaviour (#104 x1, this x2) —
 [[feedback_code_beats_prompt_rules]] says the third one moves into code.
 
 **ACs:** offer records its item ids · "yes"/"both"/"that one"/typos resolve to them without a new
