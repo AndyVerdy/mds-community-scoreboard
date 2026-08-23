@@ -292,11 +292,18 @@ nickname cases and Members-DB duplicate records, listed on the #89 ticket for An
 sends an instant, never a zone. In-person answers always use the venue's zone, named; a virtual
 session carries the content's zone *and* the member's saved-location zone.
 
-**"Today" is the venue's day (#114, 2026-08-22).** The model anchors on US Eastern; the Summit venue is
-12 hours ahead, so for half of every day "today" is already tomorrow there. The schedule route resolves
-`at=today|tomorrow|yesterday|<weekday>` in the event's zone (`src/lib/schedule-day.ts`) and returns
-`now_at_venue` on every answer; the seed tells the model to pass the word, never a computed date. Virtual
-events are not covered — the member's zone is unknown by design.
+**"Today" is the venue's day (#114, 2026-08-22/23 — promoted `bbd597b7`).** The model anchors on US
+Eastern; the Summit venue is 12 hours ahead, so for half of every day "today" is already tomorrow
+there. The schedule route resolves `at=today|tomorrow|yesterday|<weekday>|YYYY-MM-DD|instant` in the
+event's zone (`mds-digest-web/src/lib/schedule-day.ts`, pure + vitest) and returns `now_at_venue` on
+every answer; the seed tells the model to pass the word, never a computed date. **`next` is the rest of
+the venue-day** when more than three activities remain, else the classic next three reaching into
+tomorrow (`pickNext`; the answer carries `next_scope`, `day`/`day_label` = the day of the items listed,
+`asked_day`, `remaining_today`) — a hard cap of 3 once made a half-day look like the whole day. A
+member naming a date (`at=2026-08-22`) is still honoured; an impossible date falls back to venue-today
+(`resolved_from: fallback`). Virtual events are not covered — the member's zone is unknown by design.
+Test harness note: `olivia_selftest.py` turns are silent (no Meta send) — proof lives in the
+executions, Andy sees it only by texting Millie himself.
 
 ### 4.10 Email aliases — one member, all their known addresses (#100, 2026-08-20)
 

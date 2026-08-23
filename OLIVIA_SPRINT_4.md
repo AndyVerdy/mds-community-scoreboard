@@ -55,7 +55,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#110** | 🧾 Intro-tap turns are not saved to conversation history — `Save Conversation` on the intro-tap path errors on a `$('Resolve Member')` reference (swallowed by onError); SQL-proven zero rows for tap turns; no member impact, no effect on no-replay flag | 🟡 S2 | S | SQL + exec 97071 | ⏸ next session |
 | **#111** | 🎯 Who-to-meet results swing with the model's free-text topic query (Aaron: q="Retail, PPC, Amazon Ads, Sourcing, AI Automation" → 7 matches; q="Amazon PPC, Retail & Wholesale, Credit Cards & Travel Hacks, AI & Automation, Sourcing & Suppliers" → 1) — matcher should use the asker's own ledger topics deterministically + alias-normalize free text (execs 97152 vs 97286, same day) | 🟡 S2 | S-M | exec diff | ⏸ next session (or fold into #102) |
 | **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 290 EXIT 0, 24 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
-| **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ seed passes the word, gate 290/0, probed (Sunday/Monday) | ⏸ staging only — Andy: promote then unlock |
+| **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ route live (`9d0ec41`) · seed PROMOTED `bbd597b7` 2026-08-23 02:49 ET · prod probe Sunday/Monday + full day | ⏳ AC4 only: one WhatsApp "what's happening today" in the 12:00–23:59 ET window |
 | **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🟡 S2 | S | — | ⏸ next session |
 | **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🟡 S2 | L | — | ⏸ own plan |
 | **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
@@ -398,8 +398,9 @@ anyone, but a chat is named only to its own members (restricted chats).
   non-vacuously (commits `ece7233`, `7211445`, `9994d95`, `8ca2c9b`).
 - Live GRANT applied (`geo_state_set` was 403ing — `EXECUTE` missing on `attr_state`), recorded
   `scripts/sql/20260823_grant_attr_state_service_role.sql`.
-- **PROD workflow untouched — staging also carries the parallel #114 session's edit, so one promote
-  carries both.**
+- **PROD: #114 promoted ALONE by Andy 2026-08-23 06:48Z (versionId `bbd597b7`)** — staging was then
+  rebuilt from prod (+#114) and no longer carries #108. #108 is re-applied to staging next
+  (`apply_108_find.py`), re-probed/gated/snapshotted, and Andy promotes #108 separately.
 
 **Before → after:** before — a topic-sample tool named brand owners and missed all three real
 resellers. After — **17** resellers registered for the Summit (of 102 attendees in the member
@@ -1505,9 +1506,22 @@ the `Answer Seed` node's `event_schedule` tool description now tells the model t
 today/tomorrow/yesterday/a weekday, never a date it computed; the TODAY anchor line now carves out
 an explicit venue exception; a new bullet spells out the today/tomorrow/weekday case by name,
 citing Ian's miss. `scripts/olivia_loop/apply_114_venue_today.py` — 3 exact-string edits (each
-verified to occur exactly once), `node --check`, one bounce. Applied cleanly alongside #108's
-concurrent staging edit (find tool) — `diff prod staging` correctly lists both `Answer Seed` and
-`Answer Tool` as changed.
+verified to occur exactly once), `node --check`, one bounce. First applied on top of #108's
+concurrent staging edit; Andy chose to promote **#114 only**, so staging was re-built from prod
+(snapshot `staging_2026-08-23T064414Z_108-plus-114-applied` keeps the combined graph), the 3 edits
+re-applied, gate re-run (PASSED, EXIT 0), `diff prod staging` = `Answer Seed` + the two webhook
+nodes only — then **promoted 2026-08-23 02:49 ET (prod versionId `bbd597b7`)**, lock released,
+staging handed back to #108.
+
+**Task 2b (added after Andy's live test, 2026-08-23):** asked "what's happening at the summit today"
+at 12:42 pm SGT, the model called `op=next` (exec 99999) and the route's hard `slice(0,3)` hid half
+the day (Early Mixer · Check-in · Welcome Reception). `next` now returns the **rest of the venue-day**
+when more than three remain, else the classic next three (`pickNext`; answer carries `next_scope`,
+`day`, `day_label`, `asked_day`, `remaining_today`) — mds-digest-web `95eea25`, proven on Andy's
+phone at 14:16 SGT (4 remaining: Check-in, Welcome Reception, Meet N' Speed, Welcome Dinner). Final
+whole-branch review fix wave `9d0ec41` (live): `next` labels the ITEMS' day when it reaches into
+tomorrow (`asked_day` kept), `now_at_venue` wins the spread, impossible explicit dates fall back to
+venue-today, boundary tests; 24 resolver tests, suite 105/105.
 
 **ACs:**
 1. Route resolves relative words in the venue's own zone (vitest) — ✅ Task 2 (mds-digest-web).
@@ -1524,18 +1538,29 @@ concurrent staging edit (find tool) — `diff prod staging` correctly lists both
    "What's happening at the summit today?" → opens *Sunday, Aug 23* (day-one activities: Arrivals,
    Early Mixer, Event Check-in & Swag Bag Pick-Up, Welcome Reception, Meet N' Speed, Welcome
    Dinner); "What's on tomorrow?" → opens "Here's Monday's lineup: *Monday, 24 August*".
-6. Promote — Andy (`python3 scripts/olivia_wf.py promote`, then `unlock`; not done by this session).
+6. Promote — ✅ Andy, 2026-08-23 02:49 ET (prod versionId `bbd597b7`; snapshots
+   `prod_2026-08-23T064801Z_pre-promote` / `064805Z_post-promote`); lock released 02:53 ET.
 
 **Evidence:** apply script — `Answer Seed: 3 replacements, node --check OK` / `PUT ok` / `bounce ok,
-active: True`. Gate — 290 checks, 0 FAIL, `GATE PASSED — retrieval refuses everything it must
-refuse.`, EXIT 0. Diff — `changed: ['Answer Seed', 'Answer Tool', 'WA Inbound (POST)', 'WA Verify
-(GET)']` (Answer Tool = #108's concurrent edit, expected; the two webhook nodes always differ
-prod/staging). Probe — `olivia_selftest.py --staging` executions 100109 (reset) / 100110 (today) /
-100111 (tomorrow); `--cleanup` run after, bounded to this run's SELFTEST rows.
+active: True`. Gate (#114-only graph) — `GATE PASSED — retrieval refuses everything it must refuse.`,
+EXIT 0. Diff before promote — `changed: ['Answer Seed', 'WA Inbound (POST)', 'WA Verify (GET)']`
+(the two webhook nodes always differ prod/staging); after promote `diff prod staging` = webhook
+nodes only. Staging probe (executions 100110/100111) and **prod probe after promote** (executions
+100159/100160): "What's happening at the summit today?" → *"It's Sunday, 23 August at the Summit in
+Singapore — kickoff day!"* + the full day 9:00 am Arrivals … 7:00 pm Welcome Dinner,
+`tool_args {"op":"day","at":"today"}`; "What's on tomorrow?" → *Monday, Aug 24* 7:30 am … 5:05 pm,
+`{"op":"day","at":"tomorrow"}`. Route curls on prod: `at=2026-08-22T23:00:00-04:00` (Ian's exact
+instant) → `2026-08-23 Sunday`; bare `2026-08-22` → Saturday (a member naming a date is honoured);
+`at=2026-08-23T12:30:00-04:00` → `2026-08-24 Monday`; `at=2026-13-45` → `resolved_from: fallback`.
 
-**Accept when:** ACs 1-3 and 5 met (done, staging) · AC 4 proven in the differing-dates window ·
-promoted to prod · lock released. **Handoff: staging carries #114; Andy runs `promote` then
-`unlock`.**
+**CLOSE (2026-08-23 03:15 ET) — before → after:** "what's happening today" on Sunday 11:30 SGT:
+**Saturday's 3 pre-event items → Sunday's full day (6 for a plain Member)**; same question at 12:42
+SGT: **3 items (hard cap) → the rest of the day (4–5)**; day resolution: **model-computed US-Eastern
+date → venue-zone word resolved in code** (execs 100159/100160 carry `at:"today"/"tomorrow"`).
+ACs 1–3, 5, 6 ✅ · AC 4 ⏳ the only open item: one WhatsApp "what's happening at the summit today"
+between 12:00 and 23:59 ET (venue already on the next day) must open with the venue's day — unit tests
+pin the math, the Ian-replay curl proves the route, the model link is what this last probe covers.
+Virtual events deliberately out of scope (member's zone is unknown by design).
 
 ## ✅ CLOSED (Sprint 4)
 

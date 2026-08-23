@@ -84,6 +84,7 @@ See memory `feedback_short_answers`.
 - For any gated/data change, its safety gate must be GREEN before ship (e.g. Olivia = `scripts/olivia_leak_gate.py`).
 - n8n edits: edit the ACTIVE workflow, then ONE `[{deactivateWorkflow},{activateWorkflow}]` bounce — never deactivate first.
 - Keep separate repos separate (e.g. `mds-ai-bot`, `mds-digest-web` are their own folders — never edit one while working another).
+- **Two agents, one repo (Andy 2026-08-23):** the `olivia_wf.py` lock is the ONLY mutex — hold it to edit staging, release it the moment your gate is green, never force it. Docs are own-ticket sections only (`### #NNN` on the board, a `#NNN`-tagged STATE block, `#NNN`-tagged log lines); re-read right before every edit, append, commit only your hunks, last committer rebases. Tell the peer session what you put on staging (`SendMessage`) — Andy promotes one graph at a time and must know whose edits ride it; if he wants one ticket only, re-stage from prod, re-apply yours, gate, and hand staging back. Web routes (Render) have no staging tier: a push to `main` deploys — say so in the plan.
 
 ---
 

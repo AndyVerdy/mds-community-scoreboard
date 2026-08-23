@@ -28,21 +28,30 @@
 > `X-Olivia-Audit` header (never a p_limit heuristic — that silenced a real lane) ④ the E2E
 > canary pattern: temp registration row, probe, DELETE same session.
 
-## STATE 2026-08-23 (#114 built on STAGING — venue-day seed; Andy: promote then unlock)
-**#114 "today at the Summit" bug (Ian Sells, Singapore, got Saturday on his Sunday) fixed in two
-layers: mds-digest-web Tasks 1-2 LIVE prod (schedule route resolves at=today/tomorrow/yesterday/
-weekday in the venue's own zone, every answer carries `now_at_venue`) + Olivia Task 3 on STAGING
-`bqHstPDi84uOhTCJ` (`apply_114_venue_today.py`: Answer Seed's event_schedule tool description now
-tells the model to pass the WORD, never a computed date; TODAY line carves out the venue exception;
-new bullet names the case). Gate 290/0. Staging probe (execs 100109-100111): "what's happening
-today" → opens *Sunday, Aug 23* with the day-one list; "what's on tomorrow" → opens *Monday, 24
-August*; execution tool_args confirmed literal `"at":"today"`/`"at":"tomorrow"`, never a computed
-date. Applied cleanly alongside #108's concurrent staging edit (find tool) — diff correctly shows
-both `Answer Seed` and `Answer Tool` changed. **PENDING: the probe ran while US-Eastern and
-Singapore both already read Sunday (dates AGREE) — proves the seed passes the word, not yet the
-disagreeing-date case; needs a re-probe in the 12:00-23:59 ET window.** Full ticket + close block
-on the board (`OLIVIA_SPRINT_4.md` #114). **Andy: `python3 scripts/olivia_wf.py promote` then
-`python3 scripts/olivia_wf.py unlock`.**
+## STATE 2026-08-23 (#114 CLOSED except AC4 — venue-day "today" LIVE on prod; #113 waits for a fresh export)
+**#114 "today at the Summit" (Ian Sells, Singapore, got Saturday on his Sunday) — fixed in two
+layers and PROMOTED.** mds-digest-web LIVE (`/api/version` ≥ `9d0ec41`): the schedule route resolves
+`at=today|tomorrow|yesterday|<weekday>|YYYY-MM-DD|instant` in the venue's own zone
+(`src/lib/schedule-day.ts`, 24 vitest cases), every answer carries `now_at_venue`, `day` returns
+`day`/`day_label`/`resolved_from`, and **`next` returns the rest of the venue-day** (Task 2b,
+`95eea25` — Andy's 12:42 SGT test had shown `op=next` hiding half of Sunday behind a hard 3; fix wave
+`9d0ec41` labels the items' day, keeps `asked_day`, falls back on impossible dates). Olivia prompt
+**promoted by Andy 2026-08-23 02:49 ET (prod versionId `bbd597b7`)** — `apply_114_venue_today.py`: the
+`event_schedule` tool description says pass the WORD (today/tomorrow/a weekday), the TODAY line carves
+out the venue exception, one bullet names the case. Andy promoted **#114 only**: staging was re-built
+from prod (combined snapshot `staging_2026-08-23T064414Z_108-plus-114-applied` kept), #108 re-applies
+its own edit and gets its own promote. Prod probe after promote (execs 100159/100160): "what's
+happening at the summit today" → *"It's Sunday, 23 August at the Summit in Singapore — kickoff day!"*
++ full day; "what's on tomorrow" → *Monday, Aug 24*; tool_args literal `at:"today"/"tomorrow"`.
+**OPEN — AC4 only:** one WhatsApp "what's happening at the summit today" between **12:00 and 23:59
+ET** (venue already on the next calendar day) must open with the venue's day — the model link the
+unit tests cannot pin. **#113 (whole-event refresh, plan
+`docs/superpowers/plans/2026-08-22-summit-event-refresh.md`, 4 tasks, not started): waits for a
+GENUINELY fresh GroupOS export — `event_graph (1).json` was a 17-Aug scan (`_meta.scannedAt`
+2026-08-17T22:16Z; 4 of 5 people registered 18–21 Aug absent); Andy's live GroupOS already shows
+renames ("Arrive & Check-In to the Hotel at 3PM"), Welcome Dinner at Pool, a new "Explore Singapore
+Beyond the Summit" — none of that is in any file we hold.** Two-agent rule added to CLAUDE.md (lock =
+the only mutex; own-ticket doc sections; last committer rebases; message the peer session).
 
 ## STATE 2026-08-23 (#108 The Finder BUILT + PROVEN ON STAGING; Andy: promote, then decide on the 100-Q bank)
 **The Finder ships one composable filter tool covering every data layer** — `find`
@@ -52,9 +61,10 @@ on the board (`OLIVIA_SPRINT_4.md` #114). **Andy: `python3 scripts/olivia_wf.py 
 Summit attendees) / **122** community-wide (of 735 actives), every person with reasons; a country
 breakdown sums cleanly (5 buckets); the disclosure engine (R1-R10) holds — a 🟡 filter (e.g.
 `sku_min`) returns counts only, a non-member's `chat:` filter never names anyone. Gate **290 checks
-EXIT 0** (24 finder checks). Full close block + AC table on `OLIVIA_SPRINT_4.md` #108. **PROMOTE IS
-ANDY'S** (`python3 scripts/olivia_wf.py promote`) — staging also carries **#114's** concurrent
-venue-day edit, so one promote carries both. Before the promote, Andy decides whether to run the
+EXIT 0** (24 finder checks). Full close block + AC table on `OLIVIA_SPRINT_4.md` #108. **#114 already promoted alone** (Andy
+2026-08-23 06:48Z, prod `bbd597b7`); staging was rebuilt from prod (+#114) and #108 re-applies next
+(`apply_108_find.py`), then **Andy promotes #108 separately** (`python3 scripts/olivia_wf.py
+promote`). Before that promote, Andy decides whether to run the
 **100-question eval bank** first (recommended — the real risk is the model reaching for `find`
 where `expertise_search`/`content_search` was the better tool). Follow-ups filed, not blocking:
 **#115** (geo/business-model data hygiene) · **#116** (finder phase 2 content+video, phase 3
