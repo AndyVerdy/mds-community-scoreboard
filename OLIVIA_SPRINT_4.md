@@ -1248,6 +1248,20 @@ things."** Concretely, at the Big Smoke (§G of the QA checklist):
 *(Historical spend table + projections: see the session logs of 2026-07-31 (PM); baseline
 $0.0135/answer Sonnet vs $0.0270 Kimi, ~$3.70/mo today, ~$110/mo at 748 actives.)*
 
+**SHIPPED 2026-08-23 (cache half, staging `470d635b`, commit `0b6fae3`): the invalidator was
+`tool_choice` flipping `any`→`auto` between lap 1 and lap 2** — Anthropic invalidates the messages
+cache when it changes, so lap 1's write (the whole seed, 1.3–8.8K tokens) was never read and every
+turn boundary paid again. Measured before (execs 102219/102221): lap2 `cache_r` flat at the static
+31,696 while rewriting lap1's content. Fix: `tool_choice: {type:'auto'}` constant; the forced first
+fetch moved into CODE (Answer Parse `$runIndex===0` no-tool → one identical retry via the new
+`First-Fetch Retry?` IF lane). After (execs 102745/102746/102752): lap2 `cache_r = lap1 r+w` —
+extension works; same thread turn $0.115 → $0.071; single turn $0.036. Gate 292 EXIT 0.
+⚠️ Watch at the bank-C run: one probe made 2 tool calls where the pre-patch run made 6 and wrongly
+said Hannes Wiech has no Facebook link (his card carries `facebook_link`) — if `auto` reduced
+tool-thoroughness at scale, revert is the one-line ternary. Also noted: Fact Check writes a
+speculative 8.4K cache block it rarely reads back — left alone, one variable at a time.
+Remaining for this ticket: fleet-level $/answer from the bank-C counters + the Kimi comparison.**
+
 **FINDING 2026-08-22 (from the #108 design pass, verified against the prod snapshot
 `prod_2026-08-22T210014Z`): the ANSWER node pays full price on every turn — it has NO prompt
 caching.** `Answer Claude` and `Ask Claude` (both `claude-sonnet-5`, `max_tokens` 2000) carry no
@@ -1541,6 +1555,51 @@ it runs every evening.
 Same block of activities: the **Tue 25 Aug 22:30 Night Out row vanished from the agenda** on
 2026-08-23 (`op=agenda` went to 37 activities; the row is gone, the catalog row `rec4SEDr6vYnwzxwT`
 survives). Check whether it was renamed into one of these daily copies on purpose or lost upstream.
+
+### #124 · Bank C — a 400-question organic bank built on conversations, recommendations and expertise
+**🔴 S1 · size L — filed 2026-08-23 (Andy: "we tested only 100 questions. Which is nothing in the grand scheme… I don't feel confident promoting anything yet").**
+
+> **In plain words:** banks A and B are 100 and ~50 single questions. Real members ask in threads, they ask
+> for recommendations, and they ask who is good at what — and none of that is properly measured. Bank C is
+> built from what members actually wrote, kept as conversations, and weighted toward the two areas where
+> being wrong costs trust.
+
+*As the team, I have an organic bank large enough and shaped enough that a green run on it is real
+evidence Millie is safe to promote — covering multi-turn follow-ups, recommendations, and
+expertise/"who is good at what", not just isolated one-shot questions.*
+
+**Why now (Andy, 2026-08-23):** "Since we applied the new logic, I need nothing less than great results."
+Recommendations — "failing there means losing trust." Expertise — "in our community connections are
+everything." Millie's own inbox is thin only because **she has not been announced yet**, so low volume is
+not a quality signal and must not be read as one.
+
+**Source (measured live, 2026-08-23):** 610 organic member asks to Millie · 551 after a junk filter ·
+**423 never used by bank A or B** · 187 conversations of which **82 are multi-turn** (318 asks). Community
+corpus `digest.content_items` = **54,764 items**, containing 2,007 "recommend", 1,331 "looking for",
+284 "suggestion", 215 "experience with", 186 "anyone know", 80 "any good".
+
+**Build — two tiers, both organic, never reworded by the author:**
+- **Tier 1 — asked to Millie.** The 423 unused asks, minus the ungradeable. Every multi-turn thread stays
+  intact and in order as a `seq`, so a follow-up is tested as a follow-up.
+- **Tier 2 — asked to the community.** Real recommendation and expertise/connection questions harvested
+  from `content_items`, taken as the member wrote them. Where a question needs its lead-in to make sense,
+  the lead-in becomes a preceding turn (which adds follow-up coverage).
+- `expect` written from the tickets, ACs, rulings and the live data — **never invented**. Many tier-2
+  threads already contain the community's own answer, so the bar is often "surface what members said".
+- Same schema as A and B (`id, class, q, expect, soft, asker, first_asked, seq, regression, retired`),
+  ids in the **6xxx** range, runnable via `scripts/run_eval_100.py --bank`.
+- The bank's topical mix must match the real mix of what members historically ask, so it measures the
+  product members use rather than the one we imagine.
+
+**Inherited rules (Andy, #76 / #119):** ORGANIC questions only · LOCKED once written · size = what the
+questions justify · retire always-passing questions at sprint close · snapshots kept · no duplicates with
+bank A or B.
+
+**Accept when:** `eval_bank_C_2026-08-23.json` committed with ~400 questions · every question is a real
+member sentence with its source and date · ≥ 82 multi-turn threads preserved as `seq` · recommendations
+and expertise each ≥ 40 questions · all 7 asks from the last 24h included · zero duplicates against A or B ·
+one full STAGING run scored on the strict 1-10 scale (no 7; 8-10 pass) and written up as
+`OLIVIA_SMOKE_BANK_C_<date>.md` · run time recorded honestly.
 
 ### #123 · `event_lookup` never reaches the events catalog — every `event_*` call is sent to the schedule endpoint
 **🟡 S2 · size M — filed 2026-08-23 from the #108 fix-wave-4 review.**
