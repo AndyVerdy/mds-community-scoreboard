@@ -60,6 +60,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🟡 S2 | L | — | ⏸ own plan |
 | **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
 | **#118** | 🗺️ `event_who`'s `op=people` returns a ranked/personalized subset (#99 behavior), not a flat roster, for a plain "who is coming" ask — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
+| **#119** | 🧪 Bank B — a second eval bank for everything built since the 100-question bank was frozen (2026-08-16): schedule + venue-day, Summit registration & who-to-meet, intros, 2025-26 transcripts/quotes, speakers, offer binding, the finder — ORGANIC questions only (real member asks from `olivia_messages` since 08-16), `expect` from the tickets' ACs/rulings, sized by the questions not padded; runner gets `--bank`; first staging run scored against the tickets' truth | 🟡 S2 | M | ticket ACs + `olivia_question_labels` | 🔨 building 2026-08-23 (Andy: "file #119, do it while bank A runs") |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -102,6 +103,19 @@ Millie is live.
 Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at Meta ⏳ watcher-gated.
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
+
+### #119 · Bank B — a regression bank for everything built after the 100-question bank froze
+**🟡 S2 · size M — filed 2026-08-23 (Andy, during the #108 close: "wow. old… we need one more bank around everything we built since then").**
+
+> **In plain words:** the 100-question bank (`eval_bank_100_2026-08-16.json`) holds organic asks from 2026-07-19 → 08-16. Everything since — the Summit schedule lane and venue-day "today", registration-gated who-to-meet, brokered intros, the 2025-26 transcripts with quotes + timestamps, speaker matching, offer binding, the finder — has no regression net. A change can break any of it and the bank would not notice.
+
+*As the team, I have a second bank — organic member questions only — that exercises every capability shipped since 2026-08-16, so a promote can be checked against the new behaviour the way the first bank checks the old.*
+
+**Rules it inherits (Andy, #76 / 08-16):** bank = ORGANIC questions only (real member asks from `digest.olivia_messages`, SELFTEST/probe rows excluded), LOCKED once written; size = what the questions justify (not padded to 100, not trimmed to 30); retire always-passing questions at sprint close; snapshots of the bank file are kept.
+
+**Build:** pull real member asks 2026-08-16 → today · dedupe · classify into the new capability areas (schedule/venue-day · Summit registration & who-to-meet · intros · transcripts/quotes/timestamps · speakers · offer binding · finder/filters · Millie name) using `olivia_question_labels` where it has them · pick the asks that exercise each area · write `expect` from the tickets' ACs and rulings (never invented) · same schema as the 100 bank (`id, class, q, expect, soft, asker, first_asked, seq, regression, retired`) · `scripts/run_eval_100.py --bank <file>` so either bank runs unchanged · first run on STAGING after bank A, scored like the 08-21 smoke (judges against `expect`, non-PASS re-verified by hand).
+
+**Accept when:** bank file committed (`eval_bank_B_2026-08-23.json`) · every question is a real member ask with its `first_asked` date · every new capability area has ≥ 3 questions or an honest "no organic asks yet" note · runner takes `--bank` · one full staging run scored and written up (`OLIVIA_SMOKE_BANK_B_<date>.md`) · no question duplicates bank A.
 
 ### #112 · Offer→answer binding — a short "yes" must land on what she just offered
 **🔴 S1 · size S — filed + CLOSED 2026-08-22 · ⚠️ renumbered from #108 on 2026-08-22: the parallel #97/#107 session had already issued #105-#111, so my #108 collided with its "attendees ∩ chat membership" ticket. Both entries survived; this one moved to the next free number. LESSON: two sessions on one board must claim numbers from the CURRENT max, not from memory.**
