@@ -1,0 +1,164 @@
+-- 2026-08-23 · fix wave 3b, id 4100 — applied live via Supabase MCP apply_migration the same day.
+-- digest.member_dossier_v2(p_phone) returns a generic (kind,label,detail) row stream (persona,
+-- active_chat, recent_said, upcoming_event/past_event, strength, working_on, behaviour, circle) and
+-- never included membership_status or a join date. The asker's own "how long have I been a member?"
+-- answer (Andy, phone 17866578153, membership_status='Staff') reported the *application* date
+-- (2024-05-17, from member_profiles.application_at) as tenure and never said Staff — the expect
+-- ("Join date. Staff vs member distinction matters.") needs both, and neither was reachable.
+--
+-- Both are on file: digest.member_identity.membership_status ('Staff') and
+-- digest.member_profiles.join_date ('2023-02-08' for Andy — pre-dates the application by a year).
+-- Verified live: 742/742 active members have a member_profiles row, 727/742 (98%) have a non-null
+-- join_date, membership_status never disagrees between member_identity and member_profiles (0
+-- mismatches across all 742 active members).
+--
+-- Fix: append ONE new final section — 'membership' rows ('status', 'member_since') — to the existing
+-- (kind,label,detail) stream, guarded the same way the persona/strength/working_on/behaviour/circle
+-- sections already are (`if v_atid is not null`). This is CREATE OR REPLACE with the function's
+-- existing body reproduced verbatim except for that one addition at the very end, so every existing
+-- section keeps its exact text and order — nothing positional shifts, only new ROWS are appended
+-- (the return shape itself, TABLE(kind text, label text, detail text), is unchanged).
+--
+-- ACL discipline: CREATE OR REPLACE, never DROP (a DROP would discard the ACL and Postgres would
+-- re-grant EXECUTE to PUBLIC on the recreate — this project has shipped two anon-callable RPCs that
+-- way). Verified before AND after this migration:
+--   select has_function_privilege('anon','digest.member_dossier_v2(text)','EXECUTE');           -- false, unchanged
+--   select has_function_privilege('authenticated','digest.member_dossier_v2(text)','EXECUTE');  -- false, unchanged
+--   select has_function_privilege('service_role','digest.member_dossier_v2(text)','EXECUTE');   -- true, unchanged
+--   proacl both before and after: {postgres=X/postgres,service_role=X/postgres}
+--
+-- Proof after NOTIFY pgrst, 'reload schema': select * from digest.member_dossier_v2('17866578153')
+-- where kind='membership' returns [('membership','status','Staff'), ('membership','member_since',
+-- '2023-02-08')] both via direct SQL and via POST .../rest/v1/rpc/member_dossier_v2 (Accept-Profile:
+-- digest, service key) — HTTP 200, same two rows.
+
+CREATE OR REPLACE FUNCTION digest.member_dossier_v2(p_phone text)
+ RETURNS TABLE(kind text, label text, detail text)
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'digest', 'pg_temp'
+AS $function$
+declare
+  v_n int; v_atid text; v_warow text;
+begin
+  select count(*) into v_n from digest.member_identity m
+   where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
+  if v_n <> 1 then return; end if;
+  select m.at_member_id, m.airtable_id into v_atid, v_warow
+    from digest.member_identity m
+   where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
+
+  -- ── v1 sections, verbatim ────────────────────────────────────────────────
+  if v_atid is not null then
+    return query
+    select 'persona'::text, p.key,
+           left(regexp_replace(p.value::text, '[[:space:]]+', ' ', 'g'), 400)
+    from digest.member_personas mp,
+         lateral jsonb_each(mp.persona) p(key, value)
+    where mp.at_member_id = v_atid
+    limit 10;
+  end if;
+
+  return query
+  select 'active_chat'::text, w.chat_name, count(*)::text
+  from digest.wa_messages w
+  where w.sender_member = v_warow and w.sent_at >= now() - interval '30 days'
+    and nullif(trim(coalesce(w.text,'')),'') is not null
+  group by w.chat_name order by count(*) desc limit 5;
+
+  return query
+  select 'recent_said'::text,
+         w.chat_name || ' · ' || to_char(w.sent_at, 'Mon DD'),
+         left(regexp_replace(w.text, '[[:space:]]+', ' ', 'g'), 180)
+  from digest.wa_messages w
+  where w.sender_member = v_warow
+    and length(coalesce(w.text,'')) >= 30
+  order by w.sent_at desc limit 8;
+
+  if v_atid is not null then
+    return query
+    select case when coalesce(c.app_starts_at, c.start_at) >= now()
+                then 'upcoming_event' else 'past_event' end,
+           coalesce(c.app_title, c.name),
+           to_char(coalesce(c.app_starts_at, c.start_at), 'YYYY-MM-DD')
+    from (select distinct r.event_at_id from digest.event_registrations_live r
+           where r.member_at_id = v_atid) x
+    join digest.events_catalog c on c.at_record_id = x.event_at_id
+    order by 1 desc, 3 desc limit 10;
+  end if;
+
+  -- ── #29 sections ─────────────────────────────────────────────────────────
+  if v_atid is not null then
+    -- STRENGTHS: top ledger topics. Detail = human evidence, never the score.
+    return query
+    select 'strength'::text, e.topic,
+           trim(both ', ' from
+             coalesce(case when (e.evidence->>'persona_gives_hits')::int >= 1
+                           then 'shares help on this in the community, ' else '' end, '')
+             || coalesce(case when (e.evidence->>'biz_affinity')::boolean
+                              then 'their own business is in this space' else '' end, ''))
+    from digest.member_expertise e
+    where e.at_member_id = v_atid and e.score > 0
+      and e.score >= 2 * coalesce(e.weakness_score, 0)
+    order by e.score desc limit 5;
+
+    -- WORKING ON: weakness>0 topics, framed as current focus. Sort key internal.
+    return query
+    select 'working_on'::text, e.topic,
+           case when (e.evidence->>'persona_asks_hits')::int >= 1
+                then 'has been asking the community about this'
+                else 'an area they are building up' end
+    from digest.member_expertise e
+    where e.at_member_id = v_atid and coalesce(e.weakness_score, 0) > 0
+    order by e.weakness_score desc limit 4;
+
+    -- BEHAVIOUR: what they actually do, from the append-only event log (90d).
+    return query
+    select 'behaviour'::text, e.event_type,
+           count(*)::text || ' in the last 90 days'
+    from digest.member_events e
+    where e.at_member_id = v_atid
+      and e.occurred_at >= now() - interval '90 days'
+    group by e.event_type order by count(*) desc limit 6;
+
+    -- CIRCLE: top graph neighbours by summed weight, active members only,
+    -- typed ("co_attended+same_chat"). Weight never emitted.
+    return query
+    select 'circle'::text, m2.full_name,
+           string_agg(distinct replace(g.edge_type, '_', ' '), ' + '
+                      order by replace(g.edge_type, '_', ' '))
+    from digest.member_edges g
+    join digest.members m2 on m2.at_member_id = g.b_id
+      and digest.is_active_member_status(m2.membership_status)
+    where g.a_id = v_atid
+    group by m2.at_member_id, m2.full_name
+    order by sum(g.weight) desc limit 6;
+
+    -- MEMBERSHIP (wave 3b, id 4100): status + real join date. The asker's own
+    -- "how long have I been a member" answer had no membership_status (so the
+    -- Staff/member distinction was invisible) and no join date (so tenure got
+    -- reported off the application-form date instead). Both are on file:
+    -- member_identity.membership_status and member_profiles.join_date.
+    -- Appended LAST, as new ROWS (not new columns) in this (kind,label,detail)
+    -- stream, so no existing positional reader of persona/strength/circle/etc
+    -- shifts.
+    return query
+    select 'membership'::text, kv.label, kv.detail
+    from (
+      select 1 as ord, 'status' as label, mi.membership_status as detail
+        from digest.member_identity mi
+       where mi.at_member_id = v_atid
+      union all
+      select 2 as ord, 'member_since' as label, to_char(mp.join_date, 'YYYY-MM-DD') as detail
+        from digest.member_profiles mp
+       where mp.at_member_id = v_atid and mp.join_date is not null
+    ) kv
+    order by kv.ord;
+  end if;
+end $function$
+;
+
+-- verify (before/after, both true/false unchanged):
+-- select has_function_privilege('anon','digest.member_dossier_v2(text)','EXECUTE');          -- false
+-- select has_function_privilege('service_role','digest.member_dossier_v2(text)','EXECUTE');  -- true
+NOTIFY pgrst, 'reload schema';
