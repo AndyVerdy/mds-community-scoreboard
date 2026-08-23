@@ -112,6 +112,98 @@ def clean(s):
     return (s or "").strip() or None
 
 
+# ------------------------------------------------------------ refresh
+# A GroupOS export is a snapshot. Re-running the loader must make the `event`
+# schema EQUAL the snapshot for this event. Upsert alone cannot: an activity
+# deleted in GroupOS, an audience box unticked, a speaker removed or a
+# registration cancelled all stay behind as stale rows and keep gating
+# visibility (2026-08-22: the old "Night Out" row stayed open to every Member
+# after GroupOS had made it Staff + per-buyer grants).
+#
+# SCOPED lists every event-scoped table the loader writes, in DELETION ORDER —
+# children before parents, because rooms->locations and attendees->types are
+# RESTRICT and the edge tables CASCADE from activities/sessions (counted here,
+# not lost to a cascade). `people` is deliberately absent: people are humans,
+# not event rows; attendees/speakers RESTRICT on them, and a person who left the
+# export simply stops having attendee rows. `events` is the root and is never
+# deleted.
+#   (table, primary-key columns, parent column that scopes an edge table)
+SCOPED = [
+    ("activity_audience", ("activity_id", "participant_type_id"), "activity_id"),
+    ("activity_person_grants", ("activity_id", "person_id"), "activity_id"),
+    ("session_speakers", ("session_id", "person_id"), "session_id"),
+    ("sessions", ("id",), None),
+    ("activities", ("id",), None),
+    ("rooms", ("id",), None),
+    ("locations", ("id",), None),
+    ("attendees", ("id",), None),
+    ("check_ins", ("id",), None),
+    ("orders", ("id",), None),
+    ("tickets", ("id",), None),
+    ("faqs", ("id",), None),
+    ("participant_types", ("id",), None),
+]
+PARENT_OF = {"activity_id": "activities", "session_id": "sessions"}
+
+
+def _instant(s):
+    """ISO string -> aware datetime, or None when it is not a timestamp."""
+    if not isinstance(s, str) or len(s) < 19 or s[4] != "-" or s[10] != "T":
+        return None
+    try:
+        return datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def same_value(a, b):
+    """Equality for diffing a planned row against its DB row: instants compare as
+    instants whatever their offset, None / missing / '' are one thing, numbers
+    compare as numbers, strings compare stripped."""
+    if a in (None, "") and b in (None, ""):
+        return True
+    if a is None or b is None:
+        return False
+    ia, ib = _instant(a), _instant(b)
+    if ia is not None and ib is not None:
+        return ia == ib
+    if isinstance(a, bool) or isinstance(b, bool):
+        return a == b
+    try:
+        return float(a) == float(b)
+    except (TypeError, ValueError):
+        pass
+    if isinstance(a, str) and isinstance(b, str):
+        return a.strip() == b.strip()
+    return a == b
+
+
+def row_key(row, pk):
+    return tuple(row.get(c) for c in pk)
+
+
+def diff_rows(existing, planned, pk):
+    """-> (added_rows, removed_rows, changed) where changed = [(planned_row, [(col, old, new), ...])].
+    Only the planned row's columns are compared: the DB row may carry columns the
+    loader never writes and those are not drift."""
+    ex = {row_key(r, pk): r for r in existing}
+    pl = {row_key(r, pk): r for r in planned}
+    added = [pl[k] for k in pl if k not in ex]
+    removed = [ex[k] for k in ex if k not in pl]
+    changed = []
+    for k, row in pl.items():
+        if k not in ex:
+            continue
+        cols = [(c, ex[k].get(c), v) for c, v in row.items() if not same_value(ex[k].get(c), v)]
+        if cols:
+            changed.append((row, cols))
+    return added, removed, changed
+
+
+def stale_keys(existing_keys, planned_keys):
+    return sorted(k for k in existing_keys if k not in planned_keys)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("path")
