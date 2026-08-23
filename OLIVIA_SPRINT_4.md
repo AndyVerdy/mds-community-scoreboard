@@ -54,7 +54,12 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#109** | 📨 Requester-side intro notices must be TEMPLATES (accept / decline / 7-day lapse) — free-form text dies outside the 24h window (Meta 131047); found 2026-08-22 when Andy questioned the lapse promise | 🔴 S1 | S-M | templates `mds_intro_accepted` · `mds_intro_declined` · `mds_intro_lapsed` SUBMITTED (PENDING) | ⏸ logic next session (Andy: "keep as is, suggestions logic first") — must ship before any announcement |
 | **#110** | 🧾 Intro-tap turns are not saved to conversation history — `Save Conversation` on the intro-tap path errors on a `$('Resolve Member')` reference (swallowed by onError); SQL-proven zero rows for tap turns; no member impact, no effect on no-replay flag | 🟡 S2 | S | SQL + exec 97071 | ⏸ next session |
 | **#111** | 🎯 Who-to-meet results swing with the model's free-text topic query (Aaron: q="Retail, PPC, Amazon Ads, Sourcing, AI Automation" → 7 matches; q="Amazon PPC, Retail & Wholesale, Credit Cards & Travel Hacks, AI & Automation, Sourcing & Suppliers" → 1) — matcher should use the asker's own ledger topics deterministically + alias-normalize free text (execs 97152 vs 97286, same day) | 🟡 S2 | S-M | exec diff | ⏸ next session (or fold into #102) |
-| **#108** | 👥 "Who's coming who is also in chat X / does business model Y" — attendees ∩ chat membership / business model tool (Belen's reseller questions answered wrong: Millie named brand owners, missed the 3 real resellers; truth = 16 confirmed attendees in the Resellers chat, 3 wholesale/arbitrage) | 🟡 S2 | S-M | SQL truth table in the 08-22 log | ⏸ next session |
+| **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 290 EXIT 0, 24 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
+| **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ seed passes the word, gate 290/0, probed (Sunday/Monday) | ⏸ staging only — Andy: promote then unlock |
+| **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🟡 S2 | S | — | ⏸ next session |
+| **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🟡 S2 | L | — | ⏸ own plan |
+| **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
+| **#118** | 🗺️ `event_who`'s `op=people` returns a ranked/personalized subset (#99 behavior), not a flat roster, for a plain "who is coming" ask — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
 | **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
@@ -348,6 +353,83 @@ Eugene, verbatim: *"It might be also cool to just have an ability to message the
 **Accept when:** Andy's ruling recorded · consent flow live (no number leaves without the target's yes) · out-of-window template approved · declines are final and polite · gate GREEN.
 
 ---
+
+### #108 · The Finder — one lane, composable filters, every data layer
+**🟡 S2 · size M — filed 2026-08-22 (Belen's reseller question) · design approved by Andy 2026-08-22, widened twice the same day · ✅ BUILT + PROVEN ON STAGING 2026-08-23 (gate 290 checks EXIT 0) — PROMOTE IS ANDY'S**
+
+> **In plain words:** Belen asked which resellers are coming to the Summit. Millie named brand
+> owners and missed the three real resellers. Two causes, both verified live 2026-08-22: no tool
+> could filter by chat membership or business model — every tool carried its own hand-picked
+> parameter list, so "reseller" arrived as topic words matched against self-written text — and
+> `event_who` was misrouted: it sent only `p_event`+`p_limit` (no `op`), so the schedule route fell
+> through to its default `op="next"` and returned the public agenda instead of attendees.
+
+*As a member, I can ask for people by any combination of filters — what someone does, where they
+are, which chat they're in, which event they're attending — narrow it further in my next message,
+and get real matches with the reason each one matched, without ever being shown something I'm not
+allowed to see.*
+
+**Andy's rulings (spec `docs/superpowers/specs/2026-08-22-finder-design.md`):** the union — chat
+membership OR declared business model — with the reason shown per person, never one signal silently
+standing in for the other · **one tool, not two** ("what if I need a combination of member filters
+on top of content?") · **cover all data layers**, and filtering power and disclosure are separate
+axes — revenue is usable as a filter, never disclosed · **the request is a boolean TREE** (all / any
+/ not, list = any-of — "like IFTTT") · **R10**: chat membership is a signal Millie may use for
+anyone, but a chat is named only to its own members (restricted chats).
+
+**What shipped (mds-digest-web, main, live on Render — 11 commits `f3aa2ab..600ce8a`):**
+- `src/lib/finder-fields.ts` — the field registry; every filterable field classed 🟢 show / 🟡
+  aggregate (never printable beside a name) / 🔴 internal (never filterable, never returned).
+- `src/lib/finder.ts` — tree normalise + evaluate with reasons-as-proof; ten concepts (reseller ·
+  private label · brand owner · agency · oem · supplements · tiktok · dtc · retail · large sku ·
+  under 30); the disclosure engine (R1-R10); a class-aware parser with a closed allowlist (unknown
+  field → 400; a 🔴 field → 400; a what-group leaf → `400 not served yet` so the model falls back to
+  `content_search` / `video_search` honestly instead of a silently widened answer). 57
+  finder-specific tests (`finder.test.ts`, vitest) · full repo suite 101/101.
+- `src/app/api/olivia/find/route.ts` — `POST /api/olivia/find`; member-layer population 735 actives;
+  event rosters; geo folding via the SQL SSOT (`geo_country_set` / `geo_state_set` / `country_fold`)
+  added in a fix round after the first staging probe found "Europe" resolving to zero matches.
+- Staging: workflow `bqHstPDi84uOhTCJ` versionId `a49047ac` (snapshots `pre-108` / `108-applied` /
+  `108-find`) — Answer Tool routes the `find` tool to the route and `event_who` now carries
+  `op:'people'`; Answer Seed declares the `find` tool + its routing rule. Apply script
+  `scripts/olivia_loop/apply_108_find.py` (`8e92919`); canary `scripts/one_shots/canary_108.py`
+  (`62fd6b3`).
+- Gate `scripts/olivia_leak_gate.py`: **290 checks, EXIT 0**, 24 finder checks proving R1-R10
+  non-vacuously (commits `ece7233`, `7211445`, `9994d95`, `8ca2c9b`).
+- Live GRANT applied (`geo_state_set` was 403ing — `EXECUTE` missing on `attr_state`), recorded
+  `scripts/sql/20260823_grant_attr_state_service_role.sql`.
+- **PROD workflow untouched — staging also carries the parallel #114 session's edit, so one promote
+  carries both.**
+
+**Before → after:** before — a topic-sample tool named brand owners and missed all three real
+resellers. After — **17** resellers registered for the Summit (of 102 attendees in the member
+population), **122** community-wide (of 735 actives), every person carrying the reasons they
+matched; "of those, who is in Europe?" → **1** (Joshua Asquith, United Kingdom) — the first probe
+answered "none" until the geo-folding fix landed; "group them by country" → 5 clean buckets summing
+to 17, full country names throughout. *(The spec's first baseline — 99 community / 21 Summit — was a
+WhatsApp-layer count on `digest.members`; Task 5 corrected it to the member layer,
+`member_attributes`, the canonical population — [[feedback_every_member_always]].)*
+
+**AC checklist (spec §2):**
+1. Summit resellers, union + reasons — **MET** (staging execs 100024/100094, total 17)
+2. Community set, no event — **MET** (exec 100017, 121-122)
+3. Follow-up narrows the same tree — **MET** after the geo fix (exec 100095, Europe → 1)
+4. Breakdown, no invented names — **MET** (exec 100096, 5 country buckets)
+5. `event_who` reaches attendees, not the agenda — **MET** (exec 100032; `op=people` returns the
+   matched/ranked #99-style subset, not a flat roster — filed as #118)
+6. Disclosure engine holds — **MET** (gate 24/24 incl. R10 via a non-staff member; exec 100031
+   `sku_min` → counts only, no names)
+7. Gate EXIT 0 + staging proof — **MET**; **promote — PENDING Andy**
+
+**Follow-ups filed:** #115 (geo/data hygiene) · #116 (finder phase 2 content+video, phase 3
+events/partners/forms — spec §6, own plan) · #117 (`--cleanup` leaves message rows) · #118
+(`event_who` flat roster). Not filed as new tickets: **#111** should close as a side effect of the
+concept map — verify against its own executions · **#106** stays open for lanes outside the finder ·
+**#32** carries the uncached-answer-node finding, unaffected by this ticket.
+
+**Plan/spec:** `docs/superpowers/specs/2026-08-22-finder-design.md` · SDD ledger
+`.superpowers/sdd/2026-08-22-finder/progress.md` (10 tasks, each built + independently reviewed, 4
+fix rounds total).
 
 ### #72 · LOAD TEST before the Mille demo — 100 people at once, on a system that has never seen 6
 **🔴 S1 · size M — filed 2026-08-07 (Andy: "in 2 weeks we present Mille, we might get 100 people using it")**
@@ -1404,6 +1486,56 @@ timestamp; if it sits in a room I wasn't, she names the video and tells me it's 
 9. Gate GREEN · `db/` re-exported · Eugene's cold-start question re-probed as the before/after.
 
 ---
+
+### #114 · "Today at the Summit" must resolve in the venue's zone, not US Eastern
+**🔴 S1 · size S — filed + built 2026-08-22/23 (Ian Sells, Singapore, asked "what's happening at the summit today?" on his Sunday and got Saturday's list).**
+
+> **In plain words:** the seed anchors TODAY on US Eastern, and the `event_schedule` tool
+> description told the model to compute `at=YYYY-MM-DD` itself for the `day` op — so for roughly
+> half of every day, while the Singapore venue is already on tomorrow's date, "today" answers came
+> out a day stale.
+
+*As Ian in Singapore on Sunday, "what's happening today" returns Sunday.*
+
+**Fixed in two layers.** mds-digest-web (Tasks 1-2, LIVE prod, 2026-08-22): the schedule route
+resolves `at=today|tomorrow|yesterday|<weekday>|YYYY-MM-DD` in the event's own timezone
+(`src/lib/schedule-day.ts`) and every response now carries `now_at_venue`; the `day` op also
+returns `day`/`day_label`/`resolved_from`. Olivia (Task 3, STAGING `bqHstPDi84uOhTCJ`, 2026-08-23):
+the `Answer Seed` node's `event_schedule` tool description now tells the model to pass the WORD for
+today/tomorrow/yesterday/a weekday, never a date it computed; the TODAY anchor line now carves out
+an explicit venue exception; a new bullet spells out the today/tomorrow/weekday case by name,
+citing Ian's miss. `scripts/olivia_loop/apply_114_venue_today.py` — 3 exact-string edits (each
+verified to occur exactly once), `node --check`, one bounce. Applied cleanly alongside #108's
+concurrent staging edit (find tool) — `diff prod staging` correctly lists both `Answer Seed` and
+`Answer Tool` as changed.
+
+**ACs:**
+1. Route resolves relative words in the venue's own zone (vitest) — ✅ Task 2 (mds-digest-web).
+2. `now_at_venue` rides every `event_schedule` answer — ✅ Task 2.
+3. The seed passes the word, never a computed date — ✅ staging: exec 100110
+   `tool_args={"op":"day","at":"today","p_phone":"17866578153"}`, exec 100111
+   `tool_args={"op":"day","at":"tomorrow","p_phone":"17866578153"}` — literal words, not dates.
+4. Live proof while ET and the venue's calendar date DISAGREE — ⏳ **PENDING.** The probe below ran
+   ~2026-08-23 06:26Z (≈02:26am ET), when US-Eastern and Singapore (SGT, UTC+8) both already read
+   "Sunday 23 August" — it proves the seed passes the word and the answer opens with the venue's
+   day, but not the disagreeing-date case (needs the 12:00-23:59 ET window, when SGT has already
+   rolled to the next day). Tracked here, not blocking this ticket's staging work.
+5. Staging reply opens with the venue's day, not a US-Eastern-anchored one — ✅ probed:
+   "What's happening at the summit today?" → opens *Sunday, Aug 23* (day-one activities: Arrivals,
+   Early Mixer, Event Check-in & Swag Bag Pick-Up, Welcome Reception, Meet N' Speed, Welcome
+   Dinner); "What's on tomorrow?" → opens "Here's Monday's lineup: *Monday, 24 August*".
+6. Promote — Andy (`python3 scripts/olivia_wf.py promote`, then `unlock`; not done by this session).
+
+**Evidence:** apply script — `Answer Seed: 3 replacements, node --check OK` / `PUT ok` / `bounce ok,
+active: True`. Gate — 290 checks, 0 FAIL, `GATE PASSED — retrieval refuses everything it must
+refuse.`, EXIT 0. Diff — `changed: ['Answer Seed', 'Answer Tool', 'WA Inbound (POST)', 'WA Verify
+(GET)']` (Answer Tool = #108's concurrent edit, expected; the two webhook nodes always differ
+prod/staging). Probe — `olivia_selftest.py --staging` executions 100109 (reset) / 100110 (today) /
+100111 (tomorrow); `--cleanup` run after, bounded to this run's SELFTEST rows.
+
+**Accept when:** ACs 1-3 and 5 met (done, staging) · AC 4 proven in the differing-dates window ·
+promoted to prod · lock released. **Handoff: staging carries #114; Andy runs `promote` then
+`unlock`.**
 
 ## ✅ CLOSED (Sprint 4)
 
