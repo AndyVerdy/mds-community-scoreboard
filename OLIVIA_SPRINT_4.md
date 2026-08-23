@@ -1248,6 +1248,14 @@ things."** Concretely, at the Big Smoke (§G of the QA checklist):
 *(Historical spend table + projections: see the session logs of 2026-07-31 (PM); baseline
 $0.0135/answer Sonnet vs $0.0270 Kimi, ~$3.70/mo today, ~$110/mo at 748 actives.)*
 
+**REVERTED same night (staging `f31b8c83`) — the A/B Andy ordered caught a retrieval loss: under
+constant `auto`, questions that always retrieved (TikTok-agency: 2 calls, who-to-meet: 1) answered
+from preload with ZERO tool calls, and the identical-request retry reproduces the same no-tool
+choice. The forced `any` on lap 1 is what guarantees retrieval on lazy questions, so the cache
+saving genuinely conflicts with it. Follow-up design to try: a stripped-down forced lap 1 (tiny
+prompt + `any`) whose only job is choosing the first fetch, then `auto` laps carry the big seed
+with stable caching. Measurement + root cause below stand.**
+
 **SHIPPED 2026-08-23 (cache half, staging `470d635b`, commit `0b6fae3`): the invalidator was
 `tool_choice` flipping `any`→`auto` between lap 1 and lap 2** — Anthropic invalidates the messages
 cache when it changes, so lap 1's write (the whole seed, 1.3–8.8K tokens) was never read and every
