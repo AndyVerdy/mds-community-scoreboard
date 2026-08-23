@@ -226,7 +226,27 @@ instructions the model could ignore.
 ### 4.9 The Summit schedule — the `event` schema (#85, 2026-08-18)
 
 The run-of-show for a live event: what happens, where, when, who speaks and **who may see it**.
-Loaded from a GroupOS export by `scripts/load_event_graph.py`, idempotent.
+Loaded from a GroupOS export by `scripts/load_event_graph.py` — idempotent **and reconciling**
+(#113, 2026-08-23): a run makes the `event` schema EQUAL the export for that event. Rows the export no
+longer contains are deleted in FK-safe order (children first; **`event.people` never**), so an unticked
+audience box or a cancelled activity actually disappears instead of gating forever.
+
+**Refresh runbook**
+
+```bash
+python3 scripts/load_event_graph.py ~/Downloads/<export>.json --dry-run   # GETs only, writes nothing
+python3 scripts/load_event_graph.py ~/Downloads/<export>.json             # report -> upsert -> reconcile -> after-counts
+python3 scripts/event_lane.py --self-test                                  # golden invariant must pass
+```
+
+The report names rows, never ids (`~ Closing Dinner: starts_at Tue 25 Aug 18:03 -> 18:30`). Read the
+`- ` (removal) lines **and** any `!! skipping` lines before a real run. Flags: `--no-reconcile` upserts
+only and deliberately leaves `loaded_at` unstamped; `--new-event` is required to create a second event
+graph (without it an unknown event id is refused — see trap 6).
+
+**Provenance:** `event.events.source_scanned_at` = the `_meta.scannedAt` of the loaded export;
+`loaded_at` = the last time a full upsert **and** reconcile completed. `loaded_at` older than
+`source_scanned_at` means deletions are still outstanding.
 
 ```
 events ─┬─ activities ── activity_audience → participant_types
@@ -254,10 +274,13 @@ An unchecked participant box means *not invited*, never *must not know*: it bloc
 whose **every** type is unchecked. Khalid Abdulla holds a Speaker row and a Member row; Focus Groups
 has Speaker unchecked and Member checked, and he gets in on Member.
 
-**Golden tests** (`scripts/event_lane.py --self-test`): plain Member sees **6** activities on day
-one; the Women's Lunch grantee sees **7**.
+**Golden test** (`scripts/event_lane.py --self-test`): after the 2026-08-23 refresh a plain Member
+sees **7** activities on day one and the Women's Lunch grantee **8**. **The invariant is the test, not
+the integers** — the grantee sees exactly one more than a grant-less Member, and it is the Women's
+Lunch. When a refresh moves the numbers, re-derive them from the data, state what changed in GroupOS,
+and update the script and this section in the same commit.
 
-**Three traps in the export the loader absorbs — do not re-learn them:**
+**Six traps in the export and the loader — do not re-learn them:**
 1. **Milan leftovers.** The event was cloned from Milan 2025; 41 of 91 activities carry `isDelete`.
    Import them and she serves last year's Italian agenda.
 2. **The legacy audience booleans lie.** `member`/`speaker`/`partner`/`guest` are all `false` on
@@ -266,6 +289,32 @@ one; the Women's Lunch grantee sees **7**.
    Time"`. Times ship as local wall-clock strings with no offset, which is exactly how
    `digest.events_catalog.start_at` ended up eight hours wrong. The loader extracts and validates
    the IANA zone, stores true instants, and keeps the raw strings in `source_*` for audit only.
+4. **A "new" export can be an old scan.** The file handed over on 2026-08-22 was a 17-Aug scan — four
+   of the five people who registered 18–21 Aug were missing. The freshness guard compares
+   `_meta.scannedAt` with `digest.event_registrations_live` and names anyone who registered later; a
+   `!!` line there means the export cannot know those people. Get a fresh scan, do not load.
+5. **GroupOS recreates a document when a role changes** — new `_id`, same natural key. `attendees`
+   therefore upserts on `on_conflict=event_id,person_id,participant_type_id` and its `id` is rewritten;
+   that is safe **only because nothing FK-references `event.attendees.id`** (verified 2026-08-23).
+   `participant_types` is the opposite: its `id` IS referenced (`attendees` RESTRICT,
+   `activity_audience` CASCADE), so a recreated role **aborts the run before any write**, naming role,
+   old id and new id. Recovery: re-point the children to the new id, then re-run — never rewrite the
+   type's `id`.
+6. **One export = one event.** The lane serves `events?order=starts_at.desc&limit=1` when no
+   `event_id` is passed, so loading a later-starting event would silently become the schedule Millie
+   answers from. An unknown event id is refused unless `--new-event` is passed. Check the
+   `event <id> · <title>` line before proceeding.
+
+**Two limits the loader hit in production (2026-08-23), both fixed — do not undo them:** request bodies
+go to `curl` on **stdin** (`--data-binary @-`), never as an argv element (macOS ARG_MAX ~1 MB; one
+activity's `long_description` was 92 KB and the batch serialised to ~1 MB), and `datetime.fromisoformat`
+under Apple's Python 3.9 rejects the 2-digit fractional seconds PostgREST returns (`.79`), so `_instant`
+normalises the fraction — without it every re-run reported phantom "changed" rows.
+
+**A loader SKIP is not an export removal.** Rows the loader cannot build (unparseable time, `end <=
+start`, an attendee whose person or role does not resolve) are printed and **protected** from the
+reconcile — otherwise one GroupOS data-entry slip would delete a live activity together with its
+audience, grants and reminders by CASCADE.
 
 **Reminders (#86).** `event.reminders` hangs off the person and the activity or session, never a
 wall-clock string. Three ways to say when, and only two can be trusted to the model:

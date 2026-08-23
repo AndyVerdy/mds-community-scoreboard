@@ -55,6 +55,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#110** | 🧾 Intro-tap turns are not saved to conversation history — `Save Conversation` on the intro-tap path errors on a `$('Resolve Member')` reference (swallowed by onError); SQL-proven zero rows for tap turns; no member impact, no effect on no-replay flag | 🟡 S2 | S | SQL + exec 97071 | ⏸ next session |
 | **#111** | 🎯 Who-to-meet results swing with the model's free-text topic query (Aaron: q="Retail, PPC, Amazon Ads, Sourcing, AI Automation" → 7 matches; q="Amazon PPC, Retail & Wholesale, Credit Cards & Travel Hacks, AI & Automation, Sourcing & Suppliers" → 1) — matcher should use the asker's own ledger topics deterministically + alias-normalize free text (execs 97152 vs 97286, same day) | 🟡 S2 | S-M | exec diff | ⏸ next session (or fold into #102) |
 | **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 292 EXIT 0, 26 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
+| **#113** | 🔄 Summit event refresh — the whole event (activities, sessions, rooms, access, rosters) reloads from a GroupOS export, removals included | 🔴 S1 | M | ✅ LOADED 2026-08-23 from the 09:52Z scan: activities 50→86 · access edges 180→227 · grants 183→698 · full descriptions; idempotent; self-test 7/8 | ✅ CLOSED — live lane serves the new day one |
 | **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ route live (`9d0ec41`) · seed PROMOTED `bbd597b7` 2026-08-23 02:49 ET · prod probe Sunday/Monday + full day | ⏳ AC4 only: one WhatsApp "what's happening today" in the 12:00–23:59 ET window |
 | **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🟡 S2 | S | — | ⏸ next session |
 | **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🟡 S2 | L | — | ⏸ own plan |
@@ -1509,6 +1510,92 @@ timestamp; if it sits in a room I wasn't, she names the video and tells me it's 
 9. Gate GREEN · `db/` re-exported · Eugene's cold-start question re-probed as the before/after.
 
 ---
+
+### #120 · Loader hardening after the #113 refresh (report cap · edge labels · reconcile test · in-place role edit)
+**🟡 S3 · size S — filed 2026-08-23 from #113's final review.** The refresh loader works and is proven,
+but four rough edges remain: the diff report prints every added row (525 lines last run; a first load of
+a new event would print thousands) — cap per table with "… and N more"; added/removed EDGE lines label
+their parent with the pre-write name, so a renamed activity reads under its old name; the reconcile /
+`delete_stale` path has no unit test (a fake `rest` asserting the URLs per pk arity and that `dry=True`
+issues none would have caught the unmeasured delete count); and `attendees` upserting on its natural key
+does not cover the case where GroupOS edits a role IN PLACE (same `_id`, new `participant_type_id`) —
+that would 409 on the PK and exit mid-upsert. Fix: delete natural-key-stale attendees before the
+attendees upsert, or catch and explain the PK collision.
+
+### #121 · `db/` does not cover the `event` schema — the Summit tables have no reviewable restore path
+**🟡 S3 · size S — filed 2026-08-23.** `digest.schema_source()` introspects the `digest` schema only, so
+`db/tables.sql` contains zero `event.*` objects and the #113 migration
+(`event_events_load_provenance_20260822`) exists **only in the live database** — no diff, no review, no
+restore path, which is exactly what #65 built `db/` to prevent. Extend the exporter to the `event`
+schema and commit the resulting baseline. (Also to confirm while there: `db/grants.sql` gained
+`grant execute on function digest.attr_state(text) to service_role` from unrelated live drift — someone
+must say it was intended rather than inherit it silently.)
+
+### #122 · "Explore Singapore Beyond the Summit" is four daily copies, so a name lookup answers with the first
+**🟢 S4 · size XS — filed 2026-08-23.** GroupOS models the evening free-time block as one activity per
+day (22–25 Aug). `op=where q="explore singapore"` matches the earliest copy, so a member asking on Monday
+is told about Saturday. Same behaviour in `event_lane.py` and the deployed route (verified). Fix: when a
+name matches several activities, answer with the one on the venue's today (or the next upcoming) and say
+it runs every evening.
+
+### #113 · Summit event refresh — reload the whole event from a GroupOS export, removals included
+**🔴 S1 · size M — filed + built + loaded 2026-08-23.**
+
+> **In plain words:** the loader only ever ADDED and UPDATED. Anything GroupOS removed or re-gated
+> since the first load (2026-08-17) stayed in the database and kept gating what members could see —
+> and the schedule Millie served was three weeks stale: old names, no new rooms, 200-character
+> description stubs.
+
+*As a Summit attendee asking Millie, I get the current run-of-show, rooms, access lists and rosters —
+whatever GroupOS holds now — not the snapshot from the first load.*
+
+**Built:** `scripts/load_event_graph.py` became a true refresh — a name-level diff report printed
+before any write (`--dry-run` writes nothing), a reconcile that deletes rows the export no longer
+contains in FK-safe order (`event.people` never), an export-freshness guard against the live
+registrations ledger, a pending-reminder cascade warning, `--no-reconcile` / `--new-event` flags, and
+provenance columns (`event.events.source_scanned_at` / `loaded_at`, migration
+`event_events_load_provenance_20260822`). First unit tests under `scripts/tests/` (44).
+
+**ACs:**
+1. `--dry-run` prints added / changed / removed by NAME for every table — ✅.
+2. A run removes what the export removed — ✅ deleted: activity_audience 49 · activity_person_grants 10 ·
+   session_speakers 12 · sessions 11 · activities 1 ("Women's Lunch - Register NOW") · attendees 20,
+   every count matching its dry-run prediction.
+3. Export freshness is checked and stale exports are named — ✅ (it caught the file handed over on
+   08-22 as a 17-Aug scan missing four registrants; the 09:52Z scan reported "export is current").
+4. `event_lane.py --self-test` passes after the load — ✅ re-derived from the data: plain Member 7,
+   Women's Lunch grantee 8, the +1 invariant intact.
+5. Live lane proof — ✅ `{"op":"day","at":"today"}` on prod returns *Sunday 23 August* with Arrive &
+   Check-In to the Hotel at 3PM · Early Mixer · Event Check-in & Swag Bag Pick-Up · Welcome Reception ·
+   Meet N' Speed · Welcome Dinner · Explore Singapore Beyond the Summit; Women's Lunch and Event
+   Partner Check-in correctly hidden from a non-invited member; speakers 30.
+6. Runbook in the handbook — ✅ §4.9 (commands, flags, provenance semantics, six traps).
+
+**Two real bugs the run exposed, both stopped safely with nothing deleted, both fixed and proven:**
+GroupOS recreates an attendee document when a role changes (new id, same natural key) → 409 on
+`attendees`; fixed by upserting on the natural key, while `participant_types` (whose id IS
+FK-referenced) now REFUSES a recreated role instead. And request bodies were passed to `curl` as an
+argv element → macOS ARG_MAX (~1 MB) blew up on a 92 KB activity description; bodies now go on stdin.
+A third defect was caught before the load: Apple's Python 3.9 rejects the 2-digit fractional seconds
+PostgREST returns, which faked 31 "changed" rows and broke idempotency.
+
+**Final review (opus) + one fix wave, all re-reviewed clean:** a loader SKIP is never treated as an
+export removal (a data-entry slip would have deleted a live activity and CASCADEd its access rules);
+three reads that silently swallowed an HTTP failure now fail loud (one of them would have NULLed all
+234 `at_member_id` links); paging is deterministically ordered (698 grant rows, unstable past 1000);
+delete counts are measured, not assumed; loading a second event is refused without `--new-event`.
+
+**CLOSE — before → after (2026-08-23):** activities **50 → 86** · sessions 31 → 26 · attendees 178 →
+199 · people 199 → 234 · locations 18 → 27 · participant_types 6 → 7 (`MDS`) · activity_audience
+**180 → 227** · activity_person_grants **183 → 698** · session_speakers 35 → 34 · check_ins 22 → 151 ·
+orders 138 → 144 · rooms 6 · faqs 19 · tickets 25 · reminders 0. Descriptions: 200-char stubs → full
+bodies (86 activities, 26 sessions). A repeat dry-run reports `+0 ~0 -0` everywhere. Backup of the
+pre-load state kept for the session in the scratchpad.
+
+**Follow-ups filed:** #120 (loader hardening: report cap, edge labels use the planned name, a unit test
+for the reconcile path, the attendees in-place-edit PK case) · #121 (`db/` does not cover the `event`
+schema, so this migration has no reviewable restore path — extend `schema_source()`) · #122 ("Explore
+Singapore Beyond the Summit" exists as four daily copies, so a name lookup answers with the first one).
 
 ### #114 · "Today at the Summit" must resolve in the venue's zone, not US Eastern
 **🔴 S1 · size S — filed + built 2026-08-22/23 (Ian Sells, Singapore, asked "what's happening at the summit today?" on his Sunday and got Saturday's list).**

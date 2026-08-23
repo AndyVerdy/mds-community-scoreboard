@@ -28,6 +28,25 @@
 > `X-Olivia-Audit` header (never a p_limit heuristic — that silenced a real lane) ④ the E2E
 > canary pattern: temp registration row, probe, DELETE same session.
 
+## STATE 2026-08-23 (#113 CLOSED — the Summit event is RELOADED from the 09:52Z scan and live)
+**Millie now serves the current run-of-show.** `scripts/load_event_graph.py` is a true refresh (diff
+report by name → upsert → FK-safe reconcile → provenance), loaded from
+`~/Downloads/event_graph_20260823T0952Z.json` (`_meta.scannedAt` 2026-08-23T09:52:31.687Z, verified
+fresh against the ledger). **activities 50→86 · sessions 31→26 · attendees 178→199 · people 199→234 ·
+locations 18→27 · participant_types 6→7 (`MDS`) · activity_audience 180→227 · activity_person_grants
+183→698 · check_ins 22→151 · orders 138→144**; deleted 49/10/12/11/1/20 exactly as predicted; a repeat
+dry-run is `+0 ~0 -0`; `events.source_scanned_at` + `loaded_at` stamped. Golden self-test re-derived:
+plain Member **7** on day one, Women's Lunch grantee **8** (the +1 invariant is the test, not the
+integers). Live proof: `op=day at=today` returns *Sunday 23 August* with Arrive & Check-In to the Hotel
+at 3PM … Explore Singapore Beyond the Summit; Women's Lunch / Event Partner Check-in stay hidden from a
+non-invited member. Runbook + six traps in `OLIVIA_HANDBOOK.md` §4.9. Three real defects were found by
+running it — 3.9 vs PostgREST fractional seconds (faked 31 "changed" rows), GroupOS recreating an
+attendee document on a role change (409), and curl argv vs macOS ARG_MAX on a 92 KB description — plus
+a final-review fix wave (a loader SKIP is never treated as an export removal; three silent-swallowed
+reads now fail loud; ordered paging; measured delete counts; `--new-event` guard). **Follow-ups filed:
+#120 loader hardening · #121 `db/` excludes the `event` schema · #122 "Explore Singapore" is four daily
+copies.** Next refresh = one command; read the `- ` and `!! skipping` lines before the real run.
+
 ## STATE 2026-08-23 (#114 CLOSED except AC4 — venue-day "today" LIVE on prod; #113 waits for a fresh export)
 **#114 "today at the Summit" (Ian Sells, Singapore, got Saturday on his Sunday) — fixed in two
 layers and PROMOTED.** mds-digest-web LIVE (`/api/version` ≥ `9d0ec41`): the schedule route resolves
