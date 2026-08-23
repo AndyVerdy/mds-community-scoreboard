@@ -71,7 +71,8 @@ each one matched, without ever being shown something I'm not allowed to see.*
 6. **The disclosure engine holds** (§5): a green-only filter set may name people; a filter set that
    touches an amber field answers with counts only; no amber value is ever printed beside a name; no
    red field is filterable or returnable; ≤10 names with the true total; event names only for a
-   registered asker; no Staff or removed records in a names list.
+   registered asker; **a chat is named only to its own members, and a direct who-is-in-chat-X ask by a
+   non-member gets the count only**; no Staff or removed records in a names list.
 7. Leak gate EXIT 0 with the new finder checks · proven on **staging** · Andy promotes.
 
 **Non-goals (phase 1):** retiring `member_match` / `member_count` / `event_who` · semantic search
@@ -106,7 +107,7 @@ POST /api/olivia/find              // header: X-Olivia-Secret. The lane writes n
 {
   "phone": "1786…",                 // the asker — resolves identity and entitlements
   "who": {
-    "chat": ["MDS Resellers"], "business_model": ["reseller"], "event": "Summit Singapore",
+    "chat": ["MDS Resellers"], "segment": ["reseller"], "event": "Summit Singapore",
     "city": [], "state": [], "country": ["Spain"], "band": ["5-10M"], "chapter": [],
     "niche": [], "category": [], "expertise": "amazon ppc", "speaker_of": null,
     "sku_min": null, "brands_min": null, "years_selling_min": null, "age_band": null
@@ -206,11 +207,34 @@ filter cannot quietly become a new disclosure. Every field in the registry carri
   equalizer**, because a filter question must return the same set to the same asker twice · the lane
   writes nothing, so no audit header is needed.
 
-**One ruling needed from Andy (default assumed, one line either way):** may Millie name *which chat*
-someone is in, to an asker who is not in that chat? Default = **yes** — MDS chats are topical interest
-groups, the reason line is the point of the feature, and the chat directory is already discoverable
-in-app. If the answer is no, chat-only matches still appear, with the reason reading "active in
-reseller discussions" and the chat name withheld.
+- **R10 — chats (Andy's ruling, 2026-08-22).** MDS has restricted chats. Who is in a chat and what is
+  discussed there is **not** disclosed to someone who is not in it — but chat membership is a
+  **signal Millie may use for anyone**: the Resellers chat is a good additional identifier for who is a
+  reseller, the Supplements chat for who sells supplements, and so on. Concretely: (a) a concept may
+  use chat membership to decide who matches, for any asker; (b) a reason line names the chat ("in MDS
+  Resellers") only when the asker is a member of that chat — otherwise it says the concept word
+  ("reseller"), and only when no other signal already explains the match; (c) a direct `chat:` filter
+  by a non-member returns counts and breakdowns, never names, because listing a chat's members *is*
+  saying who is there; (d) what is said in a chat stays behind R7, unchanged.
+
+**Concept signals.** A segment is recognised from every signal at once — declared business model,
+chat membership, profile flags — OR-ed, with the reason naming whichever signal fired (subject to R10):
+
+| segment | business-model labels | chat | profile flag | class |
+|---|---|---|---|---|
+| reseller | Wholesale and/or Arbitrage · Wholesale, Resale & Dropshipping (+ the corrupt joined value) | MDS Resellers | — | 🟢 |
+| private label / brand owner | Private Label · Own Brand | — | — | 🟢 |
+| agency | Brand Management and/or Agency · Agency, Consulting & Brand Management | — | — | 🟢 |
+| oem | OEM Design & Development | — | — | 🟢 |
+| supplements | — | MDS Supplements | `sells_supplements` / category contains "Supplements" | 🟢 |
+| tiktok | — | MDS TikTok | `tiktok_seller` | 🟢 |
+| dtc | — | MDS DTC/Shopify | `channel_mix` ∋ DTC/Own Website | 🟢 |
+| retail | — | MDS Retail | `channel_mix` ∋ Wholesale (Big Box / Independent) | 🟢 |
+| large sku | — | MDS Large SKU | `large_sku` (SKU count ≥ 1,000) | 🟡 counts only |
+| under 30 | — | MDS Under 30 | `under_30` (age) | 🟡 counts only |
+
+The two 🟡 rows inherit their class from the attribute behind them: an age- or SKU-backed segment
+answers with numbers, never names (R2), whichever signal matched.
 
 ## 6. Phases
 

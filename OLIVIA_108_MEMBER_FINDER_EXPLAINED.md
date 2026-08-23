@@ -181,3 +181,34 @@ Second, tell me whether to run the hundred-question bank before that promote —
 
 Everything else is mine to build. The specification and the step-by-step plan are both written and
 committed, and the next move is simply to start on step one.
+
+---
+
+## Addendum — three rulings you made after this was written
+
+*About two minutes. Same plain voice.*
+
+**One tool, not two.** You asked whether a member finder and a content finder should be separate, and
+the answer was no. It is one finder with two groups of filters: *who* — what kind of seller someone
+is, where they are, which chat and which event — and *what* — what was said, in which source, when,
+by whom, in which video. Used together they intersect, so "what did resellers going to the Summit say
+about TikTok" is one question, not a copy-and-paste between two tools. This ticket builds the *who*
+half and the plumbing; content and video ride on the same plumbing next.
+
+**Every layer, and filtering is not the same as showing.** The finder registers every data layer we
+hold — people, events, chats and posts, videos, partners, forms, the dossiers, the graph, personas —
+and every field carries a class. Green fields may be filtered on, grouped by, and printed beside a
+name. Amber fields — SKU counts, brands, years selling, age, revenue sums, scores — may be filtered
+and grouped freely, but never printed beside a name, and a question that uses one of them gets numbers
+back, never names, because naming who matched "500 SKUs" gives the number away anyway. Red fields —
+exact revenue, contacts, payments, personas — cannot be filtered on at all. Revenue is the example you
+gave: Millie can use it to decide who is in the set; she never says it.
+
+**Chats.** We have restricted chats, and who is in them and what they discuss is not told to someone
+who is not in them. But membership is a signal Millie may use for anyone: the Resellers chat helps
+identify resellers, the Supplements chat helps identify supplement sellers, and so on — and the same
+idea now covers TikTok, DTC, retail, large-SKU and under-30. So a reseller who is only in the chat
+still shows up in the answer. The difference is in the reason line: if you are in that chat yourself,
+Millie says "in MDS Resellers"; if you are not, she just says "reseller" and leaves the chat unnamed.
+And if someone asks outright who is in a chat they are not part of, they get the number, not the
+names.
