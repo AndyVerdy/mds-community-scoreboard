@@ -217,14 +217,18 @@ def self_test():
         if t == {"Member"} and not grants_for(p["id"]):
             plain = p
             break
+    # 2026-08-23 refresh (#113): GroupOS added two new day-one activities —
+    # "Arrive & Check-In to the Hotel at 3PM" and "Explore Singapore Beyond the
+    # Summit" — to both views; was 6/7, now 7/8. The relationship that matters
+    # (grantee = plain Member + exactly the Women's Lunch) still holds.
     n = visible_count(plain["id"], "2026-08-23") if plain else -1
-    print(f"  plain Member day one = {n} (expect 6) — {plain['name'] if plain else 'none found'}")
-    ok &= (n == 6)
+    print(f"  plain Member day one = {n} (expect 7) — {plain['name'] if plain else 'none found'}")
+    ok &= (n == 7)
 
     k = by_email.get("kimberly.cruickshanks@gmail.com")
     n2 = visible_count(k["id"], "2026-08-23") if k else -1
-    print(f"  Women's Lunch grantee day one = {n2} (expect 7)")
-    ok &= (n2 == 7)
+    print(f"  Women's Lunch grantee day one = {n2} (expect 8)")
+    ok &= (n2 == 8)
 
     print("SELF-TEST", "PASS" if ok else "FAIL")
     return 0 if ok else 1
