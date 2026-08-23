@@ -1540,9 +1540,14 @@ def main():
         out = subprocess.run(cmd, capture_output=True, text=True).stdout
         text, _, code = out.rpartition("\n")
         try:
-            return int(code), json.loads(text or "{}")
+            icode = int(code)
+        except ValueError:
+            icode = 0          # transport failure — every check below then fails loudly
+        try:
+            parsed = json.loads(text or "{}")
         except Exception:
-            return int(code), {}
+            parsed = {}
+        return icode, parsed if isinstance(parsed, dict) else {}
 
     st, _ = find({"phone": phone, "where": {"chat": "MDS Resellers"}}, secret_hdr=False)
     check("find without the secret is 401", st == 401)
@@ -1563,22 +1568,26 @@ def main():
 
     st, body = find({"phone": phone, "where": {"segment": "reseller"}, "limit": 50})
     names = body.get("people") or []
-    check("find never lists more than 10 names", len(names) <= 10)
-    check("find keeps the true total above the cap", int(body.get("total", 0)) >= len(names))
+    total = int(body.get("total", 0))
+    check("find: the reseller set is bigger than the cap (so the cap is exercised)", st == 200 and total > 10)
+    check("find caps a big result at exactly 10 names", len(names) == 10)
+    check("find keeps the true total above the cap", total >= len(names))
     check("find emits no scores", not re.search(r'"(engagement_score|score|rank|pct)"', json.dumps(body)))
 
     st, body = find({"phone": phone, "where": {"all": [{"country": "United States"}, {"sku_min": 500}]},
                      "return": "people"})
-    check("an aggregate leaf returns counts, never names (R2)", st == 200 and not body.get("people"))
-
+    check("an aggregate leaf returns counts, never names (R2)",
+          st == 200 and int(body.get("total", 0)) > 0 and not body.get("people"))
     st, body = find({"phone": phone, "where": {"any": [{"country": "Spain"}, {"not": {"sku_min": 10}}]},
                      "return": "people"})
-    check("an aggregate leaf under not/any still withholds names (R2)", st == 200 and not body.get("people"))
-
+    check("an aggregate leaf under not/any still withholds names (R2)",
+          st == 200 and int(body.get("total", 0)) > 0 and not body.get("people"))
     st, body = find({"phone": phone, "where": {"all": [{"country": "United States"}, {"sku_min": 500}]},
-                     "return": "breakdown", "group_by": "country"})
-    small = [b for b in (body.get("breakdown") or []) if b.get("count") is not None and b["count"] < 3]
-    check("small buckets are suppressed under an aggregate filter (R4)", not small)
+                     "return": "breakdown", "group_by": "state"})
+    buckets = body.get("breakdown") or []
+    small = [b for b in buckets if b.get("count") is not None and b["count"] < 3]
+    check("R4: a breakdown under an aggregate filter exists and hides small buckets",
+          st == 200 and len(buckets) > 0 and not small)
 
     # R10: chat membership is a signal for everyone, a NAME only for members of that chat.
     # The default probe member is staff and sits in every chat, so borrow a member who does NOT
@@ -1595,20 +1604,22 @@ def main():
         r10_phone, r10_chats = r10["phone"], (r10.get("channels_present") or [])
         not_mine = next(c for c in all_chats if c not in r10_chats)
         st, body = find({"phone": r10_phone, "where": {"segment": "reseller"}, "return": "people", "limit": 10})
-        check("R10 probe member resolves on the route (total > 0)", st == 200 and int(body.get("total", 0)) > 0)
+        resolved = st == 200 and int(body.get("total", 0)) > 0
+        check("R10 probe member resolves on the route (total > 0)", resolved)
         leaked = [r for p_ in (body.get("people") or []) for r in p_.get("reasons", [])
                   if r.startswith("in ") and r[3:] not in r10_chats]
-        check("reason lines never name a chat the asker is not in (R10)", not leaked)
+        check("reason lines never name a chat the asker is not in (R10)", resolved and not leaked)
         st, body = find({"phone": r10_phone, "where": {"chat": not_mine}, "return": "people"})
-        check("a direct chat filter by a non-member returns no names (R10)", st == 200 and not body.get("people"))
+        check("a direct chat filter by a non-member returns no names (R10)", resolved and st == 200 and not body.get("people"))
         st, body = find({"phone": r10_phone, "where": {"not": {"chat": not_mine}}, "return": "people"})
-        check("a negated chat filter by a non-member returns no names either (R10)", st == 200 and not body.get("people"))
+        check("a negated chat filter by a non-member returns no names either (R10)", resolved and st == 200 and not body.get("people"))
 
     staff = curl("GET", f"{BASE}/member_attributes?select=full_name&membership_status=eq.Staff&limit=5",
                  key, profile_hdr=["Accept-Profile: digest"])[1] or []
     staff_names = {s["full_name"] for s in staff if s.get("full_name")}
+    check("gate found Staff records to test against", len(staff_names) > 0)
     st, body = find({"phone": phone, "where": {"country": "United States"}, "limit": 10})
-    check("find never lists a Staff record", not (staff_names & {p.get("name") for p in (body.get("people") or [])}))
+    check("find never lists a Staff record", st == 200 and not (staff_names & {p.get("name") for p in (body.get("people") or [])}))
 
     st, body = find({"phone": phone, "where": {"all": [{"segment": "reseller"}, {"event": "MDS Summit Singapore"}]}})
     check("find withholds attendee names from a non-registered asker (R5)",
