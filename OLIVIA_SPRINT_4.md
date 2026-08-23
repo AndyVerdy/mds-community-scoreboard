@@ -412,7 +412,7 @@ WhatsApp-layer count on `digest.members`; Task 5 corrected it to the member laye
 
 **AC checklist (spec §2):**
 1. Summit resellers, union + reasons — **MET** (staging execs 100024/100094, total 17)
-2. Community set, no event — **MET** (exec 100017, 121-122)
+2. Community set, no event — **MET** (exec 100017, 121 live-probed / 122 canonical (SQL))
 3. Follow-up narrows the same tree — **MET** after the geo fix (exec 100095, Europe → 1)
 4. Breakdown, no invented names — **MET** (exec 100096, 5 country buckets)
 5. `event_who` reaches attendees, not the agenda — **MET** (exec 100032; `op=people` returns the
@@ -428,8 +428,8 @@ concept map — verify against its own executions · **#106** stays open for lan
 **#32** carries the uncached-answer-node finding, unaffected by this ticket.
 
 **Plan/spec:** `docs/superpowers/specs/2026-08-22-finder-design.md` · SDD ledger
-`.superpowers/sdd/2026-08-22-finder/progress.md` (10 tasks, each built + independently reviewed, 4
-fix rounds total).
+`.superpowers/sdd/2026-08-22-finder/progress.md` (10 tasks, each built + independently reviewed; 8
+fix rounds in total (Tasks 3/4/5: one each · Task 9: three · the Task 8 geo fix: two)).
 
 ### #72 · LOAD TEST before the Mille demo — 100 people at once, on a system that has never seen 6
 **🔴 S1 · size M — filed 2026-08-07 (Andy: "in 2 weeks we present Mille, we might get 100 people using it")**
