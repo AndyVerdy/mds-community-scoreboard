@@ -1574,6 +1574,15 @@ def main():
     check("find keeps the true total above the cap", total >= len(names))
     check("find emits no scores", not re.search(r'"(engagement_score|score|rank|pct)"', json.dumps(body)))
 
+    # ---- geo regression (the GRANT that makes geo_state_set work lives outside any migration chain;
+    # a DROP would silently revoke it, and a caught RPC failure would look like a legitimate "0 matched"
+    # rather than an error — these two checks are non-vacuous (>10, unmatched empty) so a lost grant is loud.
+    st, body = find({"phone": phone, "where": {"country": "Europe"}, "return": "count"})
+    check("geo: a region resolves through geo_country_set (Europe > 10 members)", st == 200 and int(body.get("total", 0)) > 10 and not body.get("unmatched"))
+    st, body = find({"phone": phone, "where": {"state": "West Coast"}, "return": "breakdown", "group_by": "state"})
+    check("geo: a US region resolves through geo_state_set (West Coast > 10, 2+ states)",
+          st == 200 and int(body.get("total", 0)) > 10 and len(body.get("breakdown") or []) >= 2 and not body.get("unmatched"))
+
     st, body = find({"phone": phone, "where": {"all": [{"country": "United States"}, {"sku_min": 500}]},
                      "return": "people"})
     check("an aggregate leaf returns counts, never names (R2)",
@@ -1610,9 +1619,11 @@ def main():
                   if r.startswith("in ") and r[3:] not in r10_chats]
         check("reason lines never name a chat the asker is not in (R10)", resolved and not leaked)
         st, body = find({"phone": r10_phone, "where": {"chat": not_mine}, "return": "people"})
-        check("a direct chat filter by a non-member returns no names (R10)", resolved and st == 200 and not body.get("people"))
+        check("a direct chat filter by a non-member returns no names (R10)",
+              resolved and st == 200 and body.get("disclosure") == "chat" and not body.get("people"))
         st, body = find({"phone": r10_phone, "where": {"not": {"chat": not_mine}}, "return": "people"})
-        check("a negated chat filter by a non-member returns no names either (R10)", resolved and st == 200 and not body.get("people"))
+        check("a negated chat filter by a non-member returns no names either (R10)",
+              resolved and st == 200 and body.get("disclosure") == "chat" and not body.get("people"))
 
     staff = curl("GET", f"{BASE}/member_attributes?select=full_name&membership_status=eq.Staff&limit=5",
                  key, profile_hdr=["Accept-Profile: digest"])[1] or []
