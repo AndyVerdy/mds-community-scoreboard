@@ -168,6 +168,7 @@ SCOPED = [
     ("participant_types", ("id",), None),
 ]
 PARENT_OF = {"activity_id": "activities", "session_id": "sessions"}
+PK_BY_TABLE = {t: pk[0] for t, pk, _ in SCOPED}   # first PK column, for fetch_all's default order=
 
 
 def _instant(s):
@@ -282,7 +283,15 @@ def natural_key_collisions(existing_rows, planned_rows, key_cols):
 
 
 def fetch_all(path, key, url, profile="event"):
-    """GET every row of a PostgREST path — PostgREST hard-caps 1000 per request, so page."""
+    """GET every row of a PostgREST path — PostgREST hard-caps 1000 per request, so page.
+    Paging past 1000 rows is only stable with a deterministic ORDER BY (2026-08-23 #113:
+    activity_person_grants is 698 rows and was paged with none — `existing` could silently
+    lose rows and `stale` under-compute). A caller that did not ask for one gets the table's
+    own first PK column appended here — one choke point for every caller — falling back to
+    "id" for a path (e.g. people) with no SCOPED entry."""
+    if "order=" not in path:
+        table = path.split("?", 1)[0]
+        path = f"{path}{'&' if '?' in path else '?'}order={PK_BY_TABLE.get(table, 'id')}"
     rows, off = [], 0
     sep = "&" if "?" in path else "?"
     while True:
@@ -421,7 +430,11 @@ def reminder_warning(stale_activity_ids, stale_session_ids, key, url):
 
 def delete_stale(table, pk, keys, key, url, dry):
     """Delete the given rows. Single-column keys go in `in.()` chunks; composite
-    keys go one DELETE each (edge tables are small and the count is the proof)."""
+    keys go one DELETE each (edge tables are small and the count is the proof).
+    `Prefer: return=representation` so `done` counts ROWS THE DB ACTUALLY REMOVED, not
+    keys requested — a stale-by-old-id DELETE that matches zero rows (e.g. the attendees
+    on_conflict natural-key merge repoints `id` out from under the old key) must report 0,
+    not the inflated count of keys we asked it to try (I3, 2026-08-23 #113 review)."""
     if not keys:
         return 0
     if dry:
@@ -432,17 +445,17 @@ def delete_stale(table, pk, keys, key, url, dry):
         for i in range(0, len(ids), 100):
             chunk = ",".join(ids[i:i + 100])
             code, raw = rest("DELETE", f"{table}?{pk[0]}=in.({chunk})", key, url,
-                             extra_headers=["Prefer: return=minimal"])
+                             extra_headers=["Prefer: return=representation"])
             if code not in (200, 204):
                 sys.exit(f"DELETE {table}: HTTP {code}\n{raw[:400]}")
-            done += len(ids[i:i + 100])
+            done += len(json.loads(raw or "[]"))
         return done
     for k in keys:
         filt = "&".join(f"{c}=eq.{v}" for c, v in zip(pk, k))
-        code, raw = rest("DELETE", f"{table}?{filt}", key, url, extra_headers=["Prefer: return=minimal"])
+        code, raw = rest("DELETE", f"{table}?{filt}", key, url, extra_headers=["Prefer: return=representation"])
         if code not in (200, 204):
             sys.exit(f"DELETE {table}?{filt}: HTTP {code}\n{raw[:400]}")
-        done += 1
+        done += len(json.loads(raw or "[]"))
     return done
 
 
@@ -452,6 +465,10 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--no-reconcile", action="store_true",
                     help="upsert only; leave rows the export no longer contains (diagnostic use)")
+    ap.add_argument("--new-event", action="store_true",
+                    help="confirm this export's event id is a NEW event, not yet in event.events "
+                         "(without it the loader refuses: the deployed lane serves whichever event "
+                         "starts latest, so a second event graph would silently switch what it serves)")
     args = ap.parse_args()
 
     url, key = load_env()
@@ -460,6 +477,14 @@ def main():
     event_id = oid(ev["_id"])
     tz = iana_zone(ev.get("timeZone"))
     print(f"event {event_id} · {ev.get('title')} · tz={tz}")
+    code, raw = rest("GET", f"events?select=id&id=eq.{event_id}&limit=1", key, url)
+    if code != 200:
+        sys.exit(f"events lookup: HTTP {code}\n{raw[:300]}")
+    if not json.loads(raw or "[]") and not args.new_event:
+        sys.exit(f"event {event_id} is not yet a row in event.events — this export would silently "
+                 f"create a SECOND event graph, and the deployed lane serves whichever event starts "
+                 f"latest, so loading it would switch what Millie serves without anyone asking for "
+                 f"that. Pass --new-event to confirm this is intentional.")
 
     acts, sess = live(d["activities"]), live(d["sessions"])
     rooms, locs = live(d["rooms"]), live(d["locations"])
