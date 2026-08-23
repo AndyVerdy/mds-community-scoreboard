@@ -1142,6 +1142,22 @@ things."** Concretely, at the Big Smoke (§G of the QA checklist):
 *(Historical spend table + projections: see the session logs of 2026-07-31 (PM); baseline
 $0.0135/answer Sonnet vs $0.0270 Kimi, ~$3.70/mo today, ~$110/mo at 748 actives.)*
 
+**FINDING 2026-08-22 (from the #108 design pass, verified against the prod snapshot
+`prod_2026-08-22T210014Z`): the ANSWER node pays full price on every turn — it has NO prompt
+caching.** `Answer Claude` and `Ask Claude` (both `claude-sonnet-5`, `max_tokens` 2000) carry no
+`cache_control`; `Route Request` and `Fact Check` (both `claude-haiku-4-5`) do. So the stable
+prefix — system prompt + the ~24 KB tool block (~6K tokens) — is billed as fresh input on every
+single answer, where cached reads cost ~0.1×. The prefix is exactly the shape caching is built for:
+frozen text, deterministic tool order, volatile content (the member's question and history) last.
+Actions for this ticket: (a) measure the real per-turn input split with `count_tokens` before and
+after, (b) add one `cache_control` breakpoint after the tool block, (c) verify with
+`usage.cache_read_input_tokens` > 0 on turn 2 — if it stays 0, hunt the invalidator (a timestamp or
+unsorted JSON in the prefix). Sizing against the existing baseline ($0.0135/answer, ~$110/mo at 748
+actives): the savings land on the input half only, so treat "up to ~90% of prefix input" as the
+ceiling, not the headline, until (a) is measured. Related: #108's `member_find` tool adds ~1.5 KB
+(~400 tokens) to that same uncached block — ~$8-11/mo at 230-430 messages/day — which caching would
+make ~free.
+
 ---
 
 ### #14 · Conversational, not robotic — its ACs are the smoke's acceptance criteria
