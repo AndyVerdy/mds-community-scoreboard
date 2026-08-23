@@ -100,52 +100,65 @@ author's member id on **99.1%** of WhatsApp messages, **94.5%** of Facebook comm
 Facebook posts. Call transcripts carry no author — who spoke lives in `video_speaker_links` +
 `speakers.at_member_id` (#103, 87% library coverage), so transcript answers join through speakers.
 
-### 3.1 Request
+### 3.1 Request — a filter tree (Andy 2026-08-22: "filters with groups and conditions, like IFTTT")
 
 ```jsonc
 POST /api/olivia/find              // header: X-Olivia-Secret. The lane writes nothing.
 {
   "phone": "1786…",                 // the asker — resolves identity and entitlements
-  "who": {
-    "chat": ["MDS Resellers"], "segment": ["reseller"], "event": "Summit Singapore",
-    "city": [], "state": [], "country": ["Spain"], "band": ["5-10M"], "chapter": [],
-    "niche": [], "category": [], "expertise": "amazon ppc", "speaker_of": null,
-    "sku_min": null, "brands_min": null, "years_selling_min": null, "age_band": null
+  "where": {                        // a BOOLEAN TREE. Groups: all = AND · any = OR · not = exclude.
+    "all": [                        // Leaves: { "<field>": value }. A LIST value means any-of.
+      { "segment": "reseller" },
+      { "event": "Summit Singapore" },
+      { "any": [ { "country": "Spain" }, { "country": "Portugal" } ] },
+      { "not": { "chat": "MDS TikTok" } }
+    ]
   },
-  "what": {
-    "terms": ["tiktok"], "sources": ["wa_message","fb_post","call_transcript"], "kinds": [],
-    "chat": [], "since": "2026-01-01", "until": null,
-    "call_type": null, "video_category": [], "speaker": [], "year": null,
-    "event_type": null, "partner_category": [], "featured": null
-  },
-  "return": "people",               // people | content | videos | events | partners | count | breakdown
-  "group_by": null,                 // country | state | city | band | niche | business_model | chat |
-                                    // chapter | source | year | call_type | video_category | partner_category
+  "return": "people",               // people | count | breakdown  (content | videos | events | partners: phase 2-3)
+  "group_by": null,                 // country | state | city | band | niche | business_model | chat | chapter
   "limit": 10
 }
 ```
 
-**AND across kinds, OR inside a kind.** Unknown keys are rejected (`400 unknown filter: …`) — the
-allowlist is closed, so a drifting tool schema can never widen what Millie may read. At least one
-filter is required; there is no whole-database dump.
+Shape rules: a bare leaf is a valid tree (`"where": {"segment": "reseller"}`); groups nest freely to
+depth 4; at most 20 leaves; at least one leaf — there is no whole-database dump. A leaf's value is a
+string, a list of strings (any-of), a number (`sku_min`, `brands_min`, `years_selling_min`) or a
+boolean. Requiring two values of the same field is an `all` group of two leaves:
+`{"all":[{"segment":"reseller"},{"segment":"supplements"}]}` — resellers who also sell supplements —
+while `{"segment":["reseller","supplements"]}` is either. The model does not have to remember a
+per-field rule; the tree is the rule.
+
+Validation is closed and class-aware: an unknown field is `400 unknown filter: …`; a 🔴 field is
+`400 filter not allowed: …`; `business_model` as a leaf is `400 … use segment`; a what-group leaf
+(terms, sources, call_type, …) is `400 not served yet` in phase 1 so the model falls back to
+`content_search` / `video_search` honestly instead of getting a silently widened answer.
 
 ### 3.2 Response
 
 ```jsonc
 {
   "total": 21, "shown": 10, "capped": true,
-  "filters_echo": { "who": {...}, "what": {...}, "unmatched": [], "disclosure": "green" },
-  "event": { "name": "MDS Summit Singapore", "at_record_id": "recrATwhUDA55iQN5" },
-  "people":  [ { "name": "Ariel Tung", "reasons": ["in MDS Resellers", "wholesale & arbitrage"],
+  "where_echo": { "all": [ { "segment": "reseller" }, { "event": "MDS Summit Singapore" } ] },
+  "unmatched": [],                   // labels that resolved to nothing — the model must say so
+  "disclosure": "green",             // green | aggregate | chat | event — why names are or are not present
+  "events": [ { "name": "MDS Summit Singapore", "at_record_id": "recrATwhUDA55iQN5" } ],
+  "people":  [ { "name": "Ariel Tung", "reasons": ["in MDS Resellers", "wholesale & arbitrage",
+                                                    "attending MDS Summit Singapore"],
                  "city": "Singapore", "niche": null } ],
-  "items":   null,      // content / videos / events / partners rows, by `return`
+  "items":   null,      // content / videos / events / partners rows, by `return` (phase 2-3)
   "breakdown": null,    // [{ "value": "Spain", "count": 4 }, …]
   "note": "…"           // wording rules for the model, generated from the disclosure decision
 }
 ```
 
-`filters_echo` is how follow-ups narrow with no server state: the normalised set rides back in the tool
-result, and the next call re-sends it plus the new filter.
+`where_echo` is the normalised tree (concept words resolved, chat names canonical, event names
+resolved). It is how follow-ups narrow with no server state: the model wraps it —
+`{"all": [<where_echo>, {"country": "Spain"}]}` — and sends that.
+
+**Reasons come from the proof.** Evaluation returns, for each person, the leaves that made the tree
+true: every leaf of a satisfied `all`, the satisfied branches of an `any`, nothing from a `not`. So
+"in MDS Resellers", "Spain", "attending MDS Summit Singapore" are exactly the conditions that person
+met, in the order the tree listed them — and R3/R10 still decide which of those may be *said*.
 
 ## 4. Every data layer, and what it contributes
 
@@ -193,8 +206,9 @@ filter cannot quietly become a new disclosure. Every field in the registry carri
 - **R3 — reason rights.** Reason lines quote 🟢 values only.
 - **R4 — small buckets.** With a 🟡 filter active, breakdown buckets below 3 report as "fewer than 3";
   a one-person bucket re-identifies the person the count was meant to protect.
-- **R5 — event gate (#98).** Attendee names require the asker to hold a registration row for that
-  event; otherwise counts only, with no explanation of internals.
+- **R5 — event gate (#98).** Attendee names require the asker to hold a registration row for EVERY
+  event the tree names (fail closed when a tree ORs two events); otherwise counts only, with no
+  explanation of internals.
 - **R6 — entitlement (#101).** Video results respect `video_access`; a restricted video may be listed
   by title with content withheld — never denied, never invented.
 - **R7 — content access.** Content results pass through the existing gated read path (`access_rule`,
