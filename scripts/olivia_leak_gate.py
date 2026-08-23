@@ -1581,8 +1581,10 @@ def main():
     check("small buckets are suppressed under an aggregate filter (R4)", not small)
 
     # R10: chat membership is a signal for everyone, a NAME only for members of that chat.
-    not_mine = next((c for c in ["MDS Centurion 20M+", "MDS Under 30", "MDS Real Estate", "MDS Trading"]
-                     if c not in chats), None)
+    all_chats = [r["chat_name"] for r in (curl("GET", f"{BASE}/chats?select=chat_name&order=chat_name", key,
+                                                profile_hdr=["Accept-Profile: digest"])[1] or []) if r.get("chat_name")]
+    not_mine = next((c for c in all_chats if c not in chats), None)
+    check("R10 probe has a chat the member is NOT in (else the next two checks cannot run)", not_mine is not None)
     if not_mine:
         st, body = find({"phone": phone, "where": {"chat": not_mine}, "return": "people"})
         check("a direct chat filter by a non-member returns no names (R10)", st == 200 and not body.get("people"))
