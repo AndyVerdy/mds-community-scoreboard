@@ -827,9 +827,14 @@ def main():
         else:
             check("event_lookup_v2 set check ran", False, f"status {st}/{st2}")
         st, dos2 = rpc("member_dossier_v2", {"p_phone": phone}, key)
+        # 'membership' joined the own-data kinds on 2026-08-23 (A4100): the dossier now returns
+        # the ASKER's own membership status + join date, which is what made her report an
+        # application date as tenure. Self-only by construction, same rulebook self-exception as
+        # 'persona'; the no-scores/emails/bands check below still runs over it.
         ok_k2 = isinstance(dos2, list) and all(
             d.get("kind") in ("persona", "active_chat", "recent_said", "upcoming_event",
-                              "past_event", "strength", "working_on", "behaviour", "circle")
+                              "past_event", "strength", "working_on", "behaviour", "circle",
+                              "membership")
             for d in dos2)
         check("member_dossier_v2 rows carry only own-data kinds", ok_k2)
         dblob = json.dumps(dos2 if isinstance(dos2, list) else [])
