@@ -396,6 +396,7 @@ resolves the asker itself. The main ones:
 | `multi_source` | One-shot fan-out across all six source families |
 | `chat_info` / `chat_recommendations` | Chat metadata / which **WhatsApp chats** to join. **A CHAPTER is not a chat** — chapter questions route to `community` (#84 D1); the router had no chapter lane at all until 2026-08-17 |
 | `report_create` | Files a member report |
+| `find` | Composable member filters — one lane, every data layer (#108). **A route, not an RPC** — `POST /api/olivia/find` (§6.3) |
 
 **Grant discipline:** `DROP FUNCTION` + `CREATE` **resets the EXECUTE grant to PUBLIC** — meaning
 anon could call it. Always `revoke all … from public` and re-grant to `service_role` after a
@@ -418,6 +419,66 @@ Restricted videos embed METADATA ONLY (`embed_videos.py`), so the vector branch 
 Transcript coverage: Zoom (#70) where Zoom hosted; AssemblyAI (`meta.provenance='assemblyai'`,
 `scripts/aai_transcripts.py`) for the 96 in-person/hybrid 2026 videos it never reached — speakers
 stay `Speaker A/B/C`, never guessed names.
+
+### 6.3 `find` — one lane, composable filters, every data layer (#108)
+
+Every other lane in this chapter is a Postgres RPC; `find` is not — it is a Next.js route,
+`POST https://digest.mds.co/api/olivia/find` (mds-digest-web), header `X-Olivia-Secret`, reads only
+through PostgREST and **writes nothing**. It exists because filters did not compose: "resellers
+coming to the Summit" needs chat membership AND business model AND event attendance in one request,
+and no RPC above ever took more than a handful of fixed parameters.
+
+**The request is a boolean tree** (Andy: "filters with groups and conditions, like IFTTT"). Groups:
+`all` = AND, `any` = OR, `not` = exclude; a leaf is `{field: value}`; a list value is any-of
+(`{"segment":["reseller","supplements"]}` = either). Trees nest to depth 4, cap at 20 leaves, and
+must carry at least one leaf — there is no whole-database dump. The response echoes the normalised
+tree as `where_echo`; a follow-up narrows by wrapping it in one more `all` — no server-side session.
+Every matched person carries `reasons`: the leaves of the tree that were actually true for them, so
+"in MDS Resellers" / "Spain" / "attending MDS Summit Singapore" are exactly what they matched, in
+the tree's own order.
+
+**Validation is closed and class-aware.** An unknown field is `400 unknown filter`; a 🔴 field is
+rejected even as a filter; `business_model` as a raw leaf is `400 … use segment`; a what-group leaf
+(terms, sources, chat content, …) is `400 not served yet` in phase 1, so the model falls back to
+`content_search` / `video_search` honestly instead of silently widening the answer.
+
+**The disclosure engine — filtering and showing are different rights.** Every field carries one
+class: 🟢 **show** (filterable, groupable, printable beside a name — the member-card set, plus chat
+membership and event attendance) · 🟡 **aggregate** (filterable and groupable, never beside a name —
+SKU count, brands, employees, age, revenue, activity) · 🔴 **internal** (never filterable, never
+returned — exact revenue, email, phone, Stripe, internal ids). Ten rules enforce it: R1 only 🟢/🟡
+may filter · R2 any active 🟡 filter forces counts/breakdown, never names · R3 reasons quote 🟢 only
+· R4 buckets under 3 report "fewer than 3" under a 🟡 filter · R5 event names need the asker
+registered for EVERY named event · R6 respects `video_access` · R7 defers to the existing
+content-gate path · R8 excludes Staff/removed/unknown-status from names AND totals · R9 ≤10 names +
+the true total, no score/rank, asker never their own match, deterministic order, writes nothing ·
+**R10 (chats, Andy's ruling)** — chat membership is a signal Millie may use for ANYONE deciding who
+matches a concept, but a chat is only ever *named* to its own members; a direct `chat:` filter by a
+non-member returns counts/breakdowns only, never names; what is said in a chat still goes through R7.
+
+**Concept signals** are recognised from every declared/behavioural source at once, OR-ed together
+(the reason names whichever signal fired, subject to R10):
+
+| segment | signals | class |
+|---|---|---|
+| reseller | biz model (Wholesale/Arbitrage · Wholesale, Resale & Dropshipping) OR chat *MDS Resellers* | 🟢 |
+| private label / brand owner | biz model (Private Label · Own Brand) | 🟢 |
+| agency | biz model (Brand Mgmt/Agency) | 🟢 |
+| oem | biz model (OEM Design & Development) | 🟢 |
+| supplements / tiktok / dtc / retail | chat *MDS Supplements/TikTok/DTC/Retail* OR the matching profile flag | 🟢 |
+| large sku / under 30 | chat *MDS Large SKU/Under 30* OR the SKU-count/age attribute | 🟡 counts only |
+
+**Data caveats to say, not hide:** business model is self-declared and as old as the member's last
+form; chat membership is *behaviour*, so a brand owner can sit in *MDS Resellers* to watch; the
+label vocabulary is dirty (legacy + app-v3 sets, plus 8 rows where two labels were joined by a stray
+apostrophe); and **five** catalog rows match "Summit Singapore" (the Summit itself plus Night Out,
+Speaker's Lunch, Women's Lunch, Pre-Event Dinner) — resolution prefers the exact name, then the
+shortest, and always echoes what it picked.
+
+Phase 1 (2026-08-23) serves `return: people | count | breakdown` and the field registry above.
+Phase 2/3 (own plans, #116) add `content | videos | events | partners` through the same tree,
+registry, engine and gate — that reuse is the whole reason `find` is one lane. Full spec:
+`docs/superpowers/specs/2026-08-22-finder-design.md`.
 
 ---
 
