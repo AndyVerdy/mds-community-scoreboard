@@ -144,5 +144,32 @@ class FreshnessMessage(unittest.TestCase):
         self.assertEqual(leg.late_registrations_message(None, []), ["  !! export has no _meta.scannedAt — age unknown, compare rosters by hand"])
 
 
+
+class FreshnessFailureMessage(unittest.TestCase):
+    def test_names_the_http_code_and_reason(self):
+        msg = leg.freshness_failure_message(500, '{"message":"upstream timeout"}')
+        self.assertIn("FAILED (HTTP 500)", msg)
+        self.assertIn("cannot confirm the export is current", msg)
+        self.assertIn("upstream timeout", msg)
+
+    def test_truncates_long_body_to_200_chars(self):
+        msg = leg.freshness_failure_message(502, "a" * 250)
+        self.assertIn("a" * 200, msg)
+        self.assertNotIn("a" * 201, msg)
+
+
+class ReminderFailureMessage(unittest.TestCase):
+    def test_names_the_http_code_and_reason(self):
+        msg = leg.reminder_failure_message(500, '{"message":"upstream timeout"}')
+        self.assertIn("FAILED (HTTP 500)", msg)
+        self.assertIn("cannot confirm no pending reminders would cascade", msg)
+        self.assertIn("upstream timeout", msg)
+
+    def test_truncates_long_body_to_200_chars(self):
+        msg = leg.reminder_failure_message(503, "b" * 250)
+        self.assertIn("b" * 200, msg)
+        self.assertNotIn("b" * 201, msg)
+
+
 if __name__ == "__main__":
     unittest.main()

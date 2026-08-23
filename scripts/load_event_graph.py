@@ -286,6 +286,14 @@ def late_registrations_message(scanned_iso, late_rows):
     return lines
 
 
+def freshness_failure_message(code, raw):
+    return f"  !! freshness check FAILED (HTTP {code}) — cannot confirm the export is current: {(raw or '')[:200]}"
+
+
+def reminder_failure_message(code, raw):
+    return f"  !! reminder check FAILED (HTTP {code}) — cannot confirm no pending reminders would cascade: {(raw or '')[:200]}"
+
+
 def freshness_check(d, event_id, key, url):
     """A 'new' export can be an old scan (2026-08-22: a file handed over as new was a
     17-Aug scan missing four people who registered 18–21 Aug). The ticket ledger
@@ -300,7 +308,10 @@ def freshness_check(d, event_id, key, url):
             code, raw = rest("GET", "event_registrations_live?select=full_name,order_date"
                                     f"&event_at_id=eq.{cat[0]['at_record_id']}&order_date=gt.{scanned[:10]}&order=order_date",
                              key, url, profile="digest")
-            late = json.loads(raw or "[]") if code == 200 else []
+            if code != 200:
+                print(freshness_failure_message(code, raw))
+                return scanned
+            late = json.loads(raw or "[]")
         else:
             print("  ?? no events_catalog row maps this GroupOS event — freshness check skipped")
     for line in late_registrations_message(scanned, late):
@@ -320,7 +331,10 @@ def reminder_warning(stale_activity_ids, stale_session_ids, key, url):
     if not parts:
         return 0
     code, raw = rest("GET", f"reminders?select=id,person_id,remind_at&status=eq.pending&or=({','.join(parts)})", key, url)
-    pend = json.loads(raw or "[]") if code == 200 else []
+    if code != 200:
+        print(reminder_failure_message(code, raw))
+        return 0
+    pend = json.loads(raw or "[]")
     if pend:
         print(f"  !! {len(pend)} PENDING reminder(s) sit on activities/sessions this export removed — "
               f"they cascade-delete with them: {[p['id'] for p in pend]}")
@@ -740,8 +754,12 @@ def main():
                 print(f"  {'deleted':<10} {n:>5}  {t}")
 
     # --------------------------------------------------------- provenance
-    code, raw = rest("PATCH", f"events?id=eq.{event_id}", key, url,
-                     {"source_scanned_at": scanned, "loaded_at": datetime.now(timezone.utc).isoformat()},
+    prov = {"source_scanned_at": scanned}
+    if args.no_reconcile:
+        print("  loaded_at not stamped: --no-reconcile leaves stale rows in place")
+    else:
+        prov["loaded_at"] = datetime.now(timezone.utc).isoformat()
+    code, raw = rest("PATCH", f"events?id=eq.{event_id}", key, url, prov,
                      extra_headers=["Prefer: return=minimal"])
     if code not in (200, 204):
         sys.exit(f"provenance stamp failed: HTTP {code}\n{raw[:300]}")
@@ -751,7 +769,8 @@ def main():
     for t, pk, parent in SCOPED:
         print(f"  {t:24} {len(existing_rows(t, pk, parent, event_id, key, url)):>5}")
     print(f"  {'people':24} {len(fetch_all('people?select=id', key, url)):>5}")
-    print(f"  events.source_scanned_at = {scanned} · loaded_at = now")
+    print(f"  events.source_scanned_at = {scanned} · loaded_at = "
+          f"{'unchanged (--no-reconcile)' if args.no_reconcile else 'now'}")
 
 
 if __name__ == "__main__":
