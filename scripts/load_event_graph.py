@@ -147,9 +147,18 @@ PARENT_OF = {"activity_id": "activities", "session_id": "sessions"}
 
 
 def _instant(s):
-    """ISO string -> aware datetime, or None when it is not a timestamp."""
+    """ISO string -> aware datetime, or None when it is not a timestamp.
+    PostgREST strips trailing zeros off the fraction (".79" not ".790"), and
+    py3.9's fromisoformat only accepts a 3- or 6-digit fraction (3.11+ accepts
+    any length) — pad/truncate whatever fraction is present to 6 digits before
+    parsing so every precision PostgREST emits round-trips on the 3.9 floor."""
     if not isinstance(s, str) or len(s) < 19 or s[4] != "-" or s[10] != "T":
         return None
+    dot = s.find(".", 19)
+    if dot != -1:
+        digits = (re.match(r"\d+", s[dot + 1:]) or re.match(r"", "")).group()
+        remainder = s[dot + 1 + len(digits):]
+        s = f"{s[:dot]}.{digits[:6].ljust(6, '0')}{remainder}"
     try:
         return datetime.fromisoformat(s.replace("Z", "+00:00"))
     except ValueError:

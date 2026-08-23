@@ -37,6 +37,18 @@ class SameValue(unittest.TestCase):
         self.assertTrue(leg.same_value(True, True))
         self.assertFalse(leg.same_value(True, False))
 
+    def test_bool_and_stringy_int_are_not_equal(self):
+        self.assertFalse(leg.same_value(True, "1"))
+        self.assertFalse(leg.same_value(False, "0"))
+
+    def test_fractional_seconds_of_different_precision_are_equal(self):
+        self.assertTrue(leg.same_value("2026-08-23T09:52:31.79+00:00", "2026-08-23T09:52:31.790+00:00"))
+        self.assertTrue(leg.same_value("2026-08-23T09:52:31.7+00:00", "2026-08-23T09:52:31.700000+00:00"))
+        self.assertTrue(leg.same_value("2026-08-23T09:52:31.79Z", "2026-08-23T09:52:31.790+00:00"))
+
+    def test_fractional_seconds_real_difference_still_differs(self):
+        self.assertFalse(leg.same_value("2026-08-23T09:52:31.79+00:00", "2026-08-23T09:52:32.79+00:00"))
+
 
 class DiffRows(unittest.TestCase):
     def setUp(self):
