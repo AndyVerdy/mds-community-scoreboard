@@ -68,9 +68,15 @@ def rest(method, path, key, url, body=None, profile="event", extra_headers=()):
            "-H", f"Accept-Profile: {profile}", "-H", f"Content-Profile: {profile}"]
     for h in extra_headers:
         cmd += ["-H", h]
+    payload = None
     if body is not None:
-        cmd += ["--data-binary", json.dumps(body)]
-    out = subprocess.run(cmd, capture_output=True, text=True).stdout
+        cmd += ["--data-binary", "@-"]
+        payload = json.dumps(body)
+    # Body goes on STDIN, never as an argv element: macOS ARG_MAX (~1 MB) is a hard
+    # limit on the whole command line, and a single activity's long_description can
+    # already be 90+ KB on its own (2026-08-23: a 92 KB description blew past it on
+    # an 86-row batch). Stdin has no such ceiling regardless of payload size.
+    out = subprocess.run(cmd, input=payload, capture_output=True, text=True).stdout
     raw, _, code = out.rpartition("\n")
     return int(code or 0), raw
 
