@@ -95,7 +95,7 @@ lane while the search lanes correctly excluded it (#98/#106).
 ### 3.1 Request contract
 
 ```jsonc
-POST /api/olivia/find          // headers: X-Olivia-Secret, optional X-Olivia-Audit
+POST /api/olivia/find          // header: X-Olivia-Secret (the lane writes nothing — see 5.6)
 {
   "phone": "1786…",            // the asker; required; resolves the member + their entitlements
   "filters": {
@@ -164,9 +164,10 @@ Known data caveats, to be stated in the answer rather than hidden:
   appear, plus one corrupt value (`OEM Design & Development'Wholesale and/or Arbitrage`, 8 rows) where
   two labels were joined by an apostrophe. The synonym map covers all of them; the corrupt value is
   reported to Andy, not silently repaired.
-* Two Summit-named catalog rows exist — *MDS Summit Singapore* and *MDS Summit Singapore **Night
-  Out*** (a side event). Event resolution prefers an exact name match, and the resolved event name +
-  record id always ship in the response so a wrong pick is visible.
+* **Five** catalog rows match "Summit Singapore" (verified live 2026-08-22): the Summit itself plus
+  *Night Out*, *Speaker's Lunch 2026*, *Women's Lunch 2026* and *Pre-Event Dinner*. Event resolution
+  prefers an exact name match, then the shortest name (side events append words), and the resolved
+  name + record id always ship in the response so a wrong pick is visible.
 
 ### 4.2 Normalisation (in code, not in the prompt)
 
@@ -204,13 +205,16 @@ answer no longer depends on which topic words the model invents.
    never appear in a `names` result. They are also excluded from `total` — a count the asker cannot be
    shown the members of would be misleading. (#106 stays open for the lanes that do not yet route
    through the finder.)
-4. **Scores stay internal.** Ranking uses `engagement_score` and the equalizer; no score, rank or
-   percentile is ever emitted. Ordering is by engagement, then name, so the output is deterministic
-   for the same filter set.
+4. **Scores stay internal, and the order is deterministic.** Ordering is `engagement_score` then
+   name; no score, rank or percentile is ever emitted. The finder deliberately does **not** run the
+   equalizer: a filter question has one correct answer set, and rotating it would make "which
+   resellers are coming" return different people to the same asker on the same day. The equalizer
+   stays where it belongs — the recommendation lanes.
 5. **Self-exclusion.** The asker is never returned as their own match.
-6. **Audit.** `X-Olivia-Audit` suppresses the `olivia_recommendations` write, per the 2026-08-20
-   equalizer rule (never a `p_limit` heuristic).
-7. **Read-only.** The lane performs no writes other than the recommendations log.
+6. **Read-only, no logging.** The lane writes nothing at all — not even `olivia_recommendations`,
+   because it does not run the equalizer (§5.4). That makes the `X-Olivia-Audit` header moot here:
+   there is no write for an audit to suppress. If a later ticket adds equalizer behaviour to this
+   lane, the header rule comes with it.
 
 ## 6. `event_who` routing fix
 
