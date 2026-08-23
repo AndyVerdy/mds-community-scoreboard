@@ -1528,6 +1528,81 @@ def main():
           st == 200 and not re.search(r"\d{8,}", raw) and "wa.me" not in raw,
           f"status {st}, body {raw[:300]}")
 
+    # ---- #108 finder --------------------------------------------------------
+    FIND = "https://digest.mds.co/api/olivia/find"
+
+    def find(body, secret_hdr=True):
+        cmd = ["curl", "-s", "-w", "\n%{http_code}", "-m", "60", "-X", "POST", FIND,
+               "-H", "Content-Type: application/json"]
+        if secret_hdr:
+            cmd += ["-H", f"X-Olivia-Secret: {olivia_secret}"]
+        cmd += ["-d", json.dumps(body)]
+        out = subprocess.run(cmd, capture_output=True, text=True).stdout
+        text, _, code = out.rpartition("\n")
+        try:
+            return int(code), json.loads(text or "{}")
+        except Exception:
+            return int(code), {}
+
+    st, _ = find({"phone": phone, "where": {"chat": "MDS Resellers"}}, secret_hdr=False)
+    check("find without the secret is 401", st == 401)
+
+    st, body = find({"phone": "10000000000", "where": {"chat": "MDS Resellers"}})
+    check("find unknown phone = zero rows", st == 200 and body.get("total") == 0 and not body.get("people"))
+
+    st, body = find({"phone": phone, "where": {"salary": "big"}})
+    check("find rejects an unknown filter", st == 400 and "unknown filter" in str(body.get("error", "")))
+
+    for red in ("revenue_exact", "email", "phone", "stripe", "persona"):
+        st, body = find({"phone": phone, "where": {"all": [{"country": "Spain"}, {red: "x"}]}})
+        check(f"find refuses the internal-class filter {red} anywhere in the tree",
+              st == 400 and "not allowed" in str(body.get("error", "")))
+
+    st, body = find({"phone": phone, "where": {}})
+    check("find refuses a filter-less dump", st == 400)
+
+    st, body = find({"phone": phone, "where": {"segment": "reseller"}, "limit": 50})
+    names = body.get("people") or []
+    check("find never lists more than 10 names", len(names) <= 10)
+    check("find keeps the true total above the cap", int(body.get("total", 0)) >= len(names))
+    check("find emits no scores", not re.search(r'"(engagement_score|score|rank|pct)"', json.dumps(body)))
+
+    st, body = find({"phone": phone, "where": {"all": [{"country": "United States"}, {"sku_min": 500}]},
+                     "return": "people"})
+    check("an aggregate leaf returns counts, never names (R2)", st == 200 and not body.get("people"))
+
+    st, body = find({"phone": phone, "where": {"any": [{"country": "Spain"}, {"not": {"sku_min": 10}}]},
+                     "return": "people"})
+    check("an aggregate leaf under not/any still withholds names (R2)", st == 200 and not body.get("people"))
+
+    st, body = find({"phone": phone, "where": {"all": [{"country": "United States"}, {"sku_min": 500}]},
+                     "return": "breakdown", "group_by": "country"})
+    small = [b for b in (body.get("breakdown") or []) if b.get("count") is not None and b["count"] < 3]
+    check("small buckets are suppressed under an aggregate filter (R4)", not small)
+
+    # R10: chat membership is a signal for everyone, a NAME only for members of that chat.
+    not_mine = next((c for c in ["MDS Centurion 20M+", "MDS Under 30", "MDS Real Estate", "MDS Trading"]
+                     if c not in chats), None)
+    if not_mine:
+        st, body = find({"phone": phone, "where": {"chat": not_mine}, "return": "people"})
+        check("a direct chat filter by a non-member returns no names (R10)", st == 200 and not body.get("people"))
+        st, body = find({"phone": phone, "where": {"not": {"chat": not_mine}}, "return": "people"})
+        check("a negated chat filter by a non-member returns no names either (R10)", st == 200 and not body.get("people"))
+    st, body = find({"phone": phone, "where": {"segment": "reseller"}, "return": "people", "limit": 10})
+    leaked = [r for p_ in (body.get("people") or []) for r in p_.get("reasons", [])
+              if r.startswith("in ") and r[3:] not in chats]
+    check("reason lines never name a chat the asker is not in (R10)", not leaked)
+
+    staff = curl("GET", f"{BASE}/member_attributes?select=full_name&membership_status=eq.Staff&limit=5",
+                 key, profile_hdr=["Accept-Profile: digest"])[1] or []
+    staff_names = {s["full_name"] for s in staff if s.get("full_name")}
+    st, body = find({"phone": phone, "where": {"country": "United States"}, "limit": 10})
+    check("find never lists a Staff record", not (staff_names & {p.get("name") for p in (body.get("people") or [])}))
+
+    st, body = find({"phone": phone, "where": {"all": [{"segment": "reseller"}, {"event": "MDS Summit Singapore"}]}})
+    check("find withholds attendee names from a non-registered asker (R5)",
+          not body.get("people") and int(body.get("total", 0)) > 0)
+
     print()
     if failures:
         print(f"GATE FAILED — {len(failures)} failure(s): {failures}")
