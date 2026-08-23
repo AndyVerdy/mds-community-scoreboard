@@ -31,6 +31,23 @@ from zoneinfo import ZoneInfo
 ENV_PATH = "/Users/Born/mds-digest-web/.env.local"
 CHUNK = 200
 
+# In the whole `event` schema only two tables carry a UNIQUE constraint that is
+# not implied by their PK (verified against information_schema): `attendees`
+# UNIQUE(event_id, person_id, participant_type_id) and `participant_types`
+# UNIQUE(event_id, role). GroupOS does not edit a document in place on a role
+# change — it soft-deletes the old one and creates a new one with a new _id — so
+# a plain PK upsert leaves the old row behind to collide with the new one on
+# that second constraint. The two tables get different treatment below:
+#   * attendees.id is referenced by no FK (confirmed via information_schema) —
+#     safe to let the natural key win. Listed here; upsert() adds
+#     `?on_conflict=<cols>` for any table in this map, so the UPDATE matches on
+#     the natural key and silently repoints `id` to whatever the export says now.
+#   * participant_types.id IS FK-referenced (attendees RESTRICT,
+#     activity_audience CASCADE) — rewriting it would silently detach or cascade
+#     -delete children. It is deliberately NOT in this map; see
+#     natural_key_collisions(), which refuses instead of guessing.
+ON_CONFLICT = {"attendees": "event_id,person_id,participant_type_id"}
+
 
 def load_env():
     env = {}
@@ -64,9 +81,10 @@ def upsert(table, rows, key, url, dry):
     if dry:
         return len(rows)
     done = 0
+    path = f"{table}?on_conflict={ON_CONFLICT[table]}" if table in ON_CONFLICT else table
     for i in range(0, len(rows), CHUNK):
         batch = rows[i:i + CHUNK]
-        code, raw = rest("POST", table, key, url, batch,
+        code, raw = rest("POST", path, key, url, batch,
                          extra_headers=["Prefer: resolution=merge-duplicates,return=minimal"])
         if code not in (200, 201, 204):
             sys.exit(f"{table}: HTTP {code}\n{raw[:600]}")
@@ -211,6 +229,24 @@ def diff_rows(existing, planned, pk):
 
 def stale_keys(existing_keys, planned_keys):
     return sorted(k for k in existing_keys if k not in planned_keys)
+
+
+def natural_key_collisions(existing_rows, planned_rows, key_cols):
+    """Rows that share a natural key (`key_cols`) with an existing row but carry a
+    DIFFERENT `id` -> [(key, old_id, new_id), ...]. A plain PK upsert is blind to
+    this: the source recreated the row under a new document id, so nothing tells
+    the loader the old and new rows are "the same" thing except the natural key.
+    Used to refuse a write rather than guess (participant_types: its id is
+    FK-referenced, so silently rewriting it would detach or cascade-delete
+    children)."""
+    old_id_by_key = {tuple(r[c] for c in key_cols): r["id"] for r in existing_rows}
+    out = []
+    for r in planned_rows:
+        k = tuple(r[c] for c in key_cols)
+        old_id = old_id_by_key.get(k)
+        if old_id is not None and old_id != r["id"]:
+            out.append((k, old_id, r["id"]))
+    return out
 
 
 def fetch_all(path, key, url, profile="event"):
@@ -726,6 +762,19 @@ def main():
     print()
     scanned = freshness_check(d, event_id, key, url)
     planned = dict(plan)                       # table -> deduped planned rows
+
+    # participant_types.id is FK-referenced (attendees RESTRICT, activity_audience
+    # CASCADE) — unlike attendees, silently repointing it could detach or
+    # cascade-delete children. Refuse and name it instead of guessing.
+    pt_collisions = natural_key_collisions(snapshot["participant_types"], planned["participant_types"],
+                                           ("event_id", "role"))
+    if pt_collisions:
+        print("\n!! participant_types: a role was recreated under a new id in the export — refusing to write:")
+        for (evt, role), old_id, new_id in pt_collisions:
+            print(f"  !! role {role!r}: db has id {old_id}, export now has id {new_id} for the same (event_id, role)")
+        sys.exit("participant_types role-recreation needs a manual decision (re-point attendees / "
+                 "activity_audience rows to the new id, or correct the export) — see lines above")
+
     stale = {t: stale_keys({row_key(r, pk) for r in snapshot[t]},
                            {row_key(r, pk) for r in planned[t]})
              for t, pk, _ in SCOPED}

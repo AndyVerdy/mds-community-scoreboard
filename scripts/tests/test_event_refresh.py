@@ -98,6 +98,46 @@ class StaleKeys(unittest.TestCase):
         self.assertEqual(leg.stale_keys({("a",)}, {("a",), ("z",)}), [])
 
 
+class NaturalKeyCollisions(unittest.TestCase):
+    """GroupOS soft-deletes + recreates a row on a role change: same natural key,
+    new document id. A plain PK diff can't see that; this is what does."""
+
+    def test_same_key_different_id_is_a_collision(self):
+        existing = [{"id": "old1", "event_id": "E", "role": "Staff"}]
+        planned = [{"id": "new1", "event_id": "E", "role": "Staff"}]
+        self.assertEqual(leg.natural_key_collisions(existing, planned, ("event_id", "role")),
+                         [(("E", "Staff"), "old1", "new1")])
+
+    def test_same_id_is_not_a_collision(self):
+        existing = [{"id": "same", "event_id": "E", "role": "Staff"}]
+        planned = [{"id": "same", "event_id": "E", "role": "Staff"}]
+        self.assertEqual(leg.natural_key_collisions(existing, planned, ("event_id", "role")), [])
+
+    def test_all_new_key_is_not_a_collision(self):
+        existing = [{"id": "old1", "event_id": "E", "role": "Staff"}]
+        planned = [{"id": "new2", "event_id": "E", "role": "MDS"}]
+        self.assertEqual(leg.natural_key_collisions(existing, planned, ("event_id", "role")), [])
+
+    def test_only_the_colliding_row_is_reported_among_several(self):
+        existing = [{"id": "old1", "event_id": "E", "role": "Staff"},
+                    {"id": "keep", "event_id": "E", "role": "Member"}]
+        planned = [{"id": "new1", "event_id": "E", "role": "Staff"},
+                   {"id": "keep", "event_id": "E", "role": "Member"},
+                   {"id": "brand-new", "event_id": "E", "role": "MDS"}]
+        self.assertEqual(leg.natural_key_collisions(existing, planned, ("event_id", "role")),
+                         [(("E", "Staff"), "old1", "new1")])
+
+
+class OnConflictMap(unittest.TestCase):
+    def test_attendees_upserts_on_its_natural_key(self):
+        self.assertEqual(leg.ON_CONFLICT["attendees"], "event_id,person_id,participant_type_id")
+
+    def test_participant_types_is_never_on_conflict(self):
+        # its id IS FK-referenced (attendees RESTRICT, activity_audience CASCADE) —
+        # rewriting it would be destructive; see NaturalKeyCollisions instead.
+        self.assertNotIn("participant_types", leg.ON_CONFLICT)
+
+
 class DeletionOrder(unittest.TestCase):
     """Children before parents, or PostgREST returns 409 on RESTRICT / we lose cascades we wanted to count."""
     def pos(self, table):
