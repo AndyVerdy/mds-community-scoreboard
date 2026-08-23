@@ -4,7 +4,8 @@
   "window": "2026-08-16..2026-08-23",
   "built": "2026-08-23",
   "rule": "organic only, locked",
-  "parent": "eval_bank_100_2026-08-16.json"
+  "parent": "eval_bank_100_2026-08-16.json",
+  "amended": "2026-08-23: 5049/5050 expects made conditional on the asker's registration — the originals assumed a registered attendee; the probe member is not registered, and #86 gates reminders on attendance (OLIVIA_HANDBOOK.md 'Reminders (#86)')."
  },
  "questions": [
   {
@@ -587,7 +588,7 @@
    "id": 5049,
    "class": "QUALITY_FIXES",
    "q": "remind me about night out in 5 min",
-   "expect": "Sets the reminder and says when it will land (#86). Night Out is a separate side event, never the Summit itself, and its time is the venue's.",
+   "expect": "Registered asker: sets the reminder and says when it will land (#86). UNREGISTERED asker (the probe member): may not set it — must still name the event, give its start time in the VENUE zone and the RSVP/registration link, and say plainly why. Night Out is a separate side event, never the Summit itself.",
    "soft": false,
    "asker": "Andy Verdy",
    "first_asked": "2026-08-18",
@@ -599,7 +600,7 @@
    "id": 5050,
    "class": "QUALITY_FIXES",
    "q": "no, in 5 min from now",
-   "expect": "Read as a correction to the reminder just set — re-times it to 5 minutes from now rather than re-answering the event question (#86; #104 adjacent-turn).",
+   "expect": "Read as a correction to the previous reminder turn, not a fresh event question (#104 adjacent-turn). Registered asker: re-times the reminder to 5 minutes from now. UNREGISTERED asker: says the reminder still cannot be set and why, without re-answering the event question from scratch.",
    "soft": true,
    "asker": "Andy Verdy",
    "first_asked": "2026-08-18",
