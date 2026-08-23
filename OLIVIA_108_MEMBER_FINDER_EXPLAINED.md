@@ -1,5 +1,9 @@
 # The Member Finder — the whole story, in plain words
 
+> ⚠️ **Written before the build — its numbers are history, not status.** Its 21 / 99, "twenty-two
+> tests", "six probes", "six checks" and "nine steps" are superseded by the #108 close block on
+> `OLIVIA_SPRINT_4.md` (17 / 122 over 735 actives; 57 finder tests; 9 probes + 3 re-probes; 26 gate checks; 10 tasks). The addendum at the end still stands.
+
 *Written to be listened to. No code, no jargon. About nine minutes.*
 
 ---

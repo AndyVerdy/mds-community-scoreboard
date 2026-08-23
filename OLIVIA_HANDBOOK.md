@@ -487,6 +487,11 @@ Phase 2/3 (own plans, #116) add `content | videos | events | partners` through t
 registry, engine and gate — that reuse is the whole reason `find` is one lane. Full spec:
 `docs/superpowers/specs/2026-08-22-finder-design.md`.
 
+**Trap:** `rpc/geo_country_set` / `geo_state_set` / `country_fold` are the geo SSOT; `geo_state_set`
+needs EXECUTE on nested `digest.attr_state` for `service_role` (granted 2026-08-23,
+`scripts/sql/20260823_grant_attr_state_service_role.sql`); the gate's two geo checks make a lost
+grant loud.
+
 ---
 
 ## 7. The personalization data — and the lanes that consume it (#29)
