@@ -60,8 +60,8 @@ the only mutex; own-ticket doc sections; last committer rebases; message the pee
 `op:'people'`). Belen's "which resellers are coming to the Summit?" now answers **17** (of 102
 Summit attendees) / **122** community-wide (of 735 actives), every person with reasons; a country
 breakdown sums cleanly (5 buckets); the disclosure engine (R1-R10) holds — a 🟡 filter (e.g.
-`sku_min`) returns counts only, a non-member's `chat:` filter never names anyone. Gate **290 checks
-EXIT 0** (24 finder checks). Full close block + AC table on `OLIVIA_SPRINT_4.md` #108. **#114 already promoted alone** (Andy
+`sku_min`) returns counts only, a non-member's `chat:` filter never names anyone. Gate **292 checks
+EXIT 0** (26 finder checks). Full close block + AC table on `OLIVIA_SPRINT_4.md` #108. **#114 already promoted alone** (Andy
 2026-08-23 06:48Z, prod `bbd597b7`); staging was rebuilt from prod (+#114) and #108 re-applies next
 (`apply_108_find.py`), then **Andy promotes #108 separately** (`python3 scripts/olivia_wf.py
 promote`). Before that promote, Andy decides whether to run the
@@ -69,7 +69,14 @@ promote`). Before that promote, Andy decides whether to run the
 where `expertise_search`/`content_search` was the better tool). Follow-ups filed, not blocking:
 **#115** (geo/business-model data hygiene) · **#116** (finder phase 2 content+video, phase 3
 events/partners/forms — own plan) · **#117** (`--cleanup` leaves probe message rows) · **#118**
-(`event_who` should return a flat roster). **Lock released** (staging free for the next session).
+(`event_who` should return a flat roster). **Lock released** (staging free for the next session). Staging re-applied after the #114-only promote — versionId `4321f06a` (snapshots
+`pre-108-reapply` / `108-reapplied` / `108-final`), #114 seed edits intact. Re-probes: exec
+`100210` (17 named), `100212` (Europe → 1), `100278` (breakdown by country, 5 buckets = 17,
+`people:[]`, reply reports counts not names). Parser robustness (`mds-digest-web` main,
+`0c46d42` + `d3fe132`): a multi-field object (`{segment,event}`) now validates as an implicit
+`all` instead of 400ing ("leaf holds exactly one field"), `where` may arrive as a JSON string,
+and `group_by` with no `return`/`ret` now defaults to `breakdown` — closing the two distinct LLM
+tool-call flakes found re-proving this ticket.
 
 ## STATE 2026-08-22 (SESSION CLOSED — #97 PROMOTED + PROD E2E PROVEN; #105/#106 filed)
 **PROMOTED 04:11Z (Andy): prod `7e4be40a` (#97) → #107 ~05:24Z prod `8f48fdb8` → #107b/c ~07:10Z prod `25ceefe1` → #107e ~08:40Z prod `d9538ca6` (picker lead: "Here are the Summit attendees I've recommended to you that I can reach for an intro…"; route `d8f8250` title-case) → **#107d ~08:00Z prod `d2961c8d`: eligibility = Summit attendee + phone (Millie-user rule DROPPED both sides, Andy); picker rows = expertise · speaker · city; route `dd02a9b`** · post-Yes = WhatsApp LIST picker (route's exact ids) · suggestions NEVER filtered/shortened (Andy) · buttons always (≤1024 inline, >1024 follow-up button message) · first-contact PS first when offer present · intro-tap path silent-gated (SELFTEST). #109 templates **APPROVED** (accepted/declined UTILITY, lapsed MARKETING — verified live 2026-08-22) — route logic next session (free-form requester notices die outside 24h window). #110 filed (tap turns not saved to history). Belen's identity split fixed (registration + roster row → her Staff record) so she can use Summit lanes + intros. PROD E2E: exec 96653 Accept tap → row 13 accepted/tap → 2 texts delivered to Andy's phone, 0 LLM rows. Andy's visibility ask → #106 filed (SQL-verified: search lanes exclude Staff; event lanes don't; `test-andy-8153` purged). Andy's lock: `python3 scripts/olivia_wf.py unlock` when done.**

@@ -54,7 +54,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#109** | 📨 Requester-side intro notices must be TEMPLATES (accept / decline / 7-day lapse) — free-form text dies outside the 24h window (Meta 131047); found 2026-08-22 when Andy questioned the lapse promise | 🔴 S1 | S-M | templates `mds_intro_accepted` · `mds_intro_declined` · `mds_intro_lapsed` SUBMITTED (PENDING) | ⏸ logic next session (Andy: "keep as is, suggestions logic first") — must ship before any announcement |
 | **#110** | 🧾 Intro-tap turns are not saved to conversation history — `Save Conversation` on the intro-tap path errors on a `$('Resolve Member')` reference (swallowed by onError); SQL-proven zero rows for tap turns; no member impact, no effect on no-replay flag | 🟡 S2 | S | SQL + exec 97071 | ⏸ next session |
 | **#111** | 🎯 Who-to-meet results swing with the model's free-text topic query (Aaron: q="Retail, PPC, Amazon Ads, Sourcing, AI Automation" → 7 matches; q="Amazon PPC, Retail & Wholesale, Credit Cards & Travel Hacks, AI & Automation, Sourcing & Suppliers" → 1) — matcher should use the asker's own ledger topics deterministically + alias-normalize free text (execs 97152 vs 97286, same day) | 🟡 S2 | S-M | exec diff | ⏸ next session (or fold into #102) |
-| **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 290 EXIT 0, 24 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
+| **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 292 EXIT 0, 26 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
 | **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ route live (`9d0ec41`) · seed PROMOTED `bbd597b7` 2026-08-23 02:49 ET · prod probe Sunday/Monday + full day | ⏳ AC4 only: one WhatsApp "what's happening today" in the 12:00–23:59 ET window |
 | **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🟡 S2 | S | — | ⏸ next session |
 | **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🟡 S2 | L | — | ⏸ own plan |
@@ -355,7 +355,7 @@ Eugene, verbatim: *"It might be also cool to just have an ability to message the
 ---
 
 ### #108 · The Finder — one lane, composable filters, every data layer
-**🟡 S2 · size M — filed 2026-08-22 (Belen's reseller question) · design approved by Andy 2026-08-22, widened twice the same day · ✅ BUILT + PROVEN ON STAGING 2026-08-23 (gate 290 checks EXIT 0) — PROMOTE IS ANDY'S**
+**🟡 S2 · size M — filed 2026-08-22 (Belen's reseller question) · design approved by Andy 2026-08-22, widened twice the same day · ✅ BUILT + PROVEN ON STAGING 2026-08-23 (gate 292 checks EXIT 0) — PROMOTE IS ANDY'S**
 
 > **In plain words:** Belen asked which resellers are coming to the Summit. Millie named brand
 > owners and missed the three real resellers. Two causes, both verified live 2026-08-22: no tool
@@ -394,13 +394,21 @@ anyone, but a chat is named only to its own members (restricted chats).
   `op:'people'`; Answer Seed declares the `find` tool + its routing rule. Apply script
   `scripts/olivia_loop/apply_108_find.py` (`8e92919`); canary `scripts/one_shots/canary_108.py`
   (`62fd6b3`).
-- Gate `scripts/olivia_leak_gate.py`: **290 checks, EXIT 0**, 24 finder checks proving R1-R10
+- Gate `scripts/olivia_leak_gate.py`: **292 checks, EXIT 0**, 26 finder checks proving R1-R10
   non-vacuously (commits `ece7233`, `7211445`, `9994d95`, `8ca2c9b`).
 - Live GRANT applied (`geo_state_set` was 403ing — `EXECUTE` missing on `attr_state`), recorded
   `scripts/sql/20260823_grant_attr_state_service_role.sql`.
 - **PROD: #114 promoted ALONE by Andy 2026-08-23 06:48Z (versionId `bbd597b7`)** — staging was then
   rebuilt from prod (+#114) and no longer carries #108. #108 is re-applied to staging next
   (`apply_108_find.py`), re-probed/gated/snapshotted, and Andy promotes #108 separately.
+- **Staging re-applied after the #114-only promote** — versionId `4321f06a` (snapshots
+  `pre-108-reapply` / `108-reapplied` / `108-final`), #114 seed edits intact. Re-probes: exec
+  `100210` (17 named), `100212` (Europe → 1), `100278` (breakdown by country, 5 buckets = 17,
+  `people:[]`, reply reports counts not names). Parser robustness (`mds-digest-web` main,
+  `0c46d42` + `d3fe132`): a multi-field object (`{segment,event}`) now validates as an implicit
+  `all` instead of 400ing ("leaf holds exactly one field"), `where` may arrive as a JSON string,
+  and `group_by` with no `return`/`ret` now defaults to `breakdown` — closing the two distinct
+  LLM tool-call flakes found re-proving this ticket.
 
 **Before → after:** before — a topic-sample tool named brand owners and missed all three real
 resellers. After — **17** resellers registered for the Summit (of 102 attendees in the member
