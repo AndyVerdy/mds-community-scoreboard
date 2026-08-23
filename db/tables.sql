@@ -342,6 +342,7 @@ CREATE UNIQUE INDEX fb_post_links_pkey ON digest.fb_post_links USING btree (imag
 --   reactions                          integer
 --   hashtags                           text[]
 --   views                              integer
+--   reach                              integer
 alter table digest.fb_posts add constraint fb_posts_pkey PRIMARY KEY (post_id);
 CREATE INDEX fb_posts_author_idx ON digest.fb_posts USING btree (author_uid);
 CREATE INDEX fb_posts_created_idx ON digest.fb_posts USING btree (created_time);

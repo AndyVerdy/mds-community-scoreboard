@@ -6,6 +6,52 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-08-22 (night) — POST REACH shipped end-to-end (ext v0.93→v0.98 + `fb_posts.reach`). Four wrong theories, one anchor-free reader, validated against the FB UI.
+
+**Andy:** "reach is not views. its reach." Correct — `views` is the Insights Top-posts number (top-99
+of 28 days); **reach** is the per-post figure an admin sees in-feed, available for EVERY post.
+
+**The hunt (each step killed a theory, in order):**
+1. v0.91 probe scanned 400 buffered GraphQL responses for `*reach*`/`impression*count` → **`{}`**.
+   Reach is not in the payload at all; it is rendered text. Probe deleted, DOM reader written.
+2. v0.93 read the label at SAVE time → 3 of 10. FB virtualizes the feed; scrolled-past posts are gone
+   from the DOM by then. → v0.94 accumulates every loop pass (6 of 10) + v0.95 on scroll, debounced.
+3. Still 6 of 10, **the same six**. My "climb capped at 12 parents fails on long posts" theory → v0.96
+   rewrote traversal anchor-first, 30 levels, with a wrong-post guard. **Identical 6.** Theory dead.
+4. Andy's screenshot settled it: Daniel Meredith's post plainly showed **139 post reach** — and its
+   header timestamp is **not a link**. **FB renders no permalink anchor for recent feed posts** (same
+   behavior that killed the old feed loop in July), so anchor-first could never see those 4.
+
+**Shipped:** **v0.98 anchor-free reader** — match the label, climb ≤30 levels, identify the story by the
+**first 60 chars of the body text** the harvester already banked from GraphQL (anchor used only when FB
+provides one; assignment refused when a container matches >1 post). `reachDiag` per post
+(`ok` / `rendered-no-label` / `not-rendered`) so this is never guesswork again.
+**DB:** migration `fb_posts_reach_column` (+ comment recording the 139 validation);
+`load_manual_meta.load_reach()` folds the capture's map in **max-wins**, already inside the daily chain
+via the autopilot's META step — no extra wiring.
+
+**Proven live:** 12 of 16 posts read, all `ok`; the other 4 `not-rendered` (Andy stopped scrolling).
+**Daniel Meredith = 139, exactly the FB UI.** Max-wins visible across runs (216→219, 275→279).
+Backfilled from tonight's 4 captures: **12 posts now carry reach — every one of them with `views IS NULL`**
+(none had ever made a Top-posts sheet): Alex Mills 414 · Jonathan Jesper 279 · Ivan Ong 273 · Duncan
+Brown 272 · Ben Pearson #valueadd 263 · Norm Lanier 250 · Ben Anderson 219 · Daniel Meredith 139 ·
+Keith Mander 88 · Zaid 61 · Rich Tesoriero 38 · Michael Patrón 35.
+
+**Also this session:** harvest stall fixed (v0.93: quit at 1 post — floor step 4, 3 flat steps, settle
+0.9s→1.8s, cap 9→14); reach passed through the *recovered* payload (v0.95, it was being dropped);
+two files per Stop confirmed BY DESIGN (page final save + worker safety net, autopilot takes newest).
+**Chrome does not hot-reload unpacked extensions** — the 16:25 scheduled run used the stale 0.92 worker
+because the last reload predated v0.93 by 16 minutes; the popup version badge is the reliable tell.
+
+**Data health checked (Andy asked):** newest post Aug 22 15:14, newest comment Aug 22 21:12,
+`content_items` matches both exactly, every one of the last 12 days has posts+comments+searchable with
+**zero** blank days, **0** unembedded rows over the 30-char floor.
+
+**Next:** tomorrow's scheduled run is the first with the whole stack live (harvest fix + reach) — check
+reach coverage across a full auto-harvest. Airtable ASK/GIVE labelling still awaiting Andy's go.
+
+---
+
 ## 2026-08-22 (early) — reach is NOT in the GraphQL (probe answered it), and the auto-harvest was stalling at 1 post. Both fixed in v0.93, unproven until tomorrow's run.
 
 **Two runs today (Andy stopped there — enough FB signal for one day).** Run 2 produced the evidence:
