@@ -328,6 +328,18 @@ Expected (probe taken Sat 22 Aug ET evening = Sun 23 Aug SGT): `Sunday 23 Aug, <
 
 ---
 
+### Task 2b (added 2026-08-23, after Andy's live test): `next` returns the rest of the venue-day, never a silent 3
+
+Live evidence (prod execution 99999, 05:42Z): asked "what's happening at the summit today" at 12:42 pm
+Singapore, the model called `event_schedule {"op":"next"}` and the route's hard `slice(0, 3)` made a half-day
+(Early Mixer · Check-in · Welcome Reception) look like the whole day. Task 3's seed rule steers the model to
+`day`; this task makes the route forgiving, same lesson as the q-name fallback. Full task text, tests and
+code: `.superpowers/sdd/2026-08-22-venue-today/task-2b-brief.md` (kept verbatim in the ledger workspace; the
+rule in one line: `pickNext(items, fromIso, tz)` → the rest of the venue-day when more than three remain,
+else the classic next three; the `next` answer gains `next_scope`, `day`, `day_label`, `remaining_today`).
+
+---
+
 ### Task 3: Answer Seed (STAGING) — pass the word, trust now_at_venue; docs
 
 **Files:**
