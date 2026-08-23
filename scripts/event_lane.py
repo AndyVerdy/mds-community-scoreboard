@@ -198,8 +198,10 @@ def run(op, phone, q=None, at=None):
 
 def self_test():
     ok = True
-    ev = get("events?select=id,timezone&limit=1")[0]
-    people = get("people?select=id,name,email&limit=400")
+    ev = get("events?select=id,timezone&order=starts_at.desc&limit=1")[0]
+    # order=id: deterministic so `plain` below is stable across runs, not whatever order
+    # PostgREST's default happened to return today (M4/M5, 2026-08-23 #113 review).
+    people = get("people?select=id,name,email,at_member_id&order=id&limit=400")
     by_email = {p["email"]: p for p in people}
 
     def visible_count(pid, day):
@@ -210,17 +212,32 @@ def self_test():
                    if datetime.fromisoformat(a["starts_at"]).astimezone(
                        ZoneInfo(ev["timezone"])).date().isoformat() == day)
 
-    # a plain Member with no grants on day one
+    # a plain Member with no grants on day one. Two passes: prefer a person linked to a
+    # real member record (at_member_id not null) so the subject is a human, not a service
+    # account like "MDS Community" (which has no at_member_id and was the unordered
+    # query's first row pre-fix); fall back to any match if no linked person qualifies.
     plain = None
-    for p in people:
-        t = types_for(p["id"], ev["id"])
-        if t == {"Member"} and not grants_for(p["id"]):
-            plain = p
+    for prefer_linked in (True, False):
+        for p in people:
+            if prefer_linked and not p.get("at_member_id"):
+                continue
+            t = types_for(p["id"], ev["id"])
+            if t == {"Member"} and not grants_for(p["id"]):
+                plain = p
+                break
+        if plain:
             break
-    # 2026-08-23 refresh (#113): GroupOS added two new day-one activities —
-    # "Arrive & Check-In to the Hotel at 3PM" and "Explore Singapore Beyond the
-    # Summit" — to both views; was 6/7, now 7/8. The relationship that matters
-    # (grantee = plain Member + exactly the Women's Lunch) still holds.
+    # 2026-08-23 refresh (#113): day one's Member-visible set gained exactly one activity —
+    # "Explore Singapore Beyond the Summit" (GroupOS created 4 same-named copies, one per
+    # evening 22-25 Aug; only the Sun 23 Aug one falls on day one) — so 6->7. In the SAME
+    # load, "Arrivals" was renamed to "Arrive & Check-In to the Hotel at 3PM" (same id, same
+    # Member audience, already one of the original 6) — a rename, not a new row, and it does
+    # not move the count. The refresh's one activities-table deletion, "Women's Lunch -
+    # Register NOW", was Staff-gated only (its only activity_audience row was "<- Staff") and
+    # does not touch this count either. Verified against the live load's own diff output
+    # (activity_audience: exactly one day-one "+ ... <- Member" line, zero day-one "-" or
+    # "<- Member" removals) — not derived by hand. The relationship that matters (grantee =
+    # plain Member + exactly the Women's Lunch access) still holds, 7/8.
     n = visible_count(plain["id"], "2026-08-23") if plain else -1
     print(f"  plain Member day one = {n} (expect 7) — {plain['name'] if plain else 'none found'}")
     ok &= (n == 7)
