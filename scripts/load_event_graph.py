@@ -25,7 +25,7 @@ import re
 import subprocess
 import sys
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 ENV_PATH = "/Users/Born/mds-digest-web/.env.local"
@@ -276,10 +276,90 @@ def report(plan, snapshot, names, tz):
     return out
 
 
+def late_registrations_message(scanned_iso, late_rows):
+    if not scanned_iso:
+        return ["  !! export has no _meta.scannedAt — age unknown, compare rosters by hand"]
+    if not late_rows:
+        return [f"export scanned {scanned_iso} · no registration in the live ledger is newer — export is current"]
+    lines = [f"export scanned {scanned_iso} · {len(late_rows)} registration(s) in the live ledger are NEWER than this export:"]
+    lines += [f"  !! {r.get('full_name')} ({r.get('order_date')}) — this export cannot know them" for r in late_rows]
+    return lines
+
+
+def freshness_check(d, event_id, key, url):
+    """A 'new' export can be an old scan (2026-08-22: a file handed over as new was a
+    17-Aug scan missing four people who registered 18–21 Aug). The ticket ledger
+    (digest.event_registrations_live) is live-synced, so anything registered after
+    the export's scannedAt proves the export is stale. Returns scannedAt or None."""
+    scanned = ((d.get("_meta") or {}).get("scannedAt") or {}).get("$date") if isinstance((d.get("_meta") or {}).get("scannedAt"), dict) else (d.get("_meta") or {}).get("scannedAt")
+    late = []
+    if scanned:
+        code, raw = rest("GET", f"events_catalog?select=at_record_id&app_event_id=eq.{event_id}&limit=1", key, url, profile="digest")
+        cat = json.loads(raw or "[]") if code == 200 else []
+        if cat:
+            code, raw = rest("GET", "event_registrations_live?select=full_name,order_date"
+                                    f"&event_at_id=eq.{cat[0]['at_record_id']}&order_date=gt.{scanned[:10]}&order=order_date",
+                             key, url, profile="digest")
+            late = json.loads(raw or "[]") if code == 200 else []
+        else:
+            print("  ?? no events_catalog row maps this GroupOS event — freshness check skipped")
+    for line in late_registrations_message(scanned, late):
+        print(line)
+    return scanned
+
+
+def reminder_warning(stale_activity_ids, stale_session_ids, key, url):
+    """Pending reminders hang on activities/sessions by FK and CASCADE away with
+    them. That is the right outcome for a cancelled activity, but it must be
+    said out loud, with ids, before it happens."""
+    parts = []
+    if stale_activity_ids:
+        parts.append(f"activity_id.in.({','.join(stale_activity_ids)})")
+    if stale_session_ids:
+        parts.append(f"session_id.in.({','.join(stale_session_ids)})")
+    if not parts:
+        return 0
+    code, raw = rest("GET", f"reminders?select=id,person_id,remind_at&status=eq.pending&or=({','.join(parts)})", key, url)
+    pend = json.loads(raw or "[]") if code == 200 else []
+    if pend:
+        print(f"  !! {len(pend)} PENDING reminder(s) sit on activities/sessions this export removed — "
+              f"they cascade-delete with them: {[p['id'] for p in pend]}")
+    return len(pend)
+
+
+def delete_stale(table, pk, keys, key, url, dry):
+    """Delete the given rows. Single-column keys go in `in.()` chunks; composite
+    keys go one DELETE each (edge tables are small and the count is the proof)."""
+    if not keys:
+        return 0
+    if dry:
+        return len(keys)
+    done = 0
+    if len(pk) == 1:
+        ids = [k[0] for k in keys]
+        for i in range(0, len(ids), 100):
+            chunk = ",".join(ids[i:i + 100])
+            code, raw = rest("DELETE", f"{table}?{pk[0]}=in.({chunk})", key, url,
+                             extra_headers=["Prefer: return=minimal"])
+            if code not in (200, 204):
+                sys.exit(f"DELETE {table}: HTTP {code}\n{raw[:400]}")
+            done += len(ids[i:i + 100])
+        return done
+    for k in keys:
+        filt = "&".join(f"{c}=eq.{v}" for c, v in zip(pk, k))
+        code, raw = rest("DELETE", f"{table}?{filt}", key, url, extra_headers=["Prefer: return=minimal"])
+        if code not in (200, 204):
+            sys.exit(f"DELETE {table}?{filt}: HTTP {code}\n{raw[:400]}")
+        done += 1
+    return done
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("path")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--no-reconcile", action="store_true",
+                    help="upsert only; leave rows the export no longer contains (diagnostic use)")
     args = ap.parse_args()
 
     url, key = load_env()
@@ -628,6 +708,20 @@ def main():
     for name, old, new in relinked:
         print(f"      ~ {name}: at_member_id {old} -> {new}")
 
+    # -------------------------------------------------------------- guards
+    print()
+    scanned = freshness_check(d, event_id, key, url)
+    planned = dict(plan)                       # table -> deduped planned rows
+    stale = {t: stale_keys({row_key(r, pk) for r in snapshot[t]},
+                           {row_key(r, pk) for r in planned[t]})
+             for t, pk, _ in SCOPED}
+    reminder_warning([k[0] for k in stale["activities"]], [k[0] for k in stale["sessions"]], key, url)
+    if args.no_reconcile:
+        print("  --no-reconcile: stale rows will be LEFT IN PLACE")
+    for t, pk, _ in SCOPED:
+        if stale[t]:
+            print(f"  {'would delete' if args.dry_run else 'will delete':<12} {len(stale[t]):>5}  {t}")
+
     if args.dry_run:
         print("\n--dry-run: nothing written.")
         return
@@ -637,6 +731,27 @@ def main():
     for table, rows in plan:
         n = upsert(table, rows, key, url, False)
         print(f"  {'loaded':<10} {n:>5}  {table}")
+
+    # ---------------------------------------------------------- reconcile
+    if not args.no_reconcile:
+        for t, pk, _ in SCOPED:
+            n = delete_stale(t, pk, stale[t], key, url, False)
+            if n:
+                print(f"  {'deleted':<10} {n:>5}  {t}")
+
+    # --------------------------------------------------------- provenance
+    code, raw = rest("PATCH", f"events?id=eq.{event_id}", key, url,
+                     {"source_scanned_at": scanned, "loaded_at": datetime.now(timezone.utc).isoformat()},
+                     extra_headers=["Prefer: return=minimal"])
+    if code not in (200, 204):
+        sys.exit(f"provenance stamp failed: HTTP {code}\n{raw[:300]}")
+
+    # -------------------------------------------------------------- after
+    print("\nafter:")
+    for t, pk, parent in SCOPED:
+        print(f"  {t:24} {len(existing_rows(t, pk, parent, event_id, key, url)):>5}")
+    print(f"  {'people':24} {len(fetch_all('people?select=id', key, url)):>5}")
+    print(f"  events.source_scanned_at = {scanned} · loaded_at = now")
 
 
 if __name__ == "__main__":

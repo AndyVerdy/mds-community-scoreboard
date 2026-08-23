@@ -166,6 +166,7 @@ grant execute on function digest.attr_clean(v text) to postgres;
 grant execute on function digest.attr_list(j jsonb) to postgres;
 grant execute on function digest.attr_num(t text) to postgres;
 grant execute on function digest.attr_state(t text) to postgres;
+grant execute on function digest.attr_state(t text) to service_role;
 grant execute on function digest.attr_text(j jsonb, k text) to postgres;
 grant execute on function digest.attr_title(t text) to postgres;
 grant execute on function digest.billing_nudge(p_phone text) to postgres;

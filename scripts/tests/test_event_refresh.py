@@ -126,5 +126,23 @@ class DeletionOrder(unittest.TestCase):
                                   "check_ins", "orders", "tickets", "faqs", "participant_types"})
 
 
+class FreshnessMessage(unittest.TestCase):
+    def test_names_each_late_registration(self):
+        lines = leg.late_registrations_message("2026-08-17T22:16:44.734Z", [
+            {"full_name": "Sheng Zheng", "order_date": "2026-08-18"},
+            {"full_name": "Farzad Zahiri", "order_date": "2026-08-21"},
+        ])
+        self.assertEqual(lines[0], "export scanned 2026-08-17T22:16:44.734Z · 2 registration(s) in the live ledger are NEWER than this export:")
+        self.assertIn("  !! Sheng Zheng (2026-08-18) — this export cannot know them", lines)
+        self.assertIn("  !! Farzad Zahiri (2026-08-21) — this export cannot know them", lines)
+
+    def test_silent_when_nothing_is_newer(self):
+        self.assertEqual(leg.late_registrations_message("2026-08-17T22:16:44.734Z", []),
+                         ["export scanned 2026-08-17T22:16:44.734Z · no registration in the live ledger is newer — export is current"])
+
+    def test_missing_scanned_at_is_its_own_warning(self):
+        self.assertEqual(leg.late_registrations_message(None, []), ["  !! export has no _meta.scannedAt — age unknown, compare rosters by hand"])
+
+
 if __name__ == "__main__":
     unittest.main()
