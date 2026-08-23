@@ -28,6 +28,22 @@
 > `X-Olivia-Audit` header (never a p_limit heuristic — that silenced a real lane) ④ the E2E
 > canary pattern: temp registration row, probe, DELETE same session.
 
+## STATE 2026-08-23 (#114 built on STAGING — venue-day seed; Andy: promote then unlock)
+**#114 "today at the Summit" bug (Ian Sells, Singapore, got Saturday on his Sunday) fixed in two
+layers: mds-digest-web Tasks 1-2 LIVE prod (schedule route resolves at=today/tomorrow/yesterday/
+weekday in the venue's own zone, every answer carries `now_at_venue`) + Olivia Task 3 on STAGING
+`bqHstPDi84uOhTCJ` (`apply_114_venue_today.py`: Answer Seed's event_schedule tool description now
+tells the model to pass the WORD, never a computed date; TODAY line carves out the venue exception;
+new bullet names the case). Gate 290/0. Staging probe (execs 100109-100111): "what's happening
+today" → opens *Sunday, Aug 23* with the day-one list; "what's on tomorrow" → opens *Monday, 24
+August*; execution tool_args confirmed literal `"at":"today"`/`"at":"tomorrow"`, never a computed
+date. Applied cleanly alongside #108's concurrent staging edit (find tool) — diff correctly shows
+both `Answer Seed` and `Answer Tool` changed. **PENDING: the probe ran while US-Eastern and
+Singapore both already read Sunday (dates AGREE) — proves the seed passes the word, not yet the
+disagreeing-date case; needs a re-probe in the 12:00-23:59 ET window.** Full ticket + close block
+on the board (`OLIVIA_SPRINT_4.md` #114). **Andy: `python3 scripts/olivia_wf.py promote` then
+`python3 scripts/olivia_wf.py unlock`.**
+
 ## STATE 2026-08-22 (SESSION CLOSED — #97 PROMOTED + PROD E2E PROVEN; #105/#106 filed)
 **PROMOTED 04:11Z (Andy): prod `7e4be40a` (#97) → #107 ~05:24Z prod `8f48fdb8` → #107b/c ~07:10Z prod `25ceefe1` → #107e ~08:40Z prod `d9538ca6` (picker lead: "Here are the Summit attendees I've recommended to you that I can reach for an intro…"; route `d8f8250` title-case) → **#107d ~08:00Z prod `d2961c8d`: eligibility = Summit attendee + phone (Millie-user rule DROPPED both sides, Andy); picker rows = expertise · speaker · city; route `dd02a9b`** · post-Yes = WhatsApp LIST picker (route's exact ids) · suggestions NEVER filtered/shortened (Andy) · buttons always (≤1024 inline, >1024 follow-up button message) · first-contact PS first when offer present · intro-tap path silent-gated (SELFTEST). #109 templates **APPROVED** (accepted/declined UTILITY, lapsed MARKETING — verified live 2026-08-22) — route logic next session (free-form requester notices die outside 24h window). #110 filed (tap turns not saved to history). Belen's identity split fixed (registration + roster row → her Staff record) so she can use Summit lanes + intros. PROD E2E: exec 96653 Accept tap → row 13 accepted/tap → 2 texts delivered to Andy's phone, 0 LLM rows. Andy's visibility ask → #106 filed (SQL-verified: search lanes exclude Staff; event lanes don't; `test-andy-8153` purged). Andy's lock: `python3 scripts/olivia_wf.py unlock` when done.**
 

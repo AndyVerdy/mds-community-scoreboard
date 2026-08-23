@@ -292,6 +292,12 @@ nickname cases and Members-DB duplicate records, listed on the #89 ticket for An
 sends an instant, never a zone. In-person answers always use the venue's zone, named; a virtual
 session carries the content's zone *and* the member's saved-location zone.
 
+**"Today" is the venue's day (#114, 2026-08-22).** The model anchors on US Eastern; the Summit venue is
+12 hours ahead, so for half of every day "today" is already tomorrow there. The schedule route resolves
+`at=today|tomorrow|yesterday|<weekday>` in the event's zone (`src/lib/schedule-day.ts`) and returns
+`now_at_venue` on every answer; the seed tells the model to pass the word, never a computed date. Virtual
+events are not covered — the member's zone is unknown by design.
+
 ### 4.10 Email aliases — one member, all their known addresses (#100, 2026-08-20)
 
 A member's GroupOS grants, registrations and payments do not all use the Airtable Preferred
@@ -839,6 +845,9 @@ as defense-in-depth. (Why RLS is enabled on them at all, and by what, is #61/#64
   deliberate full-table refresh.
 - **n8n v1 fan-out branches run depth-first in order** — a feedback branch listed second runs only
   after the entire first branch. Wire the fast branch first; prove it with per-node start times.
+- **A relative day computed by the model is wrong at any venue east of Eastern.** Ian Sells
+  (Singapore, Sunday 11:30) got Saturday's list on 2026-08-22 (#114) — resolve relative days in
+  code, in the venue zone, never in the model's head.
 
 ---
 
