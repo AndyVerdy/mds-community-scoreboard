@@ -62,9 +62,15 @@ each one matched, without ever being shown something I'm not allowed to see.*
 
 1. `find` answers "which resellers are coming to the Summit" with the **union** — chat membership OR
    declared business model — each person carrying their reason. Live baseline (Summit
-   `recrATwhUDA55iQN5`, 2026-08-22): **21** = 15 in *MDS Resellers* + 9 declared wholesale, 3 both.
-   Ten named, `total: 21` returned honestly.
-2. The same question with no event returns the community set: **99** members.
+   `recrATwhUDA55iQN5`, member layer, 2026-08-22): **17** of the 102 attendees in the member
+   population. Ten named, `total: 17` returned honestly.
+   *(Correction 2026-08-22, Task 5: the first baseline — 21 at the Summit / 99 community — was
+   computed on `digest.members`, the WhatsApp layer (560 actives). The canonical population is the
+   member layer, `member_attributes` with status Current\* / New Member: **735** actives
+   ([[feedback_every_member_always]]: phone/WA is a channel, never the population). The route and
+   the SQL baseline now agree: 122 / 17. Four WA-layer "resellers" fall out because their Airtable
+   status is not current — a data check, filed as a follow-up, not the finder's job.)*
+2. The same question with no event returns the community set: **122** members.
 3. A follow-up narrows the same filter set (resellers → Summit → `country`), no fresh guess.
 4. `return: "breakdown"` with `group_by: "country"` returns counts per country, no invented names.
 5. `event_who` reaches attendees, not the agenda.
