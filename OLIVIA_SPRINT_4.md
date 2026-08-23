@@ -56,7 +56,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#111** | 🎯 Who-to-meet results swing with the model's free-text topic query (Aaron: q="Retail, PPC, Amazon Ads, Sourcing, AI Automation" → 7 matches; q="Amazon PPC, Retail & Wholesale, Credit Cards & Travel Hacks, AI & Automation, Sourcing & Suppliers" → 1) — matcher should use the asker's own ledger topics deterministically + alias-normalize free text (execs 97152 vs 97286, same day) | 🟡 S2 | S-M | exec diff | ⏸ next session (or fold into #102) |
 | **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 292 EXIT 0, 26 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
 | **#113** | 🔄 Summit event refresh — the whole event (activities, sessions, rooms, access, rosters) reloads from a GroupOS export, removals included | 🔴 S1 | M | ✅ LOADED 2026-08-23 from the 09:52Z scan: activities 50→86 · access edges 180→227 · grants 183→698 · full descriptions; idempotent; self-test 7/8 | ✅ CLOSED — live lane serves the new day one |
-| **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ route live (`9d0ec41`) · seed PROMOTED `bbd597b7` 2026-08-23 02:49 ET · prod probe Sunday/Monday + full day | ⏳ AC4 only: one WhatsApp "what's happening today" in the 12:00–23:59 ET window |
+| **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ route live (`9d0ec41`) · seed PROMOTED `bbd597b7` 2026-08-23 02:49 ET · prod probe Sunday/Monday + full day | ✅ CLOSED — Andy tested on WhatsApp 2026-08-23 (ET afternoon, Singapore already on the next day): correct |
 | **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🟡 S2 | S | — | ⏸ next session |
 | **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🟡 S2 | L | — | ⏸ own plan |
 | **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
@@ -1674,7 +1674,9 @@ venue-today, boundary tests; 24 resolver tests, suite 105/105.
 3. The seed passes the word, never a computed date — ✅ staging: exec 100110
    `tool_args={"op":"day","at":"today","p_phone":"17866578153"}`, exec 100111
    `tool_args={"op":"day","at":"tomorrow","p_phone":"17866578153"}` — literal words, not dates.
-4. Live proof while ET and the venue's calendar date DISAGREE — ⏳ **PENDING.** The probe below ran
+4. Live proof while ET and the venue's calendar date DISAGREE — ✅ **CLOSED: Andy tested it himself on
+   WhatsApp on 2026-08-23 in the ET afternoon (Singapore already on the next calendar day) and reported
+   it working.** Original pending note kept below for the record. The probe below ran
    ~2026-08-23 06:26Z (≈02:26am ET), when US-Eastern and Singapore (SGT, UTC+8) both already read
    "Sunday 23 August" — it proves the seed passes the word and the answer opens with the venue's
    day, but not the disagreeing-date case (needs the 12:00-23:59 ET window, when SGT has already

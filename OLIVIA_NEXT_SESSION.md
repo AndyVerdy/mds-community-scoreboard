@@ -62,9 +62,7 @@ from prod (combined snapshot `staging_2026-08-23T064414Z_108-plus-114-applied` k
 its own edit and gets its own promote. Prod probe after promote (execs 100159/100160): "what's
 happening at the summit today" → *"It's Sunday, 23 August at the Summit in Singapore — kickoff day!"*
 + full day; "what's on tomorrow" → *Monday, Aug 24*; tool_args literal `at:"today"/"tomorrow"`.
-**OPEN — AC4 only:** one WhatsApp "what's happening at the summit today" between **12:00 and 23:59
-ET** (venue already on the next calendar day) must open with the venue's day — the model link the
-unit tests cannot pin. **#113 (whole-event refresh, plan
+**AC4 CLOSED (Andy tested on WhatsApp, 2026-08-23 ET afternoon, Singapore already on the next day: working).** #114 is fully closed. **#113 (whole-event refresh, plan
 `docs/superpowers/plans/2026-08-22-summit-event-refresh.md`, 4 tasks, not started): waits for a
 GENUINELY fresh GroupOS export — `event_graph (1).json` was a 17-Aug scan (`_meta.scannedAt`
 2026-08-17T22:16Z; 4 of 5 people registered 18–21 Aug absent); Andy's live GroupOS already shows
