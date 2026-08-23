@@ -25,11 +25,28 @@ import re
 import subprocess
 import sys
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 ENV_PATH = "/Users/Born/mds-digest-web/.env.local"
 CHUNK = 200
+
+# In the whole `event` schema only two tables carry a UNIQUE constraint that is
+# not implied by their PK (verified against information_schema): `attendees`
+# UNIQUE(event_id, person_id, participant_type_id) and `participant_types`
+# UNIQUE(event_id, role). GroupOS does not edit a document in place on a role
+# change — it soft-deletes the old one and creates a new one with a new _id — so
+# a plain PK upsert leaves the old row behind to collide with the new one on
+# that second constraint. The two tables get different treatment below:
+#   * attendees.id is referenced by no FK (confirmed via information_schema) —
+#     safe to let the natural key win. Listed here; upsert() adds
+#     `?on_conflict=<cols>` for any table in this map, so the UPDATE matches on
+#     the natural key and silently repoints `id` to whatever the export says now.
+#   * participant_types.id IS FK-referenced (attendees RESTRICT,
+#     activity_audience CASCADE) — rewriting it would silently detach or cascade
+#     -delete children. It is deliberately NOT in this map; see
+#     natural_key_collisions(), which refuses instead of guessing.
+ON_CONFLICT = {"attendees": "event_id,person_id,participant_type_id"}
 
 
 def load_env():
@@ -51,9 +68,15 @@ def rest(method, path, key, url, body=None, profile="event", extra_headers=()):
            "-H", f"Accept-Profile: {profile}", "-H", f"Content-Profile: {profile}"]
     for h in extra_headers:
         cmd += ["-H", h]
+    payload = None
     if body is not None:
-        cmd += ["--data-binary", json.dumps(body)]
-    out = subprocess.run(cmd, capture_output=True, text=True).stdout
+        cmd += ["--data-binary", "@-"]
+        payload = json.dumps(body)
+    # Body goes on STDIN, never as an argv element: macOS ARG_MAX (~1 MB) is a hard
+    # limit on the whole command line, and a single activity's long_description can
+    # already be 90+ KB on its own (2026-08-23: a 92 KB description blew past it on
+    # an 86-row batch). Stdin has no such ceiling regardless of payload size.
+    out = subprocess.run(cmd, input=payload, capture_output=True, text=True).stdout
     raw, _, code = out.rpartition("\n")
     return int(code or 0), raw
 
@@ -64,9 +87,10 @@ def upsert(table, rows, key, url, dry):
     if dry:
         return len(rows)
     done = 0
+    path = f"{table}?on_conflict={ON_CONFLICT[table]}" if table in ON_CONFLICT else table
     for i in range(0, len(rows), CHUNK):
         batch = rows[i:i + CHUNK]
-        code, raw = rest("POST", table, key, url, batch,
+        code, raw = rest("POST", path, key, url, batch,
                          extra_headers=["Prefer: resolution=merge-duplicates,return=minimal"])
         if code not in (200, 201, 204):
             sys.exit(f"{table}: HTTP {code}\n{raw[:600]}")
@@ -112,10 +136,339 @@ def clean(s):
     return (s or "").strip() or None
 
 
+# ------------------------------------------------------------ refresh
+# A GroupOS export is a snapshot. Re-running the loader must make the `event`
+# schema EQUAL the snapshot for this event. Upsert alone cannot: an activity
+# deleted in GroupOS, an audience box unticked, a speaker removed or a
+# registration cancelled all stay behind as stale rows and keep gating
+# visibility (2026-08-22: the old "Night Out" row stayed open to every Member
+# after GroupOS had made it Staff + per-buyer grants).
+#
+# SCOPED lists every event-scoped table the loader writes, in DELETION ORDER —
+# children before parents, because rooms->locations and attendees->types are
+# RESTRICT and the edge tables CASCADE from activities/sessions (counted here,
+# not lost to a cascade). `people` is deliberately absent: people are humans,
+# not event rows; attendees/speakers RESTRICT on them, and a person who left the
+# export simply stops having attendee rows. `events` is the root and is never
+# deleted.
+#   (table, primary-key columns, parent column that scopes an edge table)
+SCOPED = [
+    ("activity_audience", ("activity_id", "participant_type_id"), "activity_id"),
+    ("activity_person_grants", ("activity_id", "person_id"), "activity_id"),
+    ("session_speakers", ("session_id", "person_id"), "session_id"),
+    ("sessions", ("id",), None),
+    ("activities", ("id",), None),
+    ("rooms", ("id",), None),
+    ("locations", ("id",), None),
+    ("attendees", ("id",), None),
+    ("check_ins", ("id",), None),
+    ("orders", ("id",), None),
+    ("tickets", ("id",), None),
+    ("faqs", ("id",), None),
+    ("participant_types", ("id",), None),
+]
+PARENT_OF = {"activity_id": "activities", "session_id": "sessions"}
+PK_BY_TABLE = {t: pk[0] for t, pk, _ in SCOPED}   # first PK column, for fetch_all's default order=
+
+
+def _instant(s):
+    """ISO string -> aware datetime, or None when it is not a timestamp.
+    PostgREST strips trailing zeros off the fraction (".79" not ".790"), and
+    py3.9's fromisoformat only accepts a 3- or 6-digit fraction (3.11+ accepts
+    any length) — pad/truncate whatever fraction is present to 6 digits before
+    parsing so every precision PostgREST emits round-trips on the 3.9 floor."""
+    if not isinstance(s, str) or len(s) < 19 or s[4] != "-" or s[10] != "T":
+        return None
+    dot = s.find(".", 19)
+    if dot != -1:
+        digits = (re.match(r"\d+", s[dot + 1:]) or re.match(r"", "")).group()
+        remainder = s[dot + 1 + len(digits):]
+        s = f"{s[:dot]}.{digits[:6].ljust(6, '0')}{remainder}"
+    try:
+        return datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def same_value(a, b):
+    """Equality for diffing a planned row against its DB row: instants compare as
+    instants whatever their offset, None / missing / '' are one thing, numbers
+    compare as numbers, strings compare stripped."""
+    if a in (None, "") and b in (None, ""):
+        return True
+    if a is None or b is None:
+        return False
+    ia, ib = _instant(a), _instant(b)
+    if ia is not None and ib is not None:
+        return ia == ib
+    if isinstance(a, bool) or isinstance(b, bool):
+        return a == b
+    try:
+        return float(a) == float(b)
+    except (TypeError, ValueError):
+        pass
+    if isinstance(a, str) and isinstance(b, str):
+        return a.strip() == b.strip()
+    return a == b
+
+
+def row_key(row, pk):
+    return tuple(row.get(c) for c in pk)
+
+
+def diff_rows(existing, planned, pk):
+    """-> (added_rows, removed_rows, changed) where changed = [(planned_row, [(col, old, new), ...])].
+    Only the planned row's columns are compared: the DB row may carry columns the
+    loader never writes and those are not drift."""
+    ex = {row_key(r, pk): r for r in existing}
+    pl = {row_key(r, pk): r for r in planned}
+    added = [pl[k] for k in pl if k not in ex]
+    removed = [ex[k] for k in ex if k not in pl]
+    changed = []
+    for k, row in pl.items():
+        if k not in ex:
+            continue
+        cols = [(c, ex[k].get(c), v) for c, v in row.items() if not same_value(ex[k].get(c), v)]
+        if cols:
+            changed.append((row, cols))
+    return added, removed, changed
+
+
+def stale_keys(existing_keys, planned_keys):
+    return sorted(k for k in existing_keys if k not in planned_keys)
+
+
+def subtract_protected(stale, protected):
+    """`stale[t]` minus any key `protected[t]` marks as a loader SKIP (never reached
+    `planned`, so its absence there is not the export saying the row is gone)."""
+    return {t: [k for k in keys if k not in protected.get(t, ())] for t, keys in stale.items()}
+
+
+def protected_from_skips(skipped, snapshot):
+    """`skipped[table]` holds the row keys of rows the loader could not plan because the
+    SOURCE was defective (unparseable time, unresolved person, an unreferenced placeholder
+    type — see the `!!` prints in main()), keyed exactly like `stale`. Expand that once to
+    every child row that CASCADEs from a skipped parent (activity_audience/
+    activity_person_grants under activities, session_speakers under sessions) using the
+    pre-write `snapshot` already on hand, so a skip never surfaces as a delete two tables
+    over from where it happened."""
+    protected = {t: set(keys) for t, keys in skipped.items()}
+    for t, pk, parent_col in SCOPED:
+        if not parent_col:
+            continue
+        parent_ids = {k[0] for k in protected.get(PARENT_OF[parent_col], ())}
+        if not parent_ids:
+            continue
+        protected.setdefault(t, set())
+        protected[t] |= {row_key(r, pk) for r in snapshot.get(t, ()) if r.get(parent_col) in parent_ids}
+    return protected
+
+
+def natural_key_collisions(existing_rows, planned_rows, key_cols):
+    """Rows that share a natural key (`key_cols`) with an existing row but carry a
+    DIFFERENT `id` -> [(key, old_id, new_id), ...]. A plain PK upsert is blind to
+    this: the source recreated the row under a new document id, so nothing tells
+    the loader the old and new rows are "the same" thing except the natural key.
+    Used to refuse a write rather than guess (participant_types: its id is
+    FK-referenced, so silently rewriting it would detach or cascade-delete
+    children)."""
+    old_id_by_key = {tuple(r[c] for c in key_cols): r["id"] for r in existing_rows}
+    out = []
+    for r in planned_rows:
+        k = tuple(r[c] for c in key_cols)
+        old_id = old_id_by_key.get(k)
+        if old_id is not None and old_id != r["id"]:
+            out.append((k, old_id, r["id"]))
+    return out
+
+
+def fetch_all(path, key, url, profile="event"):
+    """GET every row of a PostgREST path — PostgREST hard-caps 1000 per request, so page.
+    Paging past 1000 rows is only stable with a deterministic ORDER BY (2026-08-23 #113:
+    activity_person_grants is 698 rows and was paged with none — `existing` could silently
+    lose rows and `stale` under-compute). A caller that did not ask for one gets the table's
+    own first PK column appended here — one choke point for every caller — falling back to
+    "id" for a path (e.g. people) with no SCOPED entry."""
+    if "order=" not in path:
+        table = path.split("?", 1)[0]
+        path = f"{path}{'&' if '?' in path else '?'}order={PK_BY_TABLE.get(table, 'id')}"
+    rows, off = [], 0
+    sep = "&" if "?" in path else "?"
+    while True:
+        code, raw = rest("GET", f"{path}{sep}limit=1000&offset={off}", key, url, profile=profile)
+        if code != 200:
+            sys.exit(f"GET {path}: HTTP {code}\n{raw[:300]}")
+        page = json.loads(raw or "[]")
+        rows += page
+        if len(page) < 1000:
+            return rows
+        off += 1000
+
+
+def existing_rows(table, pk, parent_col, event_id, key, url):
+    """Every live row of `table` that belongs to this event. Edge tables have no
+    event_id; they are scoped through their parent's ids (fetched with event_id)."""
+    if parent_col is None:
+        return fetch_all(f"{table}?select=*&event_id=eq.{event_id}&order={pk[0]}", key, url)
+    parents = [r["id"] for r in fetch_all(f"{PARENT_OF[parent_col]}?select=id&event_id=eq.{event_id}", key, url)]
+    rows = []
+    for i in range(0, len(parents), 100):
+        chunk = ",".join(parents[i:i + 100])
+        rows += fetch_all(f"{table}?select=*&{parent_col}=in.({chunk})", key, url)
+    return rows
+
+
+LONG_TEXT = {"long_description", "answer"}          # never printed, only flagged
+
+
+def _fmt(v, tz):
+    inst = _instant(v) if isinstance(v, str) else None
+    if inst is not None:
+        return inst.astimezone(ZoneInfo(tz)).strftime("%a %d %b %H:%M")
+    s = str(v)
+    return s if len(s) <= 60 else s[:57] + "..."
+
+
+def report(plan, snapshot, names, tz):
+    """Print and return the per-table diff. `names` maps a row key to a label so the
+    operator reads 'Night Out' not 6a83823db9b13b629da3b28b."""
+    out = {}
+    print("\n== what this load would change (export vs live DB) ==")
+    for table, rows in plan:
+        if table not in snapshot:            # events, people: informational, handled by caller
+            continue
+        pk = next(p for t, p, _ in SCOPED if t == table)
+        added, removed, changed = diff_rows(snapshot[table], rows, pk)
+        out[table] = {"added": added, "removed": removed, "changed": changed}
+        print(f"  {table:24} +{len(added):<4} ~{len(changed):<4} -{len(removed):<4}")
+        label = names.get(table, lambda r: row_key(r, pk))
+        for r in added:
+            print(f"      + {label(r)}")
+        for r in removed:
+            print(f"      - {label(r)}")
+        for r, cols in changed:
+            shown = ", ".join(f"{c}: {'(changed, %d->%d chars)' % (len(str(o or '')), len(str(n or ''))) if c in LONG_TEXT else _fmt(o, tz) + ' -> ' + _fmt(n, tz)}"
+                              for c, o, n in cols)
+            print(f"      ~ {label(r)}: {shown}")
+    return out
+
+
+def late_registrations_message(scanned_iso, late_rows):
+    if not scanned_iso:
+        return ["  !! export has no _meta.scannedAt — age unknown, compare rosters by hand"]
+    if not late_rows:
+        return [f"export scanned {scanned_iso} · no registration in the live ledger is newer — export is current"]
+    lines = [f"export scanned {scanned_iso} · {len(late_rows)} registration(s) in the live ledger are NEWER than this export:"]
+    lines += [f"  !! {r.get('full_name')} ({r.get('order_date')}) — this export cannot know them" for r in late_rows]
+    return lines
+
+
+def freshness_failure_message(code, raw):
+    return f"  !! freshness check FAILED (HTTP {code}) — cannot confirm the export is current: {(raw or '')[:200]}"
+
+
+def events_catalog_failure_message(code, raw):
+    return f"  !! events_catalog lookup FAILED (HTTP {code}) — cannot check export freshness: {(raw or '')[:200]}"
+
+
+def reminder_failure_message(code, raw):
+    return f"  !! reminder check FAILED (HTTP {code}) — cannot confirm no pending reminders would cascade: {(raw or '')[:200]}"
+
+
+def freshness_check(d, event_id, key, url):
+    """A 'new' export can be an old scan (2026-08-22: a file handed over as new was a
+    17-Aug scan missing four people who registered 18–21 Aug). The ticket ledger
+    (digest.event_registrations_live) is live-synced, so anything registered after
+    the export's scannedAt proves the export is stale. Returns scannedAt or None.
+    This is a GUARD, not a write: an HTTP failure here is reported loudly and the loader
+    keeps going (unlike the identity-bridge reads in main(), which exit — losing those is
+    not something to continue past; losing this check is)."""
+    scanned = ((d.get("_meta") or {}).get("scannedAt") or {}).get("$date") if isinstance((d.get("_meta") or {}).get("scannedAt"), dict) else (d.get("_meta") or {}).get("scannedAt")
+    late = []
+    if scanned:
+        code, raw = rest("GET", f"events_catalog?select=at_record_id&app_event_id=eq.{event_id}&limit=1", key, url, profile="digest")
+        if code != 200:
+            print(events_catalog_failure_message(code, raw))
+            return scanned
+        cat = json.loads(raw or "[]")
+        if cat:
+            code, raw = rest("GET", "event_registrations_live?select=full_name,order_date"
+                                    f"&event_at_id=eq.{cat[0]['at_record_id']}&order_date=gt.{scanned[:10]}&order=order_date",
+                             key, url, profile="digest")
+            if code != 200:
+                print(freshness_failure_message(code, raw))
+                return scanned
+            late = json.loads(raw or "[]")
+        else:
+            print("  ?? no events_catalog row maps this GroupOS event — freshness check skipped")
+    for line in late_registrations_message(scanned, late):
+        print(line)
+    return scanned
+
+
+def reminder_warning(stale_activity_ids, stale_session_ids, key, url):
+    """Pending reminders hang on activities/sessions by FK and CASCADE away with
+    them. That is the right outcome for a cancelled activity, but it must be
+    said out loud, with ids, before it happens."""
+    parts = []
+    if stale_activity_ids:
+        parts.append(f"activity_id.in.({','.join(stale_activity_ids)})")
+    if stale_session_ids:
+        parts.append(f"session_id.in.({','.join(stale_session_ids)})")
+    if not parts:
+        return 0
+    code, raw = rest("GET", f"reminders?select=id,person_id,remind_at&status=eq.pending&or=({','.join(parts)})", key, url)
+    if code != 200:
+        print(reminder_failure_message(code, raw))
+        return 0
+    pend = json.loads(raw or "[]")
+    if pend:
+        print(f"  !! {len(pend)} PENDING reminder(s) sit on activities/sessions this export removed — "
+              f"they cascade-delete with them: {[p['id'] for p in pend]}")
+    return len(pend)
+
+
+def delete_stale(table, pk, keys, key, url, dry):
+    """Delete the given rows. Single-column keys go in `in.()` chunks; composite
+    keys go one DELETE each (edge tables are small and the count is the proof).
+    `Prefer: return=representation` so `done` counts ROWS THE DB ACTUALLY REMOVED, not
+    keys requested — a stale-by-old-id DELETE that matches zero rows (e.g. the attendees
+    on_conflict natural-key merge repoints `id` out from under the old key) must report 0,
+    not the inflated count of keys we asked it to try (I3, 2026-08-23 #113 review)."""
+    if not keys:
+        return 0
+    if dry:
+        return len(keys)
+    done = 0
+    if len(pk) == 1:
+        ids = [k[0] for k in keys]
+        for i in range(0, len(ids), 100):
+            chunk = ",".join(ids[i:i + 100])
+            code, raw = rest("DELETE", f"{table}?{pk[0]}=in.({chunk})", key, url,
+                             extra_headers=["Prefer: return=representation"])
+            if code not in (200, 204):
+                sys.exit(f"DELETE {table}: HTTP {code}\n{raw[:400]}")
+            done += len(json.loads(raw or "[]"))
+        return done
+    for k in keys:
+        filt = "&".join(f"{c}=eq.{v}" for c, v in zip(pk, k))
+        code, raw = rest("DELETE", f"{table}?{filt}", key, url, extra_headers=["Prefer: return=representation"])
+        if code not in (200, 204):
+            sys.exit(f"DELETE {table}?{filt}: HTTP {code}\n{raw[:400]}")
+        done += len(json.loads(raw or "[]"))
+    return done
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("path")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--no-reconcile", action="store_true",
+                    help="upsert only; leave rows the export no longer contains (diagnostic use)")
+    ap.add_argument("--new-event", action="store_true",
+                    help="confirm this export's event id is a NEW event, not yet in event.events "
+                         "(without it the loader refuses: the deployed lane serves whichever event "
+                         "starts latest, so a second event graph would silently switch what it serves)")
     args = ap.parse_args()
 
     url, key = load_env()
@@ -124,6 +477,14 @@ def main():
     event_id = oid(ev["_id"])
     tz = iana_zone(ev.get("timeZone"))
     print(f"event {event_id} · {ev.get('title')} · tz={tz}")
+    code, raw = rest("GET", f"events?select=id&id=eq.{event_id}&limit=1", key, url)
+    if code != 200:
+        sys.exit(f"events lookup: HTTP {code}\n{raw[:300]}")
+    if not json.loads(raw or "[]") and not args.new_event:
+        sys.exit(f"event {event_id} is not yet a row in event.events — this export would silently "
+                 f"create a SECOND event graph, and the deployed lane serves whichever event starts "
+                 f"latest, so loading it would switch what Millie serves without anyone asking for "
+                 f"that. Pass --new-event to confirm this is intentional.")
 
     acts, sess = live(d["activities"]), live(d["sessions"])
     rooms, locs = live(d["rooms"]), live(d["locations"])
@@ -189,7 +550,12 @@ def main():
         code, raw = rest("GET", "member_profiles?select=at_member_id,full_name,email,status"
                                 f"&order=at_member_id&limit=1000&offset={off}",
                          key, url, profile="digest")
-        page = json.loads(raw or "[]") if code == 200 else []
+        if code != 200:
+            # a silent-empty page here would resolve every person to at_member_id=None and
+            # NULL all 234 live member links — the identity bridge Millie's gating depends
+            # on. Not something to continue past.
+            sys.exit(f"member_profiles fetch: HTTP {code}\n{raw[:300]}")
+        page = json.loads(raw or "[]")
         profiles += page
         if len(page) < 1000:
             break
@@ -219,11 +585,15 @@ def main():
         code, raw = rest("GET", "event_registrations?select=email,member_at_id"
                                 f"&email=in.({quoted})&member_at_id=not.is.null",
                          key, url, profile="digest")
-        if code == 200:
-            for row in json.loads(raw or "[]"):
-                e, m = (row.get("email") or "").lower(), row["member_at_id"]
-                reg_map.setdefault(e, set()).add(m)
-                reg_claims.setdefault(m, set()).add(e)
+        if code != 200:
+            # a silently-skipped batch here just looks like "nobody in this batch matched
+            # at registration level" — the same identity bridge as member_profiles above,
+            # not something to continue past.
+            sys.exit(f"event_registrations fetch: HTTP {code}\n{raw[:300]}")
+        for row in json.loads(raw or "[]"):
+            e, m = (row.get("email") or "").lower(), row["member_at_id"]
+            reg_map.setdefault(e, set()).add(m)
+            reg_claims.setdefault(m, set()).add(e)
     for e in unhit:
         ids = reg_map.get(e) or set()
         if len(ids) == 1:
@@ -249,12 +619,20 @@ def main():
         print(f"  ⚠ {s}")
 
     # ------------------------------------------------- participant types
+    # `skipped` accumulates, per SCOPED table, the row keys of rows this loader could not
+    # plan because the SOURCE was defective (unparseable time, unresolved person, an
+    # unreferenced placeholder type) — never because the export said the row is gone. Fed to
+    # protected_from_skips() right before `stale` is computed, so none of these ever reads
+    # as "the export removed this" and gets deleted (C1, 2026-08-23 #113 review).
+    skipped = {"activities": set(), "sessions": set(), "attendees": set(), "participant_types": set()}
+
     used = {oid(r) for a in acts for r in (a.get("accessRoles") or [])}
     pt_rows, skipped_types = [], []
     for p in ptypes:
         pid = oid(p["_id"])
         if p.get("role") in ("New type", "TYPE") and pid not in used:
             skipped_types.append(p.get("role"))
+            skipped["participant_types"].add((pid,))
             continue
         pt_rows.append({"id": pid, "event_id": event_id, "role": p["role"],
                         "is_default": bool(p.get("isDefault"))})
@@ -280,16 +658,20 @@ def main():
     act_rows, audience, grants = [], [], []
     known_types = {r["id"] for r in pt_rows}
     for a in acts:
+        aid = oid(a["_id"])
         start = to_instant(a.get("date"), a.get("startTime"), tz)
         end_date = a.get("endDate") if a.get("isEndOrNextDate") else a.get("date")
         end = to_instant(end_date or a.get("date"), a.get("endTime"), tz)
         if not start or not end:
-            print(f"  !! skipping {a.get('name')!r}: unparseable time")
+            print(f"  !! skipping {a.get('name')!r}: unparseable time — its existing row "
+                  f"(if any) is protected from deletion, not treated as removed")
+            skipped["activities"].add((aid,))
             continue
         if end <= start:
-            print(f"  !! {a.get('name')!r} ends before it starts — check isEndOrNextDate")
+            print(f"  !! {a.get('name')!r} ends before it starts — check isEndOrNextDate — "
+                  f"its existing row (if any) is protected from deletion, not treated as removed")
+            skipped["activities"].add((aid,))
             continue
-        aid = oid(a["_id"])
         lid = oid(a.get("location"))
         act_rows.append({
             "id": aid, "event_id": event_id,
@@ -321,13 +703,15 @@ def main():
                       for a in acts for s in (a.get("session") or [])}
     sess_rows, speakers = [], []
     for s in sess:
+        sid = oid(s["_id"])
         start = to_instant(s.get("date"), s.get("startTime"), tz)
         end_date = s.get("endDate") if s.get("isEndOrNextDate") else s.get("date")
         end = to_instant(end_date or s.get("date"), s.get("endTime"), tz)
         if not start or not end or end <= start:
-            print(f"  !! skipping session {s.get('title')!r}: bad time window")
+            print(f"  !! skipping session {s.get('title')!r}: bad time window — its existing "
+                  f"row (if any) is protected from deletion, not treated as removed")
+            skipped["sessions"].add((sid,))
             continue
-        sid = oid(s["_id"])
         parent = act_of_session.get(sid)
         rid = oid(s.get("room"))
         sess_rows.append({
@@ -352,6 +736,15 @@ def main():
         pid = id_alias.get(oid(u.get("_id"))) if isinstance(u, dict) else None
         rid = oid(a.get("role"))
         if not pid or rid not in known_types:
+            if isinstance(u, dict):
+                who = u.get("name") or u.get("email") or oid(u.get("_id")) or "unidentified user"
+            else:
+                who = "no user object"
+            reason = ("the attendee's user did not resolve to a known person" if not pid
+                     else f"role {rid!r} is not a known participant type")
+            print(f"  !! skipping attendee {who}: {reason} — its existing row (if any) is "
+                  f"protected from deletion, not treated as removed")
+            skipped["attendees"].add((oid(a["_id"]),))
             continue
         att_rows.append({"id": oid(a["_id"]), "event_id": event_id, "person_id": pid,
                          "participant_type_id": rid,
@@ -428,10 +821,110 @@ def main():
              else dedupe(rows, ["id"]) if rows and "id" in rows[0] else rows)
             for t, rows in plan]
 
+    # ------------------------------------------------------------- before
+    # Read the live state BEFORE writing anything: the report and the reconcile
+    # both need the pre-load rows, and the counts after the load are the proof.
+    snapshot = {t: existing_rows(t, pk, parent, event_id, key, url) for t, pk, parent in SCOPED}
+    by_id = {t: {r["id"]: r for r in rows} for t, rows in snapshot.items() if rows and "id" in rows[0]}
+    act_name = lambda aid: (by_id.get("activities", {}).get(aid) or next((r for r in act_rows if r["id"] == aid), {})).get("name", aid)
+    sess_name = lambda sid: (by_id.get("sessions", {}).get(sid) or next((r for r in sess_rows if r["id"] == sid), {})).get("title", sid)
+    type_name = lambda tid: (by_id.get("participant_types", {}).get(tid) or next((r for r in pt_rows if r["id"] == tid), {})).get("role", tid)
+    person_name = lambda pid: next((p["name"] for p in people.values() if p["id"] == pid), pid)
+    names = {
+        "activities": lambda r: f"{r['name']} ({_fmt(r['starts_at'], tz)})",
+        "sessions": lambda r: f"{r['title']} ({_fmt(r['starts_at'], tz)})",
+        "rooms": lambda r: r["name"],
+        "locations": lambda r: r["name"],
+        "participant_types": lambda r: r["role"],
+        "attendees": lambda r: f"{person_name(r['person_id'])} as {type_name(r['participant_type_id'])}",
+        "activity_audience": lambda r: f"{act_name(r['activity_id'])} <- {type_name(r['participant_type_id'])}",
+        "activity_person_grants": lambda r: f"{act_name(r['activity_id'])} <- {person_name(r['person_id'])}",
+        "session_speakers": lambda r: f"{sess_name(r['session_id'])} <- {person_name(r['person_id'])}",
+        "faqs": lambda r: r["question"][:60],
+        "tickets": lambda r: r["name"],
+        "orders": lambda r: f"order {r['id']} by {person_name(r['person_id'])}",
+        "check_ins": lambda r: f"check-in {r['id']} {person_name(r['person_id'])}",
+    }
+    diff = report(plan, snapshot, names, tz)
+    # people are informational (never deleted): how many new, how many re-linked
+    existing_people = {r["id"]: r for r in fetch_all("people?select=id,name,email,at_member_id", key, url)}
+    new_people = [p for p in people.values() if p["id"] not in existing_people]
+    relinked = [(p["name"], existing_people[p["id"]].get("at_member_id"), p["at_member_id"])
+                for p in people.values() if p["id"] in existing_people and existing_people[p["id"]].get("at_member_id") != p["at_member_id"]]
+    print(f"  {'people':24} +{len(new_people):<4} ~{len(relinked):<4} -0    (people are never deleted)")
+    for p in new_people:
+        print(f"      + {p['name']} <{p['email']}>")
+    for name, old, new in relinked:
+        print(f"      ~ {name}: at_member_id {old} -> {new}")
+
+    # -------------------------------------------------------------- guards
+    print()
+    scanned = freshness_check(d, event_id, key, url)
+    planned = dict(plan)                       # table -> deduped planned rows
+
+    # participant_types.id is FK-referenced (attendees RESTRICT, activity_audience
+    # CASCADE) — unlike attendees, silently repointing it could detach or
+    # cascade-delete children. Refuse and name it instead of guessing.
+    pt_collisions = natural_key_collisions(snapshot["participant_types"], planned["participant_types"],
+                                           ("event_id", "role"))
+    if pt_collisions:
+        print("\n!! participant_types: a role was recreated under a new id in the export — refusing to write:")
+        for (evt, role), old_id, new_id in pt_collisions:
+            print(f"  !! role {role!r}: db has id {old_id}, export now has id {new_id} for the same (event_id, role)")
+        sys.exit("participant_types role-recreation needs a manual decision (re-point attendees / "
+                 "activity_audience rows to the new id, or correct the export) — see lines above")
+
+    stale_raw = {t: stale_keys({row_key(r, pk) for r in snapshot[t]},
+                               {row_key(r, pk) for r in planned[t]})
+                 for t, pk, _ in SCOPED}
+    protected = protected_from_skips(skipped, snapshot)
+    stale = subtract_protected(stale_raw, protected)
+    reminder_warning([k[0] for k in stale["activities"]], [k[0] for k in stale["sessions"]], key, url)
+    if args.no_reconcile:
+        print("  --no-reconcile: stale rows will be LEFT IN PLACE")
+    for t, pk, _ in SCOPED:
+        n_protected = len(stale_raw[t]) - len(stale[t])
+        if n_protected:
+            print(f"  protected {n_protected} row(s) from deletion in {t}: they were SKIPPED "
+                  f"by the loader, not removed by the export")
+        if stale[t]:
+            print(f"  {'would delete' if args.dry_run else 'will delete':<12} {len(stale[t]):>5}  {t}")
+
+    if args.dry_run:
+        print("\n--dry-run: nothing written.")
+        return
+
+    # -------------------------------------------------------------- write
     print()
     for table, rows in plan:
-        n = upsert(table, rows, key, url, args.dry_run)
-        print(f"  {'would load' if args.dry_run else 'loaded':<10} {n:>5}  {table}")
+        n = upsert(table, rows, key, url, False)
+        print(f"  {'loaded':<10} {n:>5}  {table}")
+
+    # ---------------------------------------------------------- reconcile
+    if not args.no_reconcile:
+        for t, pk, _ in SCOPED:
+            n = delete_stale(t, pk, stale[t], key, url, False)
+            if n:
+                print(f"  {'deleted':<10} {n:>5}  {t}")
+
+    # --------------------------------------------------------- provenance
+    prov = {"source_scanned_at": scanned}
+    if args.no_reconcile:
+        print("  loaded_at not stamped: --no-reconcile leaves stale rows in place")
+    else:
+        prov["loaded_at"] = datetime.now(timezone.utc).isoformat()
+    code, raw = rest("PATCH", f"events?id=eq.{event_id}", key, url, prov,
+                     extra_headers=["Prefer: return=minimal"])
+    if code not in (200, 204):
+        sys.exit(f"provenance stamp failed: HTTP {code}\n{raw[:300]}")
+
+    # -------------------------------------------------------------- after
+    print("\nafter:")
+    for t, pk, parent in SCOPED:
+        print(f"  {t:24} {len(existing_rows(t, pk, parent, event_id, key, url)):>5}")
+    print(f"  {'people':24} {len(fetch_all('people?select=id', key, url)):>5}")
+    print(f"  events.source_scanned_at = {scanned} · loaded_at = "
+          f"{'unchanged (--no-reconcile)' if args.no_reconcile else 'now'}")
 
 
 if __name__ == "__main__":
