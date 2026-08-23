@@ -98,6 +98,102 @@ class StaleKeys(unittest.TestCase):
         self.assertEqual(leg.stale_keys({("a",)}, {("a",), ("z",)}), [])
 
 
+class SubtractProtected(unittest.TestCase):
+    """C1: a row the loader SKIPPED (source defect) must never be treated as removed by
+    the export. `protected` is what stands between `stale` and the DELETE."""
+
+    def test_a_protected_stale_key_is_not_deleted(self):
+        stale = {"activities": [("a",), ("b",)]}
+        protected = {"activities": {("a",)}}
+        self.assertEqual(leg.subtract_protected(stale, protected), {"activities": [("b",)]})
+
+    def test_an_unprotected_stale_key_still_is(self):
+        stale = {"activities": [("a",), ("b",)]}
+        protected = {"activities": {("z",)}}          # protects a key that was never stale
+        self.assertEqual(leg.subtract_protected(stale, protected), {"activities": [("a",), ("b",)]})
+
+    def test_empty_protected_set_is_a_no_op(self):
+        stale = {"activities": [("a",), ("b",)], "sessions": [("s1",)]}
+        self.assertEqual(leg.subtract_protected(stale, {}), stale)
+
+    def test_multi_table_only_the_named_table_is_protected(self):
+        stale = {"activities": [("a",)], "sessions": [("a",)]}   # same key, different table
+        protected = {"activities": {("a",)}}
+        out = leg.subtract_protected(stale, protected)
+        self.assertEqual(out["activities"], [])
+        self.assertEqual(out["sessions"], [("a",)])              # sessions' ("a",) is untouched
+
+
+class ProtectedFromSkips(unittest.TestCase):
+    """A skipped ACTIVITY must also protect its own activity_audience /
+    activity_person_grants rows in the pre-write snapshot — those never made it into
+    `planned` either (the loop that would have added them never ran), so without this
+    expansion they would independently compute as stale and get deleted even though the
+    parent activity row survives (the exact 'CASCADE its audience, grants' consequence
+    C1 describes). A skipped SESSION protects its session_speakers the same way."""
+
+    def test_skipped_activity_protects_its_audience_and_grants(self):
+        skipped = {"activities": {("act-1",)}, "sessions": set(), "attendees": set(),
+                  "participant_types": set()}
+        snapshot = {
+            "activity_audience": [{"activity_id": "act-1", "participant_type_id": "Member"},
+                                  {"activity_id": "act-2", "participant_type_id": "Member"}],
+            "activity_person_grants": [{"activity_id": "act-1", "person_id": "p1"}],
+            "session_speakers": [],
+        }
+        protected = leg.protected_from_skips(skipped, snapshot)
+        self.assertEqual(protected["activity_audience"], {("act-1", "Member")})
+        self.assertEqual(protected["activity_person_grants"], {("act-1", "p1")})
+        self.assertNotIn(("act-2", "Member"), protected["activity_audience"])
+
+    def test_skipped_session_protects_its_speakers(self):
+        skipped = {"activities": set(), "sessions": {("sess-1",)}, "attendees": set(),
+                  "participant_types": set()}
+        snapshot = {"session_speakers": [{"session_id": "sess-1", "person_id": "p1"},
+                                         {"session_id": "sess-2", "person_id": "p2"}]}
+        protected = leg.protected_from_skips(skipped, snapshot)
+        self.assertEqual(protected["session_speakers"], {("sess-1", "p1")})
+
+    def test_nothing_skipped_is_a_no_op(self):
+        skipped = {"activities": set(), "sessions": set(), "attendees": set(),
+                  "participant_types": set()}
+        snapshot = {"activity_audience": [{"activity_id": "act-1", "participant_type_id": "Member"}]}
+        protected = leg.protected_from_skips(skipped, snapshot)
+        self.assertEqual(protected.get("activity_audience", set()), set())
+
+    def test_end_to_end_a_synthetic_skipped_activity_is_excluded_from_the_delete_set(self):
+        """Gate 4: prove, without touching the DB, that a synthetic 'skipped' activity id
+        never ends up in the set load_event_graph.py would hand to delete_stale()."""
+        existing = {
+            "activities": [{"id": "act-1"}, {"id": "act-2"}],
+            "activity_audience": [{"activity_id": "act-1", "participant_type_id": "Member"},
+                                  {"activity_id": "act-2", "participant_type_id": "Member"}],
+        }
+        planned = {
+            "activities": [{"id": "act-2"}],                              # act-1 skipped this run
+            "activity_audience": [{"activity_id": "act-2", "participant_type_id": "Member"}],
+        }
+        stale_raw = {
+            "activities": leg.stale_keys({leg.row_key(r, ("id",)) for r in existing["activities"]},
+                                         {leg.row_key(r, ("id",)) for r in planned["activities"]}),
+            "activity_audience": leg.stale_keys(
+                {leg.row_key(r, ("activity_id", "participant_type_id")) for r in existing["activity_audience"]},
+                {leg.row_key(r, ("activity_id", "participant_type_id")) for r in planned["activity_audience"]}),
+        }
+        # today, unprotected: act-1 and its audience row would both be stale
+        self.assertIn(("act-1",), stale_raw["activities"])
+        self.assertIn(("act-1", "Member"), stale_raw["activity_audience"])
+
+        skipped = {"activities": {("act-1",)}, "sessions": set(), "attendees": set(),
+                  "participant_types": set()}
+        protected = leg.protected_from_skips(skipped, existing)
+        stale = leg.subtract_protected(stale_raw, protected)
+        self.assertNotIn(("act-1",), stale["activities"])
+        self.assertNotIn(("act-1", "Member"), stale["activity_audience"])
+        self.assertEqual(stale["activities"], [])          # nothing left to delete
+        self.assertEqual(stale["activity_audience"], [])
+
+
 class NaturalKeyCollisions(unittest.TestCase):
     """GroupOS soft-deletes + recreates a row on a role change: same natural key,
     new document id. A plain PK diff can't see that; this is what does."""
@@ -196,6 +292,21 @@ class FreshnessFailureMessage(unittest.TestCase):
         msg = leg.freshness_failure_message(502, "a" * 250)
         self.assertIn("a" * 200, msg)
         self.assertNotIn("a" * 201, msg)
+
+
+class EventsCatalogFailureMessage(unittest.TestCase):
+    """C2(c): a 5xx on the events_catalog lookup must read as an HTTP failure, never as
+    the genuine 'no events_catalog row maps this GroupOS event' case."""
+    def test_names_the_http_code_and_reason(self):
+        msg = leg.events_catalog_failure_message(503, '{"message":"upstream timeout"}')
+        self.assertIn("FAILED (HTTP 503)", msg)
+        self.assertIn("cannot check export freshness", msg)
+        self.assertIn("upstream timeout", msg)
+
+    def test_truncates_long_body_to_200_chars(self):
+        msg = leg.events_catalog_failure_message(500, "c" * 250)
+        self.assertIn("c" * 200, msg)
+        self.assertNotIn("c" * 201, msg)
 
 
 class ReminderFailureMessage(unittest.TestCase):
