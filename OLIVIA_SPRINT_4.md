@@ -1538,6 +1538,42 @@ is told about Saturday. Same behaviour in `event_lane.py` and the deployed route
 name matches several activities, answer with the one on the venue's today (or the next upcoming) and say
 it runs every evening.
 
+Same block of activities: the **Tue 25 Aug 22:30 Night Out row vanished from the agenda** on
+2026-08-23 (`op=agenda` went to 37 activities; the row is gone, the catalog row `rec4SEDr6vYnwzxwT`
+survives). Check whether it was renamed into one of these daily copies on purpose or lost upstream.
+
+### #123 · `event_lookup` never reaches the events catalog — every `event_*` call is sent to the schedule endpoint
+**🟡 S2 · size M — filed 2026-08-23 from the #108 fix-wave-4 review.**
+
+> **In plain words:** Millie has two different sources for events — the *schedule* of the event you are
+> attending, and the *catalog* of every MDS event past and future. She can only reach the first one. Ask
+> her about an event that is not on your Summit agenda and she gets the Summit's agenda back instead.
+
+*As a member, when I ask about an MDS event that is not on my current agenda — a side event, a past
+summit, next quarter's roundtable — I get that event's details, not the schedule of the event I happen
+to be registered for.*
+
+**What is wrong (verified live on staging `bqHstPDi84uOhTCJ`, 2026-08-23):** `Attach Embedding`'s
+`EXEC_NAME` map rewrites `event_lookup → event_lookup_v2`, and `Answer Tool` then routes **anything**
+whose `tool_name` starts with `event_` to `https://digest.mds.co/api/olivia/schedule` — the catalog RPC
+is never called. The schedule endpoint ignores `p_terms` and answers with the live event's agenda.
+`event_history_v2` has the same fate. The clean fix was proven to work in wave 4 (`event_lookup_v3` with
+`p_phone` plus the model's own argument shape returns the right rows) and **deliberately not shipped**.
+
+**Why it was not just fixed:** bank question A4071 currently passes *because of* the misroute. The
+catalog's own row for the running Summit reads *"THIS EVENT HAS ALREADY HAPPENED"* and carries no
+registration link, so routing correctly today would regress a passing item. The catalog's
+`start_display` / `reg_link` for an in-progress event must be sorted out first.
+
+**Fold in while there:** `event_lookup_v3` prints `(time as listed: 22:30 UTC)` for an on-site side
+event that the agenda correctly shows as `10:30 pm Singapore time`. The seed now forces the venue's zone
+in the answer, so the wrong label is contained — but it is one prompt away from reaching a member.
+
+**Accept when:** an `event_lookup` call reaches the catalog RPC and returns catalog rows · the running
+event's catalog row shows a correct start and a live registration link (no "already happened") · A4071
+still passes for the right reason, from the right source · a side event asked about by name answers from
+the catalog with its own RSVP link · `event_history` reaches its RPC too · gate EXIT 0.
+
 ### #113 · Summit event refresh — reload the whole event from a GroupOS export, removals included
 **🔴 S1 · size M — filed + built + loaded 2026-08-23.**
 
