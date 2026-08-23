@@ -59,7 +59,7 @@ TOOL_DECL = (
     "video_search).',\n"
     "    input_schema: S({ where: { type: 'object', description: 'the filter tree - see the examples; at least "
     "one condition' }, ret: str('people | count | breakdown'), "
-    "group_by: str('country | state | city | band | niche | business_model | chat | chapter'), "
+    "group_by: str('country | state | city | band | niche | business_model | chat | chapter | category | age_band'), "
     "limit: num('max names, default 10') }, ['where']) },\n"
 )
 
