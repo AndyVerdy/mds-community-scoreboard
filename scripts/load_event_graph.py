@@ -204,6 +204,69 @@ def stale_keys(existing_keys, planned_keys):
     return sorted(k for k in existing_keys if k not in planned_keys)
 
 
+def fetch_all(path, key, url, profile="event"):
+    """GET every row of a PostgREST path — PostgREST hard-caps 1000 per request, so page."""
+    rows, off = [], 0
+    sep = "&" if "?" in path else "?"
+    while True:
+        code, raw = rest("GET", f"{path}{sep}limit=1000&offset={off}", key, url, profile=profile)
+        if code != 200:
+            sys.exit(f"GET {path}: HTTP {code}\n{raw[:300]}")
+        page = json.loads(raw or "[]")
+        rows += page
+        if len(page) < 1000:
+            return rows
+        off += 1000
+
+
+def existing_rows(table, pk, parent_col, event_id, key, url):
+    """Every live row of `table` that belongs to this event. Edge tables have no
+    event_id; they are scoped through their parent's ids (fetched with event_id)."""
+    if parent_col is None:
+        return fetch_all(f"{table}?select=*&event_id=eq.{event_id}&order={pk[0]}", key, url)
+    parents = [r["id"] for r in fetch_all(f"{PARENT_OF[parent_col]}?select=id&event_id=eq.{event_id}", key, url)]
+    rows = []
+    for i in range(0, len(parents), 100):
+        chunk = ",".join(parents[i:i + 100])
+        rows += fetch_all(f"{table}?select=*&{parent_col}=in.({chunk})", key, url)
+    return rows
+
+
+LONG_TEXT = {"long_description", "answer"}          # never printed, only flagged
+
+
+def _fmt(v, tz):
+    inst = _instant(v) if isinstance(v, str) else None
+    if inst is not None:
+        return inst.astimezone(ZoneInfo(tz)).strftime("%a %d %b %H:%M")
+    s = str(v)
+    return s if len(s) <= 60 else s[:57] + "..."
+
+
+def report(plan, snapshot, names, tz):
+    """Print and return the per-table diff. `names` maps a row key to a label so the
+    operator reads 'Night Out' not 6a83823db9b13b629da3b28b."""
+    out = {}
+    print("\n== what this load would change (export vs live DB) ==")
+    for table, rows in plan:
+        if table not in snapshot:            # events, people: informational, handled by caller
+            continue
+        pk = next(p for t, p, _ in SCOPED if t == table)
+        added, removed, changed = diff_rows(snapshot[table], rows, pk)
+        out[table] = {"added": added, "removed": removed, "changed": changed}
+        print(f"  {table:24} +{len(added):<4} ~{len(changed):<4} -{len(removed):<4}")
+        label = names.get(table, lambda r: row_key(r, pk))
+        for r in added:
+            print(f"      + {label(r)}")
+        for r in removed:
+            print(f"      - {label(r)}")
+        for r, cols in changed:
+            shown = ", ".join(f"{c}: {'(changed, %d->%d chars)' % (len(str(o or '')), len(str(n or ''))) if c in LONG_TEXT else _fmt(o, tz) + ' -> ' + _fmt(n, tz)}"
+                              for c, o, n in cols)
+            print(f"      ~ {label(r)}: {shown}")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("path")
@@ -520,10 +583,51 @@ def main():
              else dedupe(rows, ["id"]) if rows and "id" in rows[0] else rows)
             for t, rows in plan]
 
+    # ------------------------------------------------------------- before
+    # Read the live state BEFORE writing anything: the report and the reconcile
+    # both need the pre-load rows, and the counts after the load are the proof.
+    snapshot = {t: existing_rows(t, pk, parent, event_id, key, url) for t, pk, parent in SCOPED}
+    by_id = {t: {r["id"]: r for r in rows} for t, rows in snapshot.items() if rows and "id" in rows[0]}
+    act_name = lambda aid: (by_id.get("activities", {}).get(aid) or next((r for r in act_rows if r["id"] == aid), {})).get("name", aid)
+    sess_name = lambda sid: (by_id.get("sessions", {}).get(sid) or next((r for r in sess_rows if r["id"] == sid), {})).get("title", sid)
+    type_name = lambda tid: (by_id.get("participant_types", {}).get(tid) or next((r for r in pt_rows if r["id"] == tid), {})).get("role", tid)
+    person_name = lambda pid: next((p["name"] for p in people.values() if p["id"] == pid), pid)
+    names = {
+        "activities": lambda r: f"{r['name']} ({_fmt(r['starts_at'], tz)})",
+        "sessions": lambda r: f"{r['title']} ({_fmt(r['starts_at'], tz)})",
+        "rooms": lambda r: r["name"],
+        "locations": lambda r: r["name"],
+        "participant_types": lambda r: r["role"],
+        "attendees": lambda r: f"{person_name(r['person_id'])} as {type_name(r['participant_type_id'])}",
+        "activity_audience": lambda r: f"{act_name(r['activity_id'])} <- {type_name(r['participant_type_id'])}",
+        "activity_person_grants": lambda r: f"{act_name(r['activity_id'])} <- {person_name(r['person_id'])}",
+        "session_speakers": lambda r: f"{sess_name(r['session_id'])} <- {person_name(r['person_id'])}",
+        "faqs": lambda r: r["question"][:60],
+        "tickets": lambda r: r["name"],
+        "orders": lambda r: f"order {r['id']} by {person_name(r['person_id'])}",
+        "check_ins": lambda r: f"check-in {r['id']} {person_name(r['person_id'])}",
+    }
+    diff = report(plan, snapshot, names, tz)
+    # people are informational (never deleted): how many new, how many re-linked
+    existing_people = {r["id"]: r for r in fetch_all("people?select=id,name,email,at_member_id", key, url)}
+    new_people = [p for p in people.values() if p["id"] not in existing_people]
+    relinked = [(p["name"], existing_people[p["id"]].get("at_member_id"), p["at_member_id"])
+                for p in people.values() if p["id"] in existing_people and existing_people[p["id"]].get("at_member_id") != p["at_member_id"]]
+    print(f"  {'people':24} +{len(new_people):<4} ~{len(relinked):<4} -0    (people are never deleted)")
+    for p in new_people:
+        print(f"      + {p['name']} <{p['email']}>")
+    for name, old, new in relinked:
+        print(f"      ~ {name}: at_member_id {old} -> {new}")
+
+    if args.dry_run:
+        print("\n--dry-run: nothing written.")
+        return
+
+    # -------------------------------------------------------------- write
     print()
     for table, rows in plan:
-        n = upsert(table, rows, key, url, args.dry_run)
-        print(f"  {'would load' if args.dry_run else 'loaded':<10} {n:>5}  {table}")
+        n = upsert(table, rows, key, url, False)
+        print(f"  {'loaded':<10} {n:>5}  {table}")
 
 
 if __name__ == "__main__":
