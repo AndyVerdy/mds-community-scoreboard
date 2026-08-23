@@ -17,16 +17,17 @@ for i in range(6):
         sys.exit(f"missing shard output: {p}")
     qs += json.load(open(p))
 
-skel = {q["id"]: q for q in json.load(open(f"{SCR}/eval_bank_C_skeleton.json"))["questions"]}
+skel = {(q["tier"], q["id"]): q for q in json.load(open(f"{SCR}/eval_bank_C_skeleton.json"))["questions"]}
 seen, problems = set(), []
 for q in qs:
-    if q["id"] in seen:
-        problems.append(f"duplicate id {q['id']}")
-    seen.add(q["id"])
-    if q["id"] not in skel:
-        problems.append(f"unknown id {q['id']}")
-    elif q["q"].strip() != skel[q["id"]]["q"].strip():
-        problems.append(f"id {q['id']}: question text was REWORDED — not allowed")
+    k = (q["tier"], q["id"])
+    if k in seen:
+        problems.append(f"duplicate id {k}")
+    seen.add(k)
+    if k not in skel:
+        problems.append(f"unknown id {k}")
+    elif q["q"].strip() != skel[k]["q"].strip():
+        problems.append(f"id {k}: question text was REWORDED — not allowed")
     if not (q.get("expect") or "").strip():
         problems.append(f"id {q['id']}: empty expect")
     if not (q.get("class") or "").strip():
@@ -40,9 +41,29 @@ used = set()
 for f in ("eval_bank_100_2026-08-16.json", "eval_bank_B_2026-08-23.json"):
     for x in json.load(open(f"{REPO}/{f}"))["questions"]:
         used.add(x["q"].strip().lower())
-dups = [q["id"] for q in qs if q["q"].strip().lower() in used and not q.get("context_only")]
-if dups:
-    problems.append(f"{len(dups)} NEW questions duplicate bank A/B: {dups[:10]}")
+# exact duplicates of bank A/B: seq lead-ins become context_only, solos are DROPPED (reported)
+import re as _re
+def _norm(t): return _re.sub(r'\W+', ' ', t.lower()).strip()
+usedn = {_norm(u) for u in used}
+dropped_ab, seen_solo = [], set()
+kept = []
+for q in qs:
+    n = _norm(q["q"])
+    if n in usedn and not q.get("context_only"):
+        if q.get("seq"):
+            q["context_only"] = True          # thread lead-in: keep for context, ungraded
+        else:
+            dropped_ab.append(q["id"]); continue
+    if not q.get("seq"):
+        if n in seen_solo:
+            dropped_ab.append(q["id"]); continue
+        seen_solo.add(n)
+    kept.append(q)
+qs = kept
+# tier-2 ids move to 7001+ so they can never collide with tier-1 (6001+)
+for q in qs:
+    if q["tier"] == 2:
+        q["id"] += 500
 
 if problems:
     print("VALIDATION FAILED:")
@@ -70,7 +91,7 @@ bank = {"name": "eval_bank_C", "built": "2026-08-23", "ticket": "#124",
 json.dump(bank, open(OUT, "w"), indent=1, ensure_ascii=False)
 
 seqs = {q["seq"] for q in ordered if q["seq"]}
-print(f"WROTE {OUT}")
+print(f"WROTE {OUT} · dropped as A/B or intra-bank duplicates: {len(dropped_ab)} {dropped_ab[:12]}")
 print(f"  questions {len(ordered)} · tier1 {sum(1 for q in ordered if q['tier']==1)} "
       f"· tier2 {sum(1 for q in ordered if q['tier']==2)} · multi-turn threads {len(seqs)}")
 print(f"  classes: {Counter(q['class'] for q in ordered).most_common()}")
