@@ -112,21 +112,34 @@ def last_id(key):
     return rows[0]["id"] if rows else 0
 
 
-def wait_persisted(key, baseline, timeout):
-    """Block until THIS turn is in digest.olivia_messages, not just until a timer expires.
+def wait_persisted(key, baseline, timeout, text=None):
+    """Block until THIS turn's own reply is in digest.olivia_messages.
 
     Fixed 2026-08-03 (#52): the harness paced by sleep(20), so any answer slower than that
     fired the next question while Save Conversation was still running — the next turn then
     read INCOMPLETE history (no prev_plan) and manufactured a phantom failure. Multi-turn
     probes are the whole proof for follow-up binding, so the pacing has to wait on
     PERSISTENCE. Returns seconds waited, or -1 on timeout (reported, never silent).
+
+    Fixed 2026-08-23 (#119 bank B): "any olivia row newer than baseline" is NOT this turn's
+    reply — the nightly eval (`olivia_eval.py --nightly`, launchd 03:30 ET) writes to the SAME
+    probe phone, so its replies satisfied the check and the harness raced ahead. Every bank-B
+    turn reported a uniform ~3.1s "persisted" (one poll tick) while real answers take 6-20s,
+    and follow-ups fired before the offer they had to bind to existed — manufacturing exactly
+    the phantom failures #52 was written to prevent. The wait now finds THIS turn's own member
+    row (by text, newer than baseline) and waits for the olivia row that follows IT.
     """
     t0 = time.time()
+    want = (text or "").strip()
     while time.time() - t0 < timeout:
         time.sleep(3)
         rows = curl("GET", f"{BASE}/olivia_messages?phone=eq.{PROBE_PHONE}"
-                           f"&id=gt.{baseline}&role=eq.olivia&order=id.desc&limit=1&select=id", key)
-        if rows:
+                           f"&id=gt.{baseline}&order=id.asc&limit=200&select=id,role,text", key) or []
+        mine = next((r for r in rows if r["role"] == "member" and (r["text"] or "").strip() == want), None)
+        if mine is None:
+            continue                      # our own question has not even landed yet
+        reply = next((r for r in rows if r["role"] == "olivia" and r["id"] > mine["id"]), None)
+        if reply:
             return round(time.time() - t0, 1)
     return -1
 
@@ -163,7 +176,7 @@ def main():
     for i, (text, _wait) in enumerate(bank):
         baseline = last_id(key)
         code = fire(text, f"Q{i:02d}")
-        took = wait_persisted(key, baseline, args.timeout)
+        took = wait_persisted(key, baseline, args.timeout, text)
         mark = f"{took}s" if took >= 0 else f"NOT PERSISTED in {args.timeout}s"
         print(f"  Q{i:02d} [{code}] {mark:>22}  {text[:60]}", flush=True)
 
