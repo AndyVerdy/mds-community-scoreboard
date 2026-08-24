@@ -1248,6 +1248,28 @@ things."** Concretely, at the Big Smoke (§G of the QA checklist):
 *(Historical spend table + projections: see the session logs of 2026-07-31 (PM); baseline
 $0.0135/answer Sonnet vs $0.0270 Kimi, ~$3.70/mo today, ~$110/mo at 748 actives.)*
 
+**THE PLAN OF RECORD (Andy 2026-08-24: "File it. We will target it after all is done" — i.e. after
+the bank C loop closes). Current measured shape: ~$0.04 light answer / ~$0.15 heavy thread (bank C
+counters, 24-turn sample: mean $0.125 answer-loop + 20-30% overhead) → ~$180–400/mo at full member
+traffic, ~$110 per full-bank eval. Five levers, impact-ordered:**
+1. **Split lap 1** — the forced first fetch becomes a tiny call (question + tool schemas only,
+   ~2–3k tokens, `tool_choice any`); the big seed rides only the `auto` laps so `tool_choice` never
+   flips against the cached prefix. Captures the proven −38% without the retrieval loss that killed
+   the first attempt. Gate: A/B on retrieval (tool-call distribution per question vs baseline) +
+   smoke tranche. Est −30–40%/answer.
+2. **Regeneration + Fact Check hygiene** — regen laps re-bill the whole context (wave-7 checks are
+   first-attempt-only for this reason); Fact Check writes a measured 8.4K speculative cache block it
+   never reads (exec 102221) — cache it properly or drop its `cache_control`. Est −5–10%.
+3. **Prefix diet** — the 31,696-token static prefix rides every lap ($0.30/MTok reads + full
+   rewrite on every cold 5-min-TTL start); rules grew wave by wave and overlap. Consolidate; make
+   lane-specific rules conditional on the lane. Quality-gated by the smoke tranche. Est −10–15%.
+4. **Daily smoke tranche (~100 q)** — daily eval ~$15–20 instead of ~$110; the 602-question bank
+   only before promotes. (Also filed on #124's follow-up.)
+5. **Kimi comparison** — bank C's counters are the Claude side; one ~$6 `kimi_harvest/kimi_bench`
+   run gives the Kimi side. Decision data only.
+**Target after 1–3: roughly HALF per answer (~$0.02 light / $0.06–0.08 heavy → ~$90–200/mo).
+Sequence: bank C loop closes → lever 1 (A/B-gated) → 2 → 3; 4 and 5 whenever convenient.**
+
 **REVERTED same night (staging `f31b8c83`) — the A/B Andy ordered caught a retrieval loss: under
 constant `auto`, questions that always retrieved (TikTok-agency: 2 calls, who-to-meet: 1) answered
 from preload with ZERO tool calls, and the identical-request retry reproduces the same no-tool
