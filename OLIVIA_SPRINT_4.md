@@ -274,6 +274,39 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
 
+### #132 · "What can you do / what data do you have" — answer with CAPABILITY, and guide instead of dead-ending
+**🟡 S2 · size M — filed 2026-08-24 (Andy, after reviewing three drafted answers: "I don't like these
+answers, but I like the idea").**
+
+> **In plain words:** today this question gets a fixed marketing card. The honest-inventory version I
+> drafted was worse in a different way — it read like a list of data sources and it told a brand-new
+> member what she *couldn't* see, which lands as "you're screwed" rather than help.
+
+*As a member — especially a new one — when I ask what Millie can do, I hear what she can DO for me and
+where to start, not an inventory of tables and not a list of what I'm locked out of.*
+
+**Andy's direction (2026-08-24), verbatim in substance:**
+- **Lead with capability, not sources.** She gives personalised answers, helps you find and connect with
+  the right members, surfaces deals, events, calls — say THAT. The data list is the footnote.
+- **Never present chat access as a dead end.** "I can read the chats you're in" is fine; "you're not in
+  that one" as a full stop is not. For someone who just joined: *you haven't had a chance to explore
+  yet — here's what MDS offers, here's the chat list, the chapters, and what's worth joining.*
+- **Point outward:** the WhatsApp chat list, chapters, events — the things they could go get.
+
+**Why it is not just a prompt tweak:** the turn is routed `help` in `Plan Request` and the help lane
+bypasses the answer prompt entirely, so no seed rule can reach it (proved 2026-08-24 — fixwave 13 was
+written to re-route it and REVERTED on finding the routing is deliberate, documented in the node from
+2026-07-30: *"data-ACCESS phrasings are capability questions - the canned help list IS the answer"*,
+added because the generated answer kept being blocked by the fact-gate). So this needs either a better
+CARD (still deterministic, but capability-led and new-member aware) or a generated answer fed real
+evidence rows so the gate has something to check. The evidence exists and is cheap: the asker's own
+chats, their join date, their event count, the live chat/chapter lists.
+
+**Accept when:** a brand-new member (e.g. Luke Li, joined 2026-08-19, 6 chats, 0 events) gets an answer
+that leads with what she can do for him and points him at the chat list and chapters · a long-tenured
+member (e.g. Mo Kuhail, 12 chats, 34 events) gets the same shape with his own footing reflected · no
+answer frames a chat the asker is not in as a dead end · bank C 6002 and 6190 pass · gate GREEN.
+
 ### #106 · Staff and non-member records never surface in member-facing lists
 **🟡 S2 · size S — filed 2026-08-22 (Andy, during #97's prod E2E: "I don't want people to see me as an attendee… make sure I'm not searchable. Verify in Supa, don't trust your memory")**
 
