@@ -16,7 +16,7 @@ begin
     select count(*) into v_n from digest.member_identity mz where mz.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(mz.membership_status);
   end if;
   if v_n < 1 then return; end if;
-  select coalesce(m.channels_present, '{}'), m.at_member_id into v_chats, v_atid
+  select coalesce((select array_agg(distinct c) from digest.member_identity mu, unnest(coalesce(mu.channels_present, '{}')) c where mu.at_member_id = m.at_member_id and digest.is_active_member_status(mu.membership_status)), '{}'), m.at_member_id into v_chats, v_atid
     from digest.member_identity m where (case when p_at_member_id is not null then m.at_member_id = p_at_member_id else m.at_member_id = digest.resolve_asker(p_phone) end) and digest.is_active_member_status(m.membership_status) order by (m.phone is not null) desc, m.airtable_id limit 1;
   if p_at_member_id is not null and v_atid is null then v_atid := p_at_member_id; end if;
 
