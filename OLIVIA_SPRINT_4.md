@@ -322,12 +322,29 @@ registrations** and were eligible for `event_who` names; **153 Staff-confirmed r
 events** · `member_card_v2` returned a FULL Staff profile (city, revenue tier, niche, about-me, FB link,
 chapter, 9 chats) labelled `membership_state:'current'` → now `not_found`.
 
-**AC checklist:** Staff absent from `event_who` names for an event he's registered to ✅ (probed as
-registered member Aaron Biner: 10 names, 0 internal, `total_going` 116; and as registered STAFF Belén
-Gallardo: own `is_me` row present, no other Staff) · absent from who-to-meet ✅ (route + live candidate
-proof; **deploy pending**) · absent from the intro picker ✅ (route; **deploy pending**) · gate GREEN ✅
-**297 checks, 0 failures, EXIT 0** (+4 #106 checks; mds-digest-web `npx tsc` clean, 347/347 vitest) ·
-promote ⏸ **Andy** — the route half is not live until he pushes.
+**AC checklist — ALL MET, route DEPLOYED 2026-08-24 (`/api/version` = `aff8941`):**
+· Staff absent from `event_who` names for an event he's registered to ✅ — probed as registered member
+  Aaron Biner: 10 names, 0 internal, `total_going` 116; and as registered STAFF Belén Gallardo: her own
+  `is_me` row present, no other Staff name.
+· Absent from who-to-meet ✅ — probed live on the DEPLOYED route as Aaron Biner: 8 names, **0 Staff**,
+  matched_total 45.
+· Absent from the intro picker ✅ — probed live as **Ben Anderson, the member from Eugene's report**,
+  who has 8 recommendations in 30 days of which **2 are Staff**: picker returns no Staff, and the
+  named-target path answers *"I can't set that one up — Courtney isn't available for intros."* The
+  refusal never says "staff", so it does not disclose the record. Both probes send-free (picker is
+  pure reads; named target used `dry_run`, which returns before any send).
+· Gate GREEN ✅ **297 checks, 0 failures, EXIT 0** (+4 #106 checks). mds-digest-web `tsc` clean,
+  **359/359 vitest** on the rebased base.
+
+**The intro exposure was real and specific:** Courtney Lee is Staff, has a phone AND is Summit-registered
+— so pre-fix she was a fully eligible intro target for Ben, and an accepted tap would have released her
+number to him. Eugene Khayman is Staff with a phone but is NOT Summit-registered, so the registration
+gate already excluded him from intros; his exposure was who-to-meet only.
+
+**Shipped:** Scorecard `7e99584` (board + SQL record) · mds-digest-web `aff8941` on `main`, rebased onto
+the five #122/#124 commits it was behind (`scorecard-cf` confirmed no overlap with the who-to-meet
+region before the push). The ride-along commit is `d25fd52` (finder gate-reporting, the other session's).
+**Andy approved the push; the SQL half was already live.**
 
 **Found alongside, NOT chased (flagged for priority):** ① `'Current Member- Paused '` carries a trailing
 space in the live data while every allowlist spells it without one, so those 3 members are silently
