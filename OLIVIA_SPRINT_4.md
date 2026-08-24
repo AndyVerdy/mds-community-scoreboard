@@ -274,6 +274,88 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
 
+### #138 · Every cited item ships with its OWN link and date — 9 bank C fails
+**🔴 S1 · size M — filed 2026-08-24 from the bank C loop (155/192 fixed; this is the largest thing left).**
+
+> **In plain words:** she names six threads and links one, or names posts with no dates. The member
+> cannot tell which parts they can go and check.
+
+*As a member, anything Millie names I can open — every item carries its own link and its own date.*
+
+**IDs:** 6031 · 6066 · 6150 · 6342 · 6007 · 6331 · 6028 · 6064 · 6236
+**Why it is still open:** a prompt rule was written for this FOUR times (waves 8, 12, 16, 18) and it does
+not hold. The last attempt (S14) counts the rows carrying urls and states the requirement per item; it
+still ships answers with one link for five items. Ellipsis-truncated links ARE fixed (32 → 0, wave 9) —
+this is presence, not truncation.
+**Next thing to try, and it is not another rule:** a Gate Verdict check — if the evidence carried N urls
+and the draft names N items with 0-1 links, regenerate. That is deterministic and auditable. It was not
+built today only because the two refusal-gate regexes I audited fired on more correct answers than
+wrong ones, and I stopped before adding a third unaudited gate late at night.
+**Watch out:** 6342 also scored 2 for a separate reason now fixed (#137 record-id leak).
+
+### #139 · A named partner ships with its recorded offer and its page — 5 bank C fails
+**🔴 S1 · size S-M — filed 2026-08-24.**
+
+> **In plain words:** she says "Jones Cosman CPA" or "Trainadz" and stops. The MDS deal — the reason
+> a member asked her rather than Google — is on the same row and does not come out.
+
+*As a member, when Millie names a partner I get the actual MDS offer and the link to claim it.*
+
+**IDs:** 6075 · 7008 · 7018 · 7043 · 6301
+**Why it is still open:** S2 (wave 8) and S15 (wave 18) both stamp the requirement off the payload. The
+offers ARE in the rows. Note #135 fixed the related-but-different problem of the right partner not
+ranking at all.
+
+### #140 · A refusal names the REAL gate — no invented policy, no false capability denial — 6 fails
+**🔴 S1 · size M — filed 2026-08-24.**
+
+> **In plain words:** "I don't share who attended", "that list is held back for privacy reasons", "I
+> have no way to see who's registered". All three are false: a registered member DOES get attendee
+> names, and she can check registrations.
+
+*As a member, when Millie withholds something she tells me which rule is holding it and how to get in.*
+
+**IDs:** 6266 · 6267 · 6498 · 6356 · 6222 · 6361
+**Why it is still open:** rules R2, R9, R14 and stamps S11, S13 all target this. **A phrasing gate was
+tried and rejected on evidence:** both candidate regexes, audited over all 602 answers, fired on MORE
+correct refusals than wrong ones — "I can't check that" is right when the thing genuinely is not
+available. The discriminator is whether the payload holds the thing, which is why S13 is evidence-keyed
+— and it still is not landing.
+
+### #141 · "Not on file" when it is on file — 3 bank C fails
+**🟡 S2 · size S — filed 2026-08-24.**
+**IDs:** 6499 · 6500 (Fred's firearms brand — TLO Outdoors is in his own public Facebook post; she has
+quoted the post and the product name "TLO Gun Sling" but never the business name) · 6471 (StoreClaw's
+Summit session is on the agenda; she answers with the product blurb).
+**Note:** 6500 REGRESSED in the last round — it now denies the firearms business outright where it
+previously surfaced the product. Worth diffing the two answers before changing anything.
+
+### #142 · The gate's hard-stop clamp answers real questions with a canned line — 3 fails
+**🟡 S2 · size M — filed 2026-08-24. Deliberately not touched.**
+
+> **In plain words:** after two failed regenerations `Gate Verdict` discards the draft and sends "I
+> couldn't verify enough of the details against MDS data". For an out-of-scope question ("how high can
+> a ball jump") a friendly one-line decline is the right answer and it never survives.
+
+**IDs:** 6093 · 6483 · 7045
+**Why it is still open — read this before touching it:** the clamp fires when claims genuinely WERE
+raised, so it is doing its job; weakening it trades a safety backstop for three questions. Re-probing
+these answers them correctly, so the block is INTERMITTENT (a timed-out tool leaves the draft
+unsupported). Wave 12's S6 fixed the tool-error half — canned answers went 8 → 3 — and this is the
+remainder.
+
+### #143 · A follow-up binds to the wrong thing, or loses the thread — 3 fails
+**🟡 S2 · size S — filed 2026-08-24.**
+**IDs:** 6095 (names the 20M+ chat now but not its verification bar or application route) · 6201 (gives
+the profile instead of the WhatsApp footprint) · 6349 ("yes please" restates the credit balance instead
+of acting on the offer she just made).
+
+### #144 · 2027 events answered wrong — BLOCKED on #123
+**🔴 S1 — filed 2026-08-24. Cannot be fixed until #123 lands.**
+**IDs:** 6370 · 6372 · 6400. The 2027 events the bar wants (Centurion Summit California, Summit Cancun)
+live in the events CATALOG, and every `event_*` call is misrouted to the schedule endpoint (#123), so
+the catalog is unreachable. No prompt change can reach them.
+
 ### #132 · "What can you do / what data do you have" — answer with CAPABILITY, and guide instead of dead-ending
 **🟡 S2 · size M — filed 2026-08-24 (Andy, after reviewing three drafted answers: "I don't like these
 answers, but I like the idea").**
