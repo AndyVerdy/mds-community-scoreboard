@@ -8,6 +8,7 @@ AS $function$
 declare
   v_n int; v_atid text; v_q tsquery; v_strict tsquery; v_vec extensions.vector(1024);
   v_order text;
+  v_qfold text := '';
 begin
   if p_at_member_id is not null then
     select count(*) into v_n from digest.member_attributes mz where mz.at_member_id = p_at_member_id and digest.is_active_member_status(mz.membership_status);
@@ -67,6 +68,10 @@ begin
     v_strict := plainto_tsquery('english', p_query);
     if v_strict::text = '' then v_strict := null; end if;
   end if;
+  if nullif(trim(coalesce(p_query, '')), '') is not null then
+    v_qfold := regexp_replace(lower(p_query), '[^a-z0-9]', '', 'g');
+    if length(v_qfold) < 4 then v_qfold := ''; end if;
+  end if;
   if p_embedding is not null then
     begin
       v_vec := p_embedding::extensions.vector(1024);
@@ -107,13 +112,17 @@ begin
     limit 25
   ), sel as (
     select p.*, coalesce(k.rnk, 0.0::real) as kw_rnk,
-           (coalesce(1.0/(60+k.r), 0) + coalesce(1.0/(60+x.r), 0))::real as rrf
+           (coalesce(1.0/(60+k.r), 0) + coalesce(1.0/(60+x.r), 0))::real as rrf,
+           (case when v_qfold <> ''
+                  and regexp_replace(lower(p.pname), '[^a-z0-9]', '', 'g') like '%' || v_qfold || '%'
+                 then 1 else 0 end) as name_hit
     from pool p
     left join kw k on k.partner_id = p.partner_id
     left join vec x on x.partner_id = p.partner_id
     where (v_q is null and v_vec is null)
        or k.partner_id is not null
        or x.partner_id is not null
+       or (v_qfold <> '' and regexp_replace(lower(p.pname), '[^a-z0-9]', '', 'g') like '%' || v_qfold || '%')
   )
   select h.pname,
          h.poffer,
@@ -126,7 +135,8 @@ begin
          h.pfresh,
          digest.member_partner_url(h.partner_id) as partner_url,
          rv.sample as reviews_sample,
-         case when v_vec is null then h.kw_rnk else h.rrf end as matched_rank
+         case when h.name_hit = 1 then 10.0::real
+              when v_vec is null then h.kw_rnk else h.rrf end as matched_rank
   from sel h
   left join lateral (
     select jsonb_agg(jsonb_build_object('rating', r.rating, 'text', r.review_text)
@@ -140,6 +150,6 @@ begin
       limit 3
     ) r
   ) rv on true
-  order by h.rrf desc, h.kw_rnk desc, h.pfeat desc, h.pfresh desc, h.pclaims desc, h.pname
+  order by h.name_hit desc, h.rrf desc, h.kw_rnk desc, h.pfeat desc, h.pfresh desc, h.pclaims desc, h.pname
   limit least(greatest(coalesce(p_limit, 8), 1), 20);
 end $function$
