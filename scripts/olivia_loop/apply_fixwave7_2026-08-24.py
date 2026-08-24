@@ -55,7 +55,7 @@ def main():
     anchor1 = ("never speculate about when the next sync runs, and NEVER describe internal data "
                "problems, placeholder rows or test entries to a member.',")
     bullet = anchor1 + """
-  'LINKS sit WITH their sentence: on the same line ("Register: <url>") or directly under the line that names them (a venue line then its maps link is fine). NEVER end a reply with a link no sentence introduced, never stack a second bare link under an unrelated one, and if a link has no sentence naming it, drop the link. A stated count must equal what you actually listed - never "20+" when the evidence says 18, never a numbered list that stops early.',"""
+  'LINKS sit WITH their sentence: on the same line ("Register: <url>") or directly under the line that names them (a venue line then its maps link is fine). NEVER end a reply with a link no sentence introduced, never stack a second bare link under an unrelated one, and if a link has no sentence naming it, drop the link. When you cite a post, thread or video BY NAME and its link is in the evidence, include that link - never offer "want me to pull the link?" for a link you are holding. Never emit a URL containing an ellipsis (a link display-shortened in the evidence is not a link - use the url field or leave it out). A stated count must equal what you actually listed - never "20+" when the evidence says 18, never a numbered list that stops early.',"""
     c = sub(c, anchor1, bullet, "seed link bullet")
     node_check(c, "Answer Seed"); seed["parameters"]["jsCode"] = c
 
@@ -92,7 +92,7 @@ def main():
 // a sentence whose subject is backend machinery + a returns/came-back verb is narration.
 try {
   const _txt7 = String(answerText || '');
-  const _shape7 = /\\b(the|my|our|a|that|this)\\s+(search\\s+)?(tool|query|lookup|directory|preload(?:ed)?\\s+search)\\b[^.\\n]{0,40}\\b(returns?|returned|comes? back|came back|pulled|gave|came up|kept giving|is coming back|empty on its end)\\b/i;
+  const _shape7 = /(\\b(the|my|our|a|that|this)\\s+(search\\s+)?(tool|query|lookup|directory|preload(?:ed)?\\s+search)\\b[^.\\n]{0,40}\\b(returns?|returned|comes? back|came back|pulled|gave|came up|kept giving|is coming back|empty on its end|only covers|can (see|retrieve|search))\\b)|(\\b(in|from) my (results|search)\\b)|(\\bwhat I can retrieve\\b)|(\\bsearchable here\\b)|(\\bmy search only\\b)/i;
   if (_attempt0 && _shape7.test(_txt7)) {
     policyClaims.push('INTERNALS-SHAPE: the draft describes how the answer was obtained ("'
       + (_txt7.match(_shape7) || [''])[0].slice(0, 60)
