@@ -93,7 +93,7 @@ def main():
 // a sentence whose subject is backend machinery + a returns/came-back verb is narration.
 try {
   const _txt7 = String(answerText || '');
-  const _shape7 = /(\\b(the|my|our|a|that|this)\\s+(search\\s+)?(tool|query|lookup|directory|preload(?:ed)?\\s+search)\\b[^.\\n]{0,40}\\b(returns?|returned|comes? back|came back|pulled|gave|came up|kept giving|is coming back|empty on its end|only covers|can (see|retrieve|search))\\b)|(\\b(in|from) my (results|search)\\b)|(\\bwhat I can retrieve\\b)|(\\bsearchable here\\b)|(\\bmy search only\\b)/i;
+  const _shape7 = /(\\b(the|my|our|a|that|this)\\s+(search\\s+)?(tool|query|lookup|directory|preload(?:ed)?\\s+search)\\b[^.\\n]{0,40}\\b(returns?|returned|comes? back|came back|pulled|gave|came up|kept giving|is coming back|empty on its end|only covers|can (see|retrieve|search))\\b)|(\\b(in|from) my (results|search)\\b)|(\\bwhat I can retrieve\\b)|(\\bsearchable here\\b)|(\\bmy search only\\b)|(\\b(in|from) what I(?:'m| am| can)? ?(?:pull|retriev|access)\\w*\\b)/i;
   if (_attempt0 && _shape7.test(_txt7)) {
     policyClaims.push('INTERNALS-SHAPE: the draft describes how the answer was obtained ("'
       + (_txt7.match(_shape7) || [''])[0].slice(0, 60)
