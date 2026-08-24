@@ -20,12 +20,17 @@ only). Launch health: 200/200 executions green, 47 members, zero errors; 62 real
 **STAGING = the #108 finder + fix waves 1-6 build** (`f31b8c83` after the #32 revert). This is what bank C
 measured. **Nothing is promoted beyond #114 — Andy has not approved a promote.**
 
+### Paths — read this before you look for a file
+**Every `eval/...` path in this handoff is relative to the #108 worktree
+`.superpowers/sdd/2026-08-22-finder/`, not to the repo root.** There is no repo-root `eval/`.
+
 ### The one job to start with
 **Grade the Summit prod-vs-stage head-to-head.** `eval/summit_compare.json` already holds all 68 launch
-questions with `prod_answer` + its grade and `stage_answer` from the staging run (108 turns, EXIT 0, same
-build bank C measured). Two graders died before writing (`grade_summit_stage.json` does NOT exist). Grade
-`stage_answer` on the strict scale (1-10, no 7, ≥8 pass), declare a winner per question, and report
-regressions first. Mechanical deltas already computed, prod → stage: canned over-refusals **2 → 0**,
+questions with `prod_answer` and `stage_answer` from the staging run (108 turns, EXIT 0, same build bank
+C measured). **Only 62 of the 68 carry a `prod_score`** — six questions arrived after the prod-grading
+harvest, so `prod_score` is null on those: they can be graded on the stage side but have no head-to-head
+winner, and they are not prod passes (the launch 87% is 54/62). Grade `stage_answer` on the strict scale
+(1-10, no 7, ≥8 pass), declare a winner per question, and report regressions first. Mechanical deltas already computed, prod → stage: canned over-refusals **2 → 0**,
 ellipsis-URLs **0 → 1**, narration **0 → 1**. My hand-read of the 8 prod fails looked strongly better on
 stage (the fabricated "at the Summit with you" framing is gone; both canned refusals became sourced
 answers) — **that is a hand-read, not a verdict.**

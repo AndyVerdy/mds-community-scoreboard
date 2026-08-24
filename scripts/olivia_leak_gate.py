@@ -627,6 +627,44 @@ def main():
         check("card has no email/phone keys and no exact revenue",
               "email" not in cblob.lower().replace("facebook", "")
               and "phone" not in cblob.lower() and "Most Recent Revenue" not in cblob)
+        # ---- #106 · internal records are never a SUBJECT (Andy 2026-08-22 "make sure I'm not
+        # searchable"; Eugene 2026-08-24 "Courtney and me come up as a suggestions for who to
+        # meet at summit - need to filter out the team"). digest.is_internal_record() is the
+        # SUBJECT predicate; digest.is_active_member_status() stays the ACCESS predicate and
+        # still includes 'Staff' so the team can ASK. Probe target resolved at runtime so the
+        # gate never hardcodes a colleague's name.
+        st, staff_rows = curl("GET", f"{BASE}/member_attributes?select=full_name"
+                              "&membership_status=in.(%22Staff%22,%22Team%20User%22)"
+                              "&full_name=not.is.null&limit=1", key,
+                              profile_hdr=["Accept-Profile: digest"])
+        staff_name = (staff_rows or [{}])[0].get("full_name")
+        if not staff_name:
+            check("#106 probe: an internal record exists to probe with", False, "none found")
+        else:
+            st, sc = rpc("member_card", {"p_phone": phone, "p_member": staff_name}, key)
+            check("member_card returns NO row for an internal record (#106)",
+                  st == 200 and isinstance(sc, list) and len(sc) == 0,
+                  f"status {st} rows {len(sc) if isinstance(sc, list) else sc}")
+            st, sc2 = rpc("member_card_v2", {"p_phone": phone, "p_member": staff_name}, key)
+            # v2's contract is a single not_found row (name echoed, every profile field null) —
+            # the leak was a FULL card here, so assert the profile fields are empty, not just
+            # that a row came back.
+            leaked = [c for c in (sc2 or [])
+                      if c.get("membership_state") != "not_found"
+                      or any(c.get(k) for k in ("city", "state", "country", "revenue_tier",
+                                                "niche", "expertise", "about_me", "hobbies",
+                                                "facebook_link", "chapter"))]
+            check("member_card_v2 never emits a profile for an internal record (#106)",
+                  st == 200 and not leaked, json.dumps(leaked)[:200])
+            st, em = rpc("expertise_search", {"p_phone": phone, "p_query": "operations", "p_limit": 25}, key)
+            check("expertise_search never returns an internal record (#106)",
+                  st == 200 and staff_name not in json.dumps(em or []),
+                  f"{staff_name} present")
+            st, mm = rpc("member_match_v2", {"p_phone": phone, "p_limit": 50}, key)
+            check("member_match_v2 never returns an internal record (#106)",
+                  st == 200 and staff_name not in json.dumps(mm or []),
+                  f"{staff_name} present")
+
         st, ian = rpc("member_card", {"p_phone": phone, "p_member": "Ian Sells"}, key)
         check("member_card shared_chats never exceed the ASKER's own chats",
               all(set(c.get("shared_chats") or []) <= set(chats) for c in (ian or [])),
