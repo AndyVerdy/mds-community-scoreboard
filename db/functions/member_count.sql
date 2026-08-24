@@ -58,6 +58,11 @@ begin
               join filt f on f.at_member_id = c.at_member_id group by 1) t)
       when 'band' then (select coalesce(jsonb_object_agg(t.k, t.n order by t.n desc), '{}'::jsonb)
         from (select coalesce(nullif(trim(f.rev_band),''),'(none on file)') as k, count(*) as n from filt f group by 1) t)
+      when 'country' then (select coalesce(jsonb_object_agg(t.k, t.n order by t.n desc), '{}'::jsonb)
+        from (select coalesce(nullif(trim(digest.country_fold(ma3.country)),''),'(none on file)') as k,
+                     count(distinct f.at_member_id) as n
+              from filt f join digest.member_attributes ma3 on ma3.at_member_id = f.at_member_id
+              group by 1) t)
       when 'business_model' then (select coalesce(jsonb_object_agg(t.k, t.n order by t.n desc), '{}'::jsonb)
         from (select trim(bm.one) as k, count(distinct f.at_member_id) as n
               from filt f join digest.member_attributes ma2 on ma2.at_member_id = f.at_member_id
