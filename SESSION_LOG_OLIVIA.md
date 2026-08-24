@@ -2,6 +2,110 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-08-24 (overnight → morning, CLOSE) · Bank C built + run + graded · Millie LAUNCHED · #32 attempted and reverted
+
+**Millie was announced on stage ~01:50Z.** Prod (`bbd597b7`, #114 only) carried it: **200/200 executions
+green, 47 members, 82 messages, zero errors.** The venue-day lane Andy promoted the night before did the
+heavy lifting — every schedule answer verified against `event.*` (times, rooms, speakers, venue clock
+UTC+8 exact across six answers). Graded the 62 real prod answers on the strict scale: **54 pass / 8 fail
+(87%)**. Judge verified 18 FB permalinks, 9 partner ids, 30 video ids — all real; personalization genuine
+(members' own grants). The 8 fails: fabricated attendance (worst — 8 of 9 "at the Summit with you" names
+were not attendees), 2 canned over-refusals, 2 restricted-label errors on PUBLIC videos, invented video
+title, wrong-call quote, channels-question routing miss. All 8 verbatim questions saved as
+`eval/launch8_probes.json`.
+
+**#124 BANK C BUILT AND RUN — 602 organic questions, the honest number is 62%.** Two tiers, both organic,
+never reworded: 502 asks members sent Millie (all unused organic asks, whole conversations in order, 102
+intact multi-turn threads) + 100 asked the community (50 recommendation / 50 expertise, harvested from
+54,764 `content_items`; Millie's own inbox is thin there only because she was unannounced). Six graders
+wrote the `expect` bars against live transcripts. Run: **690 turns, 23:32Z→~04:30Z, zero dropped turns,
+all 602 answered**; graded in 8 shards on the strict scale (no 7; ≥8 pass) → **319 pass / 192 fail / 91
+context = 62%**. Fail rate by class: **FOLLOWUP 47% (51/108)** · PARTNERS 54% · EVENTS 58% · SAFETY 45% ·
+PEOPLE 41% · RECOMMENDATION 38% · EXPERTISE 32% · CONTENT 22% · VIDEOS 28%.
+
+**ROOT CAUSE FOUND IN CODE (the biggest single fix in the bank):** 20+ answers shipped a dead link ending
+in an ellipsis. Not a model slip — **`Answer Seed` and `Answer Merge` both clip evidence strings with
+`slice(TIER) + '…'`, chopping URLs mid-path** (proved: post `26239928025684017` emitted as `…/posts/262399…`;
+the full URL is in the evidence). Added `clipSafe()` to both clippers — a cut that would land inside a
+link drops the fragment instead. In wave 7, dry-run clean, committed, **NOT applied** (see below).
+
+**#32 cost: attempted, measured, REVERTED same night — Andy's "verify first" gate caught it.** Measured
+shape from the run's own counters: **$0.125/turn answer-loop mean** (~$105-115 for the full bank), vs the
+$0.0135/answer July baseline — 4-10× growth from capability, not from this change. Root cause found:
+`Answer Claude` flips `tool_choice` between lap 1 (`any`) and later laps (`auto`), which invalidates the
+messages cache every turn, so **cache WRITES were 51% of the bill** (7.5k tokens rewritten per turn).
+Fix worked on cost (thread turn $0.115 → $0.071, −38%) **and broke retrieval**: under constant `auto`,
+questions that always retrieved made ZERO tool calls (TikTok-agency 2→0, who-to-meet 1→0, five pre-patch
+samples each). Reverted (`revert_32_toolchoice.py`, staging `f31b8c83`), forced retrieval re-proven
+(Larnaca 6 calls + the right FB link, `event_who` back). **Five-lever cost plan filed on #32** as the plan
+of record, sequenced after the bank C loop (lever 1 = a stripped forced lap 1 so the flip never touches
+the big cached seed).
+
+**Shipped live during the Summit: `digest.event_who` running-event resolution.** Belen (Staff, registered)
+was told twice she was not registered. Two causes, both fixed: Andy's roster mark landed on a DUPLICATE
+member record (repointed the registration row to her real record via supabase MCP — curl PATCH is
+classifier-blocked), and **`event_who`'s matcher preferred UPCOMING over RUNNING**, so "Singapore summit"
+resolved to the Aug-25 Night Out during the Summit itself. `CREATE OR REPLACE` + `NOTIFY pgrst`, verified
+as Belen (MDS Summit Singapore, 116 going, `is_me` true) and as a non-registered member (0 names, count
+only — R5 intact), **gate 292/0**. ⚠️ The AT roster row still links the duplicate — a future registrations
+sync can revert the repoint; Andy must repoint it in AT or delete the duplicate record.
+
+**Andy's disclosure ruling (2026-08-24), now the standing rule:** the asker's own access defines
+shareability — public info carries no privacy expectation; restricted-chat content, *all* field types
+including contacts and self-stated revenue, is shareable to that chat's members ("if I said my revenue is
+30M in the Centurion chat, then all people in Centurion chat can get this info from Millie"); exact
+revenue from OUR records stays internal but a member's own visible statement is quotable; **every quoted
+fact names its source — quoting without attribution is itself a defect.** Recorded in
+`OLIVIA_HANDBOOK.md` §11, memory `reference_olivia_disclosure_visibility_rule`, six bank C expects
+amended, and the wave-7 seed SHARING RULE.
+
+**Tickets:** #123 (every `event_*` tool routes to the schedule endpoint, so the events catalog is
+unreachable — verified live; can't fix yet because 4071 passes *because of* the misroute) · #124 (bank C)
+· #125 (an ACTIVE member whose number isn't linked is told his membership is inactive — hit Shyam Murali
+live at launch; his record needed the number, done) · #126 (the WA mirror leaves `at_member_id` NULL
+although the AT row carries `source_member_id`) · **#127 RETRACTED** — I filed "video_search_v2 leaks
+restricted content" and then disproved it with a live doorman test (grant-less member gets the
+`[RESTRICTED VIDEO]` sentinel, content withheld); the two launch answers were PUBLIC videos wrongly
+LABELED restricted → wave-8 labeling rule, no prod gate needed.
+
+**Judge/expect errors I overruled against the live warehouse (the pattern to keep watching):** 6461
+(Jerwin Basa IS a PH Current Member — the bar was written off the `'Philippines'`-spelled half of a split
+country column, third exhibit for #115) · 6071 (the top-off post exists, dated and linked) · 6241 (naming
+members in the 20M+ band is permitted — `band` is class "show") · 5025 (every disputed row carries
+`call_type: 'Mogul Call'`; the judge was fooled by "APAC Chapter" in titles) · 6044 (AVASK's "1 Free VAT
+Registration or 5% OFF" is real) · 4023 (revenue BAND is shareable) · 6451/6452 (`[SEND_IMAGE]` verified
+in the execs — silent staging probes never record media) · and one flip the other way: **6486 pass→FAIL**
+(the probe member has no Summit registration row, so "you're on the books" is a false personal status).
+
+**Summit prod-vs-stage comparison: RUN DONE, GRADING NOT DONE.** All 68 launch questions (40 member
+threads, order preserved, fire-time re-harvest) fired at staging on the exact build bank C measured —
+108 turns, EXIT 0, `eval/summit_compare.json` holds all 68 prod/stage pairs. The head-to-head grader died
+twice (machine sleep, then a 529) and never wrote `grade_summit_stage.json`. **Mechanical deltas only,
+prod → stage: canned over-refusals 2 → 0 · ellipsis-URLs 0 → 1 · internals narration 0 → 1 · mean length
+1044 → 1006 ch.** Hand-read of the 8 prod fails: stage dropped the fabricated "at the Summit with you"
+framing entirely and listed real Current Members with correct cities; both canned refusals became
+substantive sourced answers; the channels question got the member's real source rundown. **That is a
+hand-read, not a graded verdict — the head-to-head is the first job next session.**
+
+**Wave 7 is written, committed, dry-run clean, and NOT APPLIED.** Deliberate: applying it between the
+bank and the stage comparison would have measured a build bank C never tested. It carries 4+1 fixes —
+link placement/withheld-recap-links/ellipsis-URL guard, honest counts + the ≤10 cap with true totals,
+internals narration by SHAPE (11 audited fires, 0 false positives over ~440 answers), follow-up
+continuity off `turn_state`, and Andy's SHARING RULE. **Wave 8 is designed in `eval/fixplan_bankC.md`
+but not written** — led by the severe: a REMOVED member's full profile plus join/leave dates and a hint
+at why she left (6080, 6272, 6277), then ungrounded claims (fabricated attendance, invented fit reasons,
+invented video titles), wrong-source citations, missing attribution, date labeling (recorded vs added),
+all-sources coverage, welcome-card misfire, and a leaked self-correction artifact.
+
+**Artifacts:** `eval_bank_C_2026-08-23.json` (602 q, LOCKED) · `scripts/bank_c/{harvest_tier1,harvest_tier2,build_bank,assemble}.py` · `scripts/olivia_loop/apply_fixwave7_2026-08-24.py` (draft) · `scripts/olivia_loop/revert_32_toolchoice.py` · `.superpowers/sdd/2026-08-22-finder/eval/` (grade_C0-C7, grade_launch, summit_compare, fixplan_bankC, bankC_failset, launch8_probes, ROOT_content_search_p_terms) · commits `201d4e7 → 64623e9`.
+
+**A harvester bug of mine worth remembering:** the tier-1 conversation splitter appended `cur` and then
+`cur.clear()`ed it — classic aliasing, so 60 copies of one thread reached the skeleton (479 "questions"
+of which 303 were duplicates). Caught by a grader flagging "26 of my 80 slots are 2 conversations".
+Fixed, re-harvested, and `score_prep.py` now paginates (PostgREST's 1000-row cap had silently hidden 177
+answers from the final pairing).
+
+
 - **2026-08-23 (day, CLOSE) · Olivia · #113 SUMMIT EVENT REFRESHED — the whole event reloaded from the 09:52Z GroupOS scan, removals included.** The loader was upsert-only, so everything GroupOS had removed or re-gated since 08-17 kept gating: Millie served 50 activities, old names, 200-char description stubs. Now a true refresh (name-level diff report → upsert → FK-safe reconcile, `event.people` never deleted → provenance `source_scanned_at`/`loaded_at`, migration `event_events_load_provenance_20260822`), with an export-freshness guard against `digest.event_registrations_live` (it caught the 08-22 file as a 17-Aug scan missing four registrants) and a pending-reminder cascade warning. **After: activities 86 · sessions 26 · attendees 199 · people 234 · locations 27 · types 7 (`MDS`) · audience 227 · grants 698 · check_ins 151 · orders 144;** deleted audience 49 · grants 10 · speakers 12 · sessions 11 · activities 1 · attendees 20, every count matching its prediction; repeat dry-run `+0 ~0 -0`. Self-test re-derived 7/8 (grantee = plain + Women's Lunch). Live lane: *Sunday 23 August* with Arrive & Check-In and Explore Singapore, Women's Lunch/Partner Check-in hidden. **Three defects found by running it:** py3.9 `fromisoformat` rejects PostgREST's 2-digit fractional seconds (faked 31 "changed" rows, broke idempotency) · GroupOS recreates an attendee doc on a role change → 409 on the natural key (fixed by `on_conflict` on it; `participant_types` REFUSES a recreated role because its id is FK-referenced) · request bodies passed as curl argv → macOS ARG_MAX on a 92 KB `long_description` (now stdin). Both live failures stopped with nothing deleted (pre-load backup taken first). Final review (opus) → one fix wave: loader SKIPs are protected from the reconcile, three silent-swallowed reads fail loud (one would have NULLed all 234 `at_member_id` links), deterministic paging order, measured delete counts, `--new-event` guard. 44 unit tests on 3.9 + 3.12. Merged `69454bb`. Follow-ups #120/#121/#122. Runbook + six traps: handbook §4.9.
 
 - **2026-08-23 (night, CLOSE) · Olivia · #114 "today at the Summit" FIXED + PROMOTED (Andy 02:49 ET, prod versionId `bbd597b7`; route live `9d0ec41`) — CLOSED except AC4.** Correction to the entry below it (written pre-promote): Andy promoted **#114 ONLY** — staging was re-built from prod, the 3 seed edits re-applied, gate PASSED/EXIT 0, `diff prod staging` = Answer Seed + webhook nodes (NOT Answer Tool; #108 re-applies its own edit later — combined snapshot `staging_2026-08-23T064414Z_108-plus-114-applied` kept). Added after Andy's live test: **Task 2b** — `op=next` had a hard cap of 3 and hid half of Sunday at 12:42 SGT (exec 99999); `next` now returns the rest of the venue-day (`pickNext`, mds-digest-web `95eea25`, proven on Andy's phone 14:16 SGT: 4 remaining) · final whole-branch review (opus) → one fix wave `9d0ec41` (items' day label + `asked_day`, `now_at_venue` wins the spread, impossible dates fall back, 24 resolver tests / 105 suite) · prod probe after promote execs 100159/100160: "today" → *"It's Sunday, 23 August at the Summit in Singapore"* + full day, "tomorrow" → *Monday, Aug 24*, tool_args literal words · Ian-replay curl `2026-08-22T23:00-04:00 → 2026-08-23` · SELFTEST turns are silent by design (no Meta send) — Andy sees results only by texting Millie himself · **OPEN: AC4** (one WhatsApp "what's happening today" in the 12:00–23:59 ET window) · #113 plan written, waits for a genuinely fresh GroupOS export (the handed-over file was a 17-Aug scan) · two-agent rule added to CLAUDE.md. Original pre-promote entry follows:

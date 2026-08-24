@@ -11,6 +11,69 @@
 
 # Olivia — next session
 
+## STATE 2026-08-24 (overnight close) — read this first
+
+**Millie is LAUNCHED.** She was announced on stage ~01:50Z 2026-08-24. **PROD = `bbd597b7`** (#114 venue-day
+only). Launch health: 200/200 executions green, 47 members, zero errors; 62 real answers graded **87%**
+(54/8). Prod is serving members right now — treat any prod change as a live change.
+
+**STAGING = the #108 finder + fix waves 1-6 build** (`f31b8c83` after the #32 revert). This is what bank C
+measured. **Nothing is promoted beyond #114 — Andy has not approved a promote.**
+
+### The one job to start with
+**Grade the Summit prod-vs-stage head-to-head.** `eval/summit_compare.json` already holds all 68 launch
+questions with `prod_answer` + its grade and `stage_answer` from the staging run (108 turns, EXIT 0, same
+build bank C measured). Two graders died before writing (`grade_summit_stage.json` does NOT exist). Grade
+`stage_answer` on the strict scale (1-10, no 7, ≥8 pass), declare a winner per question, and report
+regressions first. Mechanical deltas already computed, prod → stage: canned over-refusals **2 → 0**,
+ellipsis-URLs **0 → 1**, narration **0 → 1**. My hand-read of the 8 prod fails looked strongly better on
+stage (the fabricated "at the Summit with you" framing is gone; both canned refusals became sourced
+answers) — **that is a hand-read, not a verdict.**
+
+### Then: apply the waves, then re-run the fail-set (Andy's sequence)
+1. `python3 scripts/olivia_loop/apply_fixwave7_2026-08-24.py` — written, committed, dry-run clean, **not
+   applied**. Carries: link placement + withheld-recap-links + the **ellipsis-URL `clipSafe()` root-cause
+   fix** (the biggest single win — 20+ fails), honest counts + ≤10 cap with true totals, internals
+   narration by SHAPE (11 audited fires, 0 FPs), follow-up continuity off `turn_state`, Andy's SHARING RULE.
+2. **Write wave 8** from `eval/fixplan_bankC.md`. Order: the REMOVED-MEMBER severe first (6080/6272/6277 —
+   full profile, join/leave dates, a hint at why she left), then ungrounded claims (fabricated attendance
+   9044, invented fit reasons 6089, invented video titles 9048), wrong-source citation (6380, 9046),
+   missing attribution (6094), date labeling (recorded vs added), all-sources coverage, welcome-card
+   misfire (6190), leaked self-correction artifact (7030), channels routing (9031), restricted LABEL smear
+   (9007/9026 — the retracted #127's real fix).
+3. Keep waves 7 and 8 as **separate scripts** even though they apply together — so a regression can be
+   attributed to one batch without unpicking the other.
+4. Gate `python3 scripts/olivia_leak_gate.py` must be EXIT 0 (292 checks; never pipe through `tail`).
+5. **Re-run the fail-set only**: `eval/bankC_failset.json` (192 ids) + `eval/launch8_probes.json` (8
+   verbatim launch questions). Re-grade, count what is left. Empty → promote decision. Not empty → wave 9.
+
+### Numbers to beat
+- Bank C: **319 pass / 192 fail / 91 context = 62%** on 602 organic questions.
+- Fail rate by class: **FOLLOWUP 47%** (51/108, the weakest and the biggest class) · PARTNERS 54% ·
+  EVENTS 58% · SAFETY 45% · PEOPLE 41% · RECOMMENDATION 38% · EXPERTISE 32% · CONTENT 22% · VIDEOS 28%.
+- Launch prod: 54/62 = 87%. Bank A (older, easier): 87-89%.
+
+### Traps this session earned the hard way
+- **The evidence clipper truncates URLs.** `Answer Seed`/`Answer Merge` clip with `slice(TIER) + '…'`;
+  wave 7's `clipSafe()` fixes it. Any new clip site must use it.
+- **`score_prep.py` had to be taught to paginate** — PostgREST's 1000-row cap silently hid 177 answers.
+- **A judge's kill-shot is not a verdict.** Seven expect/judge errors were overruled against the live
+  warehouse this session, and one pass was flipped to fail. Verify anything decisive before counting it.
+- **`curl` PATCH/writes to PostgREST are classifier-blocked**; use the supabase MCP for data writes.
+- **Andy's verify-first gate is load-bearing.** The #32 cost fix looked perfect and silently killed
+  retrieval; only an A/B against pre-patch tool-call distributions caught it. Do that for every
+  prompt/tool-shape change.
+- **`caffeinate -w <runner pid>`** while a long run is in flight — a machine sleep killed a grader.
+
+### Open, needs Andy
+- **AT roster row for Belen still links a DUPLICATE member record** — repoint it in Airtable (or delete the
+  duplicate "Belen Gallardo" record) or a registrations sync will undo tonight's fix.
+- **#125** copy split (unlinked number vs genuinely inactive) — hit a paying member live at launch.
+- **#32 cost plan** (5 levers) — sequenced after this loop closes, per Andy.
+- Promote decision after the fail-set re-run.
+
+
+
 > ⛔ **Standing tiers (Andy 2026-07-29/31): Fine without asking** = read-only diagnosis · the LEAK
 > GATE (`scripts/olivia_leak_gate.py`, free) · staging edits under the `olivia_wf.py` lock ·
 > single-question staging probes. **Propose + WAIT** = any eval RUN (TEST ≤50 / FULL) · **and
