@@ -679,6 +679,27 @@ def main():
         check("a past member's card still carries their history (join date / city)",
               any(r.get("joined") or r.get("city") for r in _past) or not _past)
 
+        # ---- #137 · an Airtable record id never reaches a member. Found 2026-08-24 while grading:
+        # one answer printed "(recJnrYFuWhzom63H)" to explain two same-name records. URLs are
+        # exempt on purpose — events-details?recordId=... is a real registration link members need,
+        # and all 7 bank C answers containing a record id are exactly that link.
+        import re as _re
+        _REC = _re.compile(r"\brec[A-Za-z0-9]{14,17}\b")
+        def _bare_ids(t):
+            return _REC.findall(_re.sub(r"https?://\S+", " ", t or ""))
+        # Scoped to answers produced SINCE the guard shipped — a gate tests current behaviour, not
+        # history. One answer from 2026-08-24T23:01Z predates it and is left in the record as-is;
+        # member history is never rewritten to make a check go green.
+        GUARD_SHIPPED = "2026-08-24T23:30:00Z"
+        st, _leak = curl("GET", f"{BASE}/olivia_messages?select=text&role=eq.olivia"
+                         f"&created_at=gte.{GUARD_SHIPPED}&order=created_at.desc&limit=400", key,
+                         profile_hdr=["Accept-Profile: digest"])
+        _bare = [t for t in (x.get("text") for x in (_leak or [])) if _bare_ids(t)]
+        check("no answer carries a bare Airtable record id (#137)",
+              st == 200 and not _bare, f"{len(_bare)} leaking: {(_bare[0][:120] if _bare else '')}")
+        check("event registration links with recordId= are NOT flagged (#137 exemption holds)",
+              not _bare_ids("register: https://events.milliondollarsellers.com/events-details?recordId=recvLAxQ1MpHkv15v"))
+
         st, ian = rpc("member_card", {"p_phone": phone, "p_member": "Ian Sells"}, key)
         check("member_card shared_chats never exceed the ASKER's own chats",
               all(set(c.get("shared_chats") or []) <= set(chats) for c in (ian or [])),
