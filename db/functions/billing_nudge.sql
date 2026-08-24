@@ -8,7 +8,7 @@ AS $function$
 declare v_n int; v_atid text; v_status text; v_last timestamptz;
 begin
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
   select digest.resolve_asker(p_phone) into v_atid;
   if v_atid is null then return; end if;
 

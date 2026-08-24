@@ -5,11 +5,12 @@ CREATE OR REPLACE FUNCTION digest.member_card(p_phone text, p_member text)
  STABLE SECURITY DEFINER
  SET search_path TO 'digest', 'pg_temp'
 AS $function$
-declare v_n int; v_my_chats text[];
+declare v_n int; v_my_chats text[]; v_atid text;
 begin
   if nullif(trim(coalesce(p_member,'')),'') is null then return; end if;
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
+  select digest.resolve_asker(p_phone) into v_atid;
   select coalesce(m.channels_present, '{}') into v_my_chats
     from digest.member_identity m where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
 
@@ -34,6 +35,14 @@ begin
              'Current Member','New Member','Pending Group Entrance','Current Member- Not Renewing',
              'Current Member- Paused','Current Member- Soft Removed','Staff',
              'Removed - Canceled Membership','Removed - For Cause','Removed - Replaced with other Member')
+       -- #106 (Andy 2026-08-22 "make sure I'm not searchable"): an internal record is never a
+       -- SUBJECT for anyone ELSE. You always keep your OWN card — the same carve-out event_who
+       -- makes for the is_me row — otherwise a Staff member loses "what's on my profile".
+       -- 'Staff' stays in the list above for m_state, and in digest.is_active_member_status()
+       -- so the team can still ASK. Removed members stay visible: that is the removed-member
+       -- profile answer, a different rule.
+       and (ma.at_member_id = v_atid
+            or not digest.is_internal_record(ma.membership_status))
   )
   select c.best_name, c.city, c.state,
          nullif(trim(c.country), ''),
@@ -89,6 +98,10 @@ begin
                'Current Member','New Member','Pending Group Entrance','Current Member- Not Renewing',
                'Current Member- Paused','Current Member- Soft Removed','Staff',
                'Removed - Canceled Membership','Removed - For Cause','Removed - Replaced with other Member')
+         -- #106: same rule on the fuzzy fallback — otherwise a near-miss spelling walks straight
+         -- past the exact-match guard above and returns the internal record anyway.
+         and (ma.at_member_id = v_atid
+              or not digest.is_internal_record(ma.membership_status))
     )
     select c.best_name, c.city, c.state,
            nullif(trim(c.country), ''),

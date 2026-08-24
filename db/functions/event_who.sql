@@ -12,7 +12,7 @@ declare
 begin
   if nullif(trim(coalesce(p_event,'')),'') is null then return; end if;
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
   select digest.resolve_asker(p_phone) into v_atid;
   if v_atid is not null then
     select coalesce(ma.rev_band = '20M+', false), ma.city, ma.main_niche into v_is_20m, v_me_city, v_me_niche
@@ -28,7 +28,12 @@ begin
     and (select bool_and(c.name ilike '%'||w||'%'
                           or coalesce(c.app_title,'') ilike '%'||w||'%')
            from regexp_split_to_table(trim(p_event), '[[:space:]]+') w)
-  order by (coalesce(c.app_starts_at, c.start_at) >= now()) desc,
+  order by
+           -- 2026-08-24 (launch, Belen): a RUNNING event outranks everything — during the Summit,
+           -- "Singapore summit" must resolve to the Summit itself, never a future side event.
+           (coalesce(c.app_starts_at, c.start_at) <= now()
+             and now() <= coalesce(c.end_at, coalesce(c.app_starts_at, c.start_at) + interval '3 days')) desc,
+           (coalesce(c.app_starts_at, c.start_at) >= now()) desc,
            case c.phase when 'Registration Open' then 0 when 'Confirmed' then 1 else 2 end,
            length(c.name) asc,
            coalesce(c.app_starts_at, c.start_at) asc
@@ -111,6 +116,13 @@ begin
   left join digest.member_profiles mp on mp.at_member_id = conf.member_at_id
   left join ranked rk on rk.mid = conf.member_at_id
   where coalesce(ma.full_name, mp.full_name) is not null
+    -- #106 (Andy 2026-08-22 "make sure I'm not searchable"; Eugene 2026-08-24 "need to filter out
+    -- the team"): internal records (Staff / Team User) never appear in an attendee NAME list.
+    -- The asker still sees their OWN row, so a Staff asker keeps the is_me "you're on the books"
+    -- answer. v_total above is deliberately untouched — it stays the registration census, which
+    -- counts MDS Team tickets (#96/#98 ruling: counts are the census, names are gated).
+    and (conf.member_at_id = v_atid
+         or not digest.is_internal_record(ma.membership_status))
   order by (conf.member_at_id = v_atid) desc,
            coalesce(rk.best_w, 0) desc,
            (lower(coalesce(ma.main_niche,'')) = lower(coalesce(v_me_niche,''))) desc,

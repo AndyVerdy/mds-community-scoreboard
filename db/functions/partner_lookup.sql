@@ -14,7 +14,7 @@ begin
   else
     select count(*) into v_n from digest.member_identity mz where mz.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(mz.membership_status);
   end if;
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
   select case when p_at_member_id is not null
               then (select a.at_member_id from digest.member_attributes a
                      where a.at_member_id = p_at_member_id

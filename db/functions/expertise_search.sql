@@ -10,7 +10,7 @@ declare
 begin
   if nullif(trim(coalesce(p_query,'')),'') is null then return; end if;
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
   select digest.resolve_asker(p_phone) into v_atid;
   if v_atid is null then return; end if;
 

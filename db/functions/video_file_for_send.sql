@@ -9,7 +9,7 @@ declare v_n int;
 begin
   if nullif(trim(coalesce(p_file_key, '')), '') is null then return; end if;
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
 
   return query
   select f.file_name, f.storage_object, f.file_kind, v.title

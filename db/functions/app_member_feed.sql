@@ -34,7 +34,7 @@ begin
     join digest.member_profiles mp on mp.at_member_id = ma.at_member_id
     where lower(trim(mp.at_fields->>'Preferred Email')) = v_email
       and digest.is_active_member_status(ma.membership_status);
-    if v_n <> 1 then return '{}'::jsonb; end if;
+    if v_n < 1 then return '{}'::jsonb; end if;
     select ma.at_member_id, ma.full_name into v_atid, v_name
     from digest.member_attributes ma
     join digest.member_profiles mp on mp.at_member_id = ma.at_member_id

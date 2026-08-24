@@ -258,6 +258,8 @@ grant execute on function digest.immutable_text_array_join(p_arr text[]) to post
 grant execute on function digest.immutable_text_array_join(p_arr text[]) to service_role;
 grant execute on function digest.is_active_member_status(p_status text) to postgres;
 grant execute on function digest.is_active_member_status(p_status text) to service_role;
+grant execute on function digest.is_internal_record(p_status text) to postgres;
+grant execute on function digest.is_internal_record(p_status text) to public;
 grant execute on function digest.member_billing(p_phone text) to postgres;
 grant execute on function digest.member_billing(p_phone text) to service_role;
 grant execute on function digest.member_card(p_phone text, p_member text) to postgres;

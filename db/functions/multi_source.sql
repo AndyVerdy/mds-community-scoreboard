@@ -8,7 +8,7 @@ AS $function$
 declare v_n int; v_atid text; result jsonb := '{}'::jsonb; v_q text;
 begin
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
-  if v_n <> 1 then return '{}'::jsonb; end if;                 -- fail closed
+  if v_n < 1 then return '{}'::jsonb; end if;                 -- fail closed
   select digest.resolve_asker(p_phone) into v_atid;
   if v_atid is null then return '{}'::jsonb; end if;
   v_q := nullif(trim(coalesce(p_query, array_to_string(p_terms, ' '))), '');

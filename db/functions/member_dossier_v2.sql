@@ -10,7 +10,7 @@ declare
 begin
   select count(*) into v_n from digest.member_identity m
    where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
   select m.at_member_id, m.airtable_id into v_atid, v_warow
     from digest.member_identity m
    where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
@@ -100,5 +100,26 @@ begin
     where g.a_id = v_atid
     group by m2.at_member_id, m2.full_name
     order by sum(g.weight) desc limit 6;
+
+    -- MEMBERSHIP (wave 3b, id 4100): status + real join date. The asker's own
+    -- "how long have I been a member" answer had no membership_status (so the
+    -- Staff/member distinction was invisible) and no join date (so tenure got
+    -- reported off the application-form date instead). Both are on file:
+    -- member_identity.membership_status and member_profiles.join_date.
+    -- Appended LAST, as new ROWS (not new columns) in this (kind,label,detail)
+    -- stream, so no existing positional reader of persona/strength/circle/etc
+    -- shifts.
+    return query
+    select 'membership'::text, kv.label, kv.detail
+    from (
+      select 1 as ord, 'status' as label, mi.membership_status as detail
+        from digest.member_identity mi
+       where mi.at_member_id = v_atid
+      union all
+      select 2 as ord, 'member_since' as label, to_char(mp.join_date, 'YYYY-MM-DD') as detail
+        from digest.member_profiles mp
+       where mp.at_member_id = v_atid and mp.join_date is not null
+    ) kv
+    order by kv.ord;
   end if;
 end $function$

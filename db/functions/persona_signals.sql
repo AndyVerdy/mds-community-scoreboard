@@ -9,7 +9,7 @@ declare
   v_phone text; v_name text; v_n int;
 begin
   select count(*) into v_n from digest.member_attributes ma where ma.at_member_id = p_at_member_id;
-  if v_n <> 1 then return '{}'::jsonb; end if;
+  if v_n < 1 then return '{}'::jsonb; end if;
   select ma.full_name into v_name from digest.member_attributes ma where ma.at_member_id = p_at_member_id;
   select min(m.phone) into v_phone from digest.members m
   where m.at_member_id = p_at_member_id and m.phone is not null;

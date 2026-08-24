@@ -14,7 +14,7 @@ begin
     select count(*), max(mz.at_member_id) into v_n, v_asker from digest.member_identity mz
       where mz.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(mz.membership_status);
   end if;
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
 
   select ma.city, ma.state into v_city, v_state
   from digest.member_attributes ma where ma.at_member_id = v_asker limit 1;

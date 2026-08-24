@@ -9,7 +9,7 @@ declare
   v_n int; v_chats text[];
 begin
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
   select coalesce(m.channels_present, '{}') into v_chats
     from digest.member_identity m where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
 

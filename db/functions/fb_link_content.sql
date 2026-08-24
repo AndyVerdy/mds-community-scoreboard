@@ -14,9 +14,7 @@ begin
       '{"type":"public"}'::jsonb,'normal',jsonb_build_object('author_name',author_name)
     from digest.fb_posts
     -- a post we cannot place in time cannot become a content_item (occurred_at is NOT NULL). Skipping
-    -- it here costs that ONE post; letting it through cost the entire day's chain on 2026-08-21 —
-    -- the insert raised 23502, load_feed.py exited rc=1, and images/OCR/links/embeddings/silent-card
-    -- were all skipped. Same reasoning for comments below.
+    -- it here costs that ONE post; letting it through cost the entire day's chain on 2026-08-21.
     where created_time is not null
     on conflict (source,source_id) do nothing returning 1)
   select count(*) into p from ins;
@@ -33,9 +31,11 @@ begin
   update digest.fb_post_images set storage_path = 'fb-images/' || regexp_replace(local_path, '^.*/', '')
    where storage_path is null and local_path is not null;
   -- search_extra is REBUILT here, never appended to, so every contributing source must be in this
-  -- union: image vision text (ord 1) then link-preview cards (ord 2). Cards are DISTINCT-ed because
-  -- one shared link is captured at several thumbnail sizes = several rows, one card. display_name
-  -- sits next to the domain because to_tsvector treats "theguardian.com" as one unsplittable token.
+  -- union: image vision text (ord 1), link-preview cards (ord 2), poll results (ord 3). Cards are
+  -- DISTINCT-ed because one shared link is captured at several thumbnail sizes = several rows, one
+  -- card. display_name sits next to the domain because to_tsvector treats "theguardian.com" as one
+  -- unsplittable token. Polls carry the ANSWER the group gave — a poll post's own text is just the
+  -- question, so without this "70% said day parting works" is unsearchable.
   with parts as (
     select post_id, 1 as ord, string_agg(nullif(trim(coalesce(description,'') ||
         case when nullif(ocr_text,'') is not null then ' [text in image: '||ocr_text||']' else '' end),''),' | '
@@ -47,7 +47,16 @@ begin
             '[shared link: '||coalesce(nullif(display_name,'')||' ','')||domain
               ||coalesce(' '||target_url,'')||']' as card
           from digest.fb_post_links where domain is not null) l
-    group by post_id),
+    group by post_id
+    union all
+    select fp.post_id, 3 as ord,
+           '[poll results: ' || string_agg(
+             (o->>'pct') || '% ' || (o->>'text')
+             || coalesce(' (option added by ' || (o->>'added_by') || ')', ''),
+             ' · ' order by (o->>'pct')::int desc) || ']' as t
+    from digest.fb_posts fp, lateral jsonb_array_elements(fp.poll) o
+    where jsonb_typeof(fp.poll) = 'array' and jsonb_array_length(fp.poll) > 0
+    group by fp.post_id),
   agg as (
     select post_id, string_agg(t,' | ' order by ord) as t from parts where t is not null group by post_id),
   upd as (

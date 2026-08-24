@@ -9,7 +9,7 @@ declare
   v_n int; v_post text; v_post_author text;
 begin
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
 
   if p_post_id is not null then
     select ci.source_id into v_post from digest.content_items ci

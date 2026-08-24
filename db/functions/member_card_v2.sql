@@ -11,7 +11,7 @@ begin
   if nullif(trim(coalesce(p_member,'')),'') is null then return; end if;
   select count(*) into v_n from digest.member_identity m
    where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
 
   return query select * from digest.member_card(p_phone, p_member);
 

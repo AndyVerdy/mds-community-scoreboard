@@ -11,7 +11,7 @@ declare
 begin
   select count(*) into v_n from digest.member_identity m
    where m.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(m.membership_status);
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
 
   if nullif(trim(coalesce(p_question,'')),'') is null then
     return query

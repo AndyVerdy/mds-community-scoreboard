@@ -8,7 +8,7 @@ AS $function$
 declare v_n int;
 begin
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
-  if v_n <> 1 then return; end if;
+  if v_n < 1 then return; end if;
   return query
   with member_chapters as (
     select trim(ch.one) as chapter
