@@ -77,7 +77,31 @@ Registration or 5% OFF" is real) · 4023 (revenue BAND is shareable) · 6451/645
 in the execs — silent staging probes never record media) · and one flip the other way: **6486 pass→FAIL**
 (the probe member has no Summit registration row, so "you're on the books" is a false personal status).
 
-**Summit prod-vs-stage comparison: RUN DONE, GRADING NOT DONE.** All 68 launch questions (40 member
+**Summit prod-vs-stage comparison: DONE — STAGE 91% vs PROD 87%.** All 68 launch questions fired at
+staging on the exact build bank C measured (108 turns, EXIT 0), then **graded by me by hand** — three
+dispatched graders died (a machine sleep, then two 529s) and I killed the last two so they could not
+overwrite the file. **Stage 62 pass / 6 fail = 91%; prod 54 / 8 = 87%.** On the 49 comparable questions:
+**stage wins 6, prod wins 1, 42 ties.** The six wins are exactly prod's launch defects: both canned
+refusals became real sourced answers (TikTok non-US 3→9 with named members, the W-9 wall and thread
+links; TikTok beginner 5→9), all three false "restricted" labels are gone (top-TikTok 6→9, nine-figures
+6→9, Meta videos 6→9), and the channels question went 5→9 from a generic help card to the member's own
+source list. **The one regression → wave 8:** "Who are all the attendees" 9→6, because stage refuses with
+"not something I share for any event, registered or not" — false, registered askers DO get names (same
+false-blanket class as bank C 6266/6267/6498). Two more wave-8 items surfaced: **empty gate answers** (a
+correct gate that offers nothing — no count, no alternative — where sibling answers on the same build
+gave both) and **thin first-touch greetings**. Artifacts `eval/grade_h2h_0.json`, `grade_h2h_1.json`,
+`grade_h2h_all.json`.
+
+**⚠️ METHODOLOGY CAVEAT, carry it forward: 13 of the 68 are CONFOUNDED.** Prod answers came from the real
+members' own phones, several registered for the Summit; every stage answer came from the probe phone
+(Andy), who is **not** registered. Stage's "you're not registered" there is correct behaviour for ITS
+asker, not a regression — and prod's richer answers there are not a fair win. Any future prod-vs-stage
+run must use a registered probe identity or exclude registration-gated questions. The thin greetings are
+confounded the same way (returning asker vs first touch). Also: "Who's in the sports niche like me" scores
+2 on stage on its own merits (drops the Summit dimension) — but prod **fabricated 8 of 9 attendees** on
+that same question, so stage is the safer wrong answer; both need wave 8's grounded-attendance rule.
+
+**Superseded note (kept for honesty):** All 68 launch questions (40 member
 threads, order preserved, fire-time re-harvest) fired at staging on the exact build bank C measured —
 108 turns, EXIT 0, `eval/summit_compare.json` holds all 68 prod/stage pairs. The head-to-head grader died
 twice (machine sleep, then a 529) and never wrote `grade_summit_stage.json`. **Mechanical deltas only,

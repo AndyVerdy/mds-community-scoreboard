@@ -24,7 +24,27 @@ measured. **Nothing is promoted beyond #114 — Andy has not approved a promote.
 **Every `eval/...` path in this handoff is relative to the #108 worktree
 `.superpowers/sdd/2026-08-22-finder/`, not to the repo root.** There is no repo-root `eval/`.
 
-### The one job to start with
+### DONE — the head-to-head is graded (no longer the first job)
+
+**STAGE 91% (62 pass / 6 fail) vs PROD 87% (54 / 8)** on the 68 launch questions. Comparable set 49:
+**stage wins 6, prod wins 1, 42 ties.** Graded by hand (three dispatched graders died; the last two were
+killed to stop them overwriting the output). Files: `grade_h2h_0.json`, `grade_h2h_1.json`,
+`grade_h2h_all.json`. The six wins are prod's launch defects — canned refusals became sourced answers,
+all false "restricted" labels gone, the channels question fixed.
+
+**Three items this added to wave 8:**
+1. **False blanket refusals** — the one regression (9→6): "not something I share for any event, registered
+   or not" is false; a refusal must state the REAL gate. Same class as bank C 6266/6267/6498.
+2. **Empty gate answers** — a correct gate that offers nothing (no count, no alternative) where sibling
+   answers on the same build gave both.
+3. **Thin first-touch greetings** — a bare "what do you need?" where a new member needs orienting
+   (partly confounded, see below).
+
+**⚠️ CONFOUND to respect in any future prod-vs-stage run: 13 of 68 are not comparable.** Prod answered from
+real members' phones (several Summit-registered); all stage answers came from the probe phone (Andy, NOT
+registered). Use a registered probe identity or exclude registration-gated questions.
+
+### Superseded — the old first job
 **Grade the Summit prod-vs-stage head-to-head.** `eval/summit_compare.json` already holds all 68 launch
 questions with `prod_answer` and `stage_answer` from the staging run (108 turns, EXIT 0, same build bank
 C measured). **Only 62 of the 68 carry a `prod_score`** — six questions arrived after the prod-grading
