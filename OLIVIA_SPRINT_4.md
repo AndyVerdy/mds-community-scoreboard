@@ -1586,6 +1586,35 @@ Same block of activities: the **Tue 25 Aug 22:30 Night Out row vanished from the
 2026-08-23 (`op=agenda` went to 37 activities; the row is gone, the catalog row `rec4SEDr6vYnwzxwT`
 survives). Check whether it was renamed into one of these daily copies on purpose or lost upstream.
 
+### #125 · "Not currently active" is sent to ACTIVE members whose number simply isn't linked
+**🔴 S1 · size S — filed 2026-08-24, live at the Summit launch (Shyam Murali, +91 99406 69944).**
+
+*As an active member texting Millie from a number the system hasn't linked yet, I'm told how to get
+connected — never that my membership is inactive.*
+
+**What happened:** Shyam Murali (Current Member, Chennai) texted during the on-stage launch and got
+"this number is linked to an MDS membership that is not currently active." The truth: his WA-layer row
+carried no membership status because the number wasn't linked. The refusal copy asserts a FACT about
+his membership that is false and mildly insulting — at launch, to a paying member.
+**Fix:** split the non-member path in `Resolve Member` (prod #31 block): (a) row found but status
+empty/unlinked → "this number isn't connected to a member record yet — reply with the email on your
+MDS account and the team will link it" (+ optionally auto-file a ticket row); (b) status genuinely
+inactive → the current wording. Never claim "not active" unless the status field SAYS an inactive value.
+**Repair path proven live 2026-08-24 02:00Z:** number added on the Members DB record (Andy) → the WA
+record's `AT Database Status` lookup resolved → `Supabase Mirror (Members)` (15-min schedule, run
+103880) wrote `membership_status: Current Member` into `digest.members` → the gate's ACTIVE check now
+passes. **Accept when:** unlinked-number path sends the connect copy · inactive path unchanged ·
+probe both classes on staging · gate EXIT 0.
+
+### #126 · WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id`
+**🟡 S3 · size XS — filed 2026-08-24 (found under #125).** `Supabase Mirror (Members)`
+(`Oy7RYcgLfDYhrPvw`) maps `at_member_id: f.source_member_id`, yet Shyam's row synced at 02:00:48 with
+`membership_status` updated and `at_member_id` still NULL while the AT WA record has
+`source_member_id = recTmVnVkcX7VJnMu` (matcher-set since 2026-07-24). Likely the mirror's Airtable
+fetch omits that field, or change-detection skips it. Also his `crm_member_id` points at a dead record
+(`recEbqcLdtM7aXV9z`) — and the canonical-key rule says at_member_id, never crm_member_id. Audit how
+many of the ~646 mirror rows have NULL `at_member_id`, fix the field map, re-sync.
+
 ### #124 · Bank C — a 400-question organic bank built on conversations, recommendations and expertise
 **🔴 S1 · size L — filed 2026-08-23 (Andy: "we tested only 100 questions. Which is nothing in the grand scheme… I don't feel confident promoting anything yet").**
 
