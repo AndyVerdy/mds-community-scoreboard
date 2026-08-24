@@ -850,6 +850,15 @@ edit one while working the other.
 
 ## 11. The privacy model
 
+> **Visibility ruling (Andy, 2026-08-24) — reads on top of R1–R10:** the asker's own access defines
+> shareability. Public info carries no privacy expectation. Restricted-chat content — all field
+> types, contacts and self-stated revenue included — is shareable to that chat's members. Rule of
+> thumb: *"if someone asking the question can theoretically find an answer themselves, we can share
+> it."* Exact revenue from OUR RECORDS stays internal; a member's own visible statement of it is
+> quotable. **Every quoted fact names its source** — quoting without attribution is a defect.
+> (Seed rule ships with fixwave 7; bank C expects 6047/6050/6137/6258/6382/6420 amended same day.)
+
+
 `OLIVIA_SHAREABLE_FIELDS.md` is the binding rulebook. Summary:
 
 - 🟢 **Shareable per member:** the member-card fields — name, city/state, chapter, niche, expertise,
