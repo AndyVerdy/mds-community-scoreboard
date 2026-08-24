@@ -72,6 +72,7 @@ begin
   left join dos d on d.ord = v.ord
   left join evo eo on eo.ord = v.ord
   order by case when p_order is not null then v.ord else 0 end,
+           case when p_order is null then floor(coalesce(v.matched_rank, 0)::numeric * 4) else 0 end desc,
            case when p_order is null then coalesce(d.fit, 0) else 0 end desc,
            case when p_order is null then d.wsig else 0 end asc,
            v.ord;
