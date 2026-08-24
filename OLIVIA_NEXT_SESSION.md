@@ -11,6 +11,49 @@
 
 # Olivia — next session
 
+## STATE 2026-08-24 (SECOND overnight session) — read this first
+
+**Waves 7, 8, 9 and 10 are ALL APPLIED to staging.** Staging versionId `57db4b77`; gate **297
+checks EXIT 0** after every wave. PROD is unchanged at `bbd597b7` (#114 only) and still serving
+members — nothing has been promoted.
+
+### What the 50-question tranche proved (and disproved)
+A stratified 50 of the 192 bank C fails was re-run after waves 7+8 and graded BY HAND on the
+strict scale: **23/50 = 46% of previously-failing questions now pass.** Mechanically over the same
+50: links **90 → 126**, dates cited **12 → 34**, canned non-answers **3 → 1**.
+
+**The misses were mostly rules that never executed, not bad rules.** Two mechanical faults, both
+in `Answer Merge`, found by reading the live execution rather than the code:
+- **M1 — every stamp parsed the already-truncated `body`.** Order is: build body → squeeze rows →
+  blunt-slice at CAP 26000 → *then* the stamps `JSON.parse(body)`. Over CAP that is invalid JSON,
+  the parse throws, the stamp silently no-ops — on exactly the large payloads the stamps exist
+  for. That is why counts/cap scored 0/3, freshness 1/4, partner 1/3. Wave 9: stamps read `r`.
+- **M2 — `clipSafe` covered the first-pass trim but not the large-payload path.** The halving
+  squeeze re-sliced every string field raw (url fields included) and the backstop blunt-sliced the
+  whole string. Wave 9 makes both URL-safe and exempts url/link keys from squeezing outright.
+  ⚠️ **Correcting an earlier claim in this repo: `clipSafe` was never "dead code".** It is called
+  once in each node; a bad regex (subtracting the definition from a count that never included it)
+  produced that false reading. It was INCOMPLETE, not absent.
+
+### Two graders' notes that turned out to be wrong when probed
+- **6217 was NOT a cap failure.** The tool returned 10 rows and the S3 stamp said so; Millie
+  printed an 11th name carried over from the previous turn's San Diego list. An ungrounded name,
+  not a cap miss. Austin holds 13 member-facing records against a 10-row cap with no total, so the
+  answer also implied completeness. Wave 10 (S5) fixes both; verified live.
+- **6222's canned line is the GATE'S HARD-STOP CLAMP**, not model text — `Gate Verdict` returns a
+  fixed sentence after 2 failed regenerations and discards the draft. Not touched: it is the
+  safety backstop and changing it needs Andy.
+
+### Open for Andy
+1. **The removed-member severe (6080 / 6272 / 6277) is DELIBERATELY UNFIXED.** The bank C expects
+   say a removed member gets no profile at all — no dates, no link, no reason. Andy's recorded
+   **2026-07-26 ruling** says past members ARE findable ("I don't have a member named Lori" was a
+   lie), and the leak gate still asserts exactly that. **Two rules point opposite ways; only Andy
+   settles it.** Until then these stay failing.
+2. **#123 blocks 6372 / 6400** — the 2027 events the expects want (Cancun) live in the events
+   catalog that every `event_*` call is misrouted away from.
+3. Promote decision, after the full 192 re-run.
+
 ## STATE 2026-08-24 (overnight close) — read this first
 
 **Millie is LAUNCHED.** She was announced on stage ~01:50Z 2026-08-24. **PROD = `bbd597b7`** (#114 venue-day
