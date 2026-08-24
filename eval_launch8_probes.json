@@ -1,0 +1,50 @@
+[
+ {
+  "id": 9007,
+  "q": "Top videos for tiktok",
+  "why": "Four picks verified public with exact titles, but on the Josh Hadley 'TikTok Shop Growth Engine' row (confirmed access_restriction=restricted) she writes 'can't share its contents' and then shares them - the 4,000-creator army and $200K+/month GMV.",
+  "score": 6
+ },
+ {
+  "id": 9012,
+  "q": "Why these people?",
+  "why": "Canned 'couldn't verify enough' non-answer to 'Why these people?' when the reasons sat in the immediately preceding turn she wrote herself.",
+  "score": 2
+ },
+ {
+  "id": 9026,
+  "q": "How do I take my company to nine figures?",
+  "why": "Three videos verified public and well summarized, but the Joe Zalta row is genuinely restricted and she delivers its hiring-by-stage framework anyway while calling it restricted.",
+  "score": 6
+ },
+ {
+  "id": 9031,
+  "q": "Which channels you have access to?",
+  "why": "The member asked which channels she has access to and got the generic help card - his own channels_present list exists in the warehouse and was never surfaced.",
+  "score": 5
+ },
+ {
+  "id": 9044,
+  "q": "Who’s in the sports niche like me",
+  "why": "Eight of the nine people she says are 'at the Summit with you' are not - Salman Baig, Ershad Ganjy, Hasan Hasmani, Matteo Lombardi, Sam Haddad, Max Burdilov and Alyssa Riccardelli appear in neither event.people nor the 163-row registration list, and Lee Assoulin has no attendee row; only Corey Smith is actually there.",
+  "score": 2
+ },
+ {
+  "id": 9045,
+  "q": "Tell me how to setup TikTok shop as a non US entity",
+  "why": "Canned non-answer on setting up TikTok Shop as a non-US entity when the warehouse holds a dedicated Jul 3 Facebook thread on exactly that plus an Aug 18 follow-up - proven by her own richer answer to the same question minutes later.",
+  "score": 3
+ },
+ {
+  "id": 9046,
+  "q": "How to launch TikTok shop as a beginner",
+  "why": "The headline block quote ('US distribution and a US employee') is verified as coming from the John Fexy TikTok Shop Fashion Bootcamp call, not the Fernando Campos Beginners Panel she names and links, and the ITIN line was said by another speaker on that call - the Facebook material is exact but the marquee quote is attributed to the wrong member.",
+  "score": 5
+ },
+ {
+  "id": 9048,
+  "q": "Pull up all Meta related videos",
+  "why": "Both restricted rows are correctly withheld and four links are right, but 6a4da3dd is presented as 'Turning TikTok Content into Meta Ads' when its actual title is 'Why Your Amazon Launch is 6-Weeks Behind - Jordyn Levine' - an invented title and summary inside a list billed as the full lineup.",
+  "score": 6
+ }
+]
