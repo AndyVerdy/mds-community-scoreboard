@@ -944,6 +944,23 @@ def main():
               isinstance(browse, list) and len(browse) > 0, f"status {st}")
         check("browse never shows paused/restricted canaries",
               not ({f"REDTEAM Restricted Partner {MARKER}", f"REDTEAM Paused Partner {MARKER}"} & bnames))
+        # ---- #129 · an EVENT-specific partner offer is for ATTENDEES of that event only.
+        # Found from Eugene/Khalid on Hector: the Summit offer ("Integrate before 31st August and
+        # get Hector MCP free for 1 month") lives in event.partner_profiles and partner_lookup_v2
+        # never read it, so a registered attendee got only the standing deal. Now it is returned —
+        # and must stay gated, or it becomes a leak of an entitlement the asker does not hold.
+        st, pv2 = rpc("partner_lookup_v2", {"p_phone": phone, "p_query": "hector", "p_limit": 5}, key)
+        check("partner_lookup_v2 answers (status 200)", st == 200 and isinstance(pv2, list), f"status {st}")
+        # the default probe asker (Andy) holds no attendee row, so he must see NO event offer
+        check("event offer withheld from a non-attendee (#129)",
+              all(not r.get("event_offer") for r in (pv2 or [])),
+              json.dumps([r.get("event_offer") for r in (pv2 or []) if r.get("event_offer")])[:200])
+        check("partner_lookup_v2 still carries the standing offer for everyone (#129)",
+              any(r.get("offer_value") for r in (pv2 or [])) or not pv2)
+        st, pv2n = rpc("partner_lookup_v2", {"p_phone": "19999999999", "p_query": "hector"}, key)
+        check("partner_lookup_v2 unknown phone = zero rows (#129)",
+              isinstance(pv2n, list) and not pv2n)
+
         st, ptn = rpc("partner_lookup", {"p_phone": "19999999999", "p_query": MARKER}, key)
         check("partner_lookup unknown phone = zero rows", isinstance(ptn, list) and not ptn)
         st, _b = rpc("partner_lookup", {"p_phone": phone, "p_query": MARKER}, ANON_KEY)
