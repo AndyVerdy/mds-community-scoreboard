@@ -84,6 +84,38 @@ def main():
     cm = sub(cm, anchor2, stamps, "merge stamps")
     node_check(cm, "Answer Merge"); mg["parameters"]["jsCode"] = cm
 
+    # ---- 4 · the ellipsis-URL root cause: the evidence clipper cuts URLs mid-path -----
+    # 20+ answers across C2-C7 shipped a dead link ending in "…" — not a model slip: Answer Seed and
+    # Answer Merge both clip long string fields with slice(TIER) + '…', and a url/body field carrying a
+    # link gets chopped in the middle of the path. Fix once, in both clippers: back the cut up to
+    # before the last whitespace when the cut would land inside a URL, so a link is either whole or gone.
+    URLGUARD = ("const clipSafe = (s, n) => {\n"
+                "  if (s.length <= n) return s;\n"
+                "  let cut = s.slice(0, n);\n"
+                "  // never end inside a URL: if the tail after the last space starts a link, drop that fragment\n"
+                "  const sp = cut.lastIndexOf(' ');\n"
+                "  const tail = sp === -1 ? cut : cut.slice(sp + 1);\n"
+                "  if (/^https?:\\/\\//i.test(tail) && !/\\s/.test(s.slice(n, n + 1))) {\n"
+                "    cut = sp === -1 ? '' : cut.slice(0, sp);\n"
+                "  }\n"
+                "  return cut + '\\u2026';\n"
+                "};\n")
+    for nm in ("Answer Seed", "Answer Merge"):
+        nd = nodes[nm]
+        cc = nd["parameters"]["jsCode"]
+        anchor_t = "const TIER = (i) => (i < 5 ? 1600 : i < 15 ? 500 : 220);"
+        cc = sub(cc, anchor_t, anchor_t + "\n" + URLGUARD, f"{nm} TIER anchor")
+        if nm == "Answer Seed":
+            cc = sub(cc, "out[k] = (typeof v === 'string' && v.length > TIER(i)) ? v.slice(0, TIER(i)) + '\u2026' : v;",
+                     "out[k] = (typeof v === 'string' && v.length > TIER(i)) ? clipSafe(v, TIER(i)) : v;",
+                     "Seed clip call")
+        else:
+            cc = sub(cc, "if (typeof v === 'string' && v.length > TIER(i)) out[k] = v.slice(0, TIER(i)) + '\u2026';",
+                     "if (typeof v === 'string' && v.length > TIER(i)) out[k] = clipSafe(v, TIER(i));",
+                     "Merge clip call")
+        node_check(cc, nm + " (url guard)")
+        nd["parameters"]["jsCode"] = cc
+
     # ---- 5 · Gate Verdict: narration SHAPE check (first-attempt-only zone) -----------
     gv = nodes["Gate Verdict"]; cg = gv["parameters"]["jsCode"]
     anchor3 = "const _attempt0 = Math.max(prev.gate_attempts || 0, typeof $runIndex === 'number' ? $runIndex : 0) === 0;"
@@ -93,7 +125,7 @@ def main():
 // a sentence whose subject is backend machinery + a returns/came-back verb is narration.
 try {
   const _txt7 = String(answerText || '');
-  const _shape7 = /(\\b(the|my|our|a|that|this)\\s+(search\\s+)?(tool|query|lookup|directory|preload(?:ed)?\\s+search)\\b[^.\\n]{0,40}\\b(returns?|returned|comes? back|came back|pulled|gave|came up|kept giving|is coming back|empty on its end|only covers|can (see|retrieve|search))\\b)|(\\b(in|from) my (results|search)\\b)|(\\bwhat I can retrieve\\b)|(\\bsearchable here\\b)|(\\bmy search only\\b)|(\\b(in|from) what I(?:'m| am| can)? ?(?:pull|retriev|access)\\w*\\b)/i;
+  const _shape7 = /(\\b(the|my|our|a|that|this)\\s+(search\\s+)?(tool|query|lookup|directory|preload(?:ed)?\\s+search)\\b[^.\\n]{0,40}\\b(returns?|returned|comes? back|came back|pulled|gave|came up|kept giving|is coming back|empty on its end|only covers|can (see|retrieve|search))\\b)|(\\b(in|from) my (results|search)\\b)|(\\bwhat I can retrieve\\b)|(\\bsearchable here\\b)|(\\bmy search only\\b)|(\\b(in|from) what I(?:'m| am| can)? ?(?:pull|retriev|access|see|found)\\w*\\b)|(\\b(that|the|my) search[^.\\n]{0,30}(didn't|did not) (turn up|surface|return)\\b)|(\\bcan'?t query\\b)|(\\bwhat the tool flags\\b)|(\\bcount tool\\b)/i;
   if (_attempt0 && _shape7.test(_txt7)) {
     policyClaims.push('INTERNALS-SHAPE: the draft describes how the answer was obtained ("'
       + (_txt7.match(_shape7) || [''])[0].slice(0, 60)
