@@ -287,6 +287,54 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 
 **Accept when:** Staff record absent from event_who names for an event he's registered to (probe with a registered asker) · absent from who-to-meet · absent from the intro picker · gate GREEN · promote.
 
+#### ✅ #106 CLOSED 2026-08-24 — SQL layer LIVE · route layer BUILT, NOT DEPLOYED (needs Andy's push)
+**Trigger:** Eugene 2026-08-24 00:11 — *"Courtney and me come up as a suggestions for who to meet at
+summit need to filter out the team. Look at the test chat for Ben Anderson as example."* Andy: *"add this
+fix as well … but its search logic, make sure to apply it."*
+
+**Reproduced first, not assumed:** `digest.olivia_recommendations` **6690/6691**, 2026-08-24 05:09:37Z,
+lane `event_people`, asker Ben Anderson → Courtney Lee + Eugene Khayman, both `membership_status='Staff'`.
+
+**ROOT CAUSE — one predicate doing two jobs.** `digest.is_active_member_status()` answers *"may this
+person USE Millie?"* and correctly includes `'Staff'` (34 functions depend on it for exactly that —
+narrowing it would lock the team out). Nothing answered *"may this record be SHOWN to a member?"*: only
+`member_match_v2`/`expertise_search` carried a hand-copied literal allowlist that happens to exclude
+Staff, `member_card` listed `'Staff'` in its own subject allowlist, and `event_who` + the who-to-meet
+lane + the intro picker had no status filter at all. **A missing predicate, not a wrong one.**
+
+**Shipped — SQL, live now** (`scripts/sql/20260824_106_internal_records_never_subjects.sql`, CREATE OR
+REPLACE + `notify pgrst` each): new SSOT `digest.is_internal_record()` (Staff + Team User, btrim-safe) ·
+`event_who` excludes internal records from NAMES, keeps the asker's own `is_me` row, `v_total` untouched
+so the count stays the census · `member_card` excludes them on BOTH the exact-match and fuzzy-fallback
+CTEs (the fuzzy path let a near-miss spelling walk past the first guard), with a self-carve-out so you
+keep your OWN card; `member_card_v2` inherits it.
+
+**Built — route, NOT deployed** (mds-digest-web; a push to `main` deploys to prod, so it waits for Andy):
+who-to-meet candidates in `schedule/route.ts` now apply the existing tested `isMemberFacing()` (R8) that
+the same file already used for `total_going` and the #108 finder route already used — this lane was the
+only one that never did · `intro/route.ts` gains a TARGET-side `memberFacingSubset`, applied to both the
+picker and the named-target path, while the REQUESTER gate stays registration-only so staff can still ask.
+
+**Before → after (live numbers):** 33 internal records (30 Staff + 3 Team User) · Summit who-to-meet 140
+attendees → **99 candidates, 41 excluded, 5 of them Staff** (Courtney Lee, Doina Chilat, Eugene Khayman,
+Fernanda Arguelles, Ion Nederita — Eugene spotted 2 of the 5) · **6 Staff hold Confirmed Summit
+registrations** and were eligible for `event_who` names; **153 Staff-confirmed registrations across all
+events** · `member_card_v2` returned a FULL Staff profile (city, revenue tier, niche, about-me, FB link,
+chapter, 9 chats) labelled `membership_state:'current'` → now `not_found`.
+
+**AC checklist:** Staff absent from `event_who` names for an event he's registered to ✅ (probed as
+registered member Aaron Biner: 10 names, 0 internal, `total_going` 116; and as registered STAFF Belén
+Gallardo: own `is_me` row present, no other Staff) · absent from who-to-meet ✅ (route + live candidate
+proof; **deploy pending**) · absent from the intro picker ✅ (route; **deploy pending**) · gate GREEN ✅
+**297 checks, 0 failures, EXIT 0** (+4 #106 checks; mds-digest-web `npx tsc` clean, 347/347 vitest) ·
+promote ⏸ **Andy** — the route half is not live until he pushes.
+
+**Found alongside, NOT chased (flagged for priority):** ① `'Current Member- Paused '` carries a trailing
+space in the live data while every allowlist spells it without one, so those 3 members are silently
+excluded from `member_card`'s subject set ② the never-were-members classes (`Removed Applicant` 70,
+`Declined Applicant ` 20, `Dead Lead` 20, `Pending 1st Interview` 13, `Pending Application` 1) are out of
+scope for "the team" but sit in the same subject position.
+
 ### #105 · Verify Meta's webhook signature on every inbound message
 **🟡 S2 · size S — filed 2026-08-22 from #97's final whole-branch review (I7); Andy: "ok" to file + ship as its own ticket, not inside #97**
 
