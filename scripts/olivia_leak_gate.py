@@ -665,6 +665,20 @@ def main():
                   st == 200 and staff_name not in json.dumps(mm or []),
                   f"{staff_name} present")
 
+        # ---- #131 · a past member is FINDABLE, but WHEN and WHY they left are not (Andy
+        # 2026-08-24: "I don't want to disclose leave dates or reasons why he left"). The reason
+        # was already withheld; the leave DATE was not, and cards read "joined Nov 2022, left Feb
+        # 2026". Blanked at source in member_card; asserted here so it cannot come back.
+        st, pastc = rpc("member_card_v2", {"p_phone": phone, "p_member": "Lori Barzvi"}, key)
+        _past = [r for r in (pastc or []) if r.get("membership_state") == "past"]
+        check("a past member is still FINDABLE (Andy 2026-07-26 ruling stands)",
+              st == 200 and bool(_past), f"status {st} rows {len(pastc or [])}")
+        check("a past member's card carries NO leave date (#131)",
+              all(not r.get("left_date") for r in (pastc or [])),
+              json.dumps([r.get("left_date") for r in (pastc or [])])[:120])
+        check("a past member's card still carries their history (join date / city)",
+              any(r.get("joined") or r.get("city") for r in _past) or not _past)
+
         st, ian = rpc("member_card", {"p_phone": phone, "p_member": "Ian Sells"}, key)
         check("member_card shared_chats never exceed the ASKER's own chats",
               all(set(c.get("shared_chats") or []) <= set(chats) for c in (ian or [])),

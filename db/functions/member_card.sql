@@ -66,7 +66,7 @@ begin
          c.join_date,
          case when c.m_state = 'past'
                    and c.at_fields->>'Member Removed Date' ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-              then substring(c.at_fields->>'Member Removed Date' from 1 for 10)::date end
+              then null::date end
     from cand c
    where c.best_name is not null
      and (select bool_and(digest.name_fold(c.all_names) like '%'||digest.name_fold(w)||'%')
@@ -125,7 +125,7 @@ begin
            c.join_date,
            case when c.m_state = 'past'
                      and c.at_fields->>'Member Removed Date' ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
-                then substring(c.at_fields->>'Member Removed Date' from 1 for 10)::date end
+                then null::date end
       from cand c
      where c.best_name is not null
        and extensions.word_similarity(digest.name_fold(trim(p_member)), c.folded_names) > 0.62
