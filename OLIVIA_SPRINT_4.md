@@ -1586,6 +1586,14 @@ Same block of activities: the **Tue 25 Aug 22:30 Night Out row vanished from the
 2026-08-23 (`op=agenda` went to 37 activities; the row is gone, the catalog row `rec4SEDr6vYnwzxwT`
 survives). Check whether it was renamed into one of these daily copies on purpose or lost upstream.
 
+### #127 · `video_search_v2` serves restricted-video content while calling it restricted (one-word RPC fix, PROD-shared)
+**🔴 S1 · size XS — filed 2026-08-24 from the LAUNCH grading (9007 Josh Hadley video, 9026 Joe Zalta talk: "can't be shared… here's the framework:").** Wave 5 diagnosed the fix — the RPC filters on
+`f.access_restriction = 'restricted'` where it must use the boolean `f.restricted` — and held it back
+because the function is shared by PROD and staging and the wave was staging-only. The launch showed the
+defect live to real members twice in 40 minutes. Fix = CREATE OR REPLACE (never DROP — ACL), NOTIFY
+pgrst, gate EXIT 0, probe both launch questions. ⚠️ Ships to prod the moment it lands (shared RPC) —
+needs Andy's explicit go, same as a promote.
+
 ### #125 · "Not currently active" is sent to ACTIVE members whose number simply isn't linked
 **🔴 S1 · size S — filed 2026-08-24, live at the Summit launch (Shyam Murali, +91 99406 69944).**
 
