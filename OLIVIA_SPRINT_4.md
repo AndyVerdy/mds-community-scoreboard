@@ -49,7 +49,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#112** | 🔗 Offer→answer binding | 🔴 S1 | S | ✅ exact failing sequence returns BOTH summaries | ✅ **CLOSED 2026-08-22** — the #80 binding existed; its ACCEPT_RE end-anchor made "yes booth" miss. Fix: affirmative may carry a quantifier/typo (both·booth·all·either·that one) while a topic word still routes normally; binding now covers EVERY offered video, not just the last. Prod `e175c5a3`, gate 0 |
 | **#104** | Adjacent-turn topic lag | 🔴 S1 | S-M | ✅ **VERIFIED: rerun of all 3 original fail-chains with recreated adjacency = 3/3 on-topic PASS** | ⛔ rides the Millie promote — **root cause: FC caught all 3, Gate Verdict pass-postfilter neutralized the catch (topic-mismatch is not a fact-claim); fix = off_topic field in FC rubric + non-filterable in Gate Verdict (regenerate, cap 2). Probe: exact failing sequence now on-topic, off_topic field live in FC output, gate 263/exit 0. Bonus same session: load_speakers.py --rescan (guest-becomes-member promotion in place, 27 checked/0 due)** |
 | **#105** | 🔐 Verify Meta's webhook signature (`X-Hub-Signature-256`) on every inbound — filed from #97's final review (Andy OK 2026-08-22) | 🟡 S2 | S | — | ⏸ next session, BEFORE any wide intros announcement |
-| **#106** | 🙈 Staff / non-member records must never surface in member-facing lists (event_who names, who-to-meet, intro picker) — Andy 2026-08-22: "make sure I'm not searchable" | 🟡 S2 | S | SQL-verified exposure map | ⏸ next session (test row already purged) |
+| **#106** | 🙈 Staff / non-member records must never surface in member-facing lists (event_who names, who-to-meet, intro picker) — Andy 2026-08-22: "make sure I'm not searchable" | 🟡 S2 | S | SQL-verified exposure map | ✅ **LIVE 2026-08-24** (SQL, prod-shared) — 5 `#106` checks in the leak gate pass: `member_card`, `member_card_v2`, `expertise_search`, `member_match_v2`, finder |
 | **#107** | 🗣️ Millie-only self-name (Format Reply PS still says Olivia) + who-to-meet ends with "connect you with one of them?" Yes/No buttons → Yes = intro picker (Andy 2026-08-22: "Millie and only Millie — official name"; "ask if he would like to connect… if yes provide a list") | 🔴 S1 | S-M | — | ✅ **PROMOTED 2026-08-22 ~05:24Z (Andy) — prod `8f48fdb8`**: Millie PS (prepended when button-eligible) · who-to-meet ends with the exact offer + Yes/No buttons (96779) · Yes → member_intro, no plan replay (review caught the 500-char-trim defeat → `last_olivia_intro_offer` flag, proven 96864) · non-attendee no offer (96787) · gate 267 EXIT 0 |
 | **#109** | 📨 Requester-side intro notices must be TEMPLATES (accept / decline / 7-day lapse) — free-form text dies outside the 24h window (Meta 131047); found 2026-08-22 when Andy questioned the lapse promise | 🔴 S1 | S-M | templates `mds_intro_accepted` · `mds_intro_declined` · `mds_intro_lapsed` SUBMITTED (PENDING) | ⏸ logic next session (Andy: "keep as is, suggestions logic first") — must ship before any announcement |
 | **#110** | 🧾 Intro-tap turns are not saved to conversation history — `Save Conversation` on the intro-tap path errors on a `$('Resolve Member')` reference (swallowed by onError); SQL-proven zero rows for tap turns; no member impact, no effect on no-replay flag | 🟡 S2 | S | SQL + exec 97071 | ⏸ next session |
@@ -74,9 +74,10 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
+| **#125** | 🚫 "Not currently active" is sent to ACTIVE members whose number simply isn't linked (Shyam Murali, live at the Summit launch) | 🔴 S1 | S | ✅ **BUILT + PROVEN 2026-08-25** `01c8670d` — execs 110321/110322/110324, gate 306 EXIT 0, 12/12 regression tests | ⏸ awaiting Andy's promote |
 | **#147** | 🔀 "Is this member registered?" answered twice by two sources that disagree (agenda says yes, who-to-meet says no) | 🔴 S1 | M | — | ⏸ measure first |
-| **#146** | 🔇 A member who hides their WhatsApp number is invisible — silent drop, no answer, no error (Danson Hui) | 🔴 S1 | M | 🔨 building 2026-08-25 | ⏸ |
-| **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | 🔨 running 2026-08-25 (`daf8ec82`) — 319 graded in 2 parts, 499 turns | ⏸ promote decision rides this |
+| **#146** | 🔇 A member who hides their WhatsApp number is invisible — silent drop, no answer, no error (Danson Hui) | 🔴 S1 | M | ✅ built + probed | ✅ **PROMOTED 2026-08-25** `64995b68` — Danson live. Remainders open: silent-drop alarm · hidden-number history keyed by the opaque id · ~~refusal path bypasses the SELFTEST silent gate~~ **fixed under #125** |
+| **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | ✅ 319 graded, 8 regressions fixed | ✅ **CLOSED + PROMOTED 2026-08-25** — 311/319 hold (97.5%); links 654→808, dead links 5→0, dates 641→862, route changes 0; prod `8bb0827d` |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -2024,6 +2025,38 @@ record's `AT Database Status` lookup resolved → `Supabase Mirror (Members)` (1
 103880) wrote `membership_status: Current Member` into `digest.members` → the gate's ACTIVE check now
 passes. **Accept when:** unlinked-number path sends the connect copy · inactive path unchanged ·
 probe both classes on staging · gate EXIT 0.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-08-25 — awaiting Andy's promote
+**The fix:** an absent status is the ABSENCE of the fact, not the negative of it. `Resolve Member`
+now trims `membership_status` and returns a fourth reason, `unlinked`, when nothing is there;
+`!ACTIVE.includes(...)` keeps the `inactive` reason for a status that actually carries an inactive
+value. `Build Generic` gained the matching copy — it names the missing link and asks for the email
+on their MDS account, and never mentions their membership state. **Enabling fix, same edit:**
+`Build Generic` went straight to `Send Reply (Meta)`, bypassing the SELFTEST silent gate — the
+remainder already filed under #146 — so this path could not be probed without messaging a real
+person. It is now wired `Build Generic → Eval (silent)? → Send Reply (Meta)`, the same shape the
+answer path uses; `Save Conversation` already no-ops on `matched !== true`, so nothing else changed.
+
+| AC | result |
+|---|---|
+| unlinked-number path sends the connect copy | ✅ staging exec **110321** — `reason: "unlinked"`, reply = *"This number is not connected to an MDS member record yet… Reply with the email on your MDS account"*; the string "not currently active" is absent |
+| inactive path unchanged | ✅ staging exec **110322** — `reason: "inactive"`, reply byte-identical to the copy that shipped before |
+| probe both classes on staging | ✅ both above, plus exec **110324** proving an ACTIVE member (Staff) still reaches the full answer path, `Build Generic` never runs |
+| gate EXIT 0 | ✅ **306 PASS · 0 FAIL · EXIT 0** after the change |
+| no probe reached a phone | ✅ all three execs stop at `Eval (silent)?` output 0 — `Send Reply (Meta)` never executed; probe rows cleaned (`olivia_messages` 51968/51969, three `olivia_seen`) |
+
+**Before → after** on the class the ticket aimed at: **53** `digest.members` rows carry a phone and
+NO membership status; before the fix all 53 were told their membership "is not currently active",
+after it 0 are. **21 of the 53 carry real member signal** (in MDS WhatsApp chats and/or already
+linked to a member record) — Tomas Calonge (18 chats) and Mouad Errafik (12) are the clearest.
+Regression test `scripts/tests/test_front_door_copy.py` (12 tests) runs the REAL node code out of the
+live graph, so it cannot drift from what is deployed: **6 failed before the fix, 12/12 pass after.**
+Staging `01c8670d`.
+
+**Remainder, not fixed here:** the 53 still cannot use Millie — the repair is linking the number on
+the Members DB record, which is Airtable and therefore Andy's or ops' to make, never the agent's
+(2026-08-25 rule). The list of 21 is in the session log. `Current Member- Paused ` (2 rows, trailing
+space) is not in `ACTIVE` and keeps the inactive copy — correct today, flagged to #115 as hygiene.
 
 ### #126 · WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id`
 **🟡 S3 · size XS — filed 2026-08-24 (found under #125).** `Supabase Mirror (Members)`
