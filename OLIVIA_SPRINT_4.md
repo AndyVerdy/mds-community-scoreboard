@@ -74,7 +74,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
-| **#125** | 🚫 "Not currently active" is sent to ACTIVE members whose number simply isn't linked (Shyam Murali, live at the Summit launch) | 🔴 S1 | S | ✅ **BUILT + PROVEN 2026-08-25** `01c8670d` — execs 110321/110322/110324, gate 306 EXIT 0, 12/12 regression tests | ⏸ awaiting Andy's promote |
+| **#125** | 🚫 "Not currently active" is sent to ACTIVE members whose number simply isn't linked (Shyam Murali, live at the Summit launch) | 🔴 S1 | S | ✅ proven `01c8670d` — execs 110321/110322/110324 | ✅ **PROMOTED 2026-08-25** `c20c1811` — prod execs **110345** (unlinked, new copy) + **110346** (inactive, unchanged); gate 306 EXIT 0; 53 false claims → 0 |
 | **#147** | 🔀 "Is this member registered?" answered twice by two sources that disagree (agenda says yes, who-to-meet says no) | 🔴 S1 | M | — | ⏸ measure first |
 | **#146** | 🔇 A member who hides their WhatsApp number is invisible — silent drop, no answer, no error (Danson Hui) | 🔴 S1 | M | ✅ built + probed | ✅ **PROMOTED 2026-08-25** `64995b68` — Danson live. Remainders open: silent-drop alarm · hidden-number history keyed by the opaque id · ~~refusal path bypasses the SELFTEST silent gate~~ **fixed under #125** |
 | **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | ✅ 319 graded, 8 regressions fixed | ✅ **CLOSED + PROMOTED 2026-08-25** — 311/319 hold (97.5%); links 654→808, dead links 5→0, dates 641→862, route changes 0; prod `8bb0827d` |
@@ -2026,7 +2026,7 @@ record's `AT Database Status` lookup resolved → `Supabase Mirror (Members)` (1
 passes. **Accept when:** unlinked-number path sends the connect copy · inactive path unchanged ·
 probe both classes on staging · gate EXIT 0.
 
-#### ✅ BUILT + STAGED + PROVEN 2026-08-25 — awaiting Andy's promote
+#### ✅ CLOSED — PROMOTED 2026-08-25, prod `c20c1811` (Andy's go)
 **The fix:** an absent status is the ABSENCE of the fact, not the negative of it. `Resolve Member`
 now trims `membership_status` and returns a fourth reason, `unlinked`, when nothing is there;
 `!ACTIVE.includes(...)` keeps the `inactive` reason for a status that actually carries an inactive
@@ -2051,7 +2051,7 @@ after it 0 are. **21 of the 53 carry real member signal** (in MDS WhatsApp chats
 linked to a member record) — Tomas Calonge (18 chats) and Mouad Errafik (12) are the clearest.
 Regression test `scripts/tests/test_front_door_copy.py` (12 tests) runs the REAL node code out of the
 live graph, so it cannot drift from what is deployed: **6 failed before the fix, 12/12 pass after.**
-Staging `01c8670d`.
+Staging `01c8670d` → **prod `c20c1811`**. Re-verified ON PROD after the bounce: exec **110345** `reason: "unlinked"` with the new copy, exec **110346** `reason: "inactive"` with the copy unchanged, `Send Reply (Meta)` never executed in either — the silent gate holds on prod too.
 
 **Remainder, not fixed here:** the 53 still cannot use Millie — the repair is linking the number on
 the Members DB record, which is Airtable and therefore Andy's or ops' to make, never the agent's
