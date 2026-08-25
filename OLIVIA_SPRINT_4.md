@@ -78,6 +78,8 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#147** | 🔀 "Is this member registered?" answered twice by two sources that disagree (agenda says yes, who-to-meet says no) | 🔴 S1 | M | — | ⏸ measure first |
 | **#146** | 🔇 A member who hides their WhatsApp number is invisible — silent drop, no answer, no error (Danson Hui) | 🔴 S1 | M | ✅ built + probed | ✅ **PROMOTED 2026-08-25** `64995b68` — Danson live. Remainders open: silent-drop alarm · hidden-number history keyed by the opaque id · ~~refusal path bypasses the SELFTEST silent gate~~ **fixed under #125** |
 | **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | ✅ 319 graded, 8 regressions fixed | ✅ **CLOSED + PROMOTED 2026-08-25** — 311/319 hold (97.5%); links 654→808, dead links 5→0, dates 641→862, route changes 0; prod `8bb0827d` |
+| **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🟡 S3 | S | — | ⏸ filed 2026-08-25 |
+| **#126** | 🧾 WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id` | 🟡 S3 | XS | n/a (audit) | ✅ **CLOSED 2026-08-25 — NOT REPRODUCIBLE**: field map proven correct against mirror exec 110330; all 57/671 NULLs are genuinely unmatched. Audit found 11 matched members with no `AT Database Status` (Airtable-side, Andy/ops) and the stale-row gap, filed as #148 |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -2058,6 +2060,32 @@ the Members DB record, which is Airtable and therefore Andy's or ops' to make, n
 (2026-08-25 rule). The list of 21 is in the session log. `Current Member- Paused ` (2 rows, trailing
 space) is not in `ACTIVE` and keeps the inactive copy — correct today, flagged to #115 as hygiene.
 
+### #148 · The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever
+**🟡 S3 · size S — filed 2026-08-25 from #126's audit.**
+
+> **In plain words:** the mirror copies Airtable's WA member records into Supabase every 15 minutes,
+> but it only ever adds and updates. When a record stops coming back from Airtable, its Supabase copy
+> just stays — saying whatever it said the last time it was seen, and nothing anywhere says so.
+
+*As a member, the system never answers me out of a record it stopped being able to check.*
+
+`Recent Members (Airtable)` returned **659** rows in exec **110330**; `digest.members` holds **671**.
+The 12-row gap has been widening quietly: the oldest untouched row last synced **2026-08-05**, twenty
+days ago, and one of them is a COMPLETE row (name, status, `at_member_id`) that the front door will
+happily match a phone against and treat as current. There is no delete path, no tombstone, and no
+freshness signal — the failure `reference_mirror_freshness_signal` describes, and the same shape
+#113's loader already solved for the event graph with an FK-safe reconcile.
+
+**Shape of the fix:** every row a run touches is already stamped (`synced_at`); after each run, mark
+the rows the fetch did NOT return — a `stale_since` column beats deleting, because a row that vanishes
+for one bad Airtable call must never delete a member. The front door and the member lanes then skip
+rows stale beyond a threshold, and `prod_pulse.py` reports the count instead of nobody noticing for
+twenty days.
+
+**Accept when:** rows absent from a run are marked, not silently kept ✅ · a one-run Airtable failure
+cannot mark everything stale ✅ · stale count is visible in `prod_pulse.py` ✅ · the 12 current rows
+are triaged (matched-and-current vs genuinely gone) ✅ · gate GREEN.
+
 ### #126 · WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id`
 **🟡 S3 · size XS — filed 2026-08-24 (found under #125).** `Supabase Mirror (Members)`
 (`Oy7RYcgLfDYhrPvw`) maps `at_member_id: f.source_member_id`, yet Shyam's row synced at 02:00:48 with
@@ -2066,6 +2094,43 @@ space) is not in `ACTIVE` and keeps the inactive copy — correct today, flagged
 fetch omits that field, or change-detection skips it. Also his `crm_member_id` points at a dead record
 (`recEbqcLdtM7aXV9z`) — and the canonical-key rule says at_member_id, never crm_member_id. Audit how
 many of the ~646 mirror rows have NULL `at_member_id`, fix the field map, re-sync.
+
+#### ✅ CLOSED 2026-08-25 — NOT REPRODUCIBLE; the audit it asked for found a different defect
+**The diagnosis changed the ticket, so that first.** The field map was never wrong. `Recent Members
+(Airtable)` fetches with no field restriction and returns `source_member_id` as a plain string
+(mirror exec **110330**, e.g. `rec07yNXtfgc1JN1j → "recPUoaPTUiTtTT0P"`), and
+`at_member_id: f.source_member_id ? String(...) : null` carries it. **Shyam's row today reads
+`at_member_id = recTmVnVkcX7VJnMu`** — exactly the value the ticket said never arrived. It was sync
+lag on 08-24, not an omitted field.
+
+**The audit the ticket asked for, over all 671 rows:**
+
+| `at_member_id` | `membership_status` | rows | not in the last Airtable fetch |
+|---|---|---|---|
+| present | present | 603 | 1 |
+| present | **missing** | **11** | 0 |
+| **missing** | **missing** | 57 | 11 |
+
+**Zero rows have `at_member_id` missing while anything else about the member resolved** — all 57 also
+have no `Member Full Name` lookup, meaning their Airtable WA record carries no `Member` link at all.
+NULL is the correct, honest value for every one of them.
+
+| AC | result |
+|---|---|
+| audit how many mirror rows have NULL `at_member_id` | ✅ 57 of 671 (8.5%), and all 57 are genuinely unmatched numbers |
+| fix the field map | ✅ **no change needed** — proven correct against the live fetch, not read off the code |
+| re-sync | ✅ n/a — 660 of 671 rows re-synced at 08:15:49Z on the normal 15-minute schedule |
+| `crm_member_id` is not used as an identity key | ✅ it appears only as a passthrough column in `db/views/member_identity.sql`; no lane reads it |
+
+**What the audit DID find, both named rather than folded away:**
+1. **11 matched members carry no `AT Database Status`** — they have a `Member` link and an
+   `at_member_id`, but the status lookup is empty, so `digest.members.membership_status` is NULL and
+   they land on #125's new unlinked copy. Clearest: **Tomas Calonge** (18 chats), **Mouad Errafik**
+   (12), **Palak Raniwala** (6), **Chris Murphy** and **Oran Mochly** (4). This is an Airtable-side
+   correction — the linked member record, or the lookup — so it is Andy's or ops' to make.
+2. **12 rows Airtable no longer returns** (11 of the 57 plus 1 complete row; oldest sync 2026-08-05)
+   are frozen in `digest.members` forever: the mirror upserts and never reconciles, and nothing
+   surfaces the staleness. **Filed as #148.**
 
 ### #124 · Bank C — a 400-question organic bank built on conversations, recommendations and expertise
 **🔴 S1 · size L — filed 2026-08-23 (Andy: "we tested only 100 questions. Which is nothing in the grand scheme… I don't feel confident promoting anything yet").**
