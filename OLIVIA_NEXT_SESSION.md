@@ -11,6 +11,50 @@
 
 # Olivia — next session
 
+## STATE 2026-08-24 (END OF DAY) — read this first
+
+**GOAL OF NEXT SESSION: PROMOTE.** One thing stands in the way, agreed with Andy at close.
+
+**THE ONE JOB: re-run the 319 bank C questions that were already PASSING.** Everything measured today
+was the 192 FAILURES (155 now pass, 81%). Nothing has checked what nineteen waves of rules, stamps,
+gate checks and nine SQL changes cost the answers that were already good. This is not caution for its
+own sake — **two questions regressed inside the fail set in the last round alone** (6500 and 6267 got
+worse), and **wave 9 broke staging outright for eight hours**. A stratified sample of ~100 of the 319
+is enough signal; the full 319 is better if time allows. If it holds, promote. If it does not, the
+regression is on staging where it belongs and not on 700 phones during Summit week.
+
+**State:** staging `daf8ec82` · gate **306 EXIT 0** · **PROD `bbd597b7`, untouched all day.**
+The head-to-head that said stage 91% vs prod 87% **predates waves 7-19 — treat it as stale.**
+
+### What shipped LIVE today (SQL is prod-shared; these are already serving members)
+#106 staff/team never in member-facing lists · #128 the doorman counted PHONES not members (34 RPCs, 5
+members getting empty results from everything) · #129 event-specific partner offers, entitlement-gated
+· #130 a member with two numbers sees ALL their chats · #131 Andy's removed-member ruling · #133
+partner ranking · #134 `matched_total` · #135 exact brand name outranks the embedding hybrid · #136
+country counts · #137 no Airtable record id in an answer.
+
+### Traps this day earned — read before touching anything
+- **Verify THROUGH THE WORKFLOW, never by calling the RPC directly.** `Attach Embedding` injects an
+  embedding into every tool call, so searches are RRF hybrids. I "proved" #133 with plain SQL and it
+  proved nothing; #135 was the real cause and only a staging probe showed it.
+- **One probe is not verification.** Wave 9's `const` ordering bug hid from a single probe and errored
+  89 of 255 turns for eight hours. Probe several question SHAPES, then check execution status.
+- **Audit a gate regex over all 602 answers BEFORE enabling it.** Two were designed and rejected —
+  both fired on more correct refusals than wrong ones. "I can't check that" is often right.
+- **Stamps must match the payload SHAPE.** Every stamp read the truncated `body` and silently no-opped
+  on large payloads; the finder puts its count at the TOP level, not per row. Both were invisible.
+- **The verbatim digest route bypasses `Format Reply` entirely.**
+- **Measure before reporting.** I twice raised something as an incident before checking it.
+
+### Open for Andy
+1. **#132** capability card — real answer vs the card. His steer: lead with what she can DO, and guide
+   a new member rather than dead-ending them on chat access. Not a prompt fix (the turn is routed
+   `help` deliberately, documented 2026-07-30).
+2. **#123** blocks 3 questions — the events catalog is unreachable.
+3. **#32 cost is still untouched** and the Answer Seed grew a lot of rules today — per-turn cost and
+   latency are unmeasured since.
+4. The AT roster row for Belen still links a duplicate member record.
+
 ## STATE 2026-08-24 (SECOND overnight session) — read this first
 
 **Waves 7, 8, 9 and 10 are ALL APPLIED to staging.** Staging versionId `57db4b77`; gate **297

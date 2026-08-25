@@ -2,6 +2,63 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-08-24 (all day → late) · Olivia · **BANK C FIX LOOP: 155/192 = 81%** · 9 prod SQL fixes from ONE member report · waves 7-19 on staging
+
+**Headline: 155 of the 192 bank C failures now pass (81%), from 0 at the start of the day.** Staging
+`daf8ec82`, gate **306 checks EXIT 0**. **PROD UNTOUCHED at `bbd597b7`** — nothing promoted.
+
+**The biggest single win: dead links are gone. 32 → 0.** `Answer Merge`'s halving squeeze re-sliced
+every string field including urls, and the CAP backstop blunt-sliced the whole body; `clipSafe` only
+covered the first-pass trim. Both are URL-safe now (wave 9). Dates cited 28 → 99 on the same set.
+
+**Eugene's ONE report ("Millie can't find Hector for Khalid") produced FOUR separate live defects:**
+- **#128** every retrieval RPC opened with `if v_n <> 1 then return` against `member_identity`, which is
+  keyed PER PHONE. Khalid has two numbers → two rows → refused. **34 functions**, 5 members getting
+  empty results from everything while Millie sounded confident. Fixed to `< 1`. NOT a data problem —
+  deleting a number would have "fixed" it by taking away a real one.
+- **#130** same root: each phone carries its own chat list and the tools read ONE row, so Khalid saw 2
+  of his 4 chats. Now unioned. 3 of the 5 got chats back.
+- **#133** `partner_lookup_v2` sorted by dossier topic-fit as the PRIMARY key, so Hector (relevance
+  3.18) ranked 4th behind rows scoring 0.09.
+- **#135 the actual cause.** `Attach Embedding` injects an embedding into EVERY tool call, so partner
+  search is an RRF hybrid. RRF gives an exact BRAND NAME no weight: Hector hit the keyword list, missed
+  the vector top-25, scored 1/61, lost to generic AI partners mediocre in both. **I "verified" #133 by
+  calling the function without an embedding — a call shape the system never uses — and it proved
+  nothing.** Name match now outranks the fusion score.
+- **#129** Hector's Summit offer ("integrate before 31 Aug, MCP free for a month", expires this week)
+  lives in `event.partner_profiles` and the partner tool never read it. Now returned, gated on holding
+  an attendee row.
+
+**Also shipped live (SQL, prod-shared):** **#106** staff/team never surface in member-facing lists (the
+report was Eugene seeing himself and Courtney in who-to-meet; 5 Staff were in the Summit candidate set)
+· **#131** Andy's removed-member ruling — past members stay FINDABLE, are never COUNTED, and leave
+dates/reasons are never disclosed (verified counts already excluded them; only the leave date needed
+blanking) · **#134** `member_match_v2` now returns a true `matched_total` · **#136** `member_count`
+grouped by country · **#137** an Airtable record id never reaches a member.
+
+**Waves 7-19 on staging.** Highlights: clipSafe wiring · stamps read `r` not the truncated `body`
+(EVERY stamp silently no-opped on large payloads — the exact case they existed for) · finder payload
+shape (`total`/`shown` at top level, not per row) · hard cap · true totals · tool-error ≠ absence ·
+sensitive · fake-ack (three passes) · form-of-address · markdown headings (Format Reply AND the
+verbatim route, which bypasses it entirely).
+
+**Method notes worth keeping:**
+- **Wave 13 was written and REVERTED** on finding the routing it fought was deliberate and documented
+  from 2026-07-30. **Wave 9 broke staging for 8 hours** (a `const` used before initialisation, on a path
+  my single probe missed) — 89 of 255 turns errored. Since then every wave is probed across several
+  question shapes plus an execution-status check.
+- **Two phrasing gates were designed, audited over all 602 answers, and REJECTED** — both fired on more
+  correct refusals than wrong ones. Audit before enabling; "I can't check that" is often right.
+- I twice reported something before measuring it: the "Ian Sells / Sashani Piyasena record-id leak" was
+  30 legitimate event links and ONE bare id to the probe number.
+
+**Filed: #138-#144** — the 34 still failing, grouped by cause, each carrying what was already tried.
+
+**NEXT SESSION, agreed with Andy: re-run the 319 questions that were already PASSING.** Everything
+measured today was the failures; nothing has checked what 19 waves cost the rest, and two regressions
+were observed inside the fail set alone. **Goal of next session: PROMOTE**, if the no-regression run
+holds.
+
 ## 2026-08-24 (overnight → morning, CLOSE) · Bank C built + run + graded · Millie LAUNCHED · #32 attempted and reverted
 
 **Millie was announced on stage ~01:50Z.** Prod (`bbd597b7`, #114 only) carried it: **200/200 executions
