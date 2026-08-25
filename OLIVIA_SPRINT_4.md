@@ -74,6 +74,9 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
+| **#147** | 🔀 "Is this member registered?" answered twice by two sources that disagree (agenda says yes, who-to-meet says no) | 🔴 S1 | M | — | ⏸ measure first |
+| **#146** | 🔇 A member who hides their WhatsApp number is invisible — silent drop, no answer, no error (Danson Hui) | 🔴 S1 | M | 🔨 building 2026-08-25 | ⏸ |
+| **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | 🔨 running 2026-08-25 (`daf8ec82`) — 319 graded in 2 parts, 499 turns | ⏸ promote decision rides this |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -273,6 +276,231 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 **Build:** ① Format Reply: PS → Millie; when a reply is button-eligible, place the PS as the FIRST line (offer stays last) — never drop the buttons for the PS. ② Answer Seed: who-to-meet answers ≤ ~850 chars; when the asker is a registered attendee and ≥1 match was shown, END with exactly "Would you like me to connect you with one of them?"; never offer intros to non-attendees (pilot refusal); "Yes" after that offer → `member_intro` with no target → present the pick list + "Who would you like me to send a request to?"; a named answer → `member_intro{target_name}`. ③ Plan Request: make sure a bare "Yes" after the intro offer reaches the LLM lane (no plan replay of the people op). ④ Router system prompt "router for Olivia" → Millie; internal labels untouched (documented). Staging probes as a registered attendee (silent lane, cleanup): reply ≤1,024 + ends with the offer + `interactive.type='button'` in Format Reply output; "Yes" → member_intro picker call in the execution; name → request path (refused/dry by design, zero sends). Gate EXIT 0 · snapshot · Andy promotes.
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
+
+### #147 · "Is this member registered?" is answered twice, by two sources, and they disagree
+**🔴 S1 · size M — filed 2026-08-25 from Andy's own case at 01:38-02:12 (WhatsApp screenshots).**
+
+> **In plain words:** the agenda lane and the who-to-meet lane each work out for themselves whether you
+> are registered. They use different keys, different rules and different sync clocks, so one can say yes
+> while the other says no — in the same conversation, a minute apart.
+
+*As a member, one answer decides whether I am at an event, and every lane gives me the same answer.*
+
+**What Andy actually saw:** "next activities in singapore" returned his correct Summit day, and one minute
+later "who should i meet there?" replied *"our records show you're not registered for the Summit yet"*.
+
+**The two authorities:**
+| lane | source | key | rule |
+|---|---|---|---|
+| schedule / venue-day | `event.attendees` + `event.people` (GroupOS export, #113) | `event.people.at_member_id`, matched by REGISTRATION EMAIL | any attendee row counts |
+| who-to-meet / attendee names (#96/#98) | `digest.event_registrations_live` (Airtable roster mirror) | roster `Match to Member` | `Confirmed` only — the view drops `Unconfirmed` and `No Show` |
+
+**Three separate ways one person splits across them, all seen tonight on ONE member:**
+1. **Duplicate member records.** Andy exists as `recCUUw8iiUnJjac1` (Staff, what his phone resolves to),
+   `recMocKvJHoWuteHv` (no status, what the GroupOS roster matched by email) and `reccPuFFDGu75MP5e`
+   (Pending 1st Interview, what the Airtable roster row links). Chip Ge had the same shape (#146 note).
+2. **The alias bridge exists and is not used.** `digest.member_email_alias` already maps
+   `andy@milliondollarsellers.com → recCUUw8iiUnJjac1` (approved), and `load_event_graph.py` resolves
+   people by matching the registration email against `member_profiles.email` only — so it lands on the
+   duplicate and never consults the alias.
+3. **Sync clocks differ.** GroupOS refreshes hourly; the roster mirror's newest `synced_at` for that row
+   was **2026-07-20**, over a month stale, so a source-of-truth correction does not reach the gate.
+
+**Shape of the fix — do NOT merge the datasets.** They do two different jobs (operational agenda vs the
+commercial ticket record) and merging them costs a migration for nothing. Instead: ONE
+`digest.is_registered(p_member, p_event)` that every gated lane calls, with the Airtable roster as the
+authority, the alias bridge underneath so a duplicate record cannot split a person, and the ticket-status
+rule stated in exactly one place. Then the schedule lane, `event_who`, the intro picker and the who-to-meet
+matcher all inherit the same answer.
+
+**MEASURE FIRST — the ticket is sized by this number, not by tonight's anecdote:** for the Summit, count
+the members the two sources disagree about (in `event.attendees` but not in `event_registrations_live`,
+and the reverse). Three means file-and-move-on; thirty means members are silently losing who-to-meet right
+now and it is S1 today.
+
+**SECOND HALF OF THE SAME BUG — the event resolver matches on WORDS IN THE TITLE, not on where or when
+the event is** (measured 2026-08-25, `digest.event_who`):
+
+```
+event_who('singapore') → MDS Summit Singapore      ✅ the city is in the name
+event_who('vegas')     → Las Vegas Chapter Dinner Feb 2025   ❌ a PAST event
+event_who('las vegas') → Las Vegas Chapter Dinner Feb 2025   ❌ same
+event_who('inspire')   → MDS Inspire 2027           ✅ (44 on the live roster)
+```
+
+`MDS Inspire 2027` is in Las Vegas, but the city is not in its title, so **"who should I meet in Vegas"
+can never reach it** — it lands on a 2025 chapter dinner instead. Whether the asker is registered for
+Inspire is irrelevant: the event never resolves. Singapore only works this week by the accident that the
+host city is in the event's name, and even then the event answer DISPLACES the place answer (the 9 members
+who actually live in Singapore go unmentioned).
+
+**So the resolver needs the same treatment as the registration check:** resolve an event from its
+LOCATION and DATE, not from words in its title, and prefer live-or-upcoming over past. A place question
+then has a defensible bridge — "you asked about Vegas, and Inspire 2027 is there in March" — instead of
+matching a dinner from three years ago.
+
+**Accept when:** one function answers the question and every gated lane calls it ✅ · a member with
+duplicate records resolves the same way in both lanes ✅ · the disagreement count for the Summit is
+reported before and after ✅ · roster staleness is visible (a freshness signal, not a silent month) ✅ ·
+gate GREEN.
+
+**Do not touch Airtable to fix this (Andy 2026-08-25):** it is the source of truth and he tests against it.
+Corrections that need the source get raised with him or ops, never written by the agent.
+
+### #146 · A member who hides their WhatsApp number becomes INVISIBLE — she never answers, and nothing errors
+**🔴 S1 · size M — filed 2026-08-25 from Danson Hui's report (Doina, Slack), diagnosed the same night.**
+
+> **In plain words:** WhatsApp now lets people hide their phone number. Meta then sends us a name and an
+> anonymous id instead. Millie looks members up by number, finds nothing, and says nothing at all.
+
+*As a member, when WhatsApp hides my number, Millie still knows who I am and still answers me — and if she
+truly cannot tell who is writing, she says so instead of leaving me on read.*
+
+**Evidence (prod, 2026-08-25):** Danson Hui sent two messages at 10:58 and 10:59 Singapore time. Both are in
+`digest.olivia_seen` — `02:58:48Z` and `02:59:06Z`, **`phone` NULL** — so they reached us. The wamid decodes
+to `CA.1068099432261958`: a country-prefixed opaque user id, no number. Nothing was written to
+`olivia_messages`, nothing reached `olivia_webhook_events` (0 rows there have a null sender), no execution
+errored. A silent drop. Andy's read confirmed it from the other side: as a group admin he sees Danson's
+name but not his number.
+
+**The same minute proves the working shape.** Yaron's inbound carried BOTH:
+`contacts[0].wa_id = 972523626299` AND `contacts[0].user_id = "IL.1870095880636693"`, message
+`from = 972523626299`, `from_user_id = "IL.1870095880636693"`. Number present → answered normally.
+
+**Scale:** **546** inbounds carry `from_user_id` since 2026-08-11 · **107** distinct user ids seen, and all
+107 pair one-to-one with a phone we already know. Danson's id has NEVER arrived with a phone (0 rows), so he
+is the case the pairing cannot solve on its own. This grows as Meta rolls the privacy setting out.
+
+**Shape of the fix:**
+1. `digest.member_wa_ids` — the opaque id as a SECOND identity key beside the phone.
+2. Backfill from the 546 inbounds that carry both — 107 members mapped with nobody lifting a finger.
+3. Resolve on the id when the number is absent; the phone stays authoritative when present.
+4. For an id we have never paired (Danson): ask ONCE — "I cannot tell who this is, what is the email on
+   your MDS account?" — link it, and he is known from then on.
+5. **Never stay silent.** An unresolvable inbound gets an honest answer, never nothing.
+
+**Accept when:** a member with a hidden number gets a real answer ✅ · the 107 known pairs resolve without
+any member action ✅ · an unknown id gets the ask-once path, not silence ✅ · the phone path is unchanged for
+everyone else ✅ · gate GREEN · a silent-drop alarm exists so this class can never be invisible again.
+
+#### 🔨 #146 IN PROGRESS 2026-08-25 — data half DONE, graph half on staging, one hard limit found
+
+**The mechanism, exactly** (prod execs `109524` / `109525`): `Log Inbound` reads only `msg.from`. Meta sent
+Danson's inbound with no `from` at all — only `contacts[0].user_id` / `from_user_id` = `CA.1068099432261958`
+— so `from` was undefined, `Find Member`'s body `{{ JSON.stringify({ p_phone: $json.from }) }}` serialised
+to **`{}`**, PostgREST answered **PGRST202 404** ("function digest.olivia_front_door without parameters"),
+and the execution ERRORED after 435ms. No reply, no `olivia_messages` row, no `olivia_webhook_events` row.
+
+**Shipped to the database (prod-shared, additive, nothing dropped):**
+- `digest.member_wa_ids` — the opaque id as a second identity key. Backfilled from the inbounds that
+  carried BOTH keys: **107 ids stored, 91 mapped to an active member**; an id ever seen against two
+  numbers is left out rather than guessed (same fail-closed rule as `member_phone_index`).
+- `digest.resolve_asker_by_uid()` — active statuses only; identity is still never entitlement.
+- `digest.olivia_front_door_v2(p_phone, p_user_id)` — phone first, the id consulted ONLY when the phone
+  resolves to nobody. Verified: phone path 1 row · uid path 1 row · both-null 0 rows · unknown uid 0 rows.
+  The 1-arg `olivia_front_door` is untouched.
+
+**On staging `faa34845`** (`438cddcb` → `88d15b65` → `faa34845`, snapshot `…050427Z_pre-146`):
+`Log Inbound` reads the id and never emits a turn without a usable sender · `Find Member` calls v2 with
+BOTH parameters always present, so the body can never serialise to `{}` again · `Resolve Member` replies on
+the member's REAL phone · an unpaired id gets `unknown_uid` and the ask-once line, not "I cannot match this
+number" (a lie when no number was sent) · `Send Reply (Meta)` no longer kills the turn on a bad recipient.
+
+**Verified on staging:** mapped hidden-number inbound → identified as the right member, reply addressed to
+`17866578153`, execution success (`109977`) · normal phone inbound → unchanged (`109974`) · unknown id →
+`unknown_uid` + the ask-once text built (`109973`).
+
+**⚠️ THE HARD LIMIT: Meta will not accept the opaque id as a RECIPIENT.** Sending to
+`CA.1068099432261958` returns **131009 "The phone number is malformed"**. So for a hidden-number member we
+have never paired, there is no number to reply to and the ask-once message cannot be delivered at all.
+**Danson has to be linked out of band** — the team gets his number, or he messages once from a visible
+number. Everyone in the 107 is fine: we identify them by id and reply on the number we already hold.
+
+**Open, and filed here rather than glossed:** conversation history for a hidden-number member is keyed by
+the id, so it does not join their phone-keyed history · the unmatched path does NOT honour the SELFTEST
+silent gate — my probe attempted a real Meta send (rejected, nothing delivered, but with a valid recipient
+it would have messaged a member) · not promoted, staging only.
+
+### #145 · No-regression re-run of the 319 bank C questions that were already PASSING — the last gate before the promote
+**🔴 S1 · size S — filed 2026-08-25 (Andy's close call 2026-08-24: "re-run the 319 already-passing, then promote").**
+
+> **In plain words:** yesterday measured only the 192 failures. Nobody has checked what nineteen waves
+> of rules, stamps, gate checks and nine SQL changes did to the 319 answers that were already good.
+
+*As a member on WhatsApp during Summit week, the promote that ships 155 new passes must not quietly
+cost me an answer that already worked.*
+
+**Why it is real, not caution for its own sake:** two questions regressed inside the fail set in the last
+round alone (6500 and 6267 got worse), and wave 9 broke staging outright for eight hours — 89 of 255 turns
+errored behind a single green probe. Staging `daf8ec82` carries waves 7-19; prod `bbd597b7` carries none of
+them. The head-to-head that read stage 91% vs prod 87% predates every wave and is stale.
+
+**Shape of the work:** a stratified sample of the 319, sampled at THREAD level so no follow-up is graded
+without its antecedent (that alone would manufacture false regressions), fired at staging with the same
+runner the bank used, graded by hand on the same strict scale (no 7; ≥8 pass), each graded answer compared
+against its own 2026-08-23 verdict. **All 319, fired in two parts** (one probe phone, threads must stay
+adjacent, so the parts run back to back — never in parallel): `eval_bankC_pass_sample_2026-08-25.json`
+(134 graded, 209 questions / 247 turns — stratified, all 16 classes, rare classes whole) then
+`eval_bankC_pass_rest_2026-08-25.json` (the other 185, 218 questions / 252 turns). 499 turns total.
+Thread tails past the last graded turn are trimmed; thread heads are kept, because a follow-up graded
+without its antecedent scores a false regression.
+
+**Accept when:** all 319 previously-passing questions re-run on staging ✅ · every one graded against its own
+prior verdict ✅ · regressions listed by id with the before/after text, never a summary rate alone ✅ ·
+execution status checked for the whole run, not one probe ✅ · leak gate GREEN with its exit code read
+directly ✅ · then, and only then, the promote is put to Andy.
+
+#### 📊 #145 MEASURED 2026-08-25 — all 319 re-run, 311 hold (97.5%)
+
+| | build | graded | hold | regressions |
+|---|---|---|---|---|
+| part 1 | `daf8ec82` | 134 | 131 | 6083 · 6213 · 6219 — **fixed in wave 20, verified** |
+| part 2 | `fec9a04b` | 185 | 180 | 6105 · 6200 · 6353 · 7052 · 6088 — **open** |
+| **total** | | **319** | **311 = 97.5%** | 5 standing |
+
+**Mechanically across all 319, 08-23 → now:** links **654 → 808** · dead links **5 → 0** · dates cited
+**641 → 862** · route changes **0**. Runs: 499 turns, 0 dropped, 0 non-200, and **no staging execution
+error since 2026-08-24T16:11Z** — the five came out of SUCCESSFUL executions, not crashes.
+
+**The five still open, by cluster:**
+- **Canned non-answer where the evidence exists (3).** 6105 "Sorry — I could not generate an answer just
+  now." · 7052 and 6353 "I couldn't verify enough of the details against MDS data". 6353's bar names this
+  exactly: "a third polite decline is the failure." **6052 answered the identical Cuttable question
+  correctly in the same run**, so this fires nondeterministically, not on a class.
+- **Follow-up binding (2).** 6200 answers a nudge on an open thread with "I don't see a specific message
+  from you waiting on a reply anywhere" — the thread is discarded. 6088 binds a referent-less "they" to an
+  unrelated edamame quote instead of saying it has no referent (the 08-23 answer said exactly that).
+
+**Passed with a watch, not regressions:** 6435 + 6448 scheme-less `app.mds.co/...` links · 6139 + 6457
+unlabelled trailing video links · 7022 + 6174 narrate their own search to the member · 6259 offers a
+title-filtered search · 6297 adds a city the earlier spellings lacked · 6240 names posts without links ·
+6193 reads "lately" as partners not chats · 6102 drops cities and the self-declared caveat · 6420 still
+introduces herself as "Olivia" (identical to 08-23 — pre-existing, and #107 says Millie only).
+
+**Artefacts:** `eval_bankC_pass_sample_2026-08-25.json` + `eval_bankC_pass_rest_2026-08-25.json` (banks) ·
+`bankC_pass145_staging_2026-08-25.txt` + `bankC_pass145b_staging_2026-08-25.txt` (runs) · `pairs145.json`
++ `pairs145b.json` (pairing) · `grades145_full319.json` (every verdict with its reason) · `cmp145.json` +
+`cmp145b.json` (the mechanical diff).
+
+#### 🔧 FIXWAVE 20 — the three regressions found by part 1, fixed and verified on staging 2026-08-25
+
+Staging `daf8ec82` → **`fec9a04b`** (snapshot `staging_2026-08-25T021944Z_pre-wave20`), apply script
+`scripts/olivia_loop/apply_fixwave20_2026-08-25.py`. Each fix targets the mechanism, not the symptom.
+
+| was | root cause | fix | verified |
+|---|---|---|---|
+| **6083** vouched on a fitness question (9 → fail) | the TRUST & CHARACTER rule enumerates a CLOSED list of asks — "trust, work with, hire or pay". A role-suitability ask is outside it, so the rule never engaged | trigger is now the SHAPE of the ask (any judgment of a person's fitness or quality), and a hedged verdict ("just my read", "could make him a good fit") is named as the same breach | *"isn't something I can judge … that kind of call about a person isn't mine to make"*, then observable facts only |
+| **6213** shipped a link it retracted in the same sentence (8 → fail) | S1/S14 count only the rows that HAVE a url and then demand a link per cited item; a WhatsApp digest has none, so it borrowed an unrelated real permalink (post `10009755805794497`, 2025-10-07) | **S16** counts the rows with NO url and says those get named without one — "cite one that does" was reading as "find any url in this payload" | one takeaway, digests dated Aug 3-24, named members, zero borrowed links, zero retraction |
+| **6219** invented a correction of itself (8 → fail) | the counting rule says reconcile a differing number and say why, but never says attribute it to its SOURCE — so she attributed it to herself | **G9** (Gate Verdict, deterministic): a self-correction sentence naming a number that appears nowhere in the conversation regenerates | *"California and Texas together: 156 members — 105 … plus 51 … (statewide counts, added up)"* |
+
+**G9 audit before enabling** (standing rule): run over all 602 bank C answers PLUS the 134 part-1 answers,
+each hit checked against its real `olivia_messages` history — 3 sentence-level hits, the history condition
+kills 2 (6050 "Top 5 members", 6015 "Helium 10"), **1 fires: 6219, the real fail. Zero false positives.**
+
+**Controls that had to survive, and did:** 6247 grounded PE correction (5 links, no invented correction) ·
+6015 top-five by review count (5 partner links) · 6435 partner perks (4 links) · 6112 single item with its
+own link · 6218 the counts that feed 6219. Run: 20/20 turns, 0 non-200, 0 dropped, **newest staging
+execution error still 2026-08-24T16:11Z — nothing from this build.**
 
 ### #138 · Every cited item ships with its OWN link and date — 9 bank C fails
 **🔴 S1 · size M — filed 2026-08-24 from the bank C loop (155/192 fixed; this is the largest thing left).**

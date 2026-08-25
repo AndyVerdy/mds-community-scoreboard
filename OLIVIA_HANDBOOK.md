@@ -792,6 +792,49 @@ to `event_*` and `org_docs` (Appendix C, "The loop" row), mapped to `{op:'reques
 
 ---
 
+### 8.x A member says "Millie is not answering" — the hidden-number runbook (#146, 2026-08-25)
+
+WhatsApp now lets a member hide their phone number. When they do, Meta delivers their message with **no
+number at all** — only an opaque country-prefixed id such as `CA.1068099432261958` (Danson Hui, prod execs
+`109524`/`109525`). Millie identifies members by phone, so before this was handled the turn died in
+`Find Member` with PGRST202 and the member got **silence**: no answer, no `olivia_messages` row, nothing
+in `olivia_webhook_events`. If someone reports she ignored them, this is the first thing to rule out.
+
+**1. Look for a phone-less inbound around when they wrote.**
+
+```
+python3 scripts/olivia_link_wa_id.py --find --since 2026-08-25T02:50:00Z
+```
+
+It reads `digest.olivia_seen` for rows where `phone is null`, decodes the sender id out of the wamid, and
+says whether each is already linked. Nothing there means the cause is something else — check
+`resolve_asker`, then the front door, then executions.
+
+**2. Confirm WHO it is with a human.** The id is an identity: pairing the wrong one hands someone another
+member's chats. Meta gives us their WhatsApp profile name, which is a hint, never proof.
+
+**3. Link it.**
+
+```
+python3 scripts/olivia_link_wa_id.py --uid CA.1068099432261958 --phone 14169033267
+```
+
+It refuses unless the phone already resolves to an ACTIVE member — it connects an id to a member who is
+already there, it can never create membership — then prints `resolve_asker_by_uid` and the
+`olivia_front_door_v2` row count so the link is proven rather than assumed. `--list` shows every pairing,
+`--unlink <id>` removes a bad one.
+
+**What happens automatically, and what does not.** Any member whose number IS visible pairs itself: the id
+and the number arrive together and `digest.member_wa_ids` learns it (107 learned this way at launch). Only
+first contact from a member whose number is hidden needs a human. **Whapi cannot help here** — it reports
+plain phone numbers from the group chats, never the Cloud-API id; the two are different namespaces.
+
+**The limit to say out loud: we cannot reply to an unpaired hidden-number sender.** Meta rejects the
+opaque id as a recipient — `131009 "The phone number is malformed"`. Millie composes the honest ask-once
+line, but it cannot be delivered until the pairing exists, so the pairing has to come from our side (this
+runbook) or from the member messaging once with their number visible. Once paired, replies go to the real
+number we hold and everything works normally.
+
 ## 9. Environment and secrets
 
 **All keys live in `/Users/Born/mds-digest-web/.env.local`** (not in this repo). Scripts read it

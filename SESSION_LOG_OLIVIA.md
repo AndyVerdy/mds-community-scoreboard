@@ -2,6 +2,63 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-08-25 (overnight → 07:49Z) · Olivia · **#145 PROMOTED after 319-question no-regression run** · #146 hidden-number identity BUILT + LIVE · #147 filed
+
+**PROMOTED TWICE TONIGHT.** prod `bbd597b7` → `91c70977` (waves 7-21) → `64995b68` (#146) → **`8bb0827d`**
+(place-question rules). Gate GREEN on every promote, pre/post snapshots on disk, one bounce each.
+
+**#145 — the no-regression run, the thing the session existed for.** All 319 previously-passing bank C
+questions re-run on staging in two parts (499 turns, 0 dropped, 0 non-200): **311 hold = 97.5%**.
+Mechanically across the 319, 08-23 → now: links **654 → 808** · dead links **5 → 0** · dates cited
+**641 → 862** · route changes **0**. Eight regressions, every one traced to a mechanism before it was
+touched:
+- **wave 20** (3 from part 1): 6083 the TRUST rule enumerated a CLOSED list of ask types so a
+  role-suitability question never engaged it · 6213 S1/S14 count only rows that HAVE a url, so a WhatsApp
+  digest borrowed an unrelated permalink (verified real: post 10009755805784497, 2025-10-07) and retracted
+  it in the same sentence · 6219 the counting rule says reconcile a differing number but never says
+  attribute it to its SOURCE, so she invented a correction of herself. G9 audited over 602 + 134 answers
+  with real history: 3 sentence hits, 1 fires, zero FPs.
+- **wave 21** (5 from part 2): 6105 was a **529 overload** from the model API (exec 109771), not a rule —
+  retries 3/2s → 5/5s · 7052 the gate clamp killed a sourced answer over a LABELLING claim (exec 109574,
+  "UNTESTED: Process has ZERO member reviews") so the clamp now ships the draft when every surviving claim
+  is non-factual, appending the untested caveat itself · 6353 the clamp was RIGHT (exec 109723, "Baia-Mare,
+  Cyprus — evidence shows Romania"), only the member-facing line changed · 6200 + 6088 two Answer Seed
+  rules (a nudge is answered from the conversation, an absent antecedent is itself the answer).
+  Verified: 4 of 5 fixed outright, 6200 improved but still thin.
+
+**#146 — a member who hides their WhatsApp number was INVISIBLE.** Danson Hui's two messages (prod execs
+`109524`/`109525`) died in `Find Member`: Meta sent no `messages[].from`, only the opaque
+`CA.1068099432261958`, so the body serialised to `{}` and PostgREST answered PGRST202 404. Silence, no row,
+no error surfaced. Built: `digest.member_wa_ids` (107 ids backfilled, 91 mapped, ambiguous ids left out),
+`resolve_asker_by_uid()`, `olivia_front_door_v2(phone, uid)` (phone first), graph reads the id and replies
+on the member's REAL phone. **Meta rejects the opaque id as a recipient (131009)**, so an unpaired
+hidden-number member cannot be answered at all until linked — hence `scripts/olivia_link_wa_id.py` and the
+handbook runbook. Danson proven live on prod: exec 110168, matched, `to = 14169033267`.
+
+**Two live member reports handled:** Chip Ge answered (his number was on an applicant duplicate; the mirror
+picked up Andy's Airtable edit after one sync cycle, then `refresh_member_phone_index()` forced) — verified
+by his own real turn at 03:38Z. Danson as above.
+
+**#147 filed** — "is this member registered?" is answered twice from two sources that disagree (agenda said
+yes while who-to-meet said no, one minute apart), plus the event resolver matching on WORDS IN THE TITLE:
+`event_who('vegas')` → a 2025 chapter dinner, and Inspire 2027 is unreachable from the word Vegas.
+
+**Andy's complaint #2 fixed and promoted:** a place question is answered from the member directory first
+(Austin: "10 of the 13 members there" with reasons), an event is an addition not a substitute, a gate on
+one part never silences the rest, and payload plumbing (`viewing`, `gate`, `access`) is never quoted at a
+member. Root of that leak is still live: `mds-digest-web/src/app/api/olivia/schedule/route.ts:384` sets
+`viewing` to a full sentence — one line, other repo, own session.
+
+**Rulings this session:** **never write to Airtable** (Andy 2026-08-25: "it's my acc I'm testing things and
+I don't want to change our source of truth") — all three of my AT edits reverted. And the gate's
+non-attendee control is Andy himself, so a data patch that registered him turned the gate RED; reverting
+the registration patches restored it. That coupling belongs in #147.
+
+**Left open:** the promote of nothing (staging == prod at `8bb0827d`) · #146's silent-drop alarm and
+uid-keyed history · #147 whole · 6200 still thin · `MY.1563712991959404` from 08-24 unclaimed, someone got
+silence · the Cyprus record with country CY and a Romanian city · Andy's registration is back to
+"not registered" by his choice.
+
 ## 2026-08-24 (all day → late) · Olivia · **BANK C FIX LOOP: 155/192 = 81%** · 9 prod SQL fixes from ONE member report · waves 7-19 on staging
 
 **Headline: 155 of the 192 bank C failures now pass (81%), from 0 at the start of the day.** Staging

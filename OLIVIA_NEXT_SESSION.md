@@ -11,6 +11,43 @@
 
 # Olivia — next session
 
+## STATE 2026-08-25 (overnight close) — read this first
+
+**PROD = `8bb0827d`. Staging is identical. Gate GREEN (306, EXIT 0).** Three promotes tonight:
+`bbd597b7` → `91c70977` (bank C waves 7-21) → `64995b68` (#146 hidden-number identity) → `8bb0827d`
+(place-question rules). Pre/post snapshots for each are in `olivia_snapshots/`.
+
+**#145 is CLOSED: 311 of 319 previously-passing questions hold = 97.5%**, and all 8 regressions were fixed
+and verified before the promote. Across the 319: links 654 → 808 · dead links 5 → 0 · dates 641 → 862 ·
+route changes 0. Full detail in `SESSION_LOG_OLIVIA.md`; every verdict with its reason is in
+`.superpowers/sdd/2026-08-22-finder/eval/grades145_full319.json`.
+
+### The one rule that changed how we work
+**NEVER WRITE TO AIRTABLE (Andy, 2026-08-25):** *"it's my acc I'm testing things and I don't want to change
+our source of truth."* All three edits I made were reverted. A fix that needs the source of truth gets
+raised with Andy or ops — named record, named field — and they make the change. Mirrors, Supabase and the
+workflow are still ours to edit.
+
+### Start here
+1. **#147 — two sources answer "is this member registered?" and disagree.** Andy's agenda said yes while
+   who-to-meet said no, one minute apart. MEASURE FIRST: how many members do `event.attendees` and
+   `event_registrations_live` disagree about for the Summit? Three means file-and-move-on; thirty is an S1
+   today. The ticket also carries the second half: the event resolver matches WORDS IN THE TITLE, so
+   `event_who('vegas')` lands on a 2025 chapter dinner and Inspire 2027 is unreachable from the word Vegas.
+2. **#146 leftovers** — a silent-drop alarm (this class was invisible until a member complained), and a
+   hidden-number member's history being keyed by the opaque id instead of joining their phone history.
+3. **6200** — the nudge answer no longer invents a search result but is still thin; it should restate where
+   the thread stands.
+
+### Loose ends nobody owns
+`MY.1563712991959404` (2026-08-24 01:50Z) is an unlinked hidden-number id — somebody got silence that night
+and we do not know who; `scripts/olivia_link_wa_id.py --find` shows it. · The member record for Tudor Tanase
+has country CY with the city Baia-Mare (Romania), so he surfaces in Cyprus answers. · `viewing` is set to a
+full sentence in `mds-digest-web/src/app/api/olivia/schedule/route.ts:384`; renaming it to a token is one
+line in that repo, which deploys on push. · Andy's own Summit registration is deliberately back to "not
+registered" — the gate uses him as its non-attendee control, so registering him turns the gate RED (that
+coupling is in #147).
+
 ## STATE 2026-08-24 (END OF DAY) — read this first
 
 **GOAL OF NEXT SESSION: PROMOTE.** One thing stands in the way, agreed with Andy at close.
