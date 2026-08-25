@@ -611,6 +611,18 @@ CREATE UNIQUE INDEX member_sessions_pkey ON digest.member_sessions USING btree (
 alter table digest.member_state_snapshot add constraint member_state_snapshot_pkey PRIMARY KEY (at_member_id);
 CREATE UNIQUE INDEX member_state_snapshot_pkey ON digest.member_state_snapshot USING btree (at_member_id);
 
+-- digest.member_wa_ids
+--   wa_user_id                         text not null
+--   phone                              text
+--   at_member_id                       text
+--   source                             text not null default 'webhook_pair'::text
+--   first_seen                         timestamp with time zone not null default now()
+--   last_seen                          timestamp with time zone not null default now()
+alter table digest.member_wa_ids add constraint member_wa_ids_pkey PRIMARY KEY (wa_user_id);
+CREATE INDEX member_wa_ids_at_member_idx ON digest.member_wa_ids USING btree (at_member_id);
+CREATE INDEX member_wa_ids_phone_idx ON digest.member_wa_ids USING btree (phone);
+CREATE UNIQUE INDEX member_wa_ids_pkey ON digest.member_wa_ids USING btree (wa_user_id);
+
 -- digest.members
 --   airtable_id                        text not null
 --   phone                              text
