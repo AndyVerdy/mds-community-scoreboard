@@ -81,7 +81,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🟡 S3 | S | — | ⏸ filed 2026-08-25 |
 | **#126** | 🧾 WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id` | 🟡 S3 | XS | n/a (audit) | ✅ **CLOSED 2026-08-25 — NOT REPRODUCIBLE**: field map proven correct against mirror exec 110330; all 57/671 NULLs are genuinely unmatched. Audit found 11 matched members with no `AT Database Status` (Airtable-side, Andy/ops) and the stale-row gap, filed as #148 |
 | **#149** | 🗣️ Two real answers were wrong in shape — a live event called finished, and a yes/no answered with machinery (Andy's screenshots) | 🔴 S1 | M | ✅ **FIXED + PROVEN** — staging turns 52883 / 52885; `eventPhase` 7 tests, 366/366 repo-wide, tsc clean | ⏸ awaiting promote + one push |
-| **#150** | 🔒 All 7 Singapore sessions are `restricted` with ZERO `video_access` rows — nobody can ever be entitled, so no Summit session can be summarised or quoted (46 of 415 restricted videos are the same) | 🔴 S1 | S | — | ⏸ filed 2026-08-26, blocks the video question classes |
+| **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -281,6 +281,40 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 **Build:** ① Format Reply: PS → Millie; when a reply is button-eligible, place the PS as the FIRST line (offer stays last) — never drop the buttons for the PS. ② Answer Seed: who-to-meet answers ≤ ~850 chars; when the asker is a registered attendee and ≥1 match was shown, END with exactly "Would you like me to connect you with one of them?"; never offer intros to non-attendees (pilot refusal); "Yes" after that offer → `member_intro` with no target → present the pick list + "Who would you like me to send a request to?"; a named answer → `member_intro{target_name}`. ③ Plan Request: make sure a bare "Yes" after the intro offer reaches the LLM lane (no plan replay of the people op). ④ Router system prompt "router for Olivia" → Millie; internal labels untouched (documented). Staging probes as a registered attendee (silent lane, cleanup): reply ≤1,024 + ends with the offer + `interactive.type='button'` in Format Reply output; "Yes" → member_intro picker call in the execution; name → request path (refused/dry by design, zero sends). Gate EXIT 0 · snapshot · Andy promotes.
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
+
+### #150 · Summit videos restricted with no entitlement list — and the restricted flag contradicted the grant
+**🔴 S1 · size S — filed and CLOSED 2026-08-26. Andy's ruling: "For now, videos are not accessible. Restrict them to summit attendees and staff."**
+
+*As a Summit attendee, the sessions I sat in are mine to search, quote and get takeaways from; everyone else knows they exist and no more.*
+
+**Two defects, one ticket:**
+1. All 7 Singapore sessions were `access_restriction='restricted'` with **zero** `video_access`
+   rows — restricted with no entitlement list means nobody can ever be granted, so every content
+   question dead-ended even for people in the room.
+2. Proving the fix exposed a second: `video_search` / `video_search_v2` computed per-asker
+   entitlement (`f.restricted`) correctly for every CONTENT column, then reported the raw
+   `access_restriction` in the `is_restricted` flag — an entitled asker got the content AND a flag
+   telling the model not to quote it. Staging turn 52887: content in hand, *"I can't pull direct
+   quotes"*.
+
+**The fix:** 1,225 grants (7 videos × 175 grantees) — attendee = ticket roster OR GroupOS door
+list (a speaker is not shut out of their own session) plus staff, deduped by email because
+duplicate member records share emails (#147) and `(video_id, lower(email))` is the unique key.
+Additive-only, rerunnable: `scripts/sql/150_summit_video_grants.sql` — **RERUN when each new video
+batch lands.** The flag migration makes `is_restricted` mean restricted FOR THIS ASKER; the gate
+check asserting the old contradiction updated, the Andy 2026-07-26 unentitled-asker ruling intact.
+
+| AC | result |
+|---|---|
+| attendees + staff can get content | ✅ staging turn **52889**: Tamar's seven playbooks answered from the summary, entitled asker |
+| everyone else: exists only | ✅ gate line "restricted video IS returned, flagged is_restricted" PASS; negative control (Ward Gahan et al, 0 grants) |
+| speakers/partners/guests keep their own sessions | ✅ door list unioned into grantees (140 ids) |
+| gate GREEN | ✅ **306 PASS · 0 FAIL · EXIT 0** |
+
+**Named, not skipped:** 1 of 179 grantees has no email anywhere on file (a partner door-list row
+with no member profile) and cannot hold a grant until one exists — `video_access.email` is NOT NULL.
+**The other 39 restricted-zero-grant videos** (46 minus the 7 fixed) are pre-Summit stock and stay
+as they are; they were never Summit sessions.
 
 ### #149 · Two real answers Andy got were wrong in shape — a live event called finished, and a yes/no question answered with machinery
 **🔴 S1 · size M — filed 2026-08-26 from Andy's own WhatsApp screenshots (turns 52879 and 52881, phone ending 0106).**

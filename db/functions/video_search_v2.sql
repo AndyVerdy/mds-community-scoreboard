@@ -103,7 +103,11 @@ begin
          digest.member_video_url(f.video_id),
          ((case when f.kw_rank > 0 then 1.0/(60 + f.kw_pos) else 0 end)
           + (case when f.vec_dist is not null then 1.0/(60 + f.vec_pos) else 0 end))::real,
-         (f.access_restriction = 'restricted'),
+         -- #150 (2026-08-26): report the ASKER's entitlement, not the video's raw property.
+         -- The content columns above already keyed on f.restricted (grant-aware); this flag
+         -- still said 'restricted' to an entitled member, so the model held back content it
+         -- had been handed - Andy, staff-granted, was told "I can't pull direct quotes".
+         f.restricted,
          case when f.fitv > 0 and f.fit_topics is not null and array_length(f.fit_topics,1) > 0
               then 'touches what you focus on: ' || array_to_string(f.fit_topics[1:2], ', ') end,
          f.snote,
