@@ -57,10 +57,45 @@ def parse_vtt(text):
     return cues
 
 
+def split_long_cues(cues):
+    """Break a cue longer than CHUNK_CHARS into sentence-bounded pieces.
+
+    Zoom cues are short, so this is a no-op there. AssemblyAI is the reason it exists:
+    when diarisation finds a single speaker it can return the WHOLE talk as one
+    utterance, and the grouping loop below only tests its size boundary between cues —
+    so a 36-minute talk landed as one 35k-char chunk stamped 00:00:00 (found 2026-08-25,
+    255 videos already affected). One embedding for a whole talk retrieves nothing
+    precisely, and a citation that says 00:00:00 for everything is not a citation.
+
+    Timestamps are interpolated by character offset across the cue's span. Speech rate
+    is near enough to constant that this lands within seconds — and seconds-accurate
+    beats a 36-minute span pointing at the start.
+    """
+    for start, end, speaker, text in cues:
+        if len(text) <= CHUNK_CHARS:
+            yield (start, end, speaker, text)
+            continue
+        span = max(end - start, 0.001)
+        parts, cur = [], ""
+        for sent in re.split(r"(?<=[.!?])\s+", text):
+            if cur and len(cur) + len(sent) + 1 > CHUNK_CHARS:
+                parts.append(cur)
+                cur = sent
+            else:
+                cur = f"{cur} {sent}".strip()
+        if cur:
+            parts.append(cur)
+        off = 0
+        for part in parts:
+            s0 = start + span * (off / len(text))
+            off += len(part) + 1
+            yield (s0, start + span * (min(off, len(text)) / len(text)), speaker, part)
+
+
 def chunk(cues):
     """Group cues into passages, keeping the speaker turns and the start timestamp."""
     out, buf, buf_start, size = [], [], None, 0
-    for c in cues:
+    for c in split_long_cues(cues):
         if buf_start is None:
             buf_start = c[0]
         line = (f"{c[2]}: {c[3]}" if c[2] else c[3])
@@ -72,7 +107,11 @@ def chunk(cues):
             buf_start = buf[0][0][0] if buf else None
             size = sum(len(x[1]) + 1 for x in buf)
     if buf and size > 120:      # trailing scraps of a few words are not worth a row
-        out.append((buf_start, buf[-1][0][1], "\n".join(x[1] for x in buf)))
+        tail = "\n".join(x[1] for x in buf)
+        # the overlap carry-back can re-emit text the previous chunk already holds in
+        # full — that is a duplicate row, not an overlap (64 such rows found 2026-08-25)
+        if not (out and tail in out[-1][2]):
+            out.append((buf_start, buf[-1][0][1], tail))
     return out
 
 
