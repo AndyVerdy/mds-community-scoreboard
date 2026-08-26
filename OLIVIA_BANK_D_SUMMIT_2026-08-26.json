@@ -1,32 +1,167 @@
 {
-  "name": "Bank D — Summit videos & transcripts",
-  "built": "2026-08-26",
-  "why": "Andy 2026-08-26: 'people might ask about videos that are not done... specific speakers, or session names, or session worth watching, or videos on a specific subject. Need to cover all.' Written after #149/#150/#151; RUN ONLY when Andy says video processing is done (he did, same day — first run rides the #151 probe wave).",
-  "asker": "17866578153 (staff-granted; every content expect assumes an ENTITLED asker). The gating block at the end needs a non-attendee asker instead.",
-  "chains_note": "ids with a dot (7010.2) are follow-up turns fired on the same phone right after their parent, no reset between.",
-  "questions": [
-    {"id": 7001, "class": "availability", "q": "do you have videos from the summit?", "expect": "Yes first, with the COUNT held (7 as of build; restate live number), picked-for-me subset with links, one-line offer of the rest and of older events. No Inspire content served unasked (#151), no 'plenty' where a number belongs."},
-    {"id": 7002, "class": "availability", "q": "are the summit session recordings up yet?", "expect": "Yes/no first with count and that more are landing (#149 in-progress rule). Never 'capability coming'."},
-    {"id": 7003, "class": "availability", "q": "do you have the transcripts from the sessions?", "expect": "Leads with yes/no per what content_search actually holds NOW. If transcripts exist: yes, N sessions searchable. Never the machinery clamp line, never 'narrow your query' (#149)."},
-    {"id": 7004, "class": "availability", "q": "is there a recording of the whatnot session?", "expect": "Answer what EXISTS: if not in the catalog, say not up yet + in-progress state + offer to flag when it lands. Never claim it was not recorded (#149)."},
-    {"id": 7010, "class": "chain-recommend", "q": "what summit videos should i watch?", "expect": "Picks from the CURRENT Summit only, tailored to asker profile with why-fits, count stated, older events one-line offer (#151)."},
-    {"id": 7010.2, "class": "chain-recommend", "q": "what would you recommend for me", "expect": "STAYS ON THE JUST-OFFERED LIST: picks 2-3 of the exact videos just listed with per-pick reasons. Never life advice, never dossier read-back, never chat gossip (#151)."},
-    {"id": 7010.3, "class": "chain-recommend", "q": "which one first?", "expect": "ONE video from the same list, with the reason. Binding survives two hops."},
-    {"id": 7020, "class": "speaker-name", "q": "what did tamar yaniv say about tiktok shop at the summit?", "expect": "Real content (playbooks, numbers) from transcript/summary for an entitled asker, with the video link. No 'restricted' contradiction (#150)."},
-    {"id": 7021, "class": "speaker-name", "q": "what did khalid abdulla talk about?", "expect": "The Leadership Layer content + link. If asked without 'summit', still resolves to the Summit session (latest event is the subject)."},
-    {"id": 7022, "class": "speaker-name", "q": "did ivan ong share any numbers in his ama?", "expect": "Specific figures from the transcript if present; sized honestly if thin. Quotes only from retrieved text."},
-    {"id": 7023, "class": "speaker-subject", "q": "who spoke about AI at the summit?", "expect": "Damon Sununtnasuk (7 AI Workflows) at minimum; speakers named from catalog data, not guessed."},
-    {"id": 7024, "class": "speaker-subject", "q": "who covered tiktok?", "expect": "TikTok or Die trio + Tamar Yaniv, from the current Summit; older TikTok videos only as a one-line offer."},
-    {"id": 7030, "class": "session-name", "q": "show me the town hall video", "expect": "Intro Presentation + Town Hall + Trend Report resolved by partial name, link, one-line what it is."},
-    {"id": 7031, "class": "session-name", "q": "the reddit session — who ran it and whats it about?", "expect": "Jared Mortensen, Scaling a Subreddit as a Launch & AEO Asset, content from summary/transcript."},
-    {"id": 7040, "class": "worth-watching", "q": "is the leadership session worth watching?", "expect": "A real recommendation grounded in its content and the asker's profile — never a dodge, never 'I cannot judge'. States what it covers so the member can decide."},
-    {"id": 7041, "class": "worth-watching", "q": "im short on time — which single summit session has the highest roi for an amazon seller?", "expect": "One pick with grounded reasoning (Ivan Ong AMA or Run-Amazon-adjacent), from content actually held."},
-    {"id": 7050, "class": "subject", "q": "any sessions about seo or organic traffic?", "expect": "Subreddit/AEO session surfaces via subject search; if nothing else matches, says so plainly rather than padding with older events."},
-    {"id": 7051, "class": "subject", "q": "videos on hiring or team building from the summit?", "expect": "Leadership Layer if it matches; if the Summit has none on the subject, SAY the current event has none, then offer the back catalog (#151 order)."},
-    {"id": 7060, "class": "takeaways", "q": "what are the most relevant takeaways from the summit for me?", "expect": "CONTENT from transcripts/summaries tailored to the asker — never a schedule, never session titles as takeaways, never 'the summit is over' unless is_over is true (#149). Venue block absent."},
-    {"id": 7061, "class": "takeaways", "q": "summarize the ivan ong ama in 3 bullets", "expect": "3 bullets from the actual transcript/summary + link. Length instruction honored."},
-    {"id": 7070, "class": "quote", "q": "pull a quote from the tiktok or die session about getting started", "expect": "Verbatim-or-clearly-paraphrased text from retrieved transcript chunks with attribution; never an invented quote."},
-    {"id": 7080, "class": "gating", "asker": "NON-ATTENDEE current member", "q": "what did tamar yaniv say at the summit?", "expect": "Exists-only: title, speaker, link, 'access is restricted to Summit attendees'. No content, no summary. The refusal names the real gate (#140/#150)."},
-    {"id": 7081, "class": "gating", "asker": "NON-ATTENDEE current member", "q": "do you have summit videos?", "expect": "Yes + count + links (existence is not gated), content withheld with the reason. Never a false capability denial."}
-  ]
+ "name": "Bank D — Summit videos & transcripts",
+ "built": "2026-08-26",
+ "why": "Andy 2026-08-26: 'people might ask about videos that are not done... specific speakers, or session names, or session worth watching, or videos on a specific subject. Need to cover all.' Written after #149/#150/#151; RUN ONLY when Andy says video processing is done (he did, same day — first run rides the #151 probe wave). 2026-08-26 Andy: 'make sure we cover exact quotes where it makes sense. and timestamps' — quote-timestamp class added (27 total).",
+ "asker": "17866578153 (staff-granted; every content expect assumes an ENTITLED asker). The gating block at the end needs a non-attendee asker instead.",
+ "chains_note": "ids with a dot (7010.2) are follow-up turns fired on the same phone right after their parent, no reset between.",
+ "questions": [
+  {
+   "id": 7001,
+   "class": "availability",
+   "q": "do you have videos from the summit?",
+   "expect": "Yes first, with the COUNT held (7 as of build; restate live number), picked-for-me subset with links, one-line offer of the rest and of older events. No Inspire content served unasked (#151), no 'plenty' where a number belongs."
+  },
+  {
+   "id": 7002,
+   "class": "availability",
+   "q": "are the summit session recordings up yet?",
+   "expect": "Yes/no first with count and that more are landing (#149 in-progress rule). Never 'capability coming'."
+  },
+  {
+   "id": 7003,
+   "class": "availability",
+   "q": "do you have the transcripts from the sessions?",
+   "expect": "Leads with yes/no per what content_search actually holds NOW. If transcripts exist: yes, N sessions searchable. Never the machinery clamp line, never 'narrow your query' (#149)."
+  },
+  {
+   "id": 7004,
+   "class": "availability",
+   "q": "is there a recording of the whatnot session?",
+   "expect": "Answer what EXISTS: if not in the catalog, say not up yet + in-progress state + offer to flag when it lands. Never claim it was not recorded (#149)."
+  },
+  {
+   "id": 7010,
+   "class": "chain-recommend",
+   "q": "what summit videos should i watch?",
+   "expect": "Picks from the CURRENT Summit only, tailored to asker profile with why-fits, count stated, older events one-line offer (#151)."
+  },
+  {
+   "id": 7010.2,
+   "class": "chain-recommend",
+   "q": "what would you recommend for me",
+   "expect": "STAYS ON THE JUST-OFFERED LIST: picks 2-3 of the exact videos just listed with per-pick reasons. Never life advice, never dossier read-back, never chat gossip (#151)."
+  },
+  {
+   "id": 7010.3,
+   "class": "chain-recommend",
+   "q": "which one first?",
+   "expect": "ONE video from the same list, with the reason. Binding survives two hops."
+  },
+  {
+   "id": 7020,
+   "class": "speaker-name",
+   "q": "what did tamar yaniv say about tiktok shop at the summit?",
+   "expect": "Real content (playbooks, numbers) from transcript/summary for an entitled asker, with the video link. No 'restricted' contradiction (#150)."
+  },
+  {
+   "id": 7021,
+   "class": "speaker-name",
+   "q": "what did khalid abdulla talk about?",
+   "expect": "The Leadership Layer content + link. If asked without 'summit', still resolves to the Summit session (latest event is the subject)."
+  },
+  {
+   "id": 7022,
+   "class": "speaker-name",
+   "q": "did ivan ong share any numbers in his ama?",
+   "expect": "Specific figures from the transcript if present; sized honestly if thin. Quotes only from retrieved text."
+  },
+  {
+   "id": 7023,
+   "class": "speaker-subject",
+   "q": "who spoke about AI at the summit?",
+   "expect": "Damon Sununtnasuk (7 AI Workflows) at minimum; speakers named from catalog data, not guessed."
+  },
+  {
+   "id": 7024,
+   "class": "speaker-subject",
+   "q": "who covered tiktok?",
+   "expect": "TikTok or Die trio + Tamar Yaniv, from the current Summit; older TikTok videos only as a one-line offer."
+  },
+  {
+   "id": 7030,
+   "class": "session-name",
+   "q": "show me the town hall video",
+   "expect": "Intro Presentation + Town Hall + Trend Report resolved by partial name, link, one-line what it is."
+  },
+  {
+   "id": 7031,
+   "class": "session-name",
+   "q": "the reddit session — who ran it and whats it about?",
+   "expect": "Jared Mortensen, Scaling a Subreddit as a Launch & AEO Asset, content from summary/transcript."
+  },
+  {
+   "id": 7040,
+   "class": "worth-watching",
+   "q": "is the leadership session worth watching?",
+   "expect": "A real recommendation grounded in its content and the asker's profile — never a dodge, never 'I cannot judge'. States what it covers so the member can decide."
+  },
+  {
+   "id": 7041,
+   "class": "worth-watching",
+   "q": "im short on time — which single summit session has the highest roi for an amazon seller?",
+   "expect": "One pick with grounded reasoning (Ivan Ong AMA or Run-Amazon-adjacent), from content actually held."
+  },
+  {
+   "id": 7050,
+   "class": "subject",
+   "q": "any sessions about seo or organic traffic?",
+   "expect": "Subreddit/AEO session surfaces via subject search; if nothing else matches, says so plainly rather than padding with older events."
+  },
+  {
+   "id": 7051,
+   "class": "subject",
+   "q": "videos on hiring or team building from the summit?",
+   "expect": "Leadership Layer if it matches; if the Summit has none on the subject, SAY the current event has none, then offer the back catalog (#151 order)."
+  },
+  {
+   "id": 7060,
+   "class": "takeaways",
+   "q": "what are the most relevant takeaways from the summit for me?",
+   "expect": "CONTENT from transcripts/summaries tailored to the asker — never a schedule, never session titles as takeaways, never 'the summit is over' unless is_over is true (#149). Venue block absent."
+  },
+  {
+   "id": 7061,
+   "class": "takeaways",
+   "q": "summarize the ivan ong ama in 3 bullets",
+   "expect": "3 bullets from the actual transcript/summary + link. Length honored. Bonus pass: each bullet cites the moment (timestamp) it came from."
+  },
+  {
+   "id": 7070,
+   "class": "quote",
+   "q": "pull a quote from the tiktok or die session about getting started",
+   "expect": "Verbatim text from retrieved transcript chunks, quoted with the video TIMESTAMP (chunks carry start_sec/timestamp meta) and the video link. Attribution at session level (speakers are diarized A/B, not name-matched — #103); never invent who said it, never invent a quote."
+  },
+  {
+   "id": 7080,
+   "class": "gating",
+   "asker": "NON-ATTENDEE current member",
+   "q": "what did tamar yaniv say at the summit?",
+   "expect": "Exists-only: title, speaker, link, 'access is restricted to Summit attendees'. No content, no summary. The refusal names the real gate (#140/#150)."
+  },
+  {
+   "id": 7081,
+   "class": "gating",
+   "asker": "NON-ATTENDEE current member",
+   "q": "do you have summit videos?",
+   "expect": "Yes + count + links (existence is not gated), content withheld with the reason. Never a false capability denial."
+  },
+  {
+   "id": 7071,
+   "class": "quote-timestamp",
+   "q": "where in the tamar video does she talk about sampling? give me the timestamp",
+   "expect": "The timestamp(s) of the sampling passage from chunk meta (e.g. 'around 12:40'), quote or close paraphrase, video link. Never a guessed time."
+  },
+  {
+   "id": 7072,
+   "class": "quote-timestamp",
+   "q": "quote exactly what was said about median member revenue in the town hall",
+   "expect": "Exact figure ($7M median) quoted verbatim from the transcript with timestamp + link; if the wording differs from memory, the TRANSCRIPT wins."
+  },
+  {
+   "id": 7073,
+   "class": "quote-timestamp",
+   "q": "give me ivan ong's best line from the ama, word for word, with where it is in the video",
+   "expect": "A real verbatim line + timestamp + link. 'Best' may be judged, the WORDS may not - retrieved text only, session-level attribution."
+  }
+ ]
 }
