@@ -80,9 +80,9 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | ✅ 319 graded, 8 regressions fixed | ✅ **CLOSED + PROMOTED 2026-08-25** — 311/319 hold (97.5%); links 654→808, dead links 5→0, dates 641→862, route changes 0; prod `8bb0827d` |
 | **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🟡 S3 | S | — | ⏸ filed 2026-08-25 |
 | **#126** | 🧾 WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id` | 🟡 S3 | XS | n/a (audit) | ✅ **CLOSED 2026-08-25 — NOT REPRODUCIBLE**: field map proven correct against mirror exec 110330; all 57/671 NULLs are genuinely unmatched. Audit found 11 matched members with no `AT Database Status` (Airtable-side, Andy/ops) and the stale-row gap, filed as #148 |
-| **#149** | 🗣️ Two real answers were wrong in shape — a live event called finished, and a yes/no answered with machinery (Andy's screenshots) | 🔴 S1 | M | ✅ **FIXED + PROVEN** — staging turns 52883 / 52885; `eventPhase` 7 tests, 366/366 repo-wide, tsc clean | ⏸ awaiting promote + one push |
+| **#149** | 🗣️ Two real answers were wrong in shape — a live event called finished, a yes/no answered with machinery | 🔴 S1 | M | ✅ staging turns 52883/52885 | ✅ **PROMOTED 2026-08-26** `7abb9fc9` (rules+clamp) · route `eventPhase` pushed `102bf14` (Render deploys on push) |
 | **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
-| **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list (Andy, prod 52891/52893) | 🔴 S1 | S | ✅ **PROVEN 2026-08-26**: probe wave 8/8 after fixes — follow-up stays on list, count from `event_total` (7, stable ×2), no old-event padding; gate 306 EXIT 0 | ⏸ awaiting promote (rides #149 graph) |
+| **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list + dangling old-event links (Andy, prod 52891/52893/52935/52941/52951) | 🔴 S1 | S | ✅ probe wave 8/8 · orphan-strip unit 6/6 | ✅ **PROMOTED 2026-08-26** `06df948a` — prod turn 52959: 1 link, Denver gone; gate 306 EXIT 0 |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -326,6 +326,8 @@ worth-watching · subject · session name · 3-bullet summary), the first c1 sha
 keyword ranking and killed at the tool layer. Gate **306 PASS · 0 FAIL · EXIT 0**. Probe rows cleaned
 (26 messages, 13 seen). `db/` re-exported. **Bank D grew to 26 questions** (quote-timestamp class:
 exact quotes + `start_sec` timestamps verified present, 15 distinct starts on Tamar's 16 chunks).
+
+**#151b — the dangling-link tail (same night):** three prod turns (52935, 52941, 52951) ended with an old Denver Town Hall URL nobody named — once after the closing question, once as the second of two stacked bare URLs. One seed-rule attempt did not hold, so per the code-beats-prompt rule it moved into `Format Reply`: a URL-only line whose neighbour above is another URL-only line or ends with '?' is a structural orphan; trailing orphans are dropped repeatedly. Unit 6/6 (titled link, Register:, venue+map all survive) · staging exec 113211 one link · **prod turn 52959 after promote `06df948a`: 1 link, Denver absent** · gate 306 EXIT 0.
 
 ### #150 · Summit videos restricted with no entitlement list — and the restricted flag contradicted the grant
 **🔴 S1 · size S — filed and CLOSED 2026-08-26. Andy's ruling: "For now, videos are not accessible. Restrict them to summit attendees and staff."**
