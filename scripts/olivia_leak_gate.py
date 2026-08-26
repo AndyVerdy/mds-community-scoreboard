@@ -1152,9 +1152,13 @@ def main():
         st, ent = rpc("video_search", {"p_phone": phone, "p_query": MARKER, "p_limit": 20}, key)
         erow = next((v for v in (ent or [])
                      if v["title"] == f"REDTEAM Restricted Video {MARKER}"), None)
-        check("ENTITLED member sees restricted video content (#101)",
+        # #150 (2026-08-26): is_restricted now reports the ASKER's entitlement, not the video's
+        # raw property. The old assertion (content visible AND is_restricted True) was the exact
+        # contradiction that made Millie hold back content she had been handed — "I can't pull
+        # direct quotes" to a staff-granted asker. Entitled = content visible, flag False.
+        check("ENTITLED member sees restricted video content (#101/#150)",
               bool(erow) and str(erow.get("description_snippet") or "").startswith("video canary")
-              and erow.get("is_restricted") is True,
+              and erow.get("is_restricted") is False,
               f"got {erow}")
         # entitlement also unlocks deck-content matching for the entitled asker
         st, edeep = rpc("video_search", {"p_phone": phone, "p_query": f"deckonly{MARKER}",
