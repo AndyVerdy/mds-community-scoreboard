@@ -82,7 +82,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#126** | 🧾 WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id` | 🟡 S3 | XS | n/a (audit) | ✅ **CLOSED 2026-08-25 — NOT REPRODUCIBLE**: field map proven correct against mirror exec 110330; all 57/671 NULLs are genuinely unmatched. Audit found 11 matched members with no `AT Database Status` (Airtable-side, Andy/ops) and the stale-row gap, filed as #148 |
 | **#149** | 🗣️ Two real answers were wrong in shape — a live event called finished, and a yes/no answered with machinery (Andy's screenshots) | 🔴 S1 | M | ✅ **FIXED + PROVEN** — staging turns 52883 / 52885; `eventPhase` 7 tests, 366/366 repo-wide, tsc clean | ⏸ awaiting promote + one push |
 | **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
-| **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list (Andy, prod 52891/52893) | 🔴 S1 | S | 🔨 3 seed rules + probe wave running | ⏸ |
+| **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list (Andy, prod 52891/52893) | 🔴 S1 | S | ✅ **PROVEN 2026-08-26**: probe wave 8/8 after fixes — follow-up stays on list, count from `event_total` (7, stable ×2), no old-event padding; gate 306 EXIT 0 | ⏸ awaiting promote (rides #149 graph) |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -303,6 +303,29 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 in that list · the latest event is the subject, older on request · a video list states its count and
 its pick rule. **Accept when:** Andy's exact chain answers right on staging · speaker/session/worth-
 watching/subject probes pass · gate GREEN.
+
+#### ✅ BUILT + PROVEN ON STAGING 2026-08-26 — awaiting Andy's promote (rides the same graph as #149)
+**Three layers, because the prompt-only version half-failed on its first probe:**
+- **3 Answer Seed rules** — a question about a just-offered list stays in that list · the latest event
+  is the subject, older on request · a video list states its count and its pick rule.
+- **`event_total` on `video_search_v2`** (DROP + re-grant, service_role only — the ACL rule): every row
+  now carries how many published videos its whole event has, so the count is a fact the tool states,
+  never rows-returned. First probe said "8" (rows), the truth was 7.
+- **Tool description** teaches the event-name query: bare `summit` keyword-ranks Milan/Denver ABOVE the
+  current event (measured: top-8 keyword-only = zero Singapore rows); `singapore summit` returns all 7.
+
+| complaint | after |
+|---|---|
+| Inspire volunteered | ✅ probes serve Singapore only; older events appear only as history for a named speaker |
+| no recency preference | ✅ current event is the subject in all 8 probes |
+| "plenty", no count, no tailoring | ✅ "Yes — 7 sessions are up so far" twice in a row, `p_query='singapore summit'` both times, picks tailored to asker focus |
+| follow-up fled the list | ✅ "what would you recommend for me" now returns 3 Summit videos with per-pick reasons (was: APAC/cash-flow life advice) |
+
+**Probe wave 8/8 pass** (availability · recommend chain · speaker by subject · speaker by name ·
+worth-watching · subject · session name · 3-bullet summary), the first c1 shape-flake diagnosed to the
+keyword ranking and killed at the tool layer. Gate **306 PASS · 0 FAIL · EXIT 0**. Probe rows cleaned
+(26 messages, 13 seen). `db/` re-exported. **Bank D grew to 26 questions** (quote-timestamp class:
+exact quotes + `start_sec` timestamps verified present, 15 distinct starts on Tamar's 16 chunks).
 
 ### #150 · Summit videos restricted with no entitlement list — and the restricted flag contradicted the grant
 **🔴 S1 · size S — filed and CLOSED 2026-08-26. Andy's ruling: "For now, videos are not accessible. Restrict them to summit attendees and staff."**
