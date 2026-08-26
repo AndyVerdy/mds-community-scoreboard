@@ -82,6 +82,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#126** | 🧾 WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id` | 🟡 S3 | XS | n/a (audit) | ✅ **CLOSED 2026-08-25 — NOT REPRODUCIBLE**: field map proven correct against mirror exec 110330; all 57/671 NULLs are genuinely unmatched. Audit found 11 matched members with no `AT Database Status` (Airtable-side, Andy/ops) and the stale-row gap, filed as #148 |
 | **#149** | 🗣️ Two real answers were wrong in shape — a live event called finished, and a yes/no answered with machinery (Andy's screenshots) | 🔴 S1 | M | ✅ **FIXED + PROVEN** — staging turns 52883 / 52885; `eventPhase` 7 tests, 366/366 repo-wide, tsc clean | ⏸ awaiting promote + one push |
 | **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
+| **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list (Andy, prod 52891/52893) | 🔴 S1 | S | 🔨 3 seed rules + probe wave running | ⏸ |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -281,6 +282,27 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 **Build:** ① Format Reply: PS → Millie; when a reply is button-eligible, place the PS as the FIRST line (offer stays last) — never drop the buttons for the PS. ② Answer Seed: who-to-meet answers ≤ ~850 chars; when the asker is a registered attendee and ≥1 match was shown, END with exactly "Would you like me to connect you with one of them?"; never offer intros to non-attendees (pilot refusal); "Yes" after that offer → `member_intro` with no target → present the pick list + "Who would you like me to send a request to?"; a named answer → `member_intro{target_name}`. ③ Plan Request: make sure a bare "Yes" after the intro offer reaches the LLM lane (no plan replay of the people op). ④ Router system prompt "router for Olivia" → Millie; internal labels untouched (documented). Staging probes as a registered attendee (silent lane, cleanup): reply ≤1,024 + ends with the offer + `interactive.type='button'` in Format Reply output; "Yes" → member_intro picker call in the execution; name → request path (refused/dry by design, zero sends). Gate EXIT 0 · snapshot · Andy promotes.
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
+
+### #151 · Video answers ignore the member: Inspire volunteered, no count, no tailoring, and a follow-up that fled the list
+**🔴 S1 · size S — filed 2026-08-26 from Andy's WhatsApp (prod turns 52891/52893, 04:48-04:50Z), four complaints in his words.**
+
+*As a member asking about Summit videos, I get the CURRENT event's sessions, told how many exist, picked for me — and a follow-up about that list stays on that list.*
+
+**The four, from the saved plans:**
+1. **Inspire volunteered unasked.** "do you have videos from summit" was answered with 5 Singapore
+   sessions plus a paragraph of Inspire 2026 content. Older events are offered, never served.
+2. **No recency contract.** Many summits exist; latest is the subject, back catalog on request.
+3. **"Plenty" where a number belongs.** 7 sessions were up; she listed 5, said "plenty", no count,
+   no pick-rule, no tailoring to the asker.
+4. **Follow-up fled the list.** `pending_offer` carried `kind: video, 5 ids`; "what would you
+   recommend for me" one turn later routed `content_lookup`+dossier and answered APAC/cash-flow
+   life advice. #112 binds ACCEPTS ("yes", "both") — a QUESTION ranging over the offered list is a
+   new class.
+
+**Fix (staging `a366a5e8`+):** three Answer Seed rules — a question about a just-offered list stays
+in that list · the latest event is the subject, older on request · a video list states its count and
+its pick rule. **Accept when:** Andy's exact chain answers right on staging · speaker/session/worth-
+watching/subject probes pass · gate GREEN.
 
 ### #150 · Summit videos restricted with no entitlement list — and the restricted flag contradicted the grant
 **🔴 S1 · size S — filed and CLOSED 2026-08-26. Andy's ruling: "For now, videos are not accessible. Restrict them to summit attendees and staff."**
