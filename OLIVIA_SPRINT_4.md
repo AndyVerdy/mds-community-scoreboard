@@ -80,6 +80,8 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | ✅ 319 graded, 8 regressions fixed | ✅ **CLOSED + PROMOTED 2026-08-25** — 311/319 hold (97.5%); links 654→808, dead links 5→0, dates 641→862, route changes 0; prod `8bb0827d` |
 | **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🟡 S3 | S | — | ⏸ filed 2026-08-25 |
 | **#126** | 🧾 WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id` | 🟡 S3 | XS | n/a (audit) | ✅ **CLOSED 2026-08-25 — NOT REPRODUCIBLE**: field map proven correct against mirror exec 110330; all 57/671 NULLs are genuinely unmatched. Audit found 11 matched members with no `AT Database Status` (Airtable-side, Andy/ops) and the stale-row gap, filed as #148 |
+| **#149** | 🗣️ Two real answers were wrong in shape — a live event called finished, and a yes/no answered with machinery (Andy's screenshots) | 🔴 S1 | M | ✅ **FIXED + PROVEN** — staging turns 52883 / 52885; `eventPhase` 7 tests, 366/366 repo-wide, tsc clean | ⏸ awaiting promote + one push |
+| **#150** | 🔒 All 7 Singapore sessions are `restricted` with ZERO `video_access` rows — nobody can ever be entitled, so no Summit session can be summarised or quoted (46 of 415 restricted videos are the same) | 🔴 S1 | S | — | ⏸ filed 2026-08-26, blocks the video question classes |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -279,6 +281,74 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 **Build:** ① Format Reply: PS → Millie; when a reply is button-eligible, place the PS as the FIRST line (offer stays last) — never drop the buttons for the PS. ② Answer Seed: who-to-meet answers ≤ ~850 chars; when the asker is a registered attendee and ≥1 match was shown, END with exactly "Would you like me to connect you with one of them?"; never offer intros to non-attendees (pilot refusal); "Yes" after that offer → `member_intro` with no target → present the pick list + "Who would you like me to send a request to?"; a named answer → `member_intro{target_name}`. ③ Plan Request: make sure a bare "Yes" after the intro offer reaches the LLM lane (no plan replay of the people op). ④ Router system prompt "router for Olivia" → Millie; internal labels untouched (documented). Staging probes as a registered attendee (silent lane, cleanup): reply ≤1,024 + ends with the offer + `interactive.type='button'` in Format Reply output; "Yes" → member_intro picker call in the execution; name → request path (refused/dry by design, zero sends). Gate EXIT 0 · snapshot · Andy promotes.
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
+
+### #149 · Two real answers Andy got were wrong in shape — a live event called finished, and a yes/no question answered with machinery
+**🔴 S1 · size M — filed 2026-08-26 from Andy's own WhatsApp screenshots (turns 52879 and 52881, phone ending 0106).**
+
+> **In plain words:** he asked what the takeaways from the Summit were and got a list of session
+> titles that opened by telling him the Summit was over — it was not, it had six hours to run. Then
+> he asked whether we have the transcripts, a plain yes or no, and got a paragraph about a detail
+> that "did not check out against MDS data" and an invitation to ask for "a narrower slice".
+
+*As a member, I get an answer to the question I asked, in words that mean something to me, and she
+never tells me an event I am standing in has finished.*
+
+**The four defects, from the saved turns and not the screenshots:**
+1. **A live event declared over.** At 2026-08-26 03:36Z the reply opened *"Since we're now past the
+   Summit (it's Wednesday, the final day, at the venue)"* — self-contradictory, and false: the Summit
+   ran to 2026-08-26 10:00Z. **Root cause:** `/api/olivia/schedule` handed the model `starts_on` and
+   `ends_on` as date labels and left it to work out whether the event had finished. It got it wrong.
+2. **A content question answered with the agenda.** "Takeaways" asks what was SAID; she returned
+   titles, times and rooms, and the one honest sentence — *"Once those sessions sync into the library
+   I can pull the actual transcript"* — was the last line of 1,364 characters.
+3. **Venue and Google Maps boilerplate** rode along on a question that had nothing to do with location.
+4. **The gate's clamp swallowed a yes/no question.** Plan shows `op: video_search` over a degenerate
+   `content_search` (`p_limit: 0`, `p_terms: []`); after two regenerations `Gate Verdict` replaced the
+   whole answer with its canned line, which never says yes or no and speaks in machinery.
+   **Audited before touching it (the standing rule): the clamp has fired 3 times in 6,017 answers —
+   "who are the mds members based in cyprus", a TikTok GMV-ads question, and this one. Zero of the
+   three were correct withholds.**
+
+**Accept when:** the two screenshot questions answer correctly on staging ✅ · a live event is never
+called finished ✅ · an availability question leads with the yes/no ✅ · the clamp still withholds, but
+in member language ✅ · gate GREEN.
+
+#### ✅ FIXED + PROVEN ON STAGING 2026-08-26 — awaiting Andy's promote (and one push, see below)
+**The fix, structural rather than a prompt patch where it could be:**
+- **`eventPhase()` in `mds-digest-web/src/lib/schedule-day.ts`** — the phase is a fact the code holds,
+  so the code states it. Returns `phase` (before · running · final_day · ended), `is_over`, `day_of`,
+  `day_count` and a `status_line`, all counted in the VENUE's zone (the same reason #114 moved
+  "today" there). An event with no end instant is never declared over. Wired into every schedule
+  answer's `event` block. **7 new tests, written failing first; 366/366 pass repo-wide, `tsc` clean.**
+- **`Gate Verdict` clamp copy** — the withhold is unchanged and just as strict; only what the member
+  reads changes. No more "did not check out against MDS data" or "a narrower slice (one name, one
+  chat, one date range)".
+- **Five standing rules in `Answer Seed`** — a video reaches the library before its transcript does ·
+  "do you have X" is a yes or no answered from what is on file · what was said is not what was
+  scheduled · the event phase is handed to you, never inferred · the venue block rides only on
+  location questions. The existing RECORDINGS coverage rule claimed *every* 2025-26 video is
+  transcribed, which is false while a just-finished event is still processing — amended to point at
+  the in-progress rule.
+
+| AC | result |
+|---|---|
+| the takeaways question answers correctly | ✅ staging turn **52883** leads with where things stand, lists the 7 sessions with links, **no venue block, no map** |
+| a live event is never called finished | ✅ same turn: *"Since the event is still running (it's Wednesday afternoon in Singapore, the final day)"* |
+| an availability question leads with the yes/no | ✅ staging turn **52885** opens *"Right now — no, not yet."* then gives all 7 recordings with links |
+| the clamp still withholds, in member language | ✅ new copy in `Gate Verdict`, `node --check` clean, withhold path untouched |
+| gate GREEN | ⏳ to run before the promote |
+
+**Before → after** on the two questions Andy actually asked: a false "we're now past the Summit" and a
+canned non-answer, replaced by an accurate phase statement and a leading yes/no. Staging carries the
+workflow half; **the `eventPhase` route half is committed but NOT pushed — `mds-digest-web` has no
+staging tier and a push to `main` deploys, so it waits for Andy's go.**
+
+**⛔ FOUND WHILE PROVING THIS, AND IT BLOCKS THE REST — filed as #150.** All 7 Singapore sessions are
+`access_restriction = 'restricted'` with **ZERO rows in `digest.video_access`**. Restricted with no
+entitlement list means nobody can ever be granted them — so once transcripts finish, Millie still
+cannot summarise or quote a single Summit session, for any member, including the people who were in
+the room. Every question class Andy named (a speaker, a session name, sessions worth watching, a
+subject) dead-ends on this. 46 of the 415 restricted videos are in the same state.
 
 ### #147 · "Is this member registered?" is answered twice, by two sources, and they disagree
 **🔴 S1 · size M — filed 2026-08-25 from Andy's own case at 01:38-02:12 (WhatsApp screenshots).**
