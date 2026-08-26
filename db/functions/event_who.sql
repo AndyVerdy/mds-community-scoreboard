@@ -9,11 +9,15 @@ declare
   v_n int; v_atid text; v_is_20m boolean := false;
   v_event_id text; v_event_name text; v_banded boolean;
   v_me_city text; v_me_niche text; v_total int; v_asker_registered boolean := false;
+  -- #147: every member-record id belonging to the asker, so a duplicate record cannot
+  -- split one person across the gate and the name list.
+  v_my_ids text[] := '{}';
 begin
   if nullif(trim(coalesce(p_event,'')),'') is null then return; end if;
   select case when digest.resolve_asker(p_phone) is not null then 1 else 0 end into v_n;
   if v_n < 1 then return; end if;
   select digest.resolve_asker(p_phone) into v_atid;
+  v_my_ids := coalesce(digest.member_alias_ids(v_atid), '{}');
   if v_atid is not null then
     select coalesce(ma.rev_band = '20M+', false), ma.city, ma.main_niche into v_is_20m, v_me_city, v_me_niche
       from digest.member_attributes ma where ma.at_member_id = v_atid;
@@ -51,10 +55,11 @@ begin
 
   -- #96: is the ASKER registered for this event? (any live ticket status counts as
   -- "their event" — a member with a pending ticket is planning around it)
-  select exists (
-    select 1 from digest.event_registrations_live r
-    where r.event_at_id = v_event_id and r.member_at_id = v_atid)
-    into v_asker_registered;
+  -- #147 (2026-08-25): this used to be an inline `member_at_id = v_atid` check, which is
+  -- how the agenda lane could say yes while this lane said no for the same person a minute
+  -- apart — they used different keys. The rule now lives in ONE place, with the alias
+  -- bridge underneath it, and every gated lane calls the same function.
+  v_asker_registered := digest.is_registered(v_atid, v_event_id);
 
   if not v_asker_registered then
     -- non-attendee: the aggregate row only — true count, no names
@@ -103,7 +108,7 @@ begin
            where c2.at_record_id = v_event_id),
          coalesce(ma.full_name, mp.full_name),
          ma.state,
-         (conf.member_at_id = v_atid),
+         (conf.member_at_id = any(v_my_ids)),
          v_total,
          ma.city,
          coalesce(ma.main_niche, ma.categories[1]),
@@ -121,9 +126,11 @@ begin
     -- The asker still sees their OWN row, so a Staff asker keeps the is_me "you're on the books"
     -- answer. v_total above is deliberately untouched — it stays the registration census, which
     -- counts MDS Team tickets (#96/#98 ruling: counts are the census, names are gated).
-    and (conf.member_at_id = v_atid
+    -- #147: "their own row" now means any of their member records, not just the one the phone
+    -- happened to resolve.
+    and (conf.member_at_id = any(v_my_ids)
          or not digest.is_internal_record(ma.membership_status))
-  order by (conf.member_at_id = v_atid) desc,
+  order by (conf.member_at_id = any(v_my_ids)) desc,
            coalesce(rk.best_w, 0) desc,
            (lower(coalesce(ma.main_niche,'')) = lower(coalesce(v_me_niche,''))) desc,
            (lower(coalesce(ma.city,'')) = lower(coalesce(v_me_city,''))) desc,

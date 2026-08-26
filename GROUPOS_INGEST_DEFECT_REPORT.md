@@ -1,106 +1,76 @@
-# Defect report — incoming webhooks not testable on pre-prod
+# Test report — incoming webhooks, pre-prod
 
 **Ticket:** `86e2bjq8x` — Incoming Webhooks for default Profile fields (Address, Tags, Events registered)
-**Status on ticket:** deployed to pre-prod
-**Reported by:** Andy · 2026-08-20
-**Severity:** S1 for the QA pass — blocks the manual test checklist entirely
+**Tested by:** Andy · 2026-08-26 · pre-prod `vl223.groupos-test.co`
+**Verdict: Address and Tags pass.** Three UI issues below, none blocking.
 
 ---
 
-## Summary
+## What was tested
 
-The feature cannot be tested on pre-prod. The integration and its token are set up correctly,
-but the integration has no web address, so there is nothing for a sending tool to call.
+Connection `andy`, writing to member `staging123@groupos.com` ("Andy on the map").
 
-Doina assigned this to me to test. I set up the connection exactly as described in the test
-instructions, got a working token, and then had nowhere to send anything.
+| # | Test | Result |
+|---|---|---|
+| 1 | No token | `401 Missing or malformed Authorization header` |
+| 2 | Bad token | `401 Invalid, expired, or revoked token.` |
+| 3 | Email matching no member | `202 accepted:true`, silent no-op, flagged for a second look |
+| 4 | Address + tags on a real member | `202 {"accepted":["address","tags"],"ignored":[]}` |
+| 5 | Replace — one tag sent where two existed | previous tags removed, address untouched |
+| 6 | Dedupe — same message id resent | `202 deduped:true`, not re-applied |
+| 7 | Unknown field `phone` | `400 Unrecognized key(s) in object: 'phone'` |
 
----
+Address went in as the one-line string `1 Infinite Loop, Cupertino, CA 95014, USA` and came
+back split into street / city / state / ZIP / country, with the map flag intact — Dallas TX
+75204 → Cupertino CA 95014. Google normalisation runs on ingested values exactly as it does on
+a manual edit, which was the open question on the ticket. Tags went 0 → 2 → 1.
 
-## Environment
+Test 5 followed by test 6 is worth calling out as a pair: the replace left one tag, then the
+deduped replay of the earlier two-tag message correctly did **not** put the old tags back.
+Dedupe genuinely blocks re-application rather than just suppressing the response.
 
-| | |
-|---|---|
-| Environment | Pre-prod — `https://vl223.groupos-test.co` |
-| Integration | `andy` — `6a868ae0bdab79b87256579c` |
-| State | Active · Receiving · Member profile · never called |
-| Token | `pat_pub_KghZ…` — PAT "Incoming endpoint: andy", Active, expires Nov 17 2026 |
-| Fields enabled | Address, Tags, Events registered |
-| **Web address** | **absent** |
-
----
-
-## What happens
-
-On the integration's Setup panel:
-
-> **Web address** — Not configured for this environment
-
-And in **Share setup details**, the panel intended to be handed to whoever wires up the
-sending tool:
-
-> **No web address configured**
-> This environment has no web address configured yet. Contact support before connecting a tool.
-
-That panel is described in the UI as self-sufficient — *"Anyone wiring up the integration can
-work from it"* — but it cannot be acted on, because the one thing the other end needs is the
-one thing missing.
-
-## Confirmation that the address is genuinely absent
-
-This was checked before reporting, in case it was a rendering issue rather than a missing
-configuration value:
-
-1. **Pre-prod is a CloudFront distribution that refuses POST.** Any POST to a non-API path on
-   `vl223.groupos-test.co` returns:
-   > 403 — This distribution is not configured to allow the HTTP request method that was used
-   > for this request. The distribution supports only cachable requests.
-
-   So the ingest endpoint was never expected to live on that host.
-
-2. **No ingest route exists on either origin.** 25 candidate paths were tried under
-   `vl223.groupos-test.co/api/v1/*`, `/api/*`, `/ingest/*`, and on the real API origin
-   `api.groupos-test.co` (44.240.58.166). Every one returned 404.
-
-3. **There is no separate ingest host.** `ingest.`, `hooks.`, `gateway.`, `in.` and
-   `events.groupos-test.co` all CNAME to the same wildcard CloudFront distribution
-   (`d37inoairifeby.cloudfront.net`) — none is a distinct service.
-
-Conclusion: the gateway base URL is unset for this environment, rather than hidden or
-misrendered.
+Both gaps from the earlier draft of this report are now fixed — the web address is populated
+and the Share-setup-details panel documents `Authorization: Bearer <token>`, including that a
+bare token is rejected. Good addition; that was the one thing the panel needed to be usable
+by whoever wires up the other end.
 
 ---
 
-## What we need
+## Issues found
 
-1. **The pre-prod ingest URL**, or the environment variable set so the UI renders it. Either
-   unblocks the test immediately — the sending side is already built and waiting on that one
-   value.
+### 1. Message history does not refresh — it reports zero while the header reports messages
 
-2. **Document the auth scheme in the Share setup details panel.** Separate from the outage
-   above, and worth fixing regardless: the panel gives the token but never says how to present
-   it. `Authorization: Bearer <token>`? A custom header? Whoever configures Airtable, Zapier or
-   n8n has to guess. The example message shows the body in full but the request headers not at
-   all. Adding the header line to that example would make the panel genuinely complete.
+On an integration's detail page, the Message history section shows `All 0` and the empty state
+*"Nothing has arrived yet — This integration has never been called"* while the same page's own
+header says the integration has messages. Seen on both connections: `AMAT Testing` showed
+6 messages in the header and "never been called" in the history; `andy` did the same
+immediately after a successful send.
+
+A full page reload fixes it. Not a data problem — the history is stored correctly, it just
+doesn't fetch on mount or after a send.
+
+This one is worth prioritising: someone testing a new connection sends their first message,
+sees "This integration has never been called", and reasonably concludes it failed. That is
+exactly the moment the page needs to be right.
+
+### 2. "Show those messages" doesn't change the time filter
+
+The amber banner *"N messages need a second look"* has a **Show those messages** button. The
+history's time filter is fixed at **Last 24 hours**, and the button does not widen it. So when
+the flagged messages are older than a day — `AMAT Testing`'s were 5 days old — clicking it
+reveals nothing, and there is no visible way to reach them.
+
+### 3. Blank page on direct navigation or refresh
+
+Loading `/integrations`, `/integrations/receiving`, or `/integrations/receiving/<id>` directly
+in the address bar renders the sidebar with an empty content area. Content only appears after
+clicking **Integrations** in the sidebar. Same on refresh. This breaks bookmarks, shared links,
+and browser reload — and the setup instructions tell admins to send people a link.
 
 ---
 
-## Two smaller notes from setting it up
+## Not yet tested
 
-- The **Integrations page does not render on direct navigation.** Loading
-  `/integrations` or `/integrations/receiving/<id>` straight from the address bar gives an
-  empty content area with only the sidebar; the content appears only after clicking
-  **Integrations** in the sidebar. Worth a look — deep links and refreshes will hit this.
-
-- The **staging test community and the pre-prod community are different places.** The
-  verification note on the ticket cites community `pavel` on staging; this connection is on
-  `vl223` on pre-prod. Anyone repeating your staging verification on pre-prod will need a
-  member that exists in `vl223`, so it would help to name one in the test instructions.
-
----
-
-## Ready on our side
-
-The Airtable sender, a curl one-liner, and the full test checklist (tags + address first, then
-events registered) are written and waiting. The only unfilled value is the URL — one line
-changes and we run the whole checklist the same day.
+Events registered, including the attendee-list side effect when an event name matches a real
+event, and the `#%$*^` delimited-string path from an actual Airtable formula field. Both are
+next.

@@ -75,7 +75,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | **#125** | 🚫 "Not currently active" is sent to ACTIVE members whose number simply isn't linked (Shyam Murali, live at the Summit launch) | 🔴 S1 | S | ✅ proven `01c8670d` — execs 110321/110322/110324 | ✅ **PROMOTED 2026-08-25** `c20c1811` — prod execs **110345** (unlinked, new copy) + **110346** (inactive, unchanged); gate 306 EXIT 0; 53 false claims → 0 |
-| **#147** | 🔀 "Is this member registered?" answered twice by two sources that disagree (agenda says yes, who-to-meet says no) | 🔴 S1 | M | — | ⏸ measure first |
+| **#147** | 🔀 "Is this member registered?" answered twice by two sources that disagree (agenda says yes, who-to-meet says no) | 🔴 S1 | M | n/a (SQL) | ⏸ **PAUSED mid-ticket 2026-08-25 — HALF LIVE**: measured 36 disagreements (S1 confirmed); `member_alias_ids` + `registration_status` + `is_registered` shipped and `event_who` wired (130 → 145 registered, 15 recognised, 0 lost, gate 306 EXIT 0). BLOCKED on Andy's choice of authority shape; event resolver + schedule route not started |
 | **#146** | 🔇 A member who hides their WhatsApp number is invisible — silent drop, no answer, no error (Danson Hui) | 🔴 S1 | M | ✅ built + probed | ✅ **PROMOTED 2026-08-25** `64995b68` — Danson live. Remainders open: silent-drop alarm · hidden-number history keyed by the opaque id · ~~refusal path bypasses the SELFTEST silent gate~~ **fixed under #125** |
 | **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | ✅ 319 graded, 8 regressions fixed | ✅ **CLOSED + PROMOTED 2026-08-25** — 311/319 hold (97.5%); links 654→808, dead links 5→0, dates 641→862, route changes 0; prod `8bb0827d` |
 | **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🟡 S3 | S | — | ⏸ filed 2026-08-25 |
@@ -346,6 +346,56 @@ matching a dinner from three years ago.
 duplicate records resolves the same way in both lanes ✅ · the disagreement count for the Summit is
 reported before and after ✅ · roster staleness is visible (a freshness signal, not a silent month) ✅ ·
 gate GREEN.
+
+#### ⏸ PAUSED 2026-08-25 mid-ticket (Andy: "let's pause it and switch subjects") — HALF IS LIVE ON PROD
+
+**Measured first, as the ticket demanded — and it is above the S1 line it set.** For the Summit
+(`recrATwhUDA55iQN5` / GroupOS `689cfd00f1f12d7791cf9525`): 140 GroupOS attendees carry an
+`at_member_id`, 130 members sit on the roster, **117 agree — 23 GroupOS-only and 13 roster-only, so
+36 members got a different answer depending which lane they asked.** The ticket's own rule ("thirty
+means S1 today") applies.
+
+**SHIPPED AND LIVE (SQL is prod-shared — these are already serving members):**
+- `digest.member_alias_ids(p_member)` — every member-record id belonging to one person, via the
+  shared emails in `member_email_alias`. On Andy it returns **four** records
+  (`recCUUw8iiUnJjac1`, `recMocKvJHoWuteHv`, `reccPuFFDGu75MP5e`, `recupMCtkTwbpbUKB`) — the ticket
+  knew of three.
+- `digest.registration_status(p_member, p_event)` — THE authority: roster as the source, alias bridge
+  underneath, ticket-status rule in one place, and it reports `roster_synced_at` +
+  `roster_stale_days` so a stale snapshot can never gate someone silently (the ticket's freshness AC).
+- `digest.is_registered(p_member, p_event)` — the thin boolean wrapper every lane calls.
+- `digest.event_who` now calls the authority instead of its own inline
+  `member_at_id = v_atid`, and its `is_me` / #106 self-carve-out matches on the whole alias set, so a
+  duplicate record no longer makes a member invisible to themselves in their own list.
+
+**Before → after, measured over the 153 people involved:** the old inline check called 130 registered;
+the authority calls **145 — 15 members newly recognised, 0 lost.** Andy's three (four) records now all
+answer identically (`is_registered = false`, matched_via null), which is the ticket's duplicate-record
+AC and keeps the leak gate's non-attendee control intact. **Gate 306 PASS · 0 FAIL · EXIT 0** after
+the change. `db/` re-exported.
+
+**⛔ THE OPEN DECISION — this is where it paused, and it needs Andy.** The ticket says the roster is
+THE authority everywhere. Measured, that strips the personal agenda from people who attend without a
+member ticket. The 8 GroupOS-only attendees are: **Andy Verdy** (Member — the deliberate gate control),
+**Chip Ge** and **TK DecodeUp** (Member), **Anita Petrov** (Partners Team), **Chirag Singla**
+(Partner, Speaker), **Tamar Yaniv** (Speaker), **Christopher Murphy** and **Joe Stark** (Guests).
+Three options were put to Andy:
+1. **Roster authoritative everywhere** (the ticket as written) — all 8 drop to the public agenda.
+2. **One function, two facets (recommended)** — `registration_status` reports `has_ticket` (roster;
+   gates who-to-meet + attendee names) AND `is_attending` (GroupOS; drives the agenda). Every lane
+   reads the same function so no two can contradict, a speaker keeps their schedule and still gets no
+   name list, and the gate stays green.
+3. **Union** — nothing is lost, but Andy becomes an attendee and the leak gate goes RED.
+
+**STILL NOT STARTED — the ticket's second half:** the event resolver matches WORDS IN THE TITLE
+(`event_who`'s `bool_and(c.name ilike '%'||w||'%')`), so `event_who('vegas')` lands on the Feb 2025
+chapter dinner and **Inspire 2027 is unreachable from the word Vegas** even though it is in Las Vegas.
+Resolve from LOCATION + DATE, preferring live-or-upcoming over past. Unblocked by the decision above.
+
+**Also not started:** wiring the schedule/venue-day lane
+(`mds-digest-web/src/app/api/olivia/schedule/route.ts`, `registered = myTypes.size > 0` at line ~315)
+to the authority. That repo has NO staging tier — a push to `main` deploys — so it waits for the
+decision and an explicit go.
 
 **Do not touch Airtable to fix this (Andy 2026-08-25):** it is the source of truth and he tests against it.
 Corrections that need the source get raised with him or ops, never written by the agent.
