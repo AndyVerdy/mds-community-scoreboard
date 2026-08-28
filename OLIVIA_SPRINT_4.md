@@ -83,6 +83,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#149** | 🗣️ Two real answers were wrong in shape — a live event called finished, a yes/no answered with machinery | 🔴 S1 | M | ✅ staging turns 52883/52885 | ✅ **PROMOTED 2026-08-26** `7abb9fc9` (rules+clamp) · route `eventPhase` pushed `102bf14` (Render deploys on push) |
 | **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
 | **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list + dangling old-event links (Andy, prod 52891/52893/52935/52941/52951) | 🔴 S1 | S | ✅ probe wave 8/8 · orphan-strip unit 6/6 | ✅ **PROMOTED 2026-08-26** `06df948a` — prod turn 52959: 1 link, Denver gone; gate 306 EXIT 0 |
+| **#152** | ⏱️ `refresh_entity_dossiers` statement-timeout — `zoom_weekly` heartbeat error, last success 2026-08-07; video chain exits 1 every run (found by scorecard-df) | 🟡 S2 | S | — | ⏸ filed 2026-08-28 |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -282,6 +283,27 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 **Build:** ① Format Reply: PS → Millie; when a reply is button-eligible, place the PS as the FIRST line (offer stays last) — never drop the buttons for the PS. ② Answer Seed: who-to-meet answers ≤ ~850 chars; when the asker is a registered attendee and ≥1 match was shown, END with exactly "Would you like me to connect you with one of them?"; never offer intros to non-attendees (pilot refusal); "Yes" after that offer → `member_intro` with no target → present the pick list + "Who would you like me to send a request to?"; a named answer → `member_intro{target_name}`. ③ Plan Request: make sure a bare "Yes" after the intro offer reaches the LLM lane (no plan replay of the people op). ④ Router system prompt "router for Olivia" → Millie; internal labels untouched (documented). Staging probes as a registered attendee (silent lane, cleanup): reply ≤1,024 + ends with the offer + `interactive.type='button'` in Format Reply output; "Yes" → member_intro picker call in the execution; name → request path (refused/dry by design, zero sends). Gate EXIT 0 · snapshot · Andy promotes.
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
+
+### #152 · `refresh_entity_dossiers` times out — dossiers 20 days stale for every new video
+**🟡 S2 · size S — filed 2026-08-28, found by the video-update session (scorecard-df) and handed over.**
+
+> **In plain words:** the job that builds each video's topic fingerprint dies on a database timeout
+> every night, and has not succeeded since 2026-08-07. New videos still get fingerprints from a
+> different nightly path, but the refresh that keeps EXISTING ones current is dead, and the video
+> update chain exits 1 every run because of it.
+
+*As a member, the recommendations engine knows what every video is about, including the ones that
+changed since it first looked.*
+
+Evidence: `zoom_transcripts.py` → `rpc/refresh_entity_dossiers` fails with `{"code":"57014",
+"canceling statement due to statement timeout"}` on every `videos_weekly_check.py --apply` run;
+`zoom_weekly` heartbeat `error`, `last_success_at = 2026-08-07`. All 16 Summit videos DO carry
+dossier rows (verified 2026-08-28), so the gap is refresh, not creation.
+
+**Shape of the fix:** the function does too much in one statement for PostgREST's timeout — batch it
+(refresh N stalest per call, loop from the script), or run it as several bounded statements.
+**Accept when:** the RPC completes inside the timeout on a full backlog ✅ · `zoom_weekly` heartbeat
+green with `last_success_at` current ✅ · the chain exits 0 ✅ · gate GREEN.
 
 ### #151 · Video answers ignore the member: Inspire volunteered, no count, no tailoring, and a follow-up that fled the list
 **🔴 S1 · size S — filed 2026-08-26 from Andy's WhatsApp (prod turns 52891/52893, 04:48-04:50Z), four complaints in his words.**
