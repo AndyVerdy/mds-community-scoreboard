@@ -11,6 +11,48 @@
 
 # Olivia — next session
 
+## STATE 2026-08-27 (Andy out — full pipeline run unattended)
+**16 Summit Singapore talks are in the corpus. 9 are live and proven; 7 are loaded but reachable by
+nobody. PROD WORKFLOW UNTOUCHED — data only, no promote.**
+
+### What shipped
+- **Batch A — 7 restricted** (`~/mds_transcripts/summit_sg_2026/`): 228 chunks, 7 summaries.
+- **Batch B — 9 public** (`~/mds_transcripts/summit_sg_2026_b/`): 219 chunks, 9 summaries.
+- 8.2 hr audio, **$1.88** total at AAI. Summaries hand-written in-session, zero API spend, all inside
+  the corpus band (max 1,338 chars). Everything embedded. Gate GREEN (263 checks, exit 0) after each.
+- Library: **410/1050 transcribed, 410 summarised, 12,762 chunks, zero unembedded rows.**
+- `aai_submit.py --local` ends the presigned-export dependency (ffmpeg → AAI `/v2/upload`, resume-safe,
+  manifest binds file → `video_id` explicitly). Commits `a2f4007`, `a06f57a`, `233de8f`.
+
+### ANDY'S DESK — three calls, in this order
+1. **GRANTS for the 7 restricted talks.** They are invisible to every member — proven live, not
+   assumed (`content_search_v2` returns nothing from them even with `p_include_restricted=true`).
+   46 restricted videos have no grants (7 new + 39 from 2023). Needs the dev's audience export;
+   `scripts/load_video_access.py` already ingests it. **I did not derive grants from attendance —
+   that is an access-control decision, not a data chore.**
+2. **RE-CHUNK BACKLOG (priority call).** The producer is fixed, the existing rows are not:
+   1,423 chunks over 4,000 chars across 255 videos, **581 of them on 138 RESTRICTED videos, worst
+   23,632**. Handbook §6.2 now says plainly that the quote ruling's "~1,400-char largest retrievable
+   unit" is false for those rows. Access gate unaffected; an ENTITLED asker can pull most of a talk.
+3. **Eugene Khayman shows as a `guest`** — GroupOS has `eugene@ykuni.com`, Members DB has
+   `eugene@mds.co`. Add the alias to record `recvSgAirIbbo9Ylb`; `member_email_alias` mirrors Airtable
+   so this is yours to make, not mine. `--rescan` promotes him automatically after.
+
+### Speaker state on the 16 (recorded, not fixed — needs #103 / Airtable)
+- Linked correctly: Alex Bonilla, Brandon Himmel, Jon Jewett, Jared Mortensen, Khalid Abdulla,
+  Ivan Ong, Damon Sununtnasuk, Anjie Liu, Eva Maxfield, Corey Smith, Ary Selener, Cassidy Clawson.
+- **Name-shape misses:** "Douglas Iske" vs `Douglas Patrick Iske`; "John Spektor" vs `Jon Spektor`.
+  Both real members, both sitting `unresolved`.
+- **Correct externals:** Tamar Yaniv (Yuka AI — not in `partners_catalog`), Emily Wang (StoreClaw),
+  Meher Patel (Hector AI), Hammad Yousaf.
+- **Nathan Ross is in no members row** under any Ross spelling, though he says on stage he joined 2017.
+- **Hack Contest has 0 speaker links** — no names in the title; ~12 presenters live in the transcript.
+  Hand-patching will not stick: `load_speakers.py:287` re-patches any `guest`/`unresolved` row.
+
+### Still open from before
+- ~640 pre-2025 videos untranscribed (~$137). Local files now make this a folder + manifest away.
+- #102 answer-layer wiring · #104 adjacent-turn topic lag · #72 load test (never run).
+
 ## STATE 2026-08-25 (overnight close) — read this first
 
 **PROD = `8bb0827d`. Staging is identical. Gate GREEN (306, EXIT 0).** Three promotes tonight:
