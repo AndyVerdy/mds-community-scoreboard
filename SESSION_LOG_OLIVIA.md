@@ -2,6 +2,73 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-08-27 · Olivia · **16 SUMMIT SINGAPORE TALKS TRANSCRIBED + LIVE** · `chunk()` oversized-cue defect FOUND + FIXED · grants gap on the restricted 7
+
+**Two batches, one pipeline, PROD DATA ONLY — no workflow edit, no promote.**
+
+**Batch A (7 restricted, `~/mds_transcripts/summit_sg_2026/`)** · 4.1 hr · $0.94 · 228 chunks.
+**Batch B (9 public, `~/mds_transcripts/summit_sg_2026_b/`)** · 4.1 hr · $0.94 · 219 chunks.
+16 summaries written in-session (zero API spend), everything embedded, gate GREEN (263 checks, exit 0)
+after each batch. Library now **410/1050 videos transcribed, 410 summarised, 12,762 chunks, zero
+unembedded rows**.
+
+**`aai_submit.py --local` — the presigned export is no longer a dependency.** The dev's CSV links
+expired 2026-08-27; Andy had the files. New local path: manifest binds file → catalogue `video_id`
+(STATED, never guessed from a filename; an id absent from `videos_catalog` is a hard exit), ffmpeg
+strips to mono 16kHz (6.0 GB → 128 MB, ~47x), bytes POST to AAI's own `/v2/upload`. Resume-safe:
+the second Summit-2 run skipped the 7 already done and transcribed only the 2 late files. A silent
+video is now detected up front (`has_audio()`) instead of surfacing as ffmpeg's "output contains no
+stream" — the 2025 batch hit one.
+
+**THE REAL FIND — `chunk()` never split an oversized cue.** AssemblyAI returns a whole talk as ONE
+utterance when diarisation hears one speaker; `chunk()` only tested its size boundary BETWEEN cues.
+The Town Hall landed as a single **35,116-char** chunk stamped 00:00:00 → 00:36:46, then the overlap
+carry-back emitted it a second time, identical. Two silent consequences: one embedding for a
+36-minute talk retrieves nothing precisely, and every citation from it reads 00:00:00 — which kills
+the timestamps Andy explicitly asked for.
+- Already in the corpus: **1,423 chunks over 4,000 chars across 255 videos** (target 1,400, worst
+  40,934) and 64 duplicate rows across 32 videos.
+- **581 of those sit on 138 RESTRICTED videos, worst 23,632** — and the handbook's quote ruling
+  ("never a full transcript") rests on "~1,400-char chunk is the largest retrievable unit". The access
+  gate is unaffected (unentitled askers get nothing; gate green) but an ENTITLED asker can pull most
+  of a talk in one chunk. Handbook §6.2 corrected to say so.
+- Fix: `split_long_cues()` in `zoom_transcripts.py` — sentence-bounded, timestamps interpolated by
+  character offset; the trailing emit now refuses text the previous chunk already holds in full.
+- Verified surgical: a 219-utterance transcript chunks **byte-identically** before and after (Zoom and
+  normal AAI streams untouched); Town Hall 2 → 26 chunks, worst 35,116 → 4,163, starts monotonic, last
+  chunk ends 00:36:45 against 00:36:46 of audio; full containment 3 rows of 228.
+- **Re-chunking the 255 existing videos is NOT done — Andy's priority call.**
+
+**Batch A is loaded but UNREACHABLE.** All 7 are `restricted` with **zero `video_access` grants** —
+proven on the live lane, not theorised: a semantic query returns 10 transcript rows, none from the 7,
+even with `p_include_restricted=true`. 46 restricted videos have no grants (7 new + 39 from 2023).
+Grants come from the dev's audience export; deriving them from attendance was deliberately NOT
+attempted — that is an access-control decision, not a data chore.
+
+**Batch B is live and proven end-to-end** (public, so no grants needed). Through `content_search_v2`
+as a real member: "which live selling platform has shoppers who actually intend to buy" → Whatnot talk
+at 00:04:47 · "how do I make Meta ads profitable when almost all my revenue is Amazon" → Corey Smith
+at 00:02:21 · "how should I get doctors to recommend my supplement" → Anjie Liu at 00:07:06.
+
+**Speaker linking — 3 classes of miss, none fixed (all need Airtable or #103 work).**
+- **Eugene Khayman reads as a `guest`.** GroupOS holds `eugene@ykuni.com`, Members DB holds
+  `eugene@mds.co`; `resolve_member_by_email` works on the latter. Needs the alias on record
+  `recvSgAirIbbo9Ylb` — `member_email_alias` MIRRORS Airtable and Andy's 2026-08-25 rule forbids me
+  writing there. `--rescan` promotes him the moment it lands.
+- **Name-shape misses:** "Douglas Iske" vs `Douglas Patrick Iske` (middle name), "John Spektor" vs
+  `Jon Spektor` (variant) — both real members, both left `unresolved`.
+- **Genuine externals, correctly not members:** Tamar Yaniv (Yuka AI — not in `partners_catalog`, so
+  she cannot be a partner either), Emily Wang (StoreClaw), Meher Patel (Hector AI), Hammad Yousaf.
+- **Nathan Ross is in no members row under any Ross spelling** despite saying on stage he joined 2017.
+- **Hack Contest has 0 speaker links** — the title carries no names; ~12 named presenters sit in the
+  transcript only. A hand-patch would not survive: `load_speakers.py:287` re-patches any row whose
+  kind is `guest`/`unresolved`.
+
+**Traps re-confirmed:** `refresh_entity_dossiers` times out over PostgREST every time — run it as
+direct SQL with `statement_timeout`. Reading only the first PostgREST page silently caps at 1000 and
+produced a badly wrong grant count before an aggregate corrected it.
+
+
 ## 2026-08-25 (overnight → 07:49Z) · Olivia · **#145 PROMOTED after 319-question no-regression run** · #146 hidden-number identity BUILT + LIVE · #147 filed
 
 **PROMOTED TWICE TONIGHT.** prod `bbd597b7` → `91c70977` (waves 7-21) → `64995b68` (#146) → **`8bb0827d`**

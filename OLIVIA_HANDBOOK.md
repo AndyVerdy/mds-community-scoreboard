@@ -471,9 +471,17 @@ restricted marker. Attachments stay a PUBLIC-video feature even for entitled ask
 (`video_file_for_send` validates public-only, and surfacing them leaked the raw `file_key`).
 Andy's quote ruling: quote, summarize, TLDR, answer "what exactly did he say" — never a full
 transcript; the ~1,400-char chunk is the largest retrievable unit and no lane concatenates.
+⚠️ **That last clause is the ruling's whole safety argument, and for older rows it is NOT TRUE.**
+`chunk()` sized passages between cues but never split a single oversized cue, and AssemblyAI returns
+a whole talk as ONE utterance when it hears one speaker. Found 2026-08-27: 1,423 chunks over 4,000
+chars, worst 40,934 — including **581 chunks across 138 RESTRICTED videos, worst 23,632**, where one
+chunk is most of a talk. The access gate is unaffected (an unentitled asker still gets nothing, gate
+green) but an ENTITLED asker can retrieve far more than the ruling intends. The producer is fixed
+(`split_long_cues()` in `zoom_transcripts.py` — sentence-bounded, timestamps interpolated by character
+offset); **re-chunking the existing rows is still open.**
 Restricted videos embed METADATA ONLY (`embed_videos.py`), so the vector branch cannot leak content.
 Transcript coverage: Zoom (#70) where Zoom hosted; AssemblyAI (`meta.provenance='assemblyai'`,
-`scripts/aai_transcripts.py`) for the 96 in-person/hybrid 2026 videos it never reached — speakers
+`scripts/aai_transcripts.py`) for the in-person/hybrid videos it never reached — speakers
 stay `Speaker A/B/C`, never guessed names.
 
 ### 6.3 `find` — one lane, composable filters, every data layer (#108)
