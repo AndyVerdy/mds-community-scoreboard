@@ -41,10 +41,10 @@ def curl(method, url, token, body=None):
 
 
 TEMPLATE = {
-    "name": "mds_summit_videos_live_v2",
+    "name": "mds_summit_videos_live_v3",
     "category": "UTILITY",
     "language": "en_US",
-    "allow_category_change": True,
+    "allow_category_change": False,
     # v2 (2026-08-28): Meta rejects newlines inside template VARIABLES at send time
     # (132018, proven on a live test send) though it APPROVED the v1 template whose
     # example carried them. All line breaks live in this fixed skeleton; every
