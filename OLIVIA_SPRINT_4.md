@@ -84,6 +84,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
 | **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list + dangling old-event links (Andy, prod 52891/52893/52935/52941/52951) | 🔴 S1 | S | ✅ probe wave 8/8 · orphan-strip unit 6/6 | ✅ **PROMOTED 2026-08-26** `06df948a` — prod turn 52959: 1 link, Denver gone; gate 306 EXIT 0 |
 | **#152** | ⏱️ `refresh_entity_dossiers` statement-timeout — `zoom_weekly` heartbeat error, last success 2026-08-07; video chain exits 1 every run (found by scorecard-df) | 🟡 S2 | S | — | ⏸ filed 2026-08-28 |
+| **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ⏸ seed rule awaits promote; re-embed of 7 awaits Andy |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -283,6 +284,40 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 **Build:** ① Format Reply: PS → Millie; when a reply is button-eligible, place the PS as the FIRST line (offer stays last) — never drop the buttons for the PS. ② Answer Seed: who-to-meet answers ≤ ~850 chars; when the asker is a registered attendee and ≥1 match was shown, END with exactly "Would you like me to connect you with one of them?"; never offer intros to non-attendees (pilot refusal); "Yes" after that offer → `member_intro` with no target → present the pick list + "Who would you like me to send a request to?"; a named answer → `member_intro{target_name}`. ③ Plan Request: make sure a bare "Yes" after the intro offer reaches the LLM lane (no plan replay of the people op). ④ Router system prompt "router for Olivia" → Millie; internal labels untouched (documented). Staging probes as a registered attendee (silent lane, cleanup): reply ≤1,024 + ends with the offer + `interactive.type='button'` in Format Reply output; "Yes" → member_intro picker call in the execution; name → request path (refused/dry by design, zero sends). Gate EXIT 0 · snapshot · Andy promotes.
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
+
+### #153 · Intent questions failed on ranking and stated facts — the screenshot probes, run down
+**🔴 S1 · size S — filed 2026-08-28 from the 4-question probe table Andy screenshotted (source session unknown; scorecard-df disclaims it). 3 of 4 failed on prod.**
+
+*As a member asking by PROBLEM ("how do I tell early a senior hire isn't working out?"), I get the
+freshest session that answers it — and a figure a town hall stated out loud is never "no tally exists".*
+
+**Root causes, one per miss:**
+1. **Whatnot lost to Milan TikTok** — `video_search_v2`'s fusion had ZERO recency weight: a 2025
+   video with equal topical match tied or beat a running-Summit one. Same disease as #151, second
+   entrance (Andy: "basically the same case… relevancy suffering, since it was last year summit").
+2. **Khalid lost to an older playbook** — his video is one of the 7 embedded while restricted
+   (metadata-only vectors; re-embed pending Andy's go with scorecard-df).
+3. **Event count refused** — the model routed to the events catalog, found no tally, and refused
+   while the Town Hall transcript states ~200 events / 50+ cities out loud. It also attached a
+   REGISTRATION link to an event that had already wrapped.
+
+**Fixes:** `video_search_v2` time-decay (the #102 slice): +0.006 <60d, +0.003 <180d in the
+query-fusion order — bounded (RRF legs max 0.0164) so it reorders near-ties, never lifts junk ·
+Answer Seed rule "A STATED FACT BEATS A MISSING TALLY" (search content before refusing a figure;
+cite as reported-not-counted; never a registration link on an ended event).
+
+#### ✅ FIXED + PROVEN ON STAGING 2026-08-28 — 3/3 through the workflow
+| probe | before (prod) | after (staging) |
+|---|---|---|
+| live-selling intent | Milan TikTok content | ✅ Iske's Whatnot session, real quote ("We don't want to be the QVC brand"), exec-verified |
+| senior-hire intent | Jasim Eisa's older playbook | ✅ Khalid's Leadership Layer, $62K + fraud case + 30-day system — fixed by decay alone, before any re-embed |
+| event count | "I don't have one single tally" + register link on a wrapped event | ✅ "close to 200 events, across over 50 cities… 55 members helping lead" cited *per the Town Hall*, explicitly a reported figure, video link attached |
+
+Gate **306 PASS · 0 FAIL · EXIT 0** after the decay. Probe rows cleaned (8 + 4). Staging `0faa9be5`;
+the decay itself is prod-shared SQL and already live; the seed rule rides the next promote.
+**Remainder:** the 7 metadata-only re-embeds (scorecard-df executes on Andy's go) · the cited
+timestamp read "(at 00:00:00)" because early chunks carry start_sec 0 — cosmetic, filed under #103's
+umbrella rather than new.
 
 ### #152 · `refresh_entity_dossiers` times out — dossiers 20 days stale for every new video
 **🟡 S2 · size S — filed 2026-08-28, found by the video-update session (scorecard-df) and handed over.**
