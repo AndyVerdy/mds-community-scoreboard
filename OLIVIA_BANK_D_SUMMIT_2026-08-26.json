@@ -1,7 +1,7 @@
 {
  "name": "Bank D — Summit videos & transcripts",
  "built": "2026-08-26",
- "why": "Andy 2026-08-26: 'people might ask about videos that are not done... specific speakers, or session names, or session worth watching, or videos on a specific subject. Need to cover all.' Written after #149/#150/#151; RUN ONLY when Andy says video processing is done (he did, same day — first run rides the #151 probe wave). 2026-08-26 Andy: 'make sure we cover exact quotes where it makes sense. and timestamps' — quote-timestamp class added (26 total). 2026-08-28: problem-first class added from scorecard-df's live probes (30 total); 7004 premise updated — the Whatnot session exists now.",
+ "why": "Andy 2026-08-26: 'people might ask about videos that are not done... specific speakers, or session names, or session worth watching, or videos on a specific subject. Need to cover all.' Written after #149/#150/#151; RUN ONLY when Andy says video processing is done (he did, same day — first run rides the #151 probe wave). 2026-08-26 Andy: 'make sure we cover exact quotes where it makes sense. and timestamps' — quote-timestamp class added (26 total). 2026-08-28: problem-first class added from screenshot probes (source session unknown; scorecard-df disclaims them) (30 total); 7004 premise updated — the Whatnot session exists now.",
  "asker": "17866578153 (staff-granted; every content expect assumes an ENTITLED asker). The gating block at the end needs a non-attendee asker instead.",
  "chains_note": "ids with a dot (7010.2) are follow-up turns fired on the same phone right after their parent, no reset between.",
  "questions": [
@@ -167,25 +167,25 @@
    "id": 7090,
    "class": "problem-first",
    "q": "how do I make meta ads profitable when almost all my revenue is amazon?",
-   "expect": "Corey Smith's From Amazon-First to Profitable Meta Ads with his numbers ($28.50 to $14.15 CPA, ROAS 1.29 to 5) + link. Found by PROBLEM, not by name. (scorecard-df probe, passed 2026-08-28.)"
+   "expect": "Corey Smith's From Amazon-First to Profitable Meta Ads with his numbers ($28.50 to $14.15 CPA, ROAS 1.29 to 5) + link. Found by PROBLEM, not by name. (screenshot probe 2026-08-28, source session unknown — NOT scorecard-df; passed.)"
   },
   {
    "id": 7091,
    "class": "problem-first",
    "q": "what live selling platform actually has buyers who intend to buy?",
-   "expect": "Douglas Iske's Whatnot session from THIS Summit — not Milan TikTok content. (scorecard-df probe, failed 2026-08-28: ranking served older event.)"
+   "expect": "Douglas Iske's Whatnot session from THIS Summit — not Milan TikTok content. (screenshot probe 2026-08-28, source unknown; failed pre-decay: ranking served older event.)"
   },
   {
    "id": 7092,
    "class": "problem-first",
    "q": "how do I tell early that a senior hire isn't working out?",
-   "expect": "Khalid Abdulla's Leadership Layer (30-day trial: day-5 self-solved, day-14 resignation proof, day-30 door) + link. (scorecard-df probe, failed 2026-08-28: metadata-only embedding suspected.)"
+   "expect": "Khalid Abdulla's Leadership Layer (30-day trial: day-5 self-solved, day-14 resignation proof, day-30 door) + link. (screenshot probe 2026-08-28, source unknown; failed: metadata-only embedding, re-embed pending Andy.)"
   },
   {
    "id": 7093,
    "class": "problem-first",
    "q": "how many events did MDS run this year?",
-   "expect": "The Town Hall's own figures (~200 events, 50+ cities, 3,000 attendees) cited with source+timestamp — never 'I don't have one single tally' when a session states it. (scorecard-df probe, failed 2026-08-28.)"
+   "expect": "The Town Hall's own figures (~200 events, 50+ cities, 3,000 attendees) cited with source+timestamp — never 'I don't have one single tally' when a session states it. (screenshot probe 2026-08-28, source unknown; failed.)"
   }
  ]
 }

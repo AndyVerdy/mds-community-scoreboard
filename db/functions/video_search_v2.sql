@@ -134,6 +134,15 @@ begin
                   else (case when f.kw_rank > 0 then 1.0/(60 + f.kw_pos) else 0 end)
                        + (case when f.vec_dist is not null then 1.0/(60 + f.vec_pos) else 0 end)
                        + least(f.fitv, 2.0) * 0.004
+                       -- #102 time-decay slice (2026-08-28, Andy: "relevancy suffering, since it
+                       -- was last year summit"). A fresh session and a year-old one with equal
+                       -- topical match must not tie: problem-first intent questions were served
+                       -- Milan 2025 content over the running Summit. Bounded nudge, not a rewrite:
+                       -- 0.006 inside 60 days, 0.003 inside 180 (RRF legs max at 1/61 = 0.0164,
+                       -- so this reorders near-ties and cannot lift junk over a strong match).
+                       + (case when f.app_created_at > now() - interval '60 days' then 0.006
+                               when f.app_created_at > now() - interval '180 days' then 0.003
+                               else 0 end)
              end) desc,
             (case when v_q is null then false else f.restricted end) asc,
             (case when v_q is null then f.fitv else 0 end) desc,
