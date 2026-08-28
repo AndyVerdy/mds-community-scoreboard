@@ -12,8 +12,8 @@ And picked for you from the rest:
 • *Intro Presentation + Town Hall + Trend Report* — Eugene Khayman
 https://app.mds.co/videos/6a8e4b8e9614296a636e62c5
 
-• *TikTok or Die* — Jonathan Jewett + Brandon Himmel + Alex Bonilla
-https://app.mds.co/videos/6a8e4c859614296a636e9643
+• *Scaling a Subreddit as a Launch & AEO Asset* — Jared Mortensen
+https://app.mds.co/videos/6a8e4d8e9614296a636eb271
 
 Full transcripts are searchable too — just ask me here: "what did Tamar say about sampling?", "summarize Ivan's AMA", "which session should I watch first?" — I'll pull quotes, timestamps and summaries for you.
 
@@ -27,8 +27,8 @@ All Summit sessions so far: https://app.mds.co/videos
 🎬 Your own session is up: *From Amazon-First to Profitable Meta Ads* — share it proudly.
 And picked for you from the rest:
 
-• *Intro Presentation + Town Hall + Trend Report* — Eugene Khayman
-https://app.mds.co/videos/6a8e4b8e9614296a636e62c5
+• *Hack Contest*
+https://app.mds.co/videos/6a908525d5013ff117efaadd
 
 • *TikTok or Die* — Jonathan Jewett + Brandon Himmel + Alex Bonilla
 https://app.mds.co/videos/6a8e4c859614296a636e9643
@@ -44,11 +44,11 @@ All Summit sessions so far: https://app.mds.co/videos
 
 Picked for you:
 
-• *Intro Presentation + Town Hall + Trend Report* — Eugene Khayman
-https://app.mds.co/videos/6a8e4b8e9614296a636e62c5
+• *7 AI Workflows  Your Business Needs* — Damon Sununtnasuk
+https://app.mds.co/videos/6a8e4f349614296a636f1d7d
 
-• *TikTok or Die* — Jonathan Jewett + Brandon Himmel + Alex Bonilla
-https://app.mds.co/videos/6a8e4c859614296a636e9643
+• *Hack Contest*
+https://app.mds.co/videos/6a908525d5013ff117efaadd
 
 Full transcripts are searchable too — just ask me here: "what did Tamar say about sampling?", "summarize Ivan's AMA", "which session should I watch first?" — I'll pull quotes, timestamps and summaries for you.
 
@@ -61,11 +61,11 @@ All Summit sessions so far: https://app.mds.co/videos
 
 Picked for you:
 
-• *Intro Presentation + Town Hall + Trend Report* — Eugene Khayman
-https://app.mds.co/videos/6a8e4b8e9614296a636e62c5
+• *7 AI Workflows  Your Business Needs* — Damon Sununtnasuk
+https://app.mds.co/videos/6a8e4f349614296a636f1d7d
 
-• *TikTok or Die* — Jonathan Jewett + Brandon Himmel + Alex Bonilla
-https://app.mds.co/videos/6a8e4c859614296a636e9643
+• *Hack Contest*
+https://app.mds.co/videos/6a908525d5013ff117efaadd
 
 Full transcripts are searchable too — just ask me here: "what did Tamar say about sampling?", "summarize Ivan's AMA", "which session should I watch first?" — I'll pull quotes, timestamps and summaries for you.
 
@@ -78,11 +78,11 @@ All Summit sessions so far: https://app.mds.co/videos
 
 Picked for you:
 
-• *Intro Presentation + Town Hall + Trend Report* — Eugene Khayman
-https://app.mds.co/videos/6a8e4b8e9614296a636e62c5
+• *7 AI Workflows  Your Business Needs* — Damon Sununtnasuk
+https://app.mds.co/videos/6a8e4f349614296a636f1d7d
 
-• *TikTok or Die* — Jonathan Jewett + Brandon Himmel + Alex Bonilla
-https://app.mds.co/videos/6a8e4c859614296a636e9643
+• *Hack Contest*
+https://app.mds.co/videos/6a908525d5013ff117efaadd
 
 Full transcripts are searchable too — just ask me here: "what did Tamar say about sampling?", "summarize Ivan's AMA", "which session should I watch first?" — I'll pull quotes, timestamps and summaries for you.
 

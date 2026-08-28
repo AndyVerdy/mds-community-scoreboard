@@ -127,6 +127,11 @@ def main():
                          f"&entity_id=in.({','.join(v['video_id'] for v in vids)})")
     dprof = {d["entity_id"]: (d.get("topic_profile") or {}) for d in dossiers}
 
+    fits_path = sys.argv[1] if len(sys.argv) > 1 else         "/private/tmp/claude-501/-Users-Born-Scorecard/5da5870d-aed8-4e4f-abd7-624d2d40c92f/scratchpad/fits.json"
+    fit_by_member = {}
+    for r in json.load(open(fits_path)):
+        fit_by_member.setdefault(r["at_member_id"], {})[r["video_id"]] = float(r["fit"])
+
     speaker_norm = {}
     for v in vids:
         for s in v["speakers"]:
@@ -139,34 +144,13 @@ def main():
     for m in recipients:
         atid = m["at_member_id"]
         first = ((m.get("full_name") or name_fallback.get(atid) or "there").split() or ["there"])[0]
-        prof = rest(key, f"rpc/member_topic_profile?p_member=eq.x") if False else None
-        # topic profile via REST rpc:
-        out = subprocess.run(
-            ["curl", "-s", "-X", "POST", f"{BASE}/rpc/member_topic_profile",
-             "-H", f"apikey: {key}", "-H", f"Authorization: Bearer {key}",
-             "-H", "Content-Type: application/json",
-             "-H", "Accept-Profile: digest", "-H", "Content-Profile: digest",
-             "-d", json.dumps({"p_member": atid})],
-            capture_output=True, text=True)
-        try:
-            topics = json.loads(out.stdout)
-            assert isinstance(topics, list)
-        except Exception:
-            topics = []
-        tmap = {t["topic"]: (t.get("sort_score") or 0, bool(t.get("is_working_on"))) for t in topics}
-
         own = speaker_norm.get(norm(m.get("full_name")), [])
-        scored = []
-        for v in vids:
-            if v["video_id"] in own:
-                continue
-            fit = 0.0
-            for topic, (score, working) in tmap.items():
-                w = dprof.get(v["video_id"], {}).get(topic)
-                if w is not None and float(w) >= 0.2:
-                    fit += float(w) * (1.5 if working else 1.0)
-            scored.append((fit, v))
-        scored.sort(key=lambda x: -x[0])
+        # fit scores precomputed in ONE SQL (member_topic_profile x entity_dossier, the
+        # video_search_v2 formula) — the RPC has no service_role grant, and the first run
+        # proved a silent per-member fallback: 92/94 identical "picks" from catalog order.
+        by_vid = fit_by_member.get(atid, {})
+        scored = [(by_vid.get(v["video_id"], 0.0), v) for v in vids if v["video_id"] not in own]
+        scored.sort(key=lambda x: (-x[0], x[1]["video_id"]))
         picks = [v for fit, v in scored[:2]]
 
         lines = [f"\U0001F3AC Hi {first} — the first {n_vids} session recordings from the *MDS Summit Singapore* are live."]
