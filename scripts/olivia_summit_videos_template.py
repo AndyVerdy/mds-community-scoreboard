@@ -41,25 +41,31 @@ def curl(method, url, token, body=None):
 
 
 TEMPLATE = {
-    "name": "mds_summit_videos_live",
+    "name": "mds_summit_videos_live_v2",
     "category": "UTILITY",
     "language": "en_US",
     "allow_category_change": True,
+    # v2 (2026-08-28): Meta rejects newlines inside template VARIABLES at send time
+    # (132018, proven on a live test send) though it APPROVED the v1 template whose
+    # example carried them. All line breaks live in this fixed skeleton; every
+    # variable is single-line. {{3}} is the lead-in ("Picked for you:" or the
+    # speaker's own-session line), {{4}}/{{6}} are "Title - Speaker", {{5}}/{{7}} links.
     "components": [
         {"type": "BODY",
          "text": ("\U0001F3AC Hi {{1}} — the first {{2}} session recordings from the "
                   "*MDS Summit Singapore* are live.\n\n{{3}}\n\n"
+                  "• *{{4}}*\n{{5}}\n\n"
+                  "• *{{6}}*\n{{7}}\n\n"
                   "Full transcripts are searchable too — just ask me here: \"what did Tamar say "
                   "about sampling?\", \"summarize Ivan's AMA\", \"which session should I watch "
                   "first?\" — I'll pull quotes, timestamps and summaries for you.\n\n"
                   "All Summit sessions so far: https://app.mds.co/videos"),
          "example": {"body_text": [[
-             "Andy",
-             "16",
-             ("Picked for you:\n\n• *Run Amazon by Exception. Decide at Scale* — Ary Selener\n"
-              "https://app.mds.co/videos/6a907a6bd5013ff117eeb3d6\n\n"
-              "• *7 AI Workflows Your Business Needs* — Damon Sununtnasuk\n"
-              "https://app.mds.co/videos/6a8e4f349614296a636f1d7d")
+             "Andy", "16", "Picked for you:",
+             "Run Amazon by Exception. Decide at Scale — Ary Selener",
+             "https://app.mds.co/videos/6a907a6bd5013ff117eeb3d6",
+             "7 AI Workflows Your Business Needs — Damon Sununtnasuk",
+             "https://app.mds.co/videos/6a8e4f349614296a636f1d7d"
          ]]}},
         {"type": "BUTTONS", "buttons": [
             {"type": "URL", "text": "Watch in the app", "url": "https://app.mds.co/videos"}

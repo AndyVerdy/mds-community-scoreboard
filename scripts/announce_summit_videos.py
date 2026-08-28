@@ -173,9 +173,23 @@ def main():
                   "and summaries for you.",
                   "",
                   "All Summit sessions so far: https://app.mds.co/videos"]
+        # template v2 params — 7 single-line slots (Meta 132018: no newlines in variables)
+        if own:
+            own_titles = [v["clean"] for v in vids if v["video_id"] in own]
+            leadin = f"Your own session *{own_titles[0]}* is up \U0001F3AC — and picked for you from the rest:"
+        else:
+            leadin = "Picked for you:"
+        def _line(v):
+            spk = " + ".join(v["speakers"])
+            return v["clean"] + (f" — {spk}" if spk else "")
+        params = [first, str(n_vids), leadin,
+                  _line(picks[0]), f"https://app.mds.co/videos/{picks[0]['video_id']}",
+                  _line(picks[1]), f"https://app.mds.co/videos/{picks[1]['video_id']}"]
+        assert all("\n" not in p and "\t" not in p for p in params), params
         fill = {"at_member_id": atid, "phone": phone_by[atid],
                 "full_name": m.get("full_name"), "is_speaker": bool(own),
-                "picks": [v["video_id"] for v in picks], "text": "\n".join(lines)}
+                "picks": [v["video_id"] for v in picks], "params": params,
+                "text": "\n".join(lines)}
         fills.append(fill)
         if own:
             speaker_fills.append(fill)
