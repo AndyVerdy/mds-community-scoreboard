@@ -2,6 +2,102 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-08-28 · Olivia · **7 TICKETS SHIPPED (#125 #149 #150 #151 #153 + #102 slice), ANNOUNCEMENT WAVE SENT 94/94** · #126 closed not-reproducible · #148 #152 filed · #147 PAUSED on Andy
+
+**Prod walked `8bb0827d` → `c20c1811` → `077e2be4` → `06df948a` → `15ff4978`**, five promotes, gate
+**306 PASS · 0 FAIL · EXIT 0** at every one. Every fix below was proven THROUGH THE WORKFLOW before
+promote, and every probe row was cleaned afterwards.
+
+### The tickets
+- **#125 — an absent membership status is not an inactive membership.** `Resolve Member` collapsed
+  "we do not know your status" into "your membership is not active": Shyam Murali, a paying Current
+  Member, was told at the Summit launch that his membership was inactive because his number was not
+  linked yet. New fourth reason `unlinked` + its own copy (asks for the email on their MDS account).
+  **53 members were getting the false claim; now 0.** Regression suite
+  `scripts/tests/test_front_door_copy.py` runs the REAL node code out of the live graph — 6 failing
+  before, 12/12 after. Enabling fix in the same edit: `Build Generic` bypassed the SELFTEST silent
+  gate (a #146 remainder), so this path could not be probed without texting a stranger; now wired
+  `Build Generic → Eval (silent)? → Send Reply`. Prod execs 110345 / 110346.
+- **#126 — CLOSED, NOT REPRODUCIBLE.** The field map was never wrong (mirror exec 110330 shows
+  `source_member_id` arriving as a plain string); Shyam's row now carries it. The audit it asked for
+  over all 671 rows: 603 complete · 11 with an id but no `AT Database Status` · 57 with neither, and
+  **zero** rows where an id is missing while anything else resolved. Two findings named rather than
+  folded away → the 11 (Airtable-side, Andy/ops) and **#148**.
+- **#149 — a live event called finished, and a yes/no answered with machinery.** From Andy's
+  screenshots, diagnosed off saved turns 52879/52881. Four defects: the schedule route handed the
+  model `starts_on`/`ends_on` and let it infer the event was over (it was mid-final-day, six hours
+  to run); a takeaways question answered with the agenda, caveat last; venue+maps boilerplate on a
+  content question; `Gate Verdict`'s clamp swallowed a plain yes/no. **Clamp audited before being
+  touched: 3 firings in 6,017 answers, all three deserved real answers — zero correct withholds.**
+  Fixes: `eventPhase()` in mds-digest-web (phase computed in the VENUE's zone, 7 tests written
+  failing first, 366/366 repo-wide, pushed + deployed), member-language clamp copy, five Answer Seed
+  rules, and the RECORDINGS rule amended (it claimed every 2025-26 video is transcribed — false
+  while an event is still processing).
+- **#150 — Summit videos were restricted with NO entitlement list**, so nobody could ever be granted
+  them. Andy's ruling: attendees + staff. Grants written from `scripts/sql/150_summit_video_grants.sql`
+  (roster ∪ GroupOS door list ∪ staff, deduped by email — two member records sharing one email made
+  the first insert collide, which is #147's duplicate problem showing up again). Then the real bug:
+  `video_search_v2` computed "restricted **for this asker**" correctly and used it for content, but
+  returned the video's RAW property as `is_restricted` — so an entitled member got the content and a
+  do-not-share flag, and held back. Now per-asker. 16 videos × 175 people as of close.
+- **#151 — video answers ignored the member.** Andy's four complaints: Inspire volunteered unasked ·
+  no recency preference · "plenty" where a number belongs · the follow-up fled the just-offered list
+  into life advice. Three seed rules + **`event_total` on `video_search_v2`** (the event's real
+  session count, because the model was counting returned rows) + a tool-description fix after
+  measuring that the bare word `summit` keyword-ranks Milan/Denver ABOVE the running event. Probe
+  wave 8/8. Also stripped dangling orphan links in `Format Reply` (a bare Denver URL after the
+  closing question, twice on prod).
+- **#153 + the #102 time-decay slice — intent questions.** 3 of 4 screenshot probes failed on prod.
+  Root causes: fusion had **zero recency weight** (a 2025 video tied or beat a running-Summit one —
+  Andy: *"basically the same case… relevancy suffering, since it was last year summit"*), and the
+  model refused a figure the Town Hall states out loud. Fixes: bounded decay (+0.006 <60d, +0.003
+  <180d; RRF legs max 0.0164, so it reorders near-ties and cannot lift junk) + a "A STATED FACT BEATS
+  A MISSING TALLY" rule. **3/3 through the workflow** — Whatnot now beats Milan, Khalid's Leadership
+  Layer surfaces (fixed by decay alone, before any re-embed), and the event count answers "close to
+  200 events, 50+ cities" cited per the Town Hall.
+
+### The announcement — sent, and the honest numbers
+94 personalized fills (`scripts/announce_summit_videos.py`), 9 speakers get "your own session is up"
+and never their own talk as advice (Andy's Alex Bonilla rule), 25 distinct pick pairs, every link
+copied verbatim from the catalog row. **Wave sent 94/94 accepted, 0 errors** — then **50 failed** on
+Meta's marketing frequency caps (131049) and experiment holdouts (130472). At close: **26 read · 18
+delivered · 50 undelivered**. One member recovered free-form (window open).
+
+**The template lesson, three submissions deep:** v1 approved but was UNSENDABLE (132018 — Meta
+rejects newlines inside template VARIABLES even though it approved the example containing them);
+v2 restructured to 7 single-line slots and sent fine; but Meta reclassified UTILITY → MARKETING on
+v1, v2 **and v3 — even with `allow_category_change: false`.** The declared category is not a lever;
+the COPY decides. Personalized "picked for you + watch" reads promotional to their classifier.
+Open recommendation: a strictly transactional v4 ("the recordings from your event are available" +
+button), with personalization moving to Millie when the member taps in.
+
+### Also this session
+- **PROD WAS DOWN 04:57–05:10Z** — n8n Cloud execution quota exhausted; every inbound died in 50ms at
+  the webhook ("Execution limit reached"). Found while probing, Andy upgraded, verified back with
+  three green executions. Not our code, but nothing in the workflow could have helped.
+- **#148 filed** — the WA members mirror never reconciles: Airtable returned 659 rows, `digest.members`
+  holds 671, and 12 rows are frozen (oldest sync 2026-08-05) with no freshness signal.
+- **#152 filed** — `refresh_entity_dossiers` dies on a statement timeout every run; `zoom_weekly`
+  heartbeat error, last success 2026-08-07. Handed over by the video-update session.
+- **Bank D built: 30 questions, 10 classes** (availability · recommend-chain · speaker by name and
+  subject · session name · worth-watching · subject · takeaways · quote+timestamp · gating ·
+  problem-first). Timestamps verified real in the data (15 distinct `start_sec` on Tamar's 16 chunks).
+- **Two peer sessions synced.** scorecard-ca = FB capture (no overlap; its embed job null-fills our
+  chunks, benign). scorecard-df = the video update runs (16 videos, no title/event_id changes, so no
+  regen needed) — and it **disclaimed the 4-question probe table** attributed to it; Bank D credits
+  "source unknown". It correctly refused to re-embed the 7 metadata-only videos on my say-so with
+  Andy's answer pending — the right call, noted.
+- `OLIVIA_EVAL_2026-08-28.md` appeared in the repo from another session (220 judged, 13.2% fail);
+  not this session's work, left untouched.
+
+### Open for Andy
+1. **#147's authority shape** — roster-only · one-function-two-facets (recommended) · union. Its SQL
+   is LIVE (130 → 145 registered, 15 recovered, 0 lost); the event-resolver half is untouched.
+2. **All 16 Summit videos are `public`** in GroupOS — flipped there, not by us, and it contradicts
+   the attendees+staff ruling. Deliberate, or flip back?
+3. **The re-embed go** for the 7 metadata-only videos (scorecard-df executes, waiting on Andy).
+4. **v4 transactional template** for the 50 undelivered.
+
 ## 2026-08-27 · Olivia · **16 SUMMIT SINGAPORE TALKS TRANSCRIBED + LIVE** · `chunk()` oversized-cue defect FOUND + FIXED · grants gap on the restricted 7
 
 **Two batches, one pipeline, PROD DATA ONLY — no workflow edit, no promote.**

@@ -53,6 +53,54 @@ nobody. PROD WORKFLOW UNTOUCHED — data only, no promote.**
 - ~640 pre-2025 videos untranscribed (~$137). Local files now make this a folder + manifest away.
 - #102 answer-layer wiring · #104 adjacent-turn topic lag · #72 load test (never run).
 
+## STATE 2026-08-28 (close) — read this first
+
+**PROD = `15ff4978`. Staging identical. Gate GREEN (306, EXIT 0).** Five promotes today; every fix
+proven through the workflow, every probe row cleaned. Shipped: **#125** (an absent membership status
+is not an inactive one — 53 false claims → 0), **#149** (a live event called finished + the clamp
+answering a yes/no in machinery), **#150** (Summit video entitlement + the `is_restricted` flag now
+per-asker), **#151** (video recommendations: count, tailoring, follow-up binding, no old-event
+padding), **#153 + the #102 time-decay slice** (intent questions: recency in ranking, stated facts
+beat a missing tally). **#126** closed NOT REPRODUCIBLE; **#148** and **#152** filed.
+
+### FOUR THINGS WAIT ON ANDY — nothing else is blocked
+1. **#147's authority shape.** Its SQL is already LIVE (`registration_status` · `is_registered` ·
+   `member_alias_ids`; `event_who` calls them — 130 → 145 registered, **15 recovered, 0 lost**).
+   Paused on: roster-only · **one-function-two-facets (recommended)** · union. The event-resolver
+   half is untouched — `event_who('vegas')` still lands on a Feb 2025 chapter dinner because the
+   resolver matches WORDS IN THE TITLE.
+2. **All 16 Summit videos read `access_restriction = public`.** They flipped in GroupOS, not by us,
+   and it contradicts his ruling ("restrict them to summit attendees and staff"). Deliberate or fix?
+   Grants are written either way and harmless if public.
+3. **The re-embed go** for the 7 Aug-26 videos embedded while restricted (metadata-only vectors).
+   scorecard-df executes it; it correctly refused to act on a peer's say-so while Andy's answer is
+   pending. Note: the decay fix already recovered the Khalid miss WITHOUT the re-embed.
+4. **A v4 transactional template** for the 50 undelivered announcements — see below.
+
+### The announcement, and the template trap that cost three submissions
+94 fills sent, **94/94 accepted, 0 send errors**; at close **26 read · 18 delivered · 50 failed** on
+Meta's marketing frequency caps (131049) and experiment holdouts (130472). One recovered free-form.
+**Meta reclassified UTILITY → MARKETING on v1, v2 AND v3 — even with `allow_category_change: false`.**
+The declared category is not a lever; the COPY decides, and "picked for you + watch" reads
+promotional. v4 should be strictly transactional (the recordings from your event are available +
+button) with the personalization moving to Millie when the member taps in. Also burned: **v1 was
+approved but unsendable** — Meta rejects newlines inside template VARIABLES (132018) even though it
+approved the example containing them. Test-send every template before generating a wave.
+Regenerate fills with `scripts/announce_summit_videos.py`; send with `scripts/announce_summit_send.py`
+(resume-safe — a phone already holding a wamid is skipped, so a re-run cannot double-send).
+
+### Traps this day earned
+- **A template's approval does not mean it can be sent.** Test-send one before building the wave.
+- **`allow_category_change: false` does not hold the category.** Copy decides classification.
+- **n8n Cloud's execution quota can take PROD down** — 04:57-05:10Z every inbound died in 50ms at the
+  webhook ("Execution limit reached"), staging and prod alike. Andy upgraded; verified back green.
+- **Audit a gate before changing it** — the #149 clamp had fired 3 times in 6,017 answers and was
+  wrong all three. The audit is what justified touching it; the withhold behaviour never changed.
+- **A peer refusing your request can be right.** scorecard-df would not re-embed on my say-so while
+  Andy's ruling was pending. Correct.
+- **Bank D = 30 questions, 10 classes** (`OLIVIA_BANK_D_SUMMIT_2026-08-26.json`), written but only
+  spot-run — the problem-first class came from probes that exposed what my own 8/8 wave missed.
+
 ## STATE 2026-08-25 (overnight close) — read this first
 
 **PROD = `8bb0827d`. Staging is identical. Gate GREEN (306, EXIT 0).** Three promotes tonight:
