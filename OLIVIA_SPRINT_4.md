@@ -84,7 +84,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
 | **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list + dangling old-event links (Andy, prod 52891/52893/52935/52941/52951) | 🔴 S1 | S | ✅ probe wave 8/8 · orphan-strip unit 6/6 | ✅ **PROMOTED 2026-08-26** `06df948a` — prod turn 52959: 1 link, Denver gone; gate 306 EXIT 0 |
 | **#152** | ⏱️ `refresh_entity_dossiers` statement-timeout — `zoom_weekly` heartbeat error, last success 2026-08-07; video chain exits 1 every run (found by scorecard-df) | 🟡 S2 | S | — | ⏸ filed 2026-08-28 |
-| **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ⏸ seed rule awaits promote; re-embed of 7 awaits Andy |
+| **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ✅ **PROMOTED 2026-08-26** `15ff4978` — verified 2026-08-28: prod/staging graphs identical (only webhook path differs), gate 306 PASS · 0 FAIL · EXIT 0; re-embed of 7 still awaits Andy |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -314,7 +314,8 @@ cite as reported-not-counted; never a registration link on an ended event).
 | event count | "I don't have one single tally" + register link on a wrapped event | ✅ "close to 200 events, across over 50 cities… 55 members helping lead" cited *per the Town Hall*, explicitly a reported figure, video link attached |
 
 Gate **306 PASS · 0 FAIL · EXIT 0** after the decay. Probe rows cleaned (8 + 4). Staging `0faa9be5`;
-the decay itself is prod-shared SQL and already live; the seed rule rides the next promote.
+the decay itself is prod-shared SQL and already live. **The seed rule PROMOTED with `15ff4978`** —
+re-verified 2026-08-28: `olivia_wf.py diff prod staging` = identical bar the webhook path, gate 306/0.
 **Remainder:** the 7 metadata-only re-embeds (scorecard-df executes on Andy's go) · the cited
 timestamp read "(at 00:00:00)" because early chunks carry start_sec 0 — cosmetic, filed under #103's
 umbrella rather than new.

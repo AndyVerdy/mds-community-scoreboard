@@ -87,14 +87,17 @@ Each piece is separately testable and does one thing.
   Supabase, drops chats on the blocklist, drops story keys already in the ledger.
   Returns candidate summaries. No LLM.
 - `src/lib/fbstory/rank.ts` — one Claude call. Input: candidate summaries plus recent
-  skip reasons. Output: `{ story_key, chat_id, window_start, window_end, why,
-  confidence }` or `{ none: reason }`. No writing.
+  skip reasons. Output: `{ chat_id, window_start, window_end, topic, why, confidence }`
+  or `{ none: reason }`. It does not mint the story key — it works from summaries and
+  has no message ids. No writing.
 - `src/lib/fbstory/thread.ts` — given the winner, pulls that chat's raw messages for
   the window from `digest.wa_messages` and orders them into a thread using `reply_to`.
-  No LLM.
-- `src/lib/fbstory/write.ts` — one Claude call. Input: the thread. Output: the FB post
-  text. Named, paraphrased, roughly 100–150 words, story arc, closing question to the
-  group.
+  Also mints the story key. No LLM.
+- `src/lib/fbstory/write.ts` — one Claude call, structured output. Input: the thread.
+  Output: `{ post_text, members_named: string[] }` — the post itself plus an explicit
+  declaration of every member it credits, so the gate has something exact to check
+  instead of guessing at capitalised words. Named, paraphrased, roughly 100–150 words,
+  story arc, closing question to the group.
 - `src/lib/fbstory/gate.ts` — deterministic privacy checks. No LLM. See below.
 - `src/lib/fbstory/ledger.ts` — reads and writes `digest.fb_group_posts`.
 - `src/lib/fbstory/slack.ts` — builds and posts the Slack card.
@@ -107,11 +110,13 @@ handling.
 1. Load candidates. Last 7 days of daily summaries, minus blocklisted chats, minus
    story keys already in the ledger.
 2. Rank. Claude returns one winner with a confidence, or `none`.
-3. If `none`, or confidence is below threshold: post a single quiet line to
+3. If `none`, or confidence is below `FB_STORY_MIN_CONFIDENCE` (default `0.7`): post a single quiet line to
    `#automation-tests` — "2026-09-03: nothing cleared the bar (18 chats, 4 active)" —
    and exit 200. **Silence must always mean broken, never quiet.** This is the
    deliberate cost of choosing a ceiling over a schedule.
-4. Load the winning thread's raw messages.
+4. Load the winning thread's raw messages and mint the story key. If that key is
+   already in the ledger, stop and log — this is the authoritative dedupe check, and
+   it is what makes "no story is told twice" true rather than approximate.
 5. Write the post.
 6. Run the privacy gate. A failed gate does not post a card; it logs the reason and
    writes a `blocked` ledger row so the failure is visible rather than silent.
@@ -127,17 +132,20 @@ prompt rules means the rule moves into the tool.
 - **No verbatim quotes.** Reject the draft if any run of 8 or more words appears
   verbatim in a source message, compared case-insensitively with punctuation and
   whitespace normalised.
-- **Real members only.** Every capitalised name in the draft must resolve to a member
-  in `digest.members`. An unresolvable name blocks the draft rather than being
-  silently stripped, because a hallucinated name is a signal the write step went
-  wrong.
+- **Real members only.** The gate checks the `members_named` list that `write.ts`
+  declares, not capitalised words in the prose — a naive capitalisation scan would fire
+  on every sentence opener and every brand like Zcash or MSTR. Two checks: every
+  declared name must resolve to a member in `digest.members`, and no member name
+  present in the source thread may appear in `post_text` without being declared. An
+  unresolvable name blocks the draft rather than being silently stripped, because a
+  hallucinated name means the write step went wrong.
 - **Chat blocklist.** Chats excluded from this feature never reach the ranker. The
   list is a config constant in the repo, overridable by `FB_STORY_EXCLUDED_CHATS`,
   filtered in `candidates.ts` before any LLM sees the data. Airtable schema is not
   touched.
 
-The blocklist starts empty, pending Andy naming any chat that should never be
-surfaced.
+The blocklist ships empty — all 18 active chats are eligible. Excluding a chat later
+is an env-var edit and a redeploy, not a code change.
 
 ## Ledger
 
@@ -145,7 +153,7 @@ New table `digest.fb_group_posts`:
 
 | Column | Type | Note |
 |---|---|---|
-| `story_key` | text, primary key | Stable key for the thread, so it is never told twice |
+| `story_key` | text, primary key | `chat_id` + `:` + the id of the thread's root message. Anchored to a message rather than to a date window, so the same thread resurfacing in a later window resolves to the same key and cannot be told twice |
 | `chat_id` | text | |
 | `chat_name` | text | |
 | `window_start`, `window_end` | date | The days the story was drawn from |

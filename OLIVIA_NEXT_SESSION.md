@@ -76,6 +76,9 @@ beat a missing tally). **#126** closed NOT REPRODUCIBLE; **#148** and **#152** f
    scorecard-df executes it; it correctly refused to act on a peer's say-so while Andy's answer is
    pending. Note: the decay fix already recovered the Khalid miss WITHOUT the re-embed.
 4. **A v4 transactional template** for the 50 undelivered announcements — see below.
+   **Live check 2026-08-28 (this session): `mds_summit_videos_live_v3` is APPROVED but Meta filed it
+   MARKETING — the third reclassification in a row.** Sending v3 to the 50 would hit the same 131049
+   caps. A v4 only helps if its COPY is transactional; the declared category still buys nothing.
 
 ### The announcement, and the template trap that cost three submissions
 94 fills sent, **94/94 accepted, 0 send errors**; at close **26 read · 18 delivered · 50 failed** on
