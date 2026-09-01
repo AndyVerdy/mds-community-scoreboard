@@ -57,7 +57,9 @@ Verified live 2026-09-01:
   7 days, which is exactly 18 chats × 7 days, so coverage is complete.
 - `digest.wa_messages` — 16,004 rows, latest `2026-09-01 08:23 UTC`. Carries
   `reply_to`, `sender_member`, `sent_at`, `text`, `chat_id` — enough to reconstruct a
-  thread.
+  thread. **`sender_member` holds an Airtable record id, not a name**, and it joins on
+  `digest.members.airtable_id` — *not* on `at_member_id`, which resolves 0 of 665. The
+  correct join resolves 665 of 665 over the last 7 days.
 - `digest.chats` — chat names and ids.
 - `digest.members` — used to validate that a name in a draft is a real member.
 
@@ -114,9 +116,11 @@ handling.
    `#automation-tests` — "2026-09-03: nothing cleared the bar (18 chats, 4 active)" —
    and exit 200. **Silence must always mean broken, never quiet.** This is the
    deliberate cost of choosing a ceiling over a schedule.
-4. Load the winning thread's raw messages and mint the story key. If that key is
-   already in the ledger, stop and log — this is the authoritative dedupe check, and
-   it is what makes "no story is told twice" true rather than approximate.
+4. Load the winning thread's raw messages and mint the story key. Stop and log if the
+   key is already in the ledger, or if any of the thread's message ids appears in a
+   previously told story. Two axes rather than one, because a cluster with no replies
+   roots on the earliest message in the window, and overlapping windows could re-root
+   it. This is what makes "no story is told twice" true rather than approximate.
 5. Write the post.
 6. Run the privacy gate. A failed gate does not post a card; it logs the reason and
    writes a `blocked` ledger row so the failure is visible rather than silent.
@@ -153,7 +157,8 @@ New table `digest.fb_group_posts`:
 
 | Column | Type | Note |
 |---|---|---|
-| `story_key` | text, primary key | `chat_id` + `:` + the id of the thread's root message. Anchored to a message rather than to a date window, so the same thread resurfacing in a later window resolves to the same key and cannot be told twice |
+| `story_key` | text, primary key | `chat_id` + `:` + the id of the thread's root message. Anchored to a message rather than to a date window, so the same thread resurfacing in a later window resolves to the same key |
+| `message_ids` | text[] | Every message the story was written from. Second dedupe axis: a new thread that overlaps a told one on any message id is refused, which covers the case where a re-rooted cluster produces a different story key |
 | `chat_id` | text | |
 | `chat_name` | text | |
 | `window_start`, `window_end` | date | The days the story was drawn from |
