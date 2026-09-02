@@ -18,7 +18,7 @@ the AC table; numbers (Sonnet judge): Sonnet 5 **5.4%** fail / **$0.0211** per a
 13.0 / 9.8 / 13.0. 92 of the locked 100 questions benched (8 canned lanes never reach the model).
 
 ### ANDY'S DESK
-1. **The vendor call.** Terra-medium beats Sonnet by 2 questions on the Sonnet judge and loses on price (+47%) and
+1. **The vendor call — filed as #157 (🟡 S2).** Terra-medium beats Sonnet by 2 questions on the Sonnet judge and loses on price (+47%) and
    latency (2×); Terra-none is a cent cheaper and 2 questions worse. Read the § Judge disagreements first — the
    Terra judge fails honest-miss answers the rubric marks PASS. Caveats in the close block (Claude-tuned prompt,
    S1–S16 stamps not replicated, post-model gates not run).
