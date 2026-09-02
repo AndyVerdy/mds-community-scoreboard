@@ -88,6 +88,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#155** | 💬 A chat quote carries its own message link, and "what should I know" is not a capability tour | 🟡 S2 | M | — | — |
 | **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ✅ **PROMOTED 2026-08-26** `15ff4978` — verified 2026-08-28: prod/staging graphs identical (only webhook path differs), gate 306 PASS · 0 FAIL · EXIT 0; re-embed of 7 still awaits Andy |
 | **#156** | 💸 Sonnet 5 vs GPT-5.6 Terra on the locked 100 bank — price + quality, dual judge, prod untouched (bench harness, no n8n) | 🟡 S2 | S | — (harvest run only, no edits) | ✅ **DELIVERED 2026-09-02** `OLIVIA_MODEL_COMPARE_2026-09-02.md` — Sonnet 5.4% / $0.0211 · Terra-medium 3.3% / $0.0310 · Terra-none 7.6% / $0.0237 (Sonnet judge); nothing promoted |
+| **#157** | 🧑‍⚖️ Review the Sonnet 5 vs GPT-5.6 Terra bench (#156) — Andy's vendor call: stay on Claude, port to OpenAI, or re-test | 🟡 S2 | S | — (reading + decision) | — |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -314,6 +315,16 @@ have the lapse notice capped (131049); the free-form fallback only rescues that 
 **Build:** ① Format Reply: PS → Millie; when a reply is button-eligible, place the PS as the FIRST line (offer stays last) — never drop the buttons for the PS. ② Answer Seed: who-to-meet answers ≤ ~850 chars; when the asker is a registered attendee and ≥1 match was shown, END with exactly "Would you like me to connect you with one of them?"; never offer intros to non-attendees (pilot refusal); "Yes" after that offer → `member_intro` with no target → present the pick list + "Who would you like me to send a request to?"; a named answer → `member_intro{target_name}`. ③ Plan Request: make sure a bare "Yes" after the intro offer reaches the LLM lane (no plan replay of the people op). ④ Router system prompt "router for Olivia" → Millie; internal labels untouched (documented). Staging probes as a registered attendee (silent lane, cleanup): reply ≤1,024 + ends with the offer + `interactive.type='button'` in Format Reply output; "Yes" → member_intro picker call in the execution; name → request path (refused/dry by design, zero sends). Gate EXIT 0 · snapshot · Andy promotes.
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
+
+### #157 · Review the Sonnet 5 vs GPT-5.6 Terra bench — the vendor call
+**🟡 S2 · size S** · filed by Andy 2026-09-02 ("this task is completed; file S2 ticket to review it")
+
+> **In plain words:** Andy reads the #156 comparison and rules whether Olivia stays on Claude, moves to OpenAI, or gets one more test first.
+
+*As the owner paying Olivia's API bill, I want to review the 92-question comparison (`OLIVIA_MODEL_COMPARE_2026-09-02.md`: both judges, cost per answer, latency, the 42 judge disagreements, all answers side by side) and record a ruling, so the next ticket is either "stay", "port the answer loop to OpenAI", or "re-test with X".*
+The data (#156 close block, Sonnet judge): Sonnet 5 **5.4%** fail / **$0.0211** / 10.1 s · Terra medium **3.3%** / **$0.0310** / 19.4 s · Terra none **7.6%** / **$0.0237** / 14.2 s. Terra judge: 13.0 / 9.8 / 13.0 — it fails honest-miss answers the rubric marks PASS, so read the disagreement section before the headline. Caveats: Claude-tuned prompt · Answer Merge evidence stamps and post-model gates not replicated · Terra-medium's 8,000 output budget vs 2,000.
+**Shape of the work:** reading + a ruling, no code. Optional re-tests the harness already supports (`scripts/model_bench/README.md`): a GPT-shaped prompt variant re-run (~$12) · `gpt-5.6-luna` / `gpt-5.6-sol` runs · Terra at `low` effort · a second Sonnet run to measure judge noise.
+**Accept when:** Andy's ruling is written on this ticket (stay / port / re-test with what) · if "port": a new ticket with story + ACs for the n8n answer-loop port (Responses API shape, full through-workflow eval before any promote, OpenAI tier raise for prod traffic) · the OpenAI key pasted into chat on 2026-09-02 is rotated.
 
 ### #155 · A quote from a chat carries that message's own link, and "what should I know" is not a tour
 **🟡 S2 · size M — filed 2026-09-02, split out of #138 after the 9-id re-run.**
