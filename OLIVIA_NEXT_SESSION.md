@@ -11,6 +11,28 @@
 
 # Olivia — next session
 
+## STATE 2026-09-02 (evening) — #156 model bench DELIVERED, read `OLIVIA_MODEL_COMPARE_2026-09-02.md`
+**PROD `d40a837d` untouched all day by this ticket. Staging identical to prod. Lock free.** #156 closed on the board with
+the AC table; numbers (Sonnet judge): Sonnet 5 **5.4%** fail / **$0.0211** per answer warm · GPT-5.6 Terra medium
+**3.3%** / **$0.0310** · Terra none **7.6%** / **$0.0237**; latency median 10.1 s / 19.4 s / 14.2 s. Terra judge:
+13.0 / 9.8 / 13.0. 92 of the locked 100 questions benched (8 canned lanes never reach the model).
+
+### ANDY'S DESK
+1. **The vendor call.** Terra-medium beats Sonnet by 2 questions on the Sonnet judge and loses on price (+47%) and
+   latency (2×); Terra-none is a cent cheaper and 2 questions worse. Read the § Judge disagreements first — the
+   Terra judge fails honest-miss answers the rubric marks PASS. Caveats in the close block (Claude-tuned prompt,
+   S1–S16 stamps not replicated, post-model gates not run).
+2. **Rotate the OpenAI key** pasted into chat on 2026-09-02 (stored as `OPENAI_API_KEY` in mds-digest-web `.env.local`).
+3. **If Terra:** the n8n answer-loop port (Answer Seed/Parse/Merge to the Responses API shape) is a new ticket, size M,
+   full through-workflow eval before any promote. Tier-1 OpenAI limits (500K TPM) would also need raising for prod traffic.
+
+### Harness (for the next bench)
+Lives in `~/mds-scorecard-tools/` (NOT a git repo; snapshot in `scripts/model_bench/`): `kimi_harvest.py` (seeds from
+staging executions) → `kimi_bench.py --model … --passes 2` (Anthropic or OpenAI Responses loop, dual judge) →
+`bench_compare.py <tags> --out …`; `bench_tools.py` MUST track the live `Attach Embedding` / `Answer Tool` /
+`Answer Merge` nodes — re-extract them from the prod snapshot and re-run the 85 tests before any new bench.
+`bench_merge_rows.py` merges a `--ids` re-run. Rate limit: OpenAI tier 1 = 500K TPM → 2 workers.
+
 ## STATE 2026-09-02 (session close) — read this first
 
 **PROD = `d40a837d`. Staging identical (re-staged from prod before the last promote). Gate GREEN — 312 checks, EXIT 0.**

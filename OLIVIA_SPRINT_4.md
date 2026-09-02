@@ -87,7 +87,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#154** | 🔗 People she names carry NO link — `member_match_v2` / `expertise_search` return no url column at all | 🔴 S1 | S-M | ✅ proven `e55a45c6` — 4/4 and 10/10 linked; gate 312/0 | ✅ **LIVE 2026-09-02** prod `d40a837d` (seed) + Render `8f368b3` (finder) — prod probe 5/5 linked, live finder 5/5 linked; 718/741 actives resolve |
 | **#155** | 💬 A chat quote carries its own message link, and "what should I know" is not a capability tour | 🟡 S2 | M | — | — |
 | **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ✅ **PROMOTED 2026-08-26** `15ff4978` — verified 2026-08-28: prod/staging graphs identical (only webhook path differs), gate 306 PASS · 0 FAIL · EXIT 0; re-embed of 7 still awaits Andy |
-| **#156** | 💸 Sonnet 5 vs GPT-5.6 Terra on the locked 100 bank — price + quality, dual judge, prod untouched (bench harness, no n8n) | 🟡 S2 | S | — (harvest run only, no edits) | — (decision data) |
+| **#156** | 💸 Sonnet 5 vs GPT-5.6 Terra on the locked 100 bank — price + quality, dual judge, prod untouched (bench harness, no n8n) | 🟡 S2 | S | — (harvest run only, no edits) | ✅ **DELIVERED 2026-09-02** `OLIVIA_MODEL_COMPARE_2026-09-02.md` — Sonnet 5.4% / $0.0211 · Terra-medium 3.3% / $0.0310 · Terra-none 7.6% / $0.0237 (Sonnet judge); nothing promoted |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -314,16 +314,6 @@ have the lapse notice capped (131049); the free-form fallback only rescues that 
 **Build:** ① Format Reply: PS → Millie; when a reply is button-eligible, place the PS as the FIRST line (offer stays last) — never drop the buttons for the PS. ② Answer Seed: who-to-meet answers ≤ ~850 chars; when the asker is a registered attendee and ≥1 match was shown, END with exactly "Would you like me to connect you with one of them?"; never offer intros to non-attendees (pilot refusal); "Yes" after that offer → `member_intro` with no target → present the pick list + "Who would you like me to send a request to?"; a named answer → `member_intro{target_name}`. ③ Plan Request: make sure a bare "Yes" after the intro offer reaches the LLM lane (no plan replay of the people op). ④ Router system prompt "router for Olivia" → Millie; internal labels untouched (documented). Staging probes as a registered attendee (silent lane, cleanup): reply ≤1,024 + ends with the offer + `interactive.type='button'` in Format Reply output; "Yes" → member_intro picker call in the execution; name → request path (refused/dry by design, zero sends). Gate EXIT 0 · snapshot · Andy promotes.
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
-
-### #156 · Sonnet 5 vs GPT-5.6 Terra on the locked 100 bank — price + quality, prod untouched
-**🟡 S2 · size S** · spec `docs/superpowers/specs/2026-09-02-olivia-sonnet-vs-terra-bench-design.md`
-
-> **In plain words:** Same 100 member questions, answered by Claude and by OpenAI's equivalent model, cost and quality side by side, so the vendor choice is data. Nothing in the running product changes.
-
-*As the owner paying Olivia's API bill, I want the same 100 member questions answered by Claude Sonnet 5 and GPT-5.6 Terra under identical conditions, with cost per answer and judged quality side by side, so I can decide on the vendor from data, without any change to the running product.*
-Filed by Andy 2026-09-02 ("i want to test OpenAI vs Anthropic … 100 questions … price, quality … without interrupting prod"). Decisions in chat: model = `gpt-5.6-terra` (OpenAI's mid tier, $2/$0.20/$12 — the Sonnet 5 slot); dual judge (Sonnet primary, Terra cross-check); bench harness first, n8n port only if Terra wins. Prior art: #22 (Kimi, July: Sonnet 15.3% fail / $0.0135 vs Kimi 22.2% / $0.0270) and #32 lever 5.
-**Shape of the fix:** the existing bench harness (`~/mds-scorecard-tools/kimi_bench.py` + `kimi_harvest.py`) gets an OpenAI path. One silent run of the locked bank at STAGING (lock held, no graph edits) is harvested for the exact `Answer Seed` bodies; both vendors replay those bodies through the same tool loop, same RPCs, same embeddings, warm cache, forced first fetch on both; two judges grade every answer; one compare report. Post-model steps (clamp, fact check, link repair) not run for either — model-independent.
-**Accept when:** (a) 100/100 seeds from ONE staging run, prod exec log shows no bench traffic · (b) both models run warm, 0 loop errors or every error listed · (c) $/answer steady-state + cold per model from real usage counters at today's list prices · (d) fail % from the Sonnet judge, cross-checked by the Terra judge, disagreements listed · (e) one compare report with all 100 answer pairs · (f) staging left as found (diff identical), lock released.
 
 ### #155 · A quote from a chat carries that message's own link, and "what should I know" is not a tour
 **🟡 S2 · size M — filed 2026-09-02, split out of #138 after the 9-id re-run.**
@@ -2810,6 +2800,41 @@ pin the math, the Ian-replay curl proves the route, the model link is what this 
 Virtual events deliberately out of scope (member's zone is unknown by design).
 
 ## ✅ CLOSED (Sprint 4)
+
+### #156 · Sonnet 5 vs GPT-5.6 Terra on the locked 100 bank — price + quality, prod untouched
+**🟡 S2 · size S** · spec `docs/superpowers/specs/2026-09-02-olivia-sonnet-vs-terra-bench-design.md`
+
+> **In plain words:** Same 100 member questions, answered by Claude and by OpenAI's equivalent model, cost and quality side by side, so the vendor choice is data. Nothing in the running product changes.
+
+*As the owner paying Olivia's API bill, I want the same 100 member questions answered by Claude Sonnet 5 and GPT-5.6 Terra under identical conditions, with cost per answer and judged quality side by side, so I can decide on the vendor from data, without any change to the running product.*
+Filed by Andy 2026-09-02 ("i want to test OpenAI vs Anthropic … 100 questions … price, quality … without interrupting prod"). Decisions in chat: model = `gpt-5.6-terra` (OpenAI's mid tier, $2/$0.20/$12 — the Sonnet 5 slot); dual judge (Sonnet primary, Terra cross-check); bench harness first, n8n port only if Terra wins. Prior art: #22 (Kimi, July: Sonnet 15.3% fail / $0.0135 vs Kimi 22.2% / $0.0270) and #32 lever 5.
+**Shape of the fix:** the existing bench harness (`~/mds-scorecard-tools/kimi_bench.py` + `kimi_harvest.py`) gets an OpenAI path. One silent run of the locked bank at STAGING (lock held, no graph edits) is harvested for the exact `Answer Seed` bodies; both vendors replay those bodies through the same tool loop, same RPCs, same embeddings, warm cache, forced first fetch on both; two judges grade every answer; one compare report. Post-model steps (clamp, fact check, link repair) not run for either — model-independent.
+**Accept when:** (a) 100/100 seeds from ONE staging run, prod exec log shows no bench traffic · (b) both models run warm, 0 loop errors or every error listed · (c) $/answer steady-state + cold per model from real usage counters at today's list prices · (d) fail % from the Sonnet judge, cross-checked by the Terra judge, disagreements listed · (e) one compare report with all 100 answer pairs · (f) staging left as found (diff identical), lock released.
+
+#### ✅ BUILT + RUN + REPORTED 2026-09-02 — decision data delivered, nothing promoted
+**The work:** bench harness brought to the 2026-09-02 graph — `bench_tools.py` mirrors the LIVE `Attach Embedding` / `Answer Tool` / `Answer Merge` nodes (error shape + FAILNOTE, `clipSafe`, `restrictFix`, the over-cap halving squeeze, `_v2/_v3` remap, app-route routing, arg coercion; verified by a 28-case differential against the node JS, 0 mismatches) · `kimi_harvest.py` keeps sequence history · `kimi_bench.py` runs the Anthropic loop as prod (6 calls, 5 tool rounds, thinking off, forced first fetch) and an OpenAI **Responses API** loop (chat completions refuses tools with reasoning on Terra) · dual judge (`olivia_eval.judge_prompt` shared, `judge_one` untouched) · `bench_compare.py` three-way report. 85 unit tests. One silent bank run on STAGING (16:37–17:17Z, lock held, no edits, diff identical before/after) harvested 92/100 seeds; the 8 missing are canned lanes that never reach the model (Q4022 4025 4026 4027 safety · 4036 4037 capability · 4094 4095 digest). Each vendor ran 2 passes (pass 2 scored, warm cache), both judges graded every answer. Warehouse identical across all three runs (peer-confirmed: no embeds between 15:28Z and 19:35Z).
+
+| | Sonnet 5 (prod) | Terra medium | Terra none |
+|---|---|---|---|
+| FAIL % (Sonnet judge) | **5.4%** (83/4/5) | **3.3%** (81/8/3) | **7.6%** (78/7/7) |
+| FAIL % (Terra judge) | 13.0% (79/1/12) | 9.8% (82/1/9) | 13.0% (77/3/12) |
+| judge disagreements | 16 | 13 | 13 |
+| $ / answer, warm | **$0.0211** | **$0.0310** | **$0.0237** |
+| latency, median | 10.1 s | 19.4 s | 14.2 s |
+| model calls / output tokens per answer | 2.1 / 448 | 2.7 / 332 | 2.4 / 216 |
+
+| AC | result |
+|---|---|
+| (a) 100/100 seeds from ONE staging run, prod exec log shows no bench traffic | 92/100 seeds (8 canned-lane, unbenchable by construction); prod window 16:37–17:17Z: 14 executions, 0 SELFTEST, 1 real member turn; staging diff webhook-only before and after |
+| (b) both models run warm, 0 loop errors or every error listed | pass 2 scored with 95–100% cache reads; 0 loop errors, 0 truncated calls on all three runs — after 4 Terra-medium rows (Q4009 4017 4047 4080) that died on OpenAI's tier-1 500K-TPM limit were re-run alone and merged (`merged_reruns` in the JSON); 1 Terra-judge TPM error on Sonnet Q4062 re-judged (PASS) |
+| (c) $/answer steady-state + cold per model at today's list prices | Sonnet $0.0211 warm / $0.0616 cold · Terra-medium $0.0310 · Terra-none $0.0237 (OpenAI has no cache-write charge, so warm = cold); prices in the report |
+| (d) fail % Sonnet judge, cross-checked by Terra judge, disagreements listed | table above; `OLIVIA_MODEL_COMPARE_2026-09-02.md` § Judge disagreements (42 lines) — most are the Terra judge failing honest-miss answers the rubric marks PASS |
+| (e) one compare report with all answer pairs | `OLIVIA_MODEL_COMPARE_2026-09-02.md` — 92 questions × 3 answers × 2 verdicts |
+| (f) staging left as found, lock released | `olivia_wf.py status` LOCK free (17:18Z), diff webhook-only |
+
+**Before → after:** July #22 (72-question organic bank, July prompt): Sonnet 15.3% fail / $0.0135 vs Kimi 22.2% / $0.0270 → today (locked 100 bank, 2026-09-02 prompt): Sonnet 5.4% / $0.0211 · Terra-medium 3.3% / $0.0310 · Terra-none 7.6% / $0.0237. Not the same bank or prompt as July. Spend ≈ $25 (bench $10.8 measured · judges ≈ $6 · smokes ≈ $1.5 · harvest run ≈ $6 estimated).
+**Remainders, named:** the prompt is Claude-tuned (bias against Terra, not corrected) · Answer Merge's S1–S16 evidence stamps and its other deterministic notes are not replicated, so the absolute fail % is not the daily eval's · post-model gates (Fact Check, clamp, link repair) not run for either · a question that exhausts the 5 tool rounds counts as a loop error here where prod ships "Sorry…" (none occurred) · the Terra judge is stricter than the rubric on honest misses (reading list for Andy, not auto-resolved) · OpenAI tier 1 (500K TPM) throttled the Terra runs (2–3 workers, ~40 min per run) · an n8n port is a separate ticket if Terra is chosen · Andy rotates the OpenAI key pasted into chat on 2026-09-02 · harness lives in the unversioned `~/mds-scorecard-tools/` (snapshot committed under `scripts/model_bench/`).
+
 
 ### #154 · Every person she names can be opened — member and expertise rows carry no link at all
 **🔴 S1 · size S-M — filed 2026-09-02, split out of #138 after the 9-id re-run.**
