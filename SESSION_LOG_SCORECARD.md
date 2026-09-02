@@ -6,6 +6,36 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+### Same session, second round — Andy: "why nothing is clickable?"
+
+Fair hit: round one shipped a REPORT, not a tool. Fixed in `acf1513`:
+- **Every KPI tile opens the rows behind its number** (Partner complaints lands on the mentions
+  table already filtered to complaints).
+- **A member name focuses that member across every section**; **a count in the Members table opens
+  exactly the posts it counted** (Dan Wills' "13" under Asks → his 13 asks); a hashtag opens its
+  posts; a partner name opens their mentions. Active filters render as chips, each clearable.
+- **Facet chips with live counts** — mentions by complaint/praise/neutral, posts by
+  value add / give / ask / unclassified. (The counts are computed BEFORE the verdict filter, so a
+  chip never reads zero once you use it.)
+- **"Today" removed** from this tab's picker (the group is captured once a day, so it is always
+  empty); `?period=today` lands on Yesterday. `PeriodPicker` gained an optional `exclude`, so no
+  other tab changed.
+
+**Two traps, both worth remembering:**
+1. **A predicate closed over component state read STALE.** `matchesMember` as an in-component
+   closure meant the React Compiler memoized the derived lists and never saw the focused member
+   change — a click scrolled but filtered nothing. Fix: the scoping logic is now
+   `src/lib/admin/fb-filter.ts`, **pure functions over plain arguments, 16 tests**.
+2. **Smooth scrolling is a no-op in some embedded browsers** — the drill did nothing visible.
+   Scrolling is instant now, and deferred one double-rAF past the commit (a scroll started in the
+   same tick as the state change gets cancelled by the re-render).
+
+**Verification note (honest):** the Browser pane **cannot hydrate streamed Next content** — the
+EXISTING production Overview page fails identically there (`S:0` container, zero react keys), so
+this is the pane, not the app ([[reference_preview_pane_no_hydration]]). On the one pane instance
+that DID hydrate, tiles / facet chips / member drill / count drill / partner drill were all clicked
+and confirmed live. Everything since is covered by the 16 pure tests (302 total green) + `next build`.
+
 ## 2026-09-02 (evening) — FB report PROMOTED into the admin dashboard: `/admin/facebook`, live from Supabase
 
 **Andy:** "that's what i meant to add it here" (screenshot of `digest.mds.co/admin`). The local
