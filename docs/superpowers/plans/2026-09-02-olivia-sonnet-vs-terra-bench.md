@@ -615,7 +615,7 @@ Expected: `N executions in window` (N > 0), a small number of seeds (only bank t
 - Test: `/Users/Born/mds-scorecard-tools/tests/test_bench_loops.py`
 
 **Interfaces:**
-- Produces: `PRICES` (dict, key = model id, fields `api, in, out, cache_r, cache_w`), `run_tag(model, effort) -> str`, `anthropic_messages(seed) -> list`, `responses_input(seed) -> list`, `responses_tools(tools) -> list`, `add_anthropic_usage(m, usage)`, `add_openai_usage(m, usage)`, `new_metrics() -> dict` (keys `in, out, cache_r, cache_w, reasoning, calls, iters`), `retryable(d) -> bool`, `post_retry(url, headers, body, timeout=180) -> dict`, `cost(model, m) -> float`, `loop_anthropic(seed, model)`, `loop_openai(seed, model, effort)`.
+- Produces: `PRICES` (dict, key = model id, fields `api, in, out, cache_r, cache_w`; Sonnet 5, Terra, and Haiku for cheap smokes — no Kimi), `run_tag(model, effort) -> str`, `anthropic_messages(seed) -> list`, `responses_input(seed) -> list`, `responses_tools(tools) -> list`, `add_anthropic_usage(m, usage)`, `add_openai_usage(m, usage)`, `new_metrics() -> dict` (keys `in, out, cache_r, cache_w, reasoning, calls, iters`), `retryable(d) -> bool`, `post_retry(url, headers, body, timeout=180) -> dict`, `cost(model, m) -> float`, `loop_anthropic(seed, model)`, `loop_openai(seed, model, effort)`.
 - Consumes: `bench_tools.run_tool(name, args, tools, keys, phone)` from Task 1. `K` gains `"openai"` and `"olivia_secret"`.
 - Output JSON per run: `{"model", "tag", "effort", "judges": [], "rows": [...]}` — `judges` filled in Task 4.
 
@@ -707,7 +707,7 @@ Expected: FAIL/ERROR — `PRICES["claude-sonnet-5"]` still holds 3.00/15.00, `ru
 
 - [ ] **Step 3: Rewrite the header, prices, transport and the loops**
 
-Replace the file from the docstring down to (and including) the `loop_kimi` function with the following. `cost()` stays as it is; `main()` is edited in Step 5.
+Replace the file from the docstring down to (and including) the old Kimi loop function with the following (the Kimi path is retired — #22 closed in July, its reports stay in the repo; a vendor with an OpenAI-compatible chat API can be re-added behind `loop_openai` when needed). `cost()` stays as it is; `main()` is edited in Step 5.
 
 ```python
 #!/usr/bin/env python3
@@ -737,7 +737,6 @@ REPORT_DIR = "/Users/Born/Scorecard"
 PROBE = "17866578153"                      # fallback asker when a seed carries no phone
 ANTHROPIC = "https://api.anthropic.com/v1/messages"
 OPENAI = "https://api.openai.com/v1/responses"      # chat completions refuses tools + reasoning on Terra
-KIMI = "https://api.moonshot.ai/v1/chat/completions"
 MAX_ITER, MAX_TOKENS = 5, 2000            # the graph: max_iter 5, max_tokens 2000
 # Models that reason inside the output budget need room for the reasoning AND the answer, or
 # the comparison measures the budget, not the model (Kimi truncated 13/72 answers, 2026-07-30).
@@ -750,8 +749,6 @@ PRICES = {
     "claude-sonnet-5":  {"api": "anthropic", "in": 2.00, "out": 10.00, "cache_r": 0.20, "cache_w": 2.50},
     "claude-haiku-4-5-20251001": {"api": "anthropic", "in": 1.00, "out": 5.00, "cache_r": 0.10, "cache_w": 1.25},
     "gpt-5.6-terra":    {"api": "openai", "in": 2.00, "out": 12.00, "cache_r": 0.20, "cache_w": 0.0},
-    "kimi-k3":          {"api": "kimi", "in": 3.00, "out": 15.00, "cache_r": 0.30, "cache_w": 3.00},
-    "kimi-k2.6":        {"api": "kimi", "in": 0.95, "out": 4.00,  "cache_r": 0.16, "cache_w": 0.95, "no_forced_fetch": True},
 }
 
 
@@ -927,49 +924,9 @@ def loop_openai(seed, model, effort):
                        for p in (o.get("content") or []) if p.get("type") == "output_text")
         return text.strip(), m
     return "[no final answer inside iteration cap]", m
-
-
-def loop_kimi(seed, model):
-    """Kept for the July comparison; OpenAI-compatible chat completions, single-turn seeds."""
-    tools = [{"type": "function", "function": {"name": t["name"], "description": t.get("description", ""),
-                                               "parameters": t["input_schema"]}} for t in seed["tools"]]
-    msgs = [{"role": "system", "content": seed["system"]}] + [
-        {"role": x["role"], "content": x["content"]} for x in responses_input(seed)]
-    m = new_metrics()
-    for it in range(MAX_ITER):
-        body = {"model": model, "max_tokens": THINKING_FORCED_TOKENS, "messages": msgs, "tools": tools,
-                "tool_choice": "auto" if it or PRICES[model].get("no_forced_fetch") or PARITY else "required"}
-        _t = time.time()
-        d = post_retry(KIMI, {"Authorization": f"Bearer {K['kimi']}", "Content-Type": "application/json"}, body)
-        MODEL_SECS[seed["id"]] = MODEL_SECS.get(seed["id"], 0.0) + (time.time() - _t)
-        u = d.get("usage") or {}
-        cached = (u.get("prompt_tokens_details") or {}).get("cached_tokens", 0) or 0
-        m["in"] += max(0, u.get("prompt_tokens", 0) - cached)
-        m["cache_r"] += cached
-        m["out"] += u.get("completion_tokens", 0)
-        m["calls"] += 1
-        ch = (d.get("choices") or [{}])[0]
-        msg = ch.get("message")
-        if not msg:
-            return f"[API ERROR] {str(d)[:200]}", m
-        tcs = msg.get("tool_calls") or []
-        if tcs:
-            m["iters"] += 1
-            msgs = msgs + [msg]
-            for c in tcs:
-                fn = c.get("function") or {}
-                try:
-                    args = json.loads(fn.get("arguments") or "{}")
-                except Exception:
-                    args = {}
-                msgs.append({"role": "tool", "tool_call_id": c.get("id"),
-                             "content": run_tool(fn.get("name"), args, seed)})
-            continue
-        return (msg.get("content") or "").strip(), m
-    return "[no final answer inside iteration cap]", m
 ```
 
-Delete the old `voyage_embed`, `TIER`, `CAP`, `compact`, `run_tool`, `SUPA`, `VOYAGE`, `EMBED_TOOLS` definitions from `kimi_bench.py` — they now live in `bench_tools.py`.
+Delete the old `voyage_embed`, `TIER`, `CAP`, `compact`, `run_tool`, `SUPA`, `VOYAGE`, `EMBED_TOOLS`, `KIMI` and the Kimi loop from `kimi_bench.py` — the tool layer now lives in `bench_tools.py`, the Kimi path is retired.
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
@@ -1008,7 +965,7 @@ In `main()`, replace the argument parser block and the `K.update(...)`/seeds/run
             k_, v_ = line.strip().split("=", 1)
             e[k_] = v_
     K.update({"anthropic": e["CENTURION_ANTHROPIC_API_KEY"], "openai": e.get("OPENAI_API_KEY", ""),
-              "kimi": e.get("KIMI_API_KEY", ""), "supa": e["SUPABASE_SECRET_KEY"],
+              "supa": e["SUPABASE_SECRET_KEY"],
               "voyage": e["VOYAGE_API_KEY"],
               "olivia_secret": e.get("OLIVIA_SCHEDULE_SECRET") or e.get("OLIVIA_IOS_SECRET", "")})
 
@@ -1020,12 +977,7 @@ In `main()`, replace the argument parser block and the `K.update(...)`/seeds/run
         seeds = seeds[:a.limit]
     api = PRICES[a.model]["api"]
     tag = run_tag(a.model, a.effort)
-    if api == "anthropic":
-        runner = lambda s: loop_anthropic(s, a.model)
-    elif api == "openai":
-        runner = lambda s: loop_openai(s, a.model, a.effort)
-    else:
-        runner = lambda s: loop_kimi(s, a.model)
+    runner = (lambda s: loop_anthropic(s, a.model)) if api == "anthropic" else (lambda s: loop_openai(s, a.model, a.effort))
     print(f"BENCH {tag} ({api}) · {len(seeds)} questions · {a.workers} parallel · seeds {os.path.basename(a.seeds)}", flush=True)
 ```
 
@@ -1514,8 +1466,8 @@ Expected: `OK` (36 tests).
 
 - [ ] **Step 5: Smoke the report on the July runs (no spend)**
 
-Run: `cd /Users/Born/mds-scorecard-tools && python3 bench_compare.py claude-sonnet-5 kimi-k2.6 --out $SCRATCH/compare_smoke.md | head -20`
-Expected: a header table with the July numbers (Sonnet 15.3% fail vs Kimi 22.2%; the $ columns now use the corrected prices, so they differ from the July doc — expected), `judge disagreements | 0 | 0` (July rows have no `verdicts`), the file written. (The July JSON has no `tag` key — `newest("claude-sonnet-5")` matches by filename, and `d["model"]` is present; fine.)
+Run: `cd /Users/Born/mds-scorecard-tools && python3 bench_compare.py claude-sonnet-5 --out $SCRATCH/compare_smoke.md | head -20`
+Expected: a one-column header table with the July Sonnet numbers (15.3% fail; the $ rows now use the corrected prices, so they differ from the July doc — expected), `judge disagreements | 0` (July rows have no `verdicts`), the file written. (The July JSON has no `tag`/`judges` keys — `newest("claude-sonnet-5")` matches by filename and `d["model"]` is present; the Kimi run cannot be rendered any more because its prices left `PRICES` — expected.)
 
 ---
 
