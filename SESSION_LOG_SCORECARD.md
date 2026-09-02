@@ -6,6 +6,24 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+### Round four — a number opens its rows (Andy: "like it was on local")
+
+The drill-downs from round two only NARROWED the page; the local `fb_report.py` page opened the data
+behind a number. Rebuilt to match, in `d465e8b`:
+
+- **New `FbDetail` panel** — a modal that reuses `FbTable`, so the rows inside it sort, filter and
+  paginate like everything else. Escape or the overlay closes it; the page behind is scroll-locked.
+- **Every KPI tile** opens what it counted: Posts · Posting members · Value adds · Unanswered ·
+  Asks · Gives · Partner complaints · **Avg reach** (the posts the average is computed from).
+- **Every count in the Members table**, including *Comments received* (their posts, busiest first)
+  and *Avg reach* (their posts that have one).
+- **Both hashtag counts** — its posts, and the members who used it.
+- **A name** (member or partner) opens their detail with a **"Filter the page to X"** button, so the
+  chip behaviour from round two is still one click away rather than the only option.
+
+Verified locally in Chrome before shipping: the complaints tile opened the 4 complaints with quotes,
+and `Dan Wills · asks` opened his 13 asks with comments and reach.
+
 ### Round three — a phantom bug, four deploys, and the one lesson worth keeping
 
 Andy's "why nothing is clickable" had a boring, correct answer (round one had no drill-downs —
