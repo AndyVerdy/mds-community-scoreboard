@@ -6,6 +6,64 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-02 — ASK/GIVE/VALUE-ADD classification, partner-complaint detection, one daily Slack card, and a local report page
+
+**Andy's asks, in order:** classify every post as ask / give / value_add · capture complaints about MDS
+partners · fold both into the existing silent-post Slack card rather than adding new ones · then a
+local page to browse it all, date-ranged and drillable.
+
+**Classification (`classify_posts.py`, new).** Claude labels each post ask/give/value_add.
+**Validated before shipping, against the 3,824 hand-curated Airtable posts we also hold: 108/120 =
+90% agreement**, the misses all on the genuinely blurry give↔value_add and ask↔give lines.
+**Andy's rule, learned the hard way:** value_add is the member's own `#valueadd` claim, NOT a quality
+the model awards — it had labelled Christian Verhoeven's untagged AI write-up value_add and Andy
+caught it. The model now only ever picks ask or give; the tag decides value_add. (For the record the
+human curators are looser: of 217 VALUE ADD posts we hold, 176 carry the tag and 41 do not.)
+Backfilled: **1,866 ask · 900 give · 119 value_add**, ~1,290 older posts still queued (1,000/run).
+
+**Partner complaints (`partner_scan.py`, new + `digest.fb_partner_mentions`).** Two stages so 30k
+comments don't hit a model: prefilter on the 506 names in `digest.partners_catalog` (short/common
+names matched case-sensitively), then Claude judges complaint/praise/neutral and quotes the line.
+`not_about_partner` is the important verdict — it is how a coincidental word match is dropped instead
+of becoming a fake complaint. Scans posts AND comments, because that is where complaints live. First
+live run: 6 complaints (Wayward, Quartile ×2, Amazon Freight, TraceFuse, Activate Talent).
+
+**One card, not five (`daily_digest.py`, replaces `no_comment_alert.py`).** Sections: value adds ·
+partner complaints · asks · gives · **no-replies last and UNCAPPED** (Andy: the to-do list must never
+say "…and 5 more"). Length-guarded at 3,800 chars — Slack silently split the first card into three
+messages, scattering sections; now the capped sections shrink, then snippets shorten, and only as a
+last resort the no-reply list moves to a thread reply.
+
+**Report page (`fb_report.py` + `fb_report_template.html`, 4 new views).** Views
+`fb_report_weekly/_member_mix/_partner_sentiment/_hashtags` do the aggregation in the DB. The page is
+one self-contained HTML file carrying its own data: global date range (yesterday/7/30/90/all/custom),
+every number drills down to the posts behind it, all tables sortable + filterable, 20 rows with a
+"show all". Andy supplied the visual design; the generator only fills its `#report-data` block, so the
+design can be re-worked without touching the pipeline. **Regenerates itself after every capture.**
+A revertible theme layer (`--theme darkmatter|cosmic-night|vercel`, tokens from the shadcn MCP)
+appends a style block; omitting the flag reverts. Themes restyle chrome only — complaint red and
+positive green are never themed.
+
+**Two bugs Andy caught, both real:**
+- "Unanswered" conflated *FB has no comments* with *we have not re-checked* — his Daniel Meredith
+  example had replies we had not seen. `comment_checked_at` is now stamped by `load_feed.py` on every
+  visited post, the lists require it, and the page shows when we last looked. Backfilled from 59
+  capture files (the feed JSONs ARE the record of which posts a pass opened).
+- KPI numbers rendered black-on-black: the cards are `<button>`s and the CSS never set `color`, so
+  they inherited the UA default.
+
+**Also:** `process_manual()` split out in `auto_import.py` — the harvest used to be ingested INSIDE the
+feed gate, so two nights of failed comment passes silently discarded 13 captured posts and 11 reach
+values that were sitting in Downloads. The legs are independent sources and are now gated
+independently. Embedding is on a **self-expiring hold** until 21:40Z at a peer session's request
+(model bench needs a frozen corpus); `auto_import.py` logs "EMBED: HELD" and resumes on its own.
+
+**Not in git:** `classify_posts.py`, `partner_scan.py`, `daily_digest.py`, `fb_report.py`,
+`fb_report_template.html` all live in `mds-scorecard-tools` (no repo). This commit carries the DB
+mirror + the report views + `.mcp.json`.
+
+---
+
 ## 2026-08-22 (night) — POST REACH shipped end-to-end (ext v0.93→v0.98 + `fb_posts.reach`). Four wrong theories, one anchor-free reader, validated against the FB UI.
 
 **Andy:** "reach is not views. its reach." Correct — `views` is the Insights Top-posts number (top-99
