@@ -2,6 +2,41 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-02 (afternoon) · Olivia · **HEALTH TRIAGE — derivations tile red 13 days → GREEN (12 jobs · 0 stale · 0 errored) · 25 Summit/AI-Mastermind videos + 173 cliff-notes into the catalog**
+
+Trigger: the 08:00 tools-health card (🔴 nightly derivations · 🟡 WA agent · 🟡 member-profiles sync · 🟡 FB engagement + roster,
+10 days). Protocol `health-triage`: every fix below has a test and a FORCED live run.
+
+**Five root causes, all fixed (Scorecard `163f8c2` `154e45d` `cd02299` · mds-digest-web `0814799` `69a2ff1` unpushed):**
+1. `refresh_entity_dossiers()` cancelled at service_role's 60s statement timeout EVERY night since 20 Aug → function-level
+   `SET statement_timeout='900s'` (migration `refresh_entity_dossiers_statement_timeout_152`). Forced nightly chain 8/8 OK, dossiers 87s.
+2. Today's wipeout = Anthropic overload + an unbounded `curl` in `olivia_label_questions.py` (hung 5,506s) → `--max-time 120` + 3 tries.
+3. `zoom_weekly.py` died every Monday since 7 Aug: its three loaders wrote review CSVs into `~/Downloads`, which launchd cannot
+   write (TCC) → `~/mds_transcripts/review/`. Forced run 9/9 steps green (twice).
+4. `zoom_weekly` never stamped `last_success_at` on a DEGRADED run (no GROUPOS_PAT is the permanent state) → stamps on ok+degraded;
+   `test_zoom_weekly_heartbeat.py`. Live: stamped 15:19:53Z and 15:28Z, `stale_for_tile=false`. This alone kept the tile red 26 days.
+5. `videos_weekly_check.py`: (a) the nothing-moved branch raised `NameError: dump` so a clean week could never stamp; (b) CHANGED
+   rows kept their old vector (merge-duplicates) → every touched row is upserted with `embedding=null` and the chain re-embeds it.
+   Two tests. Plus `ingest_videos.html_to_text` accepts `cliff_notes` as a LIST (GroupOS changed the shape; crashed 201/201).
+
+**Video catalog:** the Sunday 30 Aug `groupos-videos-weekly` scheduled task never wrote a dump (no transcript either). Paged the 2026
+listing by hand — typed `limit` is rejected, so 11 pages × 20 = 201 videos — and applied: **25 NEW** (Singapore Summit 2026 talks +
+AI Mastermind sessions published 31 Aug–2 Sep) · **173 CHANGED** (gained cliff notes; on 27 Aug the API returned null for all) ·
+198 upserted · 198 without vector → **0** after the chain (39s) · catalog 1050 → 1073 rows · `videos_refresh` ok@15:20Z ·
+entity dossiers video=274. `partners_refresh` green (page 1: 2 new, 1 changed; page 2: nothing moved).
+
+**Other tiles:** WA agent 🟡 = yesterday's credit outage, no failure text since 18:49Z, clears at 24h. Member-profiles 🟡 = GitHub runs
+the 13:47Z cron 3.5–6h late; deadline 17Z → 22Z in `olivia.ts` (`69a2ff1`, NOT pushed — Andy's call). FB engagement/roster 🟡 = no
+Insights xlsx since 23 Aug although the daily feed still drops; the Insights → Download dialog in Andy's Chrome matches every
+selector the extension expects (opened + cancelled, nothing downloaded) → failure is inside the extension's chain; needs Andy.
+
+**Tile math after:** `olivia_job_heartbeats` 12 jobs · 0 stale · 0 errored (SQL 15:29Z). Next card should show derivations green.
+
+**Open / for Andy:** push `69a2ff1`+`0814799` · FB Insights (popup last-run line, or let me click Download once) · the scheduled task's
+SKILL.md says "limit 100 / ~152 videos / 2 pages" — reality is 20 per page / 11 pages / ~200 (proposal only; not edited) · why the
+30 Aug scheduled run left no trace · consider n8n `workflow_dispatch` for the two late GitHub crons. Memory: `reference_groupos_videos_list_shape`,
+`reference_launchd_cannot_write_downloads`.
+
 ## 2026-09-01/02 · Olivia · **#109 + #154 SHIPPED · #138 PROMOTED + ROLLED BACK + SPLIT · 1h38m OUTAGE (Anthropic credit) · sprint report + system map · estate survey**
 
 **Prod `15ff4978` → `01902882` → `c00987cd` → `f2f4e9b8` (rollback) → `d40a837d`.** Gate 306 → 312 checks, EXIT 0 at every

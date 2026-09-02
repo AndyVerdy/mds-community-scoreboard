@@ -18,6 +18,19 @@ Walked `15ff4978` → `01902882` (credit-aware fallback copy) → `c00987cd` (#1
 5 min) → `f2f4e9b8` (rollback) → `d40a837d` (#154). Render `mds-digest-web` = `8f368b3` (carries #109 `cae87c1`
 and #154 finder `7a0ab94`; the peer session's fbstory commits ride the same main).
 
+### Health triage, later the same day (2026-09-02 15:30Z) — tile GREEN, two things wait on Andy
+- **Derivations tile:** 12 heartbeats · 0 stale · 0 errored (SQL). Fixed for good: dossier refresh had a 60s ceiling (now 900s,
+  #152); `zoom_weekly` wrote into `~/Downloads` (launchd can't) and never stamped success on a DEGRADED run — it now stamps
+  (`154e45d`); `videos_weekly_check` crashed on a clean week and never re-embedded CHANGED rows (`cd02299`); `ingest_videos`
+  takes list-typed `cliff_notes` (Render `0814799`). Full story in `SESSION_LOG_OLIVIA.md` 2026-09-02 (afternoon).
+- **Catalog now holds the 25 Summit-2026 / AI-Mastermind videos** published 31 Aug–2 Sep, plus cliff notes on 173 videos; all
+  198 re-embedded (0 without vector). The Sunday 30 Aug `groupos-videos-weekly` scheduled task ran but left NO dump and NO
+  transcript — cause unknown; its SKILL.md still says "limit 100, ~152 videos, 2 pages" (reality: 20/page, 11 pages, ~200).
+- **Waiting on Andy:** push mds-digest-web `69a2ff1` (sync deadline 17Z→22Z) + `0814799` · FB Insights xlsx stalled since
+  23 Aug (extension popup status, or one click on Download in his Chrome — the dialog matches every selector).
+- **Verify next session:** the 08:00 card shows derivations green; Monday 07 Sep `zoom_weekly` launchd run stamps on its own;
+  Sunday 06 Sep scheduled video task writes a dump (if not, run the 11-page fetch by hand as on 02 Sep).
+
 ### Shipped today
 - **#109 CLOSED** — requester intro notices (accept · decline · 7-day lapse) go out as TEMPLATES; free-form only as
   fallback. `src/lib/intro-notices.ts`, 15 tests incl. a standing guard. Sweep probe expired=1/failed=0. NOT observed:
