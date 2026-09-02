@@ -6,29 +6,31 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
-### Round three — a hydration bug I invented, then disproved (`8ce9fdb` → reverted `ddfe63b`)
+### Round three — one false alarm, one real (narrow) defect, three deploys
 
-Chasing "why nothing is clickable" past its real answer, I convinced myself that streamed Suspense
-content never hydrates on a HARD load, "confirmed" it on production, told the peer session, filed a
-follow-up task, and shipped a workaround that dropped the boundary.
+Chasing "why nothing is clickable" past its real answer cost three round trips. The honest account:
 
-**All of it rested on an invalid detector.** Counting `__reactFiber$` keys on DOM nodes and
-`window.__next_f` entries is NOT a hydration signal in Next 16 / React 19 — it reported the same
-~60 elements on every admin page whether or not that page worked.
+**The false alarm.** I "proved" that streamed Suspense content NEVER hydrates on a hard load by
+counting `__reactFiber$` keys and `window.__next_f` entries — a probe that reports the SAME ~60
+elements on a working page and a broken one, i.e. measures nothing. On that basis I told Andy the
+tab was dead on refresh, told the peer session, filed a follow-up task, and shipped `8ce9fdb`.
+Then I clicked the actual button on a cold load and it worked, and **Overview clicked fine too**
+(`Last 7 days` → `?period=7d`, re-rendered). Task withdrawn, peer corrected, workaround reverted
+(`ddfe63b`).
 
-**Checked properly (real mouse clicks, cold hard loads, Chrome, production):**
-- `/admin/facebook` — the Partner complaints tile scrolled to the mentions table, set a `complaint`
-  chip and filtered it to its 4 rows. **Works.**
-- `/admin` Overview — "Last 7 days" changed the URL to `?period=7d` and re-rendered
-  "Top Channels · Last 7 days". **Works.** Nothing was ever broken there.
+**The real defect, found by the same clicking.** On the streamed build the tiles and tables **paint
+before that subtree is interactive**, and a click in that window is **silently lost**: five seconds
+into a cold load, the Partner-complaints tile scrolled to the mentions section but never applied the
+filter — **reproduced twice on production**. The same click on the non-streaming build works first
+try. A visible control that does nothing is worse than a page that paints a second later, so the
+final position (`387854f`) awaits the data and does not stream. **Overview keeps its boundary** —
+it was never shown to have the problem, and it is not this ticket.
 
-Task withdrawn, peer corrected, workaround reverted — the tab streams with a placeholder like every
-other admin tab again.
-
-**Lesson, worth more than the fix:** a proxy measurement that reports the same number for a working
-page and a broken one is measuring nothing. **Test the thing the user does — click it.** The real
-answer to Andy's complaint was the boring one: round one shipped a page with no drill-downs, tile
-clicks or filters, so there was genuinely nothing to click. That was fixed in `acf1513`.
+**Lessons:**
+1. **A proxy that reads the same for working and broken code is not evidence.** Click the thing.
+2. **The same clicking that killed my wrong theory found the real bug** — worth doing FIRST, not third.
+3. The answer to "nothing is clickable" was mostly the boring one: round one had no drill-downs to
+   click. That was `acf1513`.
 
 ### Same session, second round — Andy: "why nothing is clickable?"
 
