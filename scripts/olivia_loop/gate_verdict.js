@@ -143,9 +143,92 @@ hClaims = hClaims.filter(c => {
 });
 const claims = linkClaims.concat(hClaims);
 
+// #138 ITEM-LINK REPAIR (2026-09-01). She names six threads and links one, and four
+// prompt rules (waves 8/12/16/18) failed to change it. An audit over all 602 bank C
+// answers killed the count-based gate this ticket proposed: at its best setting it
+// fired on 65 CORRECT answers against 51 wrong ones, because members, chapters and
+// chats legitimately have no url. What IS checkable per item: the retrieved row this
+// item came from carried a url and the draft dropped it — then attach it, no second
+// model lap, a good answer can never be clamped. Matching is on the row's IDENTITY
+// fields only (title/name/speakers), never its body: a Summit line-up post whose body
+// named half the speakers produced two wrong links in the first prod audit (exec
+// 126957). No match, a weak match (<2 shared words) or a close one (<2 clear of the
+// runner-up) all leave the line untouched. Spec + tests: scripts/olivia_loop/
+// test_138_link_repair.js (24 cases); audit: 64 real drafts, 2 repaired, both correct.
+const IDENT_KEYS = /^(title|name|full_name|display_name|author_name|post_author|speaker|speakers|speaker_names|chat|chat_name|event|event_name|partner|partner_name|member|member_name|question|topic)$/i;
+const URL_KEYS = /^(url|link|video_url|permalink|page_url|profile_url)$/i;
+const ITEM_LINE = /^\s*(?:[•\-*]\s+|\d+[.)]\s+)/;
+const RSTOP = /^(The|This|That|These|Those|Here|There|What|When|Where|Which|Want|With|From|Your|About|Also|Just|Only|They|Their|Some|Most|More|Other|Into|Over|Under|Video|Member|Post|Chat|Group|Session)$/;
+const rTokens = function (str) {
+  const words = String(str).match(/\b[A-Z][A-Za-z0-9'’&-]{3,}\b/g) || [];
+  const set = {};
+  words.forEach(function (w) { if (!RSTOP.test(w)) set[w.toLowerCase()] = 1; });
+  return Object.keys(set);
+};
+const rIdent = function (o, d) {
+  let out = '';
+  Object.keys(o || {}).forEach(function (k) {
+    const v = o[k];
+    if (v && typeof v === 'object' && !Array.isArray(v) && (d || 0) < 2) { out += ' ' + rIdent(v, (d || 0) + 1); }
+    else if (typeof v === 'string' && IDENT_KEYS.test(k)) { out += ' ' + v.slice(0, 200); }
+  });
+  return out;
+};
+const rUrl = function (o, d) {
+  const keys = Object.keys(o || {});
+  for (let i = 0; i < keys.length; i++) {
+    const v = o[keys[i]];
+    if (typeof v === 'string' && URL_KEYS.test(keys[i]) && /^https?:\/\//.test(v)) { return v.replace(/[.,;:!?]+$/, ''); }
+    if (v && typeof v === 'object' && !Array.isArray(v) && (d || 0) < 2) { const n = rUrl(v, (d || 0) + 1); if (n) return n; }
+  }
+  return null;
+};
+const rRows = function (raw) {
+  const out = []; let depth = 0, start = -1, inStr = false, esc = false;
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+    if (inStr) { if (esc) { esc = false; } else if (c === '\\') { esc = true; } else if (c === '"') { inStr = false; } continue; }
+    if (c === '"') { inStr = true; continue; }
+    if (c === '{') { if (depth === 0) { start = i; } depth++; continue; }
+    if (c === '}') {
+      depth--;
+      if (depth === 0 && start >= 0) {
+        try { const o = JSON.parse(raw.slice(start, i + 1)); const u = rUrl(o); if (u) { out.push({ url: u, toks: rTokens(rIdent(o)) }); } } catch (e) { /* not a row */ }
+        start = -1;
+      }
+      if (depth < 0) { depth = 0; }
+    }
+  }
+  return out;
+};
+let itemLinks = 0;
+try {
+  const rows = rRows(evRaw);
+  if (rows.length) {
+    const taken = {};
+    urlsIn(answerText).forEach(function (u) { taken[u] = 1; });
+    answerText = answerText.split(NL).map(function (line) {
+      if (!ITEM_LINE.test(line) || urlsIn(line).length) { return line; }
+      const t = rTokens(line);
+      if (!t.length) { return line; }
+      const scored = rows.map(function (r) {
+        let n = 0; t.forEach(function (x) { if (r.toks.indexOf(x) !== -1) n++; });
+        return { r: r, n: n };
+      }).filter(function (x) { return x.n >= 2; }).sort(function (a, b) { return b.n - a.n; });
+      if (!scored.length) { return line; }
+      if (scored.length > 1 && scored[0].n - scored[1].n < 2) { return line; }
+      const url = scored[0].r.url;
+      if (taken[url]) { return line; }
+      taken[url] = 1; itemLinks++;
+      return line + ' ' + url;
+    }).join(NL);
+  }
+} catch (e) { /* repair is best-effort: never break the send path */ }
+
 if (!claims.length) {
   const extra = {};
   if (linkRepairs) { extra.link_repairs = linkRepairs; }
+  if (itemLinks) { extra.item_links_attached = itemLinks; }
   if (!verdict || !verdict.verdict) { extra.gate_error = true; }   // gate broke, not the answer
   else { extra.gate = (verdict.verdict === 'pass') ? 'pass' : 'pass-postfilter'; }
   return finalize(answerText, extra);

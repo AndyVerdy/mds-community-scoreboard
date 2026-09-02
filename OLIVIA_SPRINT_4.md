@@ -51,7 +51,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#105** | 🔐 Verify Meta's webhook signature (`X-Hub-Signature-256`) on every inbound — filed from #97's final review (Andy OK 2026-08-22) | 🟡 S2 | S | — | ⏸ next session, BEFORE any wide intros announcement |
 | **#106** | 🙈 Staff / non-member records must never surface in member-facing lists (event_who names, who-to-meet, intro picker) — Andy 2026-08-22: "make sure I'm not searchable" | 🟡 S2 | S | SQL-verified exposure map | ✅ **LIVE 2026-08-24** (SQL, prod-shared) — 5 `#106` checks in the leak gate pass: `member_card`, `member_card_v2`, `expertise_search`, `member_match_v2`, finder |
 | **#107** | 🗣️ Millie-only self-name (Format Reply PS still says Olivia) + who-to-meet ends with "connect you with one of them?" Yes/No buttons → Yes = intro picker (Andy 2026-08-22: "Millie and only Millie — official name"; "ask if he would like to connect… if yes provide a list") | 🔴 S1 | S-M | — | ✅ **PROMOTED 2026-08-22 ~05:24Z (Andy) — prod `8f48fdb8`**: Millie PS (prepended when button-eligible) · who-to-meet ends with the exact offer + Yes/No buttons (96779) · Yes → member_intro, no plan replay (review caught the 500-char-trim defeat → `last_olivia_intro_offer` flag, proven 96864) · non-attendee no offer (96787) · gate 267 EXIT 0 |
-| **#109** | 📨 Requester-side intro notices must be TEMPLATES (accept / decline / 7-day lapse) — free-form text dies outside the 24h window (Meta 131047); found 2026-08-22 when Andy questioned the lapse promise | 🔴 S1 | S-M | templates `mds_intro_accepted` · `mds_intro_declined` · `mds_intro_lapsed` SUBMITTED (PENDING) | ⏸ logic next session (Andy: "keep as is, suggestions logic first") — must ship before any announcement |
+| **#109** | 📨 Requester-side intro notices must be TEMPLATES (accept / decline / 7-day lapse) — free-form text dies outside the 24h window (Meta 131047); found 2026-08-22 when Andy questioned the lapse promise | 🔴 S1 | S-M | n/a (route — no staging tier) | ✅ **SHIPPED 2026-09-01** `cae87c1` — `src/lib/intro-notices.ts` + template-first route with free-form fallback; 15 unit tests incl. a standing guard that no requester path can be text, 144/144 on main; live sweep probe expired=1 failed=0, lapse notice accepted by Meta (wamid …9B34A86B928F28CF3C). ⚠️ closed-window delivery not yet observed (probe requester's window was open) · lapsed template is MARKETING, so 131049 can still cap it |
 | **#110** | 🧾 Intro-tap turns are not saved to conversation history — `Save Conversation` on the intro-tap path errors on a `$('Resolve Member')` reference (swallowed by onError); SQL-proven zero rows for tap turns; no member impact, no effect on no-replay flag | 🟡 S2 | S | SQL + exec 97071 | ⏸ next session |
 | **#111** | 🎯 Who-to-meet results swing with the model's free-text topic query (Aaron: q="Retail, PPC, Amazon Ads, Sourcing, AI Automation" → 7 matches; q="Amazon PPC, Retail & Wholesale, Credit Cards & Travel Hacks, AI & Automation, Sourcing & Suppliers" → 1) — matcher should use the asker's own ledger topics deterministically + alias-normalize free text (execs 97152 vs 97286, same day) | 🟡 S2 | S-M | exec diff | ⏸ next session (or fold into #102) |
 | **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 292 EXIT 0, 26 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
@@ -267,6 +267,33 @@ record by full name, 54 don't (guests/partners/spelling drift); zero links exist
 **Build (next session):** route `/api/olivia/intro` — every requester-side send (accept link, decline line, sweep lapse line) goes out as the matching template (params: target first name, phone digits / topic); keep free-form only for the TARGET's in-window replies; map 131047 → template fallback if any free-form path remains; the sweep's claim/retry logic already tolerates a failed send. Gate: add a check that no requester notice path is free-form. Probe: backdated lapse row for Andy with his window CLOSED (>24h since his last message) → template delivered.
 
 **Accept when:** templates APPROVED · accept/decline/lapse notices delivered to a requester whose window is closed (olivia_sends `delivered`) · gate GREEN · promote (route only — no workflow change).
+
+#### ✅ SHIPPED 2026-09-01 — Render `cae87c1` (push to main deploys; no workflow change)
+
+**What changed.** `src/lib/intro-notices.ts` builds the three approved templates; `/api/olivia/intro` sends the
+template FIRST on all three requester notices (accept · decline · sweep lapse) and only falls back to the old
+free-form wording when a template send returns no wamid. The TARGET's own reply stays free-form on purpose —
+they just tapped, their window is open.
+
+**Traps encoded in the builder, each from a real incident:** every param is collapsed to a single line and can
+never be empty (Meta approves an example with newlines then refuses every send, 132018 — the Summit announcement
+burned a template version on this); the phone travels as bare digits because a `wa.me` link inside a template
+variable is refused.
+
+**Proof.** 15 new unit tests written failing first, incl. a standing guard that reads the route and fails if
+anything ever builds a `type:"text"` send addressed to `reqPhone`; 144/144 on main, `tsc --noEmit` clean.
+Deployed sha verified live at `/api/version` 20:38:46Z. Live sweep against prod on a backdated pending row:
+`{"ok":true,"expired":1,"failed":0,"skipped":0}`, lapse notice accepted by Meta
+(`wamid.HBgLMTc4NjY1NzgxNTMVAgARGBI5QjM0QTg2QjkyOEYyOENGM0MA`, status `sent`), probe row deleted afterwards.
+
+**AC status:** templates APPROVED ✅ (accepted/declined UTILITY, lapsed MARKETING) · no requester path is
+free-form ✅ (guard test) · gate GREEN ✅ (306/0 this session) · promote ✅. **NOT met: delivery observed to a
+requester whose window is CLOSED** — the probe requester's window was open, so the closed-window case rests on
+templates being exempt from the 24h rule rather than on an observed send. Re-probe once >24h have passed since
+Andy last messaged Millie, or let the first real lapse prove it.
+
+**Remainder:** `mds_intro_lapsed` is MARKETING, so a member who has had many marketing sends that week can still
+have the lapse notice capped (131049); the free-form fallback only rescues that case when their window is open.
 
 ### #107 · Millie-only self-name + who-to-meet closes with a Yes/No intro offer that opens the picker
 **🔄 #107e (Andy ~08:15Z, "yes, go with that wording"): picker lead → "Here are the Summit attendees I've recommended to you that I can reach for an intro. Pick one…" (the list can include attendees from Millie's wider matching log that the answer didn't name — 'people I mentioned' was inaccurate); empty-pick fallback reworded; route title-cases all-lowercase names (`d8f8250`). Staged (exec 97408), gate EXIT 0 → **PROMOTED by Andy ~08:40Z, prod `d9538ca6`.**
@@ -782,6 +809,84 @@ and the draft names N items with 0-1 links, regenerate. That is deterministic an
 built today only because the two refusal-gate regexes I audited fired on more correct answers than
 wrong ones, and I stopped before adding a third unaudited gate late at night.
 **Watch out:** 6342 also scored 2 for a separate reason now fixed (#137 record-id leak).
+
+#### 🔎 2026-09-02 (after the rollback) — BOTH defects fixed, and the TICKET'S PREMISE now looks stale
+
+**Fix 1 — who wrote a row is not what it is.** `author_name` / `post_author` are out of the identity match.
+That was the prod defect: a WhatsApp row with `title:null` carried author_name + post_author both "Brandon
+Himmel", cleared the two-token bar with no runner-up, and lent its permalink to an unrelated Brandon Himmel
+quote (exec 127539).
+
+**Fix 2 — no window fallback at all.** The re-audit produced a second wrong link: `https://kos.com`, a url
+sitting inside Zenon Labs' own *description text*, attached as though it were their page (exec 127638). That
+evidence contains **zero** link fields, so JSON parsing found no rows and the old text-window fallback took
+over. A row now lends a link only from an explicit link FIELD; evidence without one has no link to give. The
+unit fixtures were rewritten from invented pipe-delimited lines to the JSON shape the loop really passes —
+the fake shape is what hid this.
+
+**28 unit tests, all green. Third re-audit: 31 real drafts, 0 repairs, 0 wrong.**
+
+**But: the symptom is no longer observable in production.** Over 22 unique recent drafts, 8 name three or more
+items and the MEDIAN multi-item answer carries **3 links**. Exactly one draft matched the ticket's shape (6
+items, 0 links) — and its evidence contains **zero urls** (a capability overview: chats, the Facebook group,
+the video library). Nothing to link. That is the false-positive class the count-gate would have punished.
+
+**Recommendation: do not ship the repair.** It is safe but fires zero times, and today proved that every line
+of gate code carries risk. What #138 needs instead is a re-measurement: re-run its 9 ids plus the multi-item
+classes against current prod and grade them. The bank C failures date from 23 Aug, before wave 9's clipSafe
+and the S14 rule; if they pass now, close #138 as fixed by other work. The implementation and its tests stay
+in the repo, unshipped, ready if the symptom returns.
+
+**Constraint discovered today: n8n keeps roughly ONE DAY of executions.** The audit corpus shrank from 65 to
+31 drafts within hours, so any evidence-based audit must be run and acted on the same day, or it must capture
+its own corpus first.
+
+#### ⛔ PROMOTED AND ROLLED BACK 2026-09-02 — NOT shipped (prod is back on `f2f4e9b8`)
+
+**The ticket's own proposal was audited and REJECTED before a line of it shipped.** Across all 602 bank C
+answers, the count rule ("names N items, carries ≤1 link") fires on more CORRECT answers than wrong ones at
+every setting: ≥3 bullets/≤1 link = 116 fires, **65 on passing answers** vs 51 on failing, catching 3 of the 9;
+the widest variant, 154 fires / 79 on passes / 4 of 9. It cannot tell "should have linked" from "there is no
+link to give" — members, chapters and chats have no url. Shipping it would have regenerated dozens of good
+answers to fix at most four bad ones, the same failure as the two refusal-gate regexes rejected on 2026-08-24.
+
+**What shipped instead — per-item, deterministic, REPAIR not regenerate.** For each item line the draft names,
+find the retrieved row it came from; if that row carried a url the draft dropped, attach it to that line. No
+second model lap, so a good answer can never be clamped. Silence beats a wrong link: no match, a weak match
+(<2 shared identity words) or a close one (<2 clear of the runner-up) all leave the line untouched.
+
+**Two audit rounds against REAL prod evidence, both of which changed the code:**
+- Round 1 (window matching): 65 drafts → 4 repairs, and **2 were wrong** — a Summit line-up post whose BODY
+  listed half the speakers lent its url to "Brandon Himmel shared…" and to "Nathan Ross's teardown" (exec
+  126957). Also pasted JSON tails (`","matched_rank":0.03`) into the answer, because `\S+` does not end a url
+  in a JSON blob.
+- Round 2 (structured rows, identity fields only, url cut at the delimiter): **64 drafts → 2 repairs, both
+  verified correct against their source rows** (Douglas Iske → the Whatnot session whose TOPICS state the
+  $175K/month run rate; "Retail needs its own playbook" → the Retail/Channel Call video). Zero wrong.
+
+**Proof.** 24 unit tests written failing first (`scripts/olivia_loop/test_138_link_repair.js`, run with
+`node`); the node code is the same logic inlined into Gate Verdict, best-effort inside a try/catch so it can
+never break the send path. Staging probe: `gate: pass-postfilter`, no `gate_error`, correct no-op on an answer
+that already carried a link per item. Prod probe after promote: exec 127624 `gate: pass`. Leak gate 306 PASS /
+0 FAIL / EXIT 0 at promote.
+
+**⛔ THE PROMOTE WAS WRONG AND WAS REVERTED WITHIN 5 MINUTES.** Promoted `c00987cd` 02:09Z, rolled back to
+`f2f4e9b8` 02:14Z. Both prod probes had been no-ops (the model already linked every item), so "it works on
+prod" was never actually tested — the verification that should have run first is running the LIVE node's own
+bytes over real drafts. Doing that found the defect: on the 30 drafts still in n8n retention, prod's code fired
+once and **the link was wrong**. A Brandon Himmel quote about SQP reports was given the permalink of a
+different comment BY Brandon Himmel about damaged units in the rain (exec 127539).
+
+**Root cause:** the identity fields matched on include `author_name` / `post_author`, so ANY row written by a
+person the draft names can win the match. For content rows the author is not identity — the topic is.
+
+**Fix before the next attempt:** exclude author-ish fields from the match, or require at least one non-person
+token (title/topic word) to overlap before a row can be chosen; then re-audit against a corpus large enough to
+mean something. The earlier "2 of 2 correct" was 2 fires — far too few to have claimed precision from, and that
+corpus has since aged out of n8n's retention.
+
+**AC status:** deterministic and auditable ✅ · never clamps a correct answer ✅ (repair, not regeneration) ·
+gate GREEN ✅ · **shipped ❌ — reverted, still open**. The missing-DATES half stays disabled.
 
 ### #139 · A named partner ships with its recorded offer and its page — 5 bank C fails
 **🔴 S1 · size S-M — filed 2026-08-24.**

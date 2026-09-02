@@ -67,6 +67,5 @@ sample drafts were reviewed before launch.
 
 ## Known deferred items
 
-Full list with rulings in `.superpowers/sdd/2026-09-01-wa-to-fb-story-posts/progress.md`.
 The notable one: `draft/route.ts` has no mocked test harness — its branches are covered by live
 dry runs rather than unit tests. Fast-follow, not a blocker.
