@@ -84,6 +84,8 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
 | **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list + dangling old-event links (Andy, prod 52891/52893/52935/52941/52951) | 🔴 S1 | S | ✅ probe wave 8/8 · orphan-strip unit 6/6 | ✅ **PROMOTED 2026-08-26** `06df948a` — prod turn 52959: 1 link, Denver gone; gate 306 EXIT 0 |
 | **#152** | ⏱️ `refresh_entity_dossiers` statement-timeout — `zoom_weekly` heartbeat error, last success 2026-08-07; video chain exits 1 every run (found by scorecard-df) | 🟡 S2 | S | — | ⏸ filed 2026-08-28 |
+| **#154** | 🔗 People she names carry NO link — `member_match_v2` / `expertise_search` return no url column at all | 🔴 S1 | S-M | ✅ proven `6757d8f9` — 4/4 and 10/10 linked on staging; gate 312/0 | ⏸ SQL is live (prod-shared, 718/741 linked); seed descriptions await promote; finder awaits push |
+| **#155** | 💬 A chat quote carries its own message link, and "what should I know" is not a capability tour | 🟡 S2 | M | — | — |
 | **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ✅ **PROMOTED 2026-08-26** `15ff4978` — verified 2026-08-28: prod/staging graphs identical (only webhook path differs), gate 306 PASS · 0 FAIL · EXIT 0; re-embed of 7 still awaits Andy |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
@@ -311,6 +313,85 @@ have the lapse notice capped (131049); the free-form fallback only rescues that 
 **Build:** ① Format Reply: PS → Millie; when a reply is button-eligible, place the PS as the FIRST line (offer stays last) — never drop the buttons for the PS. ② Answer Seed: who-to-meet answers ≤ ~850 chars; when the asker is a registered attendee and ≥1 match was shown, END with exactly "Would you like me to connect you with one of them?"; never offer intros to non-attendees (pilot refusal); "Yes" after that offer → `member_intro` with no target → present the pick list + "Who would you like me to send a request to?"; a named answer → `member_intro{target_name}`. ③ Plan Request: make sure a bare "Yes" after the intro offer reaches the LLM lane (no plan replay of the people op). ④ Router system prompt "router for Olivia" → Millie; internal labels untouched (documented). Staging probes as a registered attendee (silent lane, cleanup): reply ≤1,024 + ends with the offer + `interactive.type='button'` in Format Reply output; "Yes" → member_intro picker call in the execution; name → request path (refused/dry by design, zero sends). Gate EXIT 0 · snapshot · Andy promotes.
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
+
+### #154 · Every person she names can be opened — member and expertise rows carry no link at all
+**🔴 S1 · size S-M — filed 2026-09-02, split out of #138 after the 9-id re-run.**
+
+> **In plain words:** when she lists people, none of the names can be clicked. Not because she drops
+> the link — because the tools that find people do not return one.
+
+*As a member, every person Millie names comes with a way to reach or check them — her profile, her Facebook, something I can open.*
+
+**Evidence (2026-09-02, re-run of bank C #6028 against prod):** "top 3 members for selling on Target"
+returned Tracey Larner, Alexander Malamud and Zal Shemtov — three names, no dates, no links, no quotes.
+The evidence blob behind that answer contains **zero link fields**. Checked at the source with
+`pg_get_function_result`: `digest.member_match_v2` and `digest.expertise_search` declare **no url column
+whatsoever**; `member_card_v2` carries only `facebook_link`, and only for a single member. No gate, prompt
+rule or repair can attach a link that retrieval never returned — this is why four prompt rules (waves
+8/12/16/18) and a Gate Verdict repair all failed on this class.
+
+**Shape of the fix:** the people-returning RPCs return a per-row link — the member's app profile URL,
+falling back to their Facebook link — the same way `video_search_v2` returns `video_url` and
+`partner_lookup_v2` returns `partner_url`. Retrieval layer, not the prompt. Respect #106 (staff never
+surface) and the disclosure rules: a link is only a pointer, never contact detail.
+
+**Accept when:** `member_match_v2` · `expertise_search` · the finder's people rows each return a link
+column ✅ · a live people-list answer names three members and every one carries its own link ✅ ·
+no staff record gains a link ✅ · gate GREEN · `db/` re-exported after the migration.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-09-02 — awaiting Andy's promote (workflow) and push (finder)
+**The fix:** migration `people_lanes_link_154` (+ `member_link_normalise_154`): `digest.member_link(at_member_id)`
+is the ONE definition of a member's link — the profile's own Facebook url, else the FB-engagement map's vanity
+url, else `profile.php?id=<uid>`, normalised to `https://www.facebook.com/…`; never a phone, email or record id.
+`member_match_v2` and `expertise_search` now return it as `link` (RETURNS TABLE changed → DROP + CREATE with the
+exact grants restored: postgres + service_role, public revoked — verified in `proacl`). View `digest.member_links`
+exposes the same helper for app routes; the finder (`mds-digest-web` commit, awaiting push) emits `link` on every
+person row. Staging `6757d8f9`: the two tool descriptions tell the model to put each link on that person's line.
+
+| AC | result |
+|---|---|
+| `member_match_v2` · `expertise_search` · the finder's people rows each return a link column | ✅ both RPCs (gate checks "rows carry a link column"), finder route emits `link` (252/252 tests, `tsc` clean) — finder live only after the push |
+| a live people-list answer names three members and every one carries its own link | ✅ staging probes 03:40Z: "who should I talk to about Amazon PPC?" → 4 members, 4 links, one per line; "which members are in Texas?" → 10 members, 10 links |
+| no staff record gains a link | ✅ existing #106 checks still pass; links are computed on rows the lanes already filtered |
+| gate GREEN | ✅ 312 PASS · 0 FAIL · EXIT 0 (7 new #154 checks: link column present, facebook.com only, no phone/email/record id beside it, ≥80% resolve) |
+| `db/` re-exported after the migration | ✅ `db/functions/member_link.sql`, `db/views/member_links.sql`, both lanes, grants |
+
+**Before → after** on the class (#6028 "top 3 members for selling on Target"): 3 names, 0 links → the same lanes
+now carry a link on **718 of 741** active members (23 have neither a profile link nor an FB-map row — those rows
+return `link: null`, which the model leaves unlinked rather than inventing). 18 profile links arrived as
+`m.`/`web.`/no-scheme/upper-case variants and are normalised; 0 non-canonical remain.
+
+**Remainder:** the 23 unlinked actives are a data gap in Airtable (no Facebook Profile Link) — ops, not code.
+
+### #155 · A quote from a chat carries that message's own link, and "what should I know" is not a tour
+**🟡 S2 · size M — filed 2026-09-02, split out of #138 after the 9-id re-run.**
+
+> **In plain words:** when she quotes what someone said in a chat, or names a tool people talked about,
+> the member cannot open the message it came from. And "what should I know in MDS" still answers with a
+> tour of what she can do instead of what is actually happening.
+
+*As a member, anything Millie quotes or names from a conversation, I can open — and when I ask what I should know, I get what is live right now, dated, not a menu of her features.*
+
+**Evidence (2026-09-02, re-run against prod):** #6007 "best tools for TikTok shop launch" named 7 tools and
+linked 2, while its evidence carried ~67 link fields. #6064 named 3 items, linked 1, evidence carried ~107.
+#6031 "what info should I know in mds" returned a capability tour — chats, the Facebook group, the video
+library — with no dates and no links on any item.
+
+**Why the obvious fix does not work (proven, do not repeat it):** a Gate Verdict repair that attaches the
+link from the row an item came from cannot bind these, because the tool or quote is named inside the message
+BODY while the row's identity fields carry only the chat and the author. Matching bodies instead attached two
+wrong links on prod and forced a rollback the same day (execs 127539, 127638; #138 close block). The binding
+has to happen where the item is chosen — in the seed/answer loop, which knows which row it is quoting — not
+after the fact in the gate.
+
+**Shape of the fix:** two parts. (a) The answer loop carries the source row's link with each quoted item, so
+the link travels with the claim instead of being reconstructed later. (b) The "what should I know / what is
+live" class answers from recent retrieved items with their dates and links, and is not allowed to answer with
+a capability list.
+
+**Accept when:** a chat-sourced quote ships with its own message link ✅ · a named tool ships with the message
+that named it ✅ · "what should I know in MDS" returns dated, linked, real items and no capability tour ✅ ·
+re-run of #6007 · #6064 · #6031 against prod grades pass ✅ · gate GREEN.
 
 ### #153 · Intent questions failed on ranking and stated facts — the screenshot probes, run down
 **🔴 S1 · size S — filed 2026-08-28 from the 4-question probe table Andy screenshotted (source session unknown; scorecard-df disclaims it). 3 of 4 failed on prod.**
@@ -809,6 +890,49 @@ and the draft names N items with 0-1 links, regenerate. That is deterministic an
 built today only because the two refusal-gate regexes I audited fired on more correct answers than
 wrong ones, and I stopped before adding a third unaudited gate late at night.
 **Watch out:** 6342 also scored 2 for a separate reason now fixed (#137 record-id leak).
+
+#### 🔎 2026-09-02 — RE-RUN OF THE 9 IDS AGAINST PROD: the symptom is REAL, and a gate cannot fix it
+
+All 9 ticket ids re-fired against prod with their conversation context restored (32 turns, probe rows cleaned).
+Graded against each id's recorded `expect` — one grader (me), not the six-grader panel that produced the
+original scores.
+
+| id | verdict | why |
+|---|---|---|
+| 6150 | ✅ pass | 4 brokers, 4 links, attributed (Bill Sterry / Scott Deetz), partner terms + ratings, no valuation advice |
+| 6331 | ✅ pass | found the FB thread, served its 4 videos each with its own link and who recommended it |
+| 6066 | ✅ pass | member card, revenue as a BAND, states plainly no Facebook link is on his card |
+| 6342 | 🟡 borderline | 3 items dated, honest that the bodies are not retrievable; no links, but those rows carry none |
+| 6007 | ❌ fail | 7 tools named, 2 linked — attribution good, links missing on 5 |
+| 6028 | ❌ fail | 3 member names, no evidence quotes, no dates, no links, and the "no Target flag" caveat is not stated |
+| 6031 | ❌ fail | still a capability tour; hot topics carry neither links nor dates |
+| 6064 | ❌ fail (criterion) | 3 items, 1 link, no dates — otherwise honest and correctly refuses the character read |
+| 6236 | — n/a | the antecedent turn answered differently this run, so the follow-up is not the same test |
+
+**So the ticket is real: 4 clear fails, 3 passes, 1 borderline. My earlier "premise looks stale" read was wrong**
+— it came from 22 random recent drafts, most of which are not citation-heavy answers. The 9 ids target exactly
+the classes that still fail.
+
+**But the repair does not fix them, and would add a wrong link.** Run against each failing answer's own evidence:
+
+| id | evidence link-fields | repair attaches |
+|---|---|---|
+| 6007 | ~67 | **0** — the tool names live inside chat message BODIES; identity matching cannot bind them |
+| 6064 | ~107 | **0** — same |
+| 6028 | **0** | 0 — nothing to attach |
+| 6031 | ~15 | **1, and it is WRONG** — "*The video library* — every Mogul Call…" got a specific Whatnot video url |
+
+**Three different causes, none of them gate-shaped:**
+1. **Retrieval gap.** `member_match_v2` and `expertise_search` return **no url column at all** (checked in
+   `pg_get_function_result`) — a people list can never be linked. Fix belongs in the RPCs: give member rows
+   their profile link.
+2. **Binding gap.** For tools and quotes drawn from chat bodies, the url sits on a row whose identity fields do
+   not name the item. Matching bodies instead is what produced the two wrong links that forced today's rollback.
+3. **Wrong-shape answer.** 6031 is a capability tour; no link repair makes it the "what is live right now" read
+   the bar asks for.
+
+**Verdict: the link-repair approach is the wrong instrument and stays unshipped** (code + 28 tests in the repo).
+#138 should be split: a retrieval ticket for (1), and a seed/drafting ticket for (2)+(3).
 
 #### 🔎 2026-09-02 (after the rollback) — BOTH defects fixed, and the TICKET'S PREMISE now looks stale
 

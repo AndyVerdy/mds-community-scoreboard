@@ -294,7 +294,7 @@ def main():
         # matched_text added 2026-07-29 (#21): the PUBLIC profile snippet that matched
         # (about + fun fact — both already on the public member card), so the answering
         # loop can SEE the evidence instead of a bare name+rank. No new exposure.
-        EXP_KEYS = {"full_name", "city", "state", "expertise", "niche", "matched_text", "matched_rank"}
+        EXP_KEYS = {"full_name", "city", "state", "expertise", "niche", "matched_text", "matched_rank", "link"}  # link: #154
         check("expertise rows carry ONLY name/city/state/expertise/niche/snippet/rank",
               all(set(e.keys()) == EXP_KEYS for e in (exp or [])))
         check("expertise matched_text holds only public-card fields (about/fun fact)",
@@ -312,7 +312,9 @@ def main():
         # Scan the TEXT fields only — matched_rank is a float like 0.0312829, which the phone
         # pattern happily matches. (Caught 2026-07-27 while fixing the "Cell phone accessories"
         # false positive; a gate that cries wolf twice is worse than no gate.)
-        etext = json.dumps([{k: v for k, v in e.items() if k != "matched_rank"} for e in (exp or [])])
+        # #154: `link` is a Facebook profile url and may carry profile.php?id=<15-digit uid>, which the
+        # phone pattern matches — its own shape is asserted by the #154 checks, so skip it here.
+        etext = json.dumps([{k: v for k, v in e.items() if k not in ("matched_rank", "link")} for e in (exp or [])])
         _hit = re.search(EMAIL_RE, etext) or re.search(PHONE_RE, etext)
         check("expertise output has no revenue/contact fields",
               "rev_band" not in eblob and "Most Recent Revenue" not in eblob and not _hit,
@@ -664,6 +666,32 @@ def main():
             check("member_match_v2 never returns an internal record (#106)",
                   st == 200 and staff_name not in json.dumps(mm or []),
                   f"{staff_name} present")
+
+        # ---- #154 · every person she names can be opened. The people lanes returned NO url
+        # column at all (bank C #6028 re-run 2026-09-02: three names, nothing to click), so no
+        # prompt rule or gate repair could ever attach one. Now each row carries `link` = the
+        # member's Facebook profile via digest.member_link() — a pointer, never contact detail.
+        st, lk = rpc("member_match_v2", {"p_phone": phone, "p_limit": 20}, key)
+        lk = lk if isinstance(lk, list) else []
+        check("member_match_v2 rows carry a link column (#154)",
+              st == 200 and bool(lk) and all("link" in r for r in lk),
+              f"status {st} rows {len(lk)} with-key {sum(1 for r in lk if 'link' in r)}")
+        bad = [r.get("link") for r in lk if r.get("link") and not re.match(r"^https://(www\.)?facebook\.com/", str(r.get("link")))]
+        check("member_match_v2 links are facebook.com profile urls only (#154)", not bad, json.dumps(bad)[:160])
+        blob = json.dumps(lk).lower()
+        check("member_match_v2 rows carry no phone/email/record id beside the link (#154)",
+              "@" not in blob and not re.search(r"\brec[a-z0-9]{14}\b", blob) and not re.search(r"\+?\d{10,}", blob.replace("facebook.com/profile.php?id=", "")),
+              blob[:120])
+        covered = sum(1 for r in lk if r.get("link"))
+        check("most people rows resolve to a link (#154, >= 80%)", not lk or covered * 5 >= len(lk) * 4,
+              f"{covered}/{len(lk)} linked")
+        st, ek = rpc("expertise_search", {"p_phone": phone, "p_query": "PPC advertising", "p_limit": 15}, key)
+        ek = ek if isinstance(ek, list) else []
+        check("expertise_search rows carry a link column (#154)",
+              st == 200 and bool(ek) and all("link" in r for r in ek),
+              f"status {st} rows {len(ek)}")
+        bad2 = [r.get("link") for r in ek if r.get("link") and not re.match(r"^https://(www\.)?facebook\.com/", str(r.get("link")))]
+        check("expertise_search links are facebook.com profile urls only (#154)", not bad2, json.dumps(bad2)[:160])
 
         # ---- #131 · a past member is FINDABLE, but WHEN and WHY they left are not (Andy
         # 2026-08-24: "I don't want to disclose leave dates or reasons why he left"). The reason

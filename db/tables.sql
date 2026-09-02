@@ -287,6 +287,26 @@ CREATE INDEX fb_comments_created_idx ON digest.fb_comments USING btree (created_
 CREATE INDEX fb_comments_post_idx ON digest.fb_comments USING btree (post_id);
 CREATE UNIQUE INDEX fb_comments_pkey ON digest.fb_comments USING btree (comment_id);
 
+-- digest.fb_group_posts
+--   story_key                          text not null
+--   chat_id                            text not null
+--   chat_name                          text not null
+--   window_start                       date not null
+--   window_end                         date not null
+--   message_ids                        text[] not null default '{}'::text[]
+--   draft_text                         text
+--   why_picked                         text
+--   confidence                         numeric
+--   status                             text not null default 'draft'::text
+--   skip_reason                        text
+--   created_at                         timestamp with time zone not null default now()
+--   posted_at                          timestamp with time zone
+alter table digest.fb_group_posts add constraint fb_group_posts_pkey PRIMARY KEY (story_key);
+alter table digest.fb_group_posts add constraint fb_group_posts_status_chk CHECK ((status = ANY (ARRAY['draft'::text, 'posted'::text, 'skipped'::text, 'blocked'::text])));
+CREATE INDEX fb_group_posts_created_idx ON digest.fb_group_posts USING btree (created_at DESC);
+CREATE INDEX fb_group_posts_msgids_idx ON digest.fb_group_posts USING gin (message_ids);
+CREATE UNIQUE INDEX fb_group_posts_pkey ON digest.fb_group_posts USING btree (story_key);
+
 -- digest.fb_member_map
 --   fb_uid                             text not null
 --   at_member_id                       text
@@ -299,6 +319,25 @@ alter table digest.fb_member_map add constraint fb_member_map_pkey PRIMARY KEY (
 CREATE INDEX fb_member_map_member_idx ON digest.fb_member_map USING btree (at_member_id);
 CREATE UNIQUE INDEX fb_member_map_one_primary ON digest.fb_member_map USING btree (at_member_id) WHERE ((at_member_id IS NOT NULL) AND is_primary);
 CREATE UNIQUE INDEX fb_member_map_pkey ON digest.fb_member_map USING btree (fb_uid);
+
+-- digest.fb_partner_mentions
+--   ref_kind                           text not null
+--   ref_id                             text not null
+--   partner_id                         text not null
+--   post_id                            text
+--   partner_name                       text
+--   author_name                        text
+--   verdict                            text not null
+--   quote                              text
+--   confidence                         real
+--   occurred_at                        timestamp with time zone
+--   found_at                           timestamp with time zone not null default now()
+alter table digest.fb_partner_mentions add constraint fb_partner_mentions_pkey PRIMARY KEY (ref_kind, ref_id, partner_id);
+alter table digest.fb_partner_mentions add constraint fb_partner_mentions_ref_kind_check CHECK ((ref_kind = ANY (ARRAY['post'::text, 'comment'::text])));
+alter table digest.fb_partner_mentions add constraint fb_partner_mentions_verdict_check CHECK ((verdict = ANY (ARRAY['complaint'::text, 'praise'::text, 'neutral'::text])));
+CREATE INDEX fb_partner_mentions_partner_idx ON digest.fb_partner_mentions USING btree (partner_id, occurred_at DESC);
+CREATE INDEX fb_partner_mentions_verdict_idx ON digest.fb_partner_mentions USING btree (verdict, occurred_at DESC);
+CREATE UNIQUE INDEX fb_partner_mentions_pkey ON digest.fb_partner_mentions USING btree (ref_kind, ref_id, partner_id);
 
 -- digest.fb_post_images
 --   id                                 bigint not null default nextval('digest.fb_post_images_id_seq'::regclass)
@@ -344,7 +383,9 @@ CREATE UNIQUE INDEX fb_post_links_pkey ON digest.fb_post_links USING btree (imag
 --   views                              integer
 --   reach                              integer
 --   poll                               jsonb
+--   post_type                          text
 alter table digest.fb_posts add constraint fb_posts_pkey PRIMARY KEY (post_id);
+alter table digest.fb_posts add constraint fb_posts_post_type_check CHECK ((post_type = ANY (ARRAY['ask'::text, 'give'::text, 'value_add'::text])));
 CREATE INDEX fb_posts_author_idx ON digest.fb_posts USING btree (author_uid);
 CREATE INDEX fb_posts_created_idx ON digest.fb_posts USING btree (created_time);
 CREATE INDEX fb_posts_hashtags_gin ON digest.fb_posts USING gin (hashtags);

@@ -16,7 +16,9 @@ alter table digest.event_registrations enable row level security;
 alter table digest.events_catalog enable row level security;
 -- digest.expertise_topics: row level security DISABLED
 alter table digest.fb_comments enable row level security;
+-- digest.fb_group_posts: row level security DISABLED
 alter table digest.fb_member_map enable row level security;
+-- digest.fb_partner_mentions: row level security DISABLED
 alter table digest.fb_post_images enable row level security;
 alter table digest.fb_post_links enable row level security;
 alter table digest.fb_posts enable row level security;
