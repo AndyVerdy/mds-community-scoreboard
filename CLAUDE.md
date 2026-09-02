@@ -85,6 +85,15 @@ See memory `feedback_short_answers`.
 - n8n edits: edit the ACTIVE workflow, then ONE `[{deactivateWorkflow},{activateWorkflow}]` bounce — never deactivate first.
 - Keep separate repos separate (e.g. `mds-ai-bot`, `mds-digest-web` are their own folders — never edit one while working another).
 - **Two agents, one repo (Andy 2026-08-23):** the `olivia_wf.py` lock is the ONLY mutex — hold it to edit staging, release it the moment your gate is green, never force it. Docs are own-ticket sections only (`### #NNN` on the board, a `#NNN`-tagged STATE block, `#NNN`-tagged log lines); re-read right before every edit, append, commit only your hunks, last committer rebases. Tell the peer session what you put on staging (`SendMessage`) — Andy promotes one graph at a time and must know whose edits ride it; if he wants one ticket only, re-stage from prod, re-apply yours, gate, and hand staging back. Web routes (Render) have no staging tier: a push to `main` deploys — say so in the plan.
+- **One branch per session (Andy 2026-09-02): never commit on `main`.** Start every session on its own branch off
+  GitHub's `main` — `git fetch origin && git switch -c <ticket-or-topic>-<yyyymmdd> origin/main` (when another session holds
+  the checkout: `git worktree add .claude/worktrees/<name> -b <branch> origin/main`). Commit and push THAT branch as often
+  as you like — it is your backup and it carries nobody else's work. Merge into `main` only when the ticket is DONE and
+  proven (gate green / live check): `git switch main && git pull --ff-only && git merge --no-ff <branch> && git push`,
+  rebasing your branch on `origin/main` first if it moved. Docs (stream log, index line, handoff, board) ride the same
+  branch as the work. Because nobody commits on `main`, a push of `main` can never publish another session's unfinished
+  work — if `git log origin/main..main` shows a commit that is not yours, stop and let its owner merge. On Render repos
+  the merge to `main` IS the deploy.
 
 ---
 
