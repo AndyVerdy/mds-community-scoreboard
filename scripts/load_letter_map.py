@@ -158,8 +158,11 @@ def main():
         supa("POST", "video_speaker_links", new_links[i:i + 500],
              prefer="return=minimal")
     print(f"inserted: {len(new_letters)} letters · {len(new_links)} links")
+    # Review CSVs live under ~/mds_transcripts/review/, NOT ~/Downloads: launchd has no TCC grant for
+    # Downloads, so the Monday zoom_weekly chain died on PermissionError writing here every week from
+    # 2026-08-07 (health triage 2026-09-02). A manual run from Terminal never showed it.
     if review:
-        pth = os.path.expanduser("~/Downloads/mds_letter_review.csv")
+        pth = os.path.expanduser("~/mds_transcripts/review/mds_letter_review.csv")
         with open(pth, "w", newline="") as fh:
             wr = csv.writer(fh)
             wr.writerow(["heard_name", "detail", "video_id"])

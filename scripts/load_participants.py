@@ -18,7 +18,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from load_speakers import (World, canon, supa, supa_all, upsert_speaker)  # noqa: E402
 
 CUE = re.compile(r"^([A-Za-z][A-Za-z.'’\- ]{2,40}?):\s", re.M)
-REVIEW = os.path.expanduser("~/Downloads/mds_participant_review.csv")
+# Review CSVs live under ~/mds_transcripts/review/, NOT ~/Downloads: launchd has no TCC grant for
+# Downloads, so the Monday zoom_weekly chain died on PermissionError writing here every week from
+# 2026-08-07 (health triage 2026-09-02). A manual run from Terminal never showed it.
+REVIEW = os.path.expanduser("~/mds_transcripts/review/mds_participant_review.csv")
 
 
 def main():

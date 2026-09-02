@@ -26,7 +26,10 @@ silently overwritten.
 import argparse, csv, datetime, json, os, re, subprocess, sys
 
 ENV = "/Users/Born/mds-digest-web/.env.local"
-REVIEW = os.path.expanduser("~/Downloads/mds_speaker_review.csv")
+# Review CSVs live under ~/mds_transcripts/review/, NOT ~/Downloads: launchd has no TCC grant for
+# Downloads, so the Monday zoom_weekly chain died on PermissionError writing here every week from
+# 2026-08-07 (health triage 2026-09-02). A manual run from Terminal never showed it.
+REVIEW = os.path.expanduser("~/mds_transcripts/review/mds_speaker_review.csv")
 ACTIVE = {"Current Member", "New Member", "Pending Group Entrance",
           "Current Member- Not Renewing"}
 
