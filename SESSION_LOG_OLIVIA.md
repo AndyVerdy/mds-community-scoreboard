@@ -7,7 +7,7 @@
 Trigger: the 08:00 tools-health card (🔴 nightly derivations · 🟡 WA agent · 🟡 member-profiles sync · 🟡 FB engagement + roster,
 10 days). Protocol `health-triage`: every fix below has a test and a FORCED live run.
 
-**Five root causes, all fixed (Scorecard `163f8c2` `154e45d` `cd02299` · mds-digest-web `0814799` `69a2ff1` unpushed):**
+**Five root causes, all fixed (Scorecard `163f8c2` `154e45d` `cd02299` · mds-digest-web `69a2ff1` `0814799` `b05af61` — pushed 16:00Z, deployed):**
 1. `refresh_entity_dossiers()` cancelled at service_role's 60s statement timeout EVERY night since 20 Aug → function-level
    `SET statement_timeout='900s'` (migration `refresh_entity_dossiers_statement_timeout_152`). Forced nightly chain 8/8 OK, dossiers 87s.
 2. Today's wipeout = Anthropic overload + an unbounded `curl` in `olivia_label_questions.py` (hung 5,506s) → `--max-time 120` + 3 tries.
@@ -26,18 +26,18 @@ AI Mastermind sessions published 31 Aug–2 Sep) · **173 CHANGED** (gained clif
 entity dossiers video=274. `partners_refresh` green (page 1: 2 new, 1 changed; page 2: nothing moved).
 
 **Other tiles:** WA agent 🟡 = yesterday's credit outage, no failure text since 18:49Z, clears at 24h. Member-profiles 🟡 = GitHub runs
-the 13:47Z cron 3.5–6h late; deadline 17Z → 22Z in `olivia.ts` (`69a2ff1`, NOT pushed — Andy's call). FB engagement/roster 🟡 =
+the 13:47Z cron 3.5–6h late; deadline 17Z → 22Z in `olivia.ts` (`69a2ff1`, pushed + deployed). FB engagement/roster 🟡 =
 **confirmed real, on ONE of two legs** (Andy: "we are not stale" — true for the other). Conversation leg healthy: `fb_posts` newest
 2026-09-01 21:40Z, 133 posts / 698 comments seen in 3d, `auto_import` ran the feed yesterday. Scorecard leg dead since 23 Aug:
 Insights xlsx → `process_fb.py` → AT `Reporting Date (scrape)`; newest xlsx 8-23, state file `last=…8-23`, History has no later
 capture, Monday's heartbeat posted "stale 8d". The extension session confirmed (Chrome download history: no Insights download even
 ATTEMPTED since 23 Aug): the scheduled chain reaches the Insights page before the SPA renders `[aria-label="Download group insights
 data"]`; a retry + alarm is shipped but needs an extension reload; fix today = Andy clicks "Capture Insights". Proposal (not built):
-split the FB tile — **BUILT on Andy's go** (mds-digest-web `b05af61`, unpushed): new tile `fb-capture` reads `digest.fb_posts` last ingest + posts touched in 36h (36h degraded / 72h down); `fb-engagement` renamed "FB engagement scores (Insights export)" on the Airtable date (missed week → degraded, >14d down); roster rides that leg. Live: capture healthy (ingest 18h, 46 posts/36h) · insights degraded (08-23, 10d). 9 tests, suite 263/263, tsc clean.
+split the FB tile — **BUILT on Andy's go** (mds-digest-web `b05af61`, PUSHED + DEPLOYED — `/api/version` = b05af61 at 16:04Z; the dry-run report endpoint answers 403 to the local HEALTH_REPORT_SECRET, so the deployed tiles are proven by version + the live-env code path, and tomorrow's 08:00 card): new tile `fb-capture` reads `digest.fb_posts` last ingest + posts touched in 36h (36h degraded / 72h down); `fb-engagement` renamed "FB engagement scores (Insights export)" on the Airtable date (missed week → degraded, >14d down); roster rides that leg. Live: capture healthy (ingest 18h, 46 posts/36h) · insights degraded (08-23, 10d). 9 tests, suite 263/263, tsc clean.
 
 **Tile math after:** `olivia_job_heartbeats` 12 jobs · 0 stale · 0 errored (SQL 15:29Z). Next card should show derivations green.
 
-**Open / for Andy:** push `69a2ff1`+`0814799` · FB Insights (popup last-run line, or let me click Download once) · the scheduled task's
+**Open / for Andy:** FB Insights (popup last-run line, or let me click Download once) · the scheduled task's
 SKILL.md says "limit 100 / ~152 videos / 2 pages" — reality is 20 per page / 11 pages / ~200 (proposal only; not edited) · why the
 30 Aug scheduled run left no trace · consider n8n `workflow_dispatch` for the two late GitHub crons. Memory: `reference_groupos_videos_list_shape`,
 `reference_launchd_cannot_write_downloads`.

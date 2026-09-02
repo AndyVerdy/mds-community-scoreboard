@@ -26,10 +26,10 @@ and #154 finder `7a0ab94`; the peer session's fbstory commits ride the same main
 - **Catalog now holds the 25 Summit-2026 / AI-Mastermind videos** published 31 Aug–2 Sep, plus cliff notes on 173 videos; all
   198 re-embedded (0 without vector). The Sunday 30 Aug `groupos-videos-weekly` scheduled task ran but left NO dump and NO
   transcript — cause unknown; its SKILL.md still says "limit 100, ~152 videos, 2 pages" (reality: 20/page, 11 pages, ~200).
-- **Waiting on Andy:** push mds-digest-web `69a2ff1` (sync deadline 17Z→22Z) + `0814799` · FB Insights xlsx stalled since
+- **Waiting on Andy:** FB Insights xlsx stalled since
   23 Aug — CONFIRMED real by the extension session (no download attempted since 23 Aug; SPA timing on the Download button);
   the daily conversation leg is healthy. Fix = Andy clicks "Capture Insights" in the extension. FB tile split BUILT (`b05af61`): `fb-capture` (Supabase posts, 36h/72h) + `fb-engagement` = Insights scores (AT date,
-  missed week/14d) + roster on that leg. UNPUSHED with `69a2ff1` + `0814799` — three commits wait for Andy's "push".
+  missed week/14d) + roster on that leg. All three (`69a2ff1` `0814799` `b05af61`) PUSHED on Andy's "push"; Render serves b05af61 (16:04Z).
 - **Verify next session:** the 08:00 card shows derivations green; Monday 07 Sep `zoom_weekly` launchd run stamps on its own;
   Sunday 06 Sep scheduled video task writes a dump (if not, run the 11-page fetch by hand as on 02 Sep).
 
