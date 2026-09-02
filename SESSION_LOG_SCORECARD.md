@@ -6,28 +6,29 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
-### Round three — the real reason "nothing is clickable": streamed content never hydrates on a HARD load
+### Round three — a hydration bug I invented, then disproved (`8ce9fdb` → reverted `ddfe63b`)
 
-Andy opened the tab **by URL**. That is the whole bug, and it is not mine — it is app-wide and
-pre-existing. Verified in Andy's own Chrome against **production**:
+Chasing "why nothing is clickable" past its real answer, I convinced myself that streamed Suspense
+content never hydrates on a HARD load, "confirmed" it on production, told the peer session, filed a
+follow-up task, and shipped a workaround that dropped the boundary.
 
-| how you arrive | result |
-|---|---|
-| soft nav (click **Facebook** in the admin nav) | hydrates, everything works — tile → chips → filtered table, confirmed live |
-| **hard load** (URL typed / refresh) | only the **60-element shell** hydrates (nav, theme toggle). Everything inside the streamed `div#S:1` has **zero React fiber keys** → dead HTML |
+**All of it rested on an invalid detector.** Counting `__reactFiber$` keys on DOM nodes and
+`window.__next_f` entries is NOT a hydration signal in Next 16 / React 19 — it reported the same
+~60 elements on every admin page whether or not that page worked.
 
-**`/admin` (Overview) has the identical defect today** — its own `PeriodPicker` is unhydrated on a
-hard load, so clicking a period does nothing. Filed as a separate task; **not fixed here**
-(issues found alongside are not the job).
+**Checked properly (real mouse clicks, cold hard loads, Chrome, production):**
+- `/admin/facebook` — the Partner complaints tile scrolled to the mentions table, set a `complaint`
+  chip and filtered it to its 4 rows. **Works.**
+- `/admin` Overview — "Last 7 days" changed the URL to `?period=7d` and re-rendered
+  "Top Channels · Last 7 days". **Works.** Nothing was ever broken there.
 
-**Fix for this tab (`8ce9fdb`):** drop the `<Suspense>` boundary and await the data before the
-shell renders. Costs the loading skeleton and ~1s of first paint; the page is then interactive
-however you arrive at it.
+Task withdrawn, peer corrected, workaround reverted — the tab streams with a placeholder like every
+other admin tab again.
 
-**Lesson:** building through the nav hides this class of bug completely — a soft nav renders the
-subtree client-side, so it is always interactive. **Test the hard load.** Cheap detector, in the
-console after a refresh: `[...document.querySelectorAll('*')].filter(e=>Object.keys(e).some(k=>k.startsWith('__react'))).length`
-— a number near 60 means only the shell hydrated.
+**Lesson, worth more than the fix:** a proxy measurement that reports the same number for a working
+page and a broken one is measuring nothing. **Test the thing the user does — click it.** The real
+answer to Andy's complaint was the boring one: round one shipped a page with no drill-downs, tile
+clicks or filters, so there was genuinely nothing to click. That was fixed in `acf1513`.
 
 ### Same session, second round — Andy: "why nothing is clickable?"
 
