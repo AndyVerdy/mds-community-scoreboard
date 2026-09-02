@@ -6,31 +6,35 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
-### Round three — one false alarm, one real (narrow) defect, three deploys
+### Round three — a phantom bug, four deploys, and the one lesson worth keeping
 
-Chasing "why nothing is clickable" past its real answer cost three round trips. The honest account:
+Andy's "why nothing is clickable" had a boring, correct answer (round one had no drill-downs —
+fixed in `acf1513`). I kept going anyway and manufactured a bug that never existed.
 
-**The false alarm.** I "proved" that streamed Suspense content NEVER hydrates on a hard load by
-counting `__reactFiber$` keys and `window.__next_f` entries — a probe that reports the SAME ~60
-elements on a working page and a broken one, i.e. measures nothing. On that basis I told Andy the
-tab was dead on refresh, told the peer session, filed a follow-up task, and shipped `8ce9fdb`.
-Then I clicked the actual button on a cold load and it worked, and **Overview clicked fine too**
-(`Last 7 days` → `?period=7d`, re-rendered). Task withdrawn, peer corrected, workaround reverted
-(`ddfe63b`).
+**The chain of wrong turns:**
+1. Counted `__reactFiber$` keys + `window.__next_f` entries, saw ~60 elements, concluded **streamed
+   content never hydrates on a hard load**. That probe reports the SAME number on a page that works
+   and one that does not — it measures nothing. Told Andy, told the peer session, filed a task,
+   shipped `8ce9fdb` (dropped the Suspense boundary).
+2. Clicked properly, saw it work, saw **Overview work too** → withdrew the task, corrected the peer,
+   reverted (`ddfe63b`).
+3. Saw a click 5s into a cold load get lost on the streamed build and land on the non-streamed one,
+   called it a **real early-click defect**, shipped `387854f`.
+4. Then the same loss appeared on the NON-streamed build at 5s, 10s and 22s — and a second click
+   always worked. **The automation tool swallows its own FIRST click while the tab takes focus.**
+   No hydration bug, no streaming bug, no early-click defect, on any build. Restored streaming
+   (`ae503c3`), which is where the code started.
 
-**The real defect, found by the same clicking.** On the streamed build the tiles and tables **paint
-before that subtree is interactive**, and a click in that window is **silently lost**: five seconds
-into a cold load, the Partner-complaints tile scrolled to the mentions section but never applied the
-filter — **reproduced twice on production**. The same click on the non-streaming build works first
-try. A visible control that does nothing is worse than a page that paints a second later, so the
-final position (`387854f`) awaits the data and does not stream. **Overview keeps its boundary** —
-it was never shown to have the problem, and it is not this ticket.
+**Net:** four deploys that changed nothing a user can see, one withdrawn task, two corrections to a
+peer, three rewrites of this log entry.
 
 **Lessons:**
 1. **A proxy that reads the same for working and broken code is not evidence.** Click the thing.
-2. **The same clicking that killed my wrong theory found the real bug** — worth doing FIRST, not third.
-3. The answer to "nothing is clickable" was mostly the boring one: round one had no drill-downs to
-   click. That was `acf1513`.
+2. **Then distrust the click too.** An automated first click after a page load can be eaten by focus
+   — click twice before declaring a control dead. Repeat the failure on the OTHER build before
+   believing the difference is real: one trial per build is a coin flip, not a comparison.
+3. **The boring explanation was right the whole time.** When the user says "nothing is clickable"
+   and the page has no click targets, that is the bug.
 
 ### Same session, second round — Andy: "why nothing is clickable?"
 
