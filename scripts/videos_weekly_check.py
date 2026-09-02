@@ -92,11 +92,17 @@ def main():
         # A clean check IS a successful run. Stamping only when something moved is why
         # videos_refresh sat "stale since Aug 01" through several good runs and the alarm
         # could never clear — the monitor could not tell a healthy no-op from a dead job.
-        heartbeat(key, "ok", f"checked {len(dump)} videos, nothing moved")
+        heartbeat(key, "ok", f"checked {len(incoming)} videos, nothing moved")
         print("nothing moved — chain not run (heartbeat stamped)")
         return 0
 
     touched = new + [r for r, _ in changed]
+    # A changed row must lose its vector: the chain embeds "videos with no vector (new or
+    # re-summarised)", and merge-duplicates leaves an untouched column alone. Without this the
+    # 173 videos that gained cliff notes on 2026-09-02 kept vectors built from title +
+    # description only, and plain-language search never saw the notes.
+    for r in touched:
+        r["embedding"] = None
     for i in range(0, len(touched), 100):
         sb("POST", "videos_catalog?on_conflict=video_id", key, touched[i:i + 100],
            "resolution=merge-duplicates,return=minimal")
