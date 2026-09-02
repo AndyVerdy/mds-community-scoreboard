@@ -26,9 +26,14 @@ AI Mastermind sessions published 31 Aug–2 Sep) · **173 CHANGED** (gained clif
 entity dossiers video=274. `partners_refresh` green (page 1: 2 new, 1 changed; page 2: nothing moved).
 
 **Other tiles:** WA agent 🟡 = yesterday's credit outage, no failure text since 18:49Z, clears at 24h. Member-profiles 🟡 = GitHub runs
-the 13:47Z cron 3.5–6h late; deadline 17Z → 22Z in `olivia.ts` (`69a2ff1`, NOT pushed — Andy's call). FB engagement/roster 🟡 = no
-Insights xlsx since 23 Aug although the daily feed still drops; the Insights → Download dialog in Andy's Chrome matches every
-selector the extension expects (opened + cancelled, nothing downloaded) → failure is inside the extension's chain; needs Andy.
+the 13:47Z cron 3.5–6h late; deadline 17Z → 22Z in `olivia.ts` (`69a2ff1`, NOT pushed — Andy's call). FB engagement/roster 🟡 =
+**confirmed real, on ONE of two legs** (Andy: "we are not stale" — true for the other). Conversation leg healthy: `fb_posts` newest
+2026-09-01 21:40Z, 133 posts / 698 comments seen in 3d, `auto_import` ran the feed yesterday. Scorecard leg dead since 23 Aug:
+Insights xlsx → `process_fb.py` → AT `Reporting Date (scrape)`; newest xlsx 8-23, state file `last=…8-23`, History has no later
+capture, Monday's heartbeat posted "stale 8d". The extension session confirmed (Chrome download history: no Insights download even
+ATTEMPTED since 23 Aug): the scheduled chain reaches the Insights page before the SPA renders `[aria-label="Download group insights
+data"]`; a retry + alarm is shipped but needs an extension reload; fix today = Andy clicks "Capture Insights". Proposal (not built):
+split the FB tile — keep the AT read for the Scorecard leg, add `max(last_seen) from digest.fb_posts` (~36h) for the conversation leg.
 
 **Tile math after:** `olivia_job_heartbeats` 12 jobs · 0 stale · 0 errored (SQL 15:29Z). Next card should show derivations green.
 
