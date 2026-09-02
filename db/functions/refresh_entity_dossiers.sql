@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION digest.refresh_entity_dossiers()
  LANGUAGE plpgsql
  SECURITY DEFINER
  SET search_path TO 'digest', 'pg_temp'
+ SET statement_timeout TO '900s'
 AS $function$
 declare v_n int;
 begin
