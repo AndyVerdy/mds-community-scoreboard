@@ -11,6 +11,53 @@
 
 # Olivia — next session
 
+## STATE 2026-09-02 (session close) — read this first
+
+**PROD = `d40a837d`. Staging identical (re-staged from prod before the last promote). Gate GREEN — 312 checks, EXIT 0.**
+Walked `15ff4978` → `01902882` (credit-aware fallback copy) → `c00987cd` (#138 repair, PROMOTED THEN ROLLED BACK in
+5 min) → `f2f4e9b8` (rollback) → `d40a837d` (#154). Render `mds-digest-web` = `8f368b3` (carries #109 `cae87c1`
+and #154 finder `7a0ab94`; the peer session's fbstory commits ride the same main).
+
+### Shipped today
+- **#109 CLOSED** — requester intro notices (accept · decline · 7-day lapse) go out as TEMPLATES; free-form only as
+  fallback. `src/lib/intro-notices.ts`, 15 tests incl. a standing guard. Sweep probe expired=1/failed=0. NOT observed:
+  delivery to a requester whose window is CLOSED (probe requester's window was open) — re-probe after Andy has gone
+  24h without messaging Millie, or let the first real lapse prove it.
+- **#154 CLOSED** — `digest.member_link()` = the ONE definition of a member's link (profile FB url → FB-map vanity →
+  profile.php?id, normalised); `member_match_v2` + `expertise_search` return `link`; view `digest.member_links` for
+  app routes; finder emits `link`. 718 of 741 actives resolve. Prod probe 5/5 linked. Gate +7 checks.
+- **Incident 17:11–18:49Z** — Anthropic org out of API credit; every answer fell to the fallback line. Fixed by a $20
+  purchase even though the console showed $99.75 the whole time (balance afterwards $118.65 — the money was there;
+  the fresh charge unstuck the account). Member-facing copy now names the reason when it IS billing (Answer Parse).
+  Alarm `members-getting-failure-text` fired 69 min after the first failure — too slow, file it.
+
+### #138 — split, NOT shipped
+The count-gate the ticket proposed was audited over all 602 bank C answers: 65 false alarms vs 51 real at best.
+A per-item link repair was built (28 tests), promoted, and rolled back after the LIVE node attached a wrong link
+(author-name match). Re-run of the 9 ids against prod: 4 fail / 3 pass / 1 borderline / 1 n/a — the symptom is real,
+but its causes are retrieval (→ **#154, done**) and answer-loop binding + answer shape (→ **#155, open, S2**).
+`scripts/olivia_loop/link_repair.js` + tests stay in the repo unshipped; `gate_verdict.js` local copy carries the
+block for reference only. **Lesson written into the ticket:** verify the live node's own bytes over real drafts
+before claiming a gate change works; n8n keeps ~1 day of executions, so audits must run and land the same day.
+
+### Four things still wait on Andy (unchanged)
+1. #147 authority shape (recommended: one function, two facets) · 2. the 16 Summit videos read `public` · 3. re-embed
+the 7 (hangs off #2) · 4. v4 transactional template for the 50 undelivered — v3 came back MARKETING again.
+
+### Traps found today
+- **`digest.mds.co` SERVFAILs from this Mac's resolver** (public DNS fine, site up) — 26 route checks in the gate fail
+  with status 0. Point them at `mds-digest-web.onrender.com` if it recurs. The peer session confirmed it independently.
+- `mds-digest-web` checkout may be on another session's branch — check `git status -sb` before committing.
+- RETURNS TABLE changes need DROP + CREATE: re-grant postgres + service_role and revoke public in the same migration,
+  then verify `proacl`. Done twice today without incident.
+
+### Next
+**#155** (S2, M) is the open half of #138. Above it in S1: #72 load test (never run), #147 (blocked on Andy),
+#138's siblings #139/#140, forms #73/#66/#68, #64 runtime inventory (the survey made its case stronger — 8 of 9 launchd
+job definitions exist only on the Mac).
+
+
+
 ## STATE 2026-08-27 (Andy out — full pipeline run unattended)
 **16 Summit Singapore talks are in the corpus. 9 are live and proven; 7 are loaded but reachable by
 nobody. PROD WORKFLOW UNTOUCHED — data only, no promote.**

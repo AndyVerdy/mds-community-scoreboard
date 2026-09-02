@@ -2,6 +2,66 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-01/02 · Olivia · **#109 + #154 SHIPPED · #138 PROMOTED + ROLLED BACK + SPLIT · 1h38m OUTAGE (Anthropic credit) · sprint report + system map · estate survey**
+
+**Prod `15ff4978` → `01902882` → `c00987cd` → `f2f4e9b8` (rollback) → `d40a837d`.** Gate 306 → 312 checks, EXIT 0 at every
+promote. Render `cae87c1` (#109) → `8f368b3` (#154 finder rides the peer's fbstory push).
+
+### Deliverables for Andy
+- **Sprint report** (artifact "Millie at the Summit", 19–28 Aug, team-facing): 33 tickets closed (24 board + 9 defect
+  tickets #128–#137), 358 real member questions from 95 people (probe number excluded), 120 on Summit day. Andy rejected
+  a "62% → 91%" framing: the 602-question bank was written, run and largely fixed in the same week, so the first-pass
+  score is not a level she sat at — rewritten as "192 defects found, 155 fixed, 466/511 correct now".
+- **System map** (artifact "Millie's Wiring"), rebuilt after Andy called the first draft BS (dead ends, no Whapi, forms
+  wrongly on the Mac, Vercel drawn). Four parallel surveys (n8n 68 workflows on the MDS account, Make 171 scenarios /
+  68 active, launchd 9 jobs + 2 GH Actions + 1 Render cron, 33 Render routes) → five runtimes, ten upstreams into
+  Airtable, six pipes into Supabase, ONE reverse flow. Docs were wrong in three load-bearing places (Make "runs only two
+  Typeform syncs" — it runs the membership/billing core; three carriers can CREATE a member row; chapter-intro 4717952
+  is OFF since June). Vercel runs nothing of Millie's. Meta's callback lands on Render's relay, not n8n.
+
+### Incident 17:11–18:49Z — every answer "Sorry — I could not generate an answer just now."
+Root cause from exec 127108: Anthropic `400 invalid_request_error: credit balance is too low` on ALL keys of the org,
+while the console showed **$99.75** and 0% of a $200k limit used. Andy's $100 top-up did not help; a **$20 purchase
+did** (balance then $118.65 — the money was there all along; a fresh charge unstuck the account). Alarm fired at 18:20,
+69 min after the first failure. Shipped during the outage: Answer Parse names the reason when the error IS billing
+(Eugene's copy, last sentence dropped) — proven on staging then prod (`01902882`).
+
+### #109 CLOSED — requester intro notices as templates (accept · decline · lapse)
+`src/lib/intro-notices.ts` + `notifyRequester()` in the intro route: template first, free-form only when a template
+send returns no wamid (lapsed is MARKETING → 131049 possible). 15 tests written failing first incl. a standing guard
+that the route can never build a text send to `reqPhone`. Live sweep on a backdated row: expired=1 failed=0, lapse
+notice accepted by Meta. Commit landed on the peer's `fbstory` branch by accident (shared checkout) — peer parked it on a
+rescue branch, I cherry-picked to main (`cae87c1`) on Andy's "promote". NOT observed: closed-window delivery.
+
+### #138 — the honest arc
+1. Audit of the ticket's own proposal over all 602 bank C answers: every count rule fires on more PASS than FAIL
+   answers (best: 116 fires / 65 on passes / catches 3 of 9). Rejected before a line shipped.
+2. Built a per-item repair (repair, not regenerate), TDD, audited on real prod evidence twice (window matching attached
+   2 wrong links → structured rows, identity fields only → 64 drafts / 2 repairs / both verified). Promoted `c00987cd`.
+3. Andy: "do you need to check the prod? what superpowers skill says?" → verification-before-completion. Ran the LIVE
+   node's bytes over real drafts: 1 fire, WRONG (author_name match, exec 127539). **Rolled back in 5 min.**
+4. Fixed author fields; re-audit found `https://kos.com` (a url in Zenon Labs' description) attached via the window
+   fallback → fallback removed, fixtures rewritten to the real JSON shape. Third audit 31 drafts / 0 repairs / 0 wrong.
+5. Re-ran the 9 ids against prod with context (32 turns): 4 fail / 3 pass / 1 borderline / 1 n/a. The repair fixes none
+   of the fails and would add one wrong link. Causes: retrieval gap (`member_match_v2`/`expertise_search` return NO url
+   column), body-binding gap, answer shape. → **#154 + #155 filed; #138 stays unshipped.**
+Lessons: n8n keeps ~1 day of executions (audit corpus shrank 65 → 31 within hours); a synthetic fixture that passes
+immediately is the wrong test — reproduce on the real blob.
+
+### #154 CLOSED — every person she names can be opened
+Migrations `people_lanes_link_154` + `member_link_normalise_154`: `digest.member_link()` (profile FB url → FB-map
+vanity → profile.php?id, canonical `https://www.facebook.com/…`), `link` on both people lanes (DROP+CREATE with grants
+restored, `proacl` verified), view `member_links`, finder emits `link`. Coverage 718/741 actives, 0 non-canonical.
+Gate +7 checks (312/0; two older expertise checks updated for the new column). Staging probes 4/4, 10/10, and a null
+link reads "(no public profile link on file)". Promoted `d40a837d`; prod probe 5/5 linked; live finder 5/5 `link`.
+Staging was re-staged from prod first so the rolled-back #138 block could not ride the promote.
+
+### Also
+- `digest.mds.co` SERVFAILs from this Mac (public DNS fine) — gate route checks fail status 0; origin host works.
+- Peer session (scorecard-2d) works `fbstory` in a worktree; its `vitest.config.mts` excludes `.worktrees/**`.
+- Usage facts for Andy: intros used once end-to-end (Ben Anderson → Dat Le, 1h51m); 13 explicit offers → 1 yes; a
+  by-name intro ask (Anjie Liu → Dan Schaefer, 31 Aug) got the stale Summit picker — not in the backlog, flagged.
+
 ## 2026-08-28 · Olivia · **7 TICKETS SHIPPED (#125 #149 #150 #151 #153 + #102 slice), ANNOUNCEMENT WAVE SENT 94/94** · #126 closed not-reproducible · #148 #152 filed · #147 PAUSED on Andy
 
 **Prod walked `8bb0827d` → `c20c1811` → `077e2be4` → `06df948a` → `15ff4978`**, five promotes, gate
