@@ -6,6 +6,66 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+### Round three — a phantom bug, four deploys, and the one lesson worth keeping
+
+Andy's "why nothing is clickable" had a boring, correct answer (round one had no drill-downs —
+fixed in `acf1513`). I kept going anyway and manufactured a bug that never existed.
+
+**The chain of wrong turns:**
+1. Counted `__reactFiber$` keys + `window.__next_f` entries, saw ~60 elements, concluded **streamed
+   content never hydrates on a hard load**. That probe reports the SAME number on a page that works
+   and one that does not — it measures nothing. Told Andy, told the peer session, filed a task,
+   shipped `8ce9fdb` (dropped the Suspense boundary).
+2. Clicked properly, saw it work, saw **Overview work too** → withdrew the task, corrected the peer,
+   reverted (`ddfe63b`).
+3. Saw a click 5s into a cold load get lost on the streamed build and land on the non-streamed one,
+   called it a **real early-click defect**, shipped `387854f`.
+4. Then the same loss appeared on the NON-streamed build at 5s, 10s and 22s — and a second click
+   always worked. **The automation tool swallows its own FIRST click while the tab takes focus.**
+   No hydration bug, no streaming bug, no early-click defect, on any build. Restored streaming
+   (`ae503c3`), which is where the code started.
+
+**Net:** four deploys that changed nothing a user can see, one withdrawn task, two corrections to a
+peer, three rewrites of this log entry.
+
+**Lessons:**
+1. **A proxy that reads the same for working and broken code is not evidence.** Click the thing.
+2. **Then distrust the click too.** An automated first click after a page load can be eaten by focus
+   — click twice before declaring a control dead. Repeat the failure on the OTHER build before
+   believing the difference is real: one trial per build is a coin flip, not a comparison.
+3. **The boring explanation was right the whole time.** When the user says "nothing is clickable"
+   and the page has no click targets, that is the bug.
+
+### Same session, second round — Andy: "why nothing is clickable?"
+
+Fair hit: round one shipped a REPORT, not a tool. Fixed in `acf1513`:
+- **Every KPI tile opens the rows behind its number** (Partner complaints lands on the mentions
+  table already filtered to complaints).
+- **A member name focuses that member across every section**; **a count in the Members table opens
+  exactly the posts it counted** (Dan Wills' "13" under Asks → his 13 asks); a hashtag opens its
+  posts; a partner name opens their mentions. Active filters render as chips, each clearable.
+- **Facet chips with live counts** — mentions by complaint/praise/neutral, posts by
+  value add / give / ask / unclassified. (The counts are computed BEFORE the verdict filter, so a
+  chip never reads zero once you use it.)
+- **"Today" removed** from this tab's picker (the group is captured once a day, so it is always
+  empty); `?period=today` lands on Yesterday. `PeriodPicker` gained an optional `exclude`, so no
+  other tab changed.
+
+**Two traps, both worth remembering:**
+1. **A predicate closed over component state read STALE.** `matchesMember` as an in-component
+   closure meant the React Compiler memoized the derived lists and never saw the focused member
+   change — a click scrolled but filtered nothing. Fix: the scoping logic is now
+   `src/lib/admin/fb-filter.ts`, **pure functions over plain arguments, 16 tests**.
+2. **Smooth scrolling is a no-op in some embedded browsers** — the drill did nothing visible.
+   Scrolling is instant now, and deferred one double-rAF past the commit (a scroll started in the
+   same tick as the state change gets cancelled by the re-render).
+
+**Verification note (honest):** the Browser pane **cannot hydrate streamed Next content** — the
+EXISTING production Overview page fails identically there (`S:0` container, zero react keys), so
+this is the pane, not the app ([[reference_preview_pane_no_hydration]]). On the one pane instance
+that DID hydrate, tiles / facet chips / member drill / count drill / partner drill were all clicked
+and confirmed live. Everything since is covered by the 16 pure tests (302 total green) + `next build`.
+
 ## 2026-09-02 (evening) — FB report PROMOTED into the admin dashboard: `/admin/facebook`, live from Supabase
 
 **Andy:** "that's what i meant to add it here" (screenshot of `digest.mds.co/admin`). The local
