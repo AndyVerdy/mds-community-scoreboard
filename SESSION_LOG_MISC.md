@@ -6,6 +6,64 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-01 — WA → FB story posts: designed, built, shipped to production
+
+**Ask (Andy, story mode):** "as an MDS community, we want to post regularly on our FB community
+page about interesting things that happen in our WA chats."
+
+**Shipped and live.** Three times a week (Mon/Wed/Fri 9am ET) a Render route picks the single
+best conversation from the 18 MDS WhatsApp chats, writes it up as a ~120-word named-and-
+paraphrased post, checks it against a deterministic privacy gate, and drops a copy-ready card
+into `#automation-tests` for Andy to paste into the private FB group. Meta removed Groups API
+publishing in 2024, so the human paste is a hard constraint, not a shortcut.
+
+- **Merged + deployed:** `mds-digest-web` `31a438e` (merge of branch `fbstory`, 17 commits).
+  Suite 17 files / 237 tests green on the merge result; `next build` clean; both routes present.
+- **Deploy proven live:** `/api/version` flipped `cae87c1` → `31a438e`; `/api/fbstory/draft`
+  went 404 → 403 (route live, secret gate refusing unauthenticated) → 200 once Andy set
+  `FB_STORY_SECRET` in Render.
+- **First live run:** HTTP 200 `posted:true`, story `120363407426452368@g.us:OpD8fwN5TDFNvg-…`,
+  ledger row written (`MDS DTC/Shopify`, 22 message ids, confidence 0.78), and the card is
+  visible in `#automation-tests` — which is also the first proof the Block Kit payload is valid.
+- **Schedule:** n8n `iX7cEFrCW5apa7CS` ACTIVE, cron `0 9 * * 1,3,5`, tz `America/New_York`,
+  timeout 180s, **retry deliberately OFF**. Holds no logic — one HTTP call.
+
+**Data: existing only.** Reads `digest.summaries` and `digest.wa_messages` (both already
+mirrored). One new table `digest.fb_group_posts` records what has been told. **Airtable is
+never written.**
+
+**The whole-branch review earned its keep.** After ten clean task reviews, the final opus review
+found a CRITICAL hole every earlier review missed: the privacy gate's verbatim check ran PER
+MESSAGE, so a member's sentence split across consecutive WhatsApp messages passed. Proven by
+execution — 17 verbatim words scored 6 against a threshold of 8. Measured exposure: 17.6% of
+messages in the last 14 days are same-sender follow-ups within 2 minutes. Fixed by also
+matching against the joined thread, verified by flipping the repro to blocked and probing
+three paraphrases for over-blocking.
+
+**Other real defects found by review, all fixed:** two Criticals in the gate (non-space-delimited
+scripts bypassed the verbatim check entirely; a shared first name masked a fully-named
+undeclared member) · the ranker's JSON schema was rejected by the live API (`oneOf` unsupported)
+— caught only because a live smoke call was required rather than assumed · a Slack `postCard`
+failure silently AND permanently lost a story (row already `draft` = told) · a double-fire could
+produce two cards · a gate-blocked story was re-picked every run · the draft's markdown code
+fence could be broken by a backtick in LLM prose.
+
+**Open, Andy's call:** buttons ship unwired (Slack allows one callback URL per app; Centurion and
+Application hold both) — the card still works, only one-click Mark-posted and skip-reason
+feedback are missing; third-party names inside messages are prompt-defended + human-read only,
+not gate-checked; RLS is disabled on 43 `digest.*` tables including the new one (pre-existing).
+
+**Estate note:** a setup mistake put branch `fbstory` in the shared main checkout and captured
+peer session `scorecard-e1`'s unrelated `#109` commit. Rescued, returned to them, landed on main
+as `cae87c1`; my work moved to worktree `.worktrees/fbstory`. Also: **`digest.mds.co` does not
+resolve on this Mac** (n8n and public resolvers are fine) — use `mds-digest-web.onrender.com`
+for local checks.
+
+Spec `docs/superpowers/specs/2026-09-01-wa-to-fb-story-posts-design.md` · plan
+`docs/superpowers/plans/2026-09-01-wa-to-fb-story-posts.md` · handoff `WA_FB_STORY_POSTS.md`
+
+---
+
 ## 2026-08-13 — Application v3: verification cards went missing in Slack (fixed + both recovered)
 
 **Trigger:** Sashani in `#memebers-verification`, "Has this notification stopped? The latest one
