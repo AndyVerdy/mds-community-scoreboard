@@ -380,6 +380,21 @@ timestamp read "(at 00:00:00)" because early chunks carry start_sec 0 — cosmet
 umbrella rather than new.
 
 ### #152 · `refresh_entity_dossiers` times out — dossiers 20 days stale for every new video
+
+#### ✅ FIXED + VERIFIED LIVE 2026-09-02 (health triage of the 🔴 "nightly derivations" tile)
+**Root cause:** the RPC ran through PostgREST as `service_role`, whose role-level `statement_timeout` is **60s**
+(`pg_roles.rolconfig`); the refresh legitimately scans 53k `content_items` × 51 topics with `ts_rank` and needs
+longer. Every night since 2026-08-20 it was cancelled at 60s (`57014`), and because `last_success_at` then sat past
+its 26h `max_age_hours`, the derivations tile has been RED for 13 days on this job alone.
+**Fix:** migration `refresh_entity_dossiers_statement_timeout_152` — `alter function digest.refresh_entity_dossiers()
+set statement_timeout = '900s'` (a function-level GUC, applied on entry; the role ceiling stays 60s for everything
+else). No DROP, no body change.
+**Verified with a forced live run of the whole nightly chain** (`scripts/nightly_derivations.py`, 14:53–15:00Z):
+`OK entity_dossiers: entity dossiers refreshed: video=7, partner=0, event=358, chapter=55 [87s]` — 87s, i.e. exactly
+the class the 60s ceiling was killing. All 8 jobs green in the same run.
+**Also found:** a manual RPC call made while the chain's own refresh was running died on `55P03 lock timeout` (8s
+role lock_timeout, two concurrent refreshes) — expected; never run two at once.
+
 **🟡 S2 · size S — filed 2026-08-28, found by the video-update session (scorecard-df) and handed over.**
 
 > **In plain words:** the job that builds each video's topic fingerprint dies on a database timeout

@@ -19,7 +19,7 @@ Secrets from mds-digest-web/.env.local (key = CENTURION_ANTHROPIC_API_KEY — na
 because Claude Code exports an EMPTY ANTHROPIC_API_KEY). curl, not urllib.
 """
 import argparse
-import json
+import json, time
 import subprocess
 import sys
 
@@ -89,17 +89,28 @@ def paged(url, key, page=1000):
     return out
 
 
-def anthropic(key, system, user):
+def anthropic(key, system, user, tries=3):
+    """⚠️ ALWAYS bounded. This call had NO timeout: on 2026-09-02 it hung for 5,506 seconds
+    ("curl failed") and took the whole nightly chain down with it while Anthropic was overloaded.
+    Same shape as olivia_derive_niches.anthropic(): 120s cap, three tries, short backoff — a
+    transient now costs two minutes and a retry, never the night."""
     body = {"model": MODEL, "max_tokens": 4000, "thinking": {"type": "disabled"},
             "system": system, "messages": [{"role": "user", "content": user}]}
-    cmd = ["curl", "-s", "https://api.anthropic.com/v1/messages",
+    cmd = ["curl", "-s", "--max-time", "120", "https://api.anthropic.com/v1/messages",
            "-H", f"x-api-key: {key}", "-H", "anthropic-version: 2023-06-01",
            "-H", "content-type: application/json", "--data-binary", "@-"]
-    r = subprocess.run(cmd, input=json.dumps(body), capture_output=True, text=True)
-    resp = json.loads(r.stdout)
-    if "content" not in resp:
-        sys.exit(f"anthropic error: {r.stdout[:400]}")
-    return "".join(c.get("text", "") for c in resp["content"])
+    last = ""
+    for attempt in range(tries):
+        r = subprocess.run(cmd, input=json.dumps(body), capture_output=True, text=True)
+        try:
+            resp = json.loads(r.stdout)
+        except ValueError:
+            resp = {}
+        if "content" in resp:
+            return "".join(c.get("text", "") for c in resp["content"])
+        last = (r.stdout or r.stderr or "")[:400]
+        time.sleep(5 * (attempt + 1))
+    sys.exit(f"anthropic failed after {tries} tries: {last}")
 
 
 def main():
