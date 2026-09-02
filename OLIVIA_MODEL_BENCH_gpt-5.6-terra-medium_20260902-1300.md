@@ -1,0 +1,45 @@
+# Model bench — gpt-5.6-terra-medium — 92 questions
+
+- **Answer quality:** 88 judged · PASS 78 · PARTIAL 8 · **FAIL 2 (2.3%)**
+- **Cost:** $2.7735 total · $0.03015 per answer cold · **$0.03015 per answer steady-state** (warm prefix, cache-write excluded — the number production actually pays; list prices, no intro discount)
+- **Latency:** median 21.2s · max 144.4s
+- **Tokens:** fresh in 549,646 · cached in 6,586,598 (92% cached) · out 29,737 · 242 model calls (2.6 per answer)
+- **Reasoning tokens:** 7,384 (80 per answer, inside the output count)
+- **Effort:** medium
+- **Blended rate:** $0.39 per 1M tokens (all tokens, cache discounts included — comparable to the console's own number)
+- **Model time vs tool time:** model 25.3s per answer, rest is Supabase/Voyage (identical infrastructure for both vendors)
+- **Output budget:** 8,000 (max_output_tokens) · truncated calls 0
+- **Forced first fetch:** per model
+- **Warm-up passes:** 2 (warm)
+- **Loop errors:** 4
+- **claude-sonnet-5 judge:** PASS 78 · PARTIAL 8 · FAIL 2 · ERROR 4
+- **gpt-5.6-terra judge:** PASS 79 · PARTIAL 1 · FAIL 8 · ERROR 4
+
+- **ERROR** Q4009 [VIDEOS] What about the Amazon seo mastery call.  Can you send a transcript
+  - loop error — not graded
+- **ERROR** Q4017 [VIDEOS] Summarize the Josh taekman session
+  - loop error — not graded
+- **ERROR** Q4047 [PEOPLE] Hello. Can you find when Morris Sued started being a chapter lead? Thanks
+  - loop error — not graded
+- **FAIL** Q4050 [PEOPLE] Give me everything you know about Ivan Ong. I am working on an ask me anything session with him about Amazon and want to make it good
+  - First citation's returnless-refund content attributed to Ivan is actually authored by Zaid Al-Husseini, a misattribution.
+- **PARTIAL** Q4056 [PEOPLE] who are the mds members based in cyprus
+  - Includes Tanase Tudor listed as based in Baia-Mare (Romania), inconsistent with a Cyprus-only filter.
+- **PARTIAL** Q4060 [PEOPLE] I met someone in the Milan summit who sells travel accessories but I can't remember his name.
+  - Asks clarifying questions instead of attempting attendee cross-reference lookup that warehouse could support.
+- **FAIL** Q4064 [STATS] How many MDS member are there in Texas?
+  - Expected a derivable state count; Olivia dodged with a ticket offer instead of answering.
+- **PARTIAL** Q4065 [STATS] how many members are in MDS
+  - Gives a specific number but cannot be verified against expected vague 'community total' descriptor.
+- **PARTIAL** Q4067 [STATS] How many members are doing less than $1m in revenue annually
+  - Claims zero members but expected a real band count, contradicting the premise that such a band exists.
+- **PARTIAL** Q4072 [EVENTS] Who will be at the Women's Lunch?
+  - Gives count but omits attendee names the ground truth expects to be listed.
+- **PARTIAL** Q4074 [EVENTS] What are the upcoming virtual events?
+  - Expected answer confirms only virtual events exist, but Olivia denies having any listed, contradicting that.
+- **ERROR** Q4080 [PARTNERS] Does anybody have a TikTok agency they recommend?
+  - loop error — not graded
+- **PARTIAL** Q4091 [CONTENT] for amazon logistics - what can you tell me about peoples experience using AGL
+  - Fonseca quote attributed but that FB post's author is Sujay Kapadia, a likely misattribution of a comment as a named quote.
+- **PARTIAL** Q4092 [CONTENT] Hi, what do you know about images in Amazon?  The order of internal images and best size for largest display on mobile
+  - Attributes Facebook posts to Rick Ham/Tony Brink but verified authors are Alex Bonilla/Fabio HD, misattributing sources.
