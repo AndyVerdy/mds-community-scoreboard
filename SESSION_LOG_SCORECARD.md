@@ -6,6 +6,54 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-02 (evening) — FB report PROMOTED into the admin dashboard: `/admin/facebook`, live from Supabase
+
+**Andy:** "that's what i meant to add it here" (screenshot of `digest.mds.co/admin`). The local
+`fb_report.py` page was only ever a file on one laptop — the ask was to make it a tab in the admin
+alongside Overview / Channels / Members / Member 360 / Olivia / Tools.
+
+**Shipped — mds-digest-web `6653c44`** (branch `fb-admin-tab-20260902`, built in worktree
+`.worktrees/fb-admin`):
+- `src/app/admin/facebook/page.tsx` — server component, `force-dynamic`, read live on every request.
+- `src/lib/admin/fb-report.ts` — the loader: range-scoped posts, partner mentions, weekly trend,
+  KPIs **and their prior-period deltas** (the local page never had deltas).
+- `src/components/admin/FbTable.tsx` — one generic table for all six sections: click-to-sort,
+  filter box, 20 rows + "show all N". Column configs are PLAIN DATA (no render callbacks) so a
+  server component can pass them across the client boundary.
+- `AdminNav.tsx` — one line, tab sits between Member 360 and Olivia.
+- Reuses the admin's own `PeriodPicker` / `ComparisonStat` / `periods.ts` rather than a bespoke
+  date range, so this tab behaves exactly like every other one.
+
+**DB — migration `fb_report_posts_view`:** new `digest.fb_report_posts` (post + its comment count,
+`unanswered` = checked AND zero comments, so a never-checked post is still never called unanswered).
+Hashtags and the member mix are derived PER PERIOD in the loader instead of read from the lifetime
+`fb_report_hashtags` / `_member_mix` views — otherwise the tables would answer a different question
+than the period picker asks. `db/` re-exported (`e70f0b4`), which also captured drift the export had
+never held: the four earlier `fb_report_*` views and scorecard-fb's live `fb_group_posts` changes.
+
+**Verified (last 30 days, live):** 268 posts · 144 posting members · 14 value adds · 164 asks ·
+90 gives · 27 unanswered · 4 partner complaints · avg reach 182 — the same numbers from the loader
+directly AND rendered in the KPI cards of an authenticated `GET /admin/facebook?period=30d` (200,
+414KB, 74 posts linked back to Facebook). Unauthenticated GET → **307 to `/`**, so the member content
+sits behind the existing `@mds.co` gate. `tsc` clean, **278 tests pass**, `next build` green.
+Local QA session used the app's own dev-only `/api/test-login` (404s in production) with a neutral
+`qa-fbtab@mds.co` staff identity — no Airtable write, and never Andy's identity.
+
+**Not verified:** the click behaviour of sort/filter and the light-theme rendering — the sandbox
+blocked driving a logged-in browser, and I did not route around it. Andy sees both on the live tab.
+
+**Two-agent note:** switching the SHARED checkout to my branch disturbed scorecard-fb mid-edit (their
+two `fbstory` files landed on my branch as working-tree changes; they rescued them). Fix adopted:
+**both sessions now work in `.worktrees/`, and the shared checkout stays on `main`.** Worth making the
+house rule.
+
+**Open, unchanged:** the FB Insights xlsx export is still stale since **Aug 23** — every unattended
+retry has failed, but every one of those failures predates the retry-with-reload (v1.01) and the MV3
+keepalive (v1.07). Tonight's 4:25pm CT run is the first real test on v1.12; if it fails, v1.06+ now
+records the failing step.
+
+---
+
 ## 2026-08-22 (night) — POST REACH shipped end-to-end (ext v0.93→v0.98 + `fb_posts.reach`). Four wrong theories, one anchor-free reader, validated against the FB UI.
 
 **Andy:** "reach is not views. its reach." Correct — `views` is the Insights Top-posts number (top-99
