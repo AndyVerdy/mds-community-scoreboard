@@ -87,6 +87,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#154** | 🔗 People she names carry NO link — `member_match_v2` / `expertise_search` return no url column at all | 🔴 S1 | S-M | ✅ proven `e55a45c6` — 4/4 and 10/10 linked; gate 312/0 | ✅ **LIVE 2026-09-02** prod `d40a837d` (seed) + Render `8f368b3` (finder) — prod probe 5/5 linked, live finder 5/5 linked; 718/741 actives resolve |
 | **#155** | 💬 A chat quote carries its own message link, and "what should I know" is not a capability tour | 🟡 S2 | M | — | — |
 | **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ✅ **PROMOTED 2026-08-26** `15ff4978` — verified 2026-08-28: prod/staging graphs identical (only webhook path differs), gate 306 PASS · 0 FAIL · EXIT 0; re-embed of 7 still awaits Andy |
+| **#156** | 💸 Sonnet 5 vs GPT-5.6 Terra on the locked 100 bank — price + quality, dual judge, prod untouched (bench harness, no n8n) | 🟡 S2 | S | — (harvest run only, no edits) | — (decision data) |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -313,6 +314,16 @@ have the lapse notice capped (131049); the free-form fallback only rescues that 
 **Build:** ① Format Reply: PS → Millie; when a reply is button-eligible, place the PS as the FIRST line (offer stays last) — never drop the buttons for the PS. ② Answer Seed: who-to-meet answers ≤ ~850 chars; when the asker is a registered attendee and ≥1 match was shown, END with exactly "Would you like me to connect you with one of them?"; never offer intros to non-attendees (pilot refusal); "Yes" after that offer → `member_intro` with no target → present the pick list + "Who would you like me to send a request to?"; a named answer → `member_intro{target_name}`. ③ Plan Request: make sure a bare "Yes" after the intro offer reaches the LLM lane (no plan replay of the people op). ④ Router system prompt "router for Olivia" → Millie; internal labels untouched (documented). Staging probes as a registered attendee (silent lane, cleanup): reply ≤1,024 + ends with the offer + `interactive.type='button'` in Format Reply output; "Yes" → member_intro picker call in the execution; name → request path (refused/dry by design, zero sends). Gate EXIT 0 · snapshot · Andy promotes.
 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
+
+### #156 · Sonnet 5 vs GPT-5.6 Terra on the locked 100 bank — price + quality, prod untouched
+**🟡 S2 · size S** · spec `docs/superpowers/specs/2026-09-02-olivia-sonnet-vs-terra-bench-design.md`
+
+> **In plain words:** Same 100 member questions, answered by Claude and by OpenAI's equivalent model, cost and quality side by side, so the vendor choice is data. Nothing in the running product changes.
+
+*As the owner paying Olivia's API bill, I want the same 100 member questions answered by Claude Sonnet 5 and GPT-5.6 Terra under identical conditions, with cost per answer and judged quality side by side, so I can decide on the vendor from data, without any change to the running product.*
+Filed by Andy 2026-09-02 ("i want to test OpenAI vs Anthropic … 100 questions … price, quality … without interrupting prod"). Decisions in chat: model = `gpt-5.6-terra` (OpenAI's mid tier, $2/$0.20/$12 — the Sonnet 5 slot); dual judge (Sonnet primary, Terra cross-check); bench harness first, n8n port only if Terra wins. Prior art: #22 (Kimi, July: Sonnet 15.3% fail / $0.0135 vs Kimi 22.2% / $0.0270) and #32 lever 5.
+**Shape of the fix:** the existing bench harness (`~/mds-scorecard-tools/kimi_bench.py` + `kimi_harvest.py`) gets an OpenAI path. One silent run of the locked bank at STAGING (lock held, no graph edits) is harvested for the exact `Answer Seed` bodies; both vendors replay those bodies through the same tool loop, same RPCs, same embeddings, warm cache, forced first fetch on both; two judges grade every answer; one compare report. Post-model steps (clamp, fact check, link repair) not run for either — model-independent.
+**Accept when:** (a) 100/100 seeds from ONE staging run, prod exec log shows no bench traffic · (b) both models run warm, 0 loop errors or every error listed · (c) $/answer steady-state + cold per model from real usage counters at today's list prices · (d) fail % from the Sonnet judge, cross-checked by the Terra judge, disagreements listed · (e) one compare report with all 100 answer pairs · (f) staging left as found (diff identical), lock released.
 
 ### #155 · A quote from a chat carries that message's own link, and "what should I know" is not a tour
 **🟡 S2 · size M — filed 2026-09-02, split out of #138 after the 9-id re-run.**
