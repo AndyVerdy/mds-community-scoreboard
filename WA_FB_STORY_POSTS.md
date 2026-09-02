@@ -37,6 +37,26 @@ resolve on Andy's Mac** (n8n and public resolvers are fine).
 Add `&asof=YYYY-MM-DD` to see what it would have said on a past week — this is how the twelve
 sample drafts were reviewed before launch.
 
+## What the post looks like
+
+A chat name, then a hook built on the most concrete fact in the thread (a price, a
+result, a reversal), then two to four short paragraphs, a question to the group, a
+divider, and an "Also this week in the member chats" section of three or four
+one-line hooks from OTHER chats. Roughly 200 words.
+
+Hard-won shape, from Andy's feedback on the first live cards:
+- **Keep the numbers.** The first version stripped vendor pricing because the
+  prompt's "no numbers that embarrass anyone" rule over-fired. "$80k/yr cut to $5k"
+  is the value; "cut their bill sharply" is worthless. The rule is about people and
+  their private business, never about what software costs.
+- **No roll call.** Walking through each participant in turn reads as meeting
+  minutes. Two or three people, woven in.
+- **No message counts.** "353 messages across 8 chats" is a vanity metric. The
+  footer earns attention with what happened, not how much.
+- **Plain text, no markdown.** Facebook group posts have no formatting — `**bold**`
+  pastes through as literal asterisks. `stripMarkdown` in `write.ts` enforces this
+  in code, before the gate, so approved text is byte-identical to pasted text.
+
 ## The rules it enforces
 
 - **Named, paraphrased.** Members are credited; their exact words never leave the chat.
@@ -51,11 +71,17 @@ sample drafts were reviewed before launch.
 
 ## Open questions for Andy
 
-1. **Buttons are unwired.** Slack allows one callback URL per app; Centurion and Application hold
-   both of ours. The card posts and copies fine and dedupe is unaffected. Missing: one-click
-   "Mark posted", and skip reasons feeding back to the ranker. Fix = a new Slack app (Andy
-   creates it), then set `FB_STORY_SLACK_BOT_TOKEN` + `FB_STORY_SLACK_SIGNING_SECRET` in Render.
-   **No code change needed.** Note the interactivity route now 401s when no signing secret is set.
+1. **The card has NO buttons, deliberately — do not add any without a dedicated Slack app.**
+   2026-09-01 incident: the card shipped with an "Open group" URL button carrying no
+   `action_id`, on the assumption Slack would not deliver the click. **It does** — Slack mints
+   its own action_id and POSTs `block_actions` to the OWNING APP's Interactivity Request URL.
+   The card is posted with the MDS WA Approvals bot token, so a member clicking "Open group"
+   reached the WA Approvals handler, which read it as a join-request rejection, overwrote the
+   card in place, threaded a rejection reply, and stamped `decision=rejected` onto Airtable
+   JoinRequests row `recgrlkagHhDZH3Iv`. The Whapi call 400'd, so no member was rejected on
+   WhatsApp. The group is now a plain mrkdwn link, which sends no interaction, and a test
+   asserts the card stays inert. Buttons return only with a dedicated Slack app + its own
+   `FB_STORY_SLACK_BOT_TOKEN` / `FB_STORY_SLACK_SIGNING_SECRET`.
 2. **Third-party names.** The gate blocks quotes and undeclared *members*. Someone named *inside*
    a message — a client, a supplier — is defended only by the writing rules and by Andy reading
    the card. A reviewer proposed scanning all 673 member names against every draft; not taken,
@@ -64,6 +90,30 @@ sample drafts were reviewed before launch.
    draft text derived from private conversations. Pre-existing, not caused by this work.
 4. **The ranker has never returned "none"** — 48 for 48 across all backfills. The none path is
    proven working, so this reads as genuine chat volume, but watch whether it ever declines.
+5. **Tagging credited members (proposed, awaiting Andy).** `digest.member_links`
+   (`at_member_id` → Facebook profile url, 6,021 rows, added by the Olivia session) would let
+   the Slack card list credited members with their profile links, so whoever pastes can
+   @-mention them in the Facebook composer — tagged members get notified and reply. Constraint
+   from that view's author (#137): the link and the name are all the card needs; **never put
+   `at_member_id` in the card text**, because the paste path ends on Facebook.
+
+## Things that bit us, so they do not bite again
+
+- **The ranker truncated mid-JSON.** It wrote 1,400-char rationales against
+  `max_tokens: 2000`, so a live run 500'd with "Ranker returned non-JSON" on a
+  payload that was plainly JSON — it was valid JSON that simply stopped. Budget is
+  4000, the prompt caps `why` at ~300 chars, and the error now names truncation.
+- **The hero changes every run, by design.** The ranker is an LLM judgement call and
+  the week's top candidates sit within ~0.06 confidence of each other. You cannot
+  approve a draft and re-run to reproduce it — the card IS the artifact. The ledger
+  is what stops a story being told twice in normal operation.
+- **Selection used to bin the week.** The footer once took one headline per chat, by
+  volume, discarding everything else — a six-message day carrying "ADA lawsuits are
+  hitting multiple members" lost to a busy day of chatter. Every substantive
+  chat-day now goes to the writer, which picks. Volume is a bad proxy for interesting.
+- **Of 18 chats in a typical week, ~7 are completely silent** and ~4 barely register.
+  The material is genuinely concentrated in five or six chats. That is a community
+  fact, not a pipeline bug.
 
 ## Known deferred items
 
