@@ -52,7 +52,10 @@ def heartbeat(key, status, detail):
            "detail": detail[:500], "max_age_hours": MAX_AGE_HOURS}
     # Only STAMP success — never send the key otherwise. Sending None UPDATEs the column to
     # NULL, destroying "when did this last work" at the exact moment you need it.
-    if status == "ok":
+    # DEGRADED still stamps: the run completed the whole Zoom half; the video half it could
+    # not do is owned by the videos_refresh heartbeat. Withholding the stamp kept the tile red
+    # for 26 days (7 Aug -> 2 Sep 2026) on a job that ran clean every week.
+    if status in ("ok", "degraded"):
         row["last_success_at"] = "now()"
     sb("POST", "olivia_job_heartbeats?on_conflict=job", key, [row],
        "resolution=merge-duplicates,return=minimal")
