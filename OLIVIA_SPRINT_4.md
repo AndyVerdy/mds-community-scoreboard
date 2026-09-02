@@ -84,7 +84,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
 | **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list + dangling old-event links (Andy, prod 52891/52893/52935/52941/52951) | 🔴 S1 | S | ✅ probe wave 8/8 · orphan-strip unit 6/6 | ✅ **PROMOTED 2026-08-26** `06df948a` — prod turn 52959: 1 link, Denver gone; gate 306 EXIT 0 |
 | **#152** | ⏱️ `refresh_entity_dossiers` statement-timeout — `zoom_weekly` heartbeat error, last success 2026-08-07; video chain exits 1 every run (found by scorecard-df) | 🟡 S2 | S | — | ⏸ filed 2026-08-28 |
-| **#154** | 🔗 People she names carry NO link — `member_match_v2` / `expertise_search` return no url column at all | 🔴 S1 | S-M | ✅ proven `6757d8f9` — 4/4 and 10/10 linked on staging; gate 312/0 | ⏸ SQL is live (prod-shared, 718/741 linked); seed descriptions await promote; finder awaits push |
+| **#154** | 🔗 People she names carry NO link — `member_match_v2` / `expertise_search` return no url column at all | 🔴 S1 | S-M | ✅ proven `e55a45c6` — 4/4 and 10/10 linked on staging; gate 312/0 | ⏸ SQL is live (prod-shared, 718/741 linked); seed descriptions await promote; finder awaits push |
 | **#155** | 💬 A chat quote carries its own message link, and "what should I know" is not a capability tour | 🟡 S2 | M | — | — |
 | **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ✅ **PROMOTED 2026-08-26** `15ff4978` — verified 2026-08-28: prod/staging graphs identical (only webhook path differs), gate 306 PASS · 0 FAIL · EXIT 0; re-embed of 7 still awaits Andy |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
@@ -346,7 +346,7 @@ url, else `profile.php?id=<uid>`, normalised to `https://www.facebook.com/…`; 
 `member_match_v2` and `expertise_search` now return it as `link` (RETURNS TABLE changed → DROP + CREATE with the
 exact grants restored: postgres + service_role, public revoked — verified in `proacl`). View `digest.member_links`
 exposes the same helper for app routes; the finder (`mds-digest-web` commit, awaiting push) emits `link` on every
-person row. Staging `6757d8f9`: the two tool descriptions tell the model to put each link on that person's line.
+person row. Staging `e55a45c6` (re-staged from prod so ONLY the seed edit rides; the rolled-back #138 block is gone): the two tool descriptions tell the model to put each link on that person's line.
 
 | AC | result |
 |---|---|
