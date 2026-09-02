@@ -6,6 +6,29 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+### Round three — the real reason "nothing is clickable": streamed content never hydrates on a HARD load
+
+Andy opened the tab **by URL**. That is the whole bug, and it is not mine — it is app-wide and
+pre-existing. Verified in Andy's own Chrome against **production**:
+
+| how you arrive | result |
+|---|---|
+| soft nav (click **Facebook** in the admin nav) | hydrates, everything works — tile → chips → filtered table, confirmed live |
+| **hard load** (URL typed / refresh) | only the **60-element shell** hydrates (nav, theme toggle). Everything inside the streamed `div#S:1` has **zero React fiber keys** → dead HTML |
+
+**`/admin` (Overview) has the identical defect today** — its own `PeriodPicker` is unhydrated on a
+hard load, so clicking a period does nothing. Filed as a separate task; **not fixed here**
+(issues found alongside are not the job).
+
+**Fix for this tab (`8ce9fdb`):** drop the `<Suspense>` boundary and await the data before the
+shell renders. Costs the loading skeleton and ~1s of first paint; the page is then interactive
+however you arrive at it.
+
+**Lesson:** building through the nav hides this class of bug completely — a soft nav renders the
+subtree client-side, so it is always interactive. **Test the hard load.** Cheap detector, in the
+console after a refresh: `[...document.querySelectorAll('*')].filter(e=>Object.keys(e).some(k=>k.startsWith('__react'))).length`
+— a number near 60 means only the shell hydrated.
+
 ### Same session, second round — Andy: "why nothing is clickable?"
 
 Fair hit: round one shipped a REPORT, not a tool. Fixed in `acf1513`:
