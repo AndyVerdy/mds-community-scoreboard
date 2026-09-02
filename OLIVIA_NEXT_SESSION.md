@@ -28,8 +28,8 @@ and #154 finder `7a0ab94`; the peer session's fbstory commits ride the same main
   transcript — cause unknown; its SKILL.md still says "limit 100, ~152 videos, 2 pages" (reality: 20/page, 11 pages, ~200).
 - **Waiting on Andy:** push mds-digest-web `69a2ff1` (sync deadline 17Z→22Z) + `0814799` · FB Insights xlsx stalled since
   23 Aug — CONFIRMED real by the extension session (no download attempted since 23 Aug; SPA timing on the Download button);
-  the daily conversation leg is healthy. Fix = Andy clicks "Capture Insights" in the extension. Proposal: split the FB tile into
-  Scorecard leg (AT `Reporting Date (scrape)`) + conversation leg (`digest.fb_posts max(last_seen)`, ~36h) — not built.
+  the daily conversation leg is healthy. Fix = Andy clicks "Capture Insights" in the extension. FB tile split BUILT (`b05af61`): `fb-capture` (Supabase posts, 36h/72h) + `fb-engagement` = Insights scores (AT date,
+  missed week/14d) + roster on that leg. UNPUSHED with `69a2ff1` + `0814799` — three commits wait for Andy's "push".
 - **Verify next session:** the 08:00 card shows derivations green; Monday 07 Sep `zoom_weekly` launchd run stamps on its own;
   Sunday 06 Sep scheduled video task writes a dump (if not, run the 11-page fetch by hand as on 02 Sep).
 

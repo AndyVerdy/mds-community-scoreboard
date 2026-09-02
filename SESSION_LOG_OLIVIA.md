@@ -33,7 +33,7 @@ Insights xlsx → `process_fb.py` → AT `Reporting Date (scrape)`; newest xlsx 
 capture, Monday's heartbeat posted "stale 8d". The extension session confirmed (Chrome download history: no Insights download even
 ATTEMPTED since 23 Aug): the scheduled chain reaches the Insights page before the SPA renders `[aria-label="Download group insights
 data"]`; a retry + alarm is shipped but needs an extension reload; fix today = Andy clicks "Capture Insights". Proposal (not built):
-split the FB tile — keep the AT read for the Scorecard leg, add `max(last_seen) from digest.fb_posts` (~36h) for the conversation leg.
+split the FB tile — **BUILT on Andy's go** (mds-digest-web `b05af61`, unpushed): new tile `fb-capture` reads `digest.fb_posts` last ingest + posts touched in 36h (36h degraded / 72h down); `fb-engagement` renamed "FB engagement scores (Insights export)" on the Airtable date (missed week → degraded, >14d down); roster rides that leg. Live: capture healthy (ingest 18h, 46 posts/36h) · insights degraded (08-23, 10d). 9 tests, suite 263/263, tsc clean.
 
 **Tile math after:** `olivia_job_heartbeats` 12 jobs · 0 stale · 0 errored (SQL 15:29Z). Next card should show derivations green.
 
