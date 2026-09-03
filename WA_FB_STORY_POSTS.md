@@ -17,7 +17,8 @@ paste is a hard constraint — the system exists to make it cost one glance and 
 | Route | `GET /api/fbstory/draft?secret=…[&dry=1][&days=N][&asof=YYYY-MM-DD]` |
 | Buttons | `POST /api/fbstory/interactivity` (not wired yet — see Open questions) |
 | Schedule | n8n `iX7cEFrCW5apa7CS`, cron `0 9 * * 1,3,5`, tz `America/New_York`, retry OFF |
-| Excluded chats | **Centurion 20M+** and **Credit Card & Travel Hacks** — defaulted in `config.ts`, not env |
+| Priority chats | **DTC/Shopify, TikTok, AI & Automations** — preferred, not exclusive (`FB_STORY_PRIORITY_CHATS`) |
+| Excluded chats | **Centurion 20M+** and **Credit Card & Travel Hacks** — never surfaced (`FB_STORY_EXCLUDED_CHATS`) |
 | Slack | `#automation-tests` (`C0AQ8USNQK0`) |
 | Ledger | Supabase `digest.fb_group_posts` |
 | Reads | `digest.summaries`, `digest.wa_messages`, `digest.members` |
@@ -98,6 +99,19 @@ Hard-won shape, from Andy's feedback on the first live cards:
 - **Silence means broken.** Every no-post outcome — nothing good enough, below confidence, a
   repeat, a gate block, an error — posts a line to Slack and returns 500 if that line fails.
 - **A ceiling, not a schedule.** A thin week posts less. "None" is a valid answer.
+
+## Which chats, and in what order
+
+Eugene (2026-09-02): *"Focus on three channels: DTC, TikTok, and AI... those are the
+channels that have the most meaningful, widespread impact and from where we can actually
+share with others."* Andy: *"not only, but prioritize."*
+
+So the three are **preferred, not exclusive**. The ranker sees them flagged
+`[PRIORITY CHANNEL]` and is told: take one whenever it clears the bar, break a close tie
+its way, but prefer a good story from elsewhere over a weak one from a priority channel.
+A hard allowlist was tried first and reverted the same day — the three carry ~160
+messages a week between them, and nine distinct stories a week from that alone forced
+thin picks or empty runs.
 
 ## Three options per card, and no confidence score
 

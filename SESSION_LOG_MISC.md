@@ -69,7 +69,14 @@ authors with no map row, two of which are not people. Join `member_profiles`, NO
   real members with no FB-uid mapping); **#2 (S4)** a dedicated Slack app so the card buttons
   can be turned back on — that one is credentials and configuration, the handler is built.
 
-**State:** prod `a8a834f`, n8n `iX7cEFrCW5apa7CS` ACTIVE
+- **Channel priority (2026-09-03, after close):** Eugene asked to focus on DTC, TikTok and AI.
+  Implemented as a hard allowlist first — wrong reading, and the volume said so (two options
+  instead of three on the first check). Andy: "not only, but prioritize." Now the three are
+  flagged `[PRIORITY CHANNEL]` to the ranker and preferred, with everything else still
+  eligible as fallback. Verified live: DTC + AI as priority, Retail filling the third slot
+  when TikTok had nothing that cleared the bar.
+
+**State:** prod `dfd2c98`, n8n `iX7cEFrCW5apa7CS` ACTIVE
 Mon/Wed/Fri 9am ET, 291 tests green, final live run 3 options / 0 rejected.
 
 **Estate:** three sessions in `mds-digest-web` today. The shared checkout was switched under
