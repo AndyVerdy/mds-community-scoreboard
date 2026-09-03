@@ -36,6 +36,25 @@ to **0 rows**.
 while the **Unanswered tile still showed the server's 31** — two truths on one screen. Tiles now recount
 from the same rows the tables show (`980d454`).
 
+**Polish round (`d2437c0`), five from Andy — two were my own bugs:**
+- **Escape stopped closing the panel.** I had it call `onBack(stack.length - 1)`, which slices the
+  stack down to the panel it was meant to dismiss. It is `- 2`: pop the top, and at depth 1 that closes.
+- **"Michael Pryor › Michael Pryor › Michael Pryor"** — drilling a member from inside that member's own
+  panel pushed an identical level. A drill onto the subject already on top now REPLACES it.
+- **Give-share bars now line up** — the number is fixed-width; "0%" vs "100%" was shifting each bar.
+- **Unanswered has its own type filter** (All 31 · Value adds 2 · Gives 18 · Asks 11), separate state
+  from the All-posts facet.
+- **Mark-answered confirms first**, naming what actually happens. Andy asked for "permanently removes
+  from the report"; it is reversible, so the copy says the truth instead — leaves Unanswered here AND
+  the daily Slack card, stays in All posts where the same button undoes it.
+
+**The Slack card had to change with it (`daily_digest.py`, backup `.bak-preoverrides`):**
+`silent_posts()` read `fb_posts` + a comment lookup and knew nothing about admin edits, so a post
+handled in the portal would keep being nagged about. It now reads **`digest.fb_report_posts` with
+`unanswered=is.true`**, which already encodes both rules (only CHECKED posts count; an admin mark ends
+it). Proven: marked one of the seven silent posts answered → dry-run card went **7 → 6** and that post
+disappeared; test row deleted, overrides back to 0.
+
 **SPINE CHECK (Andy asked for confirmation):**
 - **Partners: 100%.** All 27 mentions carry `partner_id` and every one resolves in `partners_catalog`.
 - **Members: 87% of posts, 91% of people.** 246/284 posts and 135/148 authors resolve to an
