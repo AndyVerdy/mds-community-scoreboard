@@ -6,6 +6,16 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-03 — GroupOS QA: `86e2ndz5v` check-in export (pre-prod 1.2.1)
+
+Third QA of the night. Full report: `GROUPOS_CHECKIN_EXPORT_QA.md`.
+
+- **PASS.** Export button on the Check-in table; CSV (3 rows = table total, 8 columns, BOM) and XLSX (sheet "Check-ins", widths set) match the table; search filter → 1-row file; Check-in Status = "Check In" (0 rows) → "No check-in data to export." and no file; empty search likewise. One blob per click on three tries (no doubles). TC6 (button locked while working) not observable on 3 rows.
+- Observations: a stray CSV appeared 10 s before my first click (not reproducible on reload — possibly my tooling); the green toast never auto-dismisses; XLSX header plain; per-activity columns / staff exclusion / large events not exercised on this event.
+- Read-only feature, nothing changed on pre-prod. Four files left in `~/Downloads`. Not posted to ClickUp — Andy's call.
+
+---
+
 ## 2026-09-03 — GroupOS QA: `86e2t7834` cancel a paid ticket without a refund (pre-prod 1.2.1)
 
 Second QA of the night, same release line. Full report: `GROUPOS_CANCEL_WITHOUT_REFUND_QA.md`.
