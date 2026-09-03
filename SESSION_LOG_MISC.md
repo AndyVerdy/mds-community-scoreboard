@@ -6,6 +6,18 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-03 — GroupOS QA: `86e2t7834` cancel a paid ticket without a refund (pre-prod 1.2.1)
+
+Second QA of the night, same release line. Full report: `GROUPOS_CANCEL_WITHOUT_REFUND_QA.md`.
+
+- **UI-reachable ACs pass.** Tx #3 ($100, last Succeeded ticket on order `#6a8614ebdc47075a29116304`) cancelled without refund at 05:11:13 UTC → `POST /api/event/payment/refundPurchaseTicket/6a8ef5fa478f4c4209fcc541` 200, tx reads Cancelled, refunded amount unchanged (-$300.00), seat back (General Admission 1/100 → 0/100, cancelled tickets 0 → 1), option offered on an event past its refund window, blank reason blocked client-side, notify-by-email default off, dialog states the $100 not returned.
+- **Webhook:** `ticket.cancelled` one second later (`whd_e61664ef…`) with `cancellation {reason:"paid_ticket.cancelled_no_refund", type:"no_refund", refundAmount:0, cancelledBy:"admin"}`, `tickets[0].status:"cancelled"`; **no `ticket.refunded` followed** (checked 5 min later). Same `$0.00` `totalPaid`/`orderAmount` as the S2 on `86e25hmj1`.
+- **Not run:** AC 2 (Stripe/Mongo), AC 5 (inbox), AC 6 (no 2-ticket paid order exists), AC 8 (tool policy refuses to send a token; PR ships a PAT-invariant unit test; curl left in the report), AC 9 (`event_cancellation_audits` in Mongo). AC 4 inconclusive: attendee list was already empty before the test although a Succeeded ticket existed — observation for the devs.
+- Observations: Tickets page net sales → $0.00 after a no-refund cancel (money was kept); mixed order's list status hides the no-refund cancel; attendee list empty with a Succeeded ticket.
+- Pre-prod fixture exhausted: the order has no Succeeded ticket left; a card purchase is needed for anything further. Not posted to ClickUp yet — Andy's call.
+
+---
+
 ## 2026-09-03 — GroupOS QA: `86e25hmj1` ticket.cancelled on admin cancellation (pre-prod 1.2.1)
 
 Andy asked for a QA pass on ClickUp `86e25hmj1` ("Add ticket cancellation trigger", deployed to pre-prod in release 1.2.1 by Andrii Matiushenko together with `86e2t7834`, MDS-API PRs #5383 → #5493). Full report: `GROUPOS_TICKET_CANCEL_WEBHOOK_QA.md`.
