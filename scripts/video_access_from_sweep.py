@@ -15,6 +15,9 @@ with at_member_id NULL and reported, rows are deduped against the stored (video_
 pairs, and nothing is ever deleted.
 
   python3 scripts/video_access_from_sweep.py /tmp/sweep_aim.jsonl [--dry-run] [--source api]
+
+Only restricted videos (per digest.videos_catalog) become grant rows; public ids in the sweep
+are skipped. Resolving 700+ emails takes ~2 minutes — run it with a generous timeout.
 """
 import argparse, json, subprocess, sys
 
@@ -67,15 +70,31 @@ def main():
     if unresolved_rows:
         sys.exit(f"{len(unresolved_rows)} sweep rows have ids=None (probe not recorded) — fix the sweep first")
 
-    pairs = {}
+    # A sweep call returns everything the member may watch, public videos included. Only
+    # restricted videos need a grant row — a public one is visible to everyone already, and
+    # writing 600+ rows per public video would only bloat the table.
+    restricted, off = set(), 0
+    while True:
+        page = supa("GET", "videos_catalog?select=video_id&access_restriction=eq.restricted"
+                           f"&deleted_at=is.null&limit=1000&offset={off}")
+        restricted |= {r["video_id"] for r in page}
+        if len(page) < 1000:
+            break
+        off += 1000
+
+    pairs, skipped_public = {}, 0
     for r in rows_in:
         e = (r.get("email") or "").strip().lower()
         if not e:
             continue
         for v in r["ids"]:
+            if v not in restricted:
+                skipped_public += 1
+                continue
             pairs.setdefault((v, e), True)
     emails = sorted({e for (_, e) in pairs})
-    print(f"sweep rows: {len(rows_in)} · members with access: {len(emails)} · grant pairs: {len(pairs)}")
+    print(f"sweep rows: {len(rows_in)} · members with access: {len(emails)} · grant pairs: {len(pairs)}"
+          f" · public-video pairs skipped: {skipped_public}")
 
     member = {e: resolve(e) for e in emails}
     resolved = sum(1 for e in emails if member[e])
