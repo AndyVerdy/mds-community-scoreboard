@@ -60,6 +60,7 @@ alter table digest.olivia_requests enable row level security;
 -- digest.olivia_sends: row level security DISABLED
 -- digest.olivia_webhook_events: row level security DISABLED
 alter table digest.partner_reviews enable row level security;
+-- digest.partner_web_profile: row level security DISABLED
 alter table digest.partners_catalog enable row level security;
 -- digest.speaker_aliases: row level security DISABLED
 -- digest.speakers: row level security DISABLED

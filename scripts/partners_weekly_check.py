@@ -19,6 +19,7 @@ Two things this fixes, both found 2026-08-09:
 """
 import json
 import os
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,8 +32,9 @@ JOB = "partners_refresh"
 MAX_AGE_HOURS = 192          # weekly cadence + buffer; matches the row the alarm reads
 
 # Fields whose change actually matters downstream. The counters (rating, reviews, claims, page
-# views) tick constantly and are excluded on purpose: #26's trigger re-embeds on text change, so
-# treating a view count as a content change would re-embed the catalog every week for nothing.
+# views) tick constantly and are excluded on purpose: #26's trigger NULLS the vector on text change and
+# the re-embed step below rebuilds it, so treating a view count as a content change would re-embed
+# the catalog every week for nothing.
 WATCH = ("name", "description_text", "offer_value", "status", "access_restriction",
          "featured", "fresh_deal")
 
@@ -43,7 +45,7 @@ def norm_text(v):
     The warehouse text was cleaned by an earlier html_to_text; the current one keeps NBSP and
     empty paragraphs, so 29 partners diffed on '\\n\\n\\xa0\\n\\n' versus ' ' — 97.4% identical,
     zero semantic change. Without this, every weekly run would report them as changed and the
-    #26 trigger would re-embed the catalog for whitespace. Fixing the shared cleaner in
+    #26 trigger would wipe + re-embed the catalog for whitespace. Fixing the shared cleaner in
     mds-digest-web is the real repair (#17); this stops the false positives meanwhile.
     """
     if not isinstance(v, str):
@@ -121,7 +123,18 @@ def main():
         sb("POST", "partners_catalog?on_conflict=partner_id", key, touched[i:i + 100],
            "resolution=merge-duplicates,return=minimal")
     print(f"  upserted: {len(touched)}")
-    heartbeat(key, "ok", f"{len(new)} new, {len(changed)} changed, {len(touched)} upserted")
+    # #159: a NEW row has no vector and a CHANGED row just lost its (the #26 trigger nulls it on text
+    # change). Nothing else rebuilds partner vectors — the nightly embed_content step covers
+    # content_items only — so the meaning-search lane could not see 75 partners on 2026-09-03.
+    # Same pass, same script the nightly chain runs (nulls-only, resumable).
+    emb = subprocess.run([sys.executable, os.path.join(ROOT, "scripts", "embed_partners_events.py")],
+                         capture_output=True, text=True)
+    print(emb.stdout.strip()[-400:])
+    if emb.returncode != 0:
+        heartbeat(key, "error", f"{len(touched)} upserted but re-embed failed: {emb.stderr.strip()[-200:]}")
+        print("RE-EMBED FAILED:", emb.stderr.strip()[-400:])
+        return 1
+    heartbeat(key, "ok", f"{len(new)} new, {len(changed)} changed, {len(touched)} upserted + re-embedded")
     return 0
 
 

@@ -1246,7 +1246,7 @@ event_registrations_live = event_registrations
 | `olivia_messages` | `member_event_olivia_turn` | Writes a `member_events` row per real answer (eval traffic excluded). Fail-open. |
 | `olivia_reports` | `member_event_report` | Same, for filed reports. |
 | `members` | `member_event_portal_seen` | Fires only when `portal_last_seen_at` actually changes. |
-| `events_catalog`, `partners_catalog` | `*_embed_invalidate` | Clears the embedding when the text changes, so the nightly re-embed picks it up. |
+| `events_catalog`, `partners_catalog` | `*_embed_invalidate` | Clears the embedding when the text changes. Rebuilt by the nightly `embed_catalogs` step (`scripts/embed_partners_events.py`, nulls-only) and by `partners_weekly_check.py --apply` in the same pass (#159 — before 2026-09-03 nothing rebuilt it: 75 partners dark). |
 | `member_sessions` | `member_sessions_rollup` | Session counters. |
 
 ### B.4 pg_cron
