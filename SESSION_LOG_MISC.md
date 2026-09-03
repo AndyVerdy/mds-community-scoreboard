@@ -6,6 +6,18 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-03 — GroupOS QA: `86e25hmj1` ticket.cancelled on admin cancellation (pre-prod 1.2.1)
+
+Andy asked for a QA pass on ClickUp `86e25hmj1` ("Add ticket cancellation trigger", deployed to pre-prod in release 1.2.1 by Andrii Matiushenko together with `86e2t7834`, MDS-API PRs #5383 → #5493). Full report: `GROUPOS_TICKET_CANCEL_WEBHOOK_QA.md`.
+
+- **Verdict: the ticket's claim passes.** Admin cancelled a $100 paid ticket on pre-prod `vl223` (order `#6a8614ebdc47075a29116304`, tx #4) at 03:08:29 UTC → `ticket.cancelled` delivery attempted 03:08:31 (`whd_69dee84e…`) with `cancellation = {reason:"paid_ticket.cancelled", type:"refund", refundAmount:100, cancelledBy:"admin"}`, then `ticket.refunded` at 03:08:34. Same 27 top-level keys as the pre-existing admin-free baseline (Doina, 2026-08-25). Evidence = the "What we sent" payload in the sending-integration delivery history (integration "Maks WH - Approvals test", endpoint dead → every delivery "Gave up" on HTTP 404, which is pre-existing and irrelevant).
+- **Member-side parity INCONCLUSIVE:** built a throwaway event "QA webhook cancel test 86e25hmj1" (`6a98e708959c69fd82bc8ba4`, free ticket with *Allow cancellation* on), registered and cancelled as a member at 03:27:07 — order shows Cancelled, but **no delivery record exists**, because the pre-prod webhook worker stopped processing at ~03:17 UTC: nothing after the 03:17:01 `ticket.purchased` got a record, not even a manual *Send test event* at 03:34:10. Finding for the dev team (suspect the `event.created` of the bare draft event at ~03:18).
+- Other findings: paid-cancel payload carries `totalPaid`/`orderAmount` `"$0.00"` for a $100 ticket; `ticket.refunded` says `refundAmount: 0`, `"No reason provided"`, no `triggerEntity.id`; sending detail opens with "Nothing has been sent yet" while 32 deliveries exist (same as receiving defect #1); direct URL to a sending detail renders no rows (defect #3); member Order details listed 3 tickets for a 1-ticket order (seen once).
+- Pre-prod state left: Andrii's tx #4 refunded ($100 Stripe test refund); QA event **Paused** (not deleted); "VL 23" still holds a free San Diego Chapter Hike ticket; integration accidentally paused ~03:31–03:33 UTC and re-activated. Not tested: member cancels a paid ticket (needs a card), cancel-without-refund (`86e2t7834`).
+- Not posted to ClickUp (Andy's call). Nothing shipped; docs only.
+
+---
+
 ## 2026-09-02 — WA → FB story posts: rebuilt around real feedback, now on autopilot
 
 Shipped yesterday, rebuilt today against three rounds of feedback from Andy and Eugene.
