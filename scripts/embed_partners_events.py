@@ -76,6 +76,20 @@ def partner_text(r):
         parts.append(str(r["offer_value"])[:600])
     if r.get("description_text"):
         parts.append(str(r["description_text"])[:2500])
+    # #160: what the partner says on its OWN site (summary · services · pricing) joins the vector
+    # text, so a paraphrased need ("VAT returns in the UK", "fractional CFO") finds the partner
+    # whose directory blurb never used those words. Partner-stated text only shapes RECALL and
+    # rank inside the gated row set; it never widens access.
+    wp = r.get("partner_web_profile")
+    if isinstance(wp, list):
+        wp = wp[0] if wp else None
+    if wp and wp.get("crawl_status") == "ok":
+        if wp.get("summary"):
+            parts.append(str(wp["summary"])[:1200])
+        if wp.get("services"):
+            parts.append("Services: " + "; ".join(str(x) for x in wp["services"] if x)[:800])
+        if wp.get("pricing"):
+            parts.append("Pricing: " + str(wp["pricing"])[:300])
     return " \n".join(p for p in parts if p).strip()[:8000]
 
 
@@ -125,7 +139,8 @@ def main():
         return
 
     run_table("partners_catalog", "partner_id",
-              "partner_id,name,category_names,offer_value,description_text",
+              "partner_id,name,category_names,offer_value,description_text,"
+              "partner_web_profile(summary,services,pricing,crawl_status)",
               partner_text, key, vkey, a.all)
     run_table("events_catalog", "at_record_id",
               "at_record_id,name,app_title,event_type,style,chapter_hint,chapter_area,"
