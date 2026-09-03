@@ -6,6 +6,43 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-02 (night) — Insights export: the ten-day "click it yourself" was a LOGIC bug, not a Chrome one (ext v1.13)
+
+**Andy:** "if data was updated, why i need to click this? you need to resolve the logic." Correct — a
+standing manual step is the bug.
+
+**Root cause, from evidence not theory.** Today's run stored its own verdict in extension storage:
+`{"insights":"FAILED (no file landed)","roster":"ran","harvest":"22 posts, stalled","comments":"ran"}`
+— i.e. the click flow returned **ok** and no file existed. Reading the code:
+`clickInsightsDownload()` clicks FB's Download button and returns `{ok:true}` **immediately**;
+`captureInsights()` returns; the chain then calls `autoFeedCapture(myGen, tabId)` → `chainTab()` →
+`chrome.tabs.update(tabId, {url: feed})` — **navigating the very tab that just submitted the export**,
+seconds later, which cancels FB's server round-trip. A manual click always worked because a human
+leaves the page alone. That is the whole ten days.
+
+Note what it was NOT: not worker eviction (the v1.07 keepalive was already running), not the retry
+(v1.01), not FB moving the control (v0.98-era bug, already fixed) — those were the earlier failures on
+this same step, which is why the wrong diagnosis was easy to reach for.
+
+**Fix (v1.13, `background.js`):** the step's contract is now **"a file landed"**, not "I clicked".
+After submit it HOLDS the Insights tab and waits on `chrome.downloads.onCreated` + a 3s
+`downloads.search` poll for up to 150s; only then does it report success and let the chain navigate on.
+A timeout is named precisely (`"submitted, but no .xlsx started within 150s"`) and retried. The file
+matcher accepts any Facebook-sourced `.xlsx` as well as the known name, so a rename cannot silently
+reopen this.
+
+**Unverified until it runs:** an unpacked extension keeps the code Chrome loaded, so v1.13 needs a
+reload (or a Chrome restart) before tomorrow's 4:25pm run tests it. Andy chose to wait for the auto run
+rather than force one tonight. Proof to look for: a new `Facebook_Group_Insights_*.xlsx` in ~/Downloads
+and `digest.fb_posts.reactions` moving off its Aug 31 stamp.
+
+**Today's data (for the record):** everything except Insights flowed — 52 posts / 230 comments / reach
+on 15 / 3 images OCR'd / 1,000 classified / 8 partner mentions incl. a new complaint (Linnworks —
+Molson Hart) / Slack digest sent. Live tab reads 284 posts · 148 members · 176 asks · 94 gives ·
+32 unanswered · 5 complaints.
+
+---
+
 ### Round four — a number opens its rows (Andy: "like it was on local")
 
 The drill-downs from round two only NARROWED the page; the local `fb_report.py` page opened the data
