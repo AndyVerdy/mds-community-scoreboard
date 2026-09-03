@@ -32,6 +32,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 |---|---|---|---|---|---|
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
+| **#158** | 🏗️ Foreign keys on what we own + nightly orphan check *(the #61 follow-up; external architecture review 2026-09-02)* | 🟡 S2 | M | n/a (SQL) | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#100** | 🔑 Identity aliases — one member, all their known emails | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED 2026-08-20** — 5,763 aliases, resolver live, 12/12 verify, gate 0 |
 | **#101** | 🎬 Video transcripts + real access gating | 🔴 S1 | L | n/a (SQL+data) | ✅ **CLOSED 2026-08-20** — 2,730 chunks, video_access live, gate 263/0 · NEXT: 2025 batch |
@@ -1414,6 +1415,19 @@ people ≈ $1), but #32's spike alarm should be on before the room fills.
 - **Typeform deletions are permanent and bypass the trash.** 245 forms were deleted on 2026-08-07
   before that was understood. Rule recorded: **Typeform is a source of record — prune the loader
   config or `form_scope`, never the source.**
+#### ⬛ ADDED 2026-09-02 — decisions out of SQL (external architecture review, first finding)
+
+- The reviewer's first finding on our structure: **logic lives in several places, including the database.** The ruling
+  below still stands — retrieval, gating and stats STAY in Postgres (set operations over 40k+ rows; the security boundary
+  the leak gate proves). What moves is **decisions**: who counts as active, what "restricted" means, time decay,
+  disclosure, matching policy, "is this member registered".
+- **Work item:** inventory the 116 `digest` functions as *read* vs *decision*. Each decision moves into the Render route
+  that owns its lane and the RPC shrinks to a plain read; n8n keeps calling the route (Andy's rule 2026-08-17: new lanes
+  are app routes, not RPCs). **First slice = #147** (one definition of "registered"); second = activity status (#125's
+  rule, the one that bit last).
+- **Extra accept criteria:** no decision rule has two definitions (graph / SQL / TypeScript) · each moved lane carries unit
+  tests + the bank re-run · the handbook lists where every rule lives. The schema side is #158.
+
 **🔴 S1 · size M — filed 2026-08-06 (Andy: "why is the app logic scattered between so many places")**
 
 > **In plain words:** Work runs across Postgres, n8n, Make, Vercel, Render, GitHub Actions and
@@ -1738,6 +1752,43 @@ that's follow-up work, named explicitly in FORMS_ERD.md §3.5, not silently drop
 **AC checklist:** every table in the ERD with edges — met · orphans measured per relation with a
 ruling — met, 0 true orphans · FKs added only where provably safe — not met by design, candidates
 named for a follow-up · gate green, no sync job broken — met (COMMENT-only migration).
+
+---
+
+### #158 · Foreign keys on what we own, and a nightly orphan check — the #61 follow-up
+**🟡 S2 · size M — filed 2026-09-02 from the external architecture review (second finding: "the majority of tables are not connected") · Andy: "go"**
+
+> **In plain words:** 73 tables, and only 17 carry a foreign key. 28 tables hold a member id; 25 of them are joined by
+> convention, nothing in the database checks it. #61 proved the joins are clean TODAY (0 orphans). This ticket makes the
+> database enforce the ones we own, writes down why the mirrors cannot be enforced, and watches all of them every night.
+
+*As the owner, every row we create about a member points at one member record the database enforces, and a broken join
+shows up on the health card within a day — never in a wrong answer months later.*
+
+**Evidence (live 2026-09-02, information_schema):** 73 base tables · 17 with any FK (19 constraints) · 28 tables with a
+member key column (`at_member_id` / phone / FB id), 25 of them with no FK at all · 116 functions · 16 views. #61 (2026-08-12)
+measured 0 orphans across 18 `at_member_id` joins + 7 other relations and named the safe-FK candidates in `FORMS_ERD.md`
+§3.5: 18 tables → `member_profiles.at_member_id`, `event_registrations.event_at_id → events_catalog.at_record_id`,
+`member_edges.a_id/b_id → member_profiles`. It stopped short of adding them because "safe" needs each loader read for
+insert order, not a point-in-time count. Past cost of convention-only joins: 737 duplicate FB member ids, `digest.members`
+keyed per phone, an empty `member_events` nobody noticed.
+
+**Shape of the fix:**
+1. **Spine:** `member_profiles.at_member_id` is the declared root (#61's finding); `digest.member_identity` (#77) stays the
+   crosswalk to the WA-layer `members` table — no new key.
+2. **Constraints on what we own:** for each of the 20 candidates, read its loader for insert order, pick the `ON DELETE`
+   rule (RESTRICT for ledgers such as olivia_messages/sends/intros; never CASCADE on a mirror), ship one migration per
+   table group, each proven by a full loader re-run + the nightly chain + `zoom_weekly` green.
+3. **Mirrors stay FK-free, on purpose:** Airtable, WhatsApp, Zoom, GroupOS and Facebook rows carry their source's id and
+   the source does not guarantee integrity — every such column keeps (or gets) a `COMMENT` saying so (31 exist from #61).
+4. **Nightly orphan check:** one job runs the #61 query set (orphans per implicit relation, owned AND mirror), stamps
+   heartbeat `integrity_check`, and a tools-health row shows it (red on any orphan > 0 or a missed run).
+
+**Accept when**
+- Every owned table with a member/event key has its FK (list in the close block) · every mirror key column has a written reason.
+- All loaders, the nightly chain and `zoom_weekly` run green twice after the constraints land; no job double-runs or fails on insert order.
+- Heartbeat + tile live; a deliberately seeded orphan turns the tile red within a day and clears when removed.
+- `db/` re-exported in the same commit as each migration · gate GREEN.
 
 ---
 
