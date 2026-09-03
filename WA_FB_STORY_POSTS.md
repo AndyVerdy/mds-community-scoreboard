@@ -134,6 +134,11 @@ another run genuinely got there first.
   WhatsApp mirror and only holds members with a WA presence — it shows 72% and looks
   like a data problem that isn't one.
 
+## Backlog
+
+Tickets live in `FB_BACKLOG.md` (Facebook stream: capture · admin tab · story posts).
+**#1 S1** member-spine gap · **#2 S4** dedicated Slack app to re-enable the card buttons.
+
 ## Open questions for Andy
 
 1. **The card has NO buttons, deliberately — do not add any without a dedicated Slack app.**

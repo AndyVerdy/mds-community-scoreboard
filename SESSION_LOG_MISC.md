@@ -47,7 +47,17 @@ posts (87%) reach `member_profiles` via `fb_member_map.at_member_id`; the 38 mis
 authors with no map row, two of which are not people. Join `member_profiles`, NOT
 `digest.members` (WA mirror, shows a misleading 72%).
 
-**State:** prod `8219552` (mine `f92c135` is an ancestor), n8n `iX7cEFrCW5apa7CS` ACTIVE
+**Late additions (same session):**
+- **One option per chat, enforced in code** — a run had shipped two of three from the same
+  chat. Three stories from one conversation-space read as repetitive, which is the whole
+  thing a choice exists to avoid. Now a hard rule alongside the two existing duplication
+  guards (same story key; message-id overlap). Verified live: 3 options, 3 distinct chats.
+- **`FB_BACKLOG.md` opened** for the Facebook stream (capture · admin tab · story posts), in
+  Andy's structure — ARCHITECTURE, THE REST, CLOSED. **#1 (S1)** the member-spine gap (11
+  real members with no FB-uid mapping); **#2 (S4)** a dedicated Slack app so the card buttons
+  can be turned back on — that one is credentials and configuration, the handler is built.
+
+**State:** prod `a8a834f`, n8n `iX7cEFrCW5apa7CS` ACTIVE
 Mon/Wed/Fri 9am ET, 291 tests green, final live run 3 options / 0 rejected.
 
 **Estate:** three sessions in `mds-digest-web` today. The shared checkout was switched under
