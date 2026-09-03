@@ -17,6 +17,7 @@ paste is a hard constraint — the system exists to make it cost one glance and 
 | Route | `GET /api/fbstory/draft?secret=…[&dry=1][&days=N][&asof=YYYY-MM-DD]` |
 | Buttons | `POST /api/fbstory/interactivity` (not wired yet — see Open questions) |
 | Schedule | n8n `iX7cEFrCW5apa7CS`, cron `0 9 * * 1,3,5`, tz `America/New_York`, retry OFF |
+| Excluded chats | **Centurion 20M+** and **Credit Card & Travel Hacks** — defaulted in `config.ts`, not env |
 | Slack | `#automation-tests` (`C0AQ8USNQK0`) |
 | Ledger | Supabase `digest.fb_group_posts` |
 | Reads | `digest.summaries`, `digest.wa_messages`, `digest.members` |
@@ -37,7 +38,36 @@ resolve on Andy's Mac** (n8n and public resolvers are fine).
 Add `&asof=YYYY-MM-DD` to see what it would have said on a past week — this is how the twelve
 sample drafts were reviewed before launch.
 
-## What the post looks like
+## What the post looks like (rewritten 2026-09-02 after Eugene posted one by hand)
+
+Every post opens with a standing title and blurb — written by us, not the model, so
+the framing cannot drift between runs — then the chat name and date, then ONE story.
+
+```
+MDS WhatsApp Stories
+
+A new pilot we are trying to help cross post live discussions with engagements
+on Whatsapp into the Facebook group to help double down and allow for more
+threading and eyeballs.
+
+MDS DTC/Shopify - 8/30
+
+<hook: the most concrete fact — a price, a result, a reversal>
+
+<2-4 short paragraphs, one idea each>
+
+<one genuine question to the group>
+```
+
+**There is no "Also this week" footer, deliberately.** It existed briefly. Eugene,
+who actually posts these: *"it just detracts from the purpose... the WhatsApp
+stories need to be hyper-focused on one conversation that is happening and is
+driving a lot of engagement, because the purpose is to continue a threaded
+discussion on that conversation. Dropping other themes in this post is a
+distraction and will lead to more confusion."* Andy had asked for the activity
+footer earlier; Eugene's reasoning superseded it. Do not put it back without them.
+
+## Old notes on the post (still true)
 
 A chat name, then a hook built on the most concrete fact in the thread (a price, a
 result, a reversal), then two to four short paragraphs, a question to the group, a
@@ -68,6 +98,41 @@ Hard-won shape, from Andy's feedback on the first live cards:
 - **Silence means broken.** Every no-post outcome — nothing good enough, below confidence, a
   repeat, a gate block, an error — posts a line to Slack and returns 500 if that line fails.
 - **A ceiling, not a schedule.** A thin week posts less. "None" is a valid answer.
+
+## Three options per card, and no confidence score
+
+Each run offers **up to three** ready-to-paste posts, best first, and the human picks
+one. Offering exactly one made every run a coin flip: a story the poster found too
+sensitive, repetitive or weak wasted the slot until the next run days later.
+
+The ranker used to emit a self-reported `confidence` 0..1 and the route skipped runs
+below 0.7. **That was theatre** — the prompt told the model the threshold, so it
+cleared it on every run ever recorded (0.74–0.82, never once below, never once
+declining to pick). It is gone. Ranking is now comparative (order these against each
+other), and the card shows *measured* evidence instead: how many people spoke,
+whether a question drew answers from others, how many messages carry figures. Those
+come from `signals.ts` and are computed from the raw messages.
+
+**`offered` is not `told`.** An offered story stays eligible — being shown is not
+being used, and with three options two of every three are shown and not used by
+design. This was learned the hard way: the DTC/Shopify helpdesk story was offered,
+Eugene called it the best yet, and it was already unreachable. A key collision on
+re-offer updates the row rather than failing; only a `draft`/`posted` row means
+another run genuinely got there first.
+
+## Spine connections (verified live 2026-09-02)
+
+- **Partners: 27 of 27 mentions resolve to `partners_catalog`.** No orphans.
+- **Members: 246 of 284 posts in 30 days reach the spine** (87%) via
+  `fb_member_map.at_member_id` → `member_profiles` (6,025 rows).
+- The 38 that don't come from **13 authors with no `fb_member_map` row**. Two are not
+  people: "Million Dollar Sellers" (the group account) and "Anonymous member" (FB
+  makes this unresolvable by design). The real gap is 11 people — Dan Wills (13
+  posts), Ivan Ong (9), EJ Ball and others. EJ Ball *is* a member with a profile on
+  file, so the break is the FB-uid mapping, not the member record.
+- ⚠️ Join against `member_profiles`, NOT `digest.members`. The latter is the
+  WhatsApp mirror and only holds members with a WA presence — it shows 72% and looks
+  like a data problem that isn't one.
 
 ## Open questions for Andy
 
