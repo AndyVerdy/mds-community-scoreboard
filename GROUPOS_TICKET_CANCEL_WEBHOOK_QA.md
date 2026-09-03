@@ -2,7 +2,7 @@
 
 **Ticket:** `86e25hmj1` — Add ticket cancellation trigger (pre-prod release 1.2.1; MDS-API PR #5493, enabler PR #5383)
 **Tested by:** Claude for Andy · 2026-09-03 03:08–03:36 UTC · pre-prod `vl223.groupos-test.co` (community `69034d79599a70658c11755b`)
-**Verdict: the ticket's own claim PASSES** — an admin cancelling a **paid** ticket now fires `ticket.cancelled` two seconds later, with the documented shape (`cancellation.reason = "paid_ticket.cancelled"`, `cancelledBy = "admin"`). **Member-side parity could not be confirmed:** the pre-prod webhook delivery worker stopped processing jobs at ~03:17 UTC, and even a manual test event never produced a delivery. Finding 1 below.
+**Outcome: REJECTED on pre-prod (Andy, 2026-09-03) — comment `90170248124142` on the ticket, status `rejected pre-prod`.** The trigger itself works, but the payload it emits reports a paid order as $0.00 (S2) and the member-side half of the AC is unverifiable because of the worker stall (S1). Detail: **the ticket's own claim passes** — an admin cancelling a **paid** ticket now fires `ticket.cancelled` two seconds later, with the documented shape (`cancellation.reason = "paid_ticket.cancelled"`, `cancelledBy = "admin"`). **Member-side parity could not be confirmed:** the pre-prod webhook delivery worker stopped processing jobs at ~03:17 UTC, and even a manual test event never produced a delivery. Finding 1 below.
 
 What PR #5383 actually fixed (its own description): admin and member cancellations always ran the same code path; the real gap was **paid** tickets, which fired nothing at cancel time (only a `ticket.refunded` hours later, or never when the money came from invoice credit). So the decisive QA case is "admin cancels a paid ticket".
 
