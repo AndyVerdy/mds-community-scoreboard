@@ -4,7 +4,10 @@ create or replace view digest.fb_report_posts as
     p.author_uid,
     p.author_name,
     p.created_time,
-    p.post_type,
+        CASE
+            WHEN o.type_cleared THEN NULL::text
+            ELSE COALESCE(o.post_type, p.post_type)
+        END AS post_type,
     p.reach,
     p.reactions,
     p.views,
@@ -13,10 +16,14 @@ create or replace view digest.fb_report_posts as
     p.poll IS NOT NULL AS is_poll,
     "left"(regexp_replace(COALESCE(p.text, ''::text), '\s+'::text, ' '::text, 'g'::text), 240) AS snippet,
     COALESCE(c.comments, 0::bigint) AS comments,
-    p.comment_checked_at IS NOT NULL AND COALESCE(c.comments, 0::bigint) = 0 AS unanswered
+    p.comment_checked_at IS NOT NULL AND COALESCE(c.comments, 0::bigint) = 0 AND o.answered_at IS NULL AS unanswered,
+    o.post_type IS NOT NULL OR o.type_cleared AS type_edited,
+    o.answered_at,
+    o.answered_by
    FROM digest.fb_posts p
      LEFT JOIN ( SELECT fb_comments.post_id,
             count(*) AS comments
            FROM digest.fb_comments
           GROUP BY fb_comments.post_id) c ON c.post_id = p.post_id
+     LEFT JOIN digest.fb_post_overrides o ON o.post_id = p.post_id
   WHERE p.created_time IS NOT NULL;

@@ -6,6 +6,49 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-03 — FB admin tab becomes editable: nested drill-downs, type + answered write to the DB
+
+**Andy, five asks in one go**, all shipped (`12a9de3` + `980d454`):
+
+1. **Numbers inside a panel now drill too, with a breadcrumb.** `FbDetail` is a STACK — a count inside
+   a panel pushes another panel, the header shows the trail (`Partner complaints › Dan Wills`), Back
+   or a crumb walks out, Escape pops one level, the overlay closes everything.
+2. **Mark an unanswered post as answered** — a Handled toggle on every post row, undoable.
+3. **Change or remove the Type tag** — value add / give / ask / none, per row.
+4. **Where a partner mention came from** — a `Where` column (in a comment / in the post) off `ref_kind`.
+   Today: 4 of 5 complaints came from comments.
+5. **Give share is back in Members**, as a bar, using the SAME definition as the Gives tile
+   ((gives + value adds) / classified) rather than the lifetime view's.
+
+**The write design, and why it is not on `fb_posts`.** New table **`digest.fb_post_overrides`**
+(migration `fb_post_overrides_v2`) + `POST /api/admin/fb-post`, gated by the same `@mds.co` session as
+the pages. `classify_posts.py` rewrites `fb_posts.post_type` **every night**, so an admin edit stored
+there would be silently reverted — the override lives beside it, wins in `digest.fb_report_posts`,
+flags the row `type_edited`, and **deleting the row restores the classifier's own answer**. The UI
+mirrors what the database returns, never what it hoped for.
+
+**Verified against live, then cleaned up:** answered → `answered_at` set + `unanswered` false; type →
+give → `"give"` + `type_edited`; clear → null; unauthenticated POST → **403**. One real click on
+production wrote `answered_by: andy@mds.co`, was undone through the UI, and the overrides table is back
+to **0 rows**.
+
+**One flaw only clicking could find:** after marking a post answered the row left the unanswered list
+while the **Unanswered tile still showed the server's 31** — two truths on one screen. Tiles now recount
+from the same rows the tables show (`980d454`).
+
+**SPINE CHECK (Andy asked for confirmation):**
+- **Partners: 100%.** All 27 mentions carry `partner_id` and every one resolves in `partners_catalog`.
+- **Members: 87% of posts, 91% of people.** 246/284 posts and 135/148 authors resolve to an
+  `at_member_id` via `fb_member_map`. Of the 13 unmapped: the group page account and one "Anonymous
+  member" are correct; **eleven are real people missing a FB Profile Link on their member record** —
+  **Dan Wills (13 posts)** and **Ivan Ong (9)** are the ones worth fixing, then Mouad Errafik (3) and
+  eight singles. Airtable is Andy's to change, never ours.
+
+**Also today:** the Slack digest header now carries `<https://digest.mds.co/admin/facebook|full report>`
+— test card posted to #automation-tests (ts 1788403774.701589) and read back to confirm it renders.
+
+---
+
 ## 2026-09-02 (night) — Insights export: the ten-day "click it yourself" was a LOGIC bug, not a Chrome one (ext v1.13)
 
 **Andy:** "if data was updated, why i need to click this? you need to resolve the logic." Correct — a
