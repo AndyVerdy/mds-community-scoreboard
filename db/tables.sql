@@ -905,6 +905,27 @@ alter table digest.partner_reviews add constraint partner_reviews_pkey PRIMARY K
 CREATE INDEX partner_reviews_partner_idx ON digest.partner_reviews USING btree (partner_id);
 CREATE UNIQUE INDEX partner_reviews_pkey ON digest.partner_reviews USING btree (review_id);
 
+-- digest.partner_web_profile
+--   partner_id                         text not null
+--   website                            text
+--   resolved_url                       text
+--   crawl_status                       text
+--   crawled_at                         timestamp with time zone
+--   pages                              jsonb
+--   profile                            jsonb
+--   summary                            text
+--   services                           text[]
+--   markets                            text[]
+--   pricing                            text
+--   people                             jsonb
+--   source_hash                        text
+--   model                              text
+--   updated_at                         timestamp with time zone not null default now()
+alter table digest.partner_web_profile add constraint partner_web_profile_partner_id_fkey FOREIGN KEY (partner_id) REFERENCES digest.partners_catalog(partner_id) ON DELETE CASCADE;
+alter table digest.partner_web_profile add constraint partner_web_profile_pkey PRIMARY KEY (partner_id);
+CREATE INDEX partner_web_profile_crawled_idx ON digest.partner_web_profile USING btree (crawled_at);
+CREATE UNIQUE INDEX partner_web_profile_pkey ON digest.partner_web_profile USING btree (partner_id);
+
 -- digest.partners_catalog
 --   partner_id                         text not null
 --   name                               text not null

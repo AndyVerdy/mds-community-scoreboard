@@ -26,6 +26,9 @@ JOBS = [
     # #40: content-corpus embeddings are a PROCESS, not a hand-run event (script skips
     # sub-30-char noise rows by design; lives in mds-scorecard-tools, reads its own env)
     ("embed_content",        ["/Users/Born/mds-scorecard-tools/embed_backfill.py"]),
+    # #159: partner/event catalogs — the *_embed_invalidate triggers NULL a vector on text change and
+    # nothing rebuilt it (75 partners dark on 2026-09-03). Nulls-only, resumable, same Voyage model.
+    ("embed_catalogs",       [f"{REPO}/scripts/embed_partners_events.py"]),
     # #46: daily member-event diffs + the live-trigger watchdog (exit 1 = trigger dead -> alarm)
     ("member_events_daily",  [f"{REPO}/scripts/olivia_member_events_daily.py"]),
     # #44: expertise ledger + knowledge graph, full recompute (backfill == update, by design)

@@ -90,6 +90,8 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ✅ **PROMOTED 2026-08-26** `15ff4978` — verified 2026-08-28: prod/staging graphs identical (only webhook path differs), gate 306 PASS · 0 FAIL · EXIT 0; re-embed of 7 still awaits Andy |
 | **#156** | 💸 Sonnet 5 vs GPT-5.6 Terra on the locked 100 bank — price + quality, dual judge, prod untouched (bench harness, no n8n) | 🟡 S2 | S | — (harvest run only, no edits) | ✅ **DELIVERED 2026-09-02** `OLIVIA_MODEL_COMPARE_2026-09-02.md` — Sonnet 5.4% / $0.0211 · Terra-medium 3.3% / $0.0310 · Terra-none 7.6% / $0.0237 (Sonnet judge); nothing promoted |
 | **#157** | 🧑‍⚖️ Review the Sonnet 5 vs GPT-5.6 Terra bench (#156) — Andy's vendor call: stay on Claude, port to OpenAI, or re-test | 🟡 S2 | S | — (reading + decision) | — |
+| **#159** | 🕳️ Partners and events go dark in meaning search — 75 partners without a vector (35% of reviews, 48% of claims), the weekly delta missed 28 of 142 changed partners (Prosperlytics 5.0★ never shown for "bookkeeping") | 🔴 S1 | S | n/a (data + scripts) | ✅ **CLOSED 2026-09-03** — 75 partners + 36 events re-embedded (dark 0/0), nightly `embed_catalogs` + weekly re-embed, gate +2 checks (313/0), `partner_lookup_v2("bookkeeping accounting")` → Prosperlytics #1 |
+| **#160** | 🌐 Partner web profiles — crawl every partner site (services · pricing · people · proof) so Millie knows what a partner does and who runs it; founder ↔ partner link (Mudit Jain → Prosperlytics) | 🟡 S2 | M | ✅ staging `cefe0133` — probes: cost + who-runs-it answered from the site | ✅ **BUILT 2026-09-03 — READY FOR PROMOTE (Andy)**: 506 profiles (405 from live sites), 1,173 people, 52 speakers linked (Mudit Jain → Prosperlytics), RPC returns web_summary/web_people/web_pricing |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -326,6 +328,62 @@ have the lapse notice capped (131049); the free-form fallback only rescues that 
 The data (#156 close block, Sonnet judge): Sonnet 5 **5.4%** fail / **$0.0211** / 10.1 s · Terra medium **3.3%** / **$0.0310** / 19.4 s · Terra none **7.6%** / **$0.0237** / 14.2 s. Terra judge: 13.0 / 9.8 / 13.0 — it fails honest-miss answers the rubric marks PASS, so read the disagreement section before the headline. Caveats: Claude-tuned prompt · Answer Merge evidence stamps and post-model gates not replicated · Terra-medium's 8,000 output budget vs 2,000.
 **Shape of the work:** reading + a ruling, no code. Optional re-tests the harness already supports (`scripts/model_bench/README.md`): a GPT-shaped prompt variant re-run (~$12) · `gpt-5.6-luna` / `gpt-5.6-sol` runs · Terra at `low` effort · a second Sonnet run to measure judge noise.
 **Accept when:** Andy's ruling is written on this ticket (stay / port / re-test with what) · if "port": a new ticket with story + ACs for the n8n answer-loop port (Responses API shape, full through-workflow eval before any promote, OpenAI tier raise for prod traffic) · the OpenAI key pasted into chat on 2026-09-02 is rotated.
+
+### #159 · Partners and events go dark in meaning search — 75 partners without a vector, and the weekly delta misses edits
+**🔴 S1 · size S — filed 2026-09-03 (Shea Smith, 28 Aug: "Who should I use for bookkeeping?" — Prosperlytics, 5.0★ from 5 reviews, 51 claims, never appeared).**
+
+> **In plain words:** when a partner edits their page, their search vector is wiped on purpose and nobody
+> rebuilds it, so the meaning search cannot see them. The popular partners edit their pages, so the popular
+> partners go dark: 74 of 496 in the lookup pool, holding 35% of all reviews and 48% of all claims. And the
+> weekly GroupOS listing caught 114 of the 142 partners that changed between 3 Aug and 2 Sep.
+
+*As a member, when I ask Millie for a partner, the best-rated partner for that need is in her list — a partner editing their own page cannot make them disappear.*
+
+**Evidence (2026-09-03):** keyword lane ranks Prosperlytics #1 for "bookkeeping accounting" and the preload the
+model saw listed it first; the `partner_lookup` call with the Voyage embedding attached returned 8 partners without it
+(staging exec 131231, same graph as prod `d40a837d`). RRF gives a vectorless partner one list instead of two: 0.016 vs
+0.030. `partners_embed_invalidate` nulls the vector on any name/description/offer/category change (#26, July); the
+nightly `embed_content` step covers `content_items` only; `embed_partners_events.py` was a one-off in `~/mds-scorecard-tools`.
+Handbook §B claimed "the nightly re-embed picks it up". Dark rows: partners 75 (since the 1 Aug sync), events 36.
+Weekly delta: GroupOS `updated_after` works (direct call returns Prosperlytics); the scheduled session's paging stopped at 114.
+The listing endpoint breaks on 2 records when they fall inside a page (Fathom, Onsite Support — `partners_get` serves both).
+
+**Accept when:** 0 published-public partners and 0 events without a vector (backfill) ✅ · nightly chain step `embed_catalogs`
+re-embeds both catalogs (heartbeat row) · `partners_weekly_check.py --apply` re-embeds NEW/CHANGED rows in the same pass ·
+weekly task pages until `has_more=false`, checks `with_total` against rows fetched, window = last success − 3 days; the 28
+missed partners caught up · gate check "published partner/event without vector = 0" · Shea's question on staging lists
+Prosperlytics · handbook line corrected · SKILL.md of the scheduled task updated.
+
+**Results 2026-09-03 (CLOSED, no promote needed — data + scripts only):** backfill `scripts/embed_partners_events.py` (moved from `~/mds-scorecard-tools`): partners 75 + events 36 embedded, dark 0/0 (SQL). Nightly `embed_catalogs` step in `nightly_derivations.py` (heartbeat seeded, max 26h). `partners_weekly_check.py --apply` re-embeds NEW/CHANGED in the same pass and fails loud. Gate +2 checks (partners/events without vector = 0; the gate's own `redteamevt_*` fixtures excluded) → 313 PASS · 0 FAIL · EXIT 0. Scheduled task SKILL.md: page until `has_more=false`, `with_total` check, window = last success − 3 days, the two records that break the listing endpoint named with the `partners_get` workaround. Handbook §B line corrected. **Proof through the RPC:** `partner_lookup_v2('bookkeeping accounting')` with a real Voyage query vector → Prosperlytics #1 (rank 0.0323); before: absent from the top 8 (staging exec 131231). Staging re-ask names Mudit/Prosperlytics first.
+**AC checklist:** dark 0/0 ✅ · nightly step ✅ · weekly re-embed ✅ · paging + total ✅ (instructions; first real run = next Sunday) · gate check ✅ · Shea's question lists Prosperlytics ✅ · handbook ✅ · SKILL.md ✅. **Before/after:** dark partners 75 → 0 · events 36 → 0 · Prosperlytics rank for "bookkeeping accounting": absent → #1.
+
+### #160 · Partner web profiles — crawl every partner's site so Millie knows what they do, what it costs and who runs it
+**🟡 S2 · size M — filed 2026-09-03 (Andy: "lets fix partners and run agents to browse partners' website … use a cheap model, Sonnet").**
+
+> **In plain words:** the directory page is the partner's own pitch, written for the deal. Their website carries the
+> services, the pricing, the team and the case studies — and nobody has read them. "Mudit" is not linked to
+> "Prosperlytics" anywhere, so 22 member comments about him never reach the partner.
+
+*As a member, when Millie names a partner she can say what they actually do, what it costs and who is behind it — and a founder's name resolves to their firm.*
+
+**Inputs (2026-09-03):** GroupOS carries a website for 505 of 507 published partners (168 via go.mdsonly.co tracking links that
+resolve by meta-refresh, 38 via other affiliate links), LinkedIn for 470 (29 are people), Facebook for 378; our ingest drops all
+three (`partners_catalog` has no website column). Probe: prosperlytics.com is plain HTML, 1,811 words on the homepage, 20
+internal pages incl. /pricing, /team, /case-studies.
+
+**Shape:** `digest.partner_web_profile` (partner_id → website, resolved_url, pages, profile jsonb: services · markets · pricing ·
+people · integrations · proof, summary, crawled_at, source_hash) · crawler `scripts/partner_web_crawl.py` (resolve redirect,
+home + about/team + services + pricing, ≤5 pages, plain text) · extraction by Sonnet agents in batches → JSONL → loader
+`scripts/load_partner_web_profiles.py` (also links `speakers.partner_id` when a person matches) · `partner_lookup_v2` returns
+`web_summary` + `people` · re-crawl = scheduled task, same pattern as the video routine. Web copy is stored as "partner says";
+reviews and FB/WA talk stay the verdict layer.
+
+**Accept when:** a profile for every partner with a reachable site, unreachable ones listed · every profile carries the six fields +
+summary, labelled partner-stated · `partner_lookup_v2` returns summary + people · Mudit Jain → Prosperlytics linked in
+`speakers` · "what does Prosperlytics cost" answers from the pricing page on staging · re-crawl routine documented · gate green.
+
+**Results 2026-09-03 (BUILT — READY FOR PROMOTE):** full directory pulled from GroupOS (507 of 509; the listing endpoint breaks on 2 records, `partners_get` serves them): 505 websites (168 go.mdsonly.co tracking links, resolved by meta-refresh), LinkedIn 470, Facebook 378. Crawl `scripts/partner_web_crawl.py` (home + root + ≤4 internal pages, 6 parallel slices, ~12 min): **405 ok · 71 unreachable · 29 JS-only/empty · 2 no site**. Extraction by **21 Sonnet subagents** (~25 partners each, prompt `extract_prompt.md`, ~6M tokens total) → 507 JSONL profiles; loader `scripts/load_partner_web_profiles.py --apply`: **506 rows in `digest.partner_web_profile`** (1 partner newer than the warehouse), 1,173 people named, **52 speakers linked** by name (44 new; Mudit Jain → Prosperlytics). `partner_lookup_v2` now returns `web_summary` · `web_people` · `web_pricing` (migrations `partner_lookup_v2_web_profile_160` + `_web_pricing_160`, ACL postgres+service_role verified). Staging `cefe0133` = prod + one Answer Seed edit (`apply_160_partner_web.py`: the tool description names the three fields, "always as what their site says"). **Probes (staging, silent):** "What does Prosperlytics cost?" → custom quotes after a preliminary call + the free review via the MDS deal, link (msg 61741, partner_lookup). "Who runs Prosperlytics and what do they actually do?" → Mudit Jain founder & CEO, the partners named "per the firm's own site", services listed (msg 61743).
+**AC checklist:** profile for every reachable site ✅ (unreachable listed in `partner_web_profile.crawl_status`) · six fields + summary, partner-stated ✅ · RPC returns summary + people (+ pricing) ✅ · Mudit Jain → Prosperlytics ✅ · cost answered from the pricing page ✅ · re-crawl routine documented (task SKILL.md step 4b) ✅ · gate green ✅ (313/0). **Open:** 71 unreachable + 29 JS-only sites (browser fallback, own pass) · 8 tracking links resolve to the wrong company (Typeform/Airtable/Calendly landing pages: New Amazon Account, VAA Philippines, Amazon Buy with Prime…) — profiles left empty, fix the links in GroupOS · two duplicate Prosperlytics rows in the directory (5-review row `651f9c…` vs `6763ad…`) · the taxonomy has no Accounting/Tax/Legal service topics, so partner "strengths" still read as marketplaces (#160 does not fix the dossier).
 
 ### #155 · A quote from a chat carries that message's own link, and "what should I know" is not a tour
 **🟡 S2 · size M — filed 2026-09-02, split out of #138 after the 9-id re-run.**
