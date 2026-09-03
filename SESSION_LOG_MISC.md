@@ -14,7 +14,7 @@ Second QA of the night, same release line. Full report: `GROUPOS_CANCEL_WITHOUT_
 - **Webhook:** `ticket.cancelled` one second later (`whd_e61664ef…`) with `cancellation {reason:"paid_ticket.cancelled_no_refund", type:"no_refund", refundAmount:0, cancelledBy:"admin"}`, `tickets[0].status:"cancelled"`; **no `ticket.refunded` followed** (checked 5 min later). Same `$0.00` `totalPaid`/`orderAmount` as the S2 on `86e25hmj1`.
 - **Not run:** AC 2 (Stripe/Mongo), AC 5 (inbox), AC 6 (no 2-ticket paid order exists), AC 8 (tool policy refuses to send a token; PR ships a PAT-invariant unit test; curl left in the report), AC 9 (`event_cancellation_audits` in Mongo). AC 4 inconclusive: attendee list was already empty before the test although a Succeeded ticket existed — observation for the devs.
 - Observations: Tickets page net sales → $0.00 after a no-refund cancel (money was kept); mixed order's list status hides the no-refund cancel; attendee list empty with a Succeeded ticket.
-- Pre-prod fixture exhausted: the order has no Succeeded ticket left; a card purchase is needed for anything further. Not posted to ClickUp yet — Andy's call.
+- Pre-prod fixture exhausted: the order has no Succeeded ticket left; a card purchase is needed for anything further. Andy's call: PASS (no S1/S2 of its own). Evidence comment `90170248134663` posted on `86e2t7834` with AC 2/5/6/8/9 handed to Andrii; status left as is.
 
 ---
 
