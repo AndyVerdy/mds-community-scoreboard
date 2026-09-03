@@ -11,6 +11,33 @@
 
 # Olivia — next session
 
+## STATE 2026-09-03 (evening) — #159 CLOSED (vectors) · #160 BUILT, staging `cefe0133` READY FOR PROMOTE (Andy)
+**PROD `d40a837d` untouched. Staging = prod + ONE Answer Seed edit (`scripts/olivia_loop/apply_160_partner_web.py`: the
+partner_lookup tool description names `web_summary / web_people / web_pricing` as partner-stated). Gate 313 PASS · 0 FAIL · EXIT 0.
+Lock released at close.** Story in `SESSION_LOG_OLIVIA.md` 2026-09-03 (evening); board close blocks #159 / #160.
+
+### What changed in the warehouse (no promote needed)
+- `partners_catalog` / `events_catalog`: 0 rows without a vector (was 75 / 36). Nightly `embed_catalogs` step + the weekly partner
+  check re-embed; gate holds it at 0. `scripts/embed_partners_events.py` is the one script for both.
+- NEW `digest.partner_web_profile` (506 rows: 405 from live sites): summary · services · markets · pricing · people · profile jsonb.
+  `partner_lookup_v2` LEFT JOINs it (`crawl_status='ok'`) and returns `web_summary, web_people, web_pricing` — the model already
+  sees them on prod (tool result passes through); the staging edit only tells it how to frame them.
+- `speakers.affiliation_partner_id`: 52 linked (Mudit Jain → Prosperlytics). Loader never overwrites an existing link.
+
+### Weekly GroupOS task (`~/.claude/scheduled-tasks/groupos-videos-weekly/SKILL.md`) — changed
+Step 4: page until `has_more=false`, check `with_total`, window = last success − 3 days; Fathom + Onsite Support break the
+listing endpoint when inside a page (fetch with `partners_get`, skip with cursor = base64(id)). Step 4b (new): crawl + extract +
+load web profiles for NEW/CHANGED partners (`OLIVIA_PARTNER_WEB_EXTRACT.md` is the extraction spec). The `--apply` line must end
+with "re-embedded".
+
+### ANDY'S DESK
+1. Promote staging `cefe0133` (#160 description). 2. Two Prosperlytics rows in the directory (5-review `651f9c…` vs `6763ad…`) —
+directory hygiene. 3. Eight partner links land on Typeform/Airtable/Calendly pages, not the partner (New Amazon Account, VAA
+Philippines, Amazon Buy with Prime, Graphic Rhythm …) — fix in GroupOS. 4. Not filed yet, your call: founder↔partner mention
+matching (22 "Mudit" FB comments never reach Prosperlytics; `fb_partner_mentions` matches on the partner name only) and FB/WA
+complaints → partner `weak_signal` (today only <3.5★ directory ratings count); browser fallback for the 100 unreadable sites;
+service topics (Accounting/Tax/Legal) in the 51-topic taxonomy so partner strengths stop reading as marketplaces.
+
 ## STATE 2026-09-03 (early) — video entitlement SWEPT: 424/424 restricted videos carry grants (0 uncovered)
 **PROD untouched. Warehouse only:** `digest.video_access` +7,936 `source=api` rows from a per-member
 `videos_list(for_user_id)` sweep of all 749 GroupOS-linked actives (AI Mastermind tag + the 2023
