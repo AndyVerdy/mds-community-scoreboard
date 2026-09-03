@@ -36,6 +36,44 @@ to **0 rows**.
 while the **Unanswered tile still showed the server's 31** — two truths on one screen. Tiles now recount
 from the same rows the tables show (`980d454`).
 
+**Late round — classifier accuracy, then the archive (`a606979` · `83dfdac` · `df7633a`):**
+
+*Accuracy, measured not assumed.* Scored the ask/give classifier against Airtable's 37,636 human
+labels on 300 RANDOMLY sampled posts (not the export's head — it is ordered, and its first N is one
+slice of history). **94–95% overall**; ask was strong (98–99% recall) and **give was the weak class at
+85–91% recall**. One dominant failure: a give phrased as a question. Fixed the prompt in two passes —
+the first ("a question mark does not make an ask") over-corrected and started calling real asks gives,
+whose failures were themselves one class, so *comparing notes* ("anyone else seeing this? we are up
+17%") is now explicitly an ASK. **Held-out validation on a sample I had not tuned against: give recall
+85.4% → 91.0%, ask precision 95.0% → 97.4%.**
+
+*Also found by the same scoring:* `tagged_value_add()` matched `#\s*valueadd\b`, so **`#valueadded`,
+`#valueadds` and `#valueaddopportunity` never matched** and fell through to the model as gives. Now
+`\w*`; 5 archive posts corrected.
+
+*The archive.* `classify_posts.py --apply` only labels posts whose type IS NULL, so a corrected rule
+never reaches history — wrote **`relabel_archive.py`** and ran it over all 4,190 posts with text.
+**ask 2,683 → 2,619 · give 1,310 → 1,374 (+64) · value_add 197 → 197 · unclassified 0.** 64 gives had
+been filed as asks. Portal reflects it with no deploy (it reads Supabase per request): 7-day view moved
+33/16 → 32/17, give share 35% → 37%.
+
+*Three more fixes from Andy's eye:*
+- **Give share sorted as TEXT** — descending gave 67, 25, 100 because "6" > "2" > "1". `percent` now
+  sorts numerically (`a606979`).
+- **"check your math"** — the arithmetic was right (all 254 member rows add up; a value add IS a give,
+  so 1 VA + 6 gives = 7/7 = 100%), but **58 members read 100% and 43 of them had posted ONCE**, so
+  sorting put single-post members above consistent givers. A share now needs **3 classified posts**;
+  below that a dash that explains itself (`83dfdac`).
+- **A saved edit looked like a no-op** — the route returned `null` when its read-back came back empty
+  and the client read that as "not answered", so Andy's mark on Brandon Himmel's post rendered as
+  nothing while the database had it (`answered_by: andy@mds.co`, and a reload showed it gone from
+  Unanswered 11→10). Route echoes what it wrote; client falls back to what it asked for (`df7633a`).
+  **Verified at the API, not by clicking** — the automation swallows the first click and the confirm
+  dialog blocks the second.
+
+*Known and inherent:* the unanswered list is only as fresh as the last comment pass. Andy hit a post
+carrying FB comments that arrived after our 21:45 check. 12 flagged unanswered, 11 checked inside 24h.
+
 **Polish round (`d2437c0`), five from Andy — two were my own bugs:**
 - **Escape stopped closing the panel.** I had it call `onBack(stack.length - 1)`, which slices the
   stack down to the panel it was meant to dismiss. It is `- 2`: pop the top, and at depth 1 that closes.
