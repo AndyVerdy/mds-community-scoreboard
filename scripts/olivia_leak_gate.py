@@ -828,7 +828,9 @@ def main():
         check("published partners without a vector = 0 (#159)",
               st == 200 and isinstance(dark, list) and not dark,
               f"status {st}, dark: {[d.get('partner_id') for d in dark][:5] if isinstance(dark, list) else dark}")
-        st, dark = curl("GET", f"{BASE}/events_catalog?select=at_record_id&embedding=is.null&limit=5", key,
+        # the gate's own red-team fixtures (redteamevt_*) are inserted without a vector — not catalog rows
+        st, dark = curl("GET", f"{BASE}/events_catalog?select=at_record_id&embedding=is.null"
+                                "&at_record_id=not.like.redteam*&limit=5", key,
                         profile_hdr=["Accept-Profile: digest"])
         check("events without a vector = 0 (#159)",
               st == 200 and isinstance(dark, list) and not dark,
