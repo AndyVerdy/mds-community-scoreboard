@@ -2,7 +2,7 @@
 
 **Ticket:** `86e2t7834` — Admin: cancel a paid ticket without issuing a refund (pre-prod release 1.2.1; MDS-API #5493/#5494, MDS-APP #8297/#8298)
 **Tested by:** Claude for Andy · 2026-09-03 05:03–05:17 UTC · pre-prod `vl223.groupos-test.co`
-**Verdict: everything reachable from the admin UI passes** — the no-refund cancel releases the seat with $0 moving, the order reads Cancelled, the reason is enforced client-side, notify defaults off, and the webhook carries `reason paid_ticket.cancelled_no_refund` / `type no_refund` with no `ticket.refunded` after it. Four criteria could not be run from here (AC 2 Stripe, AC 6 multi-ticket order, AC 8 PAT, AC 9 audit record) and need the dev team's own check. Two observations worth a look at the end.
+**Outcome: PASS (Andy, 2026-09-03) — evidence comment `90170248134663` on the ticket; AC 2/5/6/8/9 handed to the dev team.** Detail: **everything reachable from the admin UI passes** — the no-refund cancel releases the seat with $0 moving, the order reads Cancelled, the reason is enforced client-side, notify defaults off, and the webhook carries `reason paid_ticket.cancelled_no_refund` / `type no_refund` with no `ticket.refunded` after it. Four criteria could not be run from here (AC 2 Stripe, AC 6 multi-ticket order, AC 8 PAT, AC 9 audit record) and need the dev team's own check. Two observations worth a look at the end.
 
 ## Fixture
 
