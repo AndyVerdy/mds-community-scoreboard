@@ -57,7 +57,46 @@ a misleading 72%.
 
 ## OPEN — THE REST
 
-*(none)*
+### #2 · 🔘 Give the story card its own Slack app so the buttons work · 🔵 S4
+
+**Story.** As the person posting these, I want to click "Mark posted" or "Skip" on the
+card, so the system records what actually went out and learns from what I reject —
+instead of me pasting into Facebook and the ledger never finding out.
+
+**Why it is off right now.** The card shipped with Open group / Mark posted / Skip. A URL
+button with no `action_id` does **not** stop Slack delivering the click: Slack mints its own
+id and POSTs to the Interactivity Request URL of the **app that owns the posting bot token**.
+This card posts with the **MDS WA Approvals** token, so on 2026-09-01 Eugene clicking "Open
+group" reached the WA Approvals handler, which read it as a join-request decision, defaulted
+to reject, overwrote the card in place, and stamped `decision=rejected` onto Airtable
+JoinRequests `recgrlkagHhDZH3Iv`. The Whapi call 400'd, so no member was actually rejected.
+Slack allows **one callback URL per app**, and Centurion and Application already hold both of
+ours — so any button on this card lands in someone else's system. The card is now inert by
+design, with a test pinning it.
+
+**Cost of leaving it.** Small: no one-click "Mark posted", and skip reasons never reach the
+ranker, so rejecting a weak story teaches it nothing. Dedupe is unaffected — a story is
+recorded the moment it is offered.
+
+**Acceptance criteria**
+1. A dedicated Slack app exists for this feature. **Andy creates it** — the agent does not
+   create accounts.
+2. `FB_STORY_SLACK_BOT_TOKEN` and `FB_STORY_SLACK_SIGNING_SECRET` set in Render, followed by
+   a manual redeploy (a Render env change does not restart on its own).
+3. Its Interactivity Request URL points at `/api/fbstory/interactivity`. **Centurion's and
+   Application's URLs are verified untouched** — this is the step that can silently break
+   another feature.
+4. Buttons restored to `buildCardBlocks`, and the "contains NO interactive elements" test
+   replaced by one asserting they carry *our* `action_id`s.
+5. Proven live, not assumed: clicking **Mark posted** flips that ledger row to `posted`;
+   **Skip** captures a reason that appears in the next run's ranker prompt.
+6. Proven that the click no longer reaches WA Approvals — n8n `ib7g9bBddhzCbj4X` records no
+   execution for it.
+
+**Already built, nothing to write.** `/api/fbstory/interactivity` exists, handles both
+buttons and the skip-reason modal, verifies the Slack signature via the shared
+`src/lib/slack-verify.ts`, and returns 401 when no signing secret is configured. This ticket
+is credentials and configuration, not code.
 
 ---
 
