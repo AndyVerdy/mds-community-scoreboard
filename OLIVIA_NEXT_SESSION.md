@@ -23,6 +23,7 @@ Lock released at close.** Story in `SESSION_LOG_OLIVIA.md` 2026-09-03 (evening);
   `partner_lookup_v2` LEFT JOINs it (`crawl_status='ok'`) and returns `web_summary, web_people, web_pricing` — the model already
   sees them on prod (tool result passes through); the staging edit only tells it how to frame them.
 - `speakers.affiliation_partner_id`: 52 linked (Mudit Jain → Prosperlytics). Loader never overwrites an existing link.
+- Partner VECTORS now include the web profile text (summary · services · pricing); the loader nulls the vector when a profile changes and the embed pass rebuilds it. All 508 published partners carry a vector.
 
 ### Weekly GroupOS task (`~/.claude/scheduled-tasks/groupos-videos-weekly/SKILL.md`) — changed
 Step 4: page until `has_more=false`, check `with_total`, window = last success − 3 days; Fathom + Onsite Support break the

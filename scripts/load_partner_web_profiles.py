@@ -137,10 +137,20 @@ def main():
     if not a.apply:
         print("DRY RUN — pass --apply to upsert and link")
         return 0
+    before = {r["partner_id"]: r.get("source_hash")
+              for r in sb("GET", "partner_web_profile?select=partner_id,source_hash&limit=2000", key)}
     for i in range(0, len(rows), 50):
         sb("POST", "partner_web_profile?on_conflict=partner_id", key, rows[i:i + 50],
            "resolution=merge-duplicates,return=minimal")
     print(f"  upserted {len(rows)} profiles")
+    # #160: the web text is part of the partner's search vector — a new or changed profile means
+    # the vector is stale. Null it; scripts/embed_partners_events.py (nightly + weekly) rebuilds.
+    stale = [r["partner_id"] for r in rows
+             if r["crawl_status"] == "ok" and before.get(r["partner_id"]) != r["source_hash"]]
+    for i in range(0, len(stale), 100):
+        ids = ",".join(stale[i:i + 100])
+        sb("PATCH", f"partners_catalog?partner_id=in.({ids})", key, {"embedding": None})
+    print(f"  vectors nulled for re-embed: {len(stale)}")
     for sid, disp, pid in links:
         sb("PATCH", f"speakers?speaker_id=eq.{sid}", key, {"affiliation_partner_id": pid})
     print(f"  linked {len(links)} speakers (affiliation_partner_id)")
