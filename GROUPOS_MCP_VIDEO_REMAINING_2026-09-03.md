@@ -31,9 +31,13 @@ better than what we asked for. Noted and appreciated.
 
 ---
 
-## GOS-25 · 🔴 `can_access` shipped but our token cannot call it — one scope away
+## GOS-25 · 🟡 entitlement — `for_user_id` WORKS (verified 2026-09-03); `can_access` still one scope away
 
-This is now the highest-value item, because the build is done and only the grant is missing.
+**Correction to the first draft of this section:** `videos_list(for_user_id=<member id>)` is callable
+at our tier and returns exactly the set that member may watch — verified across all 749 active MDS
+members on 2026-09-03 (two windows, 1,498 calls, results loaded into our access table). So the
+entitlement answer IS reachable today, one member at a time. What follows is what would make it
+cheap instead of a 750-call sweep.
 
 ```
 can_access(community_id, resource_type="video", resource_id="6a8e4e209614296a636efb15")
@@ -55,11 +59,12 @@ from the original doc, unchanged in effect.
 still carries all five of those fields; videos carry none.
 
 **Ask, in order:**
-1. **Add `access:read` to the MDS community token.** This alone closes the item.
-2. Confirm whether `for_user_id` on `videos_list` needs the same scope — we could not test it
-   without a member id we are entitled to query. **[untested]**
-3. If neither is grantable at community tier, expose the rule fields on the video payload as the
-   partners payload already does.
+1. **Expose the rule fields on the video payload** (`restricted_plan_ids`, `restricted_tag_ids`,
+   `restricted_user_ids`, `restricted_event_ids`) as the partners payload already does. One listing
+   call would then replace ~750 per-member calls per refresh.
+2. **Add `access:read` to the MDS community token** so `can_access` answers a single
+   member-and-video question without a listing call.
+3. `for_user_id` needs no extra scope — confirmed working. Please keep it that way.
 
 ---
 
