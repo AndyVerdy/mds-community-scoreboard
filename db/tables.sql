@@ -370,6 +370,19 @@ alter table digest.fb_post_links add constraint fb_post_links_pkey PRIMARY KEY (
 CREATE INDEX fb_post_links_post_id_idx ON digest.fb_post_links USING btree (post_id);
 CREATE UNIQUE INDEX fb_post_links_pkey ON digest.fb_post_links USING btree (image_url);
 
+-- digest.fb_post_overrides
+--   post_id                            text not null
+--   post_type                          text
+--   type_cleared                       boolean not null default false
+--   answered_at                        timestamp with time zone
+--   answered_by                        text
+--   note                               text
+--   updated_at                         timestamp with time zone not null default now()
+--   updated_by                         text
+alter table digest.fb_post_overrides add constraint fb_post_overrides_pkey PRIMARY KEY (post_id);
+alter table digest.fb_post_overrides add constraint fb_post_overrides_post_type_check CHECK ((post_type = ANY (ARRAY['ask'::text, 'give'::text, 'value_add'::text])));
+CREATE UNIQUE INDEX fb_post_overrides_pkey ON digest.fb_post_overrides USING btree (post_id);
+
 -- digest.fb_posts
 --   post_id                            text not null
 --   group_slug                         text

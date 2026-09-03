@@ -21,6 +21,7 @@ alter table digest.fb_member_map enable row level security;
 -- digest.fb_partner_mentions: row level security DISABLED
 alter table digest.fb_post_images enable row level security;
 alter table digest.fb_post_links enable row level security;
+-- digest.fb_post_overrides: row level security DISABLED
 alter table digest.fb_posts enable row level security;
 -- digest.form_concept: row level security DISABLED
 -- digest.form_field_map: row level security DISABLED
