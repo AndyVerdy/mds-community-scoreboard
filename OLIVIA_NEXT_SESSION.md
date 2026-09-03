@@ -11,6 +11,28 @@
 
 # Olivia — next session
 
+## STATE 2026-09-03 (early) — video entitlement SWEPT: 424/424 restricted videos carry grants (0 uncovered)
+**PROD untouched. Warehouse only:** `digest.video_access` +7,936 `source=api` rows from a per-member
+`videos_list(for_user_id)` sweep of all 749 GroupOS-linked actives (AI Mastermind tag + the 2023
+window). Loader `scripts/video_access_from_sweep.py`. Story + numbers in `SESSION_LOG_OLIVIA.md`
+2026-09-03 (early); method in memory `reference_groupos_entitlement_sweep`.
+
+### Weekly video run — the entitlement pass is now PART of it
+1. Dump + `videos_weekly_check.py --apply` as before (`limit=100` works now — 3 pages, not 11).
+2. If the dump has any NEW `restricted` video: `videos_list(for_user_id=<id>, created_after=<last run>)`
+   for every id in the roster (member_profiles → GroupOS id via `members_list status=active`), record to
+   JSONL, `python3 scripts/video_access_from_sweep.py <jsonl>` (dry-run first). Without this pass a new
+   restricted video is invisible to everyone.
+3. 5 emails never resolve to an `at_member_id` (chris55776@gmail.com, eugene@milliondollarsellers.com,
+   galactbrands@gmail.com, sales@bpdistributing.com, shiva@joonhaircare.com) — rows keep the email; fix
+   the alias in `member_profiles` if Andy wants them matched. 8 actives have no GroupOS account at all.
+
+### ANDY'S DESK (added 2026-09-03)
+- **S3 links for the 27 Aug–1 Sep videos** (his transcript request) = GOS-36 signed URLs — nothing sent to
+  GroupOS yet; the REMAINING doc is ready, the ClickUp comment still has the OLD GOS-25 wording.
+- 38 of the 2023 event recordings are visible to ONE admin account only — if members should see them,
+  that is a GroupOS-side rule change, not ours.
+
 ## STATE 2026-09-02 (evening) — #156 model bench DELIVERED, read `OLIVIA_MODEL_COMPARE_2026-09-02.md`
 **PROD `d40a837d` untouched all day by this ticket. Staging identical to prod. Lock free.** #156 closed on the board with
 the AC table; numbers (Sonnet judge): Sonnet 5 **5.4%** fail / **$0.0211** per answer warm · GPT-5.6 Terra medium

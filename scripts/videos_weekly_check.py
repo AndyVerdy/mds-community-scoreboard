@@ -60,8 +60,18 @@ def main():
     incoming = load_dump(args[0])
     print(f"dump: {len(incoming)} videos")
 
-    have = {r["video_id"]: r for r in sb(
-        "GET", "videos_catalog?select=" + ",".join(("video_id",) + WATCH) + "&limit=5000", key)}
+    # PostgREST caps a response at 1000 rows regardless of the limit asked for, so the old
+    # single-shot `limit=5000` silently returned only the first 1000 of 1,079 catalogue rows.
+    # Every video outside that first page looked absent, was reported NEW on every run, and was
+    # re-upserted and re-embedded for nothing. Page it, the way partners_weekly_check.py does.
+    cols = ",".join(("video_id",) + WATCH)
+    have, off = {}, 0
+    while True:
+        page = sb("GET", f"videos_catalog?select={cols}&limit=1000&offset={off}", key)
+        have.update({r["video_id"]: r for r in page})
+        if len(page) < 1000:
+            break
+        off += 1000
 
     new, changed, rows = [], [], []
     for v in incoming:
