@@ -52,7 +52,8 @@ and #154 finder `7a0ab94`; the peer session's fbstory commits ride the same main
   23 Aug — CONFIRMED real by the extension session (no download attempted since 23 Aug; SPA timing on the Download button);
   the daily conversation leg is healthy. Fix = Andy clicks "Capture Insights" in the extension. FB tile split BUILT (`b05af61`): `fb-capture` (Supabase posts, 36h/72h) + `fb-engagement` = Insights scores (AT date,
   missed week/14d) + roster on that leg. All three (`69a2ff1` `0814799` `b05af61`) PUSHED on Andy's "push"; Render serves b05af61 (16:04Z).
-- **Verify next session:** the 08:00 card shows derivations green; Monday 07 Sep `zoom_weekly` launchd run stamps on its own;
+- **Filed late 2026-09-02:** #158 (FKs + nightly orphan check, S2) · #64 amended (decisions out of SQL, first slice #147). Both on GitHub main.
+- **Verify next session:** the 08:00 card shows derivations green AND the two new FB rows (capture healthy / engagement scores degraded); Monday 07 Sep `zoom_weekly` launchd run stamps on its own;
   Sunday 06 Sep scheduled video task writes a dump (if not, run the 11-page fetch by hand as on 02 Sep).
 
 ### Shipped today

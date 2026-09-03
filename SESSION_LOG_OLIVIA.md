@@ -47,6 +47,8 @@ split the FB tile — **BUILT on Andy's go** (mds-digest-web `b05af61`, PUSHED +
 
 **Tile math after:** `olivia_job_heartbeats` 12 jobs · 0 stale · 0 errored (SQL 15:29Z). Next card should show derivations green.
 
+**Late afternoon — architecture review follow-through (Andy's "go"):** filed **#158** (FKs on the tables we own + nightly orphan check, the #61 follow-up, S2/M) and amended **#64** with the decisions-out-of-SQL inventory (retrieval/gating/stats STAY in Postgres; decisions move to Render routes; first slice #147). Rule added to CLAUDE.md on Andy's order: **one branch per session, never commit on main**. Live counts that drove it: 73 tables · 17 with any FK · 25 of 28 member-keyed tables without one · 116 functions · n8n 50 active workflows (~750 nodes). Audio brief on Alice Li's stack email delivered (5:31). GitHub main = local main at `6fa0c34`.
+
 **Open / for Andy:** FB Insights (popup last-run line, or let me click Download once) · the scheduled task's
 SKILL.md says "limit 100 / ~152 videos / 2 pages" — reality is 20 per page / 11 pages / ~200 (proposal only; not edited) · why the
 30 Aug scheduled run left no trace · consider n8n `workflow_dispatch` for the two late GitHub crons. Memory: `reference_groupos_videos_list_shape`,
