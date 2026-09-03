@@ -6,6 +6,59 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-02 — WA → FB story posts: rebuilt around real feedback, now on autopilot
+
+Shipped yesterday, rebuilt today against three rounds of feedback from Andy and Eugene.
+Live, scheduled, verified end-to-end.
+
+**What changed, and why each one mattered:**
+
+- **Three options per card, not one.** Andy: *"if the admin doesn't like a story, then we
+  are not really providing any options."* Every run wrote one story and discarded two the
+  ranker had separated by almost nothing, so a story the poster disliked wasted the slot
+  for days. All three are written and gated; the human picks.
+- **The confidence score was theatre and is gone.** It was never computed — the model
+  self-reported it AND the prompt told it the 0.7 threshold, so it cleared it on every run
+  ever recorded (0.74–0.82, never below, never a "none"). Replaced with comparative
+  ranking plus *measured* signals from the raw messages: voices, whether a question drew
+  answers from others, messages carrying figures (`signals.ts`).
+- **Post rewritten twice.** First version was a roll call with the numbers stripped out —
+  the "no embarrassing numbers" rule had over-fired onto vendor pricing, which is the whole
+  value. Then rewritten again to Eugene's format after he posted one by hand: standing
+  title + blurb, `MDS DTC/Shopify - 8/30` header, one story, no "Also this week" footer.
+- **Two chats excluded**: Centurion 20M+ (revenue-gated tier — broadcasting it gives away
+  what members pay for) and Credit Card & Travel Hacks (off-topic). Closed a gap where the
+  blocklist filtered stories but NOT the footer.
+- **Tag links on the card** from `digest.member_links` — Eugene tags members by hand and a
+  tagged member replies.
+- **`offered` ≠ `told`.** My error, caught by Andy: the DTC story Eugene liked was already
+  unreachable because being *shown* had marked it used.
+
+**Incident: the card's buttons hijacked WA Approvals.** A URL button with no `action_id`
+does NOT stop Slack delivering the click — it mints its own id and POSTs to the OWNING
+APP's Interactivity URL. The card posts with the WA Approvals bot token, so Eugene clicking
+"Open group" reached that handler, which read it as a join-request rejection, overwrote the
+card in place and stamped `decision=rejected` onto Airtable JoinRequests `recgrlkagHhDZH3Iv`
+(Whapi 400'd, so no member was actually rejected). **⚠️ That row still needs correcting —
+Andy or ops, not the agent.** Card now carries no interactive elements at all; a test pins it.
+
+**Spine verification (Andy asked):** partners 27/27 on `partners_catalog`. Members 246/284
+posts (87%) reach `member_profiles` via `fb_member_map.at_member_id`; the 38 misses are 13
+authors with no map row, two of which are not people. Join `member_profiles`, NOT
+`digest.members` (WA mirror, shows a misleading 72%).
+
+**State:** prod `8219552` (mine `f92c135` is an ancestor), n8n `iX7cEFrCW5apa7CS` ACTIVE
+Mon/Wed/Fri 9am ET, 291 tests green, final live run 3 options / 0 rejected.
+
+**Estate:** three sessions in `mds-digest-web` today. The shared checkout was switched under
+someone mid-edit twice; I now work only in `.worktrees/fbstory`. A peer's hydration-bug
+report was withdrawn as a bad measurement — I had endorsed its repro without checking it,
+and said so.
+
+Handoff `WA_FB_STORY_POSTS.md`.
+
+---
+
 ## 2026-09-01 — WA → FB story posts: designed, built, shipped to production
 
 **Ask (Andy, story mode):** "as an MDS community, we want to post regularly on our FB community
