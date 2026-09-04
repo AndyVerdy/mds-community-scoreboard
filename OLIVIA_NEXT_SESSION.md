@@ -11,6 +11,32 @@
 
 # Olivia — next session
 
+## STATE 2026-09-04 (17:30Z) — #162 CLOSED · 2026 videos 212/212 transcribed · PROD `30fd7e6f` untouched, warehouse only
+**Every 2026 video now carries a transcript.** 33 in-person talks (16 AI Mastermind restricted · 8 AI Scaling Live · 4 Summit
+day-2 + the 5 brand-new AI-Mastermind uploads) went through AssemblyAI ($2.62), 697 chunks, 33 Haiku summaries, embedded, gate
+313/0, E2E quote proven through the live workflow. Story + numbers in `SESSION_LOG_OLIVIA.md` 2026-09-04 (afternoon); close
+block on the board.
+
+### What changed in the pipeline (no promote needed)
+- **S3 links:** the dev opened `uploads/content-archive/videos/*.mp4` to anonymous GET on 2026-09-04. `aai_submit.py --year 2026
+  --csv <csv>` now works from bare URLs (CSV columns: `upload_year, video_id, download_link, title, event_name, upload_date,
+  duration, access, s3_key`). No presigned export needed any more — until GroupOS closes the bucket again (GOS-32/36).
+- **`video_summaries.py`** counts every video with `call_transcript` chunks as transcript-backed (was `digest.calls` only) — the
+  weekly chain now writes the Haiku summary for AAI videos itself; no hand-written summaries any more.
+- **Entitlement sweep, tag-filtered:** `videos_list(for_user_id, tag_id=<AI Mastermind>, created_after=<last run>)` — empties
+  come back inline, so a full-roster pass costs one file per ENTITLED member. Recorder/loader pattern in the log entry.
+- **Never run `aai_transcripts.py` on `~/mds_transcripts/2026` again** — it would re-chunk the 161 older files with the new
+  splitter and leave stale embeddings on the overwritten rows. Copy new JSONs to a batch dir and `--dir` it.
+
+### ANDY'S DESK
+1. **The opened bucket exposes restricted talks:** every `videos/*.mp4` (and the Otter transcript PDFs GroupOS attaches) is now
+   world-readable by key — the GOS-32 hole, reopened to get transcripts. Decide with GroupOS: presigned links (GOS-36) and close it.
+2. **32 members whose AI-Mastermind grants no longer hold in GroupOS** (CSV-era rows) — additive loader, nothing deleted; say if
+   they should be revoked. 10 members gained access (incl. Danson Hui, a speaker) and now carry grants.
+3. 13 target members have no GroupOS account at all (list in the #162 close block) — no grants possible until they do.
+4. One chunk at 4,202 chars (target 4,000) — same sentence-bounded class as the 25 Aug batch; re-chunking the 255 older
+   videos is still your priority call.
+
 ## STATE 2026-09-04 (day) — ClickUp handbook copy REGENERATED from a live-verified handbook · no prod change
 **Prod `30fd7e6f` = staging `cefe0133`, gate 313/0 (run 12:40Z), lock free, 13 heartbeats green.** `OLIVIA_HANDBOOK.md` re-verified
 against n8n, Supabase, Meta, launchd, GitHub, Render (header says "last verified 2026-09-04") and ClickUp `2531q-103317` pages
