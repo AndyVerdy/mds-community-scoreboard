@@ -25,11 +25,19 @@ Anita Petrov's 31 Aug Summit-offers post names 16 catalog partners. It had recor
 
 **Result:** that post went 0 to 11 mentions; the 14-day scan went 25 to 42.
 
-**Still open, a judgement call not a bug:** Hector is now FOUND by the prefilter but the model keeps
-judging it not_about_partner inside a batch (a dedicated call says neutral), so it does not stick.
-More importantly that post is an MDS ADMIN announcement of partner offers, and its 11 rows are all
-"praise" quoting the same generic sentence — that is not member sentiment and it inflates partner
-praise. Recommend excluding admin announcement posts from partner sentiment. Andy's call.
+**ANDY'S CALL (2026-09-03): admin announcements STAY in the scan** — "we might get good comments".
+Right: the announcement body is not sentiment, but the COMMENTS under it are. So the fix was the
+verdict, not the scope. The prompt now says praise must be a MEMBER's own experience, and a sponsor
+thank-you or offer listing ("2 free months", "60% off") is NEUTRAL however warm the wording. Anita's
+post went from 11 praise to 5 neutral, and the stale praise rows from the pre-fix runs were deleted.
+
+**Two things still open, both worth a ticket rather than a late-night fix:**
+- Hector is FOUND by the prefilter now but the model judges it not_about_partner inside a batch (a
+  dedicated call says neutral), so it still does not stick. Model variance on a listing.
+- **The scanner never removes a mention it later rejects.** `supa_upsert` only writes; a row judged
+  "praise" under an old prompt survives a re-run that would now call it not_about_partner. The table
+  only grows, so a prompt change leaves stale verdicts behind — the same class as the classifier's
+  "--apply only labels NULLs".
 
 ## 2026-09-03 — FB admin tab becomes editable: nested drill-downs, type + answered write to the DB
 
