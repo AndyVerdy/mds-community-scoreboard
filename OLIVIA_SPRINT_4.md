@@ -2976,6 +2976,10 @@ jeng0304@hotmail.com) · eugene@milliondollarsellers.com resolves to no `at_memb
 shows **32 members whose earlier AI-Mastermind grants no longer hold in GroupOS** and 10 who gained access — rows are
 additive, nothing was deleted; revoking is Andy's call · the opened bucket also makes RESTRICTED talks' mp4s (and their
 Otter transcript PDFs) world-readable — GroupOS side, GOS-32 class, on Andy's desk.
+**Mapping audit (same day):** vectors 33/33 · categories 33/33 · speaker links on 33/33 (26 members · 5 guests · 3 unresolved:
+Lee Lim, Elias Tiong, Shaurya Ithikkat; Operator Panel 2 of 3 names) · partner links 7 (description mentions) · Luke Lim ↔ Scale
+Insights affiliation unset (no people on the partner's web profile) · 9 videos without `event_ids` (GroupOS) · letter map run
+after the transcripts: 29 letters → people, 7 stay letters.
 
 
 
