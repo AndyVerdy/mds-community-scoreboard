@@ -230,7 +230,7 @@ describe("presentation helpers", () => {
   });
   it("blurb fallback keeps whole sentences under the cap", () => {
     const s = "Mo is a lean operator in Ottawa. He sells six products across Amazon US, Canada and EU. He ships 300k orders a year.";
-    expect(blurbFallback(s, 80)).toBe("Mo is a lean operator in Ottawa. He sells six products across Amazon US, Canada and EU.");
+    expect(blurbFallback(s, 100)).toBe("Mo is a lean operator in Ottawa. He sells six products across Amazon US, Canada and EU.");
     expect(blurbFallback(null)).toBe("");
   });
   it("signals text drops the multiplier and reads plainly", () => {
