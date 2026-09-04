@@ -334,7 +334,7 @@ create or replace view digest.personas_stats as
 select e.at_member_id, e.topic, t.parent,
        round(coalesce(e.pct,0)*100)::int as value,
        case when e.score > 0 and e.peak_score > e.score
-            then least(100, round(coalesce(e.pct,0)*100 * e.peak_score / e.score))::int
+            then least(100, round(round(coalesce(e.pct,0)*100) * e.peak_score / e.score))::int   -- round value first, then scale (same as peakOf in model.ts)
             else round(coalesce(e.pct,0)*100)::int end as peak,
        case when e.score is null or e.score = 0 then 'none'
             when e.score >= e.peak_score then 'peak'
@@ -345,6 +345,8 @@ join digest.expertise_topics t on t.topic = e.topic;
 revoke all on digest.personas_stats from anon, authenticated;
 grant select on digest.personas_stats to service_role;
 ```
+
+- [ ] **Step 1b (fix round, 2026-09-04): Migration `personas_stats_peak_161`** — re-create the view with the corrected `peak` line above (same column list, `create or replace view`), re-run the grants lines, then `notify pgrst, 'reload schema';`. Verify: `select count(*) from digest.personas_stats s join digest.member_expertise e using (at_member_id, topic) where e.peak_score > e.score and e.score > 0 and s.peak <> least(100, round(round(coalesce(e.pct,0)*100) * e.peak_score / e.score))` = 0.
 
 - [ ] **Step 2: Migration `personas_library_161`**
 
