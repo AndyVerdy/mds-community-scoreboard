@@ -1,6 +1,6 @@
 # Olivia — Developer Handbook
 
-**The MDS AI Assistant: what it is, how it works, how to run it, and why it is built this way.**
+**The MDS AI Assistant — member-facing name "Millie": what it is, how it works, how to run it, and why it is built this way.**
 
 > **This document replaces the ClickUp doc "MDS Olivia — Assistant" (`2531q-103317`).** That doc
 > was the POC-era design record (July 2026). Everything durable from it lives here, re-organised
@@ -16,8 +16,9 @@
 > **Written for a developer with no prior context and no AI assistant.** If something here is not
 > enough to act on, that is a bug in this document — fix it in the same commit as your change.
 >
-> **Last verified against live systems: 2026-08-20.** Every number in here was queried, not
-> remembered. Re-verify before trusting anything older than a few weeks.
+> **Last verified against live systems: 2026-09-04** (n8n graph, Supabase counts, Meta templates and
+> display name, launchd, GitHub Actions, Render routes, the gate — 313 checks, EXIT 0). Every number
+> in here was queried, not remembered. Re-verify before trusting anything older than a few weeks.
 
 ---
 
@@ -25,9 +26,10 @@
 
 1. **Verify against live systems, never against docs.** Including this one. Every "it works" claim
    needs an execution id, a SQL result, or gate output.
-2. **The safety gate is not optional.** `python3 scripts/olivia_leak_gate.py` (255 checks, free,
-   ~3 min) must be GREEN before anything ships. It runs after *every* change to a retrieval
-   function.
+2. **The safety gate is not optional.** `python3 scripts/olivia_leak_gate.py` (313 checks on
+   2026-09-04 — the count grows with every ship, say "gate green"; free, ~3 min) must be GREEN
+   before anything ships. It runs after *every* change to a retrieval function. Read the exit
+   code, never `| tail`.
 3. **Never edit the production workflow directly.** Edit staging → test → promote. The promote
    script enforces this (see §8.1).
 4. **Retrieval is fail-closed by construction.** Every gated function resolves the asker from
@@ -40,9 +42,13 @@
 
 ## 1. What Olivia is
 
-**A personal AI assistant for MDS members, on WhatsApp.** A member sends a message; Olivia answers
-from MDS's own data — the WhatsApp chats, the Facebook group, the member directory, events,
-partner deals and the video library.
+**A personal AI assistant for MDS members, on WhatsApp — her member-facing name is "Millie"**
+(ruled 2026-08-21, announced on stage at the Singapore Summit 2026-08-24; "Olivia" survives as the
+name of the project, the workflow and every table). A member sends a message; she answers from
+MDS's own data — the WhatsApp chats, the Facebook group, the member directory, events and the
+Summit run-of-show, partner deals and partner websites, the video library with its transcripts,
+the team's own written docs, and the member's own form answers. As of 2026-09-04: 143 members have
+talked to her (1,385 real turns), 62 of them in the last seven days.
 
 **The founding principle (Eugene, still true):** *the assistant's job is not to **be** the answer —
 it is to route the member to an MDS resource.* A short answer plus the thread, the person, the
@@ -50,33 +56,38 @@ partner page or the video that actually holds it. This is why every recommendati
 link.
 
 **Two sides were designed. One is built.**
-- **Side B — reactive Q&A: BUILT.** The member asks, Olivia answers.
+- **Side B — reactive Q&A: BUILT and live** — including personalized recommendations (§7),
+  the composable finder (§6.3), consent-first member introductions (§8.7) and the Summit lane (§4.9).
 - **Side A — proactive weekly push:** 2–3 genuinely relevant items per member per week, skipping
-  the week when nothing is relevant. **Not built.** Blocked on Meta message templates (see §2.2)
-  and on the personalization layer (see §7).
+  the week when nothing is relevant. **Not built.** The personalization layer now exists; the
+  blocker is the channel: a push needs a Meta template, and Meta classifies personalized copy as
+  MARKETING, which its per-user caps then drop (the one broadcast tried so far — the Summit-videos
+  wave of 2026-08-28 — was accepted 94/94 and delivered 44; §2.2).
 
 ### 1.1 The stack — every tool, and what it is there for
 
 | Layer | Technology | Specifics |
 |---|---|---|
-| **Orchestration** | **n8n Cloud** (`mdsco.app.n8n.cloud`) | 5 workflows: production `12wj6h1TWqb0d4Dq` (69 nodes) · staging `bqHstPDi84uOhTCJ` · holding ladder `X1vzrW9Avqff3qRa` · daily review `xkX7wnIwxJLU7YgY` · reminder sender (every minute; also the future intro-expiry tick). Edited via the public API (`N8N_API_KEY`), never the UI, so changes are diffable and snapshotable. |
-| **Database** | **Supabase Postgres 15**, project `nadtudwuwjhckotrngzn`, schema `digest` | 63 tables in `digest` + 18 in `event`, **108 functions** (exported to `db/`, see #65). Extensions in use: **`vector` 0.8.0** (pgvector/HNSW), **`pg_cron` 1.6.4** (the health alarm, every 5 min), **`pg_net` 0.20.0** (Slack calls from inside Postgres), **`pg_trgm` 1.6** (fuzzy name matching), `pgcrypto`, `uuid-ossp`. |
+| **Orchestration** | **n8n Cloud** (`mdsco.app.n8n.cloud` — 69 workflows on the account, 50 active) | Olivia's: production **`12wj6h1TWqb0d4Dq`** (**80 nodes**, versionId `30fd7e6f`, webhook path `olivia-wa-live`) · staging `bqHstPDi84uOhTCJ` (`olivia-wa-staging`; Meta must never point here) · holding timer `X1vzrW9Avqff3qRa` · daily beta review `xkX7wnIwxJLU7YgY` (17:00 ET → Slack) · reminder sender `QhJw46Mr7LAP8fdz` (**hourly**; its last node is the #97 intro-expiry sweep) · display-name watcher `a1ViYr5FT7iePdN9` (temporary, still armed) · engagement → WA DB members `BfLqFlwzBBe0LgMy` (daily 07:30 ET). The July POC `Af2atRScbYSOTYbC` is still active and stays standalone. Edited via the public API (`N8N_API_KEY`) under the `olivia_wf.py` lock, never the UI, so changes are diffable and snapshotable (183 snapshots). |
+| **Front door (relay)** | **`digest.mds.co/api/olivia/webhook`** (mds-digest-web on Render) | **Meta's callback URL points HERE, not at n8n** (since 2026-07-21, after the 8.5-hour dead-webhook incident). Normal times: pure passthrough. n8n dead (workflow off, execution cap, cloud outage): one canned "upgrading, try again shortly" text per member per 15 min, a `status='maintenance'` row in `olivia_sends`, and **502 so Meta retries** — the question is answered late, never lost (`olivia_seen` dedupes the retry). |
+| **Database** | **Supabase Postgres 17.6**, project `nadtudwuwjhckotrngzn` | Schema `digest`: **75 tables, 16 views, 116 functions** (exported to `db/`, #65, daily drift alarm) + schema `event`: 18 tables, 33 FKs, no views, no functions. Extensions: **`vector` 0.8.0** (pgvector/HNSW), **`pg_cron` 1.6.4** (`olivia-health` every 5 min + `member-phone-index` every 15 min), **`pg_net` 0.20.0** (Slack from inside Postgres), **`pg_trgm` 1.6** (fuzzy names), `pgcrypto` 1.3, `uuid-ossp` 1.1. |
 | **API surface** | **PostgREST** (Supabase REST) | Everything is `POST /rest/v1/rpc/<function>` with the `service_role` key and `Content-Profile: digest`. No ORM, no direct Postgres connections from n8n. |
-| **Answer model** | **Anthropic `claude-sonnet-5`** | The answering loop, tool-calling, thinking **disabled**, 3 prompt-cache breakpoints (tools, system, moving message mark). |
-| **Router + fact gate** | **Anthropic `claude-haiku-4-5`** | Intent routing (cached ~6.2K-token prompt) and the evidence check. Cheap, fast, replaceable. |
-| **Embeddings** | **Voyage `voyage-3.5-lite`**, 1024 dimensions | Query-time and document-time. Chosen over OpenAI by ruling. |
-| **Member channel** | **Meta WhatsApp Cloud API v22.0** | Phone-number id `1306956855827812`, WABA `1575708577606583`. Text, image and document sends; read receipts and typing indicators. |
+| **Route lanes** | **`mds-digest-web`** — Next.js on **Render**, `digest.mds.co` (live `37ddd39`; a push to `main` IS the deploy) | Policy in git, not SQL (decision 2026-08-17): `/api/olivia/schedule` (Summit lane: schedule · next · where · speakers · sessions · recommend · people/who-to-meet · reminders) · `/kb` (org docs, #18) · `/intro` (brokered intros, #97) · `/find` (the finder, #108) · `/webhook` (the relay above) · `/ticket` (escalation → Intercom, which 403-blocks n8n's IP). Admin/test: `/test-chat`, `/feedback`, `/reports`, `/requests`; the in-app widget `/widget/enter` + `/widget/messages`; the iOS Knowledge-Base app `/ask` + `/feed`. Auth on the lanes: `X-Olivia-Secret`. |
+| **Answer model** | **Anthropic `claude-sonnet-5`** | `Answer Claude`: tool-calling loop (≤5 rounds, 29 tools), `max_tokens` 2000, thinking **disabled**, 3 prompt-cache breakpoints (tools, system, moving message mark). Benched against GPT-5.6 Terra 2026-09-02 (#156): 5.4% fail / $0.0211 per answer vs 3.3% / $0.0310 — vendor call open as #157, nothing ported. |
+| **Router + fact gate** | **Anthropic `claude-haiku-4-5-20251001`** | Intent routing (cached ~6.2K-token prompt) and the evidence check. Cheap, fast, replaceable. |
+| **Embeddings** | **Voyage `voyage-3.5-lite`**, 1024 dimensions | Query-time and document-time (content, member profiles, videos, partners — whose text includes the partner's web profile since #160 — events). Chosen over OpenAI by ruling. Render holds its own `VOYAGE_API_KEY` for the kb lane. |
+| **Member channel** | **Meta WhatsApp Cloud API v22.0** | Phone-number id `1306956855827812`, WABA `1575708577606583`, display name **"MDS AI Assistant"** (APPROVED, quality GREEN; a new name has sat PENDING_REVIEW since 2026-08-19 — §2.3). Text, image, document, template, button and interactive-list sends; read receipts; typing indicators. 12 approved MDS templates (§2.2). |
 | **Group capture** | **Whapi** | Reads the WhatsApp *group* chats for the digest — the Cloud API cannot. Separate number, separate vendor, deliberately. |
-| **Systems of record** | **Airtable** | Members DB `appou5JVr0WIrioWS`; Events base `appYa7blqkHazLMYf` (Event Roster `tblfTLRfAqBhBZlc4`). |
-| **Catalog source** | **GroupOS** (MCP today) | Videos, partners, documents. A `GROUPOS_PAT` would turn the weekly manual refresh into a scheduled pull. |
-| **Portal / web** | **`mds-digest-web`** — Next.js on **Render** | `digest.mds.co`: member portal, admin dashboards (`/admin/olivia`), the Olivia test window, the ticket endpoint Olivia calls. |
-| **Scheduling** | **launchd** on Andy's Mac | 5 jobs (§8.4). Not a server — the staleness alarms exist precisely because this machine can be asleep. |
-| **Alerting** | **Slack** `#automation-tests` (`C0AQ8USNQK0`) via the MDS-Verifier bot | Alarm fires from pg_cron→pg_net (independent of n8n), plus a launchd watchdog outside Supabase. |
-| **Sync jobs** | **GitHub Actions** | `member-profiles-sync` (daily), `events-catalog-hourly` (hourly, self-healing). |
-| **Facebook capture** | **Chrome extension** (v0.90, full autopilot) | Manual scroll + comments pass — the one irreducibly human step (§8.5). |
+| **Systems of record** | **Airtable** | Members DB `appou5JVr0WIrioWS`; Events base `appYa7blqkHazLMYf` (Event Roster `tblfTLRfAqBhBZlc4`). Never written by Olivia's code (Andy 2026-08-25). |
+| **Catalog source** | **GroupOS**, via its MCP only | Videos, partners, the Summit export, documents. The MCP runs only inside a Claude session, so the **weekly scheduled Claude task `groupos-videos-weekly`** (Sunday) is the refresh: video dump → `videos_weekly_check.py --apply` · `partners_weekly_check.py --apply` (+ web-profile crawl for new/changed partners) · the per-member `videos_list(for_user_id)` entitlement sweep when a new restricted video appears. There is still no `GROUPOS_PAT`; `zoom_weekly` reports `degraded` for that reason every Monday and that is its normal state. |
+| **Transcripts** | **Zoom** cloud recordings + **AssemblyAI** | `zoom_weekly.py` (Monday) pulls Zoom transcripts with real names per cue; `aai_submit.py --local` (ffmpeg → AAI `/v2/upload`) covers in-person/hybrid rooms where speakers stay `Speaker A/B/C`. Coverage: all 2025 + 2026 videos and the 16 Summit Singapore talks (§14). |
+| **Scheduling** | **launchd** on Andy's Mac + one scheduled Claude task | 9 `com.mds.*` jobs, 6 of them Olivia's (§8.4) + `groupos-videos-weekly`. Not a server — the staleness alarms exist precisely because this machine can be asleep (and launchd cannot write `~/Downloads`, §13). |
+| **Alerting** | **Slack** `#automation-tests` (`C0AQ8USNQK0`) via the MDS-Verifier bot | Alarm fires from pg_cron→pg_net (independent of n8n), plus a launchd watchdog outside Supabase, plus the tools-health dashboard and its 08:00 card (`digest.mds.co/admin`). |
+| **Sync jobs** | **GitHub Actions** (mds-digest-web) | `member-profiles-sync` (13:47 UTC daily — profiles backfill, events layer incl. registrations, raw Typeform forms ledger; GitHub often starts it 3.5–6 h late) · `events-catalog-hourly` (:17, self-healing). |
+| **Facebook capture** | **Chrome extension** (v1.13, full autopilot) | Daily insights + humanized auto-scroll + comment pass, one owned tab; ingest is autopilot on the download drop (`auto_import.py`). The Insights xlsx leg still needs a human click when Facebook's SPA stalls — the one irreducibly human step (§8.5). |
 | **File storage** | **Supabase Storage** | `fb-images` (public bucket, for image sends), `video-files` (private, signed URLs valid 1h). |
-| **Scripting** | **Python 3, stdlib only**, shelling out to `curl` | No virtualenv, no dependencies, no ORM — deliberately. Scheduled scripts must run under **Apple's `/usr/bin/python3` (3.9)**, which is why no modern syntax is used. |
-| **Version control** | **git** (this repo) + workflow snapshots | `olivia_snapshots/` holds pre/post-promote JSON of the production graph. |
+| **Scripting** | **Python 3, stdlib only**, shelling out to `curl` | No virtualenv, no dependencies, no ORM — deliberately. Scheduled scripts must run under **Apple's `/usr/bin/python3` (3.9)**, which is why no modern syntax is used. The only OpenAI use anywhere is the model-bench harness (`~/mds-scorecard-tools`, snapshot in `scripts/model_bench/`). |
+| **Version control** | **git** (this repo) + workflow snapshots | `olivia_snapshots/` holds pre/post-promote JSON of the production graph; `db/` holds the exported SQL layer. One branch per session, never a commit on `main` (Andy 2026-09-02). |
 
 **Why so much of it is "just SQL and curl":** every layer that could hold state or fail silently was
 deliberately pushed into Postgres, where it is inspectable, transactional and gate-testable. n8n
@@ -107,28 +118,81 @@ Consequences, all deliberate:
   template needed, consent is built in, and the window opens naturally.
 - Members are onboarded with a click-to-chat link (`wa.me/<number>?text=Hi`).
 - **The proactive weekly push needs templates** — that is the real blocker on Side A, not the code.
-- **Approved templates so far:** `mds_summit_reminder` (UTILITY, #86 reminders) ·
-  `mds_intro_request` (UTILITY, #97 consent asks — approved 2026-08-20; submit templates as
-  UTILITY with `allow_category_change=true`: approve-as-marketing beats a rejection) ·
-  `mds_assistant_whats_new_aug2026` (MARKETING, the release broadcast).
-- Marketing-category sends hit Meta's per-user cap (error 131049 — 17 of 25 broadcast sends
-  dropped 2026-08-04 AFTER the API said 200). Simulated inbound messages
-  (the eval harness) do **not** open a real 24h window (error 131047).
+- Simulated inbound messages (the eval harness, `wamid.SELFTEST*`) do **not** open a real 24h
+  window (error 131047).
+
+**Approved templates (Meta, read live 2026-09-04 — the WABA's whole vocabulary):**
+
+| Template | Category | Used for |
+|---|---|---|
+| `mds_summit_reminder` | UTILITY | #86 event reminders outside the window (the hourly reminder sender) |
+| `mds_intro_request` | UTILITY | #97 consent ask to the intro target: "‹member› asked for an introduction…" + Accept/Decline buttons |
+| `mds_intro_accepted` / `mds_intro_declined` | UTILITY | #109 requester notices — free-form text dies outside the 24h window (131047), so these ride templates first, text only as fallback |
+| `mds_intro_lapsed` | MARKETING (Meta reclassified it) | #109 seven-day lapse notice — can still be capped by 131049 |
+| `mds_login_code` | AUTHENTICATION | The portal's login OTP — same number as Millie (§14) |
+| `mds_birthday_box_address` | UTILITY | Birthday-box address ask |
+| `mds_summit_videos_live_v2` / `_v3` | MARKETING | The 2026-08-28 Summit-videos wave: 94/94 accepted by the API, **44 delivered, 50 dropped** on 131049 (marketing frequency cap) and 130472 (experiment holdout) |
+| `mds_assistant_whats_new_aug2026`, `olivia_update_aug_2026`, `olivia_intro` | MARKETING | Release broadcasts (`olivia_intro` is the July one that died on 131049) |
+
+**Template lessons, burned in three submissions deep (2026-08-28):** **the COPY decides the
+category, not the flag** — Meta reclassified UTILITY → MARKETING on v1, v2 and v3 of the videos
+template even with `allow_category_change:false`; personalized "picked for you" reads as
+promotion. **No newlines inside template VARIABLES** (132018 — Meta approved the example, then
+refused every send). **Approved ≠ sendable: test-send before any wave.** **A 200 from
+`/messages` is never delivery** — the truth arrives asynchronously on the status webhook into
+`digest.olivia_sends`; always read it back. The open recommendation for the next wave is a strictly
+transactional v4 ("the recordings from your event are available" + button), with the
+personalization moving to Millie when the member taps in.
+
+### 2.3 The display name
+
+The number's verified name is **"MDS AI Assistant"** (APPROVED; quality rating GREEN). **"MDS
+Mille"** — the misspelling submitted before the name was ruled — has been **PENDING_REVIEW at Meta
+since 2026-08-19**; Meta refuses a second submission while one is pending (error 2388362, no
+cancel API). The hourly watcher `a1ViYr5FT7iePdN9` WhatsApps Andy the moment it flips. **Standing
+plan:** on the verdict do NOT re-register "Mille" — submit **"MDS Millie"**, re-register within the
+14-day window (6-digit PIN), then delete the watcher. She already calls herself Millie everywhere
+(12 strings across 4 nodes; the fact-check lane names her in RULE ONE and `community_info` returns
+`assistant_name`, because Haiku once vetoed her own name as an unsupported claim — exec 93640).
+
+### 2.4 Interactive messages
+
+Yes/no offers are **tap buttons** (#38). Pick-one-of-N — "which of these should I introduce you
+to?" — is the native **interactive list** (≤10 rows, exactly the recommendation cap); the reply
+carries the row `id`, so resolution is by id, never by parsing a typed name (#107b). A body over
+1024 characters cannot carry buttons, so the buttons go out as a **follow-up message**
+(`Followup Interactive?` → `Send Followup Interactive (Meta)`); suggestions are never filtered or
+shortened to make room (Andy, #107b). Template quick-reply taps arrive as `msg_type='button'` and
+list taps as `interactive/list_reply`; the intro ones are intercepted by `Intro Tap?` **before the
+LLM lane** (#97, in prod since 2026-08-22), everything else flows through normally.
 
 ---
 
 ## 3. How an answer happens — the pipeline
 
-A member's message travels through the **production n8n workflow** (`12wj6h1TWqb0d4Dq`, 67 nodes).
-The path, in order:
+A member's message travels through the **production n8n workflow** (`12wj6h1TWqb0d4Dq`, 80 nodes —
+Appendix C). The path, in order:
 
-1. **Webhook** receives the Meta callback. Non-text events (delivery statuses, reactions) branch
-   off immediately to their own handlers.
+1. **The relay, then the webhook.** Meta's callback lands on `digest.mds.co/api/olivia/webhook`
+   (Render), which forwards the payload untouched to `WA Inbound (POST)`; if n8n is dead it sends
+   the canned "upgrading" line and returns 502 so Meta retries (§1.1). Inside the workflow the
+   **raw-event store branch runs FIRST** (#75): every inbound message event — text, interactive,
+   reaction, media, template-button tap — is persisted verbatim to `digest.olivia_webhook_events`
+   *before any parse can throw*. Delivery statuses and reactions then branch to their own handlers.
 2. **Claim Message (dedupe)** — writes the WhatsApp message id to `digest.olivia_seen`. Meta
    retries deliveries; a claimed id is dropped. Fails *open* (a rare double reply beats silence).
-3. **Find Member / Resolve Member** — looks the phone up in `digest.members`. **Exactly one active
-   member must match**, or the conversation takes the generic non-member path. This is the
-   identity hard-fail (§5).
+2b. **Intro Tap? (#97)** — an *Accept intro* / *Decline* button tap or an `intro_pick_*` list tap is
+   swallowed here and POSTed to the intro route (`op:'tap'` / `'pick'`), which replies directly
+   (`Build Intro Reply` → `Send Reply`); a stale or unrelated tap comes back `handled:false`,
+   `Restore Original Message` puts the pre-tap message back, and the turn continues as if the
+   branch did not exist. These taps never reach the LLM lane.
+3. **Find Member / Resolve Member** — `olivia_front_door_v2(p_phone, p_user_id)` looks the sender
+   up in `digest.members` by phone **or**, when WhatsApp hides the number, by the opaque sender id
+   through `digest.member_wa_ids` (#146, §8.8). Four outcomes: matched · **unlinked** (an active
+   member whose number is not linked yet — asked for the email on their MDS account, #125; never
+   told they are inactive) · inactive · unknown. **Exactly one active member must match**, or the
+   conversation takes the generic non-member path (`Build Generic`). This is the identity
+   hard-fail (§5).
 4. **Prep Context** — loads the last 24h of conversation turns, cut at any explicit "reset", plus
    the previous turn's retrieval plan (so "yes" can be replayed).
 5. **Route Request** (Claude Haiku) — classifies the message into an intent. Cheap and cached.
@@ -141,24 +205,39 @@ The path, in order:
 8. **Verbatim? branch** — canned/no-model routes (greeting, help, chats list, ticket offer,
    refusals) answer from hard-coded text and skip the model entirely.
 9. **The answering loop** (`Answer Seed → Answer Claude → Answer Parse → Answer Tool → Answer
-   Merge → …`, max 5 rounds) — Claude Sonnet with the gated RPCs exposed as **tools**. The model
-   decides what to fetch and may look again. **`p_phone` is injected server-side in Answer Parse;
-   the tool schemas deliberately have no phone parameter the model could set.**
+   Merge → …`, max 5 rounds) — Claude Sonnet with 29 gated **tools**. The model decides what to
+   fetch and may look again; `First-Fetch Retry?` forces a retrieval when the first round tried to
+   answer without one. **`p_phone` is injected server-side in Answer Parse; the tool schemas
+   deliberately have no phone parameter the model could set.** `Answer Tool` dispatches by name:
+   `event_schedule` and `event_who` (`op:'people'`) → the schedule route · `org_docs` → the kb
+   route · `member_intro` → the intro route · `find` → the finder route — all on `digest.mds.co`,
+   policy in git — and everything else → the Supabase RPC of the same name, where `Attach
+   Embedding`'s `EXEC_NAME` map swaps the model's v1 names for the live executions
+   (`content_search_v2`, `member_card_v2`, `member_match_v2`, `member_dossier_v2`,
+   `event_lookup_v3`, `event_history_v2`, `chat_recommendations_v3`, `multi_source_v2`,
+   `video_search_v2`, `partner_lookup_v2`).
 10. **Claims? → Fact Check → Gate Verdict** — a Haiku fact-gate compares the draft against the
     evidence actually retrieved this turn. Claim-free replies skip it. Unsupported claims trigger
     one regeneration; a second failure returns an honest "I could not verify this". A deterministic
     **link gate** additionally requires every URL to appear verbatim in the evidence.
-11. **Format Reply → Billing Nudge → Eval (silent)? → Send Reply (Meta)** — WhatsApp formatting,
-    an optional once-per-24h billing reminder, then either a real send or (for eval traffic) a
-    silent path that skips Meta entirely.
+11. **Format Reply → Billing Nudge → Eval (silent)? → Send Reply (Meta) → Followup
+    Interactive?** — WhatsApp formatting (markdown → WhatsApp, `[SEND_IMAGE:]` / `[SEND_FILE:]`
+    markers extracted, dangling orphan links stripped), an optional once-per-24h billing reminder,
+    then either a real send or (for eval traffic, `wamid.SELFTEST*`) a silent path that skips Meta
+    entirely. Buttons or a list picker that could not ride the body go out as a follow-up message.
 12. **Save Conversation** — both turns are written to `digest.olivia_messages`, stamped with the
-    member record and the retrieval plan.
+    member record and the retrieval plan (known gap #110: intro-tap turns are not saved).
 
-**Two side workflows:**
+**Side workflows:**
 - **Holding ladder** (`X1vzrW9Avqff3qRa`) — fires on inbound, sends "on it" / "still working" if an
-  answer is slow. Fail-closed: it checks whether the answer already landed before each rung.
+  answer is slow. Fail-closed: it checks whether the answer already landed before each rung. Wired
+  BEFORE routing in the fan-out (branch order is depth-first in n8n v1).
 - **Daily review** (`xkX7wnIwxJLU7YgY`) — 17:00 ET, Claude reviews the last 24h of real
   conversations and posts findings to Slack `#automation-tests`.
+- **Reminder sender** (`QhJw46Mr7LAP8fdz`) — **hourly**: marks stale sends failed, fetches due
+  reminders, checks open windows, sends free-form in-window or the `mds_summit_reminder` template
+  outside, records the outcome — then runs the **intro sweep** (`/api/olivia/intro op:'sweep'`,
+  `onError: continueRegularOutput`) that expires 7-day-old pending intros.
 
 ---
 
@@ -176,7 +255,7 @@ access-tagged. An undefined source does not exist to her.* No crawling raw bases
 
 ### 4.2 Where everything lives
 
-- **Supabase project `nadtudwuwjhckotrngzn`** — schema `digest` (63 tables) + schema `event` (18 tables, the Summit run-of-show), 108 functions.
+- **Supabase project `nadtudwuwjhckotrngzn`** (Postgres 17.6) — schema `digest` (75 tables, 16 views, 116 functions) + schema `event` (18 tables, 33 FKs — the Summit run-of-show). Counts 2026-09-04.
 - **Airtable Members DB `appou5JVr0WIrioWS`** — the member system of record.
 - **Airtable Events base `appYa7blqkHazLMYf`** — events catalog + Event Roster (`tblfTLRfAqBhBZlc4`).
 - **GroupOS** — videos, partners, app events (read via MCP today; a `GROUPOS_PAT` would make it a
@@ -184,27 +263,30 @@ access-tagged. An undefined source does not exist to her.* No crawling raw bases
 
 ### 4.3 The core tables
 
-| Table | Rows (2026-08-20) | What it is |
+| Table | Rows (2026-09-04) | What it is |
 |---|---|---|
-| `content_items` | 44,813 | **The unified search index.** Every searchable thing — WhatsApp messages, chat digests, Facebook posts and comments, application answers — one row each, with `access_rule`, `sensitivity`, a full-text vector and a 1024-dim embedding. |
-| `member_edges` | 141,861 | The knowledge graph: typed, weighted member↔member connections. |
-| `event_registrations` | 18,077 | The raw registration ledger, keyed to members. **Only the sync + `stamp_event_registrations()` may read it.** |
-| `event_registrations_live` (view) | 13,995 | **#58 chokepoint — every reader uses this.** Drops `ticket_status` **Unconfirmed** (Airtable's fold of Canceled / Pending Approval / Not Going / Unpaid / Waitlist) and **No Show**. Unknown/NULL statuses stay visible on purpose: silently dropping a real registration is the worse failure. |
-| `member_events` | 24,319 | **Append-only** behaviour log (see §7.3). |
-| `member_expertise` | 15,377 | The expertise ledger: member × topic scores with evidence. |
-| `member_attributes` | 5,745 | The derived member profile — the canonical member population. |
-| `member_profiles` | 5,840 | Raw Airtable field mirror (`at_fields` jsonb). |
-| `members` | 664 | **The WhatsApp channel layer** — phone → member. Not the population. |
-| `events_catalog` / `videos_catalog` / `partners_catalog` | 1,4xx / 1,03x / ~500 | Source catalogs (weekly refresh). All 161 2026 videos carry a transcript-derived `summary`. |
+| `content_items` | 57,586 (48,502 embedded) | **The unified search index.** Every searchable thing — WhatsApp messages, chat digests, Facebook posts and comments, application answers, video transcript chunks — one row each, with `access_rule`, `sensitivity`, a full-text vector and a 1024-dim embedding (8,814 sub-30-char rows are unembedded by design). |
+| `member_edges` | 145,449 | The knowledge graph: typed, weighted member↔member connections (rebuilt nightly — the count moves both ways). |
+| `event_registrations` | 18,295 | The raw registration ledger, keyed to members. **Only the sync + `stamp_event_registrations()` may read it.** |
+| `event_registrations_live` (view) | 14,380 | **#58 chokepoint — every reader uses this.** Drops `ticket_status` **Unconfirmed** (Airtable's fold of Canceled / Pending Approval / Not Going / Unpaid / Waitlist) and **No Show**. Unknown/NULL statuses stay visible on purpose: silently dropping a real registration is the worse failure. Since #96/#98 also the attendee-ACCESS authority. |
+| `member_events` | 36,076 | **Append-only** behaviour log (see §7.3). |
+| `member_expertise` | 16,630 | The expertise ledger v2: 742 members × 51 topics with evidence. |
+| `member_attributes` | 5,757 (756 active) | The derived member profile — the canonical member population. |
+| `member_profiles` | 6,037 | Raw Airtable field mirror (`at_fields` jsonb). |
+| `members` | 680 (617 linked) | **The WhatsApp channel layer** — phone → member. Not the population. |
+| `member_wa_ids` | 108 | **#146:** opaque WhatsApp sender id → phone, for members who hide their number. Learned automatically when id and number arrive together; paired by hand (`olivia_link_wa_id.py`) when only the id does. |
+| `member_email_alias` | 5,763 | **#100:** every address known to belong to a member, with its evidence (§4.10). |
+| `events_catalog` / `videos_catalog` / `partners_catalog` | 1,452 / 1,083 / 511 | Source catalogs (hourly events; weekly videos + partners through the GroupOS task). Every published partner and event carries a vector (#159 — 75 partners were dark for a month because the invalidate trigger had no rebuild). All 2025–2026 videos carry a transcript-derived `summary`. |
+| `olivia_sends` | 2,233 | **Delivery truth.** Every outbound send with the status Meta reports back asynchronously (`delivered`, `read`, `failed` + error code, `maintenance` from the relay). A 200 from `/messages` is not in here as delivery. |
 | `partner_web_profile` | 506 | **#160** what each partner says on its OWN website (partner-stated, never member judgment): `summary`, `services[]`, `markets[]`, `pricing`, `people` jsonb (founders/leaders → `speakers.affiliation_partner_id` by name), `profile` jsonb, `crawl_status` (405 ok · 71 unreachable · 29 JS-only). Crawl `scripts/partner_web_crawl.py` → Sonnet extraction (`OLIVIA_PARTNER_WEB_EXTRACT.md`) → `scripts/load_partner_web_profiles.py --apply`. Refreshed by the weekly GroupOS task (step 4b). |
 | `video_speaker_letters` | 270 | **#103 letter-mapping.** AAI transcripts hear voices as letters (Speaker A/B/C); this maps video+letter → speaker entity where evidence allows — `confidence` = self_intro · first_name_unique · solo_dominant. Loader `scripts/load_letter_map.py` (ASR guard: a heard name never mints an entity, it fuzzy-matches that video's own speakers, else review CSV). Unmapped letters stay letters BY DESIGN — a wrong name on a quote is worse than no name. |
 | `speakers` / `speaker_aliases` / `video_speaker_links` / `video_partner_links` | 471 / — / ~1,250 / 129 | **#103 speaker identity space (2026-08-21).** One entity per human/company (`canonical` unique = "same means same"); `kind` member·partner·guest·unresolved; members EMAIL-evidenced (GroupOS mirror → `resolve_member_by_email`). Links carry `role` (speaker · participant · moderator) + `talk_seconds` (Zoom cue share) and `source` = evidence rung (speaker_ids · catalog · title_known · title_position · desc_known · desc_lead · zoom_cue). `video_partner_links` = partner sessions (video↔partner). Loaders: `load_speakers.py` (rungs A–D + `--rescan` guest→member promotion, `--coverage`), `load_participants.py` (Zoom cues). Run weekly by `zoom_weekly.py` step 4.5. ⚠️ `digest.video_speakers` is the pre-existing GroupOS speaker-USER mirror (234 rows, email = matching key; `member_record_id` is GroupOS-internal, never an AT id) — evidence source, not the identity store. Zoom transcripts carry REAL NAMES per cue; AAI = Speaker A/B/C (letter-mapping + frame-OCR = open rungs). |
-| `video_access` | 34,236 | **#101: who may see each RESTRICTED GroupOS video** — loaded from the dev's read-path mirror export, `real_match` rows only (panel-only rows are admin-panel phantoms). `at_member_id` via `resolve_member_by_email()`; NULL = unresolvable, kept so the grant activates when the alias lands. |
-| `olivia_webhook_events` | 4,312 | **#75:** every inbound MESSAGE event persisted verbatim BEFORE any parse (text/interactive/reaction/media; statuses excluded). The only place template quick-reply **button** taps land — the workflow does not persist `msg_type='button'` into `olivia_messages`. |
-| `olivia_recommendations` | 609 | **The equalizer's memory (#93/#95):** every name she recommends, per asker + lane. Read by all recommendation lanes (30d per-asker downrank · 7d global spread · LRU cycling). |
-| `olivia_intros` | 3 | **#97 consent ledger (POC):** pending → accepted / declined / expired / unreachable; no number moves before `accepted`. |
+| `video_access` | 44,972 | **#101/#150: who may see each RESTRICTED GroupOS video.** Sources: the dev's read-path mirror export (`real_match` rows only), Andy's CSV exports, the #150 Summit grants (attendees + staff, `scripts/sql/150_summit_video_grants.sql`) and, since 2026-09-03, the per-member `videos_list(for_user_id)` sweep (`source='api'`, 7,936 rows, loader `video_access_from_sweep.py`). **All 424 restricted videos carry grants (0 uncovered).** `at_member_id` via `resolve_member_by_email()`; NULL = unresolvable, kept so the grant activates when the alias lands (93 rows). |
+| `olivia_webhook_events` | 16,005 | **#75:** every inbound MESSAGE event persisted verbatim BEFORE any parse (text/interactive/reaction/media; statuses excluded). The only place template quick-reply **button** taps land — the workflow does not persist `msg_type='button'` into `olivia_messages`. |
+| `olivia_recommendations` | 20,192 | **The equalizer's memory (#93/#95):** every name she recommends, per asker + lane. Read by all recommendation lanes (30d per-asker downrank · 7d global spread · LRU cycling). |
+| `olivia_intros` | 6 | **#97 consent ledger (live since 2026-08-22):** pending → accepted / declined / expired / unreachable; no number moves before `accepted`. One intro has run end-to-end in the wild (Ben Anderson → Dat Le, 2026-08-31, accepted in 1h51m). |
 | `docs` / `doc_entries` | 4 / 50 | **#18 org knowledge library** — team documents (FAQs, SOPs), audience fail-closed to staff, served by the `/api/olivia/kb` route. |
-| `olivia_messages` | 4,653 | Conversation history, stamped with the member record. |
+| `olivia_messages` | 12,981 (1,385 real member turns from 143 members) | Conversation history, stamped with the member record; the rest is eval/probe traffic (`wamid.SELFTEST*`). |
 
 > ⚠️ **`digest.members` is the WhatsApp layer; `digest.member_attributes` is the member
 > population.** Confusing the two has caused repeated bugs — most notably staff counts. Anything
@@ -259,9 +341,18 @@ events ─┬─ activities ── activity_audience → participant_types
         └─ faqs · tickets · orders · check_ins
 ```
 
-**Fifteen tables, 25 foreign keys, no views and no functions.** `event.people.at_member_id` is a
-real FK to `digest.member_profiles`, so an attendee resolves to an MDS member where the link holds
+**Eighteen tables, 33 foreign keys, no views and no functions** (2026-09-04; live counts after the
+#113 refresh: 86 activities · 234 people · 199 attendees · 0 pending reminders). `event.people.at_member_id`
+is a real FK to `digest.member_profiles`, so an attendee resolves to an MDS member where the link holds
 and stays NULL where it does not (guests, external speakers).
+
+**Registration status has two sources that can disagree (#147, PAUSED 2026-08-25 on Andy's
+authority call).** The agenda (`event.attendees`, from the GroupOS export) and who-to-meet
+(`event_registrations_live`, from the Airtable roster) answered "am I registered?" differently for
+36 members. Shipped so far: `member_alias_ids()` (duplicate-record folding), `registration_status()`
+and `is_registered()`, and `event_who` reads them (130 → 145 registered, 15 recognised, 0 lost).
+Not started: the event resolver and the schedule route. Until ruled, one function with two facets is
+the recommended shape.
 
 **The visibility rule lives OUTSIDE the database** — see §12. Written once, in the route:
 
@@ -394,6 +485,22 @@ before joining.
   algorithm. Registrations and Facebook identities *are* auto-matched — they do not grant access.
 - Every Olivia conversation is stamped with its member record at write time; event registrations
   are re-keyed after every roster sync (`stamp_event_registrations()`).
+- **A hidden number is still an identity (#146).** WhatsApp lets a member hide their number; Meta
+  then delivers only an opaque id (`CA.1068…`). `digest.member_wa_ids` pairs id → phone; the front
+  door (`olivia_front_door_v2`) resolves either. Pairing is automatic when both arrive together
+  and **human-confirmed** otherwise (§8.8) — the wrong pairing hands someone another member's chats.
+- **An absent status is not an inactive membership (#125).** A paying member whose number is not
+  linked yet is `unlinked`, gets asked for the email on their MDS account, and is never told their
+  membership is inactive (53 members were getting that false claim; now 0).
+- **The doorman counts members, not phones (#128).** `resolve_asker` once refused any member with
+  two numbers on file; a member with two phone rows is one member.
+- **Attendee access (#96/#98) is registration-based, never presence-based:** whether an asker may
+  see an event's attendee names is checked against `event_registrations_live` for THAT event.
+  `event.people` is data — it carries staff and test rows (a test row once granted names on the
+  live route; that class is closed).
+- **Known identity debt (Andy's desk):** duplicate member-record clusters in the Members DB (the
+  #147 disagreement, two records sharing one email colliding in #150's grants). Never deleted by
+  us — the never-delete-a-member rule stands; duplicates are merged or flagged by Andy only.
 
 ---
 
@@ -428,8 +535,13 @@ tiered sort makes the vector a silent no-op — which is exactly the bug v1 had 
 is told who is speaking rather than guessing. Same marker in `fb_thread`.
 
 **Corpus hygiene:** rows whose embed-source text is under 30 characters are deliberately left
-unembedded (6,486 of them) — they stay keyword- and thread-reachable but do not pollute meaning
-search.
+unembedded (8,814 of them on 2026-09-04) — they stay keyword- and thread-reachable but do not
+pollute meaning search. Daily "No activity" digest stubs are excluded from the index entirely.
+The HNSW index is 376 MB and has 26,305 recorded scans — the v1-era zero is history.
+
+**Recency in fusion (#153 + the #102 slice, 2026-08-26):** video ranking carries a bounded decay
+(+0.006 under 60 days, +0.003 under 180; an RRF leg maxes at 0.0164, so it reorders near-ties and
+cannot lift junk) — a 2025 talk no longer ties a running-Summit one.
 
 ### 6.2 The gated RPC surface
 
@@ -453,7 +565,20 @@ resolves the asker itself. The main ones:
 | `multi_source` | One-shot fan-out across all six source families |
 | `chat_info` / `chat_recommendations` | Chat metadata / which **WhatsApp chats** to join. **A CHAPTER is not a chat** — chapter questions route to `community` (#84 D1); the router had no chapter lane at all until 2026-08-17 |
 | `report_create` | Files a member report |
+| `form_field_history` / `my_form_answers` | The asker's OWN form answers (census, application, check-ins): one field across time / one form's answers. Self only |
 | `find` | Composable member filters — one lane, every data layer (#108). **A route, not an RPC** — `POST /api/olivia/find` (§6.3) |
+| `event_schedule` | The Summit lane — schedule · next · where · speakers · sessions · recommend · people · reminders. **A route** — `/api/olivia/schedule` (§4.9) |
+| `member_intro` | "Connect me with …" — consent-first brokered intros. **A route** — `/api/olivia/intro` (§8.7) |
+| `org_docs` | The team's own written docs (FAQs, SOPs). **A route** — `/api/olivia/kb` (#18) |
+
+That is the model's view: **29 tool names** (Answer Seed, 2026-09-04). The executions behind ten of
+them are the `_v2`/`_v3` functions (`EXEC_NAME` map, §3 step 9); the model keeps the v1 names.
+What the v2/v3 layer adds, beyond personalization (§7): **`link` on every named person** (#154 —
+`digest.member_link()` is the ONE definition of a member's link, 718 of 741 actives resolve),
+`event_lookup_v3` (`what_it_is`, `room`), `chat_recommendations_v3` (`why`, `strength_note`),
+`video_search_v2` (`is_restricted` = restricted **for this asker** (#150), `event_total` = the
+event's real session count (#151), `summary`, `p_call_type` / `p_order` / `p_video_id`),
+`partner_lookup_v2` (`fit_reason`, `event_offer*`, and the #160 web fields).
 
 **Grant discipline:** `DROP FUNCTION` + `CREATE` **resets the EXECUTE grant to PUBLIC** — meaning
 anon could call it. Always `revoke all … from public` and re-grant to `service_role` after a
@@ -685,12 +810,23 @@ python3 scripts/olivia_wf.py unlock
 ### 8.2 The safety gate
 
 ```bash
-python3 scripts/olivia_leak_gate.py     # 266 checks, ~3 min, free
+python3 scripts/olivia_leak_gate.py     # 313 checks (2026-09-04), ~3 min, free
 ```
 It inserts canary rows with every access rule and sensitivity, asks the real RPCs for them as
 several different members, and asserts what must *not* come back. It also verifies anon lockout,
-cancelled-member refusal, field allowlists and grant hygiene, then cleans up after itself.
-**Green before every ship. No exceptions.**
+cancelled-member refusal, field allowlists, grant hygiene, the #96 attendee cap, the finder's
+R1–R10, the #97 no-number-before-accept half, Staff invisibility (#106), the `link` columns (#154)
+and that every published partner/event carries a vector (#159 — rows synced in the last 30h are
+exempt, they wait for the nightly embed), then cleans up after itself. Its `rpc()` sends
+`X-Olivia-Audit`, so gate runs never rotate anyone's recommendation state. **Green before every
+ship. No exceptions. Read the exit code, never `| tail`.** 26 route checks need `digest.mds.co` to
+resolve — from Andy's Mac it sometimes SERVFAILs; point them at `mds-digest-web.onrender.com` then.
+
+Its twin is `scripts/prod_pulse.py` — read-only, directional against a saved baseline: the gate
+proves retrieval REFUSES, the pulse proves she still ANSWERS (row counts not falling, RPCs
+responding, failed sends not rising). Run it before and after risky steps; exit 1 = stop. Re-save
+the baseline (`--save-baseline`) at the start of each tier, or nightly rebuilds (the graph) and old
+send failures read as regressions — as they did on 2026-09-04.
 
 ### 8.2b After ANY migration: re-export the SQL layer (#65)
 
@@ -712,10 +848,24 @@ cd /Users/Born/mds-scorecard-tools
 OLIVIA_EVAL_BANK=eval_bank_smoke.json python3 olivia_eval.py --fire --staging --ids 3106,9024,...
 OLIVIA_EVAL_BANK=eval_bank_smoke.json python3 olivia_eval.py --score
 ```
-- The bank is **organic questions real members asked** — generated questions were retired.
+- The banks are **organic questions real members asked** — generated questions were retired.
+  Four exist: the **locked 100** (`eval_bank_100_2026-08-16.json`, `scripts/run_eval_100.py` — the
+  sprint exit exam, a ruling: "not 30, not 220. 100"; it must also SHRINK, always-passing questions
+  retire) · **bank C** (602 organic asks through the Summit week, 2026-08-23/24 — 192 defects found,
+  155 fixed, the fix-loop that shaped waves 7–21) · **bank D** (30 Summit-video questions, 10
+  classes, 2026-08-28) · **bank B** (#119, the regression net for everything built after 08-16 —
+  still being written).
+- **The nightly eval** (`com.mds.olivia-eval`, 03:30) fires `eval_bank_v2.json` at the LIVE
+  webhook and writes `OLIVIA_EVAL_<date>.md` with per-source health and failure classes. 2026-09-04:
+  220 judged · 194 pass · 24 fail (10.9%) against Andy's target of **<1% inaccurate**; worst
+  classes `false_denial` and `wrong_fact`. It is the daily routine, never a release gate.
 - Eval traffic uses `wamid.SELFTEST*` ids: the workflow answers fully but **skips the Meta send**.
 - Runs pace one question at a time and look stalled for minutes. **Never kill a run.**
-- Baseline: 169 questions, 3.6% wrong (2026-08-03, production).
+- **Eval RUNs are propose-and-wait** (they cost money); probes (single questions) are free.
+- Model comparisons run OUTSIDE n8n through the bench harness (`kimi_harvest.py` → `kimi_bench.py`
+  → `bench_compare.py`; `bench_tools.py` must mirror the live `Attach Embedding` / `Answer Tool` /
+  `Answer Merge` nodes — re-extract from the prod snapshot first). #156 (2026-09-02): Sonnet 5 5.4%
+  fail / $0.0211 per answer · GPT-5.6 Terra medium 3.3% / $0.0310 · Terra none 7.6% / $0.0237.
 - ⚠️ `olivia_selftest.py` paces with a fixed 20-second sleep; an answer slower than that races the
   conversation save and produces phantom multi-turn failures. Fix it to wait on persistence.
 
@@ -723,22 +873,33 @@ OLIVIA_EVAL_BANK=eval_bank_smoke.json python3 olivia_eval.py --score
 
 | launchd job | What runs |
 |---|---|
-| `com.mds.olivia.derivations` (04:30) | `nightly_derivations.py` — 8 jobs: niches, question labels, chapter pages, member-profile embeddings, content embeddings, member-event diffs, expertise ledger + knowledge graph |
+| `com.mds.olivia.derivations` (04:30) | `nightly_derivations.py` — **9 steps**, each with its own heartbeat: `derive_niches` · `label_questions` · `sync_chapter_pages` · `embed_member_profiles` · `embed_content` (`~/mds-scorecard-tools/embed_backfill.py`) · `embed_catalogs` (#159 — partners + events, nulls only) · `member_events_daily` · `graph_ledger` (expertise ledger v2 + knowledge graph) · `entity_dossiers` (`refresh_entity_dossiers()`, 900s ceiling since #152) |
 | `com.mds.persona.refresh` (04:15) | `persona_refresh.py` — rebuilds member personas |
-| `com.mds.olivia-eval` (03:30) | the nightly eval run |
+| `com.mds.olivia-eval` (03:30) | `olivia_eval.py --nightly` — the daily eval (§8.3) |
 | `com.mds.olivia.watchdog` (every 15 min) | `alarm_watchdog.py` — watches the alarm system from *outside* Supabase |
 | `com.mds.db.drift` (05:40) | `db_export_schema.py --check --alert` — fails and alerts Slack when `db/` and the live SQL layer disagree (#65) |
+| `com.mds.zoom.weekly` (Monday 05:15) | `zoom_weekly.py` — Zoom transcripts → chunks → speaker/participant links (`load_speakers.py`, `load_participants.py`) → dossiers; review CSVs go to `~/mds_transcripts/review/` (launchd cannot write `~/Downloads`). `degraded` = "videos NOT synced (no GROUPOS_PAT)" is its normal, stamped state |
+| Claude scheduled task `groupos-videos-weekly` (Sunday) | The GroupOS MCP only runs inside a Claude session: video dump → `videos_weekly_check.py --apply` · `partners_weekly_check.py --apply` (+ crawl/extract/load web profiles for new or changed partners, `OLIVIA_PARTNER_WEB_EXTRACT.md`) · the per-member entitlement sweep when a new restricted video appears (`video_access_from_sweep.py`) |
 
-Every job stamps `digest.olivia_job_heartbeats`. A job that goes stale (>26h, or >192h for weekly
-catalog refreshes) triggers the Slack alarm. **Prove any scheduled script under `/usr/bin/python3`**
-— launchd uses Apple's Python 3.9, which is not your shell's Python.
+The other three `com.mds.*` jobs on the Mac are not Olivia's (`scorecard.autoimport` = the Facebook
+ingest watcher, `scorecard.heartbeat`, `wa.dailydigest`). Two GitHub Actions (§1.1) and the
+`chats_mirror` job (every 3h, #90) complete the picture.
+
+**13 jobs stamp `digest.olivia_job_heartbeats`** (`max_age_hours`: 26 nightly · 192 weekly catalogs ·
+216 zoom · 3 chats). Stale or `error` = the Slack alarm and a red tile on the 08:00 card. All 13 were
+green on 2026-09-04. **Prove any scheduled script under `/usr/bin/python3`** — launchd uses Apple's
+Python 3.9, which is not your shell's Python — and never let one write under `~/Downloads`.
 
 ### 8.5 Facebook capture (the one irreducibly manual step)
 
-Facebook removed permalink anchors, so the scroll/enumerate step is manual (Chrome extension).
-**Rewrite `extension/seed_ids.json` from the capture file on every run** — it falls back silently
-to a stale seed and pulls comments for the wrong days. Then:
-`load_feed.py → download_images.py → vision_decode.py → upload_images.py → linker SQL → embed_backfill.py`.
+Extension v1.13 runs full autopilot: daily Insights + humanized auto-scroll + comment pass in one
+owned tab (roster weekly; `seed_ids.json` auto-written from the DB), and the drop in `~/Downloads`
+triggers `auto_import.py` (`load_feed.py → download_images.py → vision_decode.py → upload_images.py →
+linker SQL → embed_backfill.py`, plus the nightly classifier). Facebook renders no permalink anchor
+for recent posts, so posts are fingerprinted by body text and reach is read from the DOM. The
+Insights xlsx leg (the Scorecard's engagement scores) still stalls on Facebook's SPA and then needs
+Andy to click "Capture Insights" — the one irreducibly human step. The two legs are separate tiles
+on the health card (`fb-capture` vs `fb-engagement`). Manual scroll = deep backfills only.
 
 ### 8.6 Incident response
 
@@ -770,11 +931,13 @@ Four ops, one body shape (`{op, phone, ...}`):
 | `sweep` | n8n cron tick (piggybacks the every-minute `Olivia — Reminder Sender`, `QhJw46Mr7LAP8fdz`, `onError: continueRegularOutput`) | expires `pending` rows older than 7 days: notifies the requester THEN marks `expired` — never the reverse, so a mid-row throw just leaves it `pending` for the next tick to retry (worst case one duplicate notice, never a silently stranded row) |
 
 **Rulings (Andy — enforced in the route, not in prompt text):**
-- **Eligibility, both sides, LOCKED 2026-08-21:** requester AND target must each be a Millie user
-  (≥1 real inbound turn in `olivia_messages`, SELFTEST/eval traffic excluded) *and*
-  Summit-registered (`event_registrations_live`, `SUMMIT_EVENT_ID = recrATwhUDA55iQN5` — never
-  name-match the events catalog). The picker pre-filters to eligible candidates only, so a tap
-  never lands on a refusal the pick itself should have screened out.
+- **Eligibility (#107d, 2026-08-22 — supersedes the 08-21 "both sides Millie users" lock):** the
+  target must be a **Summit attendee with a phone on file** (`event_registrations_live`,
+  `SUMMIT_EVENT_ID = recrATwhUDA55iQN5` — never name-match the events catalog). The Millie-user
+  requirement was dropped on both sides after a confirmed attendee got the pilot refusal. The
+  picker pre-filters to eligible candidates only, so a tap never lands on a refusal the pick itself
+  should have screened out; picker rows read top-2 expertise topics · speaker · city, and the list
+  is never filtered or shortened (#107b).
 - **Consent-first:** no phone number and no `wa.me` link reaches either side before
   `status='accepted'`. The request-lane half (no digits / no `wa.me` before accept) is proven
   live on every gate run (checks 13.1–13.3, §8.2). The accept-before-link ordering in `op:'tap'`
@@ -789,19 +952,32 @@ Four ops, one body shape (`{op, phone, ...}`):
   `status='unreachable'` row, never a silent skip, and the asker is told plainly with a
   human-routed alternative offered.
 
-**Tap interception, before the LLM** (staged 2026-08-21 on `bqHstPDi84uOhTCJ` — promotion to prod
-pending Andy's `promote`; until then prod drops template button taps): two nodes ahead of
-`Find Member` in the main webhook workflow (Appendix C, new **Intro taps** row) — `Intro Tap?`
-(Code node, right after `Drop Duplicates`) flags an Accept/Decline button or an `intro_pick_*`
-list tap; `Intro Route (HTTP)` POSTs `op:'tap'` and either replies directly (`handled:true`) or
-falls through to `Find Member` unchanged (`handled:false` — an unrelated tap keeps working). Wired
-**first** in the fan-out (v1 branch-order rule, §14). The loop reaches the same route through a
-tool instead, same staging caveat: `member_intro` sits in the Answer Tool name-dispatch table next
-to `event_*` and `org_docs` (Appendix C, "The loop" row), mapped to `{op:'request', phone}`.
+**Tap interception, before the LLM** (in prod since 2026-08-22, `7e4be40a`; E2E proven exec 96653:
+Accept tap → row accepted → two texts delivered, zero LLM rows): eight nodes between
+`Drop Duplicates` and `Find Member` (Appendix C, **Intro taps** row) — `Intro Tap?` flags an
+Accept/Decline button or an `intro_pick_*` list tap; `Intro Route (HTTP)` POSTs `op:'tap'`/`'pick'`
+and either replies directly (`handled:true` → `Build Intro Reply` → the silent-or-Meta send) or
+`Restore Original Message` puts the pre-tap text back and `Find Member` sees exactly what it would
+have seen (`handled:false` — an unrelated or stale tap keeps working through the normal lane).
+Wired **first** in the fan-out (v1 branch-order rule, §13). The loop reaches the same route through
+the `member_intro` tool in the Answer Tool name-dispatch table (Appendix C, "The loop" row), mapped
+to `{op:'request', phone}`; the who-to-meet answer ends with the exact offer "Would you like me to
+connect you with one of them?" + Yes/No buttons, and Yes opens the list picker (#107).
+
+**Requester notices are templates (#109, 2026-09-01):** `src/lib/intro-notices.ts` sends
+`mds_intro_accepted` / `mds_intro_declined` / `mds_intro_lapsed` first and falls back to free-form
+only when the template send returns no wamid; a standing unit test guarantees no requester path can
+be a plain text send. Closed-window delivery has not yet been observed live (the probe requester's
+window was open).
+
+**Known gaps:** intro-tap turns are not saved to `olivia_messages` (#110 — `Save Conversation`
+references `$('Resolve Member')` on that path, swallowed by onError); a by-name intro ask outside
+the Summit picker still gets the stale Summit picker (flagged 2026-09-02, no ticket yet).
+**Usage so far:** 6 ledger rows; 13 explicit offers → 1 yes; one intro completed end-to-end.
 
 ---
 
-### 8.x A member says "Millie is not answering" — the hidden-number runbook (#146, 2026-08-25)
+### 8.8 A member says "Millie is not answering" — the hidden-number runbook (#146, 2026-08-25)
 
 WhatsApp now lets a member hide their phone number. When they do, Meta delivers their message with **no
 number at all** — only an opaque country-prefixed id such as `CA.1068099432261958` (Danson Hui, prod execs
@@ -853,17 +1029,26 @@ directly. Names you will need:
 |---|---|
 | `SUPABASE_URL`, `SUPABASE_SECRET_KEY` | Everything database-side (service role) |
 | `N8N_API_KEY` | Workflow read/write |
-| `VOYAGE_API_KEY` | Embeddings (`voyage-3.5-lite`, 1024 dimensions) |
-| `CENTURION_ANTHROPIC_API_KEY` | Claude for scripts (eval judging, personas) |
-| `AIRTABLE_PAT` | Airtable syncs |
-| `HEALTH_REPORT_SECRET`, `QA_LOGIN_SECRET` | Health report / QA login |
+| `VOYAGE_API_KEY` | Embeddings (`voyage-3.5-lite`, 1024 dimensions) — Render holds its own copy for the kb lane (it silently had none until #18) |
+| `CENTURION_ANTHROPIC_API_KEY` | Claude for scripts (eval judging, personas, partner-profile extraction) |
+| `AIRTABLE_PAT` | Airtable reads (syncs). Olivia's code never writes Airtable |
+| `META_WA_TOKEN`, `META_WA_PHONE_NUMBER_ID` | WhatsApp sends from scripts (announcement waves, template create/status); Render holds its own copy for the intro and reminder routes |
+| `WHAPI_TOKEN` | The group-reading number (digest pipeline) |
+| `ASSEMBLYAI_API_KEY` | In-person/hybrid transcripts (`aai_submit.py`) |
+| `OPENAI_API_KEY` | The model bench only (#156). ⚠️ pasted into chat 2026-09-02 — rotate |
+| `HEALTH_REPORT_SECRET`, `QA_LOGIN_SECRET` | Health report / QA login. ⚠️ the local `HEALTH_REPORT_SECRET` ≠ Render's (403) — verify deploys via `/api/version` and the 08:00 card |
+| *(Render only)* `OLIVIA_SCHEDULE_SECRET` → `OLIVIA_IOS_SECRET` | The route lanes' auth (`X-Olivia-Secret` or `Authorization: Bearer`) |
 
 ⚠️ **`ANTHROPIC_API_KEY` is exported empty by some tooling** — that is why script keys are
-namespaced (`CENTURION_ANTHROPIC_API_KEY`). Never rely on the bare name.
+namespaced (`CENTURION_ANTHROPIC_API_KEY`). Never rely on the bare name. Vercel runs nothing of
+Millie's — the web tier is Render.
 
-**Models in use:** `claude-sonnet-5` (answers), `claude-haiku-4-5` (router + fact gate),
+**Models in use:** `claude-sonnet-5` (answers), `claude-haiku-4-5-20251001` (router + fact gate),
 `voyage-3.5-lite` (embeddings). Thinking is **disabled** on the n8n Claude calls — enabled thinking
 consumed the whole token budget and members received "Sorry — I could not generate an answer".
+Billing is the one failure the model cannot route around: on 2026-09-02 the org's credit read
+"too low" for 1h38m while the console showed $99.75 — a fresh $20 purchase unstuck it; the
+member-facing copy now names the reason when it IS billing (Answer Parse).
 
 ---
 
@@ -871,28 +1056,47 @@ consumed the whole token budget and members received "Sorry — I could not gene
 
 ```
 /Users/Born/Scorecard/                  ← this repo (Olivia + Scorecard + docs)
-  OLIVIA_HANDBOOK.md                    ← you are here
-  OLIVIA_BACKLOG.md / OLIVIA_SPRINT_*.md  ← open work
-  SESSION_LOG_OLIVIA.md                 ← day-by-day history (append-only)
+  OLIVIA_HANDBOOK.md                    ← you are here (the ClickUp doc 2531q-103317 mirrors it)
+  OLIVIA_SPRINT_4.md                    ← the open board (opened 2026-08-19); OLIVIA_BACKLOG_ARCHIVE.md = closed tickets
+  OLIVIA_NEXT_SESSION.md                ← the handoff: state, queue, Andy's desk
+  SESSION_LOG_OLIVIA.md                 ← day-by-day history (append-only); SESSION_LOG.md = the cross-project index
+  OLIVIA_SHAREABLE_FIELDS.md            ← the privacy rulebook (see §11)
+  OLIVIA_EVAL_<date>.md                 ← the nightly eval report; OLIVIA_MODEL_COMPARE_2026-09-02.md = the #156 bench
+  OLIVIA_BANK_*.md / eval_bank_*.json   ← the eval banks (locked 100 · C · D · B in progress)
+  OLIVIA_PARTNER_WEB_EXTRACT.md         ← the #160 partner-site extraction spec
   OLIVIA_ARCHITECTURE_AUDIT_*.md        ← the architecture scorecard + its SQL
   OLIVIA_RELEASE_NOTES.md               ← member-facing notes (Andy posts them)
-  OLIVIA_SHAREABLE_FIELDS.md            ← the privacy rulebook (see §11)
+  docs/superpowers/specs/ · plans/      ← designs and approved plans (finder, intros, venue-day …)
   db/                                   ← THE SQL LAYER IN GIT (#65) — generated, never hand-edit
-    functions/ (104) views/ (8) triggers.sql policies.sql grants.sql rls.sql tables.sql
+    functions/ (116) views/ (17) triggers.sql policies.sql grants.sql rls.sql tables.sql
+  olivia_snapshots/                     ← pre/post-promote prod + staging JSON (183)
   scripts/
-    olivia_wf.py                        ← stage / promote / rollback / snapshot / lock
-    olivia_leak_gate.py                 ← the 254-check safety gate (refusal)
-    prod_pulse.py                       ← the liveness check (does she still ANSWER?)
-                                          run BEFORE and AFTER every step; exit 1 = stop
-    run_eval_100.py                     ← fires eval_bank_100_2026-08-16.json (100, a ruling)
+    olivia_wf.py                        ← stage / promote / rollback / snapshot / diff / lock / status
+    olivia_leak_gate.py                 ← the 313-check safety gate (refusal)
+    prod_pulse.py                       ← the liveness check (does she still ANSWER?) — exit 1 = stop
+    run_eval_100.py                     ← fires the locked 100 bank (or --bank <file>)
     db_export_schema.py                 ← DB → db/ export + the drift check (#65)
-    olivia_selftest.py                  ← fire questions through a workflow
-    nightly_derivations.py              ← the 8-job nightly pipeline
-    olivia_loop/                        ← the answering-loop source (build_loop.py re-applies)
+    olivia_selftest.py                  ← fire questions through a workflow (silent turns)
+    nightly_derivations.py              ← the 9-step nightly pipeline
+    zoom_weekly.py · zoom_transcripts.py · aai_submit.py · aai_transcripts.py   ← transcripts
+    load_speakers.py · load_participants.py · load_letter_map.py                ← speaker identity (#103)
+    videos_weekly_check.py · partners_weekly_check.py · embed_partners_events.py ← weekly catalogs (#17/#159)
+    partner_web_crawl.py · load_partner_web_profiles.py                           ← partner web profiles (#160)
+    video_access_from_sweep.py · load_video_access.py                             ← restricted-video grants (#101/#150)
+    load_event_graph.py · event_lane.py                                           ← the Summit run-of-show (#85/#113)
+    olivia_link_wa_id.py                                                          ← hidden-number pairing (#146)
+    announce_summit_videos.py · olivia_*_template.py                              ← broadcast waves + Meta templates
+    olivia_loop/                        ← the answering-loop source (build_loop.py + apply_* seed edits)
+    model_bench/                        ← snapshot of the bench harness (#156)
+    tests/                              ← unit tests that run the REAL node code out of the live graph
     alarm_watchdog.py, sync_chapter_pages.py, olivia_*.py
-/Users/Born/mds-scorecard-tools/        ← eval harness + ingestion tools
-    olivia_eval.py, eval_bank_*.json, embed_backfill.py, persona_refresh.py, load_feed.py …
-/Users/Born/mds-digest-web/             ← the portal (Next.js, Render) + .env.local + sync scripts
+/Users/Born/mds-scorecard-tools/        ← eval harness + ingestion tools (NOT a git repo)
+    olivia_eval.py, eval_bank_*.json, embed_backfill.py, embed_videos.py, persona_refresh.py,
+    kimi_harvest.py, kimi_bench.py, bench_compare.py, bench_tools.py, load_feed.py, auto_import.py …
+/Users/Born/mds-digest-web/             ← the portal (Next.js, Render) + .env.local + the route lanes
+  src/app/api/olivia/{schedule,kb,intro,find,webhook,ticket,…}/route.ts
+  src/lib/{finder.ts,finder-fields.ts,schedule-day.ts,intro-notices.ts}
+  .github/workflows/                    ← member-profiles-sync · events-catalog-hourly
 ```
 
 **Separate repos are separate.** `mds-ai-bot` and `mds-digest-web` are their own projects; never
@@ -934,7 +1138,28 @@ selects them. "Used in a calculation" is not "shareable".
 - **Trust and character:** she has no vetting data and never vouches for anyone.
 - **Chapters are public**; chapter events are gated by chapter membership, and a chapter-styled
   event with no chapter link **fails closed** (hidden from everyone until tagged).
+- **Attendee-name disclosure (#96 — Andy + Eugene, 2026-08-20):** names go **only to askers
+  registered for that event** (the registrations ledger, on every branch); non-attendees get true
+  counts and one matching offer, with no mention that names exist. **The cap is 10 names per
+  answer — a DISPLAY cap, never a processing cap**: filters and counts run over the whole ledger,
+  ordering is fit-based, so the 10 shown are the best 10.
+- **Filtering and showing are different rights (#108, §6.3):** 🟢 fields may be printed beside a
+  name, 🟡 fields may only ever filter or aggregate, 🔴 fields do neither; a chat is named only to
+  its own members (R10); Staff and removed records never appear in names or totals (R8/#106 —
+  Andy: "make sure I'm not searchable").
+- **Brokered intros are consent-first (#97):** a `wa.me` link IS the phone number. Nothing moves in
+  either direction until the target taps Accept; declines are final and never revealed ("no
+  connection yet"); silence expires quietly after 7 days with zero reminders.
+- **Scores, ranks, percentiles are internal** — never shown, never confirmed to exist.
+- **Refusals are quiet:** count-then-stop, one plain-sentence decline if pushed, never internals,
+  never "unavailable/withheld/pending".
 - **Never delete a member record.** Merge or flag; only genuine test junk is removed.
+
+**How it is enforced — structurally, never by prompt:** the shareable-fields list is the literal
+column list of `member_card` (the gate pins it); attendee gating is a registration check inside
+`event_who`, the schedule route and the finder; sensitivity, access rules and `video_access`
+filter inside every content query; the fact gate blocks unsupported claims; the link gate blocks
+unretrieved URLs; the 313-check leak gate proves all of it on every ship.
 
 ---
 
@@ -958,6 +1183,25 @@ selects them. "Used in a calculation" is not "shareable".
 | **Organic eval bank only** | Generated questions can be overfitted and do not reflect what members actually ask. |
 | **One smoke test per batch, not per ticket** | The full run is slow and paid; per-ticket proof is probes plus the gate. |
 | **Coverage is a process, never an event** | Anything hand-run rots. Every derivation is a scheduled job with a heartbeat and an alarm. |
+| **Every mirror needs a freshness signal** (2026-08-18) | `digest.chats` rotted for three weeks and she sent a dead invite link; 75 partners sat without a vector for a month (#159). A mirror whose rows share one `updated_at` is a mirror nobody is watching — `max(updated_at)` + row count vs source, and a gate check. |
+| **Code beats prompt rules** (2026-08-18) | Two failed rules on one behaviour = move it into the tool. Applied to "show me the rest" (#99, the instruction travels inside the tool result), offer→answer binding (#112), the off-topic gate (#104), the assistant's own name (the fact-check vetoed it until `community_info` returned it). |
+| **Read the execution before theorising** | One look at the actual tool call settled what rounds of rule-writing chased — the equalizer bug (exec 90494, plan lane calls with `p_limit` 60), the transcript denials, Prosperlytics missing (a NULL vector, exec 131231). |
+| **The 10-name cap is a DISPLAY cap** (Andy 2026-08-20, #96) | "We can totally process this info… just keep the list short." Filters and counts run over the whole ledger; only the shown list is capped. |
+| **Intros are consent-first** (Andy 2026-08-20, #97) · **eligibility = attendee + phone** (2026-08-22, #107d) · **suggestions are never filtered or shortened** (#107b) | No number moves without the target's Accept; declines final and never revealed; silence expires without reminders; unreachable gets an honest line + team escalation. The "both sides must be Millie users" rule was dropped after a confirmed attendee got the pilot refusal. |
+| **Audits announce themselves** (2026-08-20, #95) | The gate sends `X-Olivia-Audit`; equalizer functions skip their log write. Never infer "this is an audit" from call shape — the `p_limit` heuristic silenced a real lane. |
+| **One name: Millie** (Andy 2026-08-21/22) | "Millie and only Millie — official name." Every string, the fact-check rubric and `community_info.assistant_name` say it; the Meta display name follows when the pending review clears (§2.3). |
+| **The visibility ruling** (Andy 2026-08-24) | The asker's own access defines shareability: public info carries no privacy expectation; restricted-chat content is shareable to that chat's members; "if someone asking can theoretically find the answer themselves, we can share it"; exact revenue from OUR records stays internal, a member's own visible statement is quotable; **every quoted fact names its source.** |
+| **Quote, summarize, TLDR — never a full transcript** (Andy, #101) | The ~1,400-char chunk is the largest retrievable unit and no lane concatenates (the older oversized-cue rows are the known exception, §6.2). Speaker letters stay letters when unmapped (#103) — a wrong name on a quote is worse than no name. |
+| **An absent status is not an inactive membership** (#125) | "We do not know your status yet" and "your membership is not active" are different sentences; the first asks for the email on the member's MDS account. |
+| **Restricted-video entitlement = attendees + staff** (Andy, #150) and the entitlement is swept from GroupOS, not assumed (2026-09-03) | A restricted video with no grant list is invisible to everyone (fail-closed), so every new restricted video needs the per-member `videos_list(for_user_id)` pass; `is_restricted` means restricted FOR the asker. |
+| **A stated fact beats a missing tally; recency is a bounded tiebreak** (#153, #102 slice) | A figure the Town Hall states out loud is answered, not refused for lack of a count; a running event's talk outranks last year's near-tie, never junk. |
+| **Every named person carries a link, defined once** (#154) | `digest.member_link()` is the ONE definition (profile FB url → FB-map vanity → `profile.php?id`); both people lanes and the finder return it. |
+| **The template category is decided by the copy** (2026-08-28) | Meta reclassified UTILITY → MARKETING three submissions running, flag or no flag. Transactional copy first, personalization after the tap. |
+| **Verify the live node's own bytes over real drafts before claiming a gate change works** (#138, 2026-09-02) | A per-item link repair passed 28 unit tests and its own audits, then attached a wrong link on prod within minutes; rolled back in 5, split into #154 (done) and #155. n8n keeps ~1 day of executions, so the audit must run the same day. |
+| **Retrieval, gating and stats stay in Postgres; DECISIONS move to routes** (#64 amendment, 2026-09-02) | The 116 functions are the boundary shared by four consumers; what does not belong there is policy — the first slice is #147's registration authority. |
+| **One branch per session, never a commit on `main`; two agents share the repo through the `olivia_wf.py` lock and own-ticket doc sections** (Andy 2026-09-02, CLAUDE.md) | A push of `main` can then never publish another session's unfinished work. |
+| **Partner web profiles are partner-stated; reviews stay the verdict layer** (#160) | What a site says about itself is framed as such; the founder↔partner link comes from the site's people, never overwritten once set. |
+| **Stay on Claude until #157 is decided** (bench 2026-09-02) | Terra-medium wins quality by 2 questions on the Sonnet judge, loses on price (+47%) and latency (2×); nothing ported. |
 | **The data-access tier lives in Postgres — and stays there** | See below. |
 
 ### The data-access tier lives in Postgres — and that is deliberate (2026-08-07, #65)
@@ -1031,6 +1275,77 @@ as defense-in-depth. (Why RLS is enabled on them at all, and by what, is #61/#64
 - **A relative day computed by the model is wrong at any venue east of Eastern.** Ian Sells
   (Singapore, Sunday 11:30) got Saturday's list on 2026-08-22 (#114) — resolve relative days in
   code, in the venue zone, never in the model's head.
+- **A `+` in a PostgREST URL query is a SPACE.** Send `Z`-suffixed timestamps or every date filter
+  silently matches nothing (bit twice).
+- **`DROP FUNCTION` discards the ACL** — the fresh CREATE re-grants EXECUTE to PUBLIC (anon could
+  call it). `CREATE OR REPLACE` only; a RETURNS TABLE change that needs DROP + CREATE re-grants
+  postgres + service_role and revokes public in the same migration. Then **`NOTIFY pgrst, 'reload
+  schema'`** — stale pool caches produce intermittent 404s that look like a quality regression.
+- **A STABLE function cannot call a writing function** — when the equalizer started logging, the
+  STABLE `multi_source*` wrappers broke with a misleading 405; they dropped to VOLATILE.
+- **A timeout looks exactly like "no data found"** — time the query at rising input sizes before
+  blaming ranking or embeddings; `service_role` carries a 60-second statement timeout, which
+  silently cancelled the dossier refresh every night for 13 days (#152 — fixed with a
+  function-level `SET statement_timeout`).
+- **`pg_net` installs into schema `net`** — unqualified calls inside exception handlers fail silently.
+- **No bare apostrophes in n8n expressions** (invalid syntax that fails *silently* — the fact gate
+  was dead a full day) and **`node --check` before ANY seed write** (a missing comma between two JS
+  strings broke staging for 15 minutes).
+- **n8n keeps about one day of executions** — an audit over live drafts must run and land the same
+  day (#138's corpus shrank 65 → 31 within hours).
+- **n8n Cloud's execution quota takes PROD down** — every inbound dies in 50 ms at the trigger
+  ("Execution limit reached", 2026-08-28 04:57–05:10Z). Billing-side fix only; the relay's 502
+  makes Meta retry so the questions arrive late instead of never.
+- **"Credit balance is too low" with a positive balance** — Anthropic refused every key for 1h38m
+  on 2026-09-02 while the console showed $99.75; a fresh $20 purchase unstuck it.
+- **A 200 from Meta `/messages` is NOT delivery** — read `digest.olivia_sends`. 131049 = per-user
+  marketing cap · 130472 = experiment holdout · 131026 = not on WhatsApp · 131047 = closed window ·
+  132018 = newline inside a template variable · 131009 = a hidden-number id used as a recipient ·
+  2388362 = a display-name submission while one is pending.
+- **A member can hide their WhatsApp number** — Meta then sends only an opaque id and refuses it as
+  a recipient; the turn used to die silently in `Find Member` (#146, §8.8).
+- **Template quick-reply taps are `msg_type='button'`** — not persisted to `olivia_messages`; only
+  `olivia_webhook_events` holds them. List taps (`interactive/list_reply`) flow normally and resolve
+  by row `id`, never by parsing the title.
+- **`event.people` is data, never an access key** — it carries staff/test rows (one granted attendee
+  names on the live route, #98). Access = the registrations ledger.
+- **Audit detection by call shape is a bug** — the `p_limit>30` heuristic silenced equalizer logging
+  on the plan lane (limit 60). Audits send `X-Olivia-Audit`.
+- **Substring matching on short terms** — `'ai' in Em(ai)l`, `'vat' in Pri(vat)e Label`, `'str' in
+  industrial`. Topic matching goes through `phraseto_tsquery` on curated terms, never bare `ilike`.
+- **Five catalog rows match "Summit Singapore"** (the Summit, Night Out, Speaker's Lunch, Women's
+  Lunch, Pre-Event Dinner) — resolve by `app_event_id` or prefer the exact then the shortest name,
+  and always echo what was picked. The bare word `summit` keyword-ranks Milan/Denver above the
+  running event (#151 — the tool description says so now).
+- **The chunker never split an oversized cue** — AssemblyAI returns a whole talk as one utterance
+  when it hears one speaker: 1,423 chunks over 4,000 chars, 581 of them in restricted videos
+  (2026-08-27). Producer fixed (`split_long_cues()`); re-chunking the old rows is still open.
+- **GroupOS traps:** the partners listing breaks on two records (Fathom, Onsite Support — fetch with
+  `partners_get`, skip with cursor = base64(id)); a corrupt member record breaks any `members_list`
+  page that contains it; `videos_list` accepts a typed `limit` up to 100 now (it once refused it —
+  page until `has_more=false`); `cliff_notes` became a LIST on 2026-09-02; GroupOS recreates a
+  document on a role change (new `_id`, same natural key); the Summit export handed over on
+  2026-08-22 was a 17-Aug scan.
+- **Apple's Python 3.9 rejects PostgREST's 2-digit fractional seconds** in `fromisoformat` (phantom
+  "changed" rows), and **macOS ARG_MAX** kills a 1 MB curl body passed as an argument — request
+  bodies go on stdin (`--data-binary @-`).
+- **launchd cannot write `~/Downloads`** (TCC) — `zoom_weekly` died on it every Monday for 26 days.
+  Headless jobs write under `~/mds_transcripts` or the repo.
+- **A degraded run that never stamps its heartbeat is a red tile forever** — `zoom_weekly` without a
+  `GROUPOS_PAT` is permanently degraded and must stamp anyway.
+- **PostgREST caps at 1,000 rows** even in a weekly script — `videos_weekly_check` re-upserted and
+  re-embedded 79 videos every run until it paged the catalogue read.
+- **`digest.mds.co` can SERVFAIL from Andy's Mac** while public DNS resolves it — the gate's route
+  checks then fail with status 0; use `mds-digest-web.onrender.com`.
+- **`Answer Merge` stamps must read the payload shape the finder actually returns** (`r`, not a
+  truncated body) — a stamp that reads the wrong field passes silently and the gate verdict
+  neutralises the catch.
+- **The repo's node copies go stale** — `answer_merge.js` in the repo was a 77-line copy of a
+  ~550-line live node; extract from the prod snapshot before building anything on it.
+- **The eval selftest paces on a fixed sleep** — an answer slower than 20 s races the conversation
+  save and produces phantom multi-turn failures.
+- **A synthetic fixture that passes immediately is the wrong test** — reproduce on the real blob
+  (the #138 repair passed its fixtures and attached a wrong link on prod).
 
 ---
 
@@ -1066,34 +1381,49 @@ Asked to set a reminder "in 5 minutes", the model sent `at=17:23 UTC` when the t
 story about the event being a week away. **Never let the model compute an absolute time from a
 relative ask** — pass the offset and do the arithmetic server-side.
 
-## 14. Known limits (2026-08-20)
+## 14. Known limits (2026-09-04)
 
-- ~~**Recommendations are not personalized yet.**~~ **SUPERSEDED** — #29 wired five lanes into the
-  personalization layer (2026-08-03), #93-#95 added novelty + the equalizer, #94 rebuilt the
-  ledger (v2). Personalization is live end-to-end.
-- ~~**Tap buttons are not built.**~~ **SUPERSEDED by #38 (2026-08-04)** — yes/no offers are tap
-  buttons. Remaining nuance: template quick-reply taps arrive as `msg_type='button'` and are NOT
-  persisted to `olivia_messages` (only `olivia_webhook_events` holds them); **#97 adds** the
-  `Intro Tap?` → `Intro Route` branch (§8.7, Appendix C) that swallows intro taps before the LLM
-  lane.
-- **Transcripts have hard boundaries** (#70/#101): ALL 161 videos of 2026 now carry transcripts —
-  Zoom for the 65 calls it hosted, AssemblyAI for the 96 in-person/hybrid rooms (#101). Nothing
-  before 2026-01-01 yet; the 2025 batch is next (Andy's ruling). When a gap is reported the boundary
-  travels with it — never "not live" or "coming".
+- **Transcripts cover 2025 and 2026, not before** (#70/#101, the 2025 batch 2026-08-21, the 16
+  Summit Singapore talks 2026-08-27): Zoom where Zoom hosted, AssemblyAI for in-person/hybrid rooms
+  where speakers stay `Speaker A/B/C` unless the #103 letter-mapping has evidence. Nothing before
+  2025-01-01 (Andy: "not sure about <2024"). When a gap is reported the boundary travels with it —
+  never "not live" or "coming". Old oversized chunks (§6.2) are still to be re-chunked; 7
+  metadata-only Summit videos await Andy's re-embed ruling.
 - **No forward calls calendar** — `digest.calls` holds past occurrences only. Say it as coverage,
   never as infrastructure.
 - **Events have no description field anywhere in the pipeline** — topic matching is inferred from
-  names, attendees and chatter.
-- **The proactive weekly push** still needs its Meta template set (the reminder + intro templates
-  are approved; the weekly-push one is not designed yet).
-- **THE COUNT RULING is open (Andy):** one Summit question can surface 157 (all tickets) vs 113
-  (confirmed member classes) vs 98 (active members) depending on surface — seen live in one
-  conversation 2026-08-20. Until ruled, chapter answers carry no denominator.
-- **#72 load test has never run** — and the announcement is the traffic event. Biggest open risk.
-- **#32 cost instrumentation absent** — nothing logs tokens; `latency_ms` is unreliable.
-- **Facebook capture is manual** (platform limitation; extension v0.90 autopilots the routine).
-- **Portal login OTP shares Olivia's number** — a block would break logins too.
-- **The nightly jobs run on a Mac via launchd** — staleness alarms are the backstop.
+  names, attendees and chatter (the `event` schema's Summit activities do carry descriptions).
+- **The proactive weekly push (Side A) is not built** — and the channel fights it: Meta classifies
+  personalized copy as MARKETING and drops half of a wave on per-user caps (§2.2). A transactional
+  v4 template is the open recommendation.
+- **The Meta display name still reads "MDS AI Assistant"** — "MDS Mille" pending since 2026-08-19
+  blocks the "MDS Millie" submission (§2.3).
+- **Registration has two disagreeing sources (#147, paused)** — 36 members answered differently by
+  the agenda and by who-to-meet; half the fix is live, the authority shape is Andy's call.
+- **A hidden-number member needs a human pairing on first contact (#146)** — and cannot be answered
+  until paired (Meta refuses the opaque id as a recipient). 8 active members have no GroupOS
+  account at all and get no video grants; 5 sweep emails resolve to nobody.
+- **The quality bar is not met yet** — Andy's target is <1% inaccurate; the nightly eval reads
+  10.9% on 2026-09-04 (24 of 220), led by `false_denial` and `wrong_fact`; bank C's fix-loop
+  brought its own set from 62% to 91% correct.
+- **#72 load test has never run** — the Summit day (120 questions) and the announcement wave were
+  survived, not tested. Still the biggest open risk.
+- **#32 cost instrumentation is absent in prod** — the bench measured $0.0211 per warm answer, but
+  nothing logs tokens per answer; `latency_ms` is unreliable.
+- **Facebook capture is manual at its root** (platform limitation; extension v1.13 autopilots the
+  routine, the Insights export still stalls on Facebook's SPA and needs a click).
+- **Portal login OTP shares Millie's number** — a block would break logins too.
+- **The nightly and weekly jobs run on a Mac via launchd and a scheduled Claude task** — staleness
+  alarms are the backstop; the GroupOS refresh cannot run headless until a `GROUPOS_PAT` exists.
+- **The WA members mirror never reconciles (#148)** — 12 rows Airtable stopped returning are frozen;
+  no freshness signal yet.
+- **Intro-tap turns are not in conversation history (#110)**; a by-name intro ask outside the
+  Summit gets the stale Summit picker.
+
+*Superseded limits, kept so nobody re-learns them:* ~~recommendations are not personalized~~
+(#29/#93–95) · ~~tap buttons are not built~~ (#38) · ~~no transcripts~~ (#70/#101 — the stale-rule
+incident class) · ~~intros are POC-stage~~ (#97 live 2026-08-22) · ~~the count ruling~~ (folded
+into #147) · ~~75 partners dark in meaning search~~ (#159).
 
 ---
 
@@ -1101,14 +1431,25 @@ relative ask** — pass the offset and do the arithmetic server-side.
 
 | Term | Meaning |
 |---|---|
-| **The gate** | `olivia_leak_gate.py`, 255 automated safety checks (count grows with every ship — say "gate green", the number moves). Checks, never questions. |
-| **Probe** | One question fired through a workflow. Free-ish, no approval needed. |
-| **Run** | Firing the eval bank (dozens to hundreds of questions). Costs money; needs approval. |
-| **The smoke** | The full 169-question run used as a release exit exam. |
-| **Lane / route** | Which retrieval path a question takes (events, partners, membercard, llm…). |
-| **The loop** | The tool-calling answering loop (Answer Seed → … → Gate Verdict). |
-| **Fact gate** | The Haiku check comparing a draft answer against retrieved evidence. |
-| **Promote** | Copying the staging workflow to production via `olivia_wf.py`. |
+| **Millie** | Olivia's member-facing name (Andy 2026-08-21). "Olivia" stays the project, workflow and table name. |
+| **The gate** | `olivia_leak_gate.py`, 313 automated safety checks on 2026-09-04 (count grows with every ship — say "gate green", the number moves). Checks, never questions. |
+| **The pulse** | `prod_pulse.py` — read-only liveness twin of the gate (does she still answer?). |
+| **Probe** | One question fired through a workflow (`olivia_selftest.py`, silent). Free, no approval needed. |
+| **Run** | Firing an eval bank (dozens to hundreds of questions). Costs money; propose-and-wait. |
+| **The smoke** | A scored multi-question run: the locked 100 bank at sprint completion (the exit exam), bank C/D, or a targeted set with per-question pass bars. |
+| **The nightly eval** | `olivia_eval.py --nightly` → `OLIVIA_EVAL_<date>.md`. The daily routine, never a release gate. |
+| **Lane / route** | Which retrieval path a question takes (events, partners, community, llm…). |
+| **Route lane** | A capability living in `mds-digest-web` (policy in git) — schedule, kb, intro, find. |
+| **The front door** | `Find Member` → `olivia_front_door_v2`: phone or hidden-number id → exactly one active member, or the generic path. |
+| **The relay** | `digest.mds.co/api/olivia/webhook` — Meta's callback target; passthrough to n8n, 502-and-retry when n8n is dead. |
+| **The loop** | The tool-calling answering loop (Answer Seed → … → Gate Verdict), ≤5 rounds, 29 tools. |
+| **Fact gate** | The Haiku check comparing a draft answer against retrieved evidence; plus the deterministic link gate. |
+| **The equalizer** | `olivia_recommendations` + the ranking rules that rotate recommendations (30d / 7d / LRU). |
+| **ADVICE vs MEET lanes** | "Who can help me with X" (proficiency first) vs "who should I meet" (novelty first). |
+| **The finder** | `POST /api/olivia/find` — boolean-tree member filters with the disclosure engine R1–R10. |
+| **Canary** | A temporary clearly-marked row inserted to prove a flow, deleted the same session (the gate's REDTEAM rows). |
+| **Promote** | Copying the staging workflow to production via `olivia_wf.py`. Andy runs it. |
+| **Silent turn** | A `wamid.SELFTEST*` turn: fully answered and saved, never sent through Meta. |
 
 ---
 
@@ -1150,6 +1491,42 @@ zero rows. `access_rule` and `sensitivity` filters are applied inside every cont
 | `app_member_feed` | `p_email, p_recent_queries text[], p_interest_embedding, p_limit_each` | `jsonb` | **The app's door.** Identity by email; the app must send the LINKED member email. Fail-closed: unknown or inactive email returns `{}`. |
 | `persona_signals` | `p_at_member_id` | `jsonb` | Signal bundle used by the nightly persona builder. Not member-facing. |
 
+**The v2/v3 executions the loop actually runs** (`EXEC_NAME`, §3 step 9 — signatures read live 2026-09-04):
+
+| Function | Arguments | Returns | Gating & notes |
+|---|---|---|---|
+| `member_card_v2` | `p_phone, p_member` | v1 columns | The card the loop calls; same allowlist, pinned by the gate. |
+| `member_match_v2` | `p_phone, p_dims text[] = {state,category,band}, p_limit 10, p_city, p_state, p_channel, p_category, p_country` | `TABLE(full_name, city, state, reasons text[], matched_total bigint, link)` | **VOLATILE** (equalizer log). Complementary-topic boost; `matched_total` = the census behind the sample; `link` (#154). |
+| `expertise_search` | `p_phone, p_query, p_limit 12, p_embedding` | `TABLE(full_name, city, state, expertise, niche, matched_text, matched_rank real, link)` | **VOLATILE.** RRF keyword+embedding; equalizer ×0.6 on a 30d repeat; `link` (#154). |
+| `member_dossier_v2` / `event_history_v2` | `p_phone` | `TABLE(kind, label, detail)` | Self only; v2 adds strengths / working-on / behaviour / circle and `interest` rows. |
+| `event_lookup_v3` | v1 arguments (`p_limit 12`) | v1 columns + `fit_reason, strength_note, what_it_is, room jsonb` | Personalized browse order; the room/venue facts for a named event. |
+| `chat_recommendations_v3` | `p_phone` | v1 columns + `why, strength_note` | Order = topic fit → circle presence; the `why` is rendered in the canned list. |
+| `video_search_v2` | `p_phone, p_query, p_limit 8, p_embedding, p_at_member_id, p_call_type, p_order, p_video_id` | v1 columns + `is_restricted` (**for this asker**, #150) `, fit_reason, strength_note, summary, event_total` (#151) | Entitled → full treatment; not entitled → title/speakers/date/link + the restricted marker. Bounded recency in fusion (#153). |
+| `partner_lookup_v2` | v1 + `p_order` | v1 columns + `fit_reason, strength_note, event_offer, event_offer_event, event_offer_contact, web_summary, web_people jsonb, web_pricing` | #160 web fields = what the partner's own site says (LEFT JOIN `partner_web_profile`, `crawl_status='ok'`). |
+| `multi_source_v2` | `p_phone, p_query, p_terms text[], p_city, p_want text[] = {partners,members,events,chats,fb,videos}` | `jsonb` | **VOLATILE.** v1 + the asker's `me` section. |
+| `form_field_history` / `my_form_answers` | `p_phone, p_field` / `p_phone, p_form_id` | `TABLE(canonical_key, answer, form_name, submitted_at)` / `TABLE(form_name, submitted_at, ref, question, answer)` | **Self only** — the asker's own form answers across time / per form. |
+| `form_stats` | `p_phone, p_question, p_form_id, p_group_by, p_since, p_until` | `TABLE(label, value numeric, detail)` | Census/form aggregates: % distributions, no member counts, no-answers excluded, small cells suppressed. |
+
+**Identity and plumbing functions** (not tools): `olivia_front_door_v2(p_phone, p_user_id)` — the
+front door: phone OR opaque WhatsApp id → `{phone, full_name, membership_status, at_member_id,
+airtable_id, channels_present, olivia_welcomed_at, olivia_optout_at}` · `resolve_asker` /
+`resolve_asker_by_uid(p_user_id)` · `resolve_member_by_email(p_email)` (the single email entry
+point, §4.10) · `member_alias_ids` / `registration_status` / `is_registered` (#147) ·
+`member_link(p_at_member_id)` (#154) · `member_topic_profile(p_atid)` (internal, no REST grant) ·
+`refresh_member_phone_index()` (pg_cron, every 15 min) · `refresh_entity_dossiers()` (nightly,
+900s ceiling) · `geo_country_set` / `geo_state_set` / `country_fold` (the geo SSOT).
+
+**The route lanes** (policy in git — `digest.mds.co`, auth `X-Olivia-Secret` / `Authorization: Bearer`):
+
+| Lane | Ops | Notes |
+|---|---|---|
+| `/api/olivia/schedule` | schedule · next · where · speakers · sessions · recommend · people (who-to-meet + `chapter` census) · reminders set/list/cancel | The Summit lane (§4.9). `at=today\|tomorrow\|<weekday>\|date` resolved in the VENUE's zone, `now_at_venue` on every answer, `next` = the rest of the venue-day (#114); `eventPhase()` computed in the venue zone (#149). `people`: asker must be in the registrations ledger; ≤8 matches + `matched_total`; only shown names are logged to the equalizer. |
+| `/api/olivia/kb` | `org_docs` search | Hybrid RRF (cosine + tsv), similarity floor 0.45, honest-empty, `degraded` flag when a lane is dark. Audience fail-closed to staff. |
+| `/api/olivia/intro` | request · pick · tap · sweep | **LIVE since 2026-08-22** (§8.7): consent-first, eligibility = attendee + phone, caps 3/3, decline final, 7-day sweep from the hourly reminder sender, requester notices as templates (#109). |
+| `/api/olivia/find` | `return: people \| count \| breakdown` over a boolean filter tree | **The finder (#108), phase 1** (§6.3): registry of 🟢/🟡/🔴 fields, ten disclosure rules, reasons per person, `link`, writes nothing. Phases 2/3 (#116) add content/videos/events/partners. |
+| `/api/olivia/webhook` | GET verify · POST relay | Meta's callback target (§1.1). |
+| `/api/olivia/ticket` | create | Escalation → Intercom ticket on the real member (Intercom 403-blocks n8n's IP). |
+
 **Non-gated helpers** you will see referenced: `is_active_member_status()`, `place_city()`,
 `name_fold()`, `member_event_url()`, `member_video_url()`, `member_partner_url()`,
 `content_like_escape()`, `attr_clean()`. **Derivation functions** (service-role, run by the nightly
@@ -1165,7 +1542,7 @@ pipeline): `derive_member_attributes()`, `derive_member_expertise()`, `derive_kn
 ### B.1 Core table shapes
 
 ```sql
--- THE SEARCH INDEX (38,711 rows)
+-- THE SEARCH INDEX (57,586 rows, 2026-09-04)
 content_items(
   id bigint, source text, kind text, source_id text,      -- source: wa_message|wa_digest|fb_post|fb_comment|application
   title text, tl_dr text, body text, search_extra text,   -- search_extra carries OCR'd image text after an [IMAGE TEXT] marker
@@ -1177,7 +1554,7 @@ content_items(
   embedding vector(1024),     -- HNSW indexed (cosine); NULL for sub-30-char rows by design
   ingested_at timestamptz)
 
--- THE MEMBER POPULATION (5,740 rows) — canonical key at_member_id
+-- THE MEMBER POPULATION (5,757 rows; 756 active) — canonical key at_member_id
 member_attributes(
   at_member_id text PK, full_name, membership_status, city, state, country,
   rev_band,                    -- 1-5M | 5-10M | 10-20M | 20M+  (the ONLY revenue representation)
@@ -1187,36 +1564,45 @@ member_attributes(
   tiktok_seller bool, provenance jsonb, chapter_affiliation text[], chapter_ids text[],
   refreshed_at timestamptz)
 
--- THE WHATSAPP CHANNEL LAYER (646 rows) — NOT the population
+-- THE WHATSAPP CHANNEL LAYER (680 rows, 617 linked) — NOT the population
 members(
   airtable_id text PK,        -- what olivia_messages.member points at
-  at_member_id text,          -- the canonical key; NULL for 61 unidentified numbers (never auto-stamped)
+  at_member_id text,          -- the canonical key; NULL for 63 unidentified numbers (never auto-stamped)
   phone, email, full_name, name, membership_status,
   channels_present text[],    -- which WhatsApp chats they are in = the chat_member entitlement
   olivia_welcomed_at, olivia_optout_at, olivia_interactions, olivia_last_used_at,
   portal_last_seen_at, msgs_7d, msgs_30d, otp_* , delivery_* …)
 
--- CONVERSATION (2,424 rows)
+-- CONVERSATION (12,981 rows; 1,385 real member turns)
 olivia_messages(id, phone, member,      -- member = members.airtable_id (FK)
   role text,                            -- 'member' | 'olivia'
   text, wamid, route, focus_chat, latency_ms, created_at,
   plan jsonb)                           -- the retrieval plan; replayed when the member says "yes"
 
--- BEHAVIOUR LOG (15,071 rows) — APPEND ONLY, no UPDATE/DELETE grant exists
+-- BEHAVIOUR LOG (36,076 rows) — APPEND ONLY, no UPDATE/DELETE grant exists
 member_events(id, at_member_id, member, event_type, source,
   cadence text,                          -- live | daily | weekly | backfill
   occurred_at timestamptz, captured_at timestamptz, meta jsonb)
 
--- EXPERTISE LEDGER (5,822 rows)  ·  KNOWLEDGE GRAPH (159,940 rows)
+-- EXPERTISE LEDGER v2 (16,630 rows)  ·  KNOWLEDGE GRAPH (145,449 rows)
 member_expertise(at_member_id, topic, score, rank_in_topic, pct, weakness_score, evidence jsonb, refreshed_at)
 member_edges(a_id, b_id, edge_type, weight, evidence jsonb, refreshed_at)  -- CHECK (a_id < b_id)
 expertise_topics(topic PK, terms text[])   -- topics are DATA; a new topic is an INSERT
 
--- REGISTRATION LEDGER (17,802 rows) — WRITERS ONLY (sync + stamp_event_registrations)
+-- REGISTRATION LEDGER (18,295 rows; 14,380 live) — WRITERS ONLY (sync + stamp_event_registrations)
 event_registrations(roster_record_id PK, event_at_id, member_at_id, email, full_name,
   order_date, ticket_type, ticket_status,  -- Confirmed | Unconfirmed | No Show | Partially Refunded
   ticket_for text[],                       -- MDS Member | Significant Other | Partner | …
   source, app_event_id, app_user_id, synced_at)
+
+-- HIDDEN-NUMBER PAIRING (108 rows) — #146
+member_wa_ids(user_id /* the opaque WhatsApp sender id, e.g. CA.1068… */, phone, at_member_id, source, created_at)
+
+-- DELIVERY TRUTH (2,233 rows) — what Meta reported back, asynchronously
+olivia_sends(id, phone, wamid, kind, status /* accepted|sent|delivered|read|failed|maintenance */, error_code, conversation_origin, created_at, updated_at)
+
+-- PARTNER WEB PROFILES (506 rows; 405 crawl_status='ok') — #160, partner-stated
+partner_web_profile(partner_id PK, summary, services text[], markets text[], pricing, people jsonb, profile jsonb, crawl_status, profile_hash, crawled_at)
 
 -- #58 CHOKEPOINT — every reader goes through this view, never the table above.
 -- A cancelled ticket is not an upcoming event, and a No Show is not attendance.
@@ -1228,7 +1614,7 @@ event_registrations_live = event_registrations
 
 | Index | Table | Purpose |
 |---|---|---|
-| `content_items_embedding_hnsw` | `content_items` | 275 MB HNSW (cosine). **Only reachable when the ANN operator is the leading sort of its own query** — see §6.1. |
+| `content_items_embedding_hnsw` | `content_items` | 376 MB HNSW (cosine), 26,305 scans by 2026-09-04. **Only reachable when the ANN operator is the leading sort of its own query** — see §6.1. |
 | `content_items_tsv_idx` | `content_items` | GIN on `search_tsv` — the keyword branch. |
 | `content_items_source_id_uq` | `content_items` | Idempotent ingest (35M+ scans — the hottest index in the system). |
 | `videos_catalog_embedding_hnsw` / `videos_catalog_search_idx` | `videos_catalog` | Video semantic + keyword search. |
@@ -1249,13 +1635,17 @@ event_registrations_live = event_registrations
 | `olivia_reports` | `member_event_report` | Same, for filed reports. |
 | `members` | `member_event_portal_seen` | Fires only when `portal_last_seen_at` actually changes. |
 | `events_catalog`, `partners_catalog` | `*_embed_invalidate` | Clears the embedding when the text changes. Rebuilt by the nightly `embed_catalogs` step (`scripts/embed_partners_events.py`, nulls-only) and by `partners_weekly_check.py --apply` in the same pass (#159 — before 2026-09-03 nothing rebuilt it: 75 partners dark). |
+| `member_profiles`, `members` | `member_profiles_stamp_synced`, `members_stamp_synced` | Freshness stamps on the two Airtable mirrors (`synced_at`) — the signal #148 will read. |
 | `member_sessions` | `member_sessions_rollup` | Session counters. |
+
+18 (table, trigger) pairs live on 2026-09-04 — the list above is complete.
 
 ### B.4 pg_cron
 
 | Job | Schedule | What |
 |---|---|---|
-| `olivia-health` | `*/5 * * * *` | The outage alarm — runs **inside Postgres**, so it still fires when n8n is down. Signals: members receiving failure text · workflow-down markers · an active webhook ping. Re-alerts every 30 min while firing, posts recovery on clear, and stamps its own heartbeat. |
+| `olivia-health` | `*/5 * * * *` | The outage alarm — runs **inside Postgres**, so it still fires when n8n is down. Signals: members receiving failure text · workflow-down markers (the relay's `maintenance` rows) · an active webhook ping. Re-alerts every 30 min while firing, posts recovery on clear, and stamps its own heartbeat. Known lag: it fired 69 min after the first failure of the 2026-09-02 credit outage. |
+| `member-phone-index` | `*/15 * * * *` | `refresh_member_phone_index()` — the front door's phone lookup index (#128/#146). |
 
 > ⚠️ `pg_net` installs into schema **`net`**, not `extensions`. Unqualified calls inside exception
 > handlers fail silently — check `pg_proc` before assuming a function exists.
@@ -1264,26 +1654,28 @@ event_registrations_live = event_registrations
 
 ## Appendix C — The production workflow, node by node
 
-`12wj6h1TWqb0d4Dq`, 69 nodes. Grouped by role:
+`12wj6h1TWqb0d4Dq`, **80 nodes** (prod `30fd7e6f`, 2026-09-04; staging `bqHstPDi84uOhTCJ` carries the
+identical graph on the other webhook path). Grouped by role:
 
 | Group | Nodes | Notes |
 |---|---|---|
-| **Entry** | `WA Verify (GET)`, `Respond Challenge`, `WA Inbound (POST)` | Meta webhook verification + the single inbound entry point. |
+| **Entry** | `WA Verify (GET)`, `Respond Challenge`, `WA Inbound (POST)` | Meta webhook verification + the single inbound entry point — reached through the Render relay (§1.1), never directly. Fan-out order off `WA Inbound`: `Extract Raw Event` · `Log Inbound` · `Parse Delivery Status` · `Parse Reaction`. |
+| **Raw store (#75)** | `Extract Raw Event` → `Store Raw Event (Supabase)` | Wired FIRST — every inbound message event is on disk (`olivia_webhook_events`) before any parse can throw. |
 | **Dedupe** | `Log Inbound` → `Claim Message (dedupe)` → `Drop Duplicates` | Non-text events branch off. Claim writes to `olivia_seen`; fails **open**. |
-| **Intro taps (#97)** | `Intro Tap?` → `Intro Route (HTTP)` | **Staged 2026-08-21 on `bqHstPDi84uOhTCJ` — promotion to prod pending Andy's `promote`; until then prod drops template button taps.** Not yet in the 69-node prod count above. Wired FIRST off `Drop Duplicates` (v1 branch-order rule, §14). Accept/Decline button taps and `intro_pick_*` list taps resolve here and reply directly — never reach the LLM loop. `handled:false` falls through to `Find Member` unchanged. Ops + rulings: §8.7. |
-| **Identity** | `Find Member` → `Resolve Member` → `Matched?` | Exactly-one-active-member or the generic path. Carries `airtable_id` (for stamping) and `at_member_id`. |
+| **Intro taps (#97)** | `Intro Tap?` → `Intro Tap Detected?` → `Intro Route (HTTP)` → `Intro Handled?` → (`Intro Has Reply?` → `Build Intro Reply` → `Intro Eval (silent)?` → `Send Reply (Meta)` / `Save Conversation`) or (`Restore Original Message` → `Find Member`) | **In prod since 2026-08-22.** Accept/Decline button taps and `intro_pick_*` list taps resolve at the intro route and reply directly — never reach the LLM loop. `handled:false` restores the original message and falls through to `Find Member` unchanged. Ops + rulings: §8.7. |
+| **Identity** | `Find Member` → `Resolve Member` → `Matched?` | `olivia_front_door_v2` by phone or hidden-number id (#146); exactly-one-active-member or the generic path (`Build Generic`, now wired through the silent gate so it can be probed). Four copies: matched · unlinked (#125) · inactive · unknown. Carries `airtable_id` (for stamping) and `at_member_id`. |
 | **Context** | `Load Recent Turns` → `Prep Context` | 24h history, cut at "reset", plus the previous retrieval plan for "yes" replay. |
 | **Fast feedback** | `Mark Read + Typing` → `Holding Trigger?` → `Fire Holding Timer` | **Wired FIRST in the fan-out on purpose** — n8n v1 runs branches depth-first, so this must precede routing or the read receipt lands *after* the answer. |
 | **Routing** | `Touch Olivia Stats`, `Route Request` (Haiku), `Fetch Chat Links`, `Plan Request` | `Plan Request` is the deterministic brain: ~40 overrides that outrank the router. |
 | **Retrieval** | `Embed Query` (Voyage) → `Fetch Summaries` → `Fetch Raw Matches` → `Verbatim?` | The "zeroth fetch", preloaded as guaranteed evidence. Both fetch nodes map `content_search` → `content_search_v2` at the last inch. |
 | **Canned lanes** | `Build Verbatim Digest` | Greeting, help, chats, opt-in/out, reset, ticket offer/create, contact refusal, verbatim digests — **no model call at all**. |
-| **The loop** | `Answer Seed` → `Answer Claude` → `Answer Parse` → `Answer Done?` → (`Voyage Embed` → `Attach Embedding` → `Answer Tool` → `Answer Merge` → back) | Max 5 rounds. `Answer Parse` injects `p_phone`; `Attach Embedding` swaps the execution name to v2. **`Answer Tool` dispatches by name:** `event_*` → the schedule route, `org_docs` → the kb route, `member_intro` → the intro route (§8.7 — staged 2026-08-21 on `bqHstPDi84uOhTCJ`, promotion to prod pending Andy's `promote`; until then prod drops template button taps) — all three on digest.mds.co, policy in git — everything else → the Supabase RPC of the same name. |
-| **Fact gate** | `Claims?` → `Fact Check` (Haiku) → `Gate Verdict` → `Gate OK?` | Claim-free replies skip it. One regeneration allowed, then an honest refusal. Deterministic link gate + post-filters run inside `Gate Verdict`. |
-| **Delivery** | `Format Reply` → `Billing Nudge` → `Apply Nudge` → `Eval (silent)?` → `Send Reply (Meta)` | The eval branch skips Meta entirely. `Format Reply` converts markdown to WhatsApp formatting and extracts `[SEND_IMAGE:]` / `[SEND_FILE:]` markers. |
-| **Persistence** | `Save Conversation`, `Mark Welcomed`, `Set Olivia Opt-State` | Both turns saved with plan + member stamp. |
+| **The loop** | `Answer Seed` → `Answer Claude` → `Answer Parse` → `Answer Done?` → `First-Fetch Retry?` → (`Voyage Embed` → `Attach Embedding` → `Answer Tool` → `Answer Merge` → back) | Max 5 rounds, 29 tools, `max_tokens` 2000, thinking off. `Answer Parse` injects `p_phone` and names the reason when a failure IS billing; `First-Fetch Retry?` forces a retrieval when the first round answered without one (`retry_same`); `Attach Embedding` swaps the execution name to v2/v3 (`EXEC_NAME`). **`Answer Tool` dispatches by name:** `event_schedule` + `event_who` → the schedule route, `org_docs` → kb, `member_intro` → intro, `find` → find — all on digest.mds.co, policy in git — everything else → the Supabase RPC of the same name. |
+| **Fact gate** | `Claims?` → `Fact Check` (Haiku) → `Gate Verdict` → `Gate OK?` | Claim-free replies, short affirmatives and clarifying questions skip it (RULE ZERO). One regeneration allowed, then an honest refusal; `off_topic` is a non-filterable verdict (#104). Deterministic link gate + post-filters run inside `Gate Verdict`; its clamp was audited over 6,017 answers before being softened (#149). |
+| **Delivery** | `Format Reply` → `Billing Nudge` → `Apply Nudge` → `Eval (silent)?` → `Send Reply (Meta)` → `Followup Interactive?` → `Send Followup Interactive (Meta)` | The eval branch skips Meta entirely. `Format Reply` converts markdown to WhatsApp formatting, extracts `[SEND_IMAGE:]` / `[SEND_FILE:]` markers, strips dangling orphan links and prepares `followup_interactive` (buttons or the list picker that could not ride a >1024-char body, #107). |
+| **Persistence** | `Save Conversation`, `Mark Welcomed`, `Set Olivia Opt-State` | Both turns saved with plan + member stamp (gap #110: intro-tap turns). |
 | **Attachments** | `Image To Send?` → `Fetch Post Images` → `Build Image Sends` → `Send Image (Meta)`; `File To Send?` → `Fetch Sendable File` → `Sign File URL` → `Send Document (Meta)` | File keys are re-validated server-side before any send. |
-| **Team actions** | `Action?` → `Log Request (Supabase)` → `Notify Team (Slack)` | Only fires for genuine action requests, with conversation context and a member-log link. |
-| **Side channels** | `Extract Raw Event` → `Store Raw Event (Supabase)` (#75, wired FIRST — payload on disk before any parse can throw); `Parse Delivery Status` → `Save Delivery Status`; `Parse Reaction` → `Save Feedback (Supabase)` | Meta reports delivery once and never lets you query it back — dropping these is how "delivered" beliefs go wrong. 👍/👎 reactions are the teaching signal. |
+| **Team actions** | `Action?` → `Log Request (Supabase)` → `Notify Team (Slack)` | Only fires for genuine action requests, with conversation context and a member-log link. Also the escalation path the #97 "unreachable" flow reuses. |
+| **Side channels** | `Parse Delivery Status` → `Save Delivery Status`; `Parse Reaction` → `Save Feedback (Supabase)` | Meta reports delivery once and never lets you query it back — dropping these is how "delivered" beliefs go wrong (`olivia_sends`). 👍/👎 reactions are the teaching signal (`olivia_feedback`). |
 | **Manual utilities** | `Send Test (Manual)`, `Config`, `Send Message (Meta)`, `Fix Subscription (Manual)`, `Subscribe App to WABA`, `Check WABA Subscription` | Operator tools, not part of the answer path. |
 | **Legacy** | `Build Prompt`, `Ask Claude`, `Build Generic` | The pre-loop single-shot path. `Build Prompt` still owns the **single global STYLE block** that `build_loop.py` harvests into the loop seed — edit style there, not in two places. |
 
