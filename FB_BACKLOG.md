@@ -183,6 +183,19 @@ without this a complaint would flicker off the admin tab and back. 18 unit tests
 Consultants" and two named "Riverbend Consulting", so Anita's post carries each twice. Catalog belongs
 to the Olivia stream — flagged, not chased.
 
+**Regression caught by Andy the same hour, fixed (`sane_quote()`).** Grouping several partners into one
+call made the model answer with the partner's own NAME as the quote — the admin tab's "What they said"
+column read "Hector Ai" instead of what Anita wrote (14 rows). Tightening it to "must appear in the
+text" was not enough: the model then answered with a real but generic line from the top of the post
+("Here's a list of their offerings for this Summit!"), which passed. The rule now keeps a model quote
+only when it can be LOCATED in the text and sits within 300 chars of the mention (or names the partner);
+otherwise the line that names the partner is used, trimmed to 200 chars, with markdown stripped. A quote
+that is only the partner's name is never kept. 12 quote tests; a first attempt would have replaced good
+quotes (TraceFuse's complaint, an elided A2X quote) and was caught in the dry run before applying.
+New `--fix-quotes` repairs stored rows from the text alone — no model call, no re-judging, so nothing
+flaps. Result: **21 quotes corrected, 143 of 144 rows now carry a real quote** (the 144th is a comment
+whose entire text is the two words "Scale Insights").
+
 **Pending live proof:** the 16:25 CDT autopilot (`--days 3 --apply`) is the first unattended run
 with the grouped judge; read its `PARTNERS:` line in `auto_import.log`.
 

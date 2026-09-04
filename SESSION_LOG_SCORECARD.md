@@ -32,6 +32,21 @@ confirmed. SQL: **`Hector Ai · neutral` on `27084374081239403`** (found_at 19:5
 **Sellerboard re-judged neutral by two calls** ("beta… limited… but it's a start. I hate that I pay for
 both") — Andy's call, left as the model judged it. Table 129 → 144 (complaint 21 → 20, neutral 87 → 103).
 
+**Andy caught a regression the same hour: "what they said is wrong."** The grouped call made the model
+answer with the partner's own NAME as the quote, so the admin tab read `Hector Ai` under "What they
+said" — 14 rows, all from my two runs today; the other 130 were fine. First fix (quote must appear in
+the text) was not enough: the model then answered with a real but generic line from the top of the post
+("Here's a list of their offerings for this Summit!"), which passed the check. **Second fix, and the dry
+run is what saved it:** requiring the quote to *name the partner or come from a short text* would have
+REPLACED good quotes — TraceFuse's "they were charging for removals they didn't actually cause", an
+A2X quote the model had elided with "...", Passport, Brandon Himmel's TikTok opinion. Printed as
+«old» → «new» before writing, so I saw it. Final rule (`sane_quote()`, 12 tests): keep a model quote
+only when it can be LOCATED in the text (fragments matched word-by-word, so elisions still resolve) and
+sits within 300 chars of the mention, or names the partner; never keep a bare name; else use the line
+that names the partner, trimmed to 200 chars, markdown stripped. New `--fix-quotes` repairs stored rows
+from the text alone — no model call, no re-judging, nothing flaps. **21 corrected; 143 of 144 rows now
+carry a real quote** (the 144th is a comment whose whole text is "Scale Insights").
+
 **Found alongside, flagged:** `partners_catalog` has two published "Prosperlytics Consultants" and two
 "Riverbend Consulting" rows — Anita's post carries each twice. Olivia stream owns the catalog.
 
