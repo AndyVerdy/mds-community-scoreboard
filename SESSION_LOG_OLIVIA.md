@@ -16,6 +16,8 @@
 
 **Docs:** handbook (this commit), this entry, the index line, a STATE note in `OLIVIA_NEXT_SESSION.md`, memory `project_mds_olivia_pilot`. Commits: `12ad6f9` (handbook + db export) + the close-out commit; merged into `main`.
 
+**Follow-up, same day — a dedicated known-issues page (Andy's ask) + a #123 correction.** `OLIVIA_KNOWN_ISSUES.md` (repo, source) + ClickUp page `19 · Known issues` (`2531q-67997`): the architecture program in order (11 work packages — #64 as the inventory only · decisions out of SQL (NEW) · #158/#61/#121 schema integrity · nothing on the Mac (NEW) · one web host per app (NEW) · Make → n8n with Make's real scope (NEW) · #148 mirrors · #68/#66/#73 forms · #72/#32 observability · #105 · #116), open defects by area, 14 findings not yet filed, the decisions waiting on Andy; page 00 gained the row. **Correction found while checking #123 against the prod snapshot:** `Answer Tool` routes EVERY `event_*` tool name to the schedule route by prefix match, so `event_lookup` / `event_history` never reach the events-catalog RPCs from the loop (only the plan lane's zeroth fetch does) — the handbook (§3 step 9, §6.2, Appendix C) and ClickUp pages 05/08/16/18 had said `event_schedule`+`event_who` only; all corrected. The four NEW architecture tickets wait on Andy's "file". Branch `known-issues-20260904`.
+
 
 ## 2026-09-03 (evening) · Olivia · **#159 CLOSED — partners/events went dark in meaning search (75/36 without a vector) · #160 BUILT — 506 partner web profiles, Mudit Jain → Prosperlytics** · branch `partners-vectors-20260903` · gate 313/0 · prod untouched, staging `cefe0133` READY FOR PROMOTE
 
