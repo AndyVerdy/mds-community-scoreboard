@@ -144,6 +144,11 @@ The "how do we fetch an asset now" half of this is a requirement in its own righ
 
 ## GOS-36 · 🔴 NEW — there is now no way to fetch an asset at all
 
+> **2026-09-04 update.** To get transcripts for the 27 Aug–2 Sep uploads, the dev opened `uploads/content-archive/videos/*.mp4`
+> to anonymous GET (all 30 requested links went from `403 AccessDenied` to `206`). That solves the fetch, but it does it by
+> reopening the GOS-32 exposure: RESTRICTED talks' mp4s — and the Otter "Transcript – …pdf" attachments, which were already
+> public — are readable by anyone holding the key. The ask below (signed, entitlement-checked URLs) stands.
+
 This is the other half of the GOS-32 fix, and it needs stating plainly because the current state is
 worse for an integrator than before the change.
 

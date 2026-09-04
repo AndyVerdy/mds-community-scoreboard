@@ -75,10 +75,16 @@ def main():
     # one shot silently returned 1000 of 1024 and 22 of 63 transcript videos on the first run.
     vids = sb_all("videos_catalog?select=video_id,title,description_text,summary,summary_source"
                   "&deleted_at=is.null&status=eq.published&order=video_id", key)
-    # the transcript-backed set comes from digest.calls (one row per call), not from the chunks
+    # the transcript-backed set: digest.calls (one row per Zoom call) PLUS every video that
+    # carries call_transcript chunks from another producer (AssemblyAI, #101/#161). Reading
+    # calls alone meant an AAI-transcribed video never got a transcript summary from this
+    # step — every earlier batch had its summaries hand-written and applied separately.
     with_tr = {c["groupos_video_id"] for c in sb_all(
         "calls?select=groupos_video_id&has_transcript=is.true"
         "&groupos_video_id=not.is.null", key)} - {None}
+    with_tr |= {c["video_id"] for c in sb_all(
+        "content_items?select=video_id:meta->>video_id&source=eq.call_transcript"
+        "&meta->>video_id=not.is.null&order=id", key)} - {None}
 
     need_tr = [v for v in vids if v["video_id"] in with_tr and v.get("summary_source") != "transcript"]
     need_desc = [v for v in vids if v["video_id"] not in with_tr and not (v.get("summary") or "").strip()]

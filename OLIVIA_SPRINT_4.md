@@ -36,6 +36,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
 | **#100** | 🔑 Identity aliases — one member, all their known emails | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED 2026-08-20** — 5,763 aliases, resolver live, 12/12 verify, gate 0 |
 | **#101** | 🎬 Video transcripts + real access gating | 🔴 S1 | L | n/a (SQL+data) | ✅ **CLOSED 2026-08-20** — 2,730 chunks, video_access live, gate 263/0 · NEXT: 2025 batch |
+| **#162** | 🎬 Transcripts for the 33 videos published 25 Aug–4 Sep (AI Mastermind · AI Scaling Live · Summit day 2) — AssemblyAI from the S3 links the dev opened 2026-09-04 | 🔴 S1 | S | n/a (data) | ✅ **CLOSED 2026-09-04** — 33/33 transcribed ($2.62), 697 chunks, 33 summaries, 5 new restricted videos → 44 grants each, 2026 = 212/212, E2E quote proven, gate 313/0 |
 | **#72** | 🚦 LOAD TEST — **NOW the announcement, not the Mille demo. Biggest open risk; never run** | 🔴 S1 | M | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
@@ -2921,6 +2922,62 @@ pin the math, the Ian-replay curl proves the route, the model link is what this 
 Virtual events deliberately out of scope (member's zone is unknown by design).
 
 ## ✅ CLOSED (Sprint 4)
+
+### #162 · Transcripts for the 33 videos published 25 Aug–4 Sep — AssemblyAI, in-person rooms
+**🔴 S1 · size S — filed 2026-09-04 (Andy: "we need to create transcripts for recently fetched videos").**
+
+> **In plain words:** 33 recent talks are in the library but Olivia cannot quote a word of them.
+
+*As a member, when I ask what Kevan Soh said about PPC negation or which AI Mastermind talk covered
+inventory forecasting, Olivia quotes the talk with a timestamp and the library link, gated by my
+entitlement.*
+Evidence: fresh GroupOS listing 2026-09-04 = 212 videos in 2026, 50 published since 25 Aug; 17 carried
+transcripts (16 Summit AAI batch of 25 Aug + Josh Hadley via Zoom), **33 had none** — 16 AI Mastermind
+(restricted), 8 AI Scaling Live + 4 Summit day-2 (public), 5 of them brand-new uploads not even in the
+catalog (weekly check: NEW 5, CHANGED 1). Andy's 30 S3 links returned `403 AccessDenied` for every
+anonymous GET until the dev changed the bucket policy the same day (all 30 → 206 afterwards). These are
+in-person rooms: no Zoom, AssemblyAI is the only producer (Andy: Otter PDFs are NOT a source).
+**Shape of the fix:** catalog upsert from the fresh dump · `aai_submit.py --year 2026` on a CSV built
+from the listing (`download_link` = the now-public S3 URL, `_mds` block from the catalog) ·
+`aai_transcripts.py --apply` · `video_summaries.py` now counts chunk-backed videos as transcript-backed
+(it read `digest.calls` only, so every AAI batch had hand-written summaries) · embed · entitlement sweep
+for the 5 new restricted videos · gate.
+**Accept when:** 33/33 carry `call_transcript` chunks, max chunk ≤ 4,000 chars, timestamps monotonic ·
+33/33 have `summary_source='transcript'` and a vector (0 unembedded) · the 5 new restricted videos have
+`video_access` rows (members-per-video > 0) · live probe through `content_search_v2`: an entitled asker
+gets Kevan's quote with a timestamp + `app.mds.co/videos/6a95ecb56c44f146b77f4941`, an unentitled asker
+gets nothing from an AI Mastermind talk · gate GREEN, exit 0.
+
+#### ✅ BUILT + LOADED + PROVEN 2026-09-04 — warehouse only, no promote needed
+**The fix:** catalog upsert from a fresh 212-video 2026 listing (5 NEW + 1 CHANGED) · `aai_submit.py --year 2026` on a CSV built
+from the listing (`download_link` = the bare S3 URL — the dev opened `videos/*.mp4` to anonymous GET the same afternoon; every
+link was `403 AccessDenied` before that) — 33/33, 11.4 hr audio, $2.62, 5 min wall, 0 errors · `aai_transcripts.py --dir
+~/mds_transcripts/batch_20260904 --apply` (an isolated dir, so the 161 older 2026 files are NOT re-chunked with the new
+`split_long_cues`) → 697 chunks · `video_summaries.py` now counts chunk-backed videos as transcript-backed (it read
+`digest.calls` only, so every AAI batch needed hand-written summaries) → 33 Haiku summaries · embed 697 rows + 33 videos ·
+AI-Mastermind entitlement sweep, TAG-FILTERED (`videos_list(for_user_id, tag_id=6a2c3eab1c4bb3440b9a6cf5,
+created_after=2026-08-31)`: an empty result comes back inline, so 743 roster calls in 19 batches cost 44 files, not 743) →
+44 entitled members × 21 AI-Mastermind videos, 508 new `video_access` rows.
+
+| AC | result |
+|---|---|
+| 33/33 carry `call_transcript` chunks, max chunk ≤ 4,000 chars, timestamps monotonic | ✅ 33 videos · 697 chunks · 0 non-monotonic · 264 restricted chunks carry the `video_access` rule · **max chunk 4,202 chars** — one chunk over the 4,000 target, the same class as the 25 Aug batch's 4,163 (sentence-bounded split) |
+| 33/33 have `summary_source='transcript'` and a vector, 0 unembedded | ✅ 33/33 transcript summaries · 0 unembedded chunks · 0 unembedded videos (21 restricted embed metadata only) |
+| the 5 new restricted videos have `video_access` rows, members-per-video > 0 | ✅ 44 grants on each of the 5 · restricted published 429 → 429 with grants, **0 uncovered** |
+| entitled asker gets the quote with timestamp + library link, unentitled gets nothing from an AI Mastermind talk | ✅ `content_search_v2` as Brynne (entitled): Tracy Lin "Inventory Forecasting" chunks at 00:06:35 / 00:05:00 · as Gahan (unentitled): 0 rows from that talk · Kevan (public): 7 of 10 rows, `app.mds.co/videos/6a95ecb56c44f146b77f4941` · **E2E through the LIVE workflow** (selftest, `olivia_messages` 62711): "the whitelisting is what I think is more valuable" at 00:19:23 / 00:21:16 + the library link, then the follow-up offer |
+| gate GREEN, exit 0 | ✅ leak gate PASSED after the chunk load and again after the grant load — 313 PASS · 0 FAIL |
+
+**Before → after:** 2026 videos with a transcript 179 → **212 of 212** · library 411 → **444 of 1,086** transcribed · chunks
+12,810 → 13,507 · `video_access` 44,972 → 45,480 rows · cost $2.62.
+**Remainders (named, not fixed):** 13 target members have no GroupOS account, so no grants can exist for them
+(mariela@ · jesse@ · kaylon@ · jerome@ and one nameless Staff row; john.cho@nutraville.com · shiva@joonhaircare.com ·
+rishi.manda28@gmail.com · vineet@shoplc.com · xxz5838@hotmail.com · nick@eaccountable.com · reed@amazonstart.com ·
+jeng0304@hotmail.com) · eugene@milliondollarsellers.com resolves to no `at_member_id` (row kept with the email) · the sweep
+shows **32 members whose earlier AI-Mastermind grants no longer hold in GroupOS** and 10 who gained access — rows are
+additive, nothing was deleted; revoking is Andy's call · the opened bucket also makes RESTRICTED talks' mp4s (and their
+Otter transcript PDFs) world-readable — GroupOS side, GOS-32 class, on Andy's desk.
+
+
 
 ### #156 · Sonnet 5 vs GPT-5.6 Terra on the locked 100 bank — price + quality, prod untouched
 **🟡 S2 · size S** · spec `docs/superpowers/specs/2026-09-02-olivia-sonnet-vs-terra-bench-design.md`

@@ -1390,7 +1390,8 @@ relative ask** — pass the offset and do the arithmetic server-side.
 ## 14. Known limits (2026-09-04)
 
 - **Transcripts cover 2025 and 2026, not before** (#70/#101, the 2025 batch 2026-08-21, the 16
-  Summit Singapore talks 2026-08-27): Zoom where Zoom hosted, AssemblyAI for in-person/hybrid rooms
+  Summit Singapore talks 2026-08-27, the last 33 in-person talks 2026-09-04 — #162, 212/212 of 2026,
+  444 of 1,086 library videos): Zoom where Zoom hosted, AssemblyAI for in-person/hybrid rooms
   where speakers stay `Speaker A/B/C` unless the #103 letter-mapping has evidence. Nothing before
   2025-01-01 (Andy: "not sure about <2024"). When a gap is reported the boundary travels with it —
   never "not live" or "coming". Old oversized chunks (§6.2) are still to be re-chunked; 7
