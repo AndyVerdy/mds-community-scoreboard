@@ -93,6 +93,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#157** | 🧑‍⚖️ Review the Sonnet 5 vs GPT-5.6 Terra bench (#156) — Andy's vendor call: stay on Claude, port to OpenAI, or re-test | 🟡 S2 | S | — (reading + decision) | — |
 | **#159** | 🕳️ Partners and events go dark in meaning search — 75 partners without a vector (35% of reviews, 48% of claims), the weekly delta missed 28 of 142 changed partners (Prosperlytics 5.0★ never shown for "bookkeeping") | 🔴 S1 | S | n/a (data + scripts) | ✅ **CLOSED 2026-09-03** — 75 partners + 36 events re-embedded (dark 0/0), nightly `embed_catalogs` + weekly re-embed, gate +2 checks (313/0), `partner_lookup_v2("bookkeeping accounting")` → Prosperlytics #1 |
 | **#160** | 🌐 Partner web profiles — crawl every partner site (services · pricing · people · proof) so Millie knows what a partner does and who runs it; founder ↔ partner link (Mudit Jain → Prosperlytics) | 🟡 S2 | M | ✅ staging `cefe0133` — probes: cost + who-runs-it answered from the site | ✅ **PROMOTED 2026-09-04 00:17Z (Andy: "promote") — prod `30fd7e6f`**, gate green in-promote, prod probe exec 131383: Shea's question → Prosperlytics 5.0★ first with site facts + pricing; 506 profiles, 1,173 people, 52 speakers linked, web text in the partner vectors |
+| **#161** | 🎴 MDS Personas — staff library of members (library · character sheet · cohort) on the persona + 51-stat ledger, Claude Design handoff received 2026-09-04 | 🟡 S2 | L | design + spec | 📝 spec written 2026-09-04 (`docs/superpowers/specs/2026-09-04-mds-personas-design.md`) |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -123,6 +124,31 @@ Millie is live.
 Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at Meta ⏳ watcher-gated.
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
+
+### #161 · Transcripts for the 33 videos published 25 Aug–4 Sep — AssemblyAI, in-person rooms
+**🔴 S1 · size S — filed 2026-09-04 (Andy: "we need to create transcripts for recently fetched videos").**
+
+> **In plain words:** 33 recent talks are in the library but Olivia cannot quote a word of them.
+
+*As a member, when I ask what Kevan Soh said about PPC negation or which AI Mastermind talk covered
+inventory forecasting, Olivia quotes the talk with a timestamp and the library link, gated by my
+entitlement.*
+Evidence: fresh GroupOS listing 2026-09-04 = 212 videos in 2026, 50 published since 25 Aug; 17 carried
+transcripts (16 Summit AAI batch of 25 Aug + Josh Hadley via Zoom), **33 had none** — 16 AI Mastermind
+(restricted), 8 AI Scaling Live + 4 Summit day-2 (public), 5 of them brand-new uploads not even in the
+catalog (weekly check: NEW 5, CHANGED 1). Andy's 30 S3 links returned `403 AccessDenied` for every
+anonymous GET until the dev changed the bucket policy the same day (all 30 → 206 afterwards). These are
+in-person rooms: no Zoom, AssemblyAI is the only producer (Andy: Otter PDFs are NOT a source).
+**Shape of the fix:** catalog upsert from the fresh dump · `aai_submit.py --year 2026` on a CSV built
+from the listing (`download_link` = the now-public S3 URL, `_mds` block from the catalog) ·
+`aai_transcripts.py --apply` · `video_summaries.py` now counts chunk-backed videos as transcript-backed
+(it read `digest.calls` only, so every AAI batch had hand-written summaries) · embed · entitlement sweep
+for the 5 new restricted videos · gate.
+**Accept when:** 33/33 carry `call_transcript` chunks, max chunk ≤ 4,000 chars, timestamps monotonic ·
+33/33 have `summary_source='transcript'` and a vector (0 unembedded) · the 5 new restricted videos have
+`video_access` rows (members-per-video > 0) · live probe through `content_search_v2`: an entitled asker
+gets Kevan's quote with a timestamp + `app.mds.co/videos/6a95ecb56c44f146b77f4941`, an unentitled asker
+gets nothing from an AI Mastermind talk · gate GREEN, exit 0.
 
 ### #119 · Bank B — a regression bank for everything built after the 100-question bank froze
 **🟡 S2 · size M — filed 2026-08-23 (Andy, during the #108 close: "wow. old… we need one more bank around everything we built since then").**
@@ -329,6 +355,27 @@ have the lapse notice capped (131049); the free-form fallback only rescues that 
 The data (#156 close block, Sonnet judge): Sonnet 5 **5.4%** fail / **$0.0211** / 10.1 s · Terra medium **3.3%** / **$0.0310** / 19.4 s · Terra none **7.6%** / **$0.0237** / 14.2 s. Terra judge: 13.0 / 9.8 / 13.0 — it fails honest-miss answers the rubric marks PASS, so read the disagreement section before the headline. Caveats: Claude-tuned prompt · Answer Merge evidence stamps and post-model gates not replicated · Terra-medium's 8,000 output budget vs 2,000.
 **Shape of the work:** reading + a ruling, no code. Optional re-tests the harness already supports (`scripts/model_bench/README.md`): a GPT-shaped prompt variant re-run (~$12) · `gpt-5.6-luna` / `gpt-5.6-sol` runs · Terra at `low` effort · a second Sonnet run to measure judge noise.
 **Accept when:** Andy's ruling is written on this ticket (stay / port / re-test with what) · if "port": a new ticket with story + ACs for the n8n answer-loop port (Responses API shape, full through-workflow eval before any promote, OpenAI tier raise for prod traffic) · the OpenAI key pasted into chat on 2026-09-02 is rotated.
+
+### #161 · MDS Personas — a staff library of members: browse faces, open a character sheet, click a stat to find everyone strong in it
+**🟡 S2 · size L — filed 2026-09-04 after a brainstorm + 7 live drafts (artifact 0af65aff) and a Claude Design handoff (`~/Downloads/Member 360 Admin Design System.zip`).**
+
+> **In plain words:** Member 360 is the audit view; nobody browses it. Andy wants a page that feels like a
+> streaming library: one search bar, rows of faces, click a member and read a short friendly sheet with
+> game-style stats (the 18 categories and 33 detail stats with their decay), click any stat and see who
+> else is strong in it, plus who is similar and who would be a good companion.
+
+*As MDS staff, I open Personas, find a member in seconds, understand them in twenty, and jump from any strength to the people who share it — without opening Member 360.*
+
+**Decided:** staff only (scores visible) · all 758 actives · no A-vs-B compare · no archetype labels · all 51 stats
+visible, silent ones named · asks/gives mapped to stats from the ledger evidence · badges at peak / holding / fading
+(no rising until the ledger keeps history). Design is FINAL in the handoff (tokens, components, states, responsive).
+Spec: `docs/superpowers/specs/2026-09-04-mds-personas-design.md` (data, RPCs, photo cache, blurb, gating).
+
+**Accept when:** `/admin/personas`, `/admin/personas/[id]`, `/admin/personas/stat/[key]` live on Render behind the admin
+gate · every active member opens and every one of the 51 stats renders or is named "no signal" · photos served from
+Storage (nightly `cache_member_photos.py`), never from Airtable links · similar + companions computed in SQL and
+spot-checked for 5 members · pixel review against the handoff at 1440 and 390 in both themes, all README states ·
+anonymous requests to the routes and RPCs refused · `blurb` written by the persona job (fallback: summary sentences).
 
 ### #159 · Partners and events go dark in meaning search — 75 partners without a vector, and the weekly delta misses edits
 **🔴 S1 · size S — filed 2026-09-03 (Shea Smith, 28 Aug: "Who should I use for bookkeeping?" — Prosperlytics, 5.0★ from 5 reviews, 51 claims, never appeared).**
