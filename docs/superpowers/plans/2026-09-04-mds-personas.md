@@ -528,18 +528,18 @@ export type RelatedRow = { id: string; name: string; city: string; level: number
 import { describe, it, expect } from "vitest";
 import { toCard, toSheet, reasonSimilar, reasonCompanion } from "./data";
 
-const row = { id: "rec1", name: "Mo Kuhail", status: "New Member", city: "Ottawa, Canada", joined: "2026-08-30", level: 82,
+const row = { id: "rec-test-1", name: "Sam Tester", status: "New Member", city: "Springfield, Ohio", joined: "2026-08-30", level: 82,
   top: [{ name: "Amazon FBA", value: 100 }, { name: "Logistics & 3PL", value: 100 }], photo_url: null, msgs30: 4, at_peak_count: 7 };
 
 describe("shaping", () => {
   it("card from a library row", () => {
     const c = toCard(row);
-    expect(c.isNew).toBe(true); expect(c.isStaff).toBe(false); expect(c.initials).toBe("MK");
+    expect(c.isNew).toBe(true); expect(c.isStaff).toBe(false); expect(c.initials).toBe("ST");
     expect(c.top[0].name).toBe("Amazon FBA"); expect(c.photoUrl).toBeNull();
   });
   it("sheet nests details under categories and lists silent ones", () => {
     const sheet = toSheet({
-      member: { ...row, niche: "Home", channels: ["Amazon US"], since: 2019, summary: "Mo is lean. He ships a lot.", blurb: null, focus: [], gives_text: [], asks_text: [], pattern: null },
+      member: { ...row, niche: "Home", channels: ["Amazon US"], since: 2019, summary: "Sam is lean. Sam ships a lot.", blurb: null, focus: [], gives_text: [], asks_text: [], pattern: null },
       stats: [
         { topic: "Amazon FBA", parent: null, value: 100, peak: 100, badge: "peak", rank: 1, weakness: 0, evidence: { comments: 4 } },
         { topic: "Amazon US", parent: "Amazon FBA", value: 71, peak: 71, badge: "peak", rank: 5, weakness: 0, evidence: {} },
@@ -549,11 +549,11 @@ describe("shaping", () => {
     expect(sheet!.categories[0].details[0].name).toBe("Amazon US");
     expect(sheet!.categories[0].ask).toBe(true);
     expect(sheet!.silent).toEqual(["Walmart"]);
-    expect(sheet!.blurb).toBe("Mo is lean. He ships a lot.");
+    expect(sheet!.blurb).toBe("Sam is lean. Sam ships a lot.");
   });
   it("reasons", () => {
     expect(reasonSimilar(84, ["PPC", "Amazon US"])).toBe("84% profile match · both strong in PPC, Amazon US");
-    expect(reasonCompanion("Mo", ["Listing optimization"], ["Amazon FBA"])).toBe("strong in Listing optimization, which Mo is asking about · shares Amazon FBA");
+    expect(reasonCompanion("Sam", ["Listing optimization"], ["Amazon FBA"])).toBe("strong in Listing optimization, which Sam is asking about · shares Amazon FBA");
   });
 });
 ```
