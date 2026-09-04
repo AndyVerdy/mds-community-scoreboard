@@ -100,38 +100,14 @@ is credentials and configuration, not code.
 
 ---
 
-### #3 · ♻️ A rejected partner mention is never removed — the table only grows · 🟠 S2
-
-**Story.** As MDS, we want `digest.fb_partner_mentions` to say what the CURRENT rules judge,
-so that a verdict written under an old prompt cannot keep showing on the admin tab and in the
-daily Slack card long after the scanner would reject it.
-
-**What happens now.** `partner_scan.py` finishes with
-`supa_upsert(env, "fb_partner_mentions", "ref_kind,ref_id,partner_id", rows)` — it only ever
-INSERTs or UPDATEs the rows it decided to write. A hit judged `not_about_partner` is skipped
-(`if not v or v.get("verdict") == "not_about_partner": continue`), so a row that a previous run
-wrote as `praise` simply stays. Same shape as the classifier's `--apply` only labelling NULLs:
-**a rule change does not reach what is already stored.**
-
-**Seen live 2026-09-03.** After the praise rule tightened (a sponsor listing is neutral, not
-praise), Anita Petrov's Summit post still carried **6 stale `praise` rows** quoting the same
-generic sentence. They were deleted by hand — that is the bug: it needed a human with SQL.
-
-**Acceptance criteria**
-1. Re-running the scan over a window makes that window's mentions match the current rules —
-   a verdict that flips to `not_about_partner` is **removed**, not left behind.
-2. Deletion is scoped to what the run actually re-judged. A run over `--days 3` must never
-   remove a mention from six months ago that it did not look at.
-3. Admin-visible data is not silently destroyed: state in the run output how many rows were
-   removed and why, the way skipped batches are now reported.
-4. Proven on the case that exposed it: re-run over Anita's post (`27084374081239403`) with the
-   praise rule in place and end with 5 neutral rows and no stale praise, with no hand-SQL.
-5. A backfill path exists for history, the way `relabel_archive.py` exists for post types —
-   because #3 is exactly the same lesson in a different table.
-
----
-
 ### #4 · 🎯 The partner judge is inconsistent inside a batch — "Hector Ai" disappears · 🟡 S3
+
+**Premise corrected by #3 (2026-09-04).** Part of "Hector disappears" was not a verdict at all:
+the model echoed our mention ids with the `post:` prefix dropped, so its verdicts were orphaned
+and the hit counted as unjudged. Fixed in #3 (mentions are numbered per batch). What remains is
+real verdict variance: with ids fixed, a batch still judged TikTok Shop / Receive / Xorosoft /
+Hector on Anita's post `not_about_partner` (only Euka and CrediLinq neutral) — re-measure AC 1
+from that baseline.
 
 **Story.** As an admin searching Partner mentions, I want a partner that is plainly named in a
 post to appear, so that searching "Hector" returns the post that says "Hector: Integrate before
@@ -166,4 +142,52 @@ named partner. Batch size is now 8 and `max_tokens` 4,000, so truncation is no l
 
 ## CLOSED
 
-*(none yet — this board opened 2026-09-02)*
+### #3 · ♻️ A rejected partner mention is never removed — the table only grows · 🟠 S2 · ✅ CLOSED 2026-09-04
+
+**Story.** As MDS, we want `digest.fb_partner_mentions` to say what the CURRENT rules judge,
+so that a verdict written under an old prompt cannot keep showing on the admin tab and in the
+daily Slack card long after the scanner would reject it.
+
+**What happened before.** `partner_scan.py` finished with
+`supa_upsert(env, "fb_partner_mentions", "ref_kind,ref_id,partner_id", rows)` — it only ever
+INSERTed or UPDATEd the rows it decided to write. A hit judged `not_about_partner` was skipped,
+so a row that a previous run wrote as `praise` simply stayed. Same shape as the classifier's
+`--apply` only labelling NULLs: **a rule change did not reach what was already stored.**
+Seen live 2026-09-03: after the praise rule tightened, Anita Petrov's Summit post still carried
+6 stale `praise` rows; they were deleted by hand.
+
+**Shipped 2026-09-04** (`~/mds-scorecard-tools/partner_scan.py` + `load_feed.py`, not git-tracked;
+backups `*.bak-prereconcile`). After judging, the scanner reconciles: a stored row whose text this
+run re-read is deleted when the model re-judges it `not_about_partner`, or when the name no longer
+matches any partner. Rows in a batch the model failed on, rows missing from a good reply, and rows
+for partners no longer in the catalog are never deleted and are counted. The line
+`🧹 removed N (a re-judged not_about_partner · b no longer match) · left c unjudged · d out of catalog`
+lands in `auto_import.log`; dry run prints `would remove`. `supa_delete()` returns the deleted rows,
+so the count is measured. `texts()` now pages, so `--days 30` is the backfill path. 12 unit tests in
+`tests/test_partner_scan.py`. Spec + plan under `docs/superpowers/`. Runbook in `FB_PIPELINE.md`.
+
+**Root cause found on the way.** The first proof run removed 4 rows and reported **15 unjudged** —
+Anita's stale praise survived. A probe showed the model echoes our id with the `post:` prefix
+dropped (`post:2708…:655e…` came back as `2708…:655e…`) on **16 of 16** items, orphaning every
+verdict. Mentions are now numbered 1..N per batch (`listing_for()`) and mapped back
+(`parse_verdicts()`); the second run left **0 unjudged**. This corrects #4's premise.
+
+**Acceptance criteria**
+1. ✅ A re-run makes the window match the current rules — the 5-day re-run removed 8 rows
+   (7 stale praise on Anita's post + 1), listed one per line.
+2. ✅ Scoped — rows older than the 5-day window: **27 before, 27 after** both apply runs (SQL).
+3. ✅ Reported — `🧹 removed 8 (8 re-judged not_about_partner · 0 no longer match) · left 0 unjudged · 0 out of catalog`.
+4. ✅ Praise / ⚠️ count — stale state recreated with the pre-rule copy (`partner_scan.py.bak-praiserule
+   --days 5 --apply`: Anita 5 neutral + **7 praise**), then the new scanner: **0 praise, no hand SQL**.
+   Ended at 2 neutral (3 after the 30-day pass), not 5: with ids fixed the batched judge calls
+   TikTok Shop / Receive / Xorosoft on that post `not_about_partner`. That is #4's variance, not #3.
+5. ✅ Backfill — `python3 partner_scan.py --days 30 --apply`: 1,931 texts, 199 hits, wrote 129,
+   removed 2, 0 unjudged.
+
+**Before / after.** Table **53 rows (9 complaint · 38 neutral · 6 praise) → 129 (21 · 87 · 21)** —
+the 30-day pass reached posts back to Aug 5 that the scanner (born 2026-08-31 with a 14-day window)
+had never read: 82 new mentions, complaints 9 → 21. Anita's post: 5 neutral + 7 stale praise → 3
+neutral, 0 praise. Unjudged mentions in a 5-day run: 15 → 0. Hector rows: still 0 (→ #4).
+
+**Pending live proof:** the first unattended run is the 16:25 CDT autopilot (`--days 3 --apply`);
+its `PARTNERS:` line in `auto_import.log` should carry the `🧹` count.
