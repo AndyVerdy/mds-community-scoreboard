@@ -593,6 +593,18 @@ alter table digest.member_phone_index add constraint member_phone_index_pkey PRI
 CREATE INDEX member_phone_index_member ON digest.member_phone_index USING btree (at_member_id);
 CREATE UNIQUE INDEX member_phone_index_pkey ON digest.member_phone_index USING btree (phone10);
 
+-- digest.member_photos
+--   at_member_id                       text not null
+--   storage_path                       text not null
+--   public_url                         text not null
+--   width                              integer
+--   source                             text
+--   source_url                         text
+--   fetched_at                         timestamp with time zone not null default now()
+alter table digest.member_photos add constraint member_photos_at_member_id_fkey FOREIGN KEY (at_member_id) REFERENCES digest.member_profiles(at_member_id) ON DELETE CASCADE;
+alter table digest.member_photos add constraint member_photos_pkey PRIMARY KEY (at_member_id);
+CREATE UNIQUE INDEX member_photos_pkey ON digest.member_photos USING btree (at_member_id);
+
 -- digest.member_profile_embeddings
 --   at_member_id                       text not null
 --   profile_text                       text not null
