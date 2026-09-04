@@ -712,7 +712,23 @@ Then the rest, straight from README "Components" (PortraitCard with `split`/`pos
 - [ ] **Step 1: Server page** — `page.tsx` (`export const dynamic = "force-dynamic"`) loads `getLibrary()` + taxonomy and renders `<TopBar/>` and `<LibraryClient members={cards} categories={parents} />`. Rails are computed in the client from the one payload (758 cards, ~200 KB):
   - Newest members: sort by `joined` desc, 24.
   - At their peak: `atPeakCount >= 4`, sort by level desc, 24.
-  - Strong in TikTok Shop / Logistics & 3PL / AI & Automation: needs the stat value per member → the library row's `top` only has two. Add to `personas_library()` a `strong jsonb` column: `jsonb_object_agg(topic, value)` of the member's categories ≥ 60 (small; at most 18 keys). Do that as migration `personas_library_strong_161` (recreate the function with the extra column; keep the grants) and add `strong: Record<string, number>` to `MemberCard` in `model.ts` + `toCard`.
+  - Strong in TikTok Shop / Logistics & 3PL / AI & Automation: needs the stat value per member → the library row's `top` only has two. Add a NEW RPC — never change `personas_library()`'s return type (that forces a DROP and loses the ACL) — migration `personas_strong_161`, applied with the Supabase MCP `apply_migration`:
+```sql
+create or replace function digest.personas_strong()
+returns table(id text, strong jsonb)
+language sql stable security definer set search_path = digest, pg_temp as $$
+  select s.at_member_id, jsonb_object_agg(s.topic, s.value)
+  from digest.personas_stats s
+  join digest.member_profiles p on p.at_member_id = s.at_member_id
+  where s.parent is null and s.value >= 60
+    and p.status in ('Current Member','New Member','Current Member- Not Renewing','Current Member- Paused','Staff')
+  group by s.at_member_id;
+$$;
+revoke all on function digest.personas_strong() from public, anon, authenticated;
+grant execute on function digest.personas_strong() to postgres, service_role;
+notify pgrst, 'reload schema';
+```
+  Verify: `select count(*) as members, max(jsonb_array_length(jsonb_path_query_array(strong, '$.keyvalue()'))) as max_keys from digest.personas_strong();` (members ≤ 760, max_keys ≤ 18) and the `proacl` check. Then in mds-digest-web: add `strong: Record<string, number>` to `MemberCard` in `model.ts` (`toCard` defaults it to `{}`), and make `getLibrary()` in `data.ts` call `rpc/personas_library` and `rpc/personas_strong` in parallel (`Promise.all`) and merge by id. Add a test in `data.test.ts` for the merge (`mergeStrong(rows, strongRows)` exported). Export `db/` in Scorecard (`python3 scripts/db_export_schema.py`) and commit only `db/` there: `#161 db: personas_strong()`.
   - Active in the chats this month: `msgs30 > 0`, sort desc, 24.
 - [ ] **Step 2: Client search** — `LibraryClient.tsx` (`"use client"`): state `q`; empty → rails; typing → results grid (`repeat(auto-fill, minmax(184px,1fr))`) of members where name, city or any `strong` key contains `q` (case-insensitive); focused + empty → the "BROWSE A STRENGTH" dropdown with 18 chips linking to `/personas/stat/[key]`. "/" focuses the input.
 - [ ] **Step 3: Meta line** under the bar: `{n} members · 18 categories · 33 detail stats · rebuilt nightly` (mono count).
