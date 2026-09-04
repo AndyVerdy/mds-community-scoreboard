@@ -983,3 +983,12 @@ SPRINT close, not session close.
 - Q3088 MDS-Life ruling (parked) · whale ruling (chapter TTM sums) · "Oliva" display name ·
   member_match 'Apparel' vs 'Clothing & Accessories' · 👎 reactions → Slack? · bank truth fixes
   (722→723 members; supplements count drifts) · ClickUp doc refresh pending.
+
+
+### #161 MDS Personas — STATE 2026-09-04 13:50 (PAUSED at milestone) <!-- #161 -->
+- Build runs LOCAL only, branch `personas-20260904` in Scorecard + mds-digest-web (pushed as backup, never merged; Render deploys main only).
+- Ledger = `.superpowers/sdd/2026-09-04-mds-personas/progress.md` (git-ignored, on disk). Tasks 1–6 of 12 landed; Task 6 review deferred to one combined review after Tasks 7–9 (Andy: speed).
+- Live DB objects (read-only, service_role only): view `digest.personas_stats`, table `digest.member_photos` (empty until Task 10), RPCs `personas_library()`, `personas_sheet(p_id)`, `personas_cohort(p_stat)`, `personas_related(p_id)` — all exported to `db/`.
+- Resume: start dev server via launch config `digest-web` (Scorecard `.claude/launch.json`), dispatch Task 7 (library page), then 8 sheet, 9 cohort, 10 photos (Storage `member-photos`, multi-source — Andy wants FB/GroupOS before Airtable), 11 blurbs (Haiku), 12 states/light/docs, final review.
+- Parked: Andy's UPDATED home page design zip `~/Downloads/home page.zip` (hero carousel, Browse menu, poster cards, 14 rails) — apply only AFTER he has seen version one.
+- Deferred minors: companions match category-level asks only (detail-stat asks never surface); personas_cohort recomputes personas_library per call; focus weight cast unguarded.
