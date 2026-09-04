@@ -364,6 +364,8 @@ grant execute on function digest.personas_related(p_id text) to postgres;
 grant execute on function digest.personas_related(p_id text) to service_role;
 grant execute on function digest.personas_sheet(p_id text) to postgres;
 grant execute on function digest.personas_sheet(p_id text) to service_role;
+grant execute on function digest.personas_strong() to postgres;
+grant execute on function digest.personas_strong() to service_role;
 grant execute on function digest.place_city(p text) to postgres;
 grant execute on function digest.place_city(p text) to service_role;
 grant execute on function digest.profile_rank(at_fields jsonb, q tsquery) to postgres;
