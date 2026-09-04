@@ -100,6 +100,70 @@ is credentials and configuration, not code.
 
 ---
 
+### #3 · ♻️ A rejected partner mention is never removed — the table only grows · 🟠 S2
+
+**Story.** As MDS, we want `digest.fb_partner_mentions` to say what the CURRENT rules judge,
+so that a verdict written under an old prompt cannot keep showing on the admin tab and in the
+daily Slack card long after the scanner would reject it.
+
+**What happens now.** `partner_scan.py` finishes with
+`supa_upsert(env, "fb_partner_mentions", "ref_kind,ref_id,partner_id", rows)` — it only ever
+INSERTs or UPDATEs the rows it decided to write. A hit judged `not_about_partner` is skipped
+(`if not v or v.get("verdict") == "not_about_partner": continue`), so a row that a previous run
+wrote as `praise` simply stays. Same shape as the classifier's `--apply` only labelling NULLs:
+**a rule change does not reach what is already stored.**
+
+**Seen live 2026-09-03.** After the praise rule tightened (a sponsor listing is neutral, not
+praise), Anita Petrov's Summit post still carried **6 stale `praise` rows** quoting the same
+generic sentence. They were deleted by hand — that is the bug: it needed a human with SQL.
+
+**Acceptance criteria**
+1. Re-running the scan over a window makes that window's mentions match the current rules —
+   a verdict that flips to `not_about_partner` is **removed**, not left behind.
+2. Deletion is scoped to what the run actually re-judged. A run over `--days 3` must never
+   remove a mention from six months ago that it did not look at.
+3. Admin-visible data is not silently destroyed: state in the run output how many rows were
+   removed and why, the way skipped batches are now reported.
+4. Proven on the case that exposed it: re-run over Anita's post (`27084374081239403`) with the
+   praise rule in place and end with 5 neutral rows and no stale praise, with no hand-SQL.
+5. A backfill path exists for history, the way `relabel_archive.py` exists for post types —
+   because #3 is exactly the same lesson in a different table.
+
+---
+
+### #4 · 🎯 The partner judge is inconsistent inside a batch — "Hector Ai" disappears · 🟡 S3
+
+**Story.** As an admin searching Partner mentions, I want a partner that is plainly named in a
+post to appear, so that searching "Hector" returns the post that says "Hector: Integrate before
+31st August and get Hector MCP free for 1 month."
+
+**Where it stands.** Three real bugs were fixed on 2026-09-03 and this is what is left. The
+prefilter now FINDS it — `partners()` makes the AI suffix optional, so the catalog's "Hector Ai"
+matches the post's "Hector". Verified: that post produces 16 prefilter hits including Hector.
+But `judge()` returns `not_about_partner` for it **inside a batch**, while a dedicated call on
+the same post returns `neutral`. So the mention never reaches the table and the search stays
+empty.
+
+**Suspected cause, not yet proven.** In a batch the same 1,200-char post body is repeated once
+per partner, each entry differing only by its `(partner: X)` header. That is a confusing prompt:
+the model sees near-identical items and appears to answer about the post rather than about the
+named partner. Batch size is now 8 and `max_tokens` 4,000, so truncation is no longer the cause.
+
+**Acceptance criteria**
+1. The failure is REPRODUCED and measured first, not guessed — run the same hits batched and
+   unbatched and record how often the verdict differs. One trial is not evidence.
+2. "Hector Ai" on post `27084374081239403` is judged a mention (neutral is correct — it is an
+   offer listing, per #praise rules) and appears when searching "Hector" on `/admin/facebook`.
+3. Whatever changes, the sponsor-listing rule holds: an offer announcement stays **neutral**,
+   never praise (Andy 2026-09-03 — announcements stay in scope because their COMMENTS carry
+   real sentiment).
+4. No regression in noise: the 14-day scan stays near its current ~74 matches, and complaints
+   already found (TraceFuse, Quartile, Wayward, Veeqo, Sellerboard, eCom Triage, Activate
+   Talent) are still found.
+5. If the fix is "send one partner per call", the cost is stated plainly before shipping it.
+
+---
+
 ## CLOSED
 
 *(none yet — this board opened 2026-09-02)*
