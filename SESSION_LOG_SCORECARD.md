@@ -6,6 +6,54 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-04 — FB #3 CLOSED: partner mentions reconciled, not accumulated · the model was rewriting our ids
+
+**Opened on the handoff note** (#3 first), briefed, verified live (portal `37ddd39`, posts + content_items
+both at 2026-09-03 18:26Z, `Facebook_Group_Insights_9-03-2026.xlsx` landed unattended → **ext v1.13
+Insights fix is PROVEN**, reactions moved off Aug 31). Andy asked me to confirm the pick with the
+"Facebook scraper Chrome extension" session: #3 before #4 because #4's verification needs a re-run you
+can trust; #1 and #2 wait on Andy (Airtable links, Slack app). Andy's own question was the Hector search
+(screenshot: "hector" → 0 rows of 10) — that is #4, said so, order stays #3 then #4.
+
+**Shipped** (`partner_scan.py`, `load_feed.py` in `~/mds-scorecard-tools`, backups `*.bak-prereconcile`;
+spec `docs/superpowers/specs/2026-09-04-fb3-stale-partner-mentions-design.md`, plan beside it):
+- `reconcile()` — pure function: a stored row whose text this run re-read is deleted when re-judged
+  `not_about_partner` or when the name no longer matches any partner; failed-batch rows, rows missing
+  from a good reply, and out-of-catalog partners are never deleted, only counted. 8 unit tests.
+- `supa_delete()` — PostgREST DELETE with `return=representation`, so the count is what actually left.
+  Comment ids are base64: `=` must be percent-encoded or PostgREST reads it as filter syntax.
+- `texts()` pages (was capped at 2,000 posts / 10 comment pages) → `--days 30` is the backfill path.
+- Report line placed second-to-last so `auto_import.py`'s last-3-lines capture always logs it.
+
+**The mistake worth keeping.** First proof run: `removed 4 · left 15 unjudged` — Anita's 7 stale praise
+rows survived because the model never returned a verdict for them. Probe (Anita's 16 hits, two batches):
+the model echoed every id with the `post:` prefix dropped — `post:27084374081239403:655e…` came back as
+`27084374081239403:655e…`, **16 of 16 orphaned**, and `judge()` keyed its dict by the echoed id. Numbered
+items 1..N per batch and mapped back → 16/16 matched, second run `left 0 unjudged`. Yesterday's "Hector is
+judged not_about_partner inside a batch" was partly this: the verdict never landed at all. #4 premise
+corrected on the board.
+
+**Proof (AC 4).** Recreated the stale state with `partner_scan.py.bak-praiserule --days 5 --apply`
+(Anita: 5 neutral + 7 praise, table 60). New scanner `--days 5 --apply`: removed 8 (7 of them Anita's
+praise), Anita **0 praise** with no hand SQL, rows older than 5 days **27 → 27**. Neutral ended 2, not the
+AC's 5: with ids fixed the batched judge calls TikTok Shop / Receive / Xorosoft `not_about_partner` on
+that post (only Euka + CrediLinq neutral) — #4's variance, left to #4.
+
+**History pass (AC 5).** `--days 30 --apply`: 1,931 texts, 199 hits, wrote 129, removed 2, 0 unjudged.
+Table **53 (9 complaint · 38 neutral · 6 praise) → 129 (21 · 87 · 21)** — the scanner was born
+2026-08-31 with a 14-day window, so posts Aug 5–17 had never been read: 82 new mentions, 12 new
+complaints (Wayward ×2, Walmart ×4, ClickUp ×2, Melio, Sellerise, eCom Triage, Quartile). Andy's admin tab
+shows those now. Anita after the pass: 3 neutral, 0 praise. Hector rows: 0.
+
+**Docs.** `FB_PIPELINE.md` new section (reconcile + the id trap + backfill). Board: #3 → CLOSED with AC
+checklist, #4 premise note. ClickUp `2531q-100317` pages 7 + 9 are from June and know nothing about the
+mentions scanner or the admin tab — repo is canonical; not rewritten this session.
+
+**Next:** #4 (judge variance inside a batch), starting from the corrected baseline; and read the 16:25 CDT
+`PARTNERS:` line in `auto_import.log` — the first unattended run with reconcile.
+
+---
+
 ## 2026-09-03 (late) — Andy searched "Hector" in Partner mentions, found nothing: THREE bugs in partner_scan.py
 
 Anita Petrov's 31 Aug Summit-offers post names 16 catalog partners. It had recorded **zero** mentions.
