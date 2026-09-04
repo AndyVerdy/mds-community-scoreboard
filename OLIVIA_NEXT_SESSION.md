@@ -11,6 +11,16 @@
 
 # Olivia — next session
 
+## STATE 2026-09-04 (day) — ClickUp handbook copy REGENERATED from a live-verified handbook · no prod change
+**Prod `30fd7e6f` = staging `cefe0133`, gate 313/0 (run 12:40Z), lock free, 13 heartbeats green.** `OLIVIA_HANDBOOK.md` re-verified
+against n8n, Supabase, Meta, launchd, GitHub, Render (header says "last verified 2026-09-04") and ClickUp `2531q-103317` pages
+00–18 rewritten from it; page 00 carries the shipped-since-08-20 list, Andy's desk and the open tickets. `db/` re-exported
+(the 05:40 drift alarm = `partner_lookup_v2.web_pricing`). Story in `SESSION_LOG_OLIVIA.md` 2026-09-04.
+- `prod_pulse.py` reads 2 regressions against a STALE baseline (failed sends 0→3, `member_edges` fell with the nightly rebuild):
+  run `python3 scripts/prod_pulse.py --save-baseline` before the next tier.
+- Unfiled from this pass: the alarm's 69-min lag on the 2026-09-02 outage · no Accounting/Tax/Legal topics in the taxonomy ·
+  founder↔partner FB mention matching. Andy's desk unchanged (see the 00:20Z block below).
+
 ## STATE 2026-09-04 (00:20Z) — #159 CLOSED · #160 PROMOTED — prod `30fd7e6f` = staging `cefe0133`, gate green, lock free
 **Prod probe exec 131383: Shea's bookkeeping question → Prosperlytics first with site facts + pricing. Gate vector checks now ignore rows synced <30h (they wait for the nightly embed).** Earlier text of this block kept for the story:
 **PROD `d40a837d` untouched. Staging = prod + ONE Answer Seed edit (`scripts/olivia_loop/apply_160_partner_web.py`: the
