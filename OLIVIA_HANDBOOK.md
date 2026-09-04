@@ -209,13 +209,15 @@ Appendix C). The path, in order:
    fetch and may look again; `First-Fetch Retry?` forces a retrieval when the first round tried to
    answer without one. **`p_phone` is injected server-side in Answer Parse; the tool schemas
    deliberately have no phone parameter the model could set.** `Answer Tool` dispatches by name:
-   `event_schedule` and `event_who` (`op:'people'`) → the schedule route · `org_docs` → the kb
-   route · `member_intro` → the intro route · `find` → the finder route — all on `digest.mds.co`,
-   policy in git — and everything else → the Supabase RPC of the same name, where `Attach
-   Embedding`'s `EXEC_NAME` map swaps the model's v1 names for the live executions
-   (`content_search_v2`, `member_card_v2`, `member_match_v2`, `member_dossier_v2`,
-   `event_lookup_v3`, `event_history_v2`, `chat_recommendations_v3`, `multi_source_v2`,
-   `video_search_v2`, `partner_lookup_v2`).
+   **every `event_*` tool** (`event_schedule`, `event_who` with `op:'people'`, and — by the same
+   prefix match — `event_lookup` and `event_history`, which therefore never reach the catalog RPCs
+   from the loop: **#123**, open) → the schedule route · `org_docs` → the kb route · `member_intro`
+   → the intro route · `find` → the finder route — all on `digest.mds.co`, policy in git — and
+   everything else → the Supabase RPC of the same name, where `Attach Embedding`'s `EXEC_NAME` map
+   swaps the model's v1 names for the live executions (`content_search_v2`, `member_card_v2`,
+   `member_match_v2`, `member_dossier_v2`, `chat_recommendations_v3`, `multi_source_v2`,
+   `video_search_v2`, `partner_lookup_v2`; its `event_lookup_v3` / `event_history_v2` entries are
+   reached only by the plan lane's zeroth fetch).
 10. **Claims? → Fact Check → Gate Verdict** — a Haiku fact-gate compares the draft against the
     evidence actually retrieved this turn. Claim-free replies skip it. Unsupported claims trigger
     one regeneration; a second failure returns an honest "I could not verify this". A deterministic
@@ -571,8 +573,11 @@ resolves the asker itself. The main ones:
 | `member_intro` | "Connect me with …" — consent-first brokered intros. **A route** — `/api/olivia/intro` (§8.7) |
 | `org_docs` | The team's own written docs (FAQs, SOPs). **A route** — `/api/olivia/kb` (#18) |
 
-That is the model's view: **29 tool names** (Answer Seed, 2026-09-04). The executions behind ten of
-them are the `_v2`/`_v3` functions (`EXEC_NAME` map, §3 step 9); the model keeps the v1 names.
+That is the model's view: **29 tool names** (Answer Seed, 2026-09-04). The executions behind them
+are the `_v2`/`_v3` functions (`EXEC_NAME` map, §3 step 9); the model keeps the v1 names. ⚠️ The
+four `event_*` names all go to the schedule route by prefix match, so from the loop `event_lookup`
+and `event_history` answer from the `event` schema, never from the events catalog RPCs — **#123**
+(open; #144's wrong 2027-event answers wait on it).
 What the v2/v3 layer adds, beyond personalization (§7): **`link` on every named person** (#154 —
 `digest.member_link()` is the ONE definition of a member's link, 718 of 741 actives resolve),
 `event_lookup_v3` (`what_it_is`, `room`), `chat_recommendations_v3` (`why`, `strength_note`),
@@ -1059,6 +1064,7 @@ member-facing copy now names the reason when it IS billing (Answer Parse).
   OLIVIA_HANDBOOK.md                    ← you are here (the ClickUp doc 2531q-103317 mirrors it)
   OLIVIA_SPRINT_4.md                    ← the open board (opened 2026-08-19); OLIVIA_BACKLOG_ARCHIVE.md = closed tickets
   OLIVIA_NEXT_SESSION.md                ← the handoff: state, queue, Andy's desk
+  OLIVIA_KNOWN_ISSUES.md                ← the standing known-issues list: the architecture program, open defects, unfiled findings (ClickUp page 19)
   SESSION_LOG_OLIVIA.md                 ← day-by-day history (append-only); SESSION_LOG.md = the cross-project index
   OLIVIA_SHAREABLE_FIELDS.md            ← the privacy rulebook (see §11)
   OLIVIA_EVAL_<date>.md                 ← the nightly eval report; OLIVIA_MODEL_COMPARE_2026-09-02.md = the #156 bench
@@ -1669,7 +1675,7 @@ identical graph on the other webhook path). Grouped by role:
 | **Routing** | `Touch Olivia Stats`, `Route Request` (Haiku), `Fetch Chat Links`, `Plan Request` | `Plan Request` is the deterministic brain: ~40 overrides that outrank the router. |
 | **Retrieval** | `Embed Query` (Voyage) → `Fetch Summaries` → `Fetch Raw Matches` → `Verbatim?` | The "zeroth fetch", preloaded as guaranteed evidence. Both fetch nodes map `content_search` → `content_search_v2` at the last inch. |
 | **Canned lanes** | `Build Verbatim Digest` | Greeting, help, chats, opt-in/out, reset, ticket offer/create, contact refusal, verbatim digests — **no model call at all**. |
-| **The loop** | `Answer Seed` → `Answer Claude` → `Answer Parse` → `Answer Done?` → `First-Fetch Retry?` → (`Voyage Embed` → `Attach Embedding` → `Answer Tool` → `Answer Merge` → back) | Max 5 rounds, 29 tools, `max_tokens` 2000, thinking off. `Answer Parse` injects `p_phone` and names the reason when a failure IS billing; `First-Fetch Retry?` forces a retrieval when the first round answered without one (`retry_same`); `Attach Embedding` swaps the execution name to v2/v3 (`EXEC_NAME`). **`Answer Tool` dispatches by name:** `event_schedule` + `event_who` → the schedule route, `org_docs` → kb, `member_intro` → intro, `find` → find — all on digest.mds.co, policy in git — everything else → the Supabase RPC of the same name. |
+| **The loop** | `Answer Seed` → `Answer Claude` → `Answer Parse` → `Answer Done?` → `First-Fetch Retry?` → (`Voyage Embed` → `Attach Embedding` → `Answer Tool` → `Answer Merge` → back) | Max 5 rounds, 29 tools, `max_tokens` 2000, thinking off. `Answer Parse` injects `p_phone` and names the reason when a failure IS billing; `First-Fetch Retry?` forces a retrieval when the first round answered without one (`retry_same`); `Attach Embedding` swaps the execution name to v2/v3 (`EXEC_NAME`). **`Answer Tool` dispatches by name:** every `event_*` name (prefix match — `event_schedule`, `event_who`, and also `event_lookup` / `event_history`, which never reach the catalog RPCs from the loop: #123) → the schedule route, `org_docs` → kb, `member_intro` → intro, `find` → find — all on digest.mds.co, policy in git — everything else → the Supabase RPC of the same name. |
 | **Fact gate** | `Claims?` → `Fact Check` (Haiku) → `Gate Verdict` → `Gate OK?` | Claim-free replies, short affirmatives and clarifying questions skip it (RULE ZERO). One regeneration allowed, then an honest refusal; `off_topic` is a non-filterable verdict (#104). Deterministic link gate + post-filters run inside `Gate Verdict`; its clamp was audited over 6,017 answers before being softened (#149). |
 | **Delivery** | `Format Reply` → `Billing Nudge` → `Apply Nudge` → `Eval (silent)?` → `Send Reply (Meta)` → `Followup Interactive?` → `Send Followup Interactive (Meta)` | The eval branch skips Meta entirely. `Format Reply` converts markdown to WhatsApp formatting, extracts `[SEND_IMAGE:]` / `[SEND_FILE:]` markers, strips dangling orphan links and prepares `followup_interactive` (buttons or the list picker that could not ride a >1024-char body, #107). |
 | **Persistence** | `Save Conversation`, `Mark Welcomed`, `Set Olivia Opt-State` | Both turns saved with plan + member stamp (gap #110: intro-tap turns). |
