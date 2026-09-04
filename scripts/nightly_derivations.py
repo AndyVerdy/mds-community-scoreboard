@@ -22,6 +22,11 @@ JOBS = [
     ("derive_niches",        [f"{REPO}/scripts/olivia_derive_niches.py"]),
     ("label_questions",      [f"{REPO}/scripts/olivia_label_questions.py"]),
     ("sync_chapter_pages",   [f"{REPO}/scripts/sync_chapter_pages.py"]),
+    # #161: nightly photo cache (GroupOS avatar -> Airtable attachment -> nothing/initials).
+    # No --groupos-roster here: that dump only exists inside a Claude session (same reason
+    # partners_weekly_check.py's dump is a separate manual step), so the nightly run is
+    # Airtable-only; a session refreshes the GroupOS roster and re-runs with it periodically.
+    ("cache_member_photos",  [f"{REPO}/scripts/cache_member_photos.py"]),
     ("embed_member_profiles", [f"{REPO}/scripts/embed_member_profiles.py"]),
     # #40: content-corpus embeddings are a PROCESS, not a hand-run event (script skips
     # sub-30-char noise rows by design; lives in mds-scorecard-tools, reads its own env)
