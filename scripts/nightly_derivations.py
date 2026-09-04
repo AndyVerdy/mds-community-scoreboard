@@ -41,6 +41,10 @@ JOBS = [
     # #50: entity dossiers (video/partner/event/chapter) — after graph_ledger so event/chapter
     # profiles read tonight's fresh member_expertise rows
     ("entity_dossiers",      [f"{REPO}/scripts/olivia_entity_dossiers_nightly.py"]),
+    # #161: card blurb (2-3 warm sentences) for every active member whose persona has a summary
+    # and no blurb yet, or a blurb older than the persona's own built_at. personas_sheet() falls
+    # back to the summary's own first sentences while blurb is missing.
+    ("persona_blurbs",       [f"{REPO}/scripts/persona_blurbs.py"]),
 ]
 
 
