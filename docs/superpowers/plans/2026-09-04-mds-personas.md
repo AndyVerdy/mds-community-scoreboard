@@ -233,6 +233,12 @@ describe("presentation helpers", () => {
     expect(blurbFallback(s, 100)).toBe("Mo is a lean operator in Ottawa. He sells six products across Amazon US, Canada and EU.");
     expect(blurbFallback(null)).toBe("");
   });
+  it("blurb fallback never exceeds the cap, even without punctuation", () => {
+    const run = "No punctuation here at all just words ".repeat(6);
+    expect(blurbFallback(run, 100).length).toBeLessThanOrEqual(100);
+    expect(blurbFallback(run, 100)).toMatch(/…$/);
+    expect(blurbFallback("a".repeat(150) + " " + "b".repeat(60), 100).length).toBeLessThanOrEqual(100);
+  });
   it("signals text drops the multiplier and reads plainly", () => {
     expect(signalsText({ comments: 2.47, band_multiplier: 1.3, persona_asks_hits: 2, biz_affinity: true }))
       .toBe("comments 2.47 · persona asks hits 2 · biz affinity");
@@ -285,6 +291,7 @@ export function blurbFallback(summary: string | null, max = 430): string {
   const parts = summary.match(/[^.!?]+[.!?]+(\s|$)/g) ?? [summary];
   let out = "";
   for (const p of parts) { if (out && (out + p).length > max) break; out += p; }
+  if (out.length > max) out = out.slice(0, max - 1).replace(/\s+\S*$/, "") + "…";   // one over-long first sentence, or no punctuation at all
   return out.trim();
 }
 export function signalsText(evidence: Record<string, unknown> | null): string {
