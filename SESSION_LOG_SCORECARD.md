@@ -6,6 +6,31 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-03 (late) — Andy searched "Hector" in Partner mentions, found nothing: THREE bugs in partner_scan.py
+
+Anita Petrov's 31 Aug Summit-offers post names 16 catalog partners. It had recorded **zero** mentions.
+
+1. **ID COLLISION.** `judge()` keys its verdict dict by `id`, and the id was `kind:ref` — so 16 hits on
+   one post all shared `post:27084374081239403`. Fifteen verdicts were overwritten by the sixteenth and
+   the whole post took one answer. Now `kind:ref:partner_id`.
+2. **ONLY THE FULL CATALOG NAME MATCHED.** The catalog says "Hector Ai"; the post says "Hector:".
+   The AI suffix is now optional. Deliberately narrow — stripping the other generic suffixes
+   (Systems / Media / Solutions / Consultants) leaves ordinary words behind and took 14-day matches
+   from 75 to 135, with "Seller" (Seller Systems) hitting 24 times and "First" (First Media) 22.
+3. **WHOLE BATCHES SILENTLY DROPPED.** `max_tokens: 2000` could not hold 12 verdicts each carrying a
+   200-char quote; the JSON came back cut mid-string, the parse AND its retry failed, and the batch was
+   skipped with only a console warning. Two of seven batches died that way on one run. Now
+   max_tokens 4000, batch 8, and a skipped batch prints a loud "these mentions are MISSING, not
+   absent" line with the count.
+
+**Result:** that post went 0 to 11 mentions; the 14-day scan went 25 to 42.
+
+**Still open, a judgement call not a bug:** Hector is now FOUND by the prefilter but the model keeps
+judging it not_about_partner inside a batch (a dedicated call says neutral), so it does not stick.
+More importantly that post is an MDS ADMIN announcement of partner offers, and its 11 rows are all
+"praise" quoting the same generic sentence — that is not member sentiment and it inflates partner
+praise. Recommend excluding admin announcement posts from partner sentiment. Andy's call.
+
 ## 2026-09-03 — FB admin tab becomes editable: nested drill-downs, type + answered write to the DB
 
 **Andy, five asks in one go**, all shipped (`12a9de3` + `980d454`):
