@@ -6,6 +6,41 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-04 (pm) — FB #4 CLOSED: the judge reads each text once · Hector is searchable
+
+**Andy's own question was Hector** ("hector" → 0 rows on the admin tab). Go given after #3 closed.
+
+**Measured before touching anything** (`partner_judge_bench.py`, new, read-only; 43 hits over 5 days,
+2–3 trials per shape): the old shape — 8 MENTIONS per call, so Anita's post appeared 8 times with only
+`(partner: X)` changing — judged 14 of her 16 partners `not_about_partner` in BOTH trials (43/43
+identical: wrong, and consistently wrong, not variance). One mention per call: 43 calls, 41/43 stable,
+Hector flipped. One text per call with its partners listed: 16/16 neutral, Hector neutral, 43/43 stable,
+23 calls. Up to 8 texts per call, each with its partner list: 16/16 neutral, Hector neutral, 42/43
+stable, **3 calls**. `temperature` is deprecated for `claude-sonnet-5` — the API rejects it — so it was
+never a lever (the first bench run wasted 10 calls learning that).
+
+**Shipped** (`partner_scan.py`, backup `.bak-pregrouped`; 18 unit tests): `group_hits()` /
+`chunk_groups()` / `grouped_listing()` / `judge(chunk)`, `TEXTS_PER_CALL = 8`. Then the 14-day dry run
+lost two baseline complaints (Sellerboard, Activate Talent); a probe showed Activate Talent 3/3
+complaint and Sellerboard 2/3 under the new shape and 1/2 under the old — borderline text, same
+variance either way. So **`settle()`**: a verdict that changes a stored row needs a second independent
+call to agree, else the stored verdict stands; printed as `🔁 N changed verdicts re-checked`.
+
+**Proof.** `--days 14 --apply`: 73 hits (ticket said ~74), 61 written, 0 removed, 0 unjudged, 1 change
+confirmed. SQL: **`Hector Ai · neutral` on `27084374081239403`** (found_at 19:52Z) — searchable on
+`/admin/facebook`, no deploy. Anita's post 16/16 neutral. Complaints in the window 8 of 9 kept;
+**Sellerboard re-judged neutral by two calls** ("beta… limited… but it's a start. I hate that I pay for
+both") — Andy's call, left as the model judged it. Table 129 → 144 (complaint 21 → 20, neutral 87 → 103).
+
+**Found alongside, flagged:** `partners_catalog` has two published "Prosperlytics Consultants" and two
+"Riverbend Consulting" rows — Anita's post carries each twice. Olivia stream owns the catalog.
+
+**Docs:** board #4 → CLOSED with the bench table; `FB_PIPELINE.md` judge paragraph; spec + plan in
+`docs/superpowers/`. **Next:** read the 16:25 CDT `PARTNERS:` line (first unattended run with reconcile
++ grouped judge); then #1 / #2 wait on Andy (Airtable links, Slack app).
+
+---
+
 ## 2026-09-04 — FB #3 CLOSED: partner mentions reconciled, not accumulated · the model was rewriting our ids
 
 **Opened on the handoff note** (#3 first), briefed, verified live (portal `37ddd39`, posts + content_items
