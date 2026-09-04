@@ -94,6 +94,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#159** | 🕳️ Partners and events go dark in meaning search — 75 partners without a vector (35% of reviews, 48% of claims), the weekly delta missed 28 of 142 changed partners (Prosperlytics 5.0★ never shown for "bookkeeping") | 🔴 S1 | S | n/a (data + scripts) | ✅ **CLOSED 2026-09-03** — 75 partners + 36 events re-embedded (dark 0/0), nightly `embed_catalogs` + weekly re-embed, gate +2 checks (313/0), `partner_lookup_v2("bookkeeping accounting")` → Prosperlytics #1 |
 | **#160** | 🌐 Partner web profiles — crawl every partner site (services · pricing · people · proof) so Millie knows what a partner does and who runs it; founder ↔ partner link (Mudit Jain → Prosperlytics) | 🟡 S2 | M | ✅ staging `cefe0133` — probes: cost + who-runs-it answered from the site | ✅ **PROMOTED 2026-09-04 00:17Z (Andy: "promote") — prod `30fd7e6f`**, gate green in-promote, prod probe exec 131383: Shea's question → Prosperlytics 5.0★ first with site facts + pricing; 506 profiles, 1,173 people, 52 speakers linked, web text in the partner vectors |
 | **#161** | 🎴 MDS Personas — staff library of members (library · character sheet · cohort) on the persona + 51-stat ledger, Claude Design handoff received 2026-09-04 | 🟡 S2 | L | design + spec | 📝 spec written 2026-09-04 (`docs/superpowers/specs/2026-09-04-mds-personas-design.md`) |
+| **#163** | 🔢 Personas scoring review — what each number means (level · stat value · today/peak · rank), cohort floor 60 hides the tail, "peak floor applied", asks = gives overlap. Andy 2026-09-04: "the worst performer in each category never goes below 60" | 🟡 S2 | M | filed | 📝 filed 2026-09-04 (Andy: "file it, we will check these things later, the whole scoring system") — after #161 ships |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -404,6 +405,23 @@ Prosperlytics · handbook line corrected · SKILL.md of the scheduled task updat
 
 **Results 2026-09-03 (CLOSED, no promote needed — data + scripts only):** backfill `scripts/embed_partners_events.py` (moved from `~/mds-scorecard-tools`): partners 75 + events 36 embedded, dark 0/0 (SQL). Nightly `embed_catalogs` step in `nightly_derivations.py` (heartbeat seeded, max 26h). `partners_weekly_check.py --apply` re-embeds NEW/CHANGED in the same pass and fails loud. Gate +2 checks (partners/events without vector = 0; the gate's own `redteamevt_*` fixtures excluded) → 313 PASS · 0 FAIL · EXIT 0. Scheduled task SKILL.md: page until `has_more=false`, `with_total` check, window = last success − 3 days, the two records that break the listing endpoint named with the `partners_get` workaround. Handbook §B line corrected. **Proof through the RPC:** `partner_lookup_v2('bookkeeping accounting')` with a real Voyage query vector → Prosperlytics #1 (rank 0.0323); before: absent from the top 8 (staging exec 131231). Staging re-ask names Mudit/Prosperlytics first.
 **AC checklist:** dark 0/0 ✅ · nightly step ✅ · weekly re-embed ✅ · paging + total ✅ (instructions; first real run = next Sunday) · gate check ✅ · Shea's question lists Prosperlytics ✅ · handbook ✅ · SKILL.md ✅. **Before/after:** dark partners 75 → 0 · events 36 → 0 · Prosperlytics rank for "bookkeeping accounting": absent → #1.
+
+### #163 · Personas scoring review — what each number means, and why nobody looks below 60
+
+**Story.** As MDS staff reading a member's Personas sheet or a "Strong in X" page, I want every number to mean one clear thing, so that I trust what I see and can explain it to a member. Andy, 2026-09-04, while reviewing #161: "we need to clarify what each number means" and "the worst performer in each category never goes below 60 — file it, we will check these things later, the whole scoring system".
+
+**What we already know (2026-09-04).**
+- The cohort page ("Strong in X") lists ONLY members at value ≥ 60 by design (spec: cohort = strong), sorted desc — so the last card on any cohort page is always ≥ 60. The full distribution lives in `digest.personas_stats` (`value` = community percentile 0–100 from `member_expertise.pct`) and the sheet shows the low values too (e.g. Listing optimization 11/28, Walmart 6/15).
+- Two numbers on a stat-rail card: top-right = the member's LEVEL (mean of top-3 categories), bottom-left = the RAIL'S stat value. Same gold style, no label — confusing.
+- Sheet numbers: `today/peak` per stat, badge (at peak · holding · fading = today vs 85% of peak), "Rank #n in the community" (rank_in_topic), level badge on the portrait, similar % = cosine over 18 category values.
+- Browse-menu counts (v2 home, 2026-09-04): members ≥ 60 per category = 209 AI · 270 Logistics · 265 DTC · 243 Sourcing · 225 PPC of 760 — because `value` is a percentile among scored members, "strong" (≥ 60) is simply the top ~40% of whoever has any signal. A category with 675 scored members has ~270 "strong" members. Decide whether strong should be an absolute evidence bar instead.
+- Ledger oddities to look at: evidence "peak floor applied" (peak_score floor for thin evidence); a member can be both ask and give on the same topic (Mo Kuhail: Amazon FBA); values are percentiles, so a category with few scored members still spreads 0–100.
+
+**Acceptance.**
+1. One page (in `OLIVIA_HANDBOOK.md` or a `PERSONAS_NUMBERS.md`) defining each number in one sentence, with the SQL that produces it; the in-app "?" help on the sheet uses the same words.
+2. Stat-rail cards label the two numbers (or drop one) — no unlabeled gold numbers.
+3. A distribution report per category: members with signal, min / median / p90 / max of `value`, count ≥ 60 — reviewed with Andy; decision on the cohort floor (60 vs top-N vs show-all-with-signal).
+4. Any change to the scoring itself (percentile method, peak floor, decay) is its own ticket with before/after on the eval bank.
 
 ### #160 · Partner web profiles — crawl every partner's site so Millie knows what they do, what it costs and who runs it
 **🟡 S2 · size M — filed 2026-09-03 (Andy: "lets fix partners and run agents to browse partners' website … use a cheap model, Sonnet").**
