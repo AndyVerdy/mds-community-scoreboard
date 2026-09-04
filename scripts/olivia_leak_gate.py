@@ -822,15 +822,19 @@ def main():
         # #159: a catalog row without a vector is invisible to the meaning-search lane (RRF gives it one
         # list instead of two). The *_embed_invalidate triggers null vectors on edit; the nightly
         # embed_catalogs step + partners_weekly_check rebuild them. 75 partners were dark on 2026-09-03.
+        # A row synced in the last 30h may legitimately wait for tonight's embed_catalogs pass
+        # (the events mirror inserts NEW rows without a vector); older dark rows are the defect.
+        import datetime as _dt
+        fresh = (_dt.datetime.now(_dt.timezone.utc) - _dt.timedelta(hours=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
         st, dark = curl("GET", f"{BASE}/partners_catalog?select=partner_id&status=eq.published"
-                                "&access_restriction=eq.public&embedding=is.null&limit=5", key,
+                                f"&access_restriction=eq.public&embedding=is.null&synced_at=lt.{fresh}&limit=5", key,
                         profile_hdr=["Accept-Profile: digest"])
         check("published partners without a vector = 0 (#159)",
               st == 200 and isinstance(dark, list) and not dark,
               f"status {st}, dark: {[d.get('partner_id') for d in dark][:5] if isinstance(dark, list) else dark}")
         # the gate's own red-team fixtures (redteamevt_*) are inserted without a vector — not catalog rows
         st, dark = curl("GET", f"{BASE}/events_catalog?select=at_record_id&embedding=is.null"
-                                "&at_record_id=not.like.redteam*&limit=5", key,
+                                f"&at_record_id=not.like.redteam*&synced_at=lt.{fresh}&limit=5", key,
                         profile_hdr=["Accept-Profile: digest"])
         check("events without a vector = 0 (#159)",
               st == 200 and isinstance(dark, list) and not dark,

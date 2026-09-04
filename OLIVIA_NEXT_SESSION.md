@@ -11,7 +11,8 @@
 
 # Olivia — next session
 
-## STATE 2026-09-03 (evening) — #159 CLOSED (vectors) · #160 BUILT, staging `cefe0133` READY FOR PROMOTE (Andy)
+## STATE 2026-09-04 (00:20Z) — #159 CLOSED · #160 PROMOTED — prod `30fd7e6f` = staging `cefe0133`, gate green, lock free
+**Prod probe exec 131383: Shea's bookkeeping question → Prosperlytics first with site facts + pricing. Gate vector checks now ignore rows synced <30h (they wait for the nightly embed).** Earlier text of this block kept for the story:
 **PROD `d40a837d` untouched. Staging = prod + ONE Answer Seed edit (`scripts/olivia_loop/apply_160_partner_web.py`: the
 partner_lookup tool description names `web_summary / web_people / web_pricing` as partner-stated). Gate 313 PASS · 0 FAIL · EXIT 0.
 Lock released at close.** Story in `SESSION_LOG_OLIVIA.md` 2026-09-03 (evening); board close blocks #159 / #160.
@@ -32,7 +33,7 @@ load web profiles for NEW/CHANGED partners (`OLIVIA_PARTNER_WEB_EXTRACT.md` is t
 with "re-embedded".
 
 ### ANDY'S DESK
-1. Promote staging `cefe0133` (#160 description). 2. Two Prosperlytics rows in the directory (5-review `651f9c…` vs `6763ad…`) —
+1. ~~Promote~~ done 2026-09-04 00:17Z. 2. Two Prosperlytics rows in the directory (5-review `651f9c…` vs `6763ad…`) —
 directory hygiene. 3. Eight partner links land on Typeform/Airtable/Calendly pages, not the partner (New Amazon Account, VAA
 Philippines, Amazon Buy with Prime, Graphic Rhythm …) — fix in GroupOS. 4. Not filed yet, your call: founder↔partner mention
 matching (22 "Mudit" FB comments never reach Prosperlytics; `fb_partner_mentions` matches on the partner name only) and FB/WA
