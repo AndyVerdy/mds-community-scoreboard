@@ -358,6 +358,8 @@ grant execute on function digest.persona_signals(p_at_member_id text) to postgre
 grant execute on function digest.persona_signals(p_at_member_id text) to service_role;
 grant execute on function digest.personas_cohort(p_stat text) to postgres;
 grant execute on function digest.personas_cohort(p_stat text) to service_role;
+grant execute on function digest.personas_fading() to postgres;
+grant execute on function digest.personas_fading() to service_role;
 grant execute on function digest.personas_library() to postgres;
 grant execute on function digest.personas_library() to service_role;
 grant execute on function digest.personas_related(p_id text) to postgres;
