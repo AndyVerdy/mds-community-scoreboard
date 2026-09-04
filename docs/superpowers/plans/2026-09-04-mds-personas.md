@@ -295,13 +295,13 @@ export function signalsText(evidence: Record<string, unknown> | null): string {
     .join(" · ");
 }
 export function statKey(topic: string): string {
-  return topic.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").replace(/-and-/g, "-");
+  return topic.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 export function topTwo(categories: { name: string; value: number }[]) {
   return [...categories].sort((a, b) => b.value - a.value).slice(0, 2);
 }
 ```
-(`statKey("Amazon FBA")` → `amazon-fba`; `"AWD / Amazon warehousing"` → `awd-amazon-warehousing`; `"Exits & M&A"` → `exits-m-a`. The cohort route uses this key; the SQL side receives the display name, so `data.ts` keeps a key→name map from the taxonomy.)
+(`statKey("Amazon FBA")` → `amazon-fba`; `"AWD / Amazon warehousing"` → `awd-amazon-warehousing`; `"AI & Automation"` → `ai-automation`; `"Exits & M&A"` → `exits-m-a`. The cohort route uses this key; the SQL side receives the display name, so `data.ts` resolves key→name through the taxonomy.)
 
 - [ ] **Step 4: Run, expect pass** — `npx vitest run src/lib/personas/model.test.ts` → all passed.
 
@@ -353,7 +353,7 @@ language sql stable security definer set search_path = digest, pg_temp as $$
     select s.at_member_id, s.topic, s.value, s.badge from digest.personas_stats s where s.parent is null
   ), lvl as (
     select at_member_id,
-           round(avg(value)) filter (where rn <= 3)::int as level,
+           round(avg(value) filter (where rn <= 3))::int as level,
            count(*) filter (where badge = 'peak' and value >= 50)::int as at_peak_count
     from (select c.*, row_number() over (partition by at_member_id order by value desc) rn from cat c) x
     group by at_member_id
@@ -365,10 +365,10 @@ language sql stable security definer set search_path = digest, pg_temp as $$
     select m.at_member_id, max(coalesce(m.msgs_30d,0))::int as msgs30 from digest.members m group by m.at_member_id
   )
   select a.at_member_id, a.full_name, a.status,
-         concat_ws(', ', at.city, case when coalesce(at.country,'') in ('United States','US','USA','') then at.state else at.country end),
+         concat_ws(', ', ma.city, case when coalesce(ma.country,'') in ('United States','US','USA','') then ma.state else ma.country end),
          a.join_date, coalesce(l.level,0), coalesce(t.top,'[]'::jsonb), ph.public_url, coalesce(ch.msgs30,0), coalesce(l.at_peak_count,0)
   from act a
-  left join digest.member_attributes at on at.at_member_id = a.at_member_id
+  left join digest.member_attributes ma on ma.at_member_id = a.at_member_id
   left join lvl l on l.at_member_id = a.at_member_id
   left join top2 t on t.at_member_id = a.at_member_id
   left join chats ch on ch.at_member_id = a.at_member_id
@@ -432,14 +432,14 @@ create or replace function digest.personas_sheet(p_id text)
 returns jsonb language sql stable security definer set search_path = digest, pg_temp as $$
   select jsonb_build_object(
     'member', (select to_jsonb(l) || jsonb_build_object(
-                 'niche', at.main_niche, 'channels', coalesce(to_jsonb(at.channel_mix),'[]'::jsonb), 'since', at.started_year, 'title', at.title,
+                 'niche', ma.main_niche, 'channels', coalesce(to_jsonb(ma.channel_mix),'[]'::jsonb), 'since', ma.started_year, 'title', ma.title,
                  'summary', mp.persona->>'summary', 'blurb', mp.persona->>'blurb',
                  'focus', coalesce((select jsonb_agg(f->>'item' order by (f->>'weight')::numeric desc nulls last) from jsonb_array_elements(coalesce(mp.persona->'focus','[]'::jsonb)) f), '[]'::jsonb),
                  'gives_text', coalesce((select jsonb_agg(g->>'item') from jsonb_array_elements(coalesce(mp.persona->'gives','[]'::jsonb)) g), '[]'::jsonb),
                  'asks_text', coalesce((select jsonb_agg(g->>'item') from jsonb_array_elements(coalesce(mp.persona->'asks','[]'::jsonb)) g), '[]'::jsonb),
                  'pattern', mp.persona->'engagement'->>'pattern')
                from digest.personas_library() l
-               left join digest.member_attributes at on at.at_member_id = l.id
+               left join digest.member_attributes ma on ma.at_member_id = l.id
                left join digest.member_personas mp on mp.at_member_id = l.id
                where l.id = p_id),
     'stats', coalesce((select jsonb_agg(to_jsonb(s) - 'at_member_id' order by s.parent nulls first, s.value desc) from digest.personas_stats s where s.at_member_id = p_id), '[]'::jsonb),
@@ -508,7 +508,7 @@ export function keyToTopic(key: string): string | null;          // "amazon-fba"
 export async function getLibrary(): Promise<MemberCard[]>;      // cached 60 s in module scope
 export async function getSheet(id: string): Promise<MemberSheet | null>;
 export async function getCohort(topic: string): Promise<{ card: MemberCard; value: number }[]>;
-export async function getRelated(id: string): Promise<{ similar: RelatedRow[]; companions: RelatedRow[] }>;
+export async function getRelated(id: string, first: string): Promise<{ similar: RelatedRow[]; companions: RelatedRow[] }>; // first = the member's first name, for the companion reason
 export type RelatedRow = { id: string; name: string; city: string; level: number; photoUrl: string | null; reason: string };
 ```
 
@@ -772,7 +772,7 @@ def test_groupos_roster_rows_become_candidates():
 - [ ] **Step 2: Run, expect failure.** `cd /Users/Born/Scorecard && python3 -m pytest scripts/tests/test_cache_member_photos.py -q`
 
 - [ ] **Step 3: Implement** `scripts/cache_member_photos.py` (stdlib + curl + `sips`, same env loader as `scripts/embed_partners_events.py`):
-  - `candidate_urls(fields)`: attachments (`Picture URL`, `Headshots`, `Photo` when attachment) via `best_attachment` (largest of `thumbnails.large` / `url` with width ≥ 120), then text/list fields (`Photo`) via `re.findall(r"https?://[^'\"\]\s,]+", str(v))`; skip `Facebook Photo` (40 px).
+  - `candidate_urls(fields)`: attachments (`Picture URL`, `Headshots`, `Photo` when attachment) via `best_attachment(attachments)` — prefer `thumbnails.large.url` when its width ≥ 120, else the original `url` when its width ≥ 120, else `None`; then text/list fields (`Photo`) via `re.findall(r"https?://[^'\"\]\s,]+", str(v))`; never `Facebook Photo` (40 px thumbnails).
   - `groupos_candidates(rows, email_to_member)`: optional `--groupos-roster roster.json` (the weekly GroupOS task dumps `members_list` items) → S3 URL `https://mds-community.s3.amazonaws.com/` + `avatar_url`; resolved to `at_member_id` by email through `digest.resolve_member_by_email` (call the RPC per email, cache).
   - Main: for each active member (statuses above) without a `member_photos` row younger than 30 days: try GroupOS candidate first (if roster given), then Airtable (`GET https://api.airtable.com/v0/appou5JVr0WIrioWS/tblfwOSROSHfuYUxv/{rec}` with `AIRTABLE_PAT`, 0.25 s apart); download; `sips -s format jpeg -s formatOptions 72 -Z 320`; upload with `curl -X POST "$SUPABASE_URL/storage/v1/object/member-photos/<rec>.jpg" -H "Authorization: Bearer <SUPABASE_SECRET_KEY>" -H "Content-Type: image/jpeg" -H "x-upsert: true" --data-binary @file`; upsert the row (`source` = field name or `groupos`, `width`); stamp `olivia_job_heartbeats` `cache_member_photos` ok/error with counts (same `heartbeat()` shape as `partners_weekly_check.py`).
   - `--dry-run` prints the plan; `--limit N` for tests.
