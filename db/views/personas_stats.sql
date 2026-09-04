@@ -5,7 +5,7 @@ create or replace view digest.personas_stats as
     t.parent,
     round(COALESCE(e.pct, 0::numeric) * 100::numeric)::integer AS value,
         CASE
-            WHEN e.score > 0::numeric AND e.peak_score > e.score THEN LEAST(100::numeric, round(COALESCE(e.pct, 0::numeric) * 100::numeric * e.peak_score / e.score))::integer
+            WHEN e.score > 0::numeric AND e.peak_score > e.score THEN LEAST(100::numeric, round(round(COALESCE(e.pct, 0::numeric) * 100::numeric) * e.peak_score / e.score))::integer
             ELSE round(COALESCE(e.pct, 0::numeric) * 100::numeric)::integer
         END AS peak,
         CASE
