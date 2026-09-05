@@ -95,6 +95,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#160** | 🌐 Partner web profiles — crawl every partner site (services · pricing · people · proof) so Millie knows what a partner does and who runs it; founder ↔ partner link (Mudit Jain → Prosperlytics) | 🟡 S2 | M | ✅ staging `cefe0133` — probes: cost + who-runs-it answered from the site | ✅ **PROMOTED 2026-09-04 00:17Z (Andy: "promote") — prod `30fd7e6f`**, gate green in-promote, prod probe exec 131383: Shea's question → Prosperlytics 5.0★ first with site facts + pricing; 506 profiles, 1,173 people, 52 speakers linked, web text in the partner vectors |
 | **#161** | 🎴 MDS Personas — staff library of members (library v2 · character sheet · cohort) on the persona + 51-stat ledger, Claude Design handoffs v1 + v2 | 🟡 S2 | L | ✅ built + reviewed LOCALLY | ✅ **SHIPPED 2026-09-04 (Andy: "lets promote personas")** — merged to `main` in both repos, Render deploy `e212bcf` — 3 screens live on `localhost:3000/personas`, 7 read-only RPCs, 639/760 portraits in Storage, 758/758 blurbs, gate 323/0, 359 tests, `npm run build` exit 0; 13 tasks + 5 feedback rounds + final review wave on `personas-20260904` (both repos); merge to main = Render deploy |
 | **#163** | 🔢 Personas scoring review — what each number means (level · stat value · today/peak · rank), cohort floor 60 hides the tail, "peak floor applied", asks = gives overlap. Andy 2026-09-04: "the worst performer in each category never goes below 60" | 🟡 S2 | M | filed | 📝 filed 2026-09-04 (Andy: "file it, we will check these things later, the whole scoring system") — after #161 ships |
+| **#164** | 🎨 Admin storefront + seven self-contained tools — split the shared nav bar into a launcher plus per-tool navigation, merge the three WhatsApp pages into one tabbed tool (design handoff `~/Downloads/design_handoff_mds_admin/`) | 🟡 S2 | L | n/a (web — Render, no staging tier) | 📝 filed 2026-09-05 (Andy: "i also want to redesign our digest portal") — owned by the `Digest Redesign` session |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -447,6 +448,46 @@ Prosperlytics · handbook line corrected · SKILL.md of the scheduled task updat
 2. Stat-rail cards label the two numbers (or drop one) — no unlabeled gold numbers.
 3. A distribution report per category: members with signal, min / median / p90 / max of `value`, count ≥ 60 — reviewed with Andy; decision on the cohort floor (60 vs top-N vs show-all-with-signal).
 4. Any change to the scoring itself (percentile method, peak floor, decay) is its own ticket with before/after on the eval bank.
+
+### #164 · Admin storefront + seven self-contained tools
+
+**🟡 S2 · size L — filed 2026-09-05 (Andy: "i also want to redesign our digest portal").**
+**Owned by the `Digest Redesign` session, repo `mds-digest-web`.** The #163 session does not touch it.
+
+**Story.** As an MDS admin landing on the admin surface, I want a storefront listing every tool and
+letting me find the one that answers my question, and I want each tool to own its own navigation and
+its own help, so that the surface teaches itself instead of making me hunt a shared nav bar I did not
+build.
+
+**Origin.** Design handoff `Admin tools storefront design.zip`, unzipped to
+`~/Downloads/design_handoff_mds_admin/`. Seven high-fidelity HTML design references plus one brief per
+screen. The references are prototypes, not production code — the job is to rebuild them in
+mds-digest-web's own primitives, not to port inline styles.
+
+**Scope.** Seven screens in the handoff's build order: Admin Storefront · tool covers · WhatsApp
+(merges three existing pages into one tabbed tool) · Facebook Group · Member 360 · Millie · Tools
+Health. `mds-digest-web` has no staging tier — a merge to `main` IS the Render deploy.
+
+**Acceptance.**
+1. The seven shared components are built during screen 1 and reused by every later screen, not
+   regrown per screen: ToolHeader, HelpPanel, StatTile, DataTable, Popup, PeriodSelector, FilterPills.
+   The handoff names this as the single biggest risk in the pack.
+2. The interaction rules hold on every screen, because they are the design: clicking a number opens a
+   popup over the page and never navigates away; every table sorts both directions; every list has an
+   empty state; every count derives from the data and agrees with the table under it, including under
+   an active filter; classifier chips are editable and a manual change is never overwritten by a later
+   run.
+3. One screen per session, seven sessions minimum. Each closes with its screen proven in the running
+   app, not asserted.
+4. The handoff's six open questions are answered by Andy before the screen that depends on each —
+   endpoints per screen, the real Tools Health scope (header says 38, list holds 41), whether WhatsApp
+   and Millie link out to Member 360 or keep scoped member views, the Millie rename reaching
+   WhatsApp-facing copy, the merged WhatsApp tool name, and where per-admin pins and per-tool help
+   docs live.
+5. Old WhatsApp URLs redirect to the merged tool's tabs.
+
+**Not in scope.** SOP videos do not exist yet — every help panel ships with the empty 16:9 slot. Tool
+cover artwork is CSS, standing in for real illustrations that drop into the same slots later.
 
 ### #160 · Partner web profiles — crawl every partner's site so Millie knows what they do, what it costs and who runs it
 **🟡 S2 · size M — filed 2026-09-03 (Andy: "lets fix partners and run agents to browse partners' website … use a cheap model, Sonnet").**
