@@ -194,6 +194,31 @@ def blurb_for(akey, name, summary):
         attempt += 1
 
 
+def compute_status_and_detail(written, skipped, failed, failed_ids, in_tok, out_tok):
+    """Turn one run's raw counts into a heartbeat (status, detail) pair. Pure -- no I/O. Mirrors
+    cache_member_photos.py's compute_status_and_detail (#161 review finding: this job used to
+    call heartbeat(key, "ok", detail) unconditionally, ignoring `failed` entirely).
+
+    attempted = written + failed -- `skipped` never reaches the Haiku call (due_rows() already
+    filtered for a non-empty summary; a row only skips here if a persona changed shape between
+    the select and now, a rare race, not a steady-state population like cache_member_photos.py's
+    "no candidate anywhere" members -- so there is no non-technical-failure carve-out to make
+    here, unlike that job's compute_status_and_detail).
+
+    error when: attempted > 0 and failed/attempted > 0.25 -- this also covers "every attempted
+    member failed" (100% > 25%). Nothing attempted (every due member was skipped, or nothing was
+    due at all) is "ok", a normal outcome. A population/persona-fetch failure is a separate,
+    earlier error path in main() (the due_rows() try/except) -- it never reaches this function,
+    same as cache_member_photos.py's own population-fetch failure path."""
+    attempted = written + failed
+    status = "error" if (attempted > 0 and failed / attempted > 0.25) else "ok"
+    detail = f"wrote {written} · skipped {skipped} · failed {failed} · tokens in {in_tok} out {out_tok}"
+    if failed_ids:
+        shown = ",".join(failed_ids[:10]) + (",..." if len(failed_ids) > 10 else "")
+        detail += f" ({shown})"
+    return status, detail
+
+
 def heartbeat(key, status, detail):
     """Stamp digest.olivia_job_heartbeats on EVERY completed run, moved or not."""
     row = {"job": JOB, "last_run_at": "now()", "status": status,
@@ -274,15 +299,10 @@ def main():
                 failed_ids.append(atid)
                 print(f"  FAIL {atid}", flush=True)
 
-    detail = f"wrote {written} · skipped {skipped} · failed {failed} · tokens in {in_tok} out {out_tok}"
-    if failed_ids:
-        shown = ",".join(failed_ids[:10]) + (",..." if len(failed_ids) > 10 else "")
-        detail += f" ({shown})"
-    # Per-member failures are counted in `detail`, not treated as a job failure -- same
-    # convention cache_member_photos.py uses (its heartbeat reads "ok" with failures noted).
-    heartbeat(key, "ok", detail)
+    status, detail = compute_status_and_detail(written, skipped, failed, failed_ids, in_tok, out_tok)
+    heartbeat(key, status, detail)
     print(f"done: {detail}")
-    return 0
+    return 0 if status == "ok" else 1
 
 
 if __name__ == "__main__":
