@@ -985,10 +985,11 @@ SPRINT close, not session close.
   (722→723 members; supplements count drifts) · ClickUp doc refresh pending.
 
 
-### #161 MDS Personas — STATE 2026-09-04 13:50 (PAUSED at milestone) <!-- #161 -->
-- Build runs LOCAL only, branch `personas-20260904` in Scorecard + mds-digest-web (pushed as backup, never merged; Render deploys main only).
-- Ledger = `.superpowers/sdd/2026-09-04-mds-personas/progress.md` (git-ignored, on disk). Tasks 1–6 of 12 landed; Task 6 review deferred to one combined review after Tasks 7–9 (Andy: speed).
-- Live DB objects (read-only, service_role only): view `digest.personas_stats`, table `digest.member_photos` (empty until Task 10), RPCs `personas_library()`, `personas_sheet(p_id)`, `personas_cohort(p_stat)`, `personas_related(p_id)` — all exported to `db/`.
-- Resume: start dev server via launch config `digest-web` (Scorecard `.claude/launch.json`), dispatch Task 7 (library page), then 8 sheet, 9 cohort, 10 photos (Storage `member-photos`, multi-source — Andy wants FB/GroupOS before Airtable), 11 blurbs (Haiku), 12 states/light/docs, final review.
-- Parked: Andy's UPDATED home page design zip `~/Downloads/home page.zip` (hero carousel, Browse menu, poster cards, 14 rails) — apply only AFTER he has seen version one.
+### #161 MDS Personas — STATE 2026-09-04 evening (BUILT LOCALLY, awaiting Andy's merge call) <!-- #161 -->
+- Three screens live on `localhost:3000/personas` from branch `personas-20260904` in BOTH repos (Scorecard = plan/db/scripts/docs · mds-digest-web = app). Pushed as backup; NOT merged. Merging mds-digest-web to `main` = Render deploy — Andy decides. Scorecard branch can merge any time (docs + db export + scripts; nightly steps `cache_member_photos` and `persona_blurbs` only run from the checked-out branch, so merge Scorecard when Andy says go for the app too).
+- To run locally: preview config `digest-web` (Scorecard `.claude/launch.json`); staff cookie `node --env-file=.env.local scripts/dev-session-cookie.mjs` in mds-digest-web; screenshots via the scratchpad `shot.mjs` pattern (playwright-core from mds-fb-group-members + chrome-headless-shell 1234). A stale Turbopack cache once produced `require is not defined` on `/personas/[id]` — restart the dev server before believing a 500.
+- Data: view `personas_stats` + RPCs `personas_library/sheet/cohort/related/strong/fading/topic_peaks` (service_role only, exported to `db/`) · `member_photos` + Storage `member-photos` (nightly job; 121 members have no source; FB capture = own ticket) · `persona.blurb` (nightly Haiku job) · gate 323/0 with 10 personas checks.
+- Andy's UI rules (override the design READMEs): all categories collapsed by default · compact legend + "?" popover · stats fonts +20% · aside scrolls independently, scrollbar hidden · "MDS member since YYYY" on sheet/cards/hover · rails: hidden scrollbars, arrows on hover · hero 10 swipeable banners · one number per stat card, badge tooltips · every number truthful.
+- Open: #163 scoring review (filed, after #161) · FB profile-photo capture · GroupOS roster sweep for avatars (72 today) · `SkeletonCohortCard` dead code · Chromium-only verification.
+- Ledger + briefs + reports + screenshots: `.superpowers/sdd/2026-09-04-mds-personas/` (git-ignored, on disk).
 - Deferred minors: companions match category-level asks only (detail-stat asks never surface); personas_cohort recomputes personas_library per call; focus weight cast unguarded.

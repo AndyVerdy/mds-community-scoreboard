@@ -329,7 +329,7 @@ def main():
         check("anon denied on expertise_search", st in (401, 403, 404), f"status {st}")
 
         print("— personas RPCs (#161 staff tool): anon denied, service key answers, Storage photos only —")
-        for _fn, _params in (("personas_library", {}), ("personas_strong", {}), ("personas_fading", {}),
+        for _fn, _params in (("personas_library", {}), ("personas_strong", {}), ("personas_fading", {}), ("personas_topic_peaks", {}),
                              ("personas_cohort", {"p_stat": "TikTok Shop"}),
                              ("personas_sheet", {"p_id": "recjLusFLFDlnY7d9"}),
                              ("personas_related", {"p_id": "recjLusFLFDlnY7d9"})):
