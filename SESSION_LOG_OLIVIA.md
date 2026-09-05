@@ -18,7 +18,9 @@
 
 **Round 4 (Andy, last).** New/staff chips removed, Staff rail and the Browse DESIGN row dropped, card photos are real `<img loading="lazy">` and rails past the first three mount near the viewport: image requests 121 → 43, image bytes 2.69 MB → 0.88 MB, load 677 → 321 ms, rendered cards 328 → 58; re-reviewed clean.
 
-**Next.** Andy: review on localhost, decide the merge. Then #163 scoring review (number semantics · strong = top ~40% of scored members · cohort floor 60 · asks∩gives · detail-stat asks never surface companions) · FB profile-photo capture ticket · full GroupOS roster sweep for avatars.
+**PROMOTED (Andy, same evening): "lets promote personas".** Both repos merged to `main` (`--no-ff`); mds-digest-web `main` = Render deploy `e212bcf`. The Scorecard branch first merged `origin/main` (peer FB #3/#4 + #162 docs; the index conflict was resolved keeping the peer side verbatim and adding this session's line on top).
+
+**Next.** Then #163 scoring review (number semantics · strong = top ~40% of scored members · cohort floor 60 · asks∩gives · detail-stat asks never surface companions) · FB profile-photo capture ticket · full GroupOS roster sweep for avatars.
 
 ## 2026-09-04 (afternoon) · Olivia · **#162 CLOSED — transcripts for the 33 videos published 25 Aug–4 Sep (AI Mastermind · AI Scaling Live · Summit day 2) · 2026 now 212/212 transcribed · 5 new restricted videos → 44 grants each** · branch `transcripts-20260904`
 
