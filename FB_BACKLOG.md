@@ -100,7 +100,9 @@ is credentials and configuration, not code.
 
 ---
 
-### #4 · 🎯 The partner judge is inconsistent inside a batch — "Hector Ai" disappears · 🟡 S3
+## CLOSED
+
+### #4 · 🎯 The partner judge is inconsistent inside a batch — "Hector Ai" disappears · 🟡 S3 · ✅ CLOSED 2026-09-04
 
 **Premise corrected by #3 (2026-09-04).** Part of "Hector disappears" was not a verdict at all:
 the model echoed our mention ids with the `post:` prefix dropped, so its verdicts were orphaned
@@ -138,9 +140,66 @@ named partner. Batch size is now 8 and `max_tokens` 4,000, so truncation is no l
    Talent) are still found.
 5. If the fix is "send one partner per call", the cost is stated plainly before shipping it.
 
----
+**Measured first (AC 1)** — `partner_judge_bench.py --days 5 --trials 3`, 43 prefilter hits, Anita's
+offers post = 16 partners (all should be neutral), 3 known complaints in the window. Read-only.
 
-## CLOSED
+| shape | calls | Anita's 16 | Hector | complaints kept | identical across trials |
+|---|---|---|---|---|---|
+| batched (before): 8 mentions per call, the post repeated once per partner | 6 | 14 not_about_partner · 2 neutral | not_about_partner | 3/3 | 43/43 — wrong the same way twice |
+| single: 1 mention per call | 43 | 15–16 neutral | flips | 3/3 | 41/43 |
+| grouped: 1 call per text, its partners listed | 23 | 16 neutral | neutral | 3/3 | 43/43 (3 trials) |
+| **grouped8 (shipped): ≤8 texts per call, each with its partners** | **3** | **16 neutral** | **neutral** | **3/3** | **42/43 (3 trials)** |
+
+The suspected cause was right and it was not random: repeating one 1,200-char post eight times with
+only the `(partner: X)` header changing makes the model answer about the post. `temperature` is
+deprecated for `claude-sonnet-5` (the API rejects it), so it was never a lever.
+
+**Shipped 2026-09-04** (`partner_scan.py`, backup `.bak-pregrouped`): `group_hits()` /
+`chunk_groups()` / `grouped_listing()` — each text shown once, partners numbered in one flat sequence
+across the call, `TEXTS_PER_CALL = 8`; `judge()` takes a chunk of texts. Plus `settle()`: a verdict
+that CHANGES a stored row is confirmed by a second independent call (one text per call); on
+disagreement the stored verdict stands — borderline texts flip 1 call in 3 under any shape, and
+without this a complaint would flicker off the admin tab and back. 18 unit tests green. Bench kept as
+`partner_judge_bench.py`. Spec + plan under `docs/superpowers/`.
+
+**Acceptance criteria**
+1. ✅ Reproduced and measured — table above, 2–3 trials per shape.
+2. ✅ `Hector Ai · neutral` on post `27084374081239403` (SQL, `found_at 2026-09-04 19:52Z`); the
+   portal reads the table per request, so "Hector" is searchable with no deploy.
+3. ✅ Anita's post: 16 rows, all neutral; the system prompt and its sponsor-listing rule are unchanged.
+4. ✅ / ⚠️ 73 matches on the 14-day scan (was ~74). Complaints kept **8 of 9**: TraceFuse ×2, Quartile
+   ×2, Wayward, Veeqo, Activate Talent, Linnworks. **Sellerboard (Norm Lanier, Aug 21) was re-judged
+   neutral by two independent calls** — "beta MCP… pretty limited… but it's a start. I hate that I pay
+   for both" flips 1 in 3 under either shape; Andy's call whether that is a complaint. eCom Triage
+   (Aug 21 15:32Z) sits just outside the 14-day window and was not touched.
+5. ✅ Cost stated: fewer calls than before (3 vs 6 on the 5-day window, 5 vs 10 on 14 days) plus one
+   call per changed verdict (1–3 per run so far). Not one-partner-per-call.
+
+**Before / after.** Hector rows 0 → 1. Anita's post 3 neutral → 16 neutral. Table 129 → 144 rows
+(complaint 21 → 20, neutral 87 → 103, praise 21 → 21). Unjudged: 0 → 0. Daily run: the autopilot's
+`--days 3` re-judges a row only during its first three days, so a settled row then stays put.
+
+**Found alongside, not fixed:** `partners_catalog` holds two published rows named "Prosperlytics
+Consultants" and two named "Riverbend Consulting", so Anita's post carries each twice. Catalog belongs
+to the Olivia stream — flagged, not chased.
+
+**Regression caught by Andy the same hour, fixed (`sane_quote()`).** Grouping several partners into one
+call made the model answer with the partner's own NAME as the quote — the admin tab's "What they said"
+column read "Hector Ai" instead of what Anita wrote (14 rows). Tightening it to "must appear in the
+text" was not enough: the model then answered with a real but generic line from the top of the post
+("Here's a list of their offerings for this Summit!"), which passed. The rule now keeps a model quote
+only when it can be LOCATED in the text and sits within 300 chars of the mention (or names the partner);
+otherwise the line that names the partner is used, trimmed to 200 chars, with markdown stripped. A quote
+that is only the partner's name is never kept. 12 quote tests; a first attempt would have replaced good
+quotes (TraceFuse's complaint, an elided A2X quote) and was caught in the dry run before applying.
+New `--fix-quotes` repairs stored rows from the text alone — no model call, no re-judging, so nothing
+flaps. Result: **21 quotes corrected, 143 of 144 rows now carry a real quote** (the 144th is a comment
+whose entire text is the two words "Scale Insights").
+
+**Pending live proof:** the 16:25 CDT autopilot (`--days 3 --apply`) is the first unattended run
+with the grouped judge; read its `PARTNERS:` line in `auto_import.log`.
+
+---
 
 ### #3 · ♻️ A rejected partner mention is never removed — the table only grows · 🟠 S2 · ✅ CLOSED 2026-09-04
 
