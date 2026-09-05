@@ -1401,6 +1401,26 @@ def main():
         check("anon cannot read member_personas",
               st in (401, 403, 404) or (isinstance(body, list) and not body), f"status {st}")
 
+        print("— expertise_truth (#163 phase 1: proxy truth set) service-role only —")
+        # no RLS, gated entirely by grants (same shape as member_expertise/member_personas):
+        # only postgres/service_role hold any privilege on the table or the builder function.
+        st, body = curl("GET", f"{BASE}/expertise_truth?select=topic,at_member_id&limit=1", ANON_KEY,
+                        profile_hdr=["Accept-Profile: digest"])
+        check("anon cannot read digest.expertise_truth",
+              st in (401, 403, 404) or (isinstance(body, list) and not body), f"status {st}")
+        st, _b = rpc("derive_expertise_truth", {}, ANON_KEY)
+        check("anon denied on derive_expertise_truth", st in (401, 403, 404), f"status {st}")
+        # positive control (silence is not proof): the service key sees the populated table,
+        # both sources present, and every row still resolves to an ACTIVE member
+        st, rows = curl("GET", f"{BASE}/expertise_truth?select=topic,at_member_id,source&limit=1000", key,
+                        profile_hdr=["Accept-Profile: digest"])
+        _rows = rows if isinstance(rows, list) else []
+        check("expertise_truth answers with the service key (>= 300 rows sampled)",
+              st == 200 and len(_rows) >= 300, f"status {st}, rows {len(_rows)}")
+        _sources = {r.get("source") for r in _rows}
+        check("expertise_truth carries both community_mention and speaker rows",
+              {"community_mention", "speaker"} <= _sources, str(_sources))
+
         print("— membership status gates every door (#31) —")
         # dynamic fixture: a real Removed member with a linked phone (never hardcoded)
         st, rem = curl("GET", f"{BASE}/members?select=phone,at_member_id,email"
