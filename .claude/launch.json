@@ -2,9 +2,26 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "digest-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/Born/mds-digest-web",
+        "run",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
       "name": "scratchpad-preview",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "/private/tmp/claude-501/-Users-Born-Scorecard/aef09a79-2acf-4342-895d-1c6d5cfb6e3d/scratchpad"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8765",
+        "--directory",
+        "/private/tmp/claude-501/-Users-Born-Scorecard/aef09a79-2acf-4342-895d-1c6d5cfb6e3d/scratchpad"
+      ],
       "port": 8765
     }
   ]

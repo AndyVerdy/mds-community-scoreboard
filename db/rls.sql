@@ -38,6 +38,7 @@ alter table digest.member_events enable row level security;
 -- digest.member_personas: row level security DISABLED
 -- digest.member_personas_history: row level security DISABLED
 -- digest.member_phone_index: row level security DISABLED
+-- digest.member_photos: row level security DISABLED
 alter table digest.member_profile_embeddings enable row level security;
 -- digest.member_profiles: row level security DISABLED
 alter table digest.member_sessions enable row level security;

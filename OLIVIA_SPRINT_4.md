@@ -93,6 +93,8 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#157** | 🧑‍⚖️ Review the Sonnet 5 vs GPT-5.6 Terra bench (#156) — Andy's vendor call: stay on Claude, port to OpenAI, or re-test | 🟡 S2 | S | — (reading + decision) | — |
 | **#159** | 🕳️ Partners and events go dark in meaning search — 75 partners without a vector (35% of reviews, 48% of claims), the weekly delta missed 28 of 142 changed partners (Prosperlytics 5.0★ never shown for "bookkeeping") | 🔴 S1 | S | n/a (data + scripts) | ✅ **CLOSED 2026-09-03** — 75 partners + 36 events re-embedded (dark 0/0), nightly `embed_catalogs` + weekly re-embed, gate +2 checks (313/0), `partner_lookup_v2("bookkeeping accounting")` → Prosperlytics #1 |
 | **#160** | 🌐 Partner web profiles — crawl every partner site (services · pricing · people · proof) so Millie knows what a partner does and who runs it; founder ↔ partner link (Mudit Jain → Prosperlytics) | 🟡 S2 | M | ✅ staging `cefe0133` — probes: cost + who-runs-it answered from the site | ✅ **PROMOTED 2026-09-04 00:17Z (Andy: "promote") — prod `30fd7e6f`**, gate green in-promote, prod probe exec 131383: Shea's question → Prosperlytics 5.0★ first with site facts + pricing; 506 profiles, 1,173 people, 52 speakers linked, web text in the partner vectors |
+| **#161** | 🎴 MDS Personas — staff library of members (library v2 · character sheet · cohort) on the persona + 51-stat ledger, Claude Design handoffs v1 + v2 | 🟡 S2 | L | ✅ built + reviewed LOCALLY | ✅ **SHIPPED 2026-09-04 (Andy: "lets promote personas")** — merged to `main` in both repos, Render deploy `e212bcf` — 3 screens live on `localhost:3000/personas`, 7 read-only RPCs, 639/760 portraits in Storage, 758/758 blurbs, gate 323/0, 359 tests, `npm run build` exit 0; 13 tasks + 5 feedback rounds + final review wave on `personas-20260904` (both repos); merge to main = Render deploy |
+| **#163** | 🔢 Personas scoring review — what each number means (level · stat value · today/peak · rank), cohort floor 60 hides the tail, "peak floor applied", asks = gives overlap. Andy 2026-09-04: "the worst performer in each category never goes below 60" | 🟡 S2 | M | filed | 📝 filed 2026-09-04 (Andy: "file it, we will check these things later, the whole scoring system") — after #161 ships |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -123,6 +125,31 @@ Millie is live.
 Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at Meta ⏳ watcher-gated.
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
+
+### #161 · Transcripts for the 33 videos published 25 Aug–4 Sep — AssemblyAI, in-person rooms
+**🔴 S1 · size S — filed 2026-09-04 (Andy: "we need to create transcripts for recently fetched videos").**
+
+> **In plain words:** 33 recent talks are in the library but Olivia cannot quote a word of them.
+
+*As a member, when I ask what Kevan Soh said about PPC negation or which AI Mastermind talk covered
+inventory forecasting, Olivia quotes the talk with a timestamp and the library link, gated by my
+entitlement.*
+Evidence: fresh GroupOS listing 2026-09-04 = 212 videos in 2026, 50 published since 25 Aug; 17 carried
+transcripts (16 Summit AAI batch of 25 Aug + Josh Hadley via Zoom), **33 had none** — 16 AI Mastermind
+(restricted), 8 AI Scaling Live + 4 Summit day-2 (public), 5 of them brand-new uploads not even in the
+catalog (weekly check: NEW 5, CHANGED 1). Andy's 30 S3 links returned `403 AccessDenied` for every
+anonymous GET until the dev changed the bucket policy the same day (all 30 → 206 afterwards). These are
+in-person rooms: no Zoom, AssemblyAI is the only producer (Andy: Otter PDFs are NOT a source).
+**Shape of the fix:** catalog upsert from the fresh dump · `aai_submit.py --year 2026` on a CSV built
+from the listing (`download_link` = the now-public S3 URL, `_mds` block from the catalog) ·
+`aai_transcripts.py --apply` · `video_summaries.py` now counts chunk-backed videos as transcript-backed
+(it read `digest.calls` only, so every AAI batch had hand-written summaries) · embed · entitlement sweep
+for the 5 new restricted videos · gate.
+**Accept when:** 33/33 carry `call_transcript` chunks, max chunk ≤ 4,000 chars, timestamps monotonic ·
+33/33 have `summary_source='transcript'` and a vector (0 unembedded) · the 5 new restricted videos have
+`video_access` rows (members-per-video > 0) · live probe through `content_search_v2`: an entitled asker
+gets Kevan's quote with a timestamp + `app.mds.co/videos/6a95ecb56c44f146b77f4941`, an unentitled asker
+gets nothing from an AI Mastermind talk · gate GREEN, exit 0.
 
 ### #119 · Bank B — a regression bank for everything built after the 100-question bank froze
 **🟡 S2 · size M — filed 2026-08-23 (Andy, during the #108 close: "wow. old… we need one more bank around everything we built since then").**
@@ -330,6 +357,40 @@ The data (#156 close block, Sonnet judge): Sonnet 5 **5.4%** fail / **$0.0211** 
 **Shape of the work:** reading + a ruling, no code. Optional re-tests the harness already supports (`scripts/model_bench/README.md`): a GPT-shaped prompt variant re-run (~$12) · `gpt-5.6-luna` / `gpt-5.6-sol` runs · Terra at `low` effort · a second Sonnet run to measure judge noise.
 **Accept when:** Andy's ruling is written on this ticket (stay / port / re-test with what) · if "port": a new ticket with story + ACs for the n8n answer-loop port (Responses API shape, full through-workflow eval before any promote, OpenAI tier raise for prod traffic) · the OpenAI key pasted into chat on 2026-09-02 is rotated.
 
+### #161 · MDS Personas — a staff library of members: browse faces, open a character sheet, click a stat to find everyone strong in it
+
+**✅ SHIPPED 2026-09-04.** Built locally first (Andy: "let's start with local first"), then promoted on his call: both repos merged to `main`, mds-digest-web `main` = Render deploy `e212bcf`. Live at `digest.mds.co/personas`, staff gate on every route.
+
+**What shipped (branch `personas-20260904` in BOTH repos).** mds-digest-web: `/personas` Library v2 (sticky top bar · Browse mega-menu with live strength counts · 10-banner swipeable hero · 172×258 poster cards with hover preview · 13 rails, hidden scrollbars, hover arrows, lazy images + below-the-fold rails · search grid · staff gate) · `/personas/[id]` character sheet (portrait, blurb, focus, gives/asks mapped to stats, 18 categories + 33 detail stats as today/peak with at-peak/holding/fading, similar + companions, all collapsed by default, legend "?" popover, independent-scroll aside) · `/personas/stat/[key]` cohort (≥ 60, poster cards, one number) · states, phone layouts, light theme · 358 tests. Scorecard: `personas_stats` view + RPCs `personas_library/sheet/cohort/related/strong/fading/topic_peaks` (service_role only, exported to `db/`) · `member_photos` + Storage `member-photos` via nightly `cache_member_photos.py` (GroupOS avatar → Airtable ≥ 120 px → initials; 639/760, 121 no source) · `persona.blurb` via nightly `persona_blurbs.py` (Haiku 4.5, 758/758, ~$0.45) · gate +10 personas checks = 323/0.
+
+**AC checklist.** Every active member opens (760) and all 51 stats render or are named silent — met · photos from Storage only, none from Airtable (gate check) — met · similar/companions match SQL (5 spot checks in review) — met · pixel review vs handoff at 1440/390 both themes — met (v1 + v2 screenshots in the SDD workspace) · anon refused on every route/RPC — met (gate). Before/after: 0 → 3 screens · photos 0 → 639 · blurbs 0 → 758 · gate 313 → 322.
+
+**Andy's rules applied (2026-09-04, override the READMEs):** collapse all by default · compact legend + "?" popover · stats fonts +20% · aside scrolls on its own, scrollbar hidden · "MDS member since YYYY" everywhere · rails: no scrollbars, arrows on hover · hero 10 swipeable · one number per stat card, tooltips on badges · every number truthful (hero k = per-topic peaks, 164 → 92).
+
+**Process (what the reviews caught).** 4 bugs in the plan's own code (blurb cap, peak rounding, real names in fixtures, hero substitute count), 1 real regression (loading.tsx turned 404s into 200s), 1 duplicate-DOM defect (Suspense fallback with its own top bar), and the final whole-branch review (Opus) found a production-build breaker nobody had exercised (module-scope `notFound()` on the dev components page — `npm run build` now exit 0), a false "joined this quarter" claim (90 of 121 New-Member rows were older), two hero sentences the SQL never checked, and a blurb heartbeat that could never go red. All fixed and re-reviewed. Ledger: `.superpowers/sdd/2026-09-04-mds-personas/progress.md`.
+
+**Open, filed:** #163 scoring review (number semantics, strong = top 40% of scored members, cohort floor 60, asks∩gives, detail-stat asks never surface companions) · Facebook profile-photo capture in the FB extension runs (own ticket, Andy 2026-09-04) · GroupOS roster sweep only half done (72 avatars) · Playwright/Chromium-only verification.
+
+**🟡 S2 · size L — filed 2026-09-04 after a brainstorm + 7 live drafts (artifact 0af65aff) and a Claude Design handoff (`~/Downloads/Member 360 Admin Design System.zip`).**
+
+> **In plain words:** Member 360 is the audit view; nobody browses it. Andy wants a page that feels like a
+> streaming library: one search bar, rows of faces, click a member and read a short friendly sheet with
+> game-style stats (the 18 categories and 33 detail stats with their decay), click any stat and see who
+> else is strong in it, plus who is similar and who would be a good companion.
+
+*As MDS staff, I open Personas, find a member in seconds, understand them in twenty, and jump from any strength to the people who share it — without opening Member 360.*
+
+**Decided:** staff only (scores visible) · all 758 actives · no A-vs-B compare · no archetype labels · all 51 stats
+visible, silent ones named · asks/gives mapped to stats from the ledger evidence · badges at peak / holding / fading
+(no rising until the ledger keeps history). Design is FINAL in the handoff (tokens, components, states, responsive).
+Spec: `docs/superpowers/specs/2026-09-04-mds-personas-design.md` (data, RPCs, photo cache, blurb, gating).
+
+**Accept when:** `/admin/personas`, `/admin/personas/[id]`, `/admin/personas/stat/[key]` live on Render behind the admin
+gate · every active member opens and every one of the 51 stats renders or is named "no signal" · photos served from
+Storage (nightly `cache_member_photos.py`), never from Airtable links · similar + companions computed in SQL and
+spot-checked for 5 members · pixel review against the handoff at 1440 and 390 in both themes, all README states ·
+anonymous requests to the routes and RPCs refused · `blurb` written by the persona job (fallback: summary sentences).
+
 ### #159 · Partners and events go dark in meaning search — 75 partners without a vector, and the weekly delta misses edits
 **🔴 S1 · size S — filed 2026-09-03 (Shea Smith, 28 Aug: "Who should I use for bookkeeping?" — Prosperlytics, 5.0★ from 5 reviews, 51 claims, never appeared).**
 
@@ -357,6 +418,33 @@ Prosperlytics · handbook line corrected · SKILL.md of the scheduled task updat
 
 **Results 2026-09-03 (CLOSED, no promote needed — data + scripts only):** backfill `scripts/embed_partners_events.py` (moved from `~/mds-scorecard-tools`): partners 75 + events 36 embedded, dark 0/0 (SQL). Nightly `embed_catalogs` step in `nightly_derivations.py` (heartbeat seeded, max 26h). `partners_weekly_check.py --apply` re-embeds NEW/CHANGED in the same pass and fails loud. Gate +2 checks (partners/events without vector = 0; the gate's own `redteamevt_*` fixtures excluded) → 313 PASS · 0 FAIL · EXIT 0. Scheduled task SKILL.md: page until `has_more=false`, `with_total` check, window = last success − 3 days, the two records that break the listing endpoint named with the `partners_get` workaround. Handbook §B line corrected. **Proof through the RPC:** `partner_lookup_v2('bookkeeping accounting')` with a real Voyage query vector → Prosperlytics #1 (rank 0.0323); before: absent from the top 8 (staging exec 131231). Staging re-ask names Mudit/Prosperlytics first.
 **AC checklist:** dark 0/0 ✅ · nightly step ✅ · weekly re-embed ✅ · paging + total ✅ (instructions; first real run = next Sunday) · gate check ✅ · Shea's question lists Prosperlytics ✅ · handbook ✅ · SKILL.md ✅. **Before/after:** dark partners 75 → 0 · events 36 → 0 · Prosperlytics rank for "bookkeeping accounting": absent → #1.
+
+### #163 · Personas scoring review — what each number means, and why nobody looks below 60
+
+**Story.** As MDS staff reading a member's Personas sheet or a "Strong in X" page, I want every number to mean one clear thing, so that I trust what I see and can explain it to a member. Andy, 2026-09-04, while reviewing #161: "we need to clarify what each number means" and "the worst performer in each category never goes below 60 — file it, we will check these things later, the whole scoring system".
+
+**What we already know (2026-09-04).**
+- The cohort page ("Strong in X") lists ONLY members at value ≥ 60 by design (spec: cohort = strong), sorted desc — so the last card on any cohort page is always ≥ 60. The full distribution lives in `digest.personas_stats` (`value` = community percentile 0–100 from `member_expertise.pct`) and the sheet shows the low values too (e.g. Listing optimization 11/28, Walmart 6/15).
+- Two numbers on a stat-rail card: top-right = the member's LEVEL (mean of top-3 categories), bottom-left = the RAIL'S stat value. Same gold style, no label — confusing.
+- Sheet numbers: `today/peak` per stat, badge (at peak · holding · fading = today vs 85% of peak), "Rank #n in the community" (rank_in_topic), level badge on the portrait, similar % = cosine over 18 category values.
+- Browse-menu counts (v2 home, 2026-09-04): members ≥ 60 per category = 209 AI · 270 Logistics · 265 DTC · 243 Sourcing · 225 PPC of 760 — because `value` is a percentile among scored members, "strong" (≥ 60) is simply the top ~40% of whoever has any signal. A category with 675 scored members has ~270 "strong" members. Decide whether strong should be an absolute evidence bar instead.
+- Ledger oddities to look at: evidence "peak floor applied" (peak_score floor for thin evidence); a member can be both ask and give on the same topic (Mo Kuhail: Amazon FBA); values are percentiles, so a category with few scored members still spreads 0–100.
+
+**Analysis run 2026-09-04 (live ledger, Andy: "let's check the scoring system").**
+- **The displayed number is a rank, not a strength.** `pct = 1 - percent_rank()` per topic, so every category is uniform by construction: median 50, p90 90, ~41% at 60+, in all 18. Andy's "nobody goes below 60" = the cohort filter sitting on a uniform scale.
+- **The bar is near the median member.** Amazon FBA: value 60 = score 1.05 while the median score is 1.04 and the top is 20.50 (value 80 = 1.85). TikTok Shop: 60 = 2.47, 80 = 4.06, top 32.92. 276 of 3,434 "strong" rows (8%) have only a form answer as evidence; 92 of those sit at 80+.
+- **Breadth is real and concentrated.** 103 of 742 scored members are strong in 10+ of 18 categories, 27 of them in 14-18 (averaging 13 categories at 80+); 289 are strong in 0-2. 61 distinct members hold the 180 top-10 slots, 24 hold the 54 top-3 slots.
+- **The cause is the video channel.** Members strong in 14-18 categories carry video evidence on 56% of their topic rows vs 3% for the strong-in-1-5 group (conversation evidence is flat: 23% vs 7%). One video matches 4.6 topics on average and up to 17 of 18, and each video pays 3.0 points **linear** (cap 5 = 15) in every topic it touches while every other channel is logarithmic. Business text is not the culprit (1.6 topics avg, max 4); posts/comments average ~2 topics.
+- **Fix 1 simulated on the live ledger** (share each artifact's credit across the topics it matches, log-scale videos): distinct members holding the 180 top-10 slots 60 → 87; members top-10 in 5+ categories 15 → 7; max categories for one member 11 → 8. Movers: Bryce Alderson 11 → 2, Saurabh Srivastava 8 → 0, Damon Sununtnasuk 7 → 0, Josh Hadley 8 → 2, while the writers hold or rise (Jonathan Jewett 7 → 8, Brandon Himmel 6 → 7, Corey Smith 4 → 5). Simulation swapped only the video term on the stored score and re-ranked the 18 parents; peak floor and the 33 detail stats untouched.
+- **Assessment (Andy asked for the verdict).** The architecture is right: an explainable evidence ledger in SQL with decay and a peak floor. The inputs all measure *visibility*, not competence, so the output is a participation index presented as expertise. Three amplifiers: boolean matching pays a passing mention like a deep thread; the revenue multiplier is category-blind (1.5× on Legal & IP for a 20M seller); the percentile display throws away distance. And there is **no ground truth anywhere** — the verifier checks mechanics, not accuracy — so every tuning argument today is taste.
+- **Agreed next step (Andy, 2026-09-04 evening): measure before tuning.** (1) Mine proxy truth we already hold: "who should I ask about X" threads (the community naming a person for a topic) and MDS speaker/panel assignments. (2) **Web test** on ~100 members: the 61 who hold our top-10 slots plus a control group of ~40 scoring near zero. Count only third-party placements (podcast guest spots, outside conference sessions, quotes, paid teaching) — never self-published claims, which would re-inflate breadth. Gate identity on brand + city, decay old appearances. If the control group is full of people with topic credits we scored at zero, the formula measures the wrong thing and weight tuning will not save it. Pattern and cost are known from #160 (506 partner sites via cheap subagents). (3) Only then the formula changes, each with before/after on the proxy set and on Millie's eval bank — the ledger feeds her advice lanes, not just Personas.
+- **No history exists.** `derive_member_expertise()` deletes and rebuilds nightly; only `peak_score` survives. Change over time cannot be measured until a monthly snapshot table exists (also why there is no "rising" badge).
+
+**Acceptance.**
+1. One page (in `OLIVIA_HANDBOOK.md` or a `PERSONAS_NUMBERS.md`) defining each number in one sentence, with the SQL that produces it; the in-app "?" help on the sheet uses the same words.
+2. Stat-rail cards label the two numbers (or drop one) — no unlabeled gold numbers.
+3. A distribution report per category: members with signal, min / median / p90 / max of `value`, count ≥ 60 — reviewed with Andy; decision on the cohort floor (60 vs top-N vs show-all-with-signal).
+4. Any change to the scoring itself (percentile method, peak floor, decay) is its own ticket with before/after on the eval bank.
 
 ### #160 · Partner web profiles — crawl every partner's site so Millie knows what they do, what it costs and who runs it
 **🟡 S2 · size M — filed 2026-09-03 (Andy: "lets fix partners and run agents to browse partners' website … use a cheap model, Sonnet").**

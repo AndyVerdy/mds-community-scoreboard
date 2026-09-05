@@ -17,7 +17,7 @@
 > enough to act on, that is a bug in this document — fix it in the same commit as your change.
 >
 > **Last verified against live systems: 2026-09-04** (n8n graph, Supabase counts, Meta templates and
-> display name, launchd, GitHub Actions, Render routes, the gate — 313 checks, EXIT 0). Every number
+> display name, launchd, GitHub Actions, Render routes, the gate — 323 checks, EXIT 0). Every number
 > in here was queried, not remembered. Re-verify before trusting anything older than a few weeks.
 
 ---
@@ -26,7 +26,7 @@
 
 1. **Verify against live systems, never against docs.** Including this one. Every "it works" claim
    needs an execution id, a SQL result, or gate output.
-2. **The safety gate is not optional.** `python3 scripts/olivia_leak_gate.py` (313 checks on
+2. **The safety gate is not optional.** `python3 scripts/olivia_leak_gate.py` (323 checks on
    2026-09-04 — the count grows with every ship, say "gate green"; free, ~3 min) must be GREEN
    before anything ships. It runs after *every* change to a retrieval function. Read the exit
    code, never `| tail`.
@@ -281,6 +281,7 @@ access-tagged. An undefined source does not exist to her.* No crawling raw bases
 | `events_catalog` / `videos_catalog` / `partners_catalog` | 1,452 / 1,083 / 511 | Source catalogs (hourly events; weekly videos + partners through the GroupOS task). Every published partner and event carries a vector (#159 — 75 partners were dark for a month because the invalidate trigger had no rebuild). All 2025–2026 videos carry a transcript-derived `summary`. |
 | `olivia_sends` | 2,233 | **Delivery truth.** Every outbound send with the status Meta reports back asynchronously (`delivered`, `read`, `failed` + error code, `maintenance` from the relay). A 200 from `/messages` is not in here as delivery. |
 | `partner_web_profile` | 506 | **#160** what each partner says on its OWN website (partner-stated, never member judgment): `summary`, `services[]`, `markets[]`, `pricing`, `people` jsonb (founders/leaders → `speakers.affiliation_partner_id` by name), `profile` jsonb, `crawl_status` (405 ok · 71 unreachable · 29 JS-only). Crawl `scripts/partner_web_crawl.py` → Sonnet extraction (`OLIVIA_PARTNER_WEB_EXTRACT.md`) → `scripts/load_partner_web_profiles.py --apply`. Refreshed by the weekly GroupOS task (step 4b). |
+| `member_photos` | 639 | **#161** one cached portrait per active member in Storage bucket `member-photos` (320 px JPEG): `public_url`, `source` (`groupos` · `Picture URL` · `Headshots` · `Photo`), `width`, `fetched_at`. Written nightly by `cache_member_photos.py` (GroupOS avatar first, Airtable attachments ≥ 120 px second, none → initials tile). The Personas pages read ONLY this — never an Airtable attachment URL (they expire). 121 of 760 have no source yet; Facebook capture is a follow-up ticket. |
 | `video_speaker_letters` | 270 | **#103 letter-mapping.** AAI transcripts hear voices as letters (Speaker A/B/C); this maps video+letter → speaker entity where evidence allows — `confidence` = self_intro · first_name_unique · solo_dominant. Loader `scripts/load_letter_map.py` (ASR guard: a heard name never mints an entity, it fuzzy-matches that video's own speakers, else review CSV). Unmapped letters stay letters BY DESIGN — a wrong name on a quote is worse than no name. |
 | `speakers` / `speaker_aliases` / `video_speaker_links` / `video_partner_links` | 471 / — / ~1,250 / 129 | **#103 speaker identity space (2026-08-21).** One entity per human/company (`canonical` unique = "same means same"); `kind` member·partner·guest·unresolved; members EMAIL-evidenced (GroupOS mirror → `resolve_member_by_email`). Links carry `role` (speaker · participant · moderator) + `talk_seconds` (Zoom cue share) and `source` = evidence rung (speaker_ids · catalog · title_known · title_position · desc_known · desc_lead · zoom_cue). `video_partner_links` = partner sessions (video↔partner). Loaders: `load_speakers.py` (rungs A–D + `--rescan` guest→member promotion, `--coverage`), `load_participants.py` (Zoom cues). Run weekly by `zoom_weekly.py` step 4.5. ⚠️ `digest.video_speakers` is the pre-existing GroupOS speaker-USER mirror (234 rows, email = matching key; `member_record_id` is GroupOS-internal, never an AT id) — evidence source, not the identity store. Zoom transcripts carry REAL NAMES per cue; AAI = Speaker A/B/C (letter-mapping + frame-OCR = open rungs). |
 | `video_access` | 44,972 | **#101/#150: who may see each RESTRICTED GroupOS video.** Sources: the dev's read-path mirror export (`real_match` rows only), Andy's CSV exports, the #150 Summit grants (attendees + staff, `scripts/sql/150_summit_video_grants.sql`) and, since 2026-09-03, the per-member `videos_list(for_user_id)` sweep (`source='api'`, 7,936 rows, loader `video_access_from_sweep.py`). **All 424 restricted videos carry grants (0 uncovered).** `at_member_id` via `resolve_member_by_email()`; NULL = unresolvable, kept so the grant activates when the alias lands (93 rows). |
@@ -815,7 +816,7 @@ python3 scripts/olivia_wf.py unlock
 ### 8.2 The safety gate
 
 ```bash
-python3 scripts/olivia_leak_gate.py     # 313 checks (2026-09-04), ~3 min, free
+python3 scripts/olivia_leak_gate.py     # 323 checks (2026-09-04, +9 personas), ~3 min, free
 ```
 It inserts canary rows with every access rule and sensitivity, asks the real RPCs for them as
 several different members, and asserts what must *not* come back. It also verifies anon lockout,
@@ -878,7 +879,7 @@ OLIVIA_EVAL_BANK=eval_bank_smoke.json python3 olivia_eval.py --score
 
 | launchd job | What runs |
 |---|---|
-| `com.mds.olivia.derivations` (04:30) | `nightly_derivations.py` — **9 steps**, each with its own heartbeat: `derive_niches` · `label_questions` · `sync_chapter_pages` · `embed_member_profiles` · `embed_content` (`~/mds-scorecard-tools/embed_backfill.py`) · `embed_catalogs` (#159 — partners + events, nulls only) · `member_events_daily` · `graph_ledger` (expertise ledger v2 + knowledge graph) · `entity_dossiers` (`refresh_entity_dossiers()`, 900s ceiling since #152) |
+| `com.mds.olivia.derivations` (04:30) | `nightly_derivations.py` — **11 steps**, each with its own heartbeat: `derive_niches` · `label_questions` · `sync_chapter_pages` · `cache_member_photos` (#161) · `embed_member_profiles` · `embed_content` (`~/mds-scorecard-tools/embed_backfill.py`) · `embed_catalogs` (#159 — partners + events, nulls only) · `member_events_daily` · `graph_ledger` (expertise ledger v2 + knowledge graph) · `entity_dossiers` · `persona_blurbs` (#161, Haiku blurbs for the Personas sheet) (`refresh_entity_dossiers()`, 900s ceiling since #152) |
 | `com.mds.persona.refresh` (04:15) | `persona_refresh.py` — rebuilds member personas |
 | `com.mds.olivia-eval` (03:30) | `olivia_eval.py --nightly` — the daily eval (§8.3) |
 | `com.mds.olivia.watchdog` (every 15 min) | `alarm_watchdog.py` — watches the alarm system from *outside* Supabase |
@@ -890,7 +891,7 @@ The other three `com.mds.*` jobs on the Mac are not Olivia's (`scorecard.autoimp
 ingest watcher, `scorecard.heartbeat`, `wa.dailydigest`). Two GitHub Actions (§1.1) and the
 `chats_mirror` job (every 3h, #90) complete the picture.
 
-**13 jobs stamp `digest.olivia_job_heartbeats`** (`max_age_hours`: 26 nightly · 192 weekly catalogs ·
+**15 jobs stamp `digest.olivia_job_heartbeats`** (#161 added `cache_member_photos` and `persona_blurbs`, 30 h) (`max_age_hours`: 26 nightly · 192 weekly catalogs ·
 216 zoom · 3 chats). Stale or `error` = the Slack alarm and a red tile on the 08:00 card. All 13 were
 green on 2026-09-04. **Prove any scheduled script under `/usr/bin/python3`** — launchd uses Apple's
 Python 3.9, which is not your shell's Python — and never let one write under `~/Downloads`.
@@ -1078,16 +1079,17 @@ member-facing copy now names the reason when it IS billing (Answer Parse).
   olivia_snapshots/                     ← pre/post-promote prod + staging JSON (183)
   scripts/
     olivia_wf.py                        ← stage / promote / rollback / snapshot / diff / lock / status
-    olivia_leak_gate.py                 ← the 313-check safety gate (refusal)
+    olivia_leak_gate.py                 ← the 323-check safety gate (refusal)
     prod_pulse.py                       ← the liveness check (does she still ANSWER?) — exit 1 = stop
     run_eval_100.py                     ← fires the locked 100 bank (or --bank <file>)
     db_export_schema.py                 ← DB → db/ export + the drift check (#65)
     olivia_selftest.py                  ← fire questions through a workflow (silent turns)
-    nightly_derivations.py              ← the 9-step nightly pipeline
+    nightly_derivations.py              ← the 11-step nightly pipeline (#161 added cache_member_photos · persona_blurbs)
     zoom_weekly.py · zoom_transcripts.py · aai_submit.py · aai_transcripts.py   ← transcripts
     load_speakers.py · load_participants.py · load_letter_map.py                ← speaker identity (#103)
     videos_weekly_check.py · partners_weekly_check.py · embed_partners_events.py ← weekly catalogs (#17/#159)
     partner_web_crawl.py · load_partner_web_profiles.py                           ← partner web profiles (#160)
+    cache_member_photos.py · persona_blurbs.py                                    ← MDS Personas staff tool feeds (#161): Storage portraits · 2–3 sentence blurbs (Haiku)
     video_access_from_sweep.py · load_video_access.py                             ← restricted-video grants (#101/#150)
     load_event_graph.py · event_lane.py                                           ← the Summit run-of-show (#85/#113)
     olivia_link_wa_id.py                                                          ← hidden-number pairing (#146)
@@ -1165,7 +1167,7 @@ selects them. "Used in a calculation" is not "shareable".
 column list of `member_card` (the gate pins it); attendee gating is a registration check inside
 `event_who`, the schedule route and the finder; sensitivity, access rules and `video_access`
 filter inside every content query; the fact gate blocks unsupported claims; the link gate blocks
-unretrieved URLs; the 313-check leak gate proves all of it on every ship.
+unretrieved URLs; the 323-check leak gate proves all of it on every ship.
 
 ---
 
@@ -1489,6 +1491,11 @@ zero rows. `access_rule` and `sensitivity` filters are applied inside every cont
 | `community_info` | `p_phone` | `TABLE(active_members, whatsapp_chats, upcoming_events, chapters, chapter_breakdown jsonb, gender_split jsonb)` | Community-level numbers. Gender is approximate and must be presented with the not-everyone-reports caveat. |
 | `partner_lookup` | `p_phone, p_query, p_limit, p_embedding, p_at_member_id` | `TABLE(name, offer_value, description_snippet, categories[], rating_avg, review_count, claim_count, featured, fresh_deal, partner_url, reviews_sample jsonb, matched_rank)` | Reviews are real member reviews — quotable, never attributed to a name. |
 | `partner_lookup_v2` | same + `p_order` | v1 columns + `fit_reason, strength_note, event_offer*` + **#160** `web_summary, web_people jsonb, web_pricing` (LEFT JOIN `partner_web_profile` where `crawl_status='ok'`) | The tool the loop calls. Web fields are what the partner's site says — the seed description tells the model to frame them so. A partner with no vector is invisible to the meaning lane (#159): `embed_catalogs` nightly + weekly re-embed keep it at 0. |
+| `personas_library()` | — | one row per ACTIVE member: `id, name, status, city, joined, level, top jsonb, photo_url, msgs30, at_peak_count` | **#161 staff tool — no member gating** (staff sees everyone); reads `personas_stats` (view over `member_expertise` × `expertise_topics`: `value` = pct×100, `peak`, `badge` peak/holding/fading) + `member_photos` |
+| `personas_sheet(p_id)` | `at_member_id` | one jsonb: `member` (library row + niche/channels/since/title/summary/**blurb**/focus/gives_text/asks_text) · `stats[]` (all 51) · `asks[]` · `gives[]` (topics from persona evidence) | #161; `member` null = unknown id |
+| `personas_cohort(p_stat)` | topic name | members with `value ≥ 60` on that stat, desc | #161 |
+| `personas_related(p_id)` | `at_member_id` | `similar[]` (cosine over the 18 category values, top 5, `pct`, `shared`) · `companions[]` (≥ 75 on the member's ask topics, top 5, `cover`, `shared`) | #161; never lists the member themselves; category-level asks only (detail-stat asks pending) |
+| `personas_strong()` · `personas_fading()` · `personas_topic_peaks()` | — | per member `strong jsonb` (categories ≥ 60) · per member `fading_count` · per topic `strong_count, peak_count` | #161 rails, Browse-menu counts and hero copy — new functions instead of changing `personas_library`'s return type (a DROP would lose the ACL) |
 | `video_search` | `p_phone, p_query, p_limit, p_embedding, p_at_member_id` | `TABLE(title, call_type, speakers[], description_snippet, cliff_notes_snippet, attachments jsonb, duration, categories[], tags[], published_at, video_url, matched_rank, is_restricted)` | **Restricted videos return metadata only** — title and date, never description, cliff notes or attachments. They are listed, never denied. |
 | `video_file_for_send` | `p_phone, p_file_key` | `TABLE(file_name, storage_object, file_kind, video_title)` | Re-validates the key server-side (public video, allowed kind, our bucket) — a hallucinated key for a restricted deck cannot send. |
 | `multi_source` | `p_phone, p_query, p_terms text[], p_city, p_want text[]` | `jsonb` (one key per family) | One-shot fan-out across partners / members / events / chats / Facebook / videos. A new source = one branch here + one prompt block. |

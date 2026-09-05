@@ -328,6 +328,22 @@ def main():
         st, _b = rpc("expertise_search", {"p_phone": phone, "p_query": "PPC"}, ANON_KEY)
         check("anon denied on expertise_search", st in (401, 403, 404), f"status {st}")
 
+        print("— personas RPCs (#161 staff tool): anon denied, service key answers, Storage photos only —")
+        for _fn, _params in (("personas_library", {}), ("personas_strong", {}), ("personas_fading", {}), ("personas_topic_peaks", {}),
+                             ("personas_cohort", {"p_stat": "TikTok Shop"}),
+                             ("personas_sheet", {"p_id": "recjLusFLFDlnY7d9"}),
+                             ("personas_related", {"p_id": "recjLusFLFDlnY7d9"})):
+            st, _b = rpc(_fn, _params, ANON_KEY)
+            check(f"anon denied on {_fn}", st in (401, 403, 404), f"status {st}")
+        st, _lib = rpc("personas_library", {}, key)
+        _rows = _lib if isinstance(_lib, list) else []
+        check("personas_library answers with the service key (>= 700 members)", st == 200 and len(_rows) >= 700,
+              f"status {st}, rows {len(_rows)}")
+        check("personas_library exposes no email/phone/revenue fields",
+              bool(_rows) and not ({"email", "phone", "rev_band", "mrr"} & set(_rows[0].keys())))
+        check("personas photo urls are Storage, never Airtable",
+              all("airtableusercontent" not in (r.get("photo_url") or "") for r in _rows))
+
         print("— member_match output hygiene —")
         st, matches = rpc("member_match", {"p_phone": phone, "p_dims": ["state", "category", "band"],
                                            "p_limit": 20}, key)

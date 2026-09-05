@@ -22,6 +22,11 @@ JOBS = [
     ("derive_niches",        [f"{REPO}/scripts/olivia_derive_niches.py"]),
     ("label_questions",      [f"{REPO}/scripts/olivia_label_questions.py"]),
     ("sync_chapter_pages",   [f"{REPO}/scripts/sync_chapter_pages.py"]),
+    # #161: nightly photo cache (GroupOS avatar -> Airtable attachment -> nothing/initials).
+    # No --groupos-roster here: that dump only exists inside a Claude session (same reason
+    # partners_weekly_check.py's dump is a separate manual step), so the nightly run is
+    # Airtable-only; a session refreshes the GroupOS roster and re-runs with it periodically.
+    ("cache_member_photos",  [f"{REPO}/scripts/cache_member_photos.py"]),
     ("embed_member_profiles", [f"{REPO}/scripts/embed_member_profiles.py"]),
     # #40: content-corpus embeddings are a PROCESS, not a hand-run event (script skips
     # sub-30-char noise rows by design; lives in mds-scorecard-tools, reads its own env)
@@ -36,6 +41,10 @@ JOBS = [
     # #50: entity dossiers (video/partner/event/chapter) — after graph_ledger so event/chapter
     # profiles read tonight's fresh member_expertise rows
     ("entity_dossiers",      [f"{REPO}/scripts/olivia_entity_dossiers_nightly.py"]),
+    # #161: card blurb (2-3 warm sentences) for every active member whose persona has a summary
+    # and no blurb yet, or a blurb older than the persona's own built_at. personas_sheet() falls
+    # back to the summary's own first sentences while blurb is missing.
+    ("persona_blurbs",       [f"{REPO}/scripts/persona_blurbs.py"]),
 ]
 
 
