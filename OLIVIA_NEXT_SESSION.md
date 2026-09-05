@@ -986,10 +986,11 @@ SPRINT close, not session close.
 
 
 ### #161 MDS Personas — STATE 2026-09-04 evening (SHIPPED to production) <!-- #161 -->
-- LIVE at `digest.mds.co/personas` (staff `@mds.co` session required). Both repos merged to `main` 2026-09-04 evening; Render deploy `e212bcf`. The nightly jobs `cache_member_photos` and `persona_blurbs` run from `main` now.
+- LIVE at `digest.mds.co/personas`, linked in the admin nav (staff `@mds.co` session required; Render `559b0ff`). Both repos merged to `main` 2026-09-04 evening; Render deploy `e212bcf`. The nightly jobs `cache_member_photos` and `persona_blurbs` run from `main` now.
 - To run locally: preview config `digest-web` (Scorecard `.claude/launch.json`); staff cookie `node --env-file=.env.local scripts/dev-session-cookie.mjs` in mds-digest-web; screenshots via the scratchpad `shot.mjs` pattern (playwright-core from mds-fb-group-members + chrome-headless-shell 1234). A stale Turbopack cache once produced `require is not defined` on `/personas/[id]` — restart the dev server before believing a 500.
 - Data: view `personas_stats` + RPCs `personas_library/sheet/cohort/related/strong/fading/topic_peaks` (service_role only, exported to `db/`) · `member_photos` + Storage `member-photos` (nightly job; 121 members have no source; FB capture = own ticket) · `persona.blurb` (nightly Haiku job) · gate 323/0 with 10 personas checks.
 - Andy's UI rules (override the design READMEs): all categories collapsed by default · compact legend + "?" popover · stats fonts +20% · aside scrolls independently, scrollbar hidden · "MDS member since YYYY" on sheet/cards/hover · rails: hidden scrollbars, arrows on hover · hero 10 swipeable banners · one number per stat card, badge tooltips · every number truthful.
+- **NEXT SESSION STARTS HERE: `docs/superpowers/plans/2026-09-05-expertise-truth-set.md`** (#163 phase 1 — build the ruler before tuning: proxy truth, the 101-member web test with a control group, the measurement table; formula changes only after the go/no-go). Analysis and simulation results are in `OLIVIA_SPRINT_4.md` §#163.
 - Open: #163 scoring review (filed, after #161) · FB profile-photo capture · GroupOS roster sweep for avatars (72 today) · `SkeletonCohortCard` dead code · Chromium-only verification.
 - Ledger + briefs + reports + screenshots: `.superpowers/sdd/2026-09-04-mds-personas/` (git-ignored, on disk).
 - Deferred minors: companions match category-level asks only (detail-stat asks never surface); personas_cohort recomputes personas_library per call; focus weight cast unguarded.
