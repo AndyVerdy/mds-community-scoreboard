@@ -20,6 +20,8 @@
 
 **PROMOTED (Andy, same evening): "lets promote personas".** Both repos merged to `main` (`--no-ff`); mds-digest-web `main` = Render deploy `e212bcf`. The Scorecard branch first merged `origin/main` (peer FB #3/#4 + #162 docs; the index conflict was resolved keeping the peer side verbatim and adding this session's line on top).
 
+**Also shipped after the promote:** Personas linked in the admin nav between Member 360 and Facebook (`AdminNav.tsx`, branch `personas-nav-20260904`), Render `559b0ff`; verified locally with a staff session (nav renders the item, `/personas` 200) and anonymously in prod (`/admin` and `/personas` both 307). Security question answered with evidence: every `/admin/*` page and `/personas*` redirects anonymous visitors, and each API route behind them is gated by session, shared secret or signed token; the only deliberately public endpoint is the event check-in form.
+
 **Next.** Then #163 scoring review (number semantics · strong = top ~40% of scored members · cohort floor 60 · asks∩gives · detail-stat asks never surface companions) · FB profile-photo capture ticket · full GroupOS roster sweep for avatars.
 
 ## 2026-09-04 (afternoon) · Olivia · **#162 CLOSED — transcripts for the 33 videos published 25 Aug–4 Sep (AI Mastermind · AI Scaling Live · Summit day 2) · 2026 now 212/212 transcribed · 5 new restricted videos → 44 grants each** · branch `transcripts-20260904`

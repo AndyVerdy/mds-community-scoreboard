@@ -440,6 +440,8 @@ Prosperlytics · handbook line corrected · SKILL.md of the scheduled task updat
 - **Agreed next step (Andy, 2026-09-04 evening): measure before tuning.** (1) Mine proxy truth we already hold: "who should I ask about X" threads (the community naming a person for a topic) and MDS speaker/panel assignments. (2) **Web test** on ~100 members: the 61 who hold our top-10 slots plus a control group of ~40 scoring near zero. Count only third-party placements (podcast guest spots, outside conference sessions, quotes, paid teaching) — never self-published claims, which would re-inflate breadth. Gate identity on brand + city, decay old appearances. If the control group is full of people with topic credits we scored at zero, the formula measures the wrong thing and weight tuning will not save it. Pattern and cost are known from #160 (506 partner sites via cheap subagents). (3) Only then the formula changes, each with before/after on the proxy set and on Millie's eval bank — the ledger feeds her advice lanes, not just Personas.
 - **No history exists.** `derive_member_expertise()` deletes and rebuilds nightly; only `peak_score` survives. Change over time cannot be measured until a monthly snapshot table exists (also why there is no "rising" badge).
 
+**Phase-1 plan (written 2026-09-04): `docs/superpowers/plans/2026-09-05-expertise-truth-set.md`** — truth table, 101-member web test with a control group, per-topic precision/coverage/blindness, then the formula work.
+
 **Acceptance.**
 1. One page (in `OLIVIA_HANDBOOK.md` or a `PERSONAS_NUMBERS.md`) defining each number in one sentence, with the SQL that produces it; the in-app "?" help on the sheet uses the same words.
 2. Stat-rail cards label the two numbers (or drop one) — no unlabeled gold numbers.
