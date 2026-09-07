@@ -540,6 +540,54 @@ from the old render.
 reader can tell what they ARE. No formula ships from #163's current phase, so the numbers do not move
 under this work.
 
+**Handed to the scoring (#163) session 2026-09-07** (Andy: "transfer 165 updates to Scoring system
+agent, ill work on it there"). The first build (`50c7a4a` on `165-personas-sheet-20260907`, unmerged)
+covers ACs 1–5. Andy then read Corey Smith's live sheet and the ticket grew a sixth AC.
+
+**Rulings 2026-09-07 (Andy, reading the live sheet).**
+- *"all these bars mean nothing. The whole purpose of this thing is for me to see the current score,
+  his max score, and what percentile he is at."* Traced live: the sheet showed **no raw score
+  anywhere** — both numbers in a row like `40/59` were percentiles, and `personas_stats.peak` is
+  **fabricated** (`LEAST(100, round(value × peak_score ÷ score))`, a projection, not a percentile the
+  member ever held). A percentile's median is always 50 and its max always 100, so it cannot express
+  distance: Corey's Attribution 36 vs Aggregators 51 looked like a modest gap while the real scores
+  were 0.42 vs 1.41.
+- *"use the median"* — the bar's reference line is the community median score for the topic. This
+  supersedes the earlier "keep the line at 70" call, which was made before anyone knew the 70 is
+  `left: "70%"` with a hardcoded label (`StatBar.tsx:34`) tied to no data.
+- The two grid icons in the Personas header stay as they are ("Leave it").
+- *"build it locally"* — nothing merges until Andy has looked at it.
+
+**AC 6 (added 2026-09-07).** The stat bar is absolute: the axis runs from 0 to the topic's community
+top, the fill is the member's score today, a tick marks their recorded peak score, and the reference
+line is the community median. Each row prints score today over peak score, with the percentile and
+`rank of pool` beneath (so "19 of 38" stops reading like "150 of 233"). The "60 and above is strong"
+sentence goes and no new threshold is invented — whether a percentile is the right headline at all is
+#163's call, measured before and after. Build: DB half `aa9953f` on `165-personas-numbers-20260907`
+(`personas_stats` +`score_today, score_peak, pool, topic_top, topic_median`, append-only, every
+pre-existing column byte-identical across all 16,932 rows, gate exit 0); web half on
+`165-personas-sheet-20260907` — `98f40ba` absolute bar → `e57f874`, `d452061` copy → `04b2675` final-review
+fix wave. **AC 6 BUILT + REVIEWED 2026-09-07, awaiting Andy's merge.** Opus whole-branch review: fit to merge
+with fixes; the real one was a phone break (≤640px rule still sized for "100/100", score painted over the badge
+on every row at 375px) — fixed, re-review measured 17.0 / 15.5px clear itself. tsc clean · vitest 900/900 ·
+`npm run build` exit 0. Deferred on purpose: "0th" on 10 bottom rows · `pool` counts 349 zero-score rows the
+copy calls "signal" (#163's wording) · `personas_sheet` ~89 ms · pre-existing name ellipsis at 375px.
+**Phase 3 (same day, `aa47d70` + phone fix `f2975cb`) — Andy read phase 2 and could not** ("humans will not read
+18.62/18.69 · 100th · 1 of 461 … median barely visible … these end arrows … no clue how to read it"). Approved from
+an inline mockup: **rank is the headline (`#19` / `of 38`), raw numbers on hover, log-scale bar, one dashed
+typical-member mark, no today marker, ghost only when fading, legend once.** Data untouched. Reviewed on Corey and
+Ryan Pace (#182–#475, every fill/mark matches the formula); the review caught a phone regression (27 of 51 names
+truncated, an empty grid row) — fixed to parity with 04b2675 (3 of 51, all pre-existing), re-review measured it.
+901 tests, tsc clean, build 0. **Awaiting Andy's merge.**
+
+**Findings that belong to #163, not here** (from the first build; reported, untouched): 1,016
+detail-stat rows across 503 members score under a zero parent · the scorer weights posts highest (2.0)
+but 0 of 16,762 ledger rows carry a posts evidence key, so the heaviest weight in the formula may be
+dead · `personas_sheet`'s asks filter `or weakness > 0` is redundant (weakness = ln(1 + asks_hits); 0
+disagreements) · the ticket's premise was half wrong — 2,407 of 4,960 focus signals cite the member's
+own census/application answers, so the *signal* is often the member's words even though the *line* is
+always the model's paraphrase.
+
 ### #166 · Personas and Digest have no tool switcher
 
 **🟡 S2 · size S — filed 2026-09-07 (Andy, seeing the switcher list its own Personas row as "NO

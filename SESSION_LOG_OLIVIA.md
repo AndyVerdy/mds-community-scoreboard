@@ -2,6 +2,96 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-07 (scoring session) · **#163 Task 1 COMPLETE (truth table, reviewed) · #165 phase 2 BUILT + reviewed — the stat bar is absolute, awaiting Andy's merge**
+
+**Trigger.** "continue working on oliva" → briefing → Andy: "i want to work on 163" → "go". Mid-session Andy
+handed #165 here ("transfer 165 updates to Scoring system agent") and, reading Corey Smith's live sheet:
+*"all these bars mean nothing. The whole purpose of this thing is for me to see the current score, his max
+score, and what percentile he is at"* → "use the median" → "build it locally".
+
+**#163 Task 1 — `digest.expertise_truth`, done.** Branch `163-truth-set-20260905` (worktree
+`.claude/worktrees/163-truth-set`): 15ba111 (build) → 47a7de7 (#164 filed) → 2dda4f6 (review fixes).
+Subagent-driven from `docs/superpowers/plans/2026-09-05-expertise-truth-set.md`; ledger
+`.superpowers/sdd/2026-09-05-expertise-truth-set/progress.md`. Pre-flight caught a plan defect (a
+`coalesce()` inside a PRIMARY KEY — not valid Postgres; now `url text not null default ''`). The opus task
+review caught the one that mattered: speaker topics were matched against `videos_catalog.search_tsv`, which
+spans summaries, cliff notes and attached-file text, so one AI talk credited its speaker for Customs &
+duties, Supplements, Walmart and 22 more — 282 stage appearances became 2,557 rows, 9.07 topics each, max
+25. **The ruler was laundering the exact breadth bias #163 exists to measure.** Fix: match the video's
+subject only (title · category_names · tag_names). Speaker rows 2,557 → 364; fan-out 9.07 → 3.22 avg, 25 →
+12 max; `evidence_event_id` + `evidence_event_topic_count` make fan-out visible; the gate now sweeps every
+row for active-member resolution instead of promising it in a comment. Final: **609 rows · 42 topics · 146
+members · 279 evidence events (195 speaker, 84 community) · 0 orphans · gate 328/0**. Scoped re-review:
+all three addressed, view/gate/ids verified live. **Caveat carried to Task 3:** "SEO & keywords" is 97 of
+364 speaker rows and ~95% taxonomy noise — MDS's video category is the compound "Marketing & SEO", so `seo`
+credits every marketing talk; exclude or footnote that topic when scoring precision. Two controller
+corrections owned: the brief's member join named `digest.members` (resolves 0 of 18,840 FB items; the
+implementer verified and used `member_attributes`, 18,840/18,840, and was right); and the fix agent was
+killed by a process exit before writing its report — the commit landed, the controller re-verified every
+number and ran the gate from a clean worktree rather than trust the commit message.
+**Task 2 cohort derived live and CHANGED by ruling:** the plan's 40-member control group under value 20
+cannot exist — 8 members qualify, +14 actives with no ledger row = 22 ceiling, because `value` is a rank
+percentile (uniform by construction). Andy: *"use the 22 and keep the control honest."* Cohort = 60 top +
+22 control = 82, not 101. Trap recorded: `member_expertise.pct` is **0..1**, `personas_stats.value` is
+**0..100** — "under 20" against the wrong one returns all 742. Task 2 (the crawl) still needs Andy's go on
+spend; Task 3 not started.
+
+**#164 filed** (47a7de7): admin storefront + seven self-contained tools, the design pack Andy handed over;
+owned by the `Digest Redesign` session in mds-digest-web. Kickoff written to
+`~/Downloads/design_handoff_mds_admin/PASTE_THIS_IN_NEW_SESSION.md`; the peer session briefed by message.
+
+**#165 phase 2 — the absolute stat bar, BUILT and reviewed, not merged.** Traced before building: the sheet
+showed **no raw score anywhere** — both numbers in "40/59" were percentiles, `personas_stats.peak` is
+**fabricated** (`LEAST(100, round(value × peak_score ÷ score))`), and the reference line was `left:"70%"`
+with a hardcoded label tied to nothing. A percentile's median is always 50 and max always 100, so it cannot
+show distance: Corey's Attribution 36 vs Aggregators 51 hid real scores of 0.42 vs 1.41. DB half
+(Scorecard, branch `165-personas-numbers-20260907`, worktree `.claude/worktrees/165-numbers`): aa9953f —
+`personas_stats` +`score_today, score_peak, pool, topic_top, topic_median`, append-only `create or
+replace`, every pre-existing column byte-identical across all 16,932 rows, view md5 matches the export,
+gate exit 0; 26c6cec — board rulings + AC 6. Web half (mds-digest-web, branch `165-personas-sheet-20260907`
+on top of the first #165 build 50c7a4a): 98f40ba absolute `StatBar`/`StatRow` (axis 0→community top, fill
+= score, tick = recorded peak, line = community median, `18.62/18.69` with `100th · 1 of 461` beneath;
+`barGeometry` pure with 8 asserted cases incl. the clamp when a decayed member's peak exceeds today's topic
+top) → e57f874, d452061 copy fixes → 04b2675 final-review fix wave. **Three copy agents in a row each fixed
+the sentences they were pointed at and left the one next to it**; the third transcribed all 34 rendered
+sentences that explain a number with a TRUE/FALSE each and found the "EXPERTISE RANK" hover a prior sweep
+had graded TRUE. Opus whole-branch review: fit to merge with fixes — the real one was a **phone break**: the
+≤640px rule still held the width measured for "100/100", so at 375px the score painted over the badge on
+every row. Fixed (numbers on their own row on phones), re-review measured it itself: 17.0 / 15.5px clear at
+375, six rows clean at 390, desktop `454 220 128 96` untouched. Also fixed: "a score of 60 or above" → "the
+60th percentile or above" (the cohort cutoff is on `value`); header "EXPERTISE RANK" → "EXPERTISE"; the
+strip now states the bar's ceiling. Deferred on purpose: "0th" on 10 bottom rows; aria-label on no-row
+topics; `pool` counts 349 zero-score rows the copy calls "signal" (#163's wording call); `personas_sheet`
+~89 ms; pre-existing name ellipsis at 375px. tsc clean · vitest 900/900 · `npm run build` exit 0. Ledger
+`.superpowers/sdd/165-personas-numbers/progress.md`.
+
+**#165 phase 3 — the rank-led row (`aa47d70`, phone fix `f2975cb`).** Andy read phase 2 on local: *"humans will
+not read 18.62/18.69 · 100th · 1 of 461 … median — barely visible, and not clear what it is … then these end arrows
+… I have no clue how to read it."* Owned: the phase-2 hierarchy was the controller's design — the biggest number
+was the one nobody can interpret, the readable one (rank) was the smallest text, "median" repeated 18×, two markers
+for one idea, and a linear bar crushes everyone left because the top holds 20× the median. Mockup shown inline with
+Corey's real numbers; Andy: "ok, lets see it on local". Built: rank headline `#N / of pool` · raw score, peak,
+typical, top, percentile on hover + in the score-built disclosure · log-scale bar `ln(1+x)/ln(1+top)` · one dashed
+unlabeled typical mark · no today triangle · ghost only when fading AND peak > today (proven: Aggregators has
+peak > today but holding → no ghost) · legend once · 13 rendered sentences transcribed, 1 FALSE ("Score score")
+fixed in-commit. Review on Corey AND Ryan Pace (#182–#475; 7 rows match the formula) found two phone-only CSS
+defects — the shared row took 52px from the name column (27 of 51 names truncated at 375px) and an empty grid row
+added 28px per row — fixed by restoring the dedicated numbers row (3 of 51 truncate, all pre-existing; no 0px
+track), re-review measured it. 901 tests · tsc clean · build 0.
+
+**Findings for #163 from #165 (reported, untouched):** posts weight 2.0 but 0 of 16,762 rows carry a
+posts evidence key (heaviest weight may be dead) · 1,016 detail-stat rows score under a zero parent ·
+`or weakness > 0` redundant in `personas_sheet` asks · 2,407 of 4,960 focus signals ARE the member's own
+census/application answers.
+
+**Housekeeping.** The shared checkout was moved to a peer's branch while this session was down; all work
+ran from worktrees. A wrong URL was given to Andy once (`recG2hA8WPuJJ873i` is Ryan Pace; Corey Smith is
+`recLS9VdInRcZY3vc`) — corrected the same turn.
+
+**Next.** Andy looks at `localhost:3165/personas/recLS9VdInRcZY3vc` and says "merge" → merge both
+branches (web merge = Render deploy; the view is already live so there is no ordering). Then #163 Task 2:
+bring Andy the crawl spend for 82 members and wait for the go.
+
 ## 2026-09-07 · Admin portal refinement · **#166 + #167 SHIPPED to prod (three deploys) · #165 BUILT and handed to the Scoring-system session · #163 Task 1 review fixes committed**
 
 **Trigger (Andy):** "continue working on oliva" → briefing → the digest-web handoff put Personas in front → "go" → "can you do
