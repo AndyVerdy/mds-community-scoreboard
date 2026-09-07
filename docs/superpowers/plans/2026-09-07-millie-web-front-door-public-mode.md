@@ -544,8 +544,10 @@ if (b && b.web === true) {
 
 # ---- 2. Load Recent Turns: web threads read their own table ----
 LRT_OLD = "=https://nadtudwuwjhckotrngzn.supabase.co/rest/v1/olivia_messages?phone=eq.{{ $('Resolve Member').first().json.to }}&created_at=gte.{{ new Date(Date.now() - 86400000).toISOString() }}&select=role,text,route,plan,created_at,wamid&order=created_at.desc,id.desc&limit=16"
+# Web threads keep their memory whatever their age (Andy 2026-09-07: "and it carries the history?" — yes): no 24h
+# cut for the web table, only the same 16-turn cap Prep Context already applies (each turn trimmed to 500 chars).
 LRT_NEW = ("={{ $('Log Inbound').first().json.channel === 'web' "
-           "? 'https://nadtudwuwjhckotrngzn.supabase.co/rest/v1/olivia_web_messages?thread_id=eq.' + encodeURIComponent($('Log Inbound').first().json.thread_id) + '&created_at=gte.' + new Date(Date.now() - 86400000).toISOString() + '&select=role,text,route,plan,created_at,wamid&order=created_at.desc,id.desc&limit=16' "
+           "? 'https://nadtudwuwjhckotrngzn.supabase.co/rest/v1/olivia_web_messages?thread_id=eq.' + encodeURIComponent($('Log Inbound').first().json.thread_id) + '&select=role,text,route,plan,created_at,wamid&order=created_at.desc,id.desc&limit=16' "
            ": 'https://nadtudwuwjhckotrngzn.supabase.co/rest/v1/olivia_messages?phone=eq.' + $('Resolve Member').first().json.to + '&created_at=gte.' + new Date(Date.now() - 86400000).toISOString() + '&select=role,text,route,plan,created_at,wamid&order=created_at.desc,id.desc&limit=16' }}")
 
 # ---- 3. New nodes ----
@@ -795,8 +797,17 @@ conn["Public Redact"] = {"main": [[{"node": "Public Smooth (Claude)", "type": "m
 conn["Public Smooth (Claude)"] = {"main": [[{"node": "Public Verify", "type": "main", "index": 0}]]}
 conn["Public Verify"] = {"main": [[{"node": "Format Web", "type": "main", "index": 0}]]}
 ```
-`MOD_ONE_LINE` = the module text with newlines collapsed for use inside an `={{ }}` expression (n8n expressions
-are single-line JS; `node --check` the collapsed text too). `Public Redact` reads both upstream nodes by name
+`MOD_ONE_LINE` is the module collapsed to one line for use inside an `={{ }}` expression (n8n expressions are
+single-line JS). Define it in the script exactly as:
+
+```python
+MOD_ONE_LINE = " ".join(l.strip() for l in MOD.splitlines() if l.strip() and not l.strip().startswith("//"))
+ok, err = node_check(MOD_ONE_LINE + " extractEvidenceRows([]);")
+if not ok: sys.exit("MOD_ONE_LINE does not parse: " + err)
+```
+(the module has no trailing `//` comments on code lines — keep it that way, or the collapse would swallow code).
+`Public Smooth (Claude)` copies `Fact Check`'s parameters with one key replaced:
+`{**nodes["Fact Check"]["parameters"], "jsonBody": PUBLIC_SMOOTH_BODY}` and reuses its `credentials` block. `Public Redact` reads both upstream nodes by name
 (`$('Classify Evidence (Supabase)').all()`, `$('Fetch Name Index (Supabase)').all()`) so the two-input
 merge order does not matter; n8n v1 executes both fan-out branches before a node that depends on both. Set
 `alwaysOutputData: true` on `Classify Evidence (Supabase)` so an empty classification (no urls) still lets the
@@ -864,29 +875,35 @@ git commit -m "#169: Public Gate on staging — classify, name index, redact, Ha
         # 3. no web turn ever landed in the member conversation table or reached Meta
         st, rows = curl("GET", f"{BASE}/olivia_messages?select=id&wamid=like.wamid.SELFTEST_WEB_*&limit=1", key, profile_hdr=["Accept-Profile: digest"])
         check("no SELFTEST_WEB wamid in olivia_messages (web turns save to their own table)", st == 200 and rows == [], f"status {st} rows {rows}")
-        # 4. the deployed Public Gate code is the tested module (staleness check against public_gate.js)
+        # 4. wherever the Public Gate nodes exist (prod after promote, staging before), they embed the TESTED
+        #    module — a staleness check against public_gate.js. Reads both targets so the gate can be green
+        #    before the promote that carries the nodes to prod (olivia_wf.py promote runs this gate first).
         _mod = open(os.path.join(os.path.dirname(__file__), "olivia_loop", "public_gate.js")).read()
         _mod = _mod.split("// --- PUBLIC_GATE_BEGIN ---")[1].split("// --- PUBLIC_GATE_END ---")[0].strip()
-        _n8n = load_env(); _wf = subprocess.run(["curl", "-s", "-m", "60", f"{_n8n['N8N_API_URL'].rstrip('/')}/api/v1/workflows/12wj6h1TWqb0d4Dq", "-H", f"X-N8N-API-KEY: {_n8n['N8N_API_KEY']}"], capture_output=True, text=True)
-        try:
-            _nodes = {n["name"]: n for n in json.loads(_wf.stdout)["nodes"]}
-            _ok = all(_mod in _nodes[nm]["parameters"]["jsCode"] for nm in ("Public Redact", "Public Verify"))
-        except Exception as _e:
-            _ok = False
-        check("prod Public Redact + Public Verify embed the tested public_gate.js module", _ok)
+        _n8n = load_env(); _seen, _stale = 0, []
+        for _wid in ("12wj6h1TWqb0d4Dq", "bqHstPDi84uOhTCJ"):
+            _wf = subprocess.run(["curl", "-s", "-m", "60", f"{_n8n['N8N_API_URL'].rstrip('/')}/api/v1/workflows/{_wid}", "-H", f"X-N8N-API-KEY: {_n8n['N8N_API_KEY']}"], capture_output=True, text=True)
+            try:
+                _nodes = {n["name"]: n for n in json.loads(_wf.stdout)["nodes"]}
+            except Exception:
+                _nodes = {}
+            for nm in ("Public Redact", "Public Verify"):
+                if nm in _nodes:
+                    _seen += 1
+                    if _mod not in _nodes[nm]["parameters"]["jsCode"]: _stale.append(f"{_wid}:{nm}")
+        check("Public Redact + Public Verify exist on at least one target and embed the tested public_gate.js", _seen >= 2 and not _stale, f"seen {_seen}, stale {_stale}")
         # 5. the module's own tests pass (the fail-closed path is one of them)
         _t = subprocess.run(["node", "--test", os.path.join(os.path.dirname(__file__), "olivia_loop", "public_gate.test.mjs")], capture_output=True, text=True)
         check("public_gate.js unit tests pass (redaction + leftover-name fail-closed)", _t.returncode == 0, _t.stderr[-300:])
 ```
-Until Task 8 promotes, check 4 reads prod and will FAIL (the nodes are on staging only) — that is correct: the
-gate must be red until the promote carries the nodes across, and green right after. Run it against staging
-meanwhile by pointing the workflow id at `bqHstPDi84uOhTCJ` locally, never commit that.
+Check 4 reads both targets, so it is green once the nodes are on staging (Task 6) and stays green after the
+promote carries them to prod — `olivia_wf.py promote` runs this gate BEFORE the swap and must not be blocked by
+its own precondition.
 
-- [ ] **Step 2: Run the gate on staging (temporarily) and then as committed**
+- [ ] **Step 2: Run the gate**
 
 Run: `python3 scripts/olivia_leak_gate.py`
-Expected before promote: every new check PASS except check 4; total count +6. After Task 8: all six PASS,
-`GATE PASSED`.
+Expected: all six new checks PASS, total count +6, `GATE PASSED`.
 
 - [ ] **Step 3: Commit**
 
@@ -1030,7 +1047,28 @@ export async function readThread(askerEmail: string, threadId: string): Promise<
       `&asker_email=eq.${encodeURIComponent(askerEmail)}&thread_id=eq.${encodeURIComponent(threadId)}&order=id.asc&limit=200`,
   );
 }
+
+// Multi-chat (Andy 2026-09-07: "Can we do this in the chat multi-session system? Like in Claude chat?"): one row
+// per thread for the sidebar — id, mode, the first question as its title, last activity. Derived from the
+// caller's own member rows; no model call, no extra table.
+export type ThreadSummary = { thread_id: string; mode: string; title: string; last_at: string; turns: number };
+export async function listThreads(askerEmail: string, mode: WebMode): Promise<ThreadSummary[]> {
+  const rows = await sbRequest<{ thread_id: string; mode: string; text: string | null; created_at: string }[]>(
+    `olivia_web_messages?select=thread_id,mode,text,created_at&role=eq.member` +
+      `&asker_email=eq.${encodeURIComponent(askerEmail)}&mode=eq.${mode}&order=id.asc&limit=2000`,
+  );
+  const byThread = new Map<string, ThreadSummary>();
+  for (const r of rows) {
+    const cur = byThread.get(r.thread_id);
+    if (!cur) byThread.set(r.thread_id, { thread_id: r.thread_id, mode: r.mode, title: (r.text || "").slice(0, 80), last_at: r.created_at, turns: 1 });
+    else { cur.turns += 1; cur.last_at = r.created_at; }
+  }
+  return [...byThread.values()].sort((a, b) => (a.last_at < b.last_at ? 1 : -1));
+}
 ```
+The route's `GET` also serves `?list=1&mode=public` → `{ threads: ThreadSummary[] }` (staff-gated the same way;
+`mode` parsed with `isWebMode`, else 400). Add to the route test: two threads for the caller and one for someone
+else → the list holds exactly the caller's two, newest first, titled by their first question.
 
 ```ts
 // src/app/api/admin/millie/chat/route.ts  (#169)
@@ -1159,9 +1197,13 @@ export function shapeTurns(rows: WebTurn[]): ChatTurn[] {
 - [ ] **Step 4: Run** → PASS. Commit: `git add src/components/tools/millie/chat/chat-model*.ts && git commit -m "#169: chat view-model helpers"`.
 
 - [ ] **Step 5: The component.** `"use client"`. State: `mode` (from `?mode=`), `target` (from `?target=`),
-`threadId` (per mode, generated `t_<base36>` once and kept in `sessionStorage` key `millie-chat-<mode>`), `turns`,
-`pending` (the question in flight), `error`. On mount and mode change: `GET /api/admin/millie/chat?thread_id=`
-→ `shapeTurns`. Send: `POST` with `{mode, target, text, thread_id}`; while awaiting show the question with a
+`threads` (from `GET ?list=1&mode=`), `threadId` (the newest thread of the mode, or a fresh `t_<base36>` when the
+list is empty or **New chat** is clicked), `turns`, `pending` (the question in flight), `error`. Layout adds a
+left column (220px): **New chat** button on top, then the mode's threads newest first — title (first question,
+one line, ellipsis), turn count and relative time; the active one highlighted with `var(--accent)`. Clicking a
+thread loads it (`GET ?thread_id=` → `shapeTurns`); after a successful send, refresh the list so a new thread
+appears with its title. Threads are the caller's own — the route enforces it. On mount and mode change: load
+the list, then the active thread. Send: `POST` with `{mode, target, text, thread_id}`; while awaiting show the question with a
 "Millie is working…" line and a disabled composer; on response append the turn (`answer_md`, `notes`, `sources`,
 `refused`); on non-200 show the `error` sentence. No `setInterval`, no polling anywhere. Layout: mode tabs
 (`Test` · `Public` · `Team` disabled with title "coming with Team mode (#170)") as a segmented control using the
