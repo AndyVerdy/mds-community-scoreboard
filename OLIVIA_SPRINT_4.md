@@ -95,6 +95,10 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#160** | 🌐 Partner web profiles — crawl every partner site (services · pricing · people · proof) so Millie knows what a partner does and who runs it; founder ↔ partner link (Mudit Jain → Prosperlytics) | 🟡 S2 | M | ✅ staging `cefe0133` — probes: cost + who-runs-it answered from the site | ✅ **PROMOTED 2026-09-04 00:17Z (Andy: "promote") — prod `30fd7e6f`**, gate green in-promote, prod probe exec 131383: Shea's question → Prosperlytics 5.0★ first with site facts + pricing; 506 profiles, 1,173 people, 52 speakers linked, web text in the partner vectors |
 | **#161** | 🎴 MDS Personas — staff library of members (library v2 · character sheet · cohort) on the persona + 51-stat ledger, Claude Design handoffs v1 + v2 | 🟡 S2 | L | ✅ built + reviewed LOCALLY | ✅ **SHIPPED 2026-09-04 (Andy: "lets promote personas")** — merged to `main` in both repos, Render deploy `e212bcf` — 3 screens live on `localhost:3000/personas`, 7 read-only RPCs, 639/760 portraits in Storage, 758/758 blurbs, gate 323/0, 359 tests, `npm run build` exit 0; 13 tasks + 5 feedback rounds + final review wave on `personas-20260904` (both repos); merge to main = Render deploy |
 | **#163** | 🔢 Personas scoring review — what each number means (level · stat value · today/peak · rank), cohort floor 60 hides the tail, "peak floor applied", asks = gives overlap. Andy 2026-09-04: "the worst performer in each category never goes below 60" | 🟡 S2 | M | filed | 📝 filed 2026-09-04 (Andy: "file it, we will check these things later, the whole scoring system") — after #161 ships |
+| **#164** | 🎨 Admin storefront + seven self-contained tools — split the shared nav bar into a launcher plus per-tool navigation, merge the three WhatsApp pages into one tabbed tool (design handoff `~/Downloads/design_handoff_mds_admin/`) | 🟡 S2 | L | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 00:19** — `mds-digest-web` `main` = `cfb3350`, Render live 00:22; 7 admin routes answer, `/dashboard` unaffected, all 12 retired URLs redirect; 91 commits, 200 files, 882 tests, `next build` clean. Open items (not blocking) in that repo's `docs/ADMIN_OPEN_ITEMS.md` |
+| **#165** | 🃏 The Personas sheet does not explain itself — FOCUS / GIVES / ASKS carry no source, "In their words" is a model paraphrase, 11 silent categories hide in a grey footer, "Top 6" reads as a filter and is an expand control | 🟡 S2 | M | n/a (web — Render, no staging tier) | ✅ **BUILT on `165-personas-sheet-20260907` (`50c7a4a`), awaiting Andy's look before merge** — all 18 categories as rows, provenance on every block (`docs/PERSONAS_FIELD_PROVENANCE.md`), "In their words" gone, "Top 6" → "Open top 6"; found 1,016 detail stats across 503 members that were unreachable; Ryan Pace's Member 360 correctly empty (Stripe sync lag); 892 tests, `next build` exit 0; open call: bar marker at 70 vs "60 is strong" copy |
+| **#166** | 🔲 Personas and Digest have no tool switcher — every other tool got the header grid button in #164; these two never render `ToolHeader` | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "166 is good, we can promote it")** — merge `b91f2a4`, confirmed live via `/api/version`; switcher in the Personas top bar and both Digest headers, `← All tools` link retired, 1–7 jumps with no storefront round trip; fixed on the way: dismiss layer shrunk to header height under `backdrop-filter`; 920 tests, `next build` exit 0; open call: two grid icons (switcher + Browse) in the Personas header |
+| **#167** | 🔟 Team pulse survey — the rating popup where every number but 10 runs away from your cursor; design pack approved on sight, logic (when to ask, where answers land) agreed | 🟡 S2 | M | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "if u r sure, lets promote")** — merge `41da9e7`, confirmed live via `/api/version` 02:14 local; once per person ever (wave `survey_key`), from the 2nd login after `SURVEY_STARTED_AT` 2026-09-07, card centred (`Popup align="center"`, opt-in), `?pulse=1` for `SURVEY_TESTER_EMAILS` only (default Andy), `is_test` rows excluded everywhere, Team pulse results popup on the storefront, Slack `#automation-tests`; 1047 tests, 22/22 mutations killed, e2e script 32/32, `next build` exit 0; table holds 6 rows, all Andy's tests. **Roster fix same night (Andy: "no, its only people who r using now, but we have team of 30"): M = `member_attributes.membership_status = 'Staff'` (30 rows), not the 17 `@mds.co` portal logins — merge `491a968`, live 02:24 local, storefront reads 0 OF 30.** **Second-day rule (Andy: "go"): merge `e2d933d`, live 12:42 local — asked on the 2nd distinct UTC day the person opens `/admin` since launch, visits recorded in new `digest.admin_survey_visits` (RLS on, service_role only), `member_sessions` no longer read; 1068 tests, e2e 45/45, mutation 4/4 classes killed** |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -447,6 +451,181 @@ Prosperlytics · handbook line corrected · SKILL.md of the scheduled task updat
 2. Stat-rail cards label the two numbers (or drop one) — no unlabeled gold numbers.
 3. A distribution report per category: members with signal, min / median / p90 / max of `value`, count ≥ 60 — reviewed with Andy; decision on the cohort floor (60 vs top-N vs show-all-with-signal).
 4. Any change to the scoring itself (percentile method, peak floor, decay) is its own ticket with before/after on the eval bank.
+
+### #164 · Admin storefront + seven self-contained tools
+
+**🟡 S2 · size L — filed 2026-09-05 (Andy: "i also want to redesign our digest portal").**
+**Owned by the `Digest Redesign` session, repo `mds-digest-web`.** The #163 session does not touch it.
+
+**Story.** As an MDS admin landing on the admin surface, I want a storefront listing every tool and
+letting me find the one that answers my question, and I want each tool to own its own navigation and
+its own help, so that the surface teaches itself instead of making me hunt a shared nav bar I did not
+build.
+
+**Origin.** Design handoff `Admin tools storefront design.zip`, unzipped to
+`~/Downloads/design_handoff_mds_admin/`. Seven high-fidelity HTML design references plus one brief per
+screen. The references are prototypes, not production code — the job is to rebuild them in
+mds-digest-web's own primitives, not to port inline styles.
+
+**Scope.** Seven screens in the handoff's build order: Admin Storefront · tool covers · WhatsApp
+(merges three existing pages into one tabbed tool) · Facebook Group · Member 360 · Millie · Tools
+Health. `mds-digest-web` has no staging tier — a merge to `main` IS the Render deploy.
+
+**Acceptance.**
+1. The seven shared components are built during screen 1 and reused by every later screen, not
+   regrown per screen: ToolHeader, HelpPanel, StatTile, DataTable, Popup, PeriodSelector, FilterPills.
+   The handoff names this as the single biggest risk in the pack.
+2. The interaction rules hold on every screen, because they are the design: clicking a number opens a
+   popup over the page and never navigates away; every table sorts both directions; every list has an
+   empty state; every count derives from the data and agrees with the table under it, including under
+   an active filter; classifier chips are editable and a manual change is never overwritten by a later
+   run.
+3. One screen per session, seven sessions minimum. Each closes with its screen proven in the running
+   app, not asserted.
+4. The handoff's six open questions are answered by Andy before the screen that depends on each —
+   endpoints per screen, the real Tools Health scope (header says 38, list holds 41), whether WhatsApp
+   and Millie link out to Member 360 or keep scoped member views, the Millie rename reaching
+   WhatsApp-facing copy, the merged WhatsApp tool name, and where per-admin pins and per-tool help
+   docs live.
+5. Old WhatsApp URLs redirect to the merged tool's tabs.
+
+**Not in scope.** SOP videos do not exist yet — every help panel ships with the empty 16:9 slot. Tool
+cover artwork is CSS, standing in for real illustrations that drop into the same slots later.
+
+### #165 · The Personas sheet does not explain itself
+
+**🟡 S2 · size M — filed 2026-09-07 (Andy, after reading Ryan Pace's sheet: "Basically, I feel like
+it's a very cool page, but I have no clue what is going on" · "page should be clear so others can use
+it. we need to revise the logic and make page cleaner").** Repo `mds-digest-web`; ticket detail in that
+repo's `docs/PERSONAS_OPEN_QUESTIONS.md`.
+
+**Story.** As MDS staff opening a member's Personas sheet, I want every block to say what it is and
+where it came from, so that someone who has never seen the page can read a member without being told.
+
+**What the source actually says (traced live 2026-09-07, answering the ticket's own open question).**
+`digest.personas_sheet(p_id)` returns `focus`, `gives_text`, `asks_text`, `summary`, `blurb` and
+`pattern` straight out of `digest.member_personas.persona`. That jsonb is written nightly by
+`persona_refresh.py` (`~/mds-scorecard-tools`, launchd `com.mds.persona.refresh` 04:15) using Claude
+Haiku 4.5 — 766 rows, newest built 2026-09-06. Its prompt weighs Millie questions from the last 90
+days first, then authored WhatsApp and Facebook posts and comments, then confirmed event attendance,
+then chat. **So FOCUS, GIVES and ASKS are inferred from behaviour, never member-stated** — which makes
+the current "In their words:" heading over the gives/asks prose false. The chips are a different
+thing under the same heading: `personas_stats` rows whose `evidence` carries `persona_gives_hits` /
+`persona_asks_hits` (plus `weakness > 0` for asks), i.e. that same inferred text matched against the
+taxonomy.
+
+**Acceptance.**
+1. FOCUS RIGHT NOW, GIVES and ASKS each name their source and meaning on screen. "In their words"
+   goes or becomes honest.
+2. The 11 silent categories render as ordinary zero rows, not the grey `No signal yet on: …` footer —
+   Andy's explicit ask: a zero is data, and the sheet should be all 18 categories, not an edited 7.
+3. "Top 6" renamed or reworked. It reads as a filter and is an expand control (`i < 6` decides how
+   many rows start open); it never filters anything.
+4. The ledger showing its working — the rank line, the evidence-channel counts, the nested zero
+   sub-stats — moves behind the help layer instead of leading the read.
+5. Field-by-field provenance written down in the repo; kit rules hold (every number derives from
+   fetched data, every colour a token); `tsc`, lint, tests and `next build` all clean.
+
+**Also settle.** Is Ryan Pace's Member 360 (`/admin/member360/recG2hA8WPuJJ873i`) broken or correctly
+empty? Working hypothesis is correctly empty — a New Member who joined 2026-08-31 with no activity —
+but Andy added a Stripe subscription id after the page was last read, so re-check rather than conclude
+from the old render.
+
+**Coordinate with #163**, which is reviewing whether these numbers are RIGHT. This ticket is whether a
+reader can tell what they ARE. No formula ships from #163's current phase, so the numbers do not move
+under this work.
+
+### #166 · Personas and Digest have no tool switcher
+
+**🟡 S2 · size S — filed 2026-09-07 (Andy, seeing the switcher list its own Personas row as "NO
+PAGE").** Repo `mds-digest-web`; detail in that repo's `docs/ADMIN_OPEN_ITEMS.md`, "Navigation".
+
+**Story.** As an MDS admin inside Personas or the Digest dashboard, I want the same grid button every
+other tool has, so that I can move to another tool without bouncing off the storefront and picking
+again.
+
+**Why these two missed it.** #164 gave all seven tools a `ToolHeader` carrying `ToolSwitcher`. Personas
+has its own top bar — it predates the redesign and lives outside the `(tools)` route group — and
+Digest is `/dashboard`, the member portal. Personas has a `← All tools` link, which is the exact round
+trip the switcher exists to remove. The switcher is one shared component
+(`src/components/tools/ToolSwitcher.tsx`), so this is giving two headers access to it, not rebuilding it.
+
+**Acceptance.**
+1. The grid button appears in both headers and opens the same switcher the seven tools use.
+2. Keyboard behaviour matches the seven: 1–7 to jump, Escape closes, current tool marked.
+3. No kit primitive is rebuilt; every colour a token.
+4. `tsc`, lint, tests and `next build` clean, and both headers proven in the running app.
+
+### #167 · Team pulse survey — the rating popup where only 10 is selectable
+
+**🟡 S2 · size M — filed 2026-09-07 (Andy: "i want to add a survey, it a funny one, where you cant
+select anything but 10 … i want to see it locally first to check the design, and then we can work on
+the logic").** Repo `mds-digest-web`. Design pack `~/Downloads/survey.zip`, unzipped to
+`~/Downloads/survey_design/mds-admin/`; mechanics in `components/rating-popup/README.md`.
+
+**Story.** As MDS staff, I want to know how the team is finding the new admin portal, asked in a way
+people actually enjoy answering, so that we get a real signal instead of an ignored form.
+
+**The design, approved on sight 2026-09-07.** A modal over the storefront: "How are you liking the new
+admin portal?", buttons 1–10. Hovering 1–9 makes the number bolt away, one of eight directions with
+rotation and shrink, springing back after ~520ms; the dodge grows 7px per attempt to six. Clicking a
+fleeing number dodges and shakes rather than registering. 10 never moves. The copy escalates through
+eight taunts. Picking 10 plays a celebration and offers an optional comment box. After five failed
+attempts an escape hatch appears — "let me answer honestly →" — where all ten buttons work. **Keep the
+hatch: a rigged survey collects no data, and the honest answers are the useful ones.** Browsers cannot
+move a visitor's pointer, so the button flees the cursor instead, which produces the same feeling.
+
+**The logic (Andy ruled 2026-09-07, tightening an earlier draft).**
+- **When.** Storefront `/admin` only, never inside a tool, never mid-task. **Asked once per person,
+  ever** — not once a quarter. A `wave` column (`survey_key`) carries which pulse a row belongs to, so
+  a future round can ask the same people again without a code change. A dismissal suppresses it for
+  one month. **Shown from the second DAY of use since launch, never on the first** (Andy 2026-09-07,
+  after learning a "session" is a 30-day login cookie: "Oh, then this will not happen soon. i do no
+  rememebr when was the last time i actually was loged out"). Visits are recorded per person per UTC
+  day in `digest.admin_survey_visits`, because `member_sessions` keeps one overwritten `last_seen_at`
+  and cannot tell two days apart. The shipped first cut counted logins (`MIN_SESSIONS = 2`); the
+  day rule replaces it.
+- **Who.** Identity is the session email; the staff gate is `isStaffEmail` (`@mds.co`, case-insensitive,
+  trimmed). Verified in `src/lib/session.ts` + `src/lib/staff-otp.ts` — responses key on a real person
+  and the roster is the counter's denominator.
+- **Where.** New `digest.admin_survey_responses` (email · score · comment · `honest` boolean · attempts
+  · wave · answered_at), service-role only, written through a server-side API route — the browser never
+  holds a service key. Each response posts to Slack, reusing the existing integration. **Channel:
+  `#automation-tests` (`C0AQ8USNQK0`) is the real destination, not a placeholder — Andy 2026-09-07:
+  "slack cahnnel is automation test channel".** `SURVEY_SLACK_CHANNEL` switches it if that ever changes.
+- **Reading the answers: an admin page, not email (Andy 2026-09-07: "admin page then, go with that").**
+  A staff-only **Team pulse** panel on the storefront, opening as a popup rather than navigating away,
+  same rule the seven tools follow. It shows how many of the roster answered, the joke tens against the
+  honest scores, and the comments — the only real content. Email was rejected: the Slack ping already
+  covers immediacy, and an email cannot show the split.
+
+**Andy's test requirements (2026-09-07).**
+- **The card is centred in the viewport, vertically and horizontally.** The prototype sits high on the
+  page with dead space beneath it; that is a prototype artifact, not the design.
+- **A personal trigger so he can walk the whole flow as often as he likes.** Forced open on the
+  storefront, gated to his session email alone — never anyone else's, never a flag a normal admin can
+  set on themselves.
+- **A test run must cost nothing.** A response submitted through the trigger is marked as a test, is
+  excluded from the counter and from the Team pulse panel, and does **not** consume his one real ask.
+  Without that, the first walkthrough burns the honest answer we are trying to collect.
+- Automated coverage of the flow end to end on top of that, so a regression shows up without a human
+  clicking through it.
+
+**Acceptance.**
+1. The popup behaves as the pack does: 1–9 flee, 10 does not, taunts escalate, celebration on 10,
+   hatch after five attempts. The card is centred in the viewport.
+2. A submitted answer lands in the table and the row can be shown; a joke ten and an honest answer are
+   separable by `honest`.
+3. The "N of M answered" counter is real — M is the staff roster, N the response count. No literal
+   totals (kit rule 1).
+4. The eligibility rule holds on all three arms: under three sessions, already answered this quarter,
+   dismissed within the month.
+5. New logic carries tests that can fail — #164 shipped three sort tests that passed while unable to
+   fail. `tsc`, lint, tests and `next build` clean, proven in the running app.
+
+**Not in scope.** The prototype's placeholder "12 of 14 answered" and its unwired Send button. The
+celebration image is Andy's own asset and is copyrighted character art — used as supplied, animated
+around, never redrawn.
 
 ### #160 · Partner web profiles — crawl every partner's site so Millie knows what they do, what it costs and who runs it
 **🟡 S2 · size M — filed 2026-09-03 (Andy: "lets fix partners and run agents to browse partners' website … use a cheap model, Sonnet").**

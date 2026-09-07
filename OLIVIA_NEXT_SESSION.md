@@ -11,7 +11,67 @@
 
 # Olivia — next session
 
-## STATE 2026-09-04 (17:30Z) — #162 CLOSED · 2026 videos 212/212 transcribed · PROD `30fd7e6f` untouched, warehouse only
+## STATE 2026-09-07 — #165 Personas sheet BUILT, handed to the scoring-system (#163) session · #166 + #167 SHIPPED
+**Andy 2026-09-07: "i need you to transfer 165 updates to Scoring system agent, ill work on it there."** Everything
+below is what that session needs; nothing is left in the head of the session that built it.
+
+### #165 · where the work is
+- **Repo `mds-digest-web`, branch `165-personas-sheet-20260907`, one commit `50c7a4a`, pushed, NOT merged.** Built off
+  `7ba7ea8`; `main` has since moved to `491a968` (#166 switcher, #167 survey + roster fix) — none of those touched
+  #165's files (`src/app/personas/[id]/**`, `src/components/personas/StatsPanel.tsx`, `StatRow.tsx`, `StatusDot.tsx`,
+  `Chip.tsx`, new `SheetHelp.tsx`, `PersonaLines.tsx`, `src/lib/personas/**`, `src/app/personas/dev/components/page.tsx`),
+  so it rebases clean. Merge to `main` = Render production deploy.
+- **Docs written by the build:** `docs/PERSONAS_FIELD_PROVENANCE.md` (field-by-field, two writers: `persona_refresh.py`
+  → `member_personas.persona` by Haiku 4.5; `derive_member_expertise()` → `personas_stats`) and the "What #165 did" section
+  of `docs/PERSONAS_OPEN_QUESTIONS.md`. Board row + story + ACs: `OLIVIA_SPRINT_4.md` §#165.
+- **Local proof was on `:3165`** (a worktree at `mds-digest-web/.claude/worktrees/165-personas-sheet`, dev server may be
+  down); staff cookie via `scripts/dev-session-cookie.mjs`. Gates at the commit: `tsc` 0 · 892 tests · `next build` 0.
+
+### #165 · what shipped on the branch (all verified in the running app on Ryan Pace + two other members)
+1. All 18 categories render as rows (7 with signal, 11 at zero); every sub-stat renders under its parent. The grey
+   "No signal yet on:" footer and the nested "no signal yet:" line are gone.
+2. Top strip states what the sheet is: a briefing assembled by MDS the member never fills in or sees; the written lines are
+   a model's summary of signals, not the member's words; the numbers are ranks against the community. "Persona written
+   3 Sep 2026 by Claude Haiku 4.5" beside it. "How this sheet works" panel = layer two.
+3. FOCUS shows each item's stored recency (`active-now` / `recent` / `background`); hover a line → the `signal` (often the
+   member's own form answer, e.g. "self-reported 2026-08-21: biggest constraint = Platform risk") and the `why`.
+4. GIVES → "what they can help with", ASKS → "what they are looking for"; the model's lines first, "MATCHED CATEGORIES"
+   chips second. "In their words" removed (it was Haiku's paraphrase).
+5. "Top 6" → "Open top 6" with a hover saying it never filters. Rank line + evidence channels demoted into a closed
+   "How this score was built" disclosure per opened category, rewritten as sentences; `band_multiplier` /
+   `peak_floor_applied` shown as "scoring rules applied", not evidence.
+6. Two rendering bugs fixed on the way ("Ryannever fills it in" — JSX ate a space across a line break; "Rank#179" to a
+   screen reader).
+
+### #165 · findings that belong to #163 (the scoring review) — reported, NOT touched
+- **1,016 detail-stat rows across 503 members were unreachable**: a sub-stat can score while its parent is 0 and the old
+  page only rendered details inside a surviving category (Ryan: M&A general 49, Amazon US 38, AI tooling 27 invisible).
+  Showing all 18 fixed the display; the ledger question (why a child scores with a zero parent) is #163's.
+- **The scorer weights `posts` highest (2.0) but zero of 16,762 `member_expertise` rows carry a `posts` evidence key** —
+  every authored item lands as `comments`. Either the loader mislabels or the weight is dead.
+- **`personas_sheet`'s `asks` filter `or weakness > 0` is redundant** (`weakness = ln(1 + persona_asks_hits)`; 0
+  disagreements in 16,762 rows) — drop next time the function is touched. No DB write was made on #165.
+- **The ticket's premise was half wrong:** 2,407 of 4,960 focus signals cite the member's own census/application answers
+  (`self-reported <date>: <field> = <answer>`), so "never member-stated" does not hold — the *item text* is always the
+  model's paraphrase, the *signal* often the member's words. The page now shows the signal.
+
+### #165 · open calls for Andy (unchanged since the build)
+1. **`StatBar` reference line sits at 70 while every other Personas surface and the new copy say 60 = strong.** The page
+   literally reads "60 and above is strong" above rows marked 70. Move the line to 60 (recommended) or keep 70 and name it.
+   `StatBar.tsx` was outside #165's file ownership, so it was left.
+2. Heading vocabulary kept as GIVES / ASKS + plain gloss, not renamed, so the words still match the chips and the rest of
+   the app. Rename if wanted.
+3. Two grid icons in the Personas header after #166 (switcher far left, Browse right of search) — #166's finding, Andy's
+   call on Browse's icon.
+4. Ryan Pace's Member 360 is **correctly empty**, not broken: the page reads `member_profiles` synced 2026-09-06 16:29Z,
+   his Stripe id landed 2026-09-07 05:00Z; fills on the next mirror run (`Stripe MRR` 665). No fix made.
+
+### #166 · #167 — shipped tonight, for context only
+`main` `b91f2a4` = switcher in the Personas top bar + both Digest headers · `41da9e7` = team pulse survey · `491a968` =
+its roster fix (N of M counts the 30 Airtable Staff). A second-day-of-use rule for the survey is in flight on
+`167-visits-20260907`. Board §#166 / §#167 carry the proof.
+
+ — #162 CLOSED · 2026 videos 212/212 transcribed · PROD `30fd7e6f` untouched, warehouse only
 **Every 2026 video now carries a transcript.** 33 in-person talks (16 AI Mastermind restricted · 8 AI Scaling Live · 4 Summit
 day-2 + the 5 brand-new AI-Mastermind uploads) went through AssemblyAI ($2.62), 697 chunks, 33 Haiku summaries, embedded, gate
 313/0, E2E quote proven through the live workflow. Story + numbers in `SESSION_LOG_OLIVIA.md` 2026-09-04 (afternoon); close

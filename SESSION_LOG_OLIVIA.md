@@ -2,6 +2,59 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-07 · Admin portal refinement · **#166 + #167 SHIPPED to prod (three deploys) · #165 BUILT and handed to the Scoring-system session · #163 Task 1 review fixes committed**
+
+**Trigger (Andy):** "continue working on oliva" → briefing → the digest-web handoff put Personas in front → "go" → "can you do
+persona check and these two design tasks in parallel? if so, go for it" → "166 is good, we can promote it" → "if u r sure,
+lets promote" (#167) → "no, its only people who r using now, but we have team of 30" → "Oh, then this will not happen
+soon…" → "go" (second-day rule) → "i need you to transfer 165 updates to Scoring system agent".
+
+**How.** Three tickets filed on the board (#165 sheet · #166 switcher · #167 survey) and built in parallel by three
+subagents, each in its own `git worktree` off `origin/main 7ba7ea8` with exclusive file ownership; two follow-up agents
+for #167 as Andy's rulings arrived. Every claim below was re-checked from this session before it was relayed (page HTML
+with a staff cookie, SQL on the tables, `/api/version` on prod, root test suite run here).
+
+**Shipped — `mds-digest-web` (each merge to `main` = Render deploy, all confirmed via `/api/version`):**
+- **#166 `b91f2a4`** — `ToolSwitcher` mounted in the Personas top bar and both Digest headers; `← All tools` link retired;
+  dismiss layer fixed (a `backdrop-filter` header had made the fixed scrim 1440×64). "NO PAGE" was only ever in the design
+  prototype. 920 tests.
+- **#167 `41da9e7`** — team pulse survey: kit `Popup`, 1–9 flee (34px + 7px/attempt), 10 fixed, 8 taunts, celebration,
+  honest hatch after 5, `digest.admin_survey_responses` (RLS, service_role, xor checks), server-side route, Slack card to
+  `#automation-tests` (Andy: that IS the destination), `?pulse=1` for `SURVEY_TESTER_EMAILS` only (default Andy),
+  `is_test` rows excluded everywhere, Team pulse results popup on the storefront. 1047 tests, 22/22 mutations killed,
+  e2e 32/32.
+- **#167 `491a968`** — roster fix: M = `member_attributes.membership_status='Staff'` (30), not the 17 `@mds.co` portal
+  logins. Storefront reads 0 OF 30.
+- **#167 `e2d933d`** — second-day-of-use rule: new `digest.admin_survey_visits` (email, day) written per staff visit to
+  `/admin`; asked on the 2nd distinct UTC day since `SURVEY_STARTED_AT` 2026-09-07; `member_sessions` no longer read.
+  1068 tests, e2e 45/45.
+
+**Built, not merged — #165 `165-personas-sheet-20260907` `50c7a4a`.** All 18 categories as rows; provenance on every block
+(`docs/PERSONAS_FIELD_PROVENANCE.md`: FOCUS/GIVES/ASKS = `member_personas.persona` written by `persona_refresh.py` with
+Haiku 4.5; chips = `personas_stats` evidence hits); "In their words" removed; "Top 6" → "Open top 6"; ledger internals
+behind a disclosure. Found: 1,016 detail stats across 503 members were unreachable (child scores, parent 0); scorer weights
+`posts` 2.0 but no row carries a `posts` key. Ryan Pace's Member 360 correctly empty (mirror lag). **Handed to the
+"Scoring system" session** by message + `OLIVIA_NEXT_SESSION.md` STATE block; open calls: bar marker 70 vs "60 is strong",
+two grid icons in the Personas header.
+
+**Scorecard repo.** `163-truth-set-20260905` gained `2dda4f6` (Task 1 review fixes that were live but uncommitted —
+speaker subject match, `evidence_event_id`, gate sweep) and was pushed. Board on `tickets-165-167-20260907`: #164 row
+flipped to SHIPPED (drift), #165/#166/#167 filed with stories + ACs + Andy's rulings, statuses updated per deploy.
+
+**Verified live at close:** prod `e2d933d`; anon `/admin` 307, anon `/api/admin/survey` 403; `admin_survey_visits` 0 rows;
+`admin_survey_responses` 8 rows, all `is_test`, real answers 0; `personas` and `admin` gates hold.
+
+**Lessons.** (1) `vitest run` from the main checkout globs `.claude/worktrees/**` and reports phantom failures from stale
+copies — run with `--dir src`. (2) `next build` inside the sandbox fails on Google Fonts; build with network. (3) Never chain
+a merge behind a piped test command — the pipe's exit code is grep's. (4) `git stash` is shared across worktrees; agents
+collided once. (5) Andy: "keep you answer and report short and human friendly" — relay agent output as what changed and
+what he must decide, never the agent's inventory.
+
+**Next.** #165 lives with the Scoring-system session (merge = deploy once Andy has looked). #163 phase 1 Task 2 (82-member
+web test) still needs Andy's go. #167 follow-ups if wanted: Playwright for real browser e2e (dependency decision), a vitest
+exclude for `.claude/worktrees/**`, KIT.md Popup signature (`size`, `align`). Worktrees `165/166/167/167-visits` under
+`mds-digest-web/.claude/worktrees` can be removed once #165 is merged; dev servers on 3165/3167/3169 may still be running.
+
 ## 2026-09-04 (afternoon–evening) · Olivia data layer / **MDS Personas (#161) — BUILT LOCALLY, three screens, ready for Andy's merge call** · #163 filed
 
 **Trigger (Andy):** "Let's start with local first. My concern is missing images … you are relying on AT, and this is a fraud … we can scrape it during our daily or weekly fb runs." Then, mid-build: the updated home-page design (`~/Downloads/home page.zip` = Library v2: no sidebar, Browse mega-menu, hero carousel, poster cards, 14 rails), five sheet fixes, "collapse all by default", hover arrows + hidden scrollbars, 10 swipeable banners, cohort page on poster cards, one number per stat card, "clarify what each number means" → #163.
