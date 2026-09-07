@@ -480,7 +480,18 @@ git commit -m "#169: olivia_wf.py swaps both webhook paths (wa + web) on stage/p
 **Files:**
 - Create: `scripts/olivia_loop/apply_169_web_door.py`
 - Modifies (on staging, via API): nodes `Log Inbound`, `Load Recent Turns`; adds `Web Inbound (POST)`, `Web?`,
-  `Format Web`, `Save Web (Supabase)`, `Respond Web`; rewires `Eval (silent)?` true-output.
+  `Format Web`, `Save Web (Supabase)`, `Web Response`; rewires `Eval (silent)?` true-output.
+
+> **Topology correction (Task 5 fix round 1, 2026-09-07).** A `respondToWebhook` node reachable from
+> `WA Inbound (POST)` (responseMode default) trips n8n's validator — "Unused Respond to Webhook node found in the
+> workflow" — and 500s every WhatsApp-shaped execution. So the web webhook uses `responseMode: "lastNode"`
+> (`responseData: "firstEntryJson"`), there is NO `Respond Web` node, and the web path ends in a code node
+> **`Web Response`** (after `Save Web (Supabase)`) that returns the HTTP body: `{ ok, thread_id, turn_id (from the
+> saved olivia row), mode, answer_md, notes, sources, evidence_classes, refused, redactions, source_summary,
+> latency_ms, metrics }`. Three further script fixes found live: `Log Inbound`'s web branch returns a bare object
+> (the node runs once per item); `Save Web`'s two rows carry identical key sets (PostgREST bulk insert requires
+> it); the HTTP node splits the returned array into items, so `Web Response` reads `$input.all()` to find the
+> olivia row. The apply script is re-applied after `python3 scripts/olivia_wf.py stage` (prod → staging reset).
 
 **Interfaces:**
 - Consumes: Task 1 table; the existing item shapes: `Log Inbound` output `{from, text, wamid, name, ...}`;
