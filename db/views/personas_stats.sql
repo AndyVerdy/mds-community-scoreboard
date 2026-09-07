@@ -16,6 +16,17 @@ create or replace view digest.personas_stats as
         END AS badge,
     e.rank_in_topic AS rank,
     e.weakness_score AS weakness,
-    e.evidence
+    e.evidence,
+    round(e.score, 2) AS score_today,
+    round(e.peak_score, 2) AS score_peak,
+    agg.pool,
+    round(agg.topic_top, 2) AS topic_top,
+    round(agg.topic_median, 2) AS topic_median
    FROM digest.member_expertise e
-     JOIN digest.expertise_topics t ON t.topic = e.topic;
+     JOIN digest.expertise_topics t ON t.topic = e.topic
+     JOIN ( SELECT member_expertise.topic,
+            count(*)::integer AS pool,
+            max(member_expertise.score) AS topic_top,
+            percentile_cont(0.5::double precision) WITHIN GROUP (ORDER BY (member_expertise.score::double precision))::numeric AS topic_median
+           FROM digest.member_expertise
+          GROUP BY member_expertise.topic) agg ON agg.topic = e.topic;
