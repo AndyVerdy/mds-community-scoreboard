@@ -609,7 +609,9 @@ move a visitor's pointer, so the button flees the cursor instead, which produces
   excluded from the counter and from the Team pulse panel, and does **not** consume his one real ask.
   Without that, the first walkthrough burns the honest answer we are trying to collect.
 - Automated coverage of the flow end to end on top of that, so a regression shows up without a human
-  clicking through it.
+  clicking through it. **Shipped as request-level route tests plus `scripts/survey-e2e.mjs` over HTTP
+  (45 checks). Real-browser automation (Playwright) was offered and declined — Andy 2026-09-07: "skip
+  playwright". Visual checks stay manual via `?pulse=1`.**
 
 **Acceptance.**
 1. The popup behaves as the pack does: 1–9 flee, 10 does not, taunts escalate, celebration on 10,
