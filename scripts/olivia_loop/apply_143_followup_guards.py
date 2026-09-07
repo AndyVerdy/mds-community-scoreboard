@@ -124,8 +124,38 @@ _TICKET_V3 = r"""  if (last.toLowerCase().indexOf('open a ticket with the mds te
     || /\b(send|report)\b[^.?!]{0,60}\b(to|with)\s+(the\s+)?(team|them|mds)\b/i.test(last);
 }"""
 
+# A YES WITH NOTHING ON THE TABLE (staging 65605/65607, 2026-09-07 23:57Z): her answer ended with no question
+# and no offer, and "Yes please" replayed the billing plan and restated the balance. Prep Context now says
+# whether her last line asked anything; a bare yes after a turn that asked nothing skips the replay and reaches
+# the model with an explicit instruction to ask what they want.
+PR_NOTHING_PENDING = [
+    ("} else if (bareAffirm && ctx.has_history && ctx.prev_plan && ctx.prev_plan.op && !introOfferPending) {",
+     "} else if (bareAffirm && ctx.has_history && ctx.last_olivia_asks === false && !_poN && !introOfferPending && !ticketYes) {\n"
+     "  // #143: a yes with NOTHING on the table (staging 65605/65607). Her last line asked nothing and recorded no\n"
+     "  // offer, so a replay would only repeat the last answer (or invent an action). Ask what they want, in one line.\n"
+     "  intent = 'question'; followup = true;\n"
+     "  route = 'llm'; planPeriod = 'nothing_pending';\n"
+     "  params = { p_phone: mem.to, p_source: 'wa_digest', p_kind: 'daily', p_limit: 0 };\n"
+     "  askText = 'The member replied \"' + String(rawText || '').slice(0, 60) + '\" but your previous message ended without a question or an offer,'\n"
+     "    + ' so there is nothing for a yes to land on. Do NOT repeat your last answer and do NOT claim any action was taken:'\n"
+     "    + ' in ONE short line, ask what they would like you to do next.';\n"
+     "} else if (bareAffirm && ctx.has_history && ctx.prev_plan && ctx.prev_plan.op && !introOfferPending) {"),
+]
+PREP_CONTEXT_EDITS = [
+    ("let last_olivia_intro_offer = false;",
+     "let last_olivia_intro_offer = false;\n"
+     "// #143: did her last turn END with a question? A bare yes after a turn that asked nothing has nothing to land on.\n"
+     "let last_olivia_asks = null;"),
+    ("  last_olivia_intro_offer = !!(lastOlivia && INTRO_OFFER_RE.test(String(lastOlivia.text || '').trim()));",
+     "  last_olivia_intro_offer = !!(lastOlivia && INTRO_OFFER_RE.test(String(lastOlivia.text || '').trim()));\n"
+     "  if (lastOlivia) { last_olivia_asks = /\\?\\s*$/.test(String(lastOlivia.text || '').trim()); }"),
+    ("last_olivia_intro_offer: last_olivia_intro_offer } }];",
+     "last_olivia_intro_offer: last_olivia_intro_offer, last_olivia_asks: last_olivia_asks } }];"),
+]
+
 # Upgrades: nodes that carry an earlier #143 cut of the detector get the current one (either anchor).
 UPGRADE = {
+    "Plan Request": list(PR_NOTHING_PENDING),
     "Format Reply": [
         (r"""  if (last.toLowerCase().indexOf('open a ticket with the mds team') !== -1) { return true; }
   if (!/\?\s*$/.test(last)) { return false; }
@@ -198,6 +228,10 @@ EDITS = {
 }
 
 
+EDITS["Plan Request"].extend(PR_NOTHING_PENDING)
+EDITS["Prep Context"] = PREP_CONTEXT_EDITS
+
+
 def node_check(code):
     with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as f:
         f.write(code)
@@ -230,7 +264,7 @@ def patch(wf):
             changed.append(n["name"])
             print(f"  {n['name']}: {MARK} upgraded ({len(hit)} block), node --check OK")
             continue
-        if "#174" not in code:
+        if n["name"] in ("Plan Request", "Format Reply") and "#174" not in code:
             sys.exit(f"ABORT {n['name']}: #174 not present — apply #174 first")
         for old, new in EDITS[n["name"]]:
             c = code.count(old)
