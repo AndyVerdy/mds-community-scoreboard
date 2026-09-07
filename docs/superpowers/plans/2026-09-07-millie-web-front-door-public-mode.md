@@ -68,11 +68,13 @@ PostgREST) · Next.js 16 app router + vitest in `mds-digest-web` · Claude Haiku
 - `src/lib/config.ts` — `millie.webSecret`, `millie.webhookStaging`, `millie.webhookLive`.
 - `src/lib/millie/web-chat.ts` — types + `callMillieWeb()` (server-only fetch to n8n) + `readThread()`.
 - `src/app/api/admin/millie/chat/route.ts` (+ `route.test.ts`) — POST ask, GET thread; staff-gated.
-- `src/components/tools/millie/chat/MillieChat.tsx` — the chat UI (client): tabs, composer, turns, notes, Copy.
-- `src/components/tools/millie/chat/chat-model.ts` (+ `.test.ts`) — pure view-model helpers (turn shaping, copy
-  text, tab/target parsing).
-- `src/app/admin/(tools)/millie/chat/page.tsx` — mounts `MillieChat`; the legacy `OliviaTestChat` stays mounted
-  under the Test tab until Task 9 retires it.
+- `src/components/tools/ask-millie/AskMillie.tsx` — the Ask Millie tool UI (client): sessions rail, four-target
+  picker, thread, GATED strip, source chips, Copy, composer. Design: `~/Downloads/chats_design/mds-admin-export/`.
+- `src/components/tools/ask-millie/chat-model.ts` (+ `.test.ts`) — pure view-model helpers (target parsing, turn
+  shaping, copy text, GATED strip text, day grouping).
+- `src/app/admin/(tools)/ask-millie/layout.tsx`, `page.tsx` — the tool's shell and page; `src/lib/tools/ask-millie-help.ts`
+  its help copy; `src/lib/tools/storefront-tools.ts` gains the `ask-millie` entry; `public/tool-covers/ask-millie.png`
+  its cover. `/admin/millie/chat` (#168) redirects here and its page is deleted.
 
 ---
 
@@ -564,20 +566,34 @@ try {
 text = String(text || '').replace(/\s*\[SEND_(IMAGE|FILE):[^\]]*\]/gi, '').trim();
 if (!text) text = 'Sorry — I could not generate an answer just now.';
 // Public Verify (when it ran) replaces the text and adds notes/sources; otherwise empty.
-let notes = [], sources = [], evidence_classes = {}, refused = false;
+let notes = [], sources = [], evidence_classes = {}, refused = false, redactions = [];
 try {
   if ($('Public Verify').isExecuted) {
     const pv = $('Public Verify').first().json;
     text = String(pv.text || text); notes = pv.notes || []; sources = pv.sources || [];
-    evidence_classes = pv.evidence_classes || {}; refused = pv.refused === true;
+    evidence_classes = pv.evidence_classes || {}; refused = pv.refused === true; redactions = pv.redactions || [];
   }
 } catch (e) {}
+// Source chips for the page (design pack: "Recorded call · 3 Facebook threads · #ppc channel · 2 partner records"):
+// counts of evidence rows by source, from the tool results of THIS turn — never asserted.
+let source_summary = {};
+try {
+  const msgs = $('Answer Parse').isExecuted ? ($('Answer Parse').first().json.messages || []) : [];
+  for (const m of msgs) {
+    if (!m || m.role !== 'user' || !Array.isArray(m.content)) continue;
+    for (const c of m.content) {
+      if (!c || c.type !== 'tool_result') continue;
+      let rows = null; try { rows = JSON.parse(typeof c.content === 'string' ? c.content : JSON.stringify(c.content)); } catch (e) { rows = null; }
+      for (const r of (Array.isArray(rows) ? rows : [])) { const k = String((r && (r.source || r.kind)) || 'other'); source_summary[k] = (source_summary[k] || 0) + 1; }
+    }
+  }
+} catch (e) { source_summary = {}; }
 let metrics = null, plan = null, route = null;
 try { metrics = $('Answer Parse').isExecuted ? $('Answer Parse').first().json.metrics : null; } catch (e) {}
 try { const p = $('Plan Request').first().json; route = p.route || null; plan = p.op ? { op: p.op, params: p.params || {}, period: p.period || null } : null; } catch (e) {}
 return [{ json: {
   ok: true, thread_id: inb.thread_id, mode: inb.mode, target: inb.target, asker_email: inb.asker_email,
-  question: inb.text, wamid: inb.wamid, answer_md: text, notes, sources, evidence_classes, refused,
+  question: inb.text, wamid: inb.wamid, answer_md: text, notes, sources, evidence_classes, refused, redactions, source_summary,
   route, plan, metrics, latency_ms: Date.now() - Number(inb.t_web0 || Date.now()),
   model: (inb.mode === 'public' ? 'claude-sonnet-5 + claude-haiku-4-5-20251001' : 'claude-sonnet-5'),
 } }];
@@ -591,7 +607,7 @@ SAVE_WEB_BODY = ("={{ (() => { const f = $('Format Web').first().json; const bas
 
 RESPOND_BODY = ("={{ (() => { const f = $('Format Web').first().json; const saved = $json; const turn = Array.isArray(saved) ? saved.find(r => r.role === 'olivia') : null; "
                 "return JSON.stringify({ ok: true, thread_id: f.thread_id, turn_id: turn ? turn.id : null, mode: f.mode, answer_md: f.answer_md, notes: f.notes, "
-                "sources: f.sources, evidence_classes: f.evidence_classes, refused: f.refused, latency_ms: f.latency_ms, metrics: f.metrics }); })() }}")
+                "sources: f.sources, evidence_classes: f.evidence_classes, refused: f.refused, redactions: f.redactions || [], source_summary: f.source_summary || {}, latency_ms: f.latency_ms, metrics: f.metrics }); })() }}")
 
 def main():
     wf = api("GET", f"/workflows/{STAGING_ID}")
@@ -759,8 +775,14 @@ const refused = left.length > 0 || !!newUrl;
 const text = refused
   ? 'I could not produce a public-safe version of this answer. The sources it rests on are closed, and a name or link from them would have leaked. Ask me the same thing in Test mode to read it internally.'
   : smoothed;
+// Design pack (Ask Millie.dc.html, 2026-09-07): every public answer carries a GATED strip — "2 names masked ·
+// 1 link removed · 1 quote paraphrased" — that opens a per-redaction list. Structured here, rendered by the page.
+const redactions = (red.removed || []).map(n => ({ kind: 'name', detail: n, replaced_with: 'a role phrase' }))
+  .concat(urlsIn.filter(u => !urlsOut.includes(u)).map(u => ({ kind: 'link', detail: u, replaced_with: 'removed' })))
+  .concat((red.closed_sources || []).map(s => ({ kind: 'quote', detail: s, replaced_with: 'paraphrased, no names' })));
 return [{ json: { text, notes: refused ? notes.concat(['Refused: a closed-source name or an unknown link survived the public pass.']) : notes,
-                  sources: red.public_urls || [], evidence_classes: red.classes || {}, refused, removed: red.removed || [], leftover: left } }];
+                  sources: red.public_urls || [], evidence_classes: red.classes || {}, refused, removed: red.removed || [], leftover: left,
+                  redactions } }];
 """
 ```
 
@@ -926,9 +948,15 @@ git commit -m "#169: gate — web door secret, RPC/table denial, no web turn in 
 - Consumes: Task 5's door contract; `readSessionCookie()` from `@/lib/session` (returns `{memberId, email, token}`
   or null); `isStaffEmail(email)` from `@/lib/staff-otp`; `sbRequest<T>(pathAndQuery, init?)` from `@/lib/supabase`
   (service key, schema `digest`).
-- Produces: `POST /api/admin/millie/chat` body `{ mode: 'test'|'public', target: 'staging'|'prod', text, thread_id? }`
-  → the door's JSON plus `asker_email`; `GET /api/admin/millie/chat?thread_id=` → `{ turns: WebTurn[] }` of the
-  caller's own thread. Types exported from `web-chat.ts`: `WebMode`, `WebTarget`, `WebTurn`, `DoorResponse`.
+- Produces: `POST /api/admin/millie/chat` body `{ target: 'staging'|'prod'|'public'|'team', env?: 'staging'|'prod',
+  text, thread_id? }` → the door's JSON plus `asker_email` (`team` → 400 until #172); `GET ?thread_id=` →
+  `{ turns: WebTurn[] }` of the caller's own thread; `GET ?list=1` → `{ threads: ThreadSummary[] }`. Types exported
+  from `web-chat.ts`: `WebMode`, `WebTarget`, `UiTarget`, `Redaction`, `WebTurn`, `DoorResponse`, `ThreadSummary`;
+  helpers `toDoorArgs`, `isUiTarget`, `listThreads`, `readThread`, `callMillieWeb`. Also in this task: the additive
+  migration adding `redactions jsonb not null default '[]'` and `source_summary jsonb not null default '{}'` to
+  `digest.olivia_web_messages` (Supabase MCP, exported to `db/` in the Scorecard repo on the #169 branch), and
+  `Save Web (Supabase)`'s body gains `redactions: f.redactions || [], source_summary: f.source_summary || {}` on the
+  olivia row (a one-line edit in `apply_169_web_door.py`, re-applied to staging).
 
 - [ ] **Step 1: Config**
 
@@ -958,38 +986,48 @@ vi.stubGlobal("fetch", vi.fn(async (url: string, init: RequestInit) => {
 describe("POST /api/admin/millie/chat", () => {
   it("403 without a staff session", async () => {
     await signInAs(null);
-    const res = await POST(new Request("http://x/api/admin/millie/chat", { method: "POST", body: JSON.stringify({ mode: "public", target: "staging", text: "hi" }) }) as never);
+    const res = await POST(new Request("http://x/api/admin/millie/chat", { method: "POST", body: JSON.stringify({ target: "public", text: "hi" }) }) as never);
     expect(res.status).toBe(403);
     expect(doorCalls).toHaveLength(0);
   });
   it("403 for a member session", async () => {
     await signInAs("member@example.com");
-    const res = await POST(new Request("http://x/api/admin/millie/chat", { method: "POST", body: JSON.stringify({ mode: "public", target: "staging", text: "hi" }) }) as never);
+    const res = await POST(new Request("http://x/api/admin/millie/chat", { method: "POST", body: JSON.stringify({ target: "public", text: "hi" }) }) as never);
     expect(res.status).toBe(403);
   });
-  it("calls the staging door with the secret and the session email, never a client-supplied email", async () => {
+  it("Staging target → staging door, mode test, with the secret and the SESSION email (never a client-supplied one)", async () => {
     await signInAs("casey@mds.co");
-    const res = await POST(new Request("http://x/api/admin/millie/chat", { method: "POST", body: JSON.stringify({ mode: "public", target: "staging", text: "hi", asker_email: "andy@mds.co" }) }) as never);
+    const res = await POST(new Request("http://x/api/admin/millie/chat", { method: "POST", body: JSON.stringify({ target: "staging", text: "hi", asker_email: "andy@mds.co" }) }) as never);
     expect(res.status).toBe(200);
     expect(doorCalls[0].url).toContain("olivia-web-staging");
     const headers = doorCalls[0].init.headers as Record<string, string>;
     expect(headers["X-Olivia-Web-Secret"]).toBe(config.millie.webSecret);
     const sent = JSON.parse(String(doorCalls[0].init.body));
     expect(sent.asker_email).toBe("casey@mds.co");
+    expect(sent.mode).toBe("test");
     expect(sent.web).toBe(true);
     expect((await res.json()).answer_md).toBe("Hello");
   });
-  it("rejects a bad mode, an empty text and a 2001-char text", async () => {
+  it("Public target → live door in public mode; env=staging sends it to staging", async () => {
     await signInAs("casey@mds.co");
-    for (const body of [{ mode: "team", target: "staging", text: "hi" }, { mode: "public", target: "staging", text: "" }, { mode: "public", target: "staging", text: "x".repeat(2001) }]) {
+    await POST(new Request("http://x/api/admin/millie/chat", { method: "POST", body: JSON.stringify({ target: "public", text: "hi" }) }) as never);
+    expect(doorCalls[0].url).toContain("olivia-web-live");
+    expect(JSON.parse(String(doorCalls[0].init.body)).mode).toBe("public");
+    await POST(new Request("http://x/api/admin/millie/chat", { method: "POST", body: JSON.stringify({ target: "public", env: "staging", text: "hi" }) }) as never);
+    expect(doorCalls[1].url).toContain("olivia-web-staging");
+  });
+  it("rejects team (until #172), an unknown target, an empty text and a 2001-char text", async () => {
+    await signInAs("casey@mds.co");
+    for (const body of [{ target: "team", text: "hi" }, { target: "nope", text: "hi" }, { target: "public", text: "" }, { target: "public", text: "x".repeat(2001) }]) {
       const res = await POST(new Request("http://x/api/admin/millie/chat", { method: "POST", body: JSON.stringify(body) }) as never);
       expect(res.status).toBe(400);
     }
+    expect(doorCalls).toHaveLength(0);
   });
   it("503 when the secret is not configured", async () => {
     const saved = config.millie.webSecret; (config.millie as { webSecret: string }).webSecret = "";
     await signInAs("casey@mds.co");
-    const res = await POST(new Request("http://x/api/admin/millie/chat", { method: "POST", body: JSON.stringify({ mode: "public", target: "staging", text: "hi" }) }) as never);
+    const res = await POST(new Request("http://x/api/admin/millie/chat", { method: "POST", body: JSON.stringify({ target: "public", text: "hi" }) }) as never);
     expect(res.status).toBe(503);
     (config.millie as { webSecret: string }).webSecret = saved;
   });
@@ -1019,15 +1057,31 @@ import { sbRequest } from "@/lib/supabase";
 
 export type WebMode = "test" | "public";
 export type WebTarget = "staging" | "prod";
+/** The design's four targets. `team` is accepted by the type and rejected by the route until #172. */
+export type UiTarget = "staging" | "prod" | "public" | "team";
+export type Redaction = { kind: "name" | "link" | "quote"; detail: string; replaced_with: string };
 export type DoorResponse = {
   ok: boolean; thread_id: string; turn_id: number | null; mode: string; answer_md: string; notes: string[];
-  sources: string[]; evidence_classes: Record<string, string>; refused: boolean; latency_ms: number; metrics: unknown;
+  sources: string[]; evidence_classes: Record<string, string>; refused: boolean; redactions: Redaction[];
+  source_summary: Record<string, number>; latency_ms: number; metrics: unknown;
 };
 export type WebTurn = { id: number; role: "member" | "olivia"; text: string | null; answer_md: string | null; notes: string[]; sources: string[]; refused?: boolean; created_at: string };
 
 export const MAX_TEXT = 2000;
 export const isWebMode = (m: unknown): m is WebMode => m === "test" || m === "public";
 export const isWebTarget = (t: unknown): t is WebTarget => t === "staging" || t === "prod";
+export const isUiTarget = (t: unknown): t is UiTarget => t === "staging" || t === "prod" || t === "public" || t === "team";
+
+/**
+ * Design's four targets → the door's (mode, workflow). Staging and Prod are the Test experience on the staging /
+ * live workflow; Public runs on the live workflow unless a tester passes `env=staging`; Team is #172.
+ */
+export function toDoorArgs(ui: UiTarget, env: unknown): { mode: WebMode; target: WebTarget } | null {
+  if (ui === "staging") return { mode: "test", target: "staging" };
+  if (ui === "prod") return { mode: "test", target: "prod" };
+  if (ui === "public") return { mode: "public", target: env === "staging" ? "staging" : "prod" };
+  return null; // team: not before #172
+}
 
 export async function callMillieWeb(input: { askerEmail: string; askerName: string; mode: WebMode; target: WebTarget; text: string; threadId: string }): Promise<{ status: number; body: DoorResponse | { error: string } }> {
   const url = input.target === "prod" ? config.millie.webhookLive : config.millie.webhookStaging;
@@ -1048,10 +1102,30 @@ export async function readThread(askerEmail: string, threadId: string): Promise<
   );
 }
 
+
+// Sessions rail (design pack, Ask Millie.dc.html): one row per thread — title = first question, target, last
+// activity, turn count. Derived from the caller's own member rows; no model call, no extra table. Millie's LONG
+// memory of a thread (running summary + search tool) stays #170; the rail itself ships here because the design
+// is built around it.
+export type ThreadSummary = { thread_id: string; target: UiTarget; title: string; last_at: string; turns: number };
+export async function listThreads(askerEmail: string): Promise<ThreadSummary[]> {
+  const rows = await sbRequest<{ thread_id: string; mode: string; target: string; text: string | null; created_at: string }[]>(
+    `olivia_web_messages?select=thread_id,mode,target,text,created_at&role=eq.member` +
+      `&asker_email=eq.${encodeURIComponent(askerEmail)}&order=id.asc&limit=4000`,
+  );
+  const byThread = new Map<string, ThreadSummary>();
+  for (const r of rows) {
+    const ui: UiTarget = r.mode === "public" ? "public" : r.mode === "team" ? "team" : r.target === "prod" ? "prod" : "staging";
+    const cur = byThread.get(r.thread_id);
+    if (!cur) byThread.set(r.thread_id, { thread_id: r.thread_id, target: ui, title: (r.text || "").slice(0, 80), last_at: r.created_at, turns: 1 });
+    else { cur.turns += 1; cur.last_at = r.created_at; }
+  }
+  return [...byThread.values()].sort((a, b) => (a.last_at < b.last_at ? 1 : -1));
+}
 ```
-Multi-chat (thread list, sidebar, New chat) and Millie's long thread memory (running summary + search tool) are
-**#170**, filed 2026-09-07 — Andy: "File it, will do. Main focus on generating public questions." This plan keeps
-one thread per mode per person; the table already carries `thread_id` so #170 adds without a migration.
+The route's `GET` also serves `?list=1` → `{ threads: ThreadSummary[] }` (staff-gated the same way). Route test:
+two threads for the caller (one Public, one Staging) and one for someone else → the list holds exactly the
+caller's two, newest first, titled by their first question, with the right `target`.
 
 ```ts
 // src/app/api/admin/millie/chat/route.ts  (#169)
@@ -1073,16 +1147,17 @@ export async function POST(req: NextRequest) {
   const email = await staffEmail();
   if (!email) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   if (!config.millie.webSecret) return NextResponse.json({ error: "web door not configured" }, { status: 503 });
-  let body: { mode?: unknown; target?: unknown; text?: unknown; thread_id?: unknown };
+  let body: { target?: unknown; env?: unknown; text?: unknown; thread_id?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "bad json" }, { status: 400 }); }
   const text = typeof body.text === "string" ? body.text.trim() : "";
-  if (!isWebMode(body.mode)) return NextResponse.json({ error: "mode must be test or public" }, { status: 400 });
-  if (!isWebTarget(body.target)) return NextResponse.json({ error: "target must be staging or prod" }, { status: 400 });
+  if (!isUiTarget(body.target)) return NextResponse.json({ error: "target must be staging, prod, public or team" }, { status: 400 });
+  const door_args = toDoorArgs(body.target, body.env);
+  if (!door_args) return NextResponse.json({ error: "Team mode ships with #172" }, { status: 400 });
   if (!text) return NextResponse.json({ error: "empty message" }, { status: 400 });
   if (text.length > MAX_TEXT) return NextResponse.json({ error: "message too long" }, { status: 400 });
   const threadId = typeof body.thread_id === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(body.thread_id) ? body.thread_id : `t_${Date.now().toString(36)}`;
   // The asker is the SESSION, never the request body — a client cannot ask as someone else.
-  const { status, body: door } = await callMillieWeb({ askerEmail: email, askerName: email.split("@")[0], mode: body.mode, target: body.target, text, threadId });
+  const { status, body: door } = await callMillieWeb({ askerEmail: email, askerName: email.split("@")[0], mode: door_args.mode, target: door_args.target, text, threadId });
   if (status !== 200 || !("ok" in door)) return NextResponse.json({ error: "error" in door ? door.error : `door returned ${status}` }, { status: 502 });
   return NextResponse.json({ ...door, asker_email: email });
 }
@@ -1090,10 +1165,14 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const email = await staffEmail();
   if (!email) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (req.nextUrl.searchParams.get("list") === "1") return NextResponse.json({ threads: await listThreads(email) });
   const threadId = req.nextUrl.searchParams.get("thread_id") || "";
   if (!/^[A-Za-z0-9_-]{1,64}$/.test(threadId)) return NextResponse.json({ error: "thread_id required" }, { status: 400 });
   return NextResponse.json({ turns: await readThread(email, threadId) });
 }
+```
+(imports: add `isUiTarget, toDoorArgs, listThreads` to the `@/lib/millie/web-chat` import; `isWebMode`/`isWebTarget`
+are no longer used by the route.)
 ```
 
 - [ ] **Step 5: Run the tests; then tsc + eslint**
@@ -1110,35 +1189,57 @@ git commit -m "#169: /api/admin/millie/chat — staff-gated door to olivia-web, 
 
 ---
 
-### Task 9: The chat page — mode tabs, synchronous turns, notes, Copy
+### Task 9: The Ask Millie tool — sessions rail, four targets, gated public answers
+
+**Design reference (Andy, 2026-09-07: "here is the design"):** `~/Downloads/chats_design/mds-admin-export/` —
+`Ask Millie.dc.html` + `README.md` ("Ask Millie — the four targets") + `tool-covers/ask-millie.png` (the orange
+`?` on dark). Prototype, not production code: rebuild in the kit, do not port inline styles. Read
+`docs/design/mds-admin/KIT.md` and `DECISIONS.md` first.
 
 **Files (mds-digest-web):**
-- Create: `src/components/tools/millie/chat/chat-model.ts`, `chat-model.test.ts`
-- Create: `src/components/tools/millie/chat/MillieChat.tsx`
-- Modify: `src/app/admin/(tools)/millie/chat/page.tsx`
+- Create: `src/components/tools/ask-millie/chat-model.ts`, `chat-model.test.ts`
+- Create: `src/components/tools/ask-millie/AskMillie.tsx` (client: rail + thread + composer)
+- Create: `src/app/admin/(tools)/ask-millie/layout.tsx` (ToolHeader "Ask Millie" + BETA pill, same shape as
+  `millie/layout.tsx`), `src/app/admin/(tools)/ask-millie/page.tsx`
+- Create: `src/lib/tools/ask-millie-help.ts` (help panel copy: what each target is, what GATED means)
+- Modify: `src/lib/tools/storefront-tools.ts` — new entry `ask-millie` (name "Ask Millie", url `/admin/ask-millie`,
+  tagline "Ask her anything she knows. Four targets, one thread each.", keywords ask · chat · millie · public ·
+  gated · answer); `public/tool-covers/ask-millie.png` copied from the design pack (800×1000, text-free like the
+  others); the switcher picks the new tool up from the same registry.
+- Modify: `next.config.ts` — `/admin/millie/chat` → `/admin/ask-millie` (307, like the #168 rule);
+  `src/app/admin/(tools)/millie/layout.tsx` — drop the Chat tab (#168) and add the design's header link
+  "Ask Millie →"; Ask Millie's header carries "Millie dashboard →" back.
+- Delete: `src/app/admin/(tools)/millie/chat/page.tsx` (#168's page; its content moves here).
 
 **Interfaces:**
-- Consumes: Task 8 route (`POST`/`GET` shapes, `WebTurn`, `DoorResponse`), kit components `HelpDot`, `Popup` are
-  not needed here; use `var(--token)` colours from `src/app/admin/(tools)/tools.css` (`--ink`, `--ink-2`,
-  `--ink-3`, `--panel`, `--hairline`, `--accent`, `--warning`).
-- Produces: pure helpers `parseMode(v) → 'test'|'public'`, `parseTarget(v) → 'staging'|'prod'`,
-  `copyText(turn) → string` (answer + blank line + "Notes:" lines), `shapeTurns(rows: WebTurn[]) → ChatTurn[]`
-  (pairs member/olivia rows into `{ id, question, answer_md, notes, sources, refused, at }`).
+- Consumes: Task 8 route (`POST` body `{ target, text, thread_id, env? }`, `GET ?thread_id=`, `GET ?list=1&target=`),
+  types `UiTarget`, `WebTurn`, `DoorResponse`, `ThreadSummary` from `@/lib/millie/web-chat`; tokens from
+  `src/app/admin/(tools)/tools.css` (`--ink`, `--ink-2`, `--ink-3`, `--panel`, `--hairline`, `--accent`,
+  `--warning`).
+- Produces: pure helpers `parseTarget(v) → UiTarget` (default `staging`), `copyText(turn) → string` (answer +
+  blank line + "Notes:" lines), `shapeTurns(rows: WebTurn[]) → ChatTurn[]` (pairs member/olivia rows into
+  `{ id, question, answer_md, notes, sources, refused, redactions, source_summary, at }`), `gatedStrip(turn) →
+  string` ("2 names masked · 1 link removed · 1 quote paraphrased", counts from `redactions[].kind`),
+  `groupByDay(threads, now) → { Today, Yesterday, Earlier }`.
 
 - [ ] **Step 1: Failing view-model tests**
 
 ```ts
-// src/components/tools/millie/chat/chat-model.test.ts
+// src/components/tools/ask-millie/chat-model.test.ts
 import { describe, it, expect } from "vitest";
-import { parseMode, parseTarget, copyText, shapeTurns } from "./chat-model";
+import { parseTarget, copyText, shapeTurns, gatedStrip, groupByDay } from "./chat-model";
+
+const turn = (over: Partial<ReturnType<typeof shapeTurns>[number]> = {}) => ({
+  id: 1, question: "q", answer_md: "**A**", notes: [], sources: [], refused: false, redactions: [], source_summary: {}, at: "2026-09-07T10:00:00Z", ...over,
+});
 
 describe("chat-model", () => {
-  it("parses modes and targets with safe defaults", () => {
-    expect(parseMode("public")).toBe("public"); expect(parseMode("team")).toBe("test"); expect(parseMode(undefined)).toBe("test");
-    expect(parseTarget("prod")).toBe("prod"); expect(parseTarget("x")).toBe("staging");
+  it("parses the four targets with a safe default", () => {
+    expect(parseTarget("public")).toBe("public"); expect(parseTarget("team")).toBe("team");
+    expect(parseTarget("prod")).toBe("prod"); expect(parseTarget("x")).toBe("staging"); expect(parseTarget(undefined)).toBe("staging");
   });
   it("copyText carries the answer and the notes, nothing else", () => {
-    const s = copyText({ id: 1, question: "q", answer_md: "**A**", notes: ["Public: page", "From a closed chat, paraphrased"], sources: ["https://x"], refused: false, at: "2026-09-07T10:00:00Z" });
+    const s = copyText(turn({ notes: ["Public: page", "From a closed chat, paraphrased"], sources: ["https://x"] }));
     expect(s).toBe("**A**\n\nNotes:\n- Public: page\n- From a closed chat, paraphrased");
   });
   it("shapeTurns pairs member and olivia rows in order and tolerates a missing reply", () => {
@@ -1150,19 +1251,40 @@ describe("chat-model", () => {
     expect(turns.map((t) => [t.question, t.answer_md])).toEqual([["q1", "a1"], ["q2", null]]);
     expect(turns[0].notes).toEqual(["n"]);
   });
+  it("gatedStrip counts redactions by kind, in the design's order, and is empty when nothing was gated", () => {
+    expect(gatedStrip(turn({ redactions: [
+      { kind: "name", detail: "A B", replaced_with: "a role phrase" }, { kind: "name", detail: "C D", replaced_with: "a role phrase" },
+      { kind: "link", detail: "https://x", replaced_with: "removed" }, { kind: "quote", detail: "wa", replaced_with: "paraphrased" },
+    ] }))).toBe("2 names masked · 1 link removed · 1 quote paraphrased");
+    expect(gatedStrip(turn({ redactions: [{ kind: "name", detail: "A B", replaced_with: "a role phrase" }] }))).toBe("1 name masked");
+    expect(gatedStrip(turn())).toBe("");
+  });
+  it("groupByDay buckets threads into Today / Yesterday / Earlier by the viewer's clock", () => {
+    const now = new Date("2026-09-07T20:00:00Z");
+    const g = groupByDay([
+      { thread_id: "a", target: "public", title: "t", last_at: "2026-09-07T12:00:00Z", turns: 1 },
+      { thread_id: "b", target: "staging", title: "y", last_at: "2026-09-06T23:00:00Z", turns: 2 },
+      { thread_id: "c", target: "prod", title: "e", last_at: "2026-09-02T09:00:00Z", turns: 3 },
+    ], now);
+    expect(g.Today.map((t) => t.thread_id)).toEqual(["a"]);
+    expect(g.Yesterday.map((t) => t.thread_id)).toEqual(["b"]);
+    expect(g.Earlier.map((t) => t.thread_id)).toEqual(["c"]);
+  });
 });
 ```
 
-- [ ] **Step 2: Run to fail** — `npx vitest run ./src/components/tools/millie/chat/chat-model.test.ts` → FAIL.
+- [ ] **Step 2: Run to fail** — `npx vitest run ./src/components/tools/ask-millie/chat-model.test.ts` → FAIL.
 
 - [ ] **Step 3: Implement the helpers**
 
 ```ts
-// src/components/tools/millie/chat/chat-model.ts  (#169) — pure, no React.
-import type { WebMode, WebTarget, WebTurn } from "@/lib/millie/web-chat";
-export type ChatTurn = { id: number; question: string; answer_md: string | null; notes: string[]; sources: string[]; refused: boolean; at: string };
-export const parseMode = (v: unknown): WebMode => (v === "public" ? "public" : "test");
-export const parseTarget = (v: unknown): WebTarget => (v === "prod" ? "prod" : "staging");
+// src/components/tools/ask-millie/chat-model.ts  (#169) — pure, no React.
+import type { Redaction, ThreadSummary, UiTarget, WebTurn } from "@/lib/millie/web-chat";
+export type ChatTurn = {
+  id: number; question: string; answer_md: string | null; notes: string[]; sources: string[]; refused: boolean;
+  redactions: Redaction[]; source_summary: Record<string, number>; at: string;
+};
+export const parseTarget = (v: unknown): UiTarget => (v === "public" || v === "team" || v === "prod" ? v : "staging");
 export function copyText(t: ChatTurn): string {
   const notes = t.notes.length ? "\n\nNotes:\n" + t.notes.map((n) => `- ${n}`).join("\n") : "";
   return `${t.answer_md ?? ""}${notes}`;
@@ -1170,48 +1292,104 @@ export function copyText(t: ChatTurn): string {
 export function shapeTurns(rows: WebTurn[]): ChatTurn[] {
   const out: ChatTurn[] = [];
   for (const r of rows) {
-    if (r.role === "member") out.push({ id: r.id, question: r.text ?? "", answer_md: null, notes: [], sources: [], refused: false, at: r.created_at });
-    else if (out.length) { const last = out[out.length - 1]; last.answer_md = r.answer_md ?? r.text; last.notes = r.notes ?? []; last.sources = r.sources ?? []; last.refused = r.refused === true; }
+    if (r.role === "member") out.push({ id: r.id, question: r.text ?? "", answer_md: null, notes: [], sources: [], refused: false, redactions: [], source_summary: {}, at: r.created_at });
+    else if (out.length) {
+      const last = out[out.length - 1];
+      last.answer_md = r.answer_md ?? r.text; last.notes = r.notes ?? []; last.sources = r.sources ?? []; last.refused = r.refused === true;
+      last.redactions = (r as { redactions?: Redaction[] }).redactions ?? []; last.source_summary = (r as { source_summary?: Record<string, number> }).source_summary ?? {};
+    }
   }
   return out;
 }
-```
-
-- [ ] **Step 4: Run** → PASS. Commit: `git add src/components/tools/millie/chat/chat-model*.ts && git commit -m "#169: chat view-model helpers"`.
-
-- [ ] **Step 5: The component.** `"use client"`. State: `mode` (from `?mode=`), `target` (from `?target=`),
-`threadId` (one per mode per person: `t_<mode>_<base36>` generated once and kept in `localStorage` key
-`millie-chat-thread-<mode>`, so a reload or a new tab continues the same thread), `turns`, `pending` (the question
-in flight), `error`. On mount and mode change: `GET /api/admin/millie/chat?thread_id=` → `shapeTurns`. (Thread
-list, sidebar and New chat are #170.) Send: `POST` with `{mode, target, text, thread_id}`; while awaiting show the question with a
-"Millie is working…" line and a disabled composer; on response append the turn (`answer_md`, `notes`, `sources`,
-`refused`); on non-200 show the `error` sentence. No `setInterval`, no polling anywhere. Layout: mode tabs
-(`Test` · `Public` · `Team` disabled with title "coming with Team mode (#170)") as a segmented control using the
-same style as the survey's buttons; a small `staging | prod` toggle right-aligned; the turn list; for Public
-turns a NOTES block (mono eyebrow "WHERE THIS COMES FROM", one line per note) and a **Copy** button calling
-`navigator.clipboard.writeText(copyText(turn))` then showing "Copied" for 1.5 s; refused turns render the refusal
-text in `var(--warning)`. Markdown: render `answer_md` with the app's existing markdown renderer if one exists
-(`grep -rl "react-markdown\|remark" src | head`), else as `white-space: pre-wrap` text — do not add a
-dependency. Test tab: render the legacy `<OliviaTestChat />` unchanged (it moves onto the door in Task 11).
-
-- [ ] **Step 6: Mount it**
-
-```tsx
-// src/app/admin/(tools)/millie/chat/page.tsx — replace the body: keep the heading block from #168, then
-import { MillieChat } from "@/components/tools/millie/chat/MillieChat";
-export const dynamic = "force-dynamic";
-export default async function MillieChatPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const sp = await searchParams;
-  return <MillieChat initialMode={sp.mode} initialTarget={sp.target} />;
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+export function gatedStrip(t: ChatTurn): string {
+  const c = { name: 0, link: 0, quote: 0 };
+  for (const r of t.redactions) c[r.kind] += 1;
+  const parts: string[] = [];
+  if (c.name) parts.push(`${plural(c.name, "name", "names")} masked`);
+  if (c.link) parts.push(`${plural(c.link, "link", "links")} removed`);
+  if (c.quote) parts.push(`${plural(c.quote, "quote", "quotes")} paraphrased`);
+  return parts.join(" · ");
+}
+export function groupByDay(threads: ThreadSummary[], now: Date): { Today: ThreadSummary[]; Yesterday: ThreadSummary[]; Earlier: ThreadSummary[] } {
+  const day = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const today = day(now), yesterday = today - 86_400_000;
+  const g = { Today: [] as ThreadSummary[], Yesterday: [] as ThreadSummary[], Earlier: [] as ThreadSummary[] };
+  for (const t of threads) {
+    const d = day(new Date(t.last_at));
+    (d === today ? g.Today : d === yesterday ? g.Yesterday : g.Earlier).push(t);
+  }
+  return g;
 }
 ```
-(`MillieChat` parses both with `parseMode`/`parseTarget`.)
+(`readThread`'s select in Task 8 must include `redactions,source_summary` for `shapeTurns` to carry them — add both
+columns to the `WebTurn` select; the `Save Web` node writes them into the row's `notes`-sibling columns
+`redactions jsonb` and `source_summary jsonb`: add both to the Task 1 table with an additive `alter table … add
+column if not exists … jsonb not null default '[]'/'{}'` migration in Task 8, exported to `db/`.)
+
+- [ ] **Step 4: Run** → PASS. Commit: `git add src/components/tools/ask-millie/chat-model*.ts && git commit -m "#169: Ask Millie view-model helpers"`.
+
+- [ ] **Step 5: The component, from the design.** `"use client"`. Layout = the design's three parts:
+
+  **Sessions rail (left, 300px):** **+ New session** button on top, **Search sessions** box under it, then the
+  caller's threads grouped **TODAY / YESTERDAY / EARLIER** (`groupByDay`), each row = title (first question, one
+  line, ellipsis) · a dot in the target's colour + target label in mono caps · time; the active row highlighted
+  with `var(--accent)`; footer "N SESSIONS" derived from the list (KIT rule 1). Data: `GET ?list=1&target=<all>`
+  on mount (the route returns all of the caller's threads across targets; filter client-side). New session
+  creates `t_<base36>` and clears the thread pane; the thread appears in the rail after its first answer.
+
+  **Target picker (top right of the thread pane):** one segmented control, `Staging · Prod` | `MDS Team · Public`
+  with a divider between the pairs (design: "two test targets and two real ones"). **The target belongs to the
+  session**: with an empty session, switching just switches; with answers in it, switching starts a new session
+  (design rule — one thread never mixes a gated and an ungated answer). **MDS Team renders disabled** with title
+  "Team mode ships with #172" until that ticket lands. The thread header shows the title, then a mono line
+  `<TARGET> · <time> · <n> TURNS`. Public threads carry a mono eyebrow `PUBLIC · GATED`.
+
+  **Thread + composer:** turns in order; a turn = question, then the answer (markdown via the app's existing
+  renderer if one exists — `grep -rl "react-markdown\|remark" src | head` — else `white-space: pre-wrap`, never a
+  new dependency). Under every answer: **source chips** from `source_summary` ("Recorded call", "3 Facebook
+  threads", "#ppc channel", "2 partner records" — map `source` keys to those labels, unknown keys shown as-is) and a
+  "N sources →" link opening a kit `Popup` that lists each evidence URL with its class (`evidence_classes`) and,
+  for Public turns, what the published text says instead (from `redactions`). Public answers additionally carry
+  the **GATED strip** — `gatedStrip(turn)` text, click to expand the per-redaction list — and the NOTES block
+  (mono eyebrow "WHERE THIS COMES FROM", one line per note). **Copy** copies `copyText(turn)` and shows "Copied"
+  1.5 s. Refused turns render the refusal text in `var(--warning)`. The composer: textarea, **Send**; while a
+  request is open show the question, a "Millie is reading…" line with a live elapsed counter (honest: no
+  invented steps — the live per-step trail is #173), and a disabled composer. Exactly one `POST` per question.
+  No `setInterval` except the elapsed counter, no polling of any endpoint.
+
+  **Targets → the door:** Staging and Prod are the Test experience on the staging / live workflow (mode `test`);
+  Public is mode `public` on the live workflow (`env` defaults to prod; `?env=staging` lets a tester run Public
+  against staging). The route does the mapping (Task 8).
+
+  The legacy `OliviaTestChat` is no longer mounted anywhere after this task; Task 11 deletes it and its route.
+
+- [ ] **Step 6: Mount it as a tool**
+
+```tsx
+// src/app/admin/(tools)/ask-millie/page.tsx
+import { AskMillie } from "@/components/tools/ask-millie/AskMillie";
+export const dynamic = "force-dynamic";
+export default async function AskMilliePage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const sp = await searchParams;
+  return <AskMillie initialTarget={sp.target} initialEnv={sp.env} />;
+}
+```
+`layout.tsx` mirrors `millie/layout.tsx` (ToolHelpProvider with `ASK_MILLIE_HELP`, ToolHeader name "Ask Millie",
+the same BETA pill, no tabs — the target picker lives in the thread pane per the design) plus the header link
+"Millie dashboard →" (`/admin/millie`). Storefront: add the `ask-millie` entry to `STOREFRONT_TOOLS` next to
+`millie`, copy the cover PNG to `public/tool-covers/ask-millie.png`; the tool switcher lists it automatically.
+Redirect `/admin/millie/chat` → `/admin/ask-millie`; remove the #168 Chat tab from the Millie layout and add its
+"Ask Millie →" link; delete `millie/chat/page.tsx`.
 
 - [ ] **Step 7: Prove it in the browser** (`npx next dev -p 3171`, staff cookie from `scripts/dev-session-cookie.mjs`
-set on `localhost`): open `/admin/millie/chat?mode=public&target=staging`, ask "What is the MDS Summit?", watch
-the network panel — exactly ONE request to `/api/admin/millie/chat` per question, no repeats; the answer appears
-with notes and Copy; reload → the thread is still there (GET). Then `?mode=test` still shows the legacy chat.
-Record the request count and the `latency_ms` in the commit message.
+set on `localhost`): open `/admin` — the Ask Millie cover is on the shelf and in the switcher; open
+`/admin/ask-millie?target=public&env=staging`, ask "What is the MDS Summit?", watch the network panel — exactly ONE
+request to `/api/admin/millie/chat` per question, no repeats; the answer appears with source chips, the GATED
+strip, notes and Copy; the session shows in the rail under TODAY with the Public dot; **New session** clears the
+pane; switching target on a session with answers starts a new session; reload → the thread is still there;
+`/admin/millie/chat` forwards here; MDS Team is disabled. Record the request count and the `latency_ms` in the
+commit message.
 
 - [ ] **Step 8: Gates and commit**
 
@@ -1219,8 +1397,9 @@ Run: `npx tsc --noEmit && npx vitest run --dir src && npx next build`
 Expected: clean, all green, exit 0.
 
 ```bash
-git add src/components/tools/millie/chat/ "src/app/admin/(tools)/millie/chat/page.tsx"
-git commit -m "#169: /admin/millie/chat — mode tabs, synchronous turns, notes + Copy; Test tab keeps the legacy chat"
+git add src/components/tools/ask-millie/ "src/app/admin/(tools)/ask-millie/" src/lib/tools/ask-millie-help.ts src/lib/tools/storefront-tools.ts public/tool-covers/ask-millie.png next.config.ts "src/app/admin/(tools)/millie/layout.tsx"
+git rm "src/app/admin/(tools)/millie/chat/page.tsx"
+git commit -m "#169: Ask Millie tool — sessions rail, four targets, gated public answers with source chips and GATED strip"
 git push -u origin 169-millie-web-20260907
 ```
 
@@ -1264,10 +1443,10 @@ Andy's thread per staff question 2 → 0), stream-log entry, index line.
 
 ### Task 11 (follow-up, same ticket): move the Test tab onto the door and retire `/api/olivia/test-chat`
 
-- [ ] Switch the Test tab to `POST /api/admin/millie/chat` with `mode: "test"` (the door already accepts it); delete
-`src/components/admin/OliviaTestChat.tsx` and `src/app/api/olivia/test-chat/route.ts`; update the redirect comment in
-`next.config.ts`; `npx vitest run --dir src`, `npx next build`; merge on Andy's word. Leave `/api/olivia/ask` (iOS)
-alone — it is a separate decision.
+- [ ] The Staging and Prod targets already run through the door (Task 9), so the legacy polling chat has no caller
+left: delete `src/components/admin/OliviaTestChat.tsx` and `src/app/api/olivia/test-chat/route.ts`; retarget the
+`/admin/olivia/test` redirect in `next.config.ts` to `/admin/ask-millie`; `npx vitest run --dir src`, `npx next
+build`; merge on Andy's word. Leave `/api/olivia/ask` (iOS) alone — it is a separate decision.
 
 ---
 

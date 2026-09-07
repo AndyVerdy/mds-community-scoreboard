@@ -104,6 +104,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#170** | 🧠 Millie web chat — long thread memory + many chats: running Haiku summary per thread, a `web_thread_search` tool for exact recall, sidebar of past chats with New chat | 🟡 S2 | M | staging first | 📝 filed 2026-09-07 (Andy: "File it, will do") — after #169 |
 | **#171** | 📣 Public answer from the Facebook tool — for a post without an answer, generate a public-safe reply in a popup (Andy's design pending) | 🟡 S2 | M | n/a (web) + the #169 door | 📝 filed 2026-09-07 (Andy: "delivery 2: generate public answer from facebook tool") — after #169 |
 | **#172** | 🔓 Team chat — everything-access mode for staff (exact revenue, contacts, billing included) behind a huge disclaimer; new team-only SQL the gate proves WhatsApp can never reach | 🔴 S1 | L | staging first, gate | 📝 filed 2026-09-07 (Andy: "I need team mode to include all categories - everything. That's why we need a huge disclaimer" · "delivery 3: Team chat") — after #169 |
+| **#173** | 📡 Ask Millie — live source trail + token streaming: the design's "Reading WhatsApp channels · 38 chats ✓" steps and streamed answer text on one held request; needs a progress hook in the answer loop | 🟡 S2 | M | staging first | 📝 filed 2026-09-07 from the design pack README ("Streaming, not polling") — #169 ships an honest two-event stream (started · answer) first |
 | **#174** | 🎯 A named item from her own list is a drill-down, not a new search — "Tell me more about Alex Chiru video" after a four-video list re-planned as a fresh speaker search (Andy's case 1, prod turn 65490 / exec 137515) | 🔴 S1 | S | ✅ **proven on staging `2d875cb3`** — Andy's exact chain exec 137664 `offer_bind.mode:'drilldown'`, speaker-named 137633, title-named 137645, "yes" 137637 unchanged, gate EXIT 0 | ⏳ awaiting Andy's promote (the graph also carries #169 Task 5 + #175) |
 | **#175** | 🔗 The gate's link repair pins a URL to the wrong row — a bare, untitled link before the closing question on every video answer (Andy's case 1, execs 137508 / 137515) | 🟡 S2 | S | ✅ **proven on staging `2d875cb3`** — 14/14 unit on the live bytes, replay of execs 137508/137515 appends 0 (was 1 · 2), 0 appended links in 33 probe turns | ⏳ awaiting Andy's promote (with #174) |
 | **#143** | 🔁 A follow-up binds to the wrong thing, or loses the thread — four guards: no echo-bind on a new question, a bare ordinal is a drill-down, a bold number is never an offer, a yes to nothing asks what they want; her own-words report offer reaches the ticket lane (bank C 6095/6349 + tonight's probes) | 🟡 S2 | S | ✅ **proven on staging `eb99c336`** — execs 137713 · 137716 · 137720 · 137739, rows 65655 · 65661; 45/45 unit; gate EXIT 0 | ⏳ awaiting Andy's promote (with #174 · #175) |
@@ -702,9 +703,19 @@ or something, ill give you the design").** Depends on #169's Public mode. Design
 public-safe reply for it in a popup — drawn from everything we hold, names only from public sources, notes on
 where each part came from — so that answering the group takes minutes and never leaks a closed source.
 
-**Acceptance (to firm up with the design).** 1. A control on unanswered posts opens a popup over the page (kit
-rule: never navigates away). 2. The popup calls the #169 door in Public mode with the post text as the question
-and shows answer + notes + Copy. 3. The generated answer is stored against the post id for later review. 4.
+**Design received 2026-09-07** (`~/Downloads/chats.zip` → `~/Downloads/chats_design/mds-admin-export/`, README
+"Facebook Group — draft an answer" + `Facebook Group.dc.html`): unanswered posts carry a **Draft answer** action in
+the last column; it opens a popup over the table with the post quoted on top, a Public / MDS Team target picker
+(Public by default), the same streaming trail as Ask Millie, then an editable draft, source chips and a source
+note. Actions: copy · mark answered · regenerate · open the question in Ask Millie. A deliberate "no confident
+answer" state for posts the record does not cover — it says so and suggests posting the question back to the group
+rather than inventing one.
+
+**Acceptance.** 1. Draft answer on unanswered posts opens a popup (kit rule: never navigates away), post quoted
+on top, Public preselected; MDS Team only once #172 ships. 2. The popup calls the #169 door with the post text as
+the question and shows the editable draft, source chips, source note and the GATED strip. 3. The draft is stored
+against the post id; mark answered flips the post's state; regenerate asks again; "open in Ask Millie" carries the
+question over. 4. The no-confident-answer state renders when the door returns a refusal or an honest miss. 5.
 Nothing is posted to Facebook by this ticket.
 
 ### #172 · Team chat — everything-access mode
@@ -727,6 +738,13 @@ filtered by the public-source rule on the way out.
 Anonymous, member and WhatsApp paths get nothing new (gate checks). 3. Disclaimer shown and acknowledged per
 session; every Team turn stored with asker email and mode. 4. `OLIVIA_SHAREABLE_FIELDS.md` gains a "Team mode"
 column documenting exactly what opens.
+
+**Design received 2026-09-07** (`Ask Millie.dc.html`): the MDS Team target shows a persistent amber notice —
+"Unrestricted — MDS team only. Reads closed WhatsApp groups, private call transcripts, member records and partner
+terms, and it will name people. Never paste it anywhere outside the team." — with an **I understand** button; the
+composer is locked ("Read the notice above, then acknowledge to start") until acknowledged once per session; the
+copy button reads **Copy (internal)**; the target belongs to the session, so switching target inside a session that
+already has answers starts a new session — one thread never mixes an unrestricted answer with a gated one.
 
 ### #169 · Millie web front door + Public mode
 

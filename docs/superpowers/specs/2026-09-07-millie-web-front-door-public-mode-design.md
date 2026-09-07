@@ -185,6 +185,23 @@ text above, each chosen to reuse the existing chain instead of duplicating it:
   that matter stay: never `Send Reply (Meta)`, never `olivia_messages`.
 - `Mark Read + Typing` still fires on the probe phone for web turns, exactly as the current test chat does.
 
+**Design pack received 2026-09-07** (`~/Downloads/chats.zip` → `~/Downloads/chats_design/mds-admin-export/`,
+`Ask Millie.dc.html` + README) — supersedes §Page above:
+- The chat is its own storefront tool, **Ask Millie** (`/admin/ask-millie`, cover `tool-covers/ask-millie.png`),
+  not a tab under the Millie dashboard; the two link to each other. `/admin/millie/chat` (#168) redirects.
+- A **sessions rail**: New session, Search sessions, threads grouped Today / Yesterday / Earlier, each with its
+  target. The rail ships in #169 because the design is built around it; Millie's long memory per thread is #170.
+- **Four targets in one picker**, `Staging · Prod | MDS Team · Public`. Staging and Prod are the Test experience on
+  the two workflows; Public is the gated mode on the live workflow; MDS Team is disabled until #172. The target
+  belongs to the session: switching inside a session with answers starts a new session.
+- Every public answer carries a **GATED strip** ("2 names masked · 1 link removed · 1 quote paraphrased") opening
+  a per-redaction list, **source chips** by class ("Recorded call · 3 Facebook threads · #ppc channel · 2 partner
+  records") and a sources panel; Copy copies the gated text and the notes. The ungated draft never leaves the
+  workflow.
+- The design assumes a **streamed source trail** ("Reading WhatsApp channels · 38 chats ✓") and streamed tokens on
+  one held request. #169 ships the same single held request with an honest "Millie is reading…" and elapsed
+  counter; the live per-step trail and token streaming need a progress hook in the answer loop and are **#173**.
+
 ## Open questions
 
 None blocking. Two to confirm at plan time: the exact role phrases used for redacted names (proposed above) and
