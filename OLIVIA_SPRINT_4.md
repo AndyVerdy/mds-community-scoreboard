@@ -585,8 +585,9 @@ move a visitor's pointer, so the button flees the cursor instead, which produces
   and the roster is the counter's denominator.
 - **Where.** New `digest.admin_survey_responses` (email · score · comment · `honest` boolean · attempts
   · wave · answered_at), service-role only, written through a server-side API route — the browser never
-  holds a service key. Each response posts to Slack in the team channel, reusing the existing
-  integration.
+  holds a service key. Each response posts to Slack, reusing the existing integration. **Channel:
+  `#automation-tests` (`C0AQ8USNQK0`) is the real destination, not a placeholder — Andy 2026-09-07:
+  "slack cahnnel is automation test channel".** `SURVEY_SLACK_CHANNEL` switches it if that ever changes.
 - **Reading the answers: an admin page, not email (Andy 2026-09-07: "admin page then, go with that").**
   A staff-only **Team pulse** panel on the storefront, opening as a popup rather than navigating away,
   same rule the seven tools follow. It shows how many of the roster answered, the joke tens against the
