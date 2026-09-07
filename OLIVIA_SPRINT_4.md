@@ -99,6 +99,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#165** | 🃏 The Personas sheet does not explain itself — FOCUS / GIVES / ASKS carry no source, "In their words" is a model paraphrase, 11 silent categories hide in a grey footer, "Top 6" reads as a filter and is an expand control | 🟡 S2 | M | n/a (web — Render, no staging tier) | ✅ **BUILT on `165-personas-sheet-20260907` (`50c7a4a`), awaiting Andy's look before merge** — all 18 categories as rows, provenance on every block (`docs/PERSONAS_FIELD_PROVENANCE.md`), "In their words" gone, "Top 6" → "Open top 6"; found 1,016 detail stats across 503 members that were unreachable; Ryan Pace's Member 360 correctly empty (Stripe sync lag); 892 tests, `next build` exit 0; open call: bar marker at 70 vs "60 is strong" copy |
 | **#166** | 🔲 Personas and Digest have no tool switcher — every other tool got the header grid button in #164; these two never render `ToolHeader` | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "166 is good, we can promote it")** — merge `b91f2a4`, confirmed live via `/api/version`; switcher in the Personas top bar and both Digest headers, `← All tools` link retired, 1–7 jumps with no storefront round trip; fixed on the way: dismiss layer shrunk to header height under `backdrop-filter`; 920 tests, `next build` exit 0; open call: two grid icons (switcher + Browse) in the Personas header |
 | **#167** | 🔟 Team pulse survey — the rating popup where every number but 10 runs away from your cursor; design pack approved on sight, logic (when to ask, where answers land) agreed | 🟡 S2 | M | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "if u r sure, lets promote")** — merge `41da9e7`, confirmed live via `/api/version` 02:14 local; once per person ever (wave `survey_key`), from the 2nd login after `SURVEY_STARTED_AT` 2026-09-07, card centred (`Popup align="center"`, opt-in), `?pulse=1` for `SURVEY_TESTER_EMAILS` only (default Andy), `is_test` rows excluded everywhere, Team pulse results popup on the storefront, Slack `#automation-tests`; 1047 tests, 22/22 mutations killed, e2e script 32/32, `next build` exit 0; table holds 6 rows, all Andy's tests. **Roster fix same night (Andy: "no, its only people who r using now, but we have team of 30"): M = `member_attributes.membership_status = 'Staff'` (30 rows), not the 17 `@mds.co` portal logins — merge `491a968`, live 02:24 local, storefront reads 0 OF 30.** **Second-day rule (Andy: "go"): merge `e2d933d`, live 12:42 local — asked on the 2nd distinct UTC day the person opens `/admin` since launch, visits recorded in new `digest.admin_survey_visits` (RLS on, service_role only), `member_sessions` no longer read; 1068 tests, e2e 45/45, mutation 4/4 classes killed** |
+| **#168** | 💬 Millie test chat back in the admin at a new address — `/admin/olivia/test` was retired by #164; component + API survived, only the page died | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 13:20 local** — merge `48851e7`, confirmed via `/api/version`; `/admin/millie/chat` as a Chat tab in the Millie tool, `/admin/olivia/test` 307 → the chat (checked on prod), anon 307, API 403 anon / 200 staff; 1068 tests, `next build` exit 0; not restyled to the kit (legacy Tailwind look kept) |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -555,6 +556,38 @@ trip the switcher exists to remove. The switcher is one shared component
 2. Keyboard behaviour matches the seven: 1–7 to jump, Escape closes, current tool marked.
 3. No kit primitive is rebuilt; every colour a token.
 4. `tsc`, lint, tests and `next build` clean, and both headers proven in the running app.
+
+### #168 · Millie test chat back in the admin, at a new address
+
+**🟡 S2 · size S — filed 2026-09-07 (Andy: "you do know that we have a chat millie in admin? what is the link?" →
+"find this page you can assign new usrl").** Repo `mds-digest-web`.
+
+**Story.** As MDS staff, I want the Millie test chat back inside the admin portal, so that I can talk to the staging
+workflow from the browser the way I did before the redesign.
+
+**What happened.** The chat lived at `/admin/olivia/test` (`OliviaTestChat`, "admin messenger window on the staging
+workflow", commit `7bf4180`): fires simulated inbounds as the probe member down the silent path, reads replies from the
+conversation log, toggles staging ↔ prod. #164 retired every legacy Olivia page on 2026-09-07; the old address now
+forwards to `/admin/millie?from=olivia-test`, which shows a "retired, no replacement yet" notice. The component and its
+API (`/api/olivia/test-chat`, staff-gated) both survived; only the page was deleted.
+
+**Acceptance.**
+1. The chat is reachable at `/admin/millie/chat`, inside the Millie tool (its header and switcher), as a Chat tab.
+2. Staff gate holds (`@mds.co` session) on the page and on the API, anonymous gets bounced.
+3. The old `/admin/olivia/test` link forwards to the new chat, not to the notice.
+4. Proven in the running app: a message sent from the page reaches the staging workflow and the reply renders.
+5. `tsc`, lint (no new problems), tests, `next build` clean. Merge = Render deploy.
+
+**Not in scope.** Restyling the chat to the kit's tokens — it keeps its legacy Tailwind look for now; flagged as a
+follow-up if it bothers anyone.
+
+**CLOSED 2026-09-07 13:20 local — merge `48851e7`, live on Render (`/api/version`).** Results: new
+`src/app/admin/(tools)/millie/chat/page.tsx` (the retired page's content, framed with tool tokens), Millie layout gains
+Overview + Chat tabs, `next.config.ts` forwards `/admin/olivia/test` to the chat. ACs: 1 ✅ tabs on both Millie routes ·
+2 ✅ anon 307 on the page, API 403 anon / 200 staff · 3 ✅ old URL 307 → `/admin/millie/chat`, checked on prod ·
+4 ⏳ a real send through the page is Andy's first click (it appends a staging turn to his own thread, so not fired from
+here) · 5 ✅ tsc 0, eslint clean on the three files, 1068 tests, `next build` exit 0. Before/after: chat reachable
+nowhere → one address, one tab, gate unchanged.
 
 ### #167 · Team pulse survey — the rating popup where only 10 is selectable
 

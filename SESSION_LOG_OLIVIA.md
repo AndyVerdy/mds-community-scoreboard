@@ -54,6 +54,11 @@ what he must decide, never the agent's inventory.
 the Scoring-system session · the two grid icons in the Personas header stay · Playwright declined ("skip playwright"),
 request-level tests + the HTTP e2e script stand.
 
+**Reopened for #168 (Andy: "you do know that we have a chat millie in admin? what is the link?").** #164 had retired the
+`/admin/olivia/test` messenger window with the other legacy pages; component + API survived. Restored at
+`/admin/millie/chat` as a Chat tab (new page, two-tab Millie layout, redirect retargeted) — merge `48851e7`, live 13:20
+local; anon 307, API 403/200, old URL 307 → chat on prod. Not restyled to the kit.
+
 **Closed clean.** Scorecard `main` `5b9d2bd` (docs only; #163 code stays on `163-truth-set-20260905` with `2dda4f6`) ·
 `mds-digest-web` `main` `e2d933d` = prod · merged worktrees `166 / 167 / 167-visits` removed, dev servers 3165/3167/3169
 and the design-pack server 8791 stopped · the `165-personas-sheet` worktree kept for the Scoring-system session.
