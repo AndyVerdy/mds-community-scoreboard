@@ -100,6 +100,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#166** | 🔲 Personas and Digest have no tool switcher — every other tool got the header grid button in #164; these two never render `ToolHeader` | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "166 is good, we can promote it")** — merge `b91f2a4`, confirmed live via `/api/version`; switcher in the Personas top bar and both Digest headers, `← All tools` link retired, 1–7 jumps with no storefront round trip; fixed on the way: dismiss layer shrunk to header height under `backdrop-filter`; 920 tests, `next build` exit 0; open call: two grid icons (switcher + Browse) in the Personas header |
 | **#167** | 🔟 Team pulse survey — the rating popup where every number but 10 runs away from your cursor; design pack approved on sight, logic (when to ask, where answers land) agreed | 🟡 S2 | M | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "if u r sure, lets promote")** — merge `41da9e7`, confirmed live via `/api/version` 02:14 local; once per person ever (wave `survey_key`), from the 2nd login after `SURVEY_STARTED_AT` 2026-09-07, card centred (`Popup align="center"`, opt-in), `?pulse=1` for `SURVEY_TESTER_EMAILS` only (default Andy), `is_test` rows excluded everywhere, Team pulse results popup on the storefront, Slack `#automation-tests`; 1047 tests, 22/22 mutations killed, e2e script 32/32, `next build` exit 0; table holds 6 rows, all Andy's tests. **Roster fix same night (Andy: "no, its only people who r using now, but we have team of 30"): M = `member_attributes.membership_status = 'Staff'` (30 rows), not the 17 `@mds.co` portal logins — merge `491a968`, live 02:24 local, storefront reads 0 OF 30.** **Second-day rule (Andy: "go"): merge `e2d933d`, live 12:42 local — asked on the 2nd distinct UTC day the person opens `/admin` since launch, visits recorded in new `digest.admin_survey_visits` (RLS on, service_role only), `member_sessions` no longer read; 1068 tests, e2e 45/45, mutation 4/4 classes killed** |
 | **#168** | 💬 Millie test chat back in the admin at a new address — `/admin/olivia/test` was retired by #164; component + API survived, only the page died | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 13:20 local** — merge `48851e7`, confirmed via `/api/version`; `/admin/millie/chat` as a Chat tab in the Millie tool, `/admin/olivia/test` 307 → the chat (checked on prod), anon 307, API 403 anon / 200 staff; 1068 tests, `next build` exit 0; not restyled to the kit (legacy Tailwind look kept) |
+| **#169** | 🚪 Millie web front door + Public mode — a real chat for staff (answer in the same request, own conversation table, real asker) and a Public mode whose answers may leave MDS: names only from public sources, notes on where each part came from | 🟡 S2 | L | staging first (`olivia-web` entry), gate +6 checks | 📝 **DESIGNED 2026-09-07** — spec `docs/superpowers/specs/2026-09-07-millie-web-front-door-public-mode-design.md`, awaiting Andy's read, then plan |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -556,6 +557,41 @@ trip the switcher exists to remove. The switcher is one shared component
 2. Keyboard behaviour matches the seven: 1–7 to jump, Escape closes, current tool marked.
 3. No kit primitive is rebuilt; every colour a token.
 4. `tsc`, lint, tests and `next build` clean, and both headers proven in the running app.
+
+### #169 · Millie web front door + Public mode
+
+**🟡 S2 · size L — designed 2026-09-07.** Spec: `docs/superpowers/specs/2026-09-07-millie-web-front-door-public-mode-design.md`.
+Repos: `mds-digest-web` (route, page) + the Olivia workflow (new `olivia-web` entry, Public Gate) via staging → gate → promote.
+
+**Story.** As MDS staff, I want to ask Millie from the admin portal and get the answer back in the same request,
+under my own name, and I want a Public mode whose answer I can publish outside MDS — drawn from everything we
+hold, naming a person only when a public source backs the name, with notes on where each part came from — so
+that the team can use her without polluting Andy's WhatsApp thread, and so that a careful public answer takes
+minutes instead of a rewrite.
+
+**Andy's rulings (2026-09-07).** Own front door, not the WhatsApp disguise ("Own front door. Ideally if we can
+minimize cost somehow on ai") · Team mode = everything, all three internal categories, behind a huge disclaimer —
+**later ticket** ("for now, let's focus on the public answer, since it's a faster win") · public answers name a
+person **only from public sources** ("second one, only from public sources") · the MDS Facebook group counts as
+closed.
+
+**Today's chat, confirmed from code:** every message is a fake WhatsApp inbound from Andy's phone; n8n answers
+200 at once; the page polls `olivia_messages` every 2.5 s for up to 120 s. Every staff member asks as Andy and
+every turn lands in his real thread.
+
+**Acceptance.**
+1. A Public question returns the answer in the same request, no polling, with notes and a Copy button; the turn is
+   stored in `digest.olivia_web_messages` under the staff email; nothing reaches WhatsApp or `olivia_messages`.
+2. Mixed evidence (closed chat + public page): only the publicly backed person is named; the notes say what was
+   paraphrased and from where.
+3. A leftover unbacked name fails closed with the refusal text.
+4. Leak gate green with the new checks (secret required · no Meta send · no `olivia_messages` write · name gate ·
+   fail-closed · staff-only route). Before/after: polling requests per answer ~10–48 → 1; turns in Andy's thread per
+   staff question 2 → 0.
+5. Cost per Public answer ≈ $0.023 (today's $0.021 + one Haiku pass).
+
+**Out of scope.** Team mode + disclaimer (own ticket) · Facebook "answer this post" popup (design pending) ·
+`/api/olivia/ask` (iOS) migration · publishing from the page.
 
 ### #168 · Millie test chat back in the admin, at a new address
 
