@@ -593,9 +593,21 @@ move a visitor's pointer, so the button flees the cursor instead, which produces
   honest scores, and the comments — the only real content. Email was rejected: the Slack ping already
   covers immediacy, and an email cannot show the split.
 
+**Andy's test requirements (2026-09-07).**
+- **The card is centred in the viewport, vertically and horizontally.** The prototype sits high on the
+  page with dead space beneath it; that is a prototype artifact, not the design.
+- **A personal trigger so he can walk the whole flow as often as he likes.** Forced open on the
+  storefront, gated to his session email alone — never anyone else's, never a flag a normal admin can
+  set on themselves.
+- **A test run must cost nothing.** A response submitted through the trigger is marked as a test, is
+  excluded from the counter and from the Team pulse panel, and does **not** consume his one real ask.
+  Without that, the first walkthrough burns the honest answer we are trying to collect.
+- Automated coverage of the flow end to end on top of that, so a regression shows up without a human
+  clicking through it.
+
 **Acceptance.**
 1. The popup behaves as the pack does: 1–9 flee, 10 does not, taunts escalate, celebration on 10,
-   hatch after five attempts.
+   hatch after five attempts. The card is centred in the viewport.
 2. A submitted answer lands in the table and the row can be shown; a joke ten and an honest answer are
    separable by `honest`.
 3. The "N of M answered" counter is real — M is the staff roster, N the response count. No literal
