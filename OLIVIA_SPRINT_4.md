@@ -566,7 +566,12 @@ sentence goes and no new threshold is invented — whether a percentile is the r
 #163's call, measured before and after. Build: DB half `aa9953f` on `165-personas-numbers-20260907`
 (`personas_stats` +`score_today, score_peak, pool, topic_top, topic_median`, append-only, every
 pre-existing column byte-identical across all 16,932 rows, gate exit 0); web half on
-`165-personas-sheet-20260907`.
+`165-personas-sheet-20260907` — `98f40ba` absolute bar → `e57f874`, `d452061` copy → `04b2675` final-review
+fix wave. **AC 6 BUILT + REVIEWED 2026-09-07, awaiting Andy's merge.** Opus whole-branch review: fit to merge
+with fixes; the real one was a phone break (≤640px rule still sized for "100/100", score painted over the badge
+on every row at 375px) — fixed, re-review measured 17.0 / 15.5px clear itself. tsc clean · vitest 900/900 ·
+`npm run build` exit 0. Deferred on purpose: "0th" on 10 bottom rows · `pool` counts 349 zero-score rows the
+copy calls "signal" (#163's wording) · `personas_sheet` ~89 ms · pre-existing name ellipsis at 375px.
 
 **Findings that belong to #163, not here** (from the first build; reported, untouched): 1,016
 detail-stat rows across 503 members score under a zero parent · the scorer weights posts highest (2.0)

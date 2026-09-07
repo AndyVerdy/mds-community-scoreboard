@@ -11,6 +11,45 @@
 
 # Olivia — next session
 
+## STATE 2026-09-07 (scoring session close) — #163 Task 1 DONE · #165 absolute stat bar BUILT + REVIEWED, waiting on Andy's "merge"
+**PROD n8n untouched all session (no promote, no lock).** Two branches await Andy, both reviewed clean:
+- **mds-digest-web `165-personas-sheet-20260907` @ `04b2675`** — the absolute stat bar on top of the first #165
+  build. Merge to `main` = Render deploy. Look first: `localhost:3165/personas/recLS9VdInRcZY3vc` (Corey Smith;
+  `recG2hA8WPuJJ873i` is Ryan Pace). Staff cookie: `node --env-file=.env.local scripts/dev-session-cookie.mjs`.
+- **Scorecard `165-personas-numbers-20260907` @ `26c6cec`** — `db/` mirror of the `personas_stats` view (+5 columns,
+  ALREADY LIVE in the database) + board. No merge-ordering constraint.
+- **Scorecard `163-truth-set-20260905` @ `2dda4f6`** — #163 Task 1, complete. Merge when Andy wants the
+  truth-table code on main; nothing downstream needs it until Task 3.
+
+### What the bar now means (the thing to explain to staff)
+Big number = raw evidence score today · `/x` = highest recorded score · `51st · 19 of 38` beneath = percentile,
+rank of pool · bar 0 → community top for that topic · tick = peak · line = community **median** (Andy: "use the
+median"; the old 70 was decoration). No "strong" threshold on the bar — the cohort/library pages keep their own
+60th-percentile cutoff, stated as theirs. `member_expertise.pct` untouched; Millie's lanes tier on it.
+
+### #163 — where it stands
+Task 1 `digest.expertise_truth`: 609 rows · 42 topics · 146 members · 279 evidence events · 0 orphans · gate 328/0.
+**Task 3 must exclude/footnote "SEO & keywords"** (97 of 364 speaker rows, ~95% taxonomy noise from the compound
+"Marketing & SEO" video category). **Task 2 = 82 members, not 101** (Andy: "use the 22 and keep the control
+honest" — 8 under value 20 + 14 actives with no ledger row; the percentile scale makes "near zero" almost empty).
+Task 2 needs Andy's explicit go on the crawl spend before dispatch. Ledgers:
+`.superpowers/sdd/2026-09-05-expertise-truth-set/progress.md` · `.superpowers/sdd/165-personas-numbers/progress.md`.
+
+### ANDY'S DESK
+1. **"merge"** for the two #165 branches (and #163's when convenient).
+2. **#163 Task 2 spend** — 82 members, third-party placements only, same subagent pattern as #160's 506 sites.
+3. Four #163 findings from #165 (posts weight 2.0 with 0 rows carrying a posts key · 1,016 detail rows under a
+   zero parent · redundant `weakness > 0` · focus signals often ARE the member's own words) — fold into Task 3 or file.
+
+### Traps this session
+- `member_expertise.pct` is **0..1**; `personas_stats.value` is **0..100**. Read "under 20" against the wrong one
+  and every member qualifies.
+- `personas_stats.peak` is a projection, not a recorded percentile. `member_expertise.peak_score` is the real one.
+- "The phrase is gone" is not "the meaning is gone" — three copy agents each fixed the sentence they were pointed
+  at and left the one beside it. Verify copy by transcribing the RENDERED page sentence by sentence.
+- A desktop column widening does not carry into the phone breakpoint by itself; the final review measured 375px.
+- Postgres refuses `percentile_cont(...) OVER (...)`; per-topic aggregates come from one GROUP BY join.
+
 ## STATE 2026-09-07 — #165 Personas sheet BUILT, handed to the scoring-system (#163) session · #166 + #167 SHIPPED
 **Andy 2026-09-07: "i need you to transfer 165 updates to Scoring system agent, ill work on it there."** Everything
 below is what that session needs; nothing is left in the head of the session that built it.
