@@ -892,6 +892,33 @@ CREATE INDEX olivia_sends_phone_idx ON digest.olivia_sends USING btree (to_phone
 CREATE INDEX olivia_sends_status_idx ON digest.olivia_sends USING btree (status);
 CREATE UNIQUE INDEX olivia_sends_pkey ON digest.olivia_sends USING btree (wamid);
 
+-- digest.olivia_web_messages
+--   id                                 bigint not null default nextval('digest.olivia_web_messages_id_seq'::regclass)
+--   thread_id                          text not null
+--   asker_email                        text not null
+--   mode                               text not null
+--   target                             text not null
+--   role                               text not null
+--   text                               text
+--   answer_md                          text
+--   notes                              jsonb not null default '[]'::jsonb
+--   sources                            jsonb not null default '[]'::jsonb
+--   evidence_classes                   jsonb not null default '{}'::jsonb
+--   route                              text
+--   plan                               jsonb
+--   wamid                              text
+--   latency_ms                         integer
+--   metrics                            jsonb
+--   model                              text
+--   created_at                         timestamp with time zone not null default now()
+alter table digest.olivia_web_messages add constraint olivia_web_messages_mode_check CHECK ((mode = ANY (ARRAY['test'::text, 'public'::text, 'team'::text])));
+alter table digest.olivia_web_messages add constraint olivia_web_messages_pkey PRIMARY KEY (id);
+alter table digest.olivia_web_messages add constraint olivia_web_messages_role_check CHECK ((role = ANY (ARRAY['member'::text, 'olivia'::text])));
+alter table digest.olivia_web_messages add constraint olivia_web_messages_target_check CHECK ((target = ANY (ARRAY['staging'::text, 'prod'::text])));
+CREATE INDEX olivia_web_messages_asker_idx ON digest.olivia_web_messages USING btree (asker_email, created_at DESC);
+CREATE INDEX olivia_web_messages_thread_idx ON digest.olivia_web_messages USING btree (thread_id, created_at DESC);
+CREATE UNIQUE INDEX olivia_web_messages_pkey ON digest.olivia_web_messages USING btree (id);
+
 -- digest.olivia_webhook_events
 --   id                                 bigint not null
 --   received_at                        timestamp with time zone not null default now()
