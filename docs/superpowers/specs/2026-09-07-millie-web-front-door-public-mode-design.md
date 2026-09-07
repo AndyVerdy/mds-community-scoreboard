@@ -173,6 +173,18 @@ Team mode and its everything-access SQL + disclaimer (D2, own ticket) · the Fac
 popup (Andy's design pending) · moving `/api/olivia/ask` (iOS) onto the door · restyling beyond the chat page ·
 publishing anywhere from the page.
 
+## Plan deviations (recorded when the plan was written, 2026-09-07)
+
+Plan: `docs/superpowers/plans/2026-09-07-millie-web-front-door-public-mode.md`. Three small departures from the
+text above, each chosen to reuse the existing chain instead of duplicating it:
+
+- The web table stores `metrics jsonb` (the answer loop's token counts) instead of a `cost_usd` column; the
+  ≈ $0.023 figure stays the estimate, computed from the counts when anyone needs dollars.
+- A web turn passes through `Claim Message (dedupe)` like every other turn and therefore writes one
+  `olivia_seen` row (unique wamid, harmless). The gate clause "never touches `olivia_seen`" is dropped; the two
+  that matter stay: never `Send Reply (Meta)`, never `olivia_messages`.
+- `Mark Read + Typing` still fires on the probe phone for web turns, exactly as the current test chat does.
+
 ## Open questions
 
 None blocking. Two to confirm at plan time: the exact role phrases used for redacted names (proposed above) and
