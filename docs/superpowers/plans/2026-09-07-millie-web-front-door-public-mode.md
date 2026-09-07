@@ -410,10 +410,17 @@ function leftoverNames(text, names, backed) {
 module.exports = { ROLE_PHRASES, extractEvidenceRows, backedNames, redact, leftoverNames };
 ```
 
+> **Superseded in part by Task 3 fix round 1 (2026-09-07, from the task review):** `backedNames()` must test each
+> name with a word-bounded regex (`\b…\b`, case-insensitive), never `includes` — "Arianna Leeman" in a public row
+> was backing the unrelated "Anna Lee". The first-name follow-up pass stays case-sensitive, requires a first name
+> of ≥ 4 letters and skips names in `COMMON_WORD_FIRST_NAMES` (Will, Grace, Mark, …) so "Will this feature ship?"
+> is never rewritten. **`scripts/olivia_loop/public_gate.js` is the source of truth**; Task 6 embeds the file, not
+> this block. Its suite has 9 tests after the fix.
+
 - [ ] **Step 4: Run the tests**
 
 Run: `node --test scripts/olivia_loop/public_gate.test.mjs`
-Expected: `# pass 6`, `# fail 0`
+Expected: `# pass 6`, `# fail 0` (9 after fix round 1)
 
 - [ ] **Step 5: Mutation check (the tests must be able to fail).** Temporarily change `rowClass` to return
 `'public'` always → the "backed only by a PUBLIC row" test must fail. Revert. Change `redact` to skip the
@@ -740,7 +747,10 @@ const draft = $('Gate Verdict').isExecuted
 const classifyRows = $('Classify Evidence (Supabase)').all().map(i => i.json);
 const nameRows = $('Fetch Name Index (Supabase)').all().map(i => i.json);
 const classes = {};
-for (const r of classifyRows) { if (r && r.key) classes[r.key] = (classes[r.key] === 'public' ? 'public' : String(r.klass || 'closed')); }
+// Most-RESTRICTIVE wins when one key comes back in several rows (Task 2 review): any 'closed' row closes the key.
+for (const r of classifyRows) { if (r && r.key) classes[r.key] = (classes[r.key] === 'closed' || String(r.klass) !== 'public') ? 'closed' : 'public'; }
+// Facebook content is not in content_items, so a Facebook URL gets NO classify row; rowClass() treats a missing
+// key as closed — the private group stays closed by default, never by luck.
 const ev = extractEvidenceRows(ap.messages);
 const backed = backedNames(ev.rows, classes, nameRows);
 const red = redact(draft, nameRows, backed);
