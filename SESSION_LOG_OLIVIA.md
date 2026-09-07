@@ -50,10 +50,18 @@ a merge behind a piped test command — the pipe's exit code is grep's. (4) `git
 collided once. (5) Andy: "keep you answer and report short and human friendly" — relay agent output as what changed and
 what he must decide, never the agent's inventory.
 
+**Rulings at close (Andy):** Personas bar line stays at 70 — the #165 copy ("60 and above is strong") must change, passed to
+the Scoring-system session · the two grid icons in the Personas header stay · Playwright declined ("skip playwright"),
+request-level tests + the HTTP e2e script stand.
+
+**Closed clean.** Scorecard `main` `5b9d2bd` (docs only; #163 code stays on `163-truth-set-20260905` with `2dda4f6`) ·
+`mds-digest-web` `main` `e2d933d` = prod · merged worktrees `166 / 167 / 167-visits` removed, dev servers 3165/3167/3169
+and the design-pack server 8791 stopped · the `165-personas-sheet` worktree kept for the Scoring-system session.
+
 **Next.** #165 lives with the Scoring-system session (merge = deploy once Andy has looked). #163 phase 1 Task 2 (82-member
-web test) still needs Andy's go. #167 follow-ups if wanted: Playwright for real browser e2e (dependency decision), a vitest
-exclude for `.claude/worktrees/**`, KIT.md Popup signature (`size`, `align`). Worktrees `165/166/167/167-visits` under
-`mds-digest-web/.claude/worktrees` can be removed once #165 is merged; dev servers on 3165/3167/3169 may still be running.
+web test) still needs Andy's go, and the gate has not been re-run since `2dda4f6`'s new check. Small #167 follow-ups if
+wanted: a vitest exclude for `.claude/worktrees/**`, KIT.md Popup signature (`size`, `align`). ClickUp handbook copy
+deliberately not touched (last regenerated whole 2026-09-04; repo is canonical).
 
 ## 2026-09-04 (afternoon–evening) · Olivia data layer / **MDS Personas (#161) — BUILT LOCALLY, three screens, ready for Andy's merge call** · #163 filed
 
