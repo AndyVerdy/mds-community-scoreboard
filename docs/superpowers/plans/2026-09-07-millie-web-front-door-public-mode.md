@@ -623,7 +623,9 @@ def main():
     creds = api("GET", "/credentials?limit=250").get("data", [])
     cred = next((c for c in creds if c["name"] == "Olivia Web Secret"), None)
     if not cred: sys.exit("create the 'Olivia Web Secret' httpHeaderAuth credential first (Task 5 step 1)")
-    sb = next(c for c in creds if c["type"] == "httpHeaderAuth" and "upabase" in c["name"])  # the existing Supabase service header cred used by Save Conversation
+    # The Supabase service header credential Save Conversation / Load Recent Turns already use (verified on the
+    # staging graph 2026-09-07): id QHLDE4VHvm8jrVds, name "Supabase secret (digest mirror)". Match by exact name.
+    sb = next(c for c in creds if c["type"] == "httpHeaderAuth" and c["name"] == "Supabase secret (digest mirror)")
 
     li = nodes["Log Inbound"]["parameters"]["jsCode"]
     assert li.count(LOG_INBOUND_OLD) == 1, "Log Inbound anchor not unique"
@@ -729,9 +731,11 @@ git commit -m "#169: web door on staging — Web Inbound (POST), Web? fork, Form
 - Produces: `Public Verify` output `{ text, notes: string[], sources: string[], evidence_classes: {key: klass},
   refused: boolean, removed: string[] }` consumed by `Format Web` (already written to read it).
 
-- [ ] **Step 1: Write the apply script.** Same skeleton as Task 5 (env, api, node_check, one bounce). The
-module is embedded by reading `scripts/olivia_loop/public_gate.js` and slicing between `// --- PUBLIC_GATE_BEGIN ---`
-and `// --- PUBLIC_GATE_END ---`:
+- [ ] **Step 1: Write the apply script.** Same skeleton as Task 5 (env, api, node_check, one bounce; `sb` = the
+credential named exactly "Supabase secret (digest mirror)", id QHLDE4VHvm8jrVds; the Anthropic credential is
+whatever `Fact Check` carries — copy its `credentials` block, do not look it up by name). The module is embedded by
+reading `scripts/olivia_loop/public_gate.js` and slicing between `// --- PUBLIC_GATE_BEGIN ---` and
+`// --- PUBLIC_GATE_END ---`:
 
 ```python
 MOD = open(os.path.join(os.path.dirname(__file__), "public_gate.js")).read()
