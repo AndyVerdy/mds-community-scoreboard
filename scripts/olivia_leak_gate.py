@@ -1411,7 +1411,9 @@ def main():
         st, _b = rpc("derive_expertise_truth", {}, ANON_KEY)
         check("anon denied on derive_expertise_truth", st in (401, 403, 404), f"status {st}")
         # positive control (silence is not proof): the service key sees the populated table,
-        # both sources present, and every row still resolves to an ACTIVE member
+        # both sources present (the ACTIVE-member resolution claim used to live in THIS
+        # comment with no check behind it -- #163 phase 1 review finding 3 -- it now has its
+        # own sweep immediately below).
         st, rows = curl("GET", f"{BASE}/expertise_truth?select=topic,at_member_id,source&limit=1000", key,
                         profile_hdr=["Accept-Profile: digest"])
         _rows = rows if isinstance(rows, list) else []
@@ -1420,6 +1422,46 @@ def main():
         _sources = {r.get("source") for r in _rows}
         check("expertise_truth carries both community_mention and speaker rows",
               {"community_mention", "speaker"} <= _sources, str(_sources))
+        # every row resolves to an ACTIVE member -- swept over the WHOLE table (paginated,
+        # not just the 1000-row sample above) so a future rebuild that orphans a row, or a
+        # member whose status lapses after the row was written, fails this gate instead of
+        # relying on a one-off manual query forever. PostgREST can't call a plpgsql predicate
+        # as a filter, so the status allowlist is mirrored here as a literal in.() list --
+        # same values as digest.is_active_member_status() (#31's ACCESS predicate) and the
+        # same in.() style member_card's probe target and the #106 staff probe already use
+        # above. IDs are chunked to keep each request URL a sane size.
+        _et_member_ids, _offset, _page = set(), 0, 1000
+        while True:
+            st, _pg = curl("GET", f"{BASE}/expertise_truth?select=at_member_id"
+                                  f"&limit={_page}&offset={_offset}", key,
+                            profile_hdr=["Accept-Profile: digest"])
+            if st != 200 or not isinstance(_pg, list):
+                break
+            _et_member_ids.update(r.get("at_member_id") for r in _pg if r.get("at_member_id"))
+            if len(_pg) < _page:
+                break
+            _offset += _page
+        ACTIVE_STATUSES = ("Current Member", "New Member", "Current Member- Not Renewing",
+                           "Staff", "Pending Group Entrance")
+        _status_in = ",".join("%22" + s.replace(" ", "%20") + "%22" for s in ACTIVE_STATUSES)
+        _et_ids_sorted = sorted(_et_member_ids)
+        _active_ids, _sweep_ok = set(), bool(_et_ids_sorted)
+        for _i in range(0, len(_et_ids_sorted), 150):
+            _chunk = _et_ids_sorted[_i:_i + 150]
+            _ids_in = ",".join("%22" + mid + "%22" for mid in _chunk)
+            st, _act = curl("GET", f"{BASE}/member_attributes?select=at_member_id"
+                                   f"&at_member_id=in.({_ids_in})"
+                                   f"&membership_status=in.({_status_in})", key,
+                            profile_hdr=["Accept-Profile: digest"])
+            if st != 200 or not isinstance(_act, list):
+                _sweep_ok = False
+                break
+            _active_ids.update(r.get("at_member_id") for r in _act)
+        _orphaned = sorted(_et_member_ids - _active_ids)
+        check("every expertise_truth row resolves to an ACTIVE member",
+              _sweep_ok and not _orphaned,
+              f"{len(_et_member_ids)} members swept, {len(_orphaned)} not active/found"
+              f"{', e.g. ' + str(_orphaned[:5]) if _orphaned else ''}")
 
         print("— membership status gates every door (#31) —")
         # dynamic fixture: a real Removed member with a linked phone (never hardcoded)

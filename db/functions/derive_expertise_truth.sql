@@ -64,7 +64,8 @@ begin
 
   -- Join the two (now correctly-sized) halves, apply Addendum F (self-description) and the
   -- reply-to-address exclusion, then collapse to one row per thread (see url note below).
-  insert into digest.expertise_truth (topic, at_member_id, source, weight, url, occurred_at, evidence)
+  insert into digest.expertise_truth (topic, at_member_id, source, weight, url, occurred_at, evidence,
+                                       evidence_event_id, evidence_event_topic_count)
   with matched as (
     select at2.topic, nh.at_member_id, nh.url, nh.occurred_at, nh.comment_ci_id,
            nh.post_id, at2.post_body, nh.body, nh.full_name, nh.author_name
@@ -99,15 +100,21 @@ begin
            'post_snippet', left(post_body, 300),
            'comment_snippet', left(body, 300),
            'named_as', full_name,
-           'commenter', author_name)
+           'commenter', author_name),
+         -- Finding 2: stable event id = this (thread, member) pair, plus how many topic rows
+         -- that same pair produced (post-dedup, i.e. the rows actually being inserted).
+         'community_mention:' || post_id || ':' || at_member_id,
+         count(*) over (partition by post_id, at_member_id)
   from dedup;
 
   -- ============ SOURCE 2: speaker picks ============
   -- MDS put this person on stage for this subject: videos_catalog.speaker_ids resolved to a
   -- member via the member_profiles Email/Preferred Email union (Addendum E), crossed with the
-  -- video's own topic match. Verified before building on it: 202 speaker-member pairs, 421
-  -- video-member pairs (task-1-report.md).
-  insert into digest.expertise_truth (topic, at_member_id, source, weight, url, occurred_at, evidence)
+  -- video's own SUBJECT match (title + category_names + tag_names -- Finding 1; see video_subject
+  -- below). Verified before building on it: 202 speaker-member pairs, 421 video-member pairs
+  -- (task-1-report.md).
+  insert into digest.expertise_truth (topic, at_member_id, source, weight, url, occurred_at, evidence,
+                                       evidence_event_id, evidence_event_topic_count)
   with term_q as materialized (
     select t.topic, x.term, phraseto_tsquery('english', x.term) as q
     from digest.expertise_topics t, unnest(t.terms) as x(term)
@@ -131,22 +138,40 @@ begin
   active_members as (
     select at_member_id from digest.member_attributes where digest.is_active_member_status(membership_status)
   ),
+  video_subject as (
+    -- Finding 1: the video's own SUBJECT only -- title, category_names, tag_names. NEVER
+    -- search_tsv (also spans speaker_names, call_type, cliff_notes, summary, files_text,
+    -- description_text) -- that generated column is why the prior build credited a single
+    -- talk's speaker with 25 topics off its summary and attached-file text. Computed once per
+    -- video (not once per video-term pair) so the join below stays cheap.
+    select v.video_id, v.title, v.speaker_ids, v.app_created_at,
+           to_tsvector('english',
+             coalesce(v.title, '') || ' ' ||
+             digest.immutable_text_array_join(v.category_names) || ' ' ||
+             digest.immutable_text_array_join(v.tag_names)
+           ) as subject_tsv
+    from digest.videos_catalog v
+    where v.deleted_at is null
+  ),
   video_topic as (
     -- grouped (not a bare distinct) so a member reachable via two speaker rows on the same
     -- video can never produce two rows sharing one primary key
-    select v.video_id, min(v.title) as title, tq.topic, s.at_member_id,
-           min(s.display_name) as speaker_display_name, min(v.app_created_at) as app_created_at
-    from digest.videos_catalog v
-    join term_q tq on v.search_tsv @@ tq.q
-    join spk s on v.speaker_ids @> array[s.user_id]
-    where v.deleted_at is null
-    group by v.video_id, tq.topic, s.at_member_id
+    select vs.video_id, min(vs.title) as title, tq.topic, s.at_member_id,
+           min(s.display_name) as speaker_display_name, min(vs.app_created_at) as app_created_at
+    from video_subject vs
+    join term_q tq on vs.subject_tsv @@ tq.q
+    join spk s on vs.speaker_ids @> array[s.user_id]
+    group by vs.video_id, tq.topic, s.at_member_id
   )
   select vt.topic, vt.at_member_id, 'speaker', 1,
          coalesce(digest.member_video_url(vt.video_id), ''),
          vt.app_created_at::date,
          jsonb_build_object('kind', 'speaker', 'video_id', vt.video_id,
-                             'video_title', vt.title, 'speaker_display_name', vt.speaker_display_name)
+                             'video_title', vt.title, 'speaker_display_name', vt.speaker_display_name),
+         -- Finding 2: stable event id = this (video, member) pair, plus how many topic rows
+         -- that same pair produced.
+         'speaker:' || vt.video_id || ':' || vt.at_member_id,
+         count(*) over (partition by vt.video_id, vt.at_member_id)
   from video_topic vt
   join active_members am on am.at_member_id = vt.at_member_id;
 

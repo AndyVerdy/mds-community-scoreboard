@@ -276,8 +276,11 @@ CREATE UNIQUE INDEX expertise_topics_pkey ON digest.expertise_topics USING btree
 --   occurred_at                        date
 --   evidence                           jsonb not null default '{}'::jsonb
 --   captured_at                        timestamp with time zone not null default now()
+--   evidence_event_id                  text
+--   evidence_event_topic_count         integer
 alter table digest.expertise_truth add constraint expertise_truth_pkey PRIMARY KEY (topic, at_member_id, source, url);
 alter table digest.expertise_truth add constraint expertise_truth_source_check CHECK ((source = ANY (ARRAY['community_mention'::text, 'speaker'::text, 'web'::text])));
+CREATE INDEX expertise_truth_event_idx ON digest.expertise_truth USING btree (evidence_event_id);
 CREATE INDEX expertise_truth_member_idx ON digest.expertise_truth USING btree (at_member_id);
 CREATE INDEX expertise_truth_source_idx ON digest.expertise_truth USING btree (source);
 CREATE INDEX expertise_truth_topic_idx ON digest.expertise_truth USING btree (topic);
