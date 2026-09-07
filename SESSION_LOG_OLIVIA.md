@@ -2,6 +2,61 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-07 (night) · Poor answers check, case 1 · **#174 + #175 BUILT, STAGED and PROVEN on `2d875cb3` — awaiting Andy's promote**
+
+**Trigger (Andy):** "oliva continues. poor answers check" → "case 1" (a WhatsApp screenshot: "Tell me more about Alex Chiru
+video" answered with a three-video cluster and two bare links) → "short version with status" → "do you know how to fix it?"
+→ "what is 174?" → "go" → "chck backlog for more cases adress them one by one".
+
+**Diagnosis (live, not memory).** Prod turns 65488–65491, execs 137508 / 137515 fetched through the n8n public API (the
+official n8n MCP cannot read the prod workflow). ① The first answer had recorded a `pending_offer` with four video ids
+including `6a8866c0…`; "Tell me more about Alex Chiru video" reached Plan Request with `offer_bind:null` because the three
+acceptance signals (router `accepts_offer`, bare affirmation, echo of the offer-line word "further") never covered a member
+NAMING an item; the videos lane ran `video_search "alex chiru"`, eight speaker rows were preloaded, the model searched again and
+wrote a list. The router could not have bound it: `history_block` trims each turn to 500 chars and the bullet starts at char
+829. Not a regression — never a bound shape. Same class 26 Aug (53868 "Summarize the Orkun one", 53870). ② The two bare links
+were inserted by Gate Verdict's #1b link-coverage repair, not the model (the Answer Parse draft had none): it paired each URL
+with the last `title` in the 900 chars before it, a top-5 row carries up to 3,200 chars of snippets between title and
+`video_url`, so the URL took the NEXT row's title; replayed on the real evidence: `65ef9f07…` rode on "Listing Optimisation
+Deep Dive", `63e5b874…` on "How Brands Turn Failed Creative Tests…", `67e4836b…` was the restricted duplicate catalog row of a
+talk already linked (8/10 title words). Every LLM answer of Andy's that day carried one. ③ Side finding, not worked: the first
+answer's fact-check FAILED two claims and the #53 post-filter passed them (every entity present in evidence) — by design.
+
+**What shipped (branch `174-named-item-drilldown-20260907`, TDD, tests run against the shipped node bytes):**
+- **#174** `apply_174_named_item_drilldown.py` — Format Reply records `pending_offer.items[{id,name}]` (the line above each
+  video link); Plan Request `namedOfferItem()` = fourth acceptance signal (≤16 words, a capitalised word of an item's line,
+  drill-down cue or two words, no new-question opener, a single word shared by several items binds nothing, two-item ties
+  bind both), `offer_bind.mode` `drilldown`|`accept`; Answer Seed DRILL-DOWN block. `test_174_named_item.js` 30/30.
+- **#175** `apply_175_link_pairing.py` — Gate Verdict `linkCoverageUrls()`: row = the JSON object around the url field by a
+  bracket-depth walk (a nested `attachments:[{…}]` no longer passes for a boundary — that is what hid the public 684848cd row
+  and let its duplicate through), first depth-0 title, image keys skipped, already-linked twins skipped. `test_175_link_pairing.js`
+  14/14; replay of execs 137508 / 137515 appends 0 (was 1 and 2).
+- Board: #174 + #175 filed with story + ACs and close blocks; handoff STATE; handbook §13 two traps + Appendix C notes.
+
+**Verified on staging `2d875cb3` (= #169 Task 5 + #174 + #175), 33 WA-path turns, all 200, probe rows cleaned by id:**
+Andy's exact chain → exec **137664** `offer_bind {mode:'drilldown', ids:['6a8866c0…']}`, saved plan `offer_bound` +
+`video_search p_video_id`, answer = the one video, its substance, one link (rows 65563–65565) · "Summarize the Fabio one" →
+137633 drilldown `67f6e83d…` · "tell me more about the title update one" → 137645 drilldown `6a8866c0…` · "yes" → 137637
+`accept`, 3 ids (unchanged) · no-offer control → 137647 videos lane (unchanged) · `link_coverage` absent on all 33 Gate
+Verdict outputs (#175) · gate 324 checks EXIT 0 (22:15Z and 22:42Z). **Not bound, in writing:** a bare ordinal ("the second
+one", 137667) — pre-existing, the seed rule still answered the right item.
+
+**#143 probes (findings only, nothing changed):** "How much MDS credit do I have?" → "Yes please" bound to the bold `*$3,615.00*`
+as an offered item (the #112 recorder counts any bold span; 137650 `accept ids:[]`) and restated the balance · "…tiktok ballers"
+→ "Is there any bigger revenue group" echo-bound on *revenue* (137656) and narrowed the people list by band where bank C wants
+the revenue-gated chat · "I thought I was in that chat already" → chat_info, correct · "What do you know about me from
+WhatsApp?" → dossier lane (137661), profile + one June-3 activity line, no links.
+
+**Incident — two sessions, one host-level lock (30 min lost).** The #169 session re-staged from prod (22:19Z) and PUT the whole
+graph while this session held the `olivia_wf.py` lock; #174 was applied at 22:11Z (8275f8da) and re-applied 22:23Z (1d9a96d4)
+and both were wiped; a first probe run (10 min) tested the wrong graph. Every WA inbound on staging had also errored
+21:52–22:19Z with "Unused Respond to Webhook node found in the workflow" (#169's Respond Web node, WA Inbound (POST)). Resolved
+by message: hold → "staging is yours" → apply → probe → gate → "staging is back" (22:52Z, lock released). The lock records
+`user@host` and cannot separate two sessions on one Mac — handbook §13, memory `olivia-staging-lock-is-host-level`.
+
+**Next.** Andy's promote (one graph: #169 Task 5/6 + #174 + #175, or re-stage from prod and re-apply for a one-ticket graph) →
+re-probe prod → then #143 one by one (the bold-as-offer recorder guard first), #155, #139, #140, #141.
+
 ## 2026-09-07 (scoring session) · **#163 Task 1 COMPLETE (truth table, reviewed) · #165 phase 2 BUILT + reviewed — the stat bar is absolute, awaiting Andy's merge**
 
 **Trigger.** "continue working on oliva" → briefing → Andy: "i want to work on 163" → "go". Mid-session Andy
