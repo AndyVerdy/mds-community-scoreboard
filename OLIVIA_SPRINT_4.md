@@ -577,9 +577,14 @@ move a visitor's pointer, so the button flees the cursor instead, which produces
 
 **The logic (Andy ruled 2026-09-07, tightening an earlier draft).**
 - **When.** Storefront `/admin` only, never inside a tool, never mid-task. **Asked once per person,
-  ever** — not once a quarter — and **from that person's second session onward**, never on their first
-  login after the feature lands. A `wave` column carries which pulse a row belongs to, so a future
-  round can ask the same people again without a code change. A dismissal suppresses it for one month.
+  ever** — not once a quarter. A `wave` column (`survey_key`) carries which pulse a row belongs to, so
+  a future round can ask the same people again without a code change. A dismissal suppresses it for
+  one month. **Shown from the second DAY of use since launch, never on the first** (Andy 2026-09-07,
+  after learning a "session" is a 30-day login cookie: "Oh, then this will not happen soon. i do no
+  rememebr when was the last time i actually was loged out"). Visits are recorded per person per UTC
+  day in `digest.admin_survey_visits`, because `member_sessions` keeps one overwritten `last_seen_at`
+  and cannot tell two days apart. The shipped first cut counted logins (`MIN_SESSIONS = 2`); the
+  day rule replaces it.
 - **Who.** Identity is the session email; the staff gate is `isStaffEmail` (`@mds.co`, case-insensitive,
   trimmed). Verified in `src/lib/session.ts` + `src/lib/staff-otp.ts` — responses key on a real person
   and the roster is the counter's denominator.
