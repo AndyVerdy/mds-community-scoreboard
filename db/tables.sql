@@ -911,6 +911,8 @@ CREATE UNIQUE INDEX olivia_sends_pkey ON digest.olivia_sends USING btree (wamid)
 --   metrics                            jsonb
 --   model                              text
 --   created_at                         timestamp with time zone not null default now()
+--   redactions                         jsonb not null default '[]'::jsonb
+--   source_summary                     jsonb not null default '{}'::jsonb
 alter table digest.olivia_web_messages add constraint olivia_web_messages_mode_check CHECK ((mode = ANY (ARRAY['test'::text, 'public'::text, 'team'::text])));
 alter table digest.olivia_web_messages add constraint olivia_web_messages_pkey PRIMARY KEY (id);
 alter table digest.olivia_web_messages add constraint olivia_web_messages_role_check CHECK ((role = ANY (ARRAY['member'::text, 'olivia'::text])));
