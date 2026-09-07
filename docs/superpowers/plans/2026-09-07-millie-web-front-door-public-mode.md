@@ -496,6 +496,15 @@ git commit -m "#169: olivia_wf.py swaps both webhook paths (wa + web) on stage/p
 `httpHeaderAuth`, name `Olivia Web Secret`, header `X-Olivia-Web-Secret`, value = a new 48-char random secret
 (`openssl rand -hex 24`). Put the same value in `/Users/Born/mds-digest-web/.env.local` as `OLIVIA_WEB_SECRET=`
 and in Render's env for the web service (Andy, or whoever holds the Render dashboard) **before** Task 8.
+*(Done by the controller 2026-09-07: credential id `mY6DDdu06zPKvOuE`; `.env.local` carries the secret; Render still
+pending.)*
+
+- [ ] **Step 1b (pulled forward from Task 8): the two gate columns.** Migration
+`scripts/sql/20260907_olivia_web_messages_gate_cols_169.sql` — `alter table digest.olivia_web_messages add column if
+not exists redactions jsonb not null default '[]'::jsonb;` and `… source_summary jsonb not null default '{}'::jsonb;`
+plus their `comment on column` lines — applied as `olivia_web_messages_gate_cols_169`, exported to `db/` (only
+this table's hunks). `SAVE_WEB_BODY`'s olivia row gains `redactions: f.redactions || [], source_summary:
+f.source_summary || {}`.
 
 - [ ] **Step 2: Write the apply script.** Pattern = `apply_160_partner_web.py` (env from `.env.local`, `api()`
 via curl, `STAGING_ID = "bqHstPDi84uOhTCJ"`, `old` exactly once, `node --check`, one bounce). New content:
@@ -966,11 +975,9 @@ git commit -m "#169: gate — web door secret, RPC/table denial, no web turn in 
   text, thread_id? }` → the door's JSON plus `asker_email` (`team` → 400 until #172); `GET ?thread_id=` →
   `{ turns: WebTurn[] }` of the caller's own thread; `GET ?list=1` → `{ threads: ThreadSummary[] }`. Types exported
   from `web-chat.ts`: `WebMode`, `WebTarget`, `UiTarget`, `Redaction`, `WebTurn`, `DoorResponse`, `ThreadSummary`;
-  helpers `toDoorArgs`, `isUiTarget`, `listThreads`, `readThread`, `callMillieWeb`. Also in this task: the additive
-  migration adding `redactions jsonb not null default '[]'` and `source_summary jsonb not null default '{}'` to
-  `digest.olivia_web_messages` (Supabase MCP, exported to `db/` in the Scorecard repo on the #169 branch), and
-  `Save Web (Supabase)`'s body gains `redactions: f.redactions || [], source_summary: f.source_summary || {}` on the
-  olivia row (a one-line edit in `apply_169_web_door.py`, re-applied to staging).
+  helpers `toDoorArgs`, `isUiTarget`, `listThreads`, `readThread`, `callMillieWeb`. (The two jsonb columns
+  `redactions` / `source_summary` and the matching `Save Web` fields were pulled forward into Task 5 — migration
+  `olivia_web_messages_gate_cols_169` — so nothing about the table or the workflow changes in this task.)
 
 - [ ] **Step 1: Config**
 
