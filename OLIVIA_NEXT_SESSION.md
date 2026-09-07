@@ -11,13 +11,15 @@
 
 # Olivia — next session
 
-## STATE 2026-09-07 (scoring session close) — #163 Task 1 DONE · #165 absolute stat bar BUILT + REVIEWED, waiting on Andy's "merge"
-**PROD n8n untouched all session (no promote, no lock).** Two branches await Andy, both reviewed clean:
-- **mds-digest-web `165-personas-sheet-20260907` @ `04b2675`** — the absolute stat bar on top of the first #165
-  build. Merge to `main` = Render deploy. Look first: `localhost:3165/personas/recLS9VdInRcZY3vc` (Corey Smith;
-  `recG2hA8WPuJJ873i` is Ryan Pace). Staff cookie: `node --env-file=.env.local scripts/dev-session-cookie.mjs`.
-- **Scorecard `165-personas-numbers-20260907` @ `26c6cec`** — `db/` mirror of the `personas_stats` view (+5 columns,
-  ALREADY LIVE in the database) + board. No merge-ordering constraint.
+## STATE 2026-09-07 (scoring session close) — #163 Task 1 DONE · **#165 PROMOTED — rank-led stat bar LIVE on prod (Render `b44e2d7`)**
+**PROD n8n untouched all session (no promote, no lock).** Andy: "lets promote it" (2026-09-07). Both merged:
+- **mds-digest-web `main` = `b44e2d7`** — merge of `165-personas-sheet-20260907` (rebased on 48851e7 → f3be5ca;
+  re-verified after rebase: tsc clean, vitest 1087/1087, next build exit 0). **Render `/api/version` = b44e2d7,
+  live 2026-09-07 ~17:03 local.** Sheet: `digest.mds.co/personas/recLS9VdInRcZY3vc` (Corey Smith; staff login).
+- **Scorecard `main` = `4e111c1`** — merge of `165-personas-numbers-20260907` (rebased on 23ed52c → dc148cb): the
+  `personas_stats` view mirror (+5 columns, live since aa9953f), board, logs, handbook.
+- Both merges went through detached throwaway worktrees (`git push origin HEAD:main`) — no shared checkout moved.
+  Peer sessions told to `git pull --ff-only`.
 - **Scorecard `163-truth-set-20260905` @ `2dda4f6`** — #163 Task 1, complete. Merge when Andy wants the
   truth-table code on main; nothing downstream needs it until Task 3.
 

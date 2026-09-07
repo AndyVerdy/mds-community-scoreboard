@@ -567,7 +567,7 @@ sentence goes and no new threshold is invented — whether a percentile is the r
 (`personas_stats` +`score_today, score_peak, pool, topic_top, topic_median`, append-only, every
 pre-existing column byte-identical across all 16,932 rows, gate exit 0); web half on
 `165-personas-sheet-20260907` — `98f40ba` absolute bar → `e57f874`, `d452061` copy → `04b2675` final-review
-fix wave. **AC 6 BUILT + REVIEWED 2026-09-07, awaiting Andy's merge.** Opus whole-branch review: fit to merge
+fix wave. **AC 6 BUILT + REVIEWED 2026-09-07, then superseded by phase 3 below and PROMOTED.** Opus whole-branch review: fit to merge
 with fixes; the real one was a phone break (≤640px rule still sized for "100/100", score painted over the badge
 on every row at 375px) — fixed, re-review measured 17.0 / 15.5px clear itself. tsc clean · vitest 900/900 ·
 `npm run build` exit 0. Deferred on purpose: "0th" on 10 bottom rows · `pool` counts 349 zero-score rows the
@@ -578,7 +578,11 @@ an inline mockup: **rank is the headline (`#19` / `of 38`), raw numbers on hover
 typical-member mark, no today marker, ghost only when fading, legend once.** Data untouched. Reviewed on Corey and
 Ryan Pace (#182–#475, every fill/mark matches the formula); the review caught a phone regression (27 of 51 names
 truncated, an empty grid row) — fixed to parity with 04b2675 (3 of 51, all pre-existing), re-review measured it.
-901 tests, tsc clean, build 0. **Awaiting Andy's merge.**
+901 tests, tsc clean, build 0. **PROMOTED 2026-09-07 (Andy: "lets promote it"): web `main` b44e2d7 → Render
+`/api/version` b44e2d7 live; Scorecard `main` 4e111c1.** Rebased on the moved mains first; after the web rebase
+crossed 11 commits (shared `personas.css`) the branch was re-verified: tsc clean, vitest 1087/1087, build exit 0.
+Open follow-up, Andy's call: the dashed typical-member mark gets its own hover text — he asked what the line meant
+after the legend had said it.
 
 **Findings that belong to #163, not here** (from the first build; reported, untouched): 1,016
 detail-stat rows across 503 members score under a zero parent · the scorer weights posts highest (2.0)
