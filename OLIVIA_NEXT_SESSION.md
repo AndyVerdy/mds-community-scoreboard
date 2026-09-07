@@ -11,6 +11,27 @@
 
 # Olivia — next session
 
+## STATE 2026-09-07 (evening) — #174 + #175 BUILT and unit-proven, staging apply PENDING the #169 handover · branch `174-named-item-drilldown-20260907`
+**Andy's "poor answers check", case 1 (prod turns 65488–65491):** "Tell me more about Alex Chiru video" after a four-video
+list was re-planned as a fresh speaker search (#174), and the two bare links under it came from the gate's link repair pairing
+URLs with the wrong row (#175). Both on the board with story + ACs; both filed from live evidence (execs 137508 / 137515).
+- **#174** `scripts/olivia_loop/apply_174_named_item_drilldown.py` (Format Reply `pending_offer.items` · Plan Request
+  `namedOfferItem()` fourth acceptance signal · Answer Seed DRILL-DOWN offer block) — `test_174_named_item.js` 30/30 on the
+  patched bytes · gate GREEN exit 0 (22:15Z run). **Applied to staging twice (8275f8da, 1d9a96d4) and overwritten twice by
+  the #169 session's whole-graph PUTs** — the `olivia_wf.py` lock is host-level and cannot separate two sessions on one Mac
+  (memory `olivia-staging-lock-is-host-level`). Agreed by message: #169 finishes its Task 5 fix, hands staging over, #174 +
+  #175 apply on top, probe, gate, hand back; #169 Task 6 goes on after; the promote carries #169 + #174 + #175.
+- **#175** `scripts/olivia_loop/apply_175_link_pairing.py` (Gate Verdict `linkCoverageUrls()`, depth-aware row bounds) —
+  `test_175_link_pairing.js` 14/14 · replaying the real evidence of execs 137508 / 137515 appends 0 URLs (was 1 and 2).
+- **Probe plan once staging is ours** (`olivia_selftest.py --staging`, probe rows cleaned by id afterwards, never `--cleanup`
+  — it deletes by the oldest SELFTEST claim and would take Andy's real turns with it): reset · Andy's split-test question ·
+  "Tell me more about Alex Chiru video" (AC chain) · "Summarize the Fabio one" · "yes" · "the second one" (#112 unchanged) ·
+  a title-word drill-down · the no-offer control · then #143's c117 ("How much MDS credit do I have?" → "Yes please") and c39
+  ("…tiktok ballers" → "Is there any bigger revenue group" → "I thought I was in that chat already") and 6201.
+- **Backlog cases queued after these (Andy: "check backlog for more cases, address them one by one"):** #143 (3 bank C
+  follow-ups — 6349 is a bare "yes please" on a billing offer that replays the billing RPC; 6095/6096 are chat-tier
+  context; 6201 is the profile lane answering a from-WhatsApp ask) · #155 · #139 · #140 · #141 · #142 (deliberately untouched).
+
 ## STATE 2026-09-07 (scoring session close) — #163 Task 1 DONE · **#165 PROMOTED — rank-led stat bar LIVE on prod (Render `b44e2d7`)**
 **PROD n8n untouched all session (no promote, no lock).** Andy: "lets promote it" (2026-09-07). Both merged:
 - **mds-digest-web `main` = `b44e2d7`** — merge of `165-personas-sheet-20260907` (rebased on 48851e7 → f3be5ca;
