@@ -575,13 +575,23 @@ attempts an escape hatch appears — "let me answer honestly →" — where all 
 hatch: a rigged survey collects no data, and the honest answers are the useful ones.** Browsers cannot
 move a visitor's pointer, so the button flees the cursor instead, which produces the same feeling.
 
-**The logic (Andy approved 2026-09-07).**
-- **When.** Storefront `/admin` only, never inside a tool, never mid-task. Once per quarter per admin,
-  and only after that person has opened the portal in three separate sessions, so a first-timer is
-  never asked. A dismissal suppresses it for one month, not forever.
+**The logic (Andy ruled 2026-09-07, tightening an earlier draft).**
+- **When.** Storefront `/admin` only, never inside a tool, never mid-task. **Asked once per person,
+  ever** — not once a quarter — and **from that person's second session onward**, never on their first
+  login after the feature lands. A `wave` column carries which pulse a row belongs to, so a future
+  round can ask the same people again without a code change. A dismissal suppresses it for one month.
+- **Who.** Identity is the session email; the staff gate is `isStaffEmail` (`@mds.co`, case-insensitive,
+  trimmed). Verified in `src/lib/session.ts` + `src/lib/staff-otp.ts` — responses key on a real person
+  and the roster is the counter's denominator.
 - **Where.** New `digest.admin_survey_responses` (email · score · comment · `honest` boolean · attempts
-  · answered_at), service-role only, written through a server-side API route — the browser never holds
-  a service key. Each response posts to Slack in the team channel, reusing the existing integration.
+  · wave · answered_at), service-role only, written through a server-side API route — the browser never
+  holds a service key. Each response posts to Slack in the team channel, reusing the existing
+  integration.
+- **Reading the answers: an admin page, not email (Andy 2026-09-07: "admin page then, go with that").**
+  A staff-only **Team pulse** panel on the storefront, opening as a popup rather than navigating away,
+  same rule the seven tools follow. It shows how many of the roster answered, the joke tens against the
+  honest scores, and the comments — the only real content. Email was rejected: the Slack ping already
+  covers immediacy, and an email cannot show the split.
 
 **Acceptance.**
 1. The popup behaves as the pack does: 1–9 flee, 10 does not, taunts escalate, celebration on 10,
