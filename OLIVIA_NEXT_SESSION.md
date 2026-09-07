@@ -21,11 +21,16 @@
 - **Scorecard `163-truth-set-20260905` @ `2dda4f6`** — #163 Task 1, complete. Merge when Andy wants the
   truth-table code on main; nothing downstream needs it until Task 3.
 
-### What the bar now means (the thing to explain to staff)
-Big number = raw evidence score today · `/x` = highest recorded score · `51st · 19 of 38` beneath = percentile,
-rank of pool · bar 0 → community top for that topic · tick = peak · line = community **median** (Andy: "use the
-median"; the old 70 was decoration). No "strong" threshold on the bar — the cohort/library pages keep their own
-60th-percentile cutoff, stated as theirs. `member_expertise.pct` untouched; Millie's lanes tier on it.
+### What the bar now means (phase 3, `f2975cb` — the thing to explain to staff)
+Andy could not read phase 2 ("humans will not read 18.62/18.69 · 100th · 1 of 461"), so the row is now: **big
+number = rank `#19` over `of 38`** (members with any signal in the category) · bar on a **log scale** 0 → community
+top (`ln(1+x)/ln(1+top)`), fill = today · one **dashed unlabeled mark = a typical member** (the community median —
+Andy: "use the median") · a **faint ghost past the fill only when `fading`** = where they peaked · trend word
+unchanged · **raw score, peak, typical, top and percentile on hover** and in "How this score was built". No today
+triangle, no "median" text, no scores in the cell. No "strong" threshold on the bar — the cohort/library pages keep
+their own 60th-percentile cutoff, stated as theirs. `member_expertise.pct` untouched; Millie's lanes tier on it.
+Web branch `165-personas-sheet-20260907` @ `f2975cb` (phase 2 `98f40ba…04b2675` → phase 3 `aa47d70` → phone fix
+`f2975cb`); reviewed on Corey AND Ryan Pace (#182–#475), 901 tests, build 0, phone truncation at parity with 04b2675.
 
 ### #163 — where it stands
 Task 1 `digest.expertise_truth`: 609 rows · 42 topics · 146 members · 279 evidence events · 0 orphans · gate 328/0.

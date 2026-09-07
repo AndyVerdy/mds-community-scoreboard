@@ -572,6 +572,13 @@ with fixes; the real one was a phone break (≤640px rule still sized for "100/1
 on every row at 375px) — fixed, re-review measured 17.0 / 15.5px clear itself. tsc clean · vitest 900/900 ·
 `npm run build` exit 0. Deferred on purpose: "0th" on 10 bottom rows · `pool` counts 349 zero-score rows the
 copy calls "signal" (#163's wording) · `personas_sheet` ~89 ms · pre-existing name ellipsis at 375px.
+**Phase 3 (same day, `aa47d70` + phone fix `f2975cb`) — Andy read phase 2 and could not** ("humans will not read
+18.62/18.69 · 100th · 1 of 461 … median barely visible … these end arrows … no clue how to read it"). Approved from
+an inline mockup: **rank is the headline (`#19` / `of 38`), raw numbers on hover, log-scale bar, one dashed
+typical-member mark, no today marker, ghost only when fading, legend once.** Data untouched. Reviewed on Corey and
+Ryan Pace (#182–#475, every fill/mark matches the formula); the review caught a phone regression (27 of 51 names
+truncated, an empty grid row) — fixed to parity with 04b2675 (3 of 51, all pre-existing), re-review measured it.
+901 tests, tsc clean, build 0. **Awaiting Andy's merge.**
 
 **Findings that belong to #163, not here** (from the first build; reported, untouched): 1,016
 detail-stat rows across 503 members score under a zero parent · the scorer weights posts highest (2.0)

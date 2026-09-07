@@ -65,6 +65,20 @@ topics; `pool` counts 349 zero-score rows the copy calls "signal" (#163's wordin
 ~89 ms; pre-existing name ellipsis at 375px. tsc clean · vitest 900/900 · `npm run build` exit 0. Ledger
 `.superpowers/sdd/165-personas-numbers/progress.md`.
 
+**#165 phase 3 — the rank-led row (`aa47d70`, phone fix `f2975cb`).** Andy read phase 2 on local: *"humans will
+not read 18.62/18.69 · 100th · 1 of 461 … median — barely visible, and not clear what it is … then these end arrows
+… I have no clue how to read it."* Owned: the phase-2 hierarchy was the controller's design — the biggest number
+was the one nobody can interpret, the readable one (rank) was the smallest text, "median" repeated 18×, two markers
+for one idea, and a linear bar crushes everyone left because the top holds 20× the median. Mockup shown inline with
+Corey's real numbers; Andy: "ok, lets see it on local". Built: rank headline `#N / of pool` · raw score, peak,
+typical, top, percentile on hover + in the score-built disclosure · log-scale bar `ln(1+x)/ln(1+top)` · one dashed
+unlabeled typical mark · no today triangle · ghost only when fading AND peak > today (proven: Aggregators has
+peak > today but holding → no ghost) · legend once · 13 rendered sentences transcribed, 1 FALSE ("Score score")
+fixed in-commit. Review on Corey AND Ryan Pace (#182–#475; 7 rows match the formula) found two phone-only CSS
+defects — the shared row took 52px from the name column (27 of 51 names truncated at 375px) and an empty grid row
+added 28px per row — fixed by restoring the dedicated numbers row (3 of 51 truncate, all pre-existing; no 0px
+track), re-review measured it. 901 tests · tsc clean · build 0.
+
 **Findings for #163 from #165 (reported, untouched):** posts weight 2.0 but 0 of 16,762 rows carry a
 posts evidence key (heaviest weight may be dead) · 1,016 detail-stat rows score under a zero parent ·
 `or weakness > 0` redundant in `personas_sheet` asks · 2,407 of 4,960 focus signals ARE the member's own
