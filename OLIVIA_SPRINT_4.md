@@ -1612,10 +1612,45 @@ unsupported). Wave 12's S6 fixed the tool-error half — canned answers went 8 �
 remainder.
 
 ### #143 · A follow-up binds to the wrong thing, or loses the thread — 3 fails
-**🟡 S2 · size S — filed 2026-08-24.**
+**🟡 S2 · size S — filed 2026-08-24 · scoped 2026-09-07 (night) from the original rows + tonight's staging probes (Andy: "check backlog for more cases, address them one by one").**
 **IDs:** 6095 (names the 20M+ chat now but not its verification bar or application route) · 6201 (gives
 the profile instead of the WhatsApp footprint) · 6349 ("yes please" restates the credit balance instead
 of acting on the offer she just made).
+
+> **In plain words:** four small ways a "yes" or a short follow-up lands on the wrong thing — all deterministic
+> binding code, none of them the model.
+
+*As a member, my short reply lands on what she just put in front of me: a yes to "file this with the team" files it,
+"the second one" opens the second item, a new question is never mistaken for a yes, and a bold number is never treated
+as something she offered.*
+
+**What the original rows show (read 2026-09-07, `olivia_messages`):** 6349 = Etienne 2026-08-04 (23044–23047): she found no
+credit balance and offered *"Want me to file this as a report so the team can check…?"* — her own wording, not the seed's
+exact ticket sentence, so `ticketYes` (which needs `open a ticket with the mds team` in her last turn) never fired; the
+bank re-run replayed the billing plan and restated the balance; the live turn claimed "Done — I've filed that" without a
+ticket. 6095 = 2026-08-01 (17095–17098): the original run answered it RIGHT (route `chats`, the +1M TTM step-up chat with its
+verification bar and Typeform); tonight's staging probe (exec 137656) echo-bound "Is there any bigger revenue group" on the
+word *revenue* from her offer line ("narrow this list by niche or revenue band") — `_poEcho` only refuses a trailing "?" and
+the member typed none — and narrowed the PEOPLE list by band instead. Tonight also: "How much MDS credit do I have?" → "Yes
+please" (exec 137650) bound to the bold `*$3,615.00*` as an offered item (the #112 recorder counts every bold span, and a
+bare affirmation binds whatever it recorded); and "the second one" after a three-video list (exec 137667) reached the model
+unbound (ordinals are read only as quantifiers inside an acceptance) — the seed rule still answered the right item both times.
+6201 is a LANE question (the dossier lane answers a from-WhatsApp ask with the profile) — out of this ticket, see the
+handoff desk.
+
+**Shape of the fix (code, four guards — `test_143_followup_guards.js` runs them against the shipped bytes):** ① `Plan Request`
+`isNewQuestion()` — the #174 opener guard applied to the echo signal too: a message opening any/who/when/where/how many/is
+there/… never binds as an acceptance · ② `Format Reply` records bold spans as offered titles only when the reply ENDS with an
+offer question, and a numeric/currency bold never · ③ `Format Reply` records a report/ticket offer in her own words as
+`pending_offer.kind:'ticket'` (the reply's last line offers to file/open/flag a report/ticket/issue); `Plan Request`'s
+`ticketYes` accepts that kind on a yes, so the two-step ticket lane fires and the ticket is actually created · ④ `Plan
+Request` `bareOrdinalPick()` — "the second one" / "first" / "the last one" after an offer of ≥2 items binds to that item as a
+drill-down (same bound path as #174).
+
+**Accept when:** staging chains — "How much MDS credit do I have?" → "Yes please" no longer binds to the balance (no offer:
+answered as a nudge; with her ticket offer: a ticket row) · "…tiktok ballers" → "Is there any bigger revenue group" is not
+echo-bound (fresh plan, the step-up chat or a clarifier) · a list then "the second one" → `offer_bind.mode:'drilldown'` on
+the second item · #174 + #112 probes unchanged · gate GREEN · promote.
 
 ### #144 · 2027 events answered wrong — BLOCKED on #123
 **🔴 S1 — filed 2026-08-24. Cannot be fixed until #123 lands.**
