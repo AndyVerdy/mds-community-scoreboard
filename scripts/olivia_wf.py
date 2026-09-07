@@ -55,8 +55,10 @@ LOCK_PATH = os.path.join(REPO, ".olivia_wf.lock")
 GATE = os.path.join(REPO, "scripts", "olivia_leak_gate.py")
 
 PROD_ID = "12wj6h1TWqb0d4Dq"
-PROD_WEBHOOK_PATH = "olivia-wa-live"
-STAGING_WEBHOOK_PATH = "olivia-wa-staging"
+WEBHOOK_PATHS = {  # prod path : staging path — the TARGET's path always wins on a copy
+    "olivia-wa-live": "olivia-wa-staging",
+    "olivia-web-live": "olivia-web-staging",
+}
 STAGING_NAME = "Olivia WA — STAGING (test copy · Meta must never point here)"
 LOCK_TTL_MIN = 120
 
@@ -315,14 +317,28 @@ def cmd_diff(args):
 
 def apply_webhook_identity(graph, target_wf):
     """The TARGET's webhook path + webhookId always win — a graph can never carry
-    the live Meta path onto staging, or the staging path onto prod."""
+    the live Meta path onto staging, or the staging path onto prod.
+
+    Every entry in WEBHOOK_PATHS is handled identically, so a second webhook
+    (olivia-web-*) needs no branch of its own, only a second table row. A node
+    already present on the target (matched by name) always inherits the target's
+    OWN current path; the table is only consulted as a fallback — for a node the
+    target doesn't have yet (first-ever stage, or promoting a brand-new webhook)."""
     live = {n["name"]: n for n in (target_wf.get("nodes") or [])
             if n["type"] == "n8n-nodes-base.webhook"}
-    fallback_path = STAGING_WEBHOOK_PATH if target_wf["id"] != PROD_ID else PROD_WEBHOOK_PATH
+    target_is_prod = target_wf["id"] == PROD_ID
+    # direction-appropriate view of the table: prod path -> staging path, or reversed
+    mapping = ({staging: prod for prod, staging in WEBHOOK_PATHS.items()} if target_is_prod
+               else dict(WEBHOOK_PATHS))
+    # olivia-wa-* is the one pair every graph is guaranteed to carry (required on both
+    # prod and staging), so it is the last-resort default for a path this tool doesn't
+    # otherwise recognise — the web pair stays optional until its node exists
+    default_path = mapping.get("olivia-wa-live", "olivia-wa-live")
     for node in graph["nodes"]:
         if node["type"] != "n8n-nodes-base.webhook":
             continue
         twin = live.get(node["name"])
+        fallback_path = mapping.get(node["parameters"].get("path"), default_path)
         if twin:
             node["parameters"]["path"] = twin["parameters"].get("path", fallback_path)
             node["webhookId"] = twin.get("webhookId") or str(uuid.uuid4())
@@ -422,7 +438,11 @@ def cmd_stage(args):
         print(f"staging CREATED {created['id']} ({len(graph['nodes'])} nodes), inactive")
         print(f"activate it when you want to fire probes: "
               f"python3 scripts/olivia_wf.py activate --target staging")
-    print(f"staging webhook: {env('N8N_API_URL')}/webhook/{STAGING_WEBHOOK_PATH}")
+    base = env("N8N_API_URL")
+    staging_paths = sorted({n["parameters"].get("path") for n in graph["nodes"]
+                            if n["type"] == "n8n-nodes-base.webhook"})
+    for path in staging_paths:
+        print(f"staging webhook: {base}/webhook/{path}")
 
 
 def cmd_promote(args):
