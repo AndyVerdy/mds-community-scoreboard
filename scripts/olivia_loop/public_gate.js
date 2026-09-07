@@ -6,6 +6,26 @@
 // --- PUBLIC_GATE_BEGIN ---
 const ROLE_PHRASES = ['a member', 'a seller in the community', 'one of the speakers'];
 
+// Capitalised English words that are also common first names — the first-name follow-up
+// pass in redact() skips these so it doesn't mangle an unrelated sentence-initial word.
+const COMMON_WORD_FIRST_NAMES = new Set([
+  'Ace', 'Amber', 'Angel', 'April', 'Austin', 'Autumn', 'Baron', 'Bear',
+  'Bill', 'Blaze', 'Brook', 'Brooklyn', 'Buck', 'Carolina', 'Carter', 'Chance',
+  'Chase', 'Chelsea', 'Chip', 'Christian', 'Cliff', 'Colt', 'Cooper', 'Crystal',
+  'Daisy', 'Dakota', 'Dallas', 'Dawn', 'Dean', 'Denver', 'Destiny', 'Drew',
+  'Duke', 'Earl', 'Eve', 'Faith', 'Florence', 'Ford', 'Forest', 'Fox',
+  'Frank', 'Gene', 'Georgia', 'Grace', 'Grant', 'Harmony', 'Hawk', 'Hazel',
+  'Holly', 'Hope', 'Hunter', 'Israel', 'Ivy', 'Jack', 'Jade', 'Jay',
+  'Jordan', 'Joy', 'Judge', 'June', 'Justice', 'King', 'Kingston', 'Lance',
+  'Legend', 'Liberty', 'Lily', 'London', 'Madison', 'Major', 'Mark', 'Marshall',
+  'Mason', 'Maverick', 'Melody', 'Merry', 'Miles', 'Montana', 'Nevada', 'Ocean',
+  'Olive', 'Paris', 'Pearl', 'Penny', 'Phoenix', 'Pierce', 'Prince', 'Rain',
+  'Raven', 'Rebel', 'Reed', 'Rich', 'River', 'Robin', 'Rocky', 'Rose',
+  'Royal', 'Ruby', 'Rusty', 'Sage', 'Savannah', 'Sky', 'Skye', 'Star',
+  'Sterling', 'Storm', 'Summer', 'Sunny', 'Sydney', 'Tanner', 'Taylor', 'Victoria',
+  'Violet', 'Virginia', 'Wade', 'Walker', 'Will', 'Wolf',
+]);
+
 function escapeRe(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
 function extractEvidenceRows(messages) {
@@ -43,10 +63,10 @@ function backedNames(rows, classes, names) {
   const backed = new Set();
   for (const row of rows) {
     if (rowClass(row, classes) !== 'public') continue;
-    const hay = String(row.text || '').toLowerCase();
+    const text = String(row.text || '');
     for (const n of names) {
       const nm = String(n.name || '').trim();
-      if (nm && hay.includes(nm.toLowerCase())) backed.add(nm);
+      if (nm && new RegExp('\\b' + escapeRe(nm) + '\\b', 'i').test(text)) backed.add(nm);
     }
   }
   return backed;
@@ -64,9 +84,13 @@ function redact(draft, names, backed) {
     const phrase = ROLE_PHRASES[i++ % ROLE_PHRASES.length];
     text = text.replace(re, phrase);
     removed.push(full);
-    // first-name-only follow-ups ("Later Jonathan added") — only once the full name was present
+    // first-name-only follow-ups ("Later Jonathan added") — only once the full name was present.
+    // Conservative: case-sensitive, length >= 4, and skip words that are also common first names
+    // (COMMON_WORD_FIRST_NAMES) so an unrelated sentence-initial word isn't mangled.
     const first = full.split(/\s+/)[0];
-    if (first.length >= 3) text = text.replace(new RegExp('\\b' + escapeRe(first) + '\\b', 'g'), 'they');
+    if (first.length >= 4 && !COMMON_WORD_FIRST_NAMES.has(first)) {
+      text = text.replace(new RegExp('\\b' + escapeRe(first) + '\\b', 'g'), 'they');
+    }
   }
   return { text, removed };
 }

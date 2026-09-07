@@ -52,3 +52,19 @@ test('an unknown row class counts as closed', () => {
   const backed = pg.backedNames(ev.rows, {}, names);
   assert.equal(backed.size, 0);
 });
+
+test('a public row containing a longer name does not back a shorter name inside it', () => {
+  const shortLongNames = [{ name: 'Anna Lee', kind: 'member' }, { name: 'Arianna Leeman', kind: 'member' }];
+  const rows = [{ source: 'fb', source_id: 's1', url: 'https://example.com/p1', text: 'Arianna Leeman posted a great tip today' }];
+  const classes = { 'https://example.com/p1': 'public' };
+  const backed = pg.backedNames(rows, classes, shortLongNames);
+  assert.ok(backed.has('Arianna Leeman'));
+  assert.ok(!backed.has('Anna Lee'));
+});
+
+test('the first-name pass leaves an unrelated capitalised word alone', () => {
+  const r = pg.redact('Will Turner joined the call. Will this feature ship soon?', [{ name: 'Will Turner', kind: 'member' }], new Set());
+  assert.ok(pg.ROLE_PHRASES.some(p => r.text.startsWith(p)));
+  assert.ok(r.text.includes('Will this feature ship soon?'));
+  assert.ok(!r.text.includes('Turner'));
+});
