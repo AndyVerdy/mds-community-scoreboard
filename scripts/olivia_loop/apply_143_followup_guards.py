@@ -98,10 +98,30 @@ function ticketOfferLine(offerText) {
   const last = lines.length ? lines[lines.length - 1] : '';
   if (!last) { return false; }
   if (last.toLowerCase().indexOf('open a ticket with the mds team') !== -1) { return true; }
-  if (!/\?\s*$/.test(last)) { return false; }
-  return /\b(want|would you like|shall i|should i|can i|do you want)\b[^?]{0,80}\b(file|open|log|raise|flag|pass|send|report)\b[^?]{0,60}\b(report|ticket|issue|team)\b/i.test(last);
+  // question OR statement form ("Let me know if you'd like me to flag that request to them." — staging 137712)
+  if (!/\b(want|would you like|shall i|should i|can i|do you want|let me know if|happy to|i can)\b/i.test(last)) { return false; }
+  return /\b(file|log|raise|flag|escalate)\b[^.?!]{0,60}\b(report|ticket|issue|request)\b/i.test(last)
+    || /\b(open|raise|file)\b[^.?!]{0,30}\b(ticket|issue)\b/i.test(last)
+    || /\b(flag|pass|send|report|escalate)\b[^.?!]{0,60}\b(to|with)\s+(the\s+)?(team|them|mds)\b/i.test(last);
 }
 """
+
+# Stage 2 (2026-09-07 23:55Z): nodes that already carry the first #143 cut get the widened detector.
+UPGRADE = {
+    "Format Reply": [
+        (r"""  if (last.toLowerCase().indexOf('open a ticket with the mds team') !== -1) { return true; }
+  if (!/\?\s*$/.test(last)) { return false; }
+  return /\b(want|would you like|shall i|should i|can i|do you want)\b[^?]{0,80}\b(file|open|log|raise|flag|pass|send|report)\b[^?]{0,60}\b(report|ticket|issue|team)\b/i.test(last);
+}""",
+         r"""  if (last.toLowerCase().indexOf('open a ticket with the mds team') !== -1) { return true; }
+  // question OR statement form ("Let me know if you'd like me to flag that request to them." — staging 137712)
+  if (!/\b(want|would you like|shall i|should i|can i|do you want|let me know if|happy to|i can)\b/i.test(last)) { return false; }
+  return /\b(file|log|raise|flag|escalate)\b[^.?!]{0,60}\b(report|ticket|issue|request)\b/i.test(last)
+    || /\b(open|raise|file)\b[^.?!]{0,30}\b(ticket|issue)\b/i.test(last)
+    || /\b(flag|pass|send|report|escalate)\b[^.?!]{0,60}\b(to|with)\s+(the\s+)?(team|them|mds)\b/i.test(last);
+}"""),
+    ],
+}
 
 EDITS = {
     "Plan Request": [
@@ -169,7 +189,21 @@ def patch(wf):
             continue
         code = n["parameters"]["jsCode"]
         if MARK in code:
-            print(f"  {n['name']}: already carries {MARK}, skipped")
+            ups = UPGRADE.get(n["name"], [])
+            hit = [(o, nw) for o, nw in ups if o in code]
+            if not hit:
+                print(f"  {n['name']}: already carries {MARK} (current cut), skipped")
+                continue
+            for old, new in hit:
+                if code.count(old) != 1:
+                    sys.exit(f"ABORT {n['name']}: upgrade anchor found {code.count(old)}x")
+                code = code.replace(old, new)
+            ok, err = node_check(code)
+            if not ok:
+                sys.exit(f"ABORT {n['name']}: node --check failed after upgrade\n{err}")
+            n["parameters"]["jsCode"] = code
+            changed.append(n["name"])
+            print(f"  {n['name']}: {MARK} upgraded ({len(hit)} block), node --check OK")
             continue
         if "#174" not in code:
             sys.exit(f"ABORT {n['name']}: #174 not present — apply #174 first")
@@ -206,8 +240,8 @@ def main():
     if not changed:
         print("nothing to do")
         return
-    if sorted(changed) != sorted(EDITS.keys()):
-        sys.exit(f"ABORT: expected {sorted(EDITS.keys())} changed, got {sorted(changed)}")
+    if not set(changed) <= set(EDITS.keys()):
+        sys.exit(f"ABORT: unexpected nodes changed: {sorted(changed)}")
     body = {k: wf[k] for k in ("name", "nodes", "connections", "settings")}
     r = api("PUT", f"/workflows/{STAGING_ID}", body)
     if r.get("id") != STAGING_ID:

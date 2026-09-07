@@ -71,6 +71,10 @@ check('6349 shape: "Want me to file this as a report so the team can check…?"'
 check('the seed\'s exact sentence', ticketOfferLine('Nothing on file for that.\n\nI can open a ticket with the MDS team - reply YES and I will file it.'), true);
 check('"Want me to flag this to the team?"', ticketOfferLine('Want me to flag this to the team?'), true);
 check('"Should I raise a ticket for you?"', ticketOfferLine('Should I raise a ticket for you?'), true);
+check('statement-form offer (staging 137712): "Let me know if you\'d like me to flag that request to them."', ticketOfferLine('You\'ve got *$3,615.00* in MDS credit.\n\nThe team applies it at renewal. Let me know if you\'d like me to flag that request to them.'), true);
+check('"Happy to escalate this to the MDS team if you want" (no punctuation)', ticketOfferLine('Happy to escalate this to the MDS team if you want'), true);
+check('"Want me to send you the link?" is not a ticket offer', ticketOfferLine('Want me to send you the link?'), false);
+check('"Want me to send the report to you?" is not a ticket offer', ticketOfferLine('Want me to send the report to you?'), false);
 check('"Want a quick summary?" is not a ticket offer', ticketOfferLine('Here it is.\n\nWant a quick summary?'), false);
 check('"Want me to pull the invoice?" is not', ticketOfferLine('Want me to pull the invoice?'), false);
 check('a ticket offer that is NOT the last line does not count', ticketOfferLine('Want me to file a report with the team?\nActually here is the answer instead.'), false);
