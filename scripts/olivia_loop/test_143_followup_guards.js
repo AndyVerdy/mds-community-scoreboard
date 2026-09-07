@@ -73,6 +73,12 @@ check('"Want me to flag this to the team?"', ticketOfferLine('Want me to flag th
 check('"Should I raise a ticket for you?"', ticketOfferLine('Should I raise a ticket for you?'), true);
 check('statement-form offer (staging 137712): "Let me know if you\'d like me to flag that request to them."', ticketOfferLine('You\'ve got *$3,615.00* in MDS credit.\n\nThe team applies it at renewal. Let me know if you\'d like me to flag that request to them.'), true);
 check('"Happy to escalate this to the MDS team if you want" (no punctuation)', ticketOfferLine('Happy to escalate this to the MDS team if you want'), true);
+check('statement-form, no object (staging 65599): "just let me know if you\'d like me to flag that for you."', ticketOfferLine('You\'ve got *$3,615.00* in MDS credit.\n\nThe team applies it at renewal or you can request it be used sooner — just let me know if you\'d like me to flag that for you.'), true);
+check('"Want me to pass this on?"', ticketOfferLine('Want me to pass this on?'), true);
+check('"Shall I let the team know?"', ticketOfferLine('Shall I let the team know?'), true);
+// ACCEPTED LIMIT, asserted so it stays visible: "flag" as "mark" reads as a team flag. A wrong ticket
+// on a yes is a cheap, visible mistake; a fake "Done — I've flagged that" is not.
+check('accepted limit: "Want me to flag the 5-star ones?" reads as a ticket offer', ticketOfferLine('Want me to flag the 5-star ones?'), true);
 check('"Want me to send you the link?" is not a ticket offer', ticketOfferLine('Want me to send you the link?'), false);
 check('"Want me to send the report to you?" is not a ticket offer', ticketOfferLine('Want me to send the report to you?'), false);
 check('"Want a quick summary?" is not a ticket offer', ticketOfferLine('Here it is.\n\nWant a quick summary?'), false);

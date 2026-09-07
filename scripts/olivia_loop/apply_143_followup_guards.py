@@ -98,28 +98,46 @@ function ticketOfferLine(offerText) {
   const last = lines.length ? lines[lines.length - 1] : '';
   if (!last) { return false; }
   if (last.toLowerCase().indexOf('open a ticket with the mds team') !== -1) { return true; }
-  // question OR statement form ("Let me know if you'd like me to flag that request to them." — staging 137712)
+  // Question OR statement form, matched on the VERB, not on an object: her wording moved three times in
+  // one evening ("file this as a report", "flag that request to them", "flag that for you" — staging
+  // 137712 / 65599). Chasing objects is the hand-written yes-list this codebase forbids; a wrong ticket
+  // on a yes is cheap and visible, a fake "Done — I've flagged that" is not.
   if (!/\b(want|would you like|shall i|should i|can i|do you want|let me know if|happy to|i can)\b/i.test(last)) { return false; }
-  return /\b(file|log|raise|flag|escalate)\b[^.?!]{0,60}\b(report|ticket|issue|request)\b/i.test(last)
-    || /\b(open|raise|file)\b[^.?!]{0,30}\b(ticket|issue)\b/i.test(last)
-    || /\b(flag|pass|send|report|escalate)\b[^.?!]{0,60}\b(to|with)\s+(the\s+)?(team|them|mds)\b/i.test(last);
+  return /\b(flag|file|log|raise|escalate)\b/i.test(last)
+    || /\bopen (a |an )?(ticket|issue|request)\b/i.test(last)
+    || /\bpass (it|this|that|the request)\b[^.?!]{0,20}\b(on|along)\b/i.test(last)
+    || /\b(let|tell|notify|ping|alert)\b[^.?!]{0,20}\b(team|mds)\b/i.test(last)
+    || /\b(send|report)\b[^.?!]{0,60}\b(to|with)\s+(the\s+)?(team|them|mds)\b/i.test(last);
 }
 """
 
-# Stage 2 (2026-09-07 23:55Z): nodes that already carry the first #143 cut get the widened detector.
+_TICKET_V3 = r"""  if (last.toLowerCase().indexOf('open a ticket with the mds team') !== -1) { return true; }
+  // Question OR statement form, matched on the VERB, not on an object: her wording moved three times in
+  // one evening ("file this as a report", "flag that request to them", "flag that for you" — staging
+  // 137712 / 65599). Chasing objects is the hand-written yes-list this codebase forbids; a wrong ticket
+  // on a yes is cheap and visible, a fake "Done — I've flagged that" is not.
+  if (!/\b(want|would you like|shall i|should i|can i|do you want|let me know if|happy to|i can)\b/i.test(last)) { return false; }
+  return /\b(flag|file|log|raise|escalate)\b/i.test(last)
+    || /\bopen (a |an )?(ticket|issue|request)\b/i.test(last)
+    || /\bpass (it|this|that|the request)\b[^.?!]{0,20}\b(on|along)\b/i.test(last)
+    || /\b(let|tell|notify|ping|alert)\b[^.?!]{0,20}\b(team|mds)\b/i.test(last)
+    || /\b(send|report)\b[^.?!]{0,60}\b(to|with)\s+(the\s+)?(team|them|mds)\b/i.test(last);
+}"""
+
+# Upgrades: nodes that carry an earlier #143 cut of the detector get the current one (either anchor).
 UPGRADE = {
     "Format Reply": [
         (r"""  if (last.toLowerCase().indexOf('open a ticket with the mds team') !== -1) { return true; }
   if (!/\?\s*$/.test(last)) { return false; }
   return /\b(want|would you like|shall i|should i|can i|do you want)\b[^?]{0,80}\b(file|open|log|raise|flag|pass|send|report)\b[^?]{0,60}\b(report|ticket|issue|team)\b/i.test(last);
-}""",
-         r"""  if (last.toLowerCase().indexOf('open a ticket with the mds team') !== -1) { return true; }
+}""", _TICKET_V3),
+        (r"""  if (last.toLowerCase().indexOf('open a ticket with the mds team') !== -1) { return true; }
   // question OR statement form ("Let me know if you'd like me to flag that request to them." — staging 137712)
   if (!/\b(want|would you like|shall i|should i|can i|do you want|let me know if|happy to|i can)\b/i.test(last)) { return false; }
   return /\b(file|log|raise|flag|escalate)\b[^.?!]{0,60}\b(report|ticket|issue|request)\b/i.test(last)
     || /\b(open|raise|file)\b[^.?!]{0,30}\b(ticket|issue)\b/i.test(last)
     || /\b(flag|pass|send|report|escalate)\b[^.?!]{0,60}\b(to|with)\s+(the\s+)?(team|them|mds)\b/i.test(last);
-}"""),
+}""", _TICKET_V3),
     ],
 }
 
@@ -152,6 +170,13 @@ EDITS = {
          "    : (_poOrd >= 0 && Array.isArray(_po.items)\n"
          "      ? _po.items.filter(function (it) { return it && it.id === _poIds[_poOrd] && it.name; }).map(function (it) { return it.name; }).slice(0, 1)\n"
          "      : [])"),
+    ],
+    "Answer Seed": [
+        ('say so plainly and offer: "I can open a ticket with the MDS team - reply YES and I will file it." Use that exact offer sentence.',
+         'say so plainly and offer: "I can open a ticket with the MDS team - reply YES and I will file it." Use that exact offer sentence. '
+         'It is also the ONLY way you offer to flag, file, pass on or escalate anything to the MDS team (#143) - never "let me know if '
+         'you would like me to flag that", never a paraphrase: the acceptance is matched on those exact words, and a yes to any other '
+         'wording is not filed anywhere. Never say you have filed, flagged or saved a request unless the turn actually ran the ticket lane.'),
     ],
     "Format Reply": [
         ("// #174 NAMING LINES (Andy, prod 2026-09-07 turn 65490). The record below carries ids and bold\n",
