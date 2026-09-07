@@ -68,8 +68,11 @@ below is what that session needs; nothing is left in the head of the session tha
 
 ### #166 · #167 — shipped tonight, for context only
 `main` `b91f2a4` = switcher in the Personas top bar + both Digest headers · `41da9e7` = team pulse survey · `491a968` =
-its roster fix (N of M counts the 30 Airtable Staff). A second-day-of-use rule for the survey is in flight on
-`167-visits-20260907`. Board §#166 / §#167 carry the proof.
+its roster fix (N of M counts the 30 Airtable Staff) · `e2d933d` = second-day-of-use rule (asked on the 2nd distinct
+UTC day a staff member opens `/admin` since 2026-09-07; `digest.admin_survey_visits`). Board §#166 / §#167 carry the proof.
+Andy's rulings at close: Personas bar line stays at 70 (the #165 copy must stop saying "60 is strong"); the two grid icons
+in the Personas header stay; Playwright declined. Merged worktrees removed, dev servers stopped; only the #165 worktree
+remains under `mds-digest-web/.claude/worktrees/`.
 
  — #162 CLOSED · 2026 videos 212/212 transcribed · PROD `30fd7e6f` untouched, warehouse only
 **Every 2026 video now carries a transcript.** 33 in-person talks (16 AI Mastermind restricted · 8 AI Scaling Live · 4 Summit
