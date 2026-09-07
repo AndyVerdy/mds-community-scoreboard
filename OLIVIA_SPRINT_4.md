@@ -104,6 +104,8 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#170** | 🧠 Millie web chat — long thread memory + many chats: running Haiku summary per thread, a `web_thread_search` tool for exact recall, sidebar of past chats with New chat | 🟡 S2 | M | staging first | 📝 filed 2026-09-07 (Andy: "File it, will do") — after #169 |
 | **#171** | 📣 Public answer from the Facebook tool — for a post without an answer, generate a public-safe reply in a popup (Andy's design pending) | 🟡 S2 | M | n/a (web) + the #169 door | 📝 filed 2026-09-07 (Andy: "delivery 2: generate public answer from facebook tool") — after #169 |
 | **#172** | 🔓 Team chat — everything-access mode for staff (exact revenue, contacts, billing included) behind a huge disclaimer; new team-only SQL the gate proves WhatsApp can never reach | 🔴 S1 | L | staging first, gate | 📝 filed 2026-09-07 (Andy: "I need team mode to include all categories - everything. That's why we need a huge disclaimer" · "delivery 3: Team chat") — after #169 |
+| **#174** | 🎯 A named item from her own list is a drill-down, not a new search — "Tell me more about Alex Chiru video" after a four-video list re-planned as a fresh speaker search (Andy's case 1, prod turn 65490 / exec 137515) | 🔴 S1 | S | ✅ **proven on staging `2d875cb3`** — Andy's exact chain exec 137664 `offer_bind.mode:'drilldown'`, speaker-named 137633, title-named 137645, "yes" 137637 unchanged, gate EXIT 0 | ⏳ awaiting Andy's promote (the graph also carries #169 Task 5 + #175) |
+| **#175** | 🔗 The gate's link repair pins a URL to the wrong row — a bare, untitled link before the closing question on every video answer (Andy's case 1, execs 137508 / 137515) | 🟡 S2 | S | ✅ **proven on staging `2d875cb3`** — 14/14 unit on the live bytes, replay of execs 137508/137515 appends 0 (was 1 · 2), 0 appended links in 33 probe turns | ⏳ awaiting Andy's promote (with #174) |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -134,6 +136,61 @@ Millie is live.
 Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at Meta ⏳ watcher-gated.
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
+
+### #174 · A named item from her own list is a drill-down, not a new search
+**🔴 S1 · size S — filed 2026-09-07 (Andy's "poor answers check", case 1 — prod turns 65488–65491, execs 137508 / 137515).**
+
+> **In plain words:** when she lists videos and the member picks one by name ("tell me more about the Alex Chiru video"), she must open THAT video — not run a new search for the name and hand back another list.
+
+*As a member who just got a list from Millie, when I name one of its items, I get the substance of that one item from its summary and transcript — not another list.*
+
+**The miss, verbatim (prod 2026-09-07 20:47Z):** after a four-video answer whose pending offer was recorded (ids `69853b…`, `67f6e83d…`, `6a8866c0…`, `63e5b874…`; offer line "Want me to dig into any one of these further?"), Andy: *"Tell me more about Alex Chiru video"*. Router: intent `videos`, `accepts_offer:false`, `followup:true`. Plan Request: `offer_bind:null` — binding fires only on a yes-word (router), a bare affirmation, or the member echoing a word of her offer line ("further"); naming an item is not a recognised shape. Plan: `video_search p_query:"alex chiru" p_limit:8`; the model then called `video_search "Alex Chiru listing optimization"` and wrote a three-video cluster with a one-line blurb, ending "Want a quick summary of any one of these?". The 75-Character Title Update video carries a 904-char transcript summary and 9,673 chars of cliff notes on file; neither was fetched. The router could not have bound it either: `history_block` trims each turn to 500 chars and the Alex Chiru bullet starts at char 829 of the previous answer. **Not a regression** — Search 2.0 changed retrieval, #112 (23 Aug) bound yes/both/ordinals, #151 bound "which one for me"; the named item was never a bound shape. Same class in real traffic 26 Aug: "Summarize the Orkun one" (53868) and "Summarize the design impactful ai based creatives presentation" (53870) both re-planned as fresh searches and got the "could not confirm" line; bank C **#143** (3 fails).
+
+**Shape of the fix (code, per code-beats-prompt):** ① `Format Reply` records each offered video's NAMING LINE — the line she wrote above its link (title + speaker as the member saw it) — as `pending_offer.items[{id,name}]`; Save Conversation and Prep Context already carry the whole object · ② `Plan Request` fourth acceptance signal `namedOfferItem()`: a message of ≤16 words that names ONE offered item by a capitalised word unique to its line (Chiru · Orkun · Gullo · Intellivy · a title word), with a drill-down cue (more · about · summary · cover · expand …) or two such words and no new-question opener (any · who · when · how many · is there …), binds to THAT item; the existing bound path then does the rest (zeroth fetch `video_search p_video_id`, no topic search). Two items sharing the words → both bound · ③ `Answer Seed` DRILL-DOWN variant of the OFFER ACCEPTED block: one item, deliver its substance (what it covers · the takeaways for what they asked · who / when / how long · its one link), no list, no "want a summary?". Offline unit test `scripts/olivia_loop/test_174_named_item.js` runs against the shipped node code (30 cases incl. the false-bind guards).
+
+**Accept when:** Andy's exact chain on staging answers about the 75-Character Title Update from its summary with ONE link (`6a8866c0…`), the saved plan carrying `period:'offer_bound'` + `video_search p_video_id=6a8866c0…` and the execution's Plan Request showing `offer_bind.mode:'drilldown'` · a "summarize the <speaker> one" probe binds · #112 probes unchanged (yes · both · the second) · no pending offer = planning unchanged · two items sharing the name → she names both and asks which · gate GREEN · promote.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-09-07 — awaiting Andy's promote (staging `2d875cb3` = #169 Task 5 + #174 + #175)
+**The fix:** `scripts/olivia_loop/apply_174_named_item_drilldown.py` — Format Reply records `pending_offer.items[{id,name}]` (the line above each video link, title + speaker as the member saw it) · Plan Request `namedOfferItem()` as the fourth acceptance signal, `offer_bind.mode` = `drilldown` | `accept`, a named item selects itself in `_poPick` · Answer Seed DRILL-DOWN block (one item, its substance, one link, no re-offer). Offline: `test_174_named_item.js` 30/30 on the shipped bytes. Applied to staging three times — the first two were wiped by the #169 session's whole-graph PUTs (the lock is host-level, handbook §13); the third rode the handover protocol.
+
+| AC | result |
+|---|---|
+| Andy's exact chain answers about the 75-Character Title Update from its summary with ONE link · saved plan `offer_bound` + `video_search p_video_id=6a8866c0…` · Plan Request `offer_bind.mode:'drilldown'` | ✅ staging exec **137664** (rows 65563–65565): title · Alex Chiru & Jamie Graham · Aug 21 2026 · 1:01:08 · what it covers · five takeaways · one link; `offer_bind {mode:'drilldown', ids:['6a8866c0…'], named:["Alex Chiru – Amazon's 75-Character Title Update…"]}` |
+| a "summarize the <speaker> one" probe binds | ✅ "Summarize the Fabio one" → exec 137633 `drilldown` `67f6e83d…`, the full Fabio Gullo summary (row 65519) · "tell me more about the title update one" → exec 137645 `drilldown` `6a8866c0…` (row 65537) |
+| #112 probes unchanged (yes · both · the second) | ✅ "yes" → exec 137637 `mode:'accept'`, 3 ids, three summaries delivered (row 65525) · **"the second one" alone was never code-bound, before or after** (exec 137667: no `offer_bind`; the answer was still the second item via the seed's ANSWER THE THING ON THE TABLE rule) — see remainder |
+| no pending offer = planning unchanged | ✅ after a reset, "Tell me more about Alex Chiru video" → exec 137647 videos lane, `video_search "alex chiru"` (row 65541) |
+| two items sharing the name → both bound, she asks which | ✅ unit (cases 27–28); not exercised live |
+| gate GREEN | ✅ 324 checks, EXIT 0 (22:42Z) |
+| promote | ⏳ Andy's call — one graph, three tickets |
+
+**Before → after** on the failing case: prod turn 65491 — a three-video cluster with a one-line blurb, two bare links, plan `video_search "alex chiru"` → staging row 65565 — the one video, its substance, one link, plan `offer_bound p_video_id`. The bank C 26 Aug shape ("Summarize the Orkun one") now binds by speaker name. Probe rows cleaned by id (64 rows), never `--cleanup`.
+**Remainder, in writing:** a bare ordinal ("the second one") reaches the model unbound — pre-existing, #112 reads ordinals only as quantifiers inside an acceptance; both live runs still answered the right item. Candidate for #143. The router still sees each history turn trimmed to 500 chars — left alone, the deterministic bind made it moot.
+
+### #175 · The gate's link repair pins a URL to the wrong row — a bare, untitled link on every video answer
+**🟡 S2 · size S — filed 2026-09-07 (Andy's case 1, the two bare links; "check backlog for more cases, address them one by one").**
+
+> **In plain words:** after she drafts an answer, a safety step adds links for videos she named but forgot to link. It pairs each link with the wrong video, so the member gets bare, unexplained links to talks she never mentioned.
+
+*As a member, every link in Millie's reply sits under the sentence that names it — I never get a bare link to something she did not mention.*
+
+**Evidence (prod 2026-09-07, replayed on the real evidence blobs):** `Gate Verdict` #1b pairs each evidence URL with the last `title` in the 900 chars BEFORE it; a top-5 evidence row carries up to 3,200 chars of snippets between its title and its `video_url`, so the URL falls to the "after" fallback and is paired with the NEXT row's title. When that next row is named and linked in the draft, the previous row's URL is appended bare, before the closing question. Exec 137515 appended `65ef9f07…` (Building a Listing…, Prue Millsap 2024) paired with "Listing Optimisation Deep Dive", and `67e4836b…` (the restricted duplicate catalog row of the Inspire 2025 talk the draft had already linked, 8 of 10 title words); exec 137508 appended `63e5b874…` (Why Split Test?, Anthony Nguyen 2022) paired with "How Brands Turn Failed Creative Tests…". `link_coverage` 2 and 1; every LLM answer of Andy's that day carried a bare link. Format Reply's orphan stripper only drops TRAILING orphans and #1b inserts before the closing question, so they survive. The model's own drafts had none.
+
+**Shape of the fix:** pair a URL with ITS OWN ROW — the row is the JSON object around the url field (between `[{` / `},{` and the next `},{` / `}]`); its title is the last `title` before the url inside that row, else the first one after it inside the row (url-first shapes); thumbnail / logo / image keys never pair; a candidate whose title shares ≥80% of its words with a row the draft already links is a duplicate and is skipped. Extracted as `linkCoverageUrls(evRaw, answerText)` in `Gate Verdict`, unit-tested (`scripts/olivia_loop/test_175_link_pairing.js`: the case-1 shape, the duplicate, url-first rows, image keys, the cap, the B5019 shape that #1b exists for).
+
+**Accept when:** the unit test passes on the shipped node bytes · replaying the exec 137508 / 137515 evidence + drafts appends 0 URLs · a named-but-unlinked video still gets its link (B5019/B5021 shape) · gate GREEN · promote (rides the #174 graph).
+
+#### ✅ BUILT + STAGED + PROVEN 2026-09-07 — awaiting Andy's promote (rides staging `2d875cb3`)
+**The fix:** `scripts/olivia_loop/apply_175_link_pairing.py` — Gate Verdict's #1b pairing loop becomes `linkCoverageUrls(evRaw, answerText)`: the row is the JSON object around the url field (a bracket-depth walk — a nested `attachments:[{…}]` array no longer passes for a boundary, which is exactly what hid the public 684848cd row), its title is the first depth-0 `title` inside that row, image/logo keys are skipped, and a candidate whose title shares ≥80% of its words with an already-linked row is a duplicate. Insertion unchanged (max 3, before a trailing offer question).
+
+| AC | result |
+|---|---|
+| the unit test passes on the shipped node bytes | ✅ `test_175_link_pairing.js` 14/14 on the dry-run of the live staging node |
+| replaying exec 137508 / 137515 evidence + drafts appends 0 URLs | ✅ 0 and 0 (was 1 and 2), the nested-attachments row and the restricted duplicate included |
+| a named-but-unlinked video still gets its link (B5019/B5021) | ✅ unit cases 2 · 3 · 8 · 12 (title-first rows, url-first Facebook rows, a nested-attachments row) |
+| gate GREEN | ✅ same run, EXIT 0 |
+| promote | ⏳ with #174 |
+
+**Before → after:** Andy's four LLM answers on 2026-09-07 carried 1 · 1 · 1 · 2 gate-appended bare links (`link_coverage` on the prod Gate Verdict outputs); the 33-turn staging run on `2d875cb3` carried **0** — `link_coverage` absent on every Gate Verdict output.
 
 ### #161 · Transcripts for the 33 videos published 25 Aug–4 Sep — AssemblyAI, in-person rooms
 **🔴 S1 · size S — filed 2026-09-04 (Andy: "we need to create transcripts for recently fetched videos").**

@@ -1389,6 +1389,25 @@ Asked to set a reminder "in 5 minutes", the model sent `at=17:23 UTC` when the t
 story about the event being a week away. **Never let the model compute an absolute time from a
 relative ask** — pass the offset and do the arithmetic server-side.
 
+### Two sessions, one host-level lock (2026-09-07)
+
+`olivia_wf.py lock` records `user@host`. Two Claude sessions on Andy's Mac read as the same holder, so
+the lock never separates them — and every apply script is GET → modify → PUT of the WHOLE node list,
+so even non-overlapping node sets collide. The #169 session re-staged and PUT twice while the #174
+session held the lock; #174's node edits were wiped both times and a probe run spent ten minutes
+testing the wrong graph. **Before any staging PUT, message the peer session and wait for an explicit
+"staging is yours"; hand it back with "staging is back" and the versionId; re-read the staging
+`versionId` right before probing — a change mid-run means the graph under test changed.** Keep apply
+scripts idempotent (a marker check) so a re-apply after an overwrite is one command.
+
+### A gate repair that pairs by distance pairs with the wrong row (2026-09-07, #175)
+
+`Gate Verdict`'s link-coverage repair paired each evidence URL with the last `title` in the 900 chars
+before it. A top-5 evidence row carries up to 3,200 chars of snippets between its title and its
+`video_url`, so the URL fell to the "after" fallback and took the NEXT row's title — a bare link to a
+talk nobody named, under every video answer. **Pair fields by structure (the enclosing JSON object),
+never by character distance**, and skip a candidate whose title matches a row the draft already links.
+
 ## 14. Known limits (2026-09-04)
 
 - **Transcripts cover 2025 and 2026, not before** (#70/#101, the 2025 batch 2026-08-21, the 16
@@ -1678,14 +1697,14 @@ identical graph on the other webhook path). Grouped by role:
 | **Dedupe** | `Log Inbound` → `Claim Message (dedupe)` → `Drop Duplicates` | Non-text events branch off. Claim writes to `olivia_seen`; fails **open**. |
 | **Intro taps (#97)** | `Intro Tap?` → `Intro Tap Detected?` → `Intro Route (HTTP)` → `Intro Handled?` → (`Intro Has Reply?` → `Build Intro Reply` → `Intro Eval (silent)?` → `Send Reply (Meta)` / `Save Conversation`) or (`Restore Original Message` → `Find Member`) | **In prod since 2026-08-22.** Accept/Decline button taps and `intro_pick_*` list taps resolve at the intro route and reply directly — never reach the LLM loop. `handled:false` restores the original message and falls through to `Find Member` unchanged. Ops + rulings: §8.7. |
 | **Identity** | `Find Member` → `Resolve Member` → `Matched?` | `olivia_front_door_v2` by phone or hidden-number id (#146); exactly-one-active-member or the generic path (`Build Generic`, now wired through the silent gate so it can be probed). Four copies: matched · unlinked (#125) · inactive · unknown. Carries `airtable_id` (for stamping) and `at_member_id`. |
-| **Context** | `Load Recent Turns` → `Prep Context` | 24h history, cut at "reset", plus the previous retrieval plan for "yes" replay. |
+| **Context** | `Load Recent Turns` → `Prep Context` | 24h history, cut at "reset", plus the previous retrieval plan for "yes" replay and the previous turn's `pending_offer` (ids · bold titles · offer-line nouns · since #174 `items[{id,name}]`, the line she wrote for each offered video). The router sees each turn trimmed to 500 chars; the loop sees 1,500. |
 | **Fast feedback** | `Mark Read + Typing` → `Holding Trigger?` → `Fire Holding Timer` | **Wired FIRST in the fan-out on purpose** — n8n v1 runs branches depth-first, so this must precede routing or the read receipt lands *after* the answer. |
-| **Routing** | `Touch Olivia Stats`, `Route Request` (Haiku), `Fetch Chat Links`, `Plan Request` | `Plan Request` is the deterministic brain: ~40 overrides that outrank the router. |
+| **Routing** | `Touch Olivia Stats`, `Route Request` (Haiku), `Fetch Chat Links`, `Plan Request` | `Plan Request` is the deterministic brain: ~40 overrides that outrank the router. Offer binding (#112) fires on the router's `accepts_offer`, a bare affirmation, an echo of her offer-line word, or — since #174 — `namedOfferItem()`: a message of ≤16 words naming one offered item by a capitalised word of its recorded line (speaker, product, title word), with a drill-down cue or two such words and no new-question opener; `offer_bind.mode` = `accept` or `drilldown`. |
 | **Retrieval** | `Embed Query` (Voyage) → `Fetch Summaries` → `Fetch Raw Matches` → `Verbatim?` | The "zeroth fetch", preloaded as guaranteed evidence. Both fetch nodes map `content_search` → `content_search_v2` at the last inch. |
 | **Canned lanes** | `Build Verbatim Digest` | Greeting, help, chats, opt-in/out, reset, ticket offer/create, contact refusal, verbatim digests — **no model call at all**. |
 | **The loop** | `Answer Seed` → `Answer Claude` → `Answer Parse` → `Answer Done?` → `First-Fetch Retry?` → (`Voyage Embed` → `Attach Embedding` → `Answer Tool` → `Answer Merge` → back) | Max 5 rounds, 29 tools, `max_tokens` 2000, thinking off. `Answer Parse` injects `p_phone` and names the reason when a failure IS billing; `First-Fetch Retry?` forces a retrieval when the first round answered without one (`retry_same`); `Attach Embedding` swaps the execution name to v2/v3 (`EXEC_NAME`). **`Answer Tool` dispatches by name:** every `event_*` name (prefix match — `event_schedule`, `event_who`, and also `event_lookup` / `event_history`, which never reach the catalog RPCs from the loop: #123) → the schedule route, `org_docs` → kb, `member_intro` → intro, `find` → find — all on digest.mds.co, policy in git — everything else → the Supabase RPC of the same name. |
-| **Fact gate** | `Claims?` → `Fact Check` (Haiku) → `Gate Verdict` → `Gate OK?` | Claim-free replies, short affirmatives and clarifying questions skip it (RULE ZERO). One regeneration allowed, then an honest refusal; `off_topic` is a non-filterable verdict (#104). Deterministic link gate + post-filters run inside `Gate Verdict`; its clamp was audited over 6,017 answers before being softened (#149). |
-| **Delivery** | `Format Reply` → `Billing Nudge` → `Apply Nudge` → `Eval (silent)?` → `Send Reply (Meta)` → `Followup Interactive?` → `Send Followup Interactive (Meta)` | The eval branch skips Meta entirely. `Format Reply` converts markdown to WhatsApp formatting, extracts `[SEND_IMAGE:]` / `[SEND_FILE:]` markers, strips dangling orphan links and prepares `followup_interactive` (buttons or the list picker that could not ride a >1024-char body, #107). |
+| **Fact gate** | `Claims?` → `Fact Check` (Haiku) → `Gate Verdict` → `Gate OK?` | Claim-free replies, short affirmatives and clarifying questions skip it (RULE ZERO). One regeneration allowed, then an honest refusal; `off_topic` is a non-filterable verdict (#104). Deterministic link gate + post-filters run inside `Gate Verdict`; its clamp was audited over 6,017 answers before being softened (#149). The link-coverage repair (#1b) appends the URL of a row the draft names but does not link — since #175 paired per JSON row (`linkCoverageUrls()`), never by character distance, image keys excluded, duplicates of an already-linked title skipped; `link_coverage` on the output counts what it added. |
+| **Delivery** | `Format Reply` → `Billing Nudge` → `Apply Nudge` → `Eval (silent)?` → `Send Reply (Meta)` → `Followup Interactive?` → `Send Followup Interactive (Meta)` | The eval branch skips Meta entirely. `Format Reply` converts markdown to WhatsApp formatting, extracts `[SEND_IMAGE:]` / `[SEND_FILE:]` markers, strips dangling orphan links and prepares `followup_interactive` (buttons or the list picker that could not ride a >1024-char body, #107). It also records the turn's `pending_offer` — video ids, bold titles, the offer line's nouns and (#174) `items[{id,name}]`, the naming line above each video link — which Save Conversation persists on the row's `plan`. |
 | **Persistence** | `Save Conversation`, `Mark Welcomed`, `Set Olivia Opt-State` | Both turns saved with plan + member stamp (gap #110: intro-tap turns). |
 | **Attachments** | `Image To Send?` → `Fetch Post Images` → `Build Image Sends` → `Send Image (Meta)`; `File To Send?` → `Fetch Sendable File` → `Sign File URL` → `Send Document (Meta)` | File keys are re-validated server-side before any send. |
 | **Team actions** | `Action?` → `Log Request (Supabase)` → `Notify Team (Slack)` | Only fires for genuine action requests, with conversation context and a member-log link. Also the escalation path the #97 "unreachable" flow reuses. |
