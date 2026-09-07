@@ -751,6 +751,13 @@ git commit -m "#169: web door on staging — Web Inbound (POST), Web? fork, Form
 - Produces: `Public Verify` output `{ text, notes: string[], sources: string[], evidence_classes: {key: klass},
   refused: boolean, removed: string[] }` consumed by `Format Web` (already written to read it).
 
+> **Rules learned in Task 5 (2026-09-07), binding here:** (1) GET the staging graph fresh and PUT on top of it —
+> it carries other tickets' node edits (#174/#175 on `Format Reply`, `Plan Request`, `Answer Seed`); never re-stage
+> from prod. (2) No node of type `n8n-nodes-base.respondToWebhook` anywhere on the web fork — a reachable one 500s
+> the WhatsApp webhook. The fork ends `… → Format Web → Save Web (Supabase) → Web Response` (a code node; the web
+> webhook is in `lastNode` mode). (3) A code node that runs once per item must return a bare object, not an array.
+> (4) Wire `Public Verify → Format Web`; `Format Web` already reads `$('Public Verify')` when it executed.
+
 - [ ] **Step 1: Write the apply script.** Same skeleton as Task 5 (env, api, node_check, one bounce; `sb` = the
 credential named exactly "Supabase secret (digest mirror)", id QHLDE4VHvm8jrVds; the Anthropic credential is
 whatever `Fact Check` carries — copy its `credentials` block, do not look it up by name). The module is embedded by
