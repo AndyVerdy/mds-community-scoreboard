@@ -101,6 +101,9 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#167** | 🔟 Team pulse survey — the rating popup where every number but 10 runs away from your cursor; design pack approved on sight, logic (when to ask, where answers land) agreed | 🟡 S2 | M | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "if u r sure, lets promote")** — merge `41da9e7`, confirmed live via `/api/version` 02:14 local; once per person ever (wave `survey_key`), from the 2nd login after `SURVEY_STARTED_AT` 2026-09-07, card centred (`Popup align="center"`, opt-in), `?pulse=1` for `SURVEY_TESTER_EMAILS` only (default Andy), `is_test` rows excluded everywhere, Team pulse results popup on the storefront, Slack `#automation-tests`; 1047 tests, 22/22 mutations killed, e2e script 32/32, `next build` exit 0; table holds 6 rows, all Andy's tests. **Roster fix same night (Andy: "no, its only people who r using now, but we have team of 30"): M = `member_attributes.membership_status = 'Staff'` (30 rows), not the 17 `@mds.co` portal logins — merge `491a968`, live 02:24 local, storefront reads 0 OF 30.** **Second-day rule (Andy: "go"): merge `e2d933d`, live 12:42 local — asked on the 2nd distinct UTC day the person opens `/admin` since launch, visits recorded in new `digest.admin_survey_visits` (RLS on, service_role only), `member_sessions` no longer read; 1068 tests, e2e 45/45, mutation 4/4 classes killed** |
 | **#168** | 💬 Millie test chat back in the admin at a new address — `/admin/olivia/test` was retired by #164; component + API survived, only the page died | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 13:20 local** — merge `48851e7`, confirmed via `/api/version`; `/admin/millie/chat` as a Chat tab in the Millie tool, `/admin/olivia/test` 307 → the chat (checked on prod), anon 307, API 403 anon / 200 staff; 1068 tests, `next build` exit 0; not restyled to the kit (legacy Tailwind look kept) |
 | **#169** | 🚪 Millie web front door + Public mode — a real chat for staff (answer in the same request, own conversation table, real asker) and a Public mode whose answers may leave MDS: names only from public sources, notes on where each part came from | 🟡 S2 | L | staging first (`olivia-web` entry), gate +6 checks | 📝 **PLANNED 2026-09-07** — spec `docs/superpowers/specs/2026-09-07-millie-web-front-door-public-mode-design.md` (Andy: "go, write the plan") · plan `docs/superpowers/plans/2026-09-07-millie-web-front-door-public-mode.md`, 11 tasks: table → RPCs → tested gate module → `olivia_wf.py` → web door on staging → Public Gate on staging → 6 gate checks → API route → page → promote + docs → retire old route |
+| **#170** | 🧠 Millie web chat — long thread memory + many chats: running Haiku summary per thread, a `web_thread_search` tool for exact recall, sidebar of past chats with New chat | 🟡 S2 | M | staging first | 📝 filed 2026-09-07 (Andy: "File it, will do") — after #169 |
+| **#171** | 📣 Public answer from the Facebook tool — for a post without an answer, generate a public-safe reply in a popup (Andy's design pending) | 🟡 S2 | M | n/a (web) + the #169 door | 📝 filed 2026-09-07 (Andy: "delivery 2: generate public answer from facebook tool") — after #169 |
+| **#172** | 🔓 Team chat — everything-access mode for staff (exact revenue, contacts, billing included) behind a huge disclaimer; new team-only SQL the gate proves WhatsApp can never reach | 🔴 S1 | L | staging first, gate | 📝 filed 2026-09-07 (Andy: "I need team mode to include all categories - everything. That's why we need a huge disclaimer" · "delivery 3: Team chat") — after #169 |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -557,6 +560,63 @@ trip the switcher exists to remove. The switcher is one shared component
 2. Keyboard behaviour matches the seven: 1–7 to jump, Escape closes, current tool marked.
 3. No kit primitive is rebuilt; every colour a token.
 4. `tsc`, lint, tests and `next build` clean, and both headers proven in the running app.
+
+### #170 · Millie web chat — long thread memory + many chats
+
+**🟡 S2 · size M — filed 2026-09-07 (Andy: "File it, will do").** Depends on #169's door and table.
+
+**Story.** As MDS staff, I want to keep several chats with Millie and come back to any of them, and I want her to
+remember the whole thread — not just the last 16 turns — so that a long investigation can continue over days
+without me re-explaining it, at a per-question cost that does not grow with the thread.
+
+**Why it is not in #169.** Today's memory is the last 16 turns, 500 characters each, roughly 8,000 characters.
+Andy: "if its just 8k or 24h window, then i se no purpose for this section." Real memory needs three pieces:
+recent turns verbatim (as now) · a running Haiku summary of everything older, refreshed after each answer (≈ a tenth
+of a cent per question, flat) · a `web_thread_search` tool she calls for exact earlier passages (costs only when
+used). Plus the sidebar: threads per mode, titled by the first question, New chat.
+
+**Acceptance.** 1. A thread of 100+ turns answers "what did we decide earlier about X?" correctly from the
+summary or the tool. 2. Per-question cost on a long thread is within 10% of a fresh thread. 3. Sidebar lists the
+caller's own threads per mode, newest first; New chat starts one. 4. The tool is reachable only for web turns and
+only for the asker's own thread (server-injected `thread_id`, like `p_phone`); gate proves WhatsApp turns cannot
+call it. 5. New table `digest.olivia_web_threads` (thread_id, asker_email, mode, title, summary, updated_at),
+service_role only.
+
+### #171 · Public answer from the Facebook tool
+
+**🟡 S2 · size M — filed 2026-09-07 (Andy: "delivery 2: generate public answer from facebook tool" · earlier: "we
+will add an option to generate an answer right from the facebook page for posts w/o an answer. we will make a popup
+or something, ill give you the design").** Depends on #169's Public mode. Design pending from Andy.
+
+**Story.** As MDS staff on the Facebook Group tool, I want to pick a post that has no answer and generate a
+public-safe reply for it in a popup — drawn from everything we hold, names only from public sources, notes on
+where each part came from — so that answering the group takes minutes and never leaks a closed source.
+
+**Acceptance (to firm up with the design).** 1. A control on unanswered posts opens a popup over the page (kit
+rule: never navigates away). 2. The popup calls the #169 door in Public mode with the post text as the question
+and shows answer + notes + Copy. 3. The generated answer is stored against the post id for later review. 4.
+Nothing is posted to Facebook by this ticket.
+
+### #172 · Team chat — everything-access mode
+
+**🔴 S1 · size L — filed 2026-09-07 (Andy: "I need team mode to include all categories - everything. That's why we
+need a huge disclaimer" · "delivery 3: Team chat").** Depends on #169's door.
+
+**Story.** As MDS staff, I want a Team mode where Millie answers from everything we hold — the three internal
+categories included: exact revenue from our records, contact details, Stripe and billing — behind a disclaimer
+that this data must never be shared, so that the team can do its work without asking an engineer to run SQL.
+
+**What it takes.** Today those three categories are unreachable by construction: no gated function selects
+them. Team mode = team-only variants of the affected functions (or a `p_team` path) callable only with a staff
+principal the web door sets server-side; the leak gate must prove a WhatsApp turn can never reach them; the
+disclaimer is shown before the first Team question and on every Team answer; every Team turn is logged with the
+asker's email. Public mode then switches its retrieval to the team principal and gains those categories, still
+filtered by the public-source rule on the way out.
+
+**Acceptance.** 1. A Team question returns exact revenue / contact / billing facts a member could never get. 2.
+Anonymous, member and WhatsApp paths get nothing new (gate checks). 3. Disclaimer shown and acknowledged per
+session; every Team turn stored with asker email and mode. 4. `OLIVIA_SHAREABLE_FIELDS.md` gains a "Team mode"
+column documenting exactly what opens.
 
 ### #169 · Millie web front door + Public mode
 

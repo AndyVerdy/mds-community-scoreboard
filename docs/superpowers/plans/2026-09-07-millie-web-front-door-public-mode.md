@@ -1048,27 +1048,10 @@ export async function readThread(askerEmail: string, threadId: string): Promise<
   );
 }
 
-// Multi-chat (Andy 2026-09-07: "Can we do this in the chat multi-session system? Like in Claude chat?"): one row
-// per thread for the sidebar — id, mode, the first question as its title, last activity. Derived from the
-// caller's own member rows; no model call, no extra table.
-export type ThreadSummary = { thread_id: string; mode: string; title: string; last_at: string; turns: number };
-export async function listThreads(askerEmail: string, mode: WebMode): Promise<ThreadSummary[]> {
-  const rows = await sbRequest<{ thread_id: string; mode: string; text: string | null; created_at: string }[]>(
-    `olivia_web_messages?select=thread_id,mode,text,created_at&role=eq.member` +
-      `&asker_email=eq.${encodeURIComponent(askerEmail)}&mode=eq.${mode}&order=id.asc&limit=2000`,
-  );
-  const byThread = new Map<string, ThreadSummary>();
-  for (const r of rows) {
-    const cur = byThread.get(r.thread_id);
-    if (!cur) byThread.set(r.thread_id, { thread_id: r.thread_id, mode: r.mode, title: (r.text || "").slice(0, 80), last_at: r.created_at, turns: 1 });
-    else { cur.turns += 1; cur.last_at = r.created_at; }
-  }
-  return [...byThread.values()].sort((a, b) => (a.last_at < b.last_at ? 1 : -1));
-}
 ```
-The route's `GET` also serves `?list=1&mode=public` → `{ threads: ThreadSummary[] }` (staff-gated the same way;
-`mode` parsed with `isWebMode`, else 400). Add to the route test: two threads for the caller and one for someone
-else → the list holds exactly the caller's two, newest first, titled by their first question.
+Multi-chat (thread list, sidebar, New chat) and Millie's long thread memory (running summary + search tool) are
+**#170**, filed 2026-09-07 — Andy: "File it, will do. Main focus on generating public questions." This plan keeps
+one thread per mode per person; the table already carries `thread_id` so #170 adds without a migration.
 
 ```ts
 // src/app/api/admin/millie/chat/route.ts  (#169)
@@ -1197,13 +1180,10 @@ export function shapeTurns(rows: WebTurn[]): ChatTurn[] {
 - [ ] **Step 4: Run** → PASS. Commit: `git add src/components/tools/millie/chat/chat-model*.ts && git commit -m "#169: chat view-model helpers"`.
 
 - [ ] **Step 5: The component.** `"use client"`. State: `mode` (from `?mode=`), `target` (from `?target=`),
-`threads` (from `GET ?list=1&mode=`), `threadId` (the newest thread of the mode, or a fresh `t_<base36>` when the
-list is empty or **New chat** is clicked), `turns`, `pending` (the question in flight), `error`. Layout adds a
-left column (220px): **New chat** button on top, then the mode's threads newest first — title (first question,
-one line, ellipsis), turn count and relative time; the active one highlighted with `var(--accent)`. Clicking a
-thread loads it (`GET ?thread_id=` → `shapeTurns`); after a successful send, refresh the list so a new thread
-appears with its title. Threads are the caller's own — the route enforces it. On mount and mode change: load
-the list, then the active thread. Send: `POST` with `{mode, target, text, thread_id}`; while awaiting show the question with a
+`threadId` (one per mode per person: `t_<mode>_<base36>` generated once and kept in `localStorage` key
+`millie-chat-thread-<mode>`, so a reload or a new tab continues the same thread), `turns`, `pending` (the question
+in flight), `error`. On mount and mode change: `GET /api/admin/millie/chat?thread_id=` → `shapeTurns`. (Thread
+list, sidebar and New chat are #170.) Send: `POST` with `{mode, target, text, thread_id}`; while awaiting show the question with a
 "Millie is working…" line and a disabled composer; on response append the turn (`answer_md`, `notes`, `sources`,
 `refused`); on non-200 show the `error` sentence. No `setInterval`, no polling anywhere. Layout: mode tabs
 (`Test` · `Public` · `Team` disabled with title "coming with Team mode (#170)") as a segmented control using the
