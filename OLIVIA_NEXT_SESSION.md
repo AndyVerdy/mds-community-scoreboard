@@ -11,6 +11,13 @@
 
 # Olivia — next session
 
+## STATE 2026-09-08 00:15Z — #174 + #175 + #143 PROVEN ON STAGING `eb99c336` · awaiting Andy's promote · branch `174-named-item-drilldown-20260907` (merged to `main` for #174/#175; #143 docs follow)
+**Staging `eb99c336` = #169 Task 5 + Task 6 (the peer's Public Gate) + #174 + #175 + #143. Prod `30fd7e6f` untouched. Gate EXIT 0
+(four runs, last 00:14Z). Lock free; the #169 session runs its Task 7 gate checks next, then Andy decides one promote for all four.**
+**#143 close block on the board (AC table, execs 137713 · 137716 · 137720 · 137739). Tried and reverted: re-issuing the previous
+plan for a titles-only offer — the `chapter_info` payload is truncated in the evidence after 14 rows, the model invented the rest
+and the clamp fired (137759). Found alongside, unfiled: list-tool evidence clipping.** Earlier state below kept for the story.
+
 ## STATE 2026-09-07 (night) — #174 + #175 PROVEN ON STAGING `2d875cb3` · awaiting Andy's promote · branch `174-named-item-drilldown-20260907`
 **Staging `2d875cb3` = #169 Task 5 + #174 + #175 (the #169 session stacks Task 6 next; one promote carries all three — or
 re-stage from prod and re-apply `apply_174_…` + `apply_175_…` for a one-ticket graph). Prod `30fd7e6f` untouched. Gate 324 / EXIT 0.**

@@ -54,8 +54,25 @@ and both were wiped; a first probe run (10 min) tested the wrong graph. Every WA
 by message: hold → "staging is yours" → apply → probe → gate → "staging is back" (22:52Z, lock released). The lock records
 `user@host` and cannot separate two sessions on one Mac — handbook §13, memory `olivia-staging-lock-is-host-level`.
 
-**Next.** Andy's promote (one graph: #169 Task 5/6 + #174 + #175, or re-stage from prod and re-apply for a one-ticket graph) →
-re-probe prod → then #143 one by one (the bold-as-offer recorder guard first), #155, #139, #140, #141.
+**#143 (same night, Andy: "check backlog for more cases, address them one by one").** Scoped from the ORIGINAL rows (23044–23047:
+Etienne's "Yes please" answered an own-words "file this as a report" offer that `ticketYes` never recognised; 17095–17098: the
+2026-08-01 run had answered 6095 right) plus tonight's probes. Built TDD (`test_143_followup_guards.js` 45/45 on the shipped
+bytes) and landed on staging in five cuts, each probed: ① `isNewQuestion()` guards the echo signal (6095 shape: "Is there any bigger
+revenue group" no longer echo-binds on *revenue* — 137716/137752) · ② `Format Reply` records bold spans as offered titles only
+under an offer question and never a number (the `*$3,615.00*` bind, 137650 → gone, 137713) · ③ `bareOrdinalPick()`: "the second
+one" after a list → `offer_bind.mode:'drilldown'` (137720) · ④ own-words report offers → `pending_offer.kind:'ticket'` →
+`ticketYes`; the detector went question-only → statement-form → verb-based as her wording moved three times in one evening; plus
+an Answer Seed rule pinning the exact ticket sentence and forbidding "Done — I've filed that" (65577 fake → 65655 a real two-step
+offer) · ⑤ a yes after a turn that asked nothing (`Prep Context.last_olivia_asks`: trailing "?" OR a statement-form offer on the
+last line) takes a `nothing_pending` lane and asks what they want (137739). **Tried and reverted:** re-issuing the previous plan
+for a titles-only offer — `chapter_info` is TRUNCATED in the evidence after 14 rows, the model invented the rest, the clamp fired
+(137759). Regression: list + "yes" 137746, "how many chapters" + "yes" 65661 delivered, Andy's chain unchanged. Gate EXIT 0 ×4.
+Staging handover protocol with the #169 session worked both ways this time (asked → "staging is yours" → "staging is back"),
+final graph `eb99c336` = #169 T5+T6 + #174 + #175 + #143.
+
+**Next.** Andy's promote (one graph, four tickets — or re-stage from prod and re-apply `apply_174` · `apply_175` · `apply_143` for a
+Millie-only graph) → re-probe prod → then #139 (S1, the partner offer half; #175 already covers the link half), #155, #140, #141.
+Found alongside, unfiled: list-tool evidence clipping (`chapter_info` cut at 14 of 20 rows); 6201 dossier lane on a from-WhatsApp ask.
 
 ## 2026-09-07 (scoring session) · **#163 Task 1 COMPLETE (truth table, reviewed) · #165 phase 2 BUILT + reviewed — the stat bar is absolute, awaiting Andy's merge**
 
