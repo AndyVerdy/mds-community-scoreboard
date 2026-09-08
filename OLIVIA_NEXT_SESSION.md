@@ -112,8 +112,10 @@ URLs with the wrong row (#175). Both on the board with story + ACs; both filed f
   keyword scan over each `;`-segment, census-key fallback, hyphen is a boundary), 33 tests. Community-wide gives:
   **987 self-reported · 1,742 observed · 118 untagged (4.1%)**; asks 487 / 1,778 / 125; focus 2,375 / 2,507 / 83.
   Merged `556b168` → web `main` `18bac76` (main had moved to `1987a2e` under other sessions; clean merge).
-- **PARKED, unmerged:** the human-sentence "Written from" hover (`signalText.ts`, commits `ff4f234`, `bf1ab62` on
-  `165-source-labels-20260907`). Two review rounds each found a new free-prose pointer shape; `bf1ab62` still garbles
+- **PARKED, unmerged — `parked/165-sentence-hover-20260907` (= `bf1ab62`) in mds-digest-web. DO NOT MERGE.**
+  The human-sentence "Written from" hover (`signalText.ts`). The working branch `165-source-labels-20260907`, its
+  worktree and its dev server are GONE; the shipped part is in `main`. **Convention from today: anything under
+  `parked/` is not in flight — no session picks it up without Andy's word.** (`ff4f234`, `bf1ab62`). Two review rounds each found a new free-prose pointer shape; `bf1ab62` still garbles
   7 bracketed-list profile values. Do NOT merge it as is. The real fix is upstream: make `persona_refresh.py`'s
   prompt emit a structured `signal` pointer (`source | date | field | value`), after which the rewriter is trivial and
   the 4% untagged bucket disappears. Not filed yet — Andy's call.

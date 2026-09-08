@@ -667,7 +667,7 @@ after the legend had said it.
 section; one help sentence; chips untouched. Reviewed twice (30/30/30 hand audit; all 10,202 pointers re-run through a
 port of the shipped code — splits digit-for-digit; the one precision bug, `post-scaling` matching `post`, fixed with
 zero regression). Gives community-wide: 987 self-reported / 1,742 observed / 118 untagged. Merged `556b168`.
-**Phase 5 — human sentence in the "Written from" hover — PARKED, unmerged** (`ff4f234`, `bf1ab62`): only ~26% of
+**Phase 5 — human sentence in the "Written from" hover — PARKED on `parked/165-sentence-hover-20260907` (mds-digest-web, = `bf1ab62`). DO NOT MERGE.** Working branch, worktree and dev server removed; anything under `parked/` is not in flight (`ff4f234`, `bf1ab62`): only ~26% of
 pointer segments have enough structure to rewrite; two review rounds each surfaced a new free-prose shape and `bf1ab62`
 garbles 7 bracketed-list values. Stopped on Andy's "pause". Real fix = structured pointer in the persona prompt.
 
