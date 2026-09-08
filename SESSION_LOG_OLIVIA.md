@@ -2,6 +2,57 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-08 (small hours) · Backlog verified first, then fixed one by one · **#139 · #141 · #142 · #144 BUILT, STAGED and PROVEN on `c28fb532` (+ #175 lap 2 · #139 lap 2) — awaiting Andy's promote**
+
+**Trigger (Andy):** "chaeck if there are more report in the backlog" → "why are you redin eval not backlog?" (the board is the
+backlog, not the eval reports) → "check one by one, and fix one by one, but verify first if issue is still present".
+
+**Verification pass (00:33–00:50Z, staging `aa649e7b`, 25 bank C cases in 54 read-only probe turns, rows cleaned by id):**
+#139 1/5 still failed (6075: five agencies, no deal, no page) · #140 2/6 (6267 → #123 misroute of `event_who`, 6498 → #147;
+not worked) · #141 1/3 (6500: "his" rebound to Tamkin Collins, Fred's own posts never retrieved) · #144 1/3 (6372: the follow-up
+left the events lane; the 2027 catalog IS reachable since `event_lookup_v3`, 6370 / 6400 pass) · #142 1/3 (6483 clamped on an
+identity-rule false positive) · #155 half present (size M) · #132 unchanged by design. Verification tables under each ticket.
+
+**Fixes (TDD — a pure function each, RED watched on the live bytes, an idempotent apply script, GREEN on the dry-run and again on
+the shipped bytes):** #139 `apply_139_partner_link_repair.py` (`linkCoverageUrls` pairs `partner_url` rows by name; repair line
+`Name (offer): page`) · #142 `apply_142_identity_precision.py` (`secondPersonAboutOther()` stands down when the draft names the
+asker or refuses the typed name) · #141 `apply_141_pronoun_subject.py` (`pronounSubject()` keeps the previous plan's person) ·
+#144 `apply_144_events_lane_carry.py` (`eventsLaneCarry()`) · `apply_batch_139_142_141_144.py` composes every `patch_code()` on
+one GET → one PUT → one bounce.
+
+**Staging, four cuts under the lock** (the #169 session had said "staging is yours" but left the lock under its reason;
+`lock` refused without `--force`, which stays forbidden — asked by message, waited on a poll, took it 00:57Z):
+- `b39b31ab` 00:58Z — the batch. 22-turn probe: #144 ✅ exec 137902 · #142 ✅ 137904 (the lap-3 draft carried a typed name +
+  "your profile" and passed; laps 1–2 were the Haiku fact check's own identity ruling) · #143/#174 regressions ✅ (137907 ·
+  137910 · 137914) · #139 not exercised (no partner rows in 137887) · **#141 ❌ 137893** — the router put the follow-up on the
+  member-card lane this time, the carry never ran · **the #1c event repair appended stale links** (137901: the same rows'
+  `event_url` under a list linked by `reg_link`; 137902: "Register: …MDSSummitSingapore" pinned to a 2027 answer because
+  "…of Singapore:\n*MDS Summit Cancun 2027*" read as naming the finished Summit).
+- `b82f752e` 01:09Z — #175 lap 2 `apply_175b_event_repair_precision.py` (`_nameInAnswer` per line / clause;
+  `fieldRepairSkip()` → linked / past) and #141 lap 2 `apply_141b_topic_carry.py` (card lane + `pronounTopicTerms()`).
+  20-turn probe: #175b ✅ 137953 / 137954 (replay of 137901 / 137902 → 0, was 2 / 2) · #139 ✅ 137957 with one wart
+  ("TikTok Shop (TBA): …" — a partner literally named like the question) · #142 ✅ 137962 one lap · #174 ✅ 137965 · #143
+  ordinal ✅ 137969 · **#141 ❌ 137951** — with `p_author` set, the name as a raw TERM ranked forty comments that mention Fred
+  above his own posts; the TLO Outdoors post (content_items 103886, 1,326 chars in) sat past the preload cap.
+- `f4e40708` 01:25Z — #141 lap 3 (`pronounRawTerms()`: distinctive words only, no name pieces) · `c28fb532` 01:26Z — #139
+  lap 2 `apply_139b_partner_ask_guard.py` (`linkCoverageUrls(evRaw, answerText, askText)`). 10-turn probe: **#141 ✅ 138001
+  "Fred's brand is *TLO Outdoors* — he posted about it directly on Facebook … hunting, firearm accessory, and tactical gear"
+  + the post link** · #139 ✅ 138004 seven partners, seven deals, seven pages, nothing appended · #174 ✅ 138007 drilldown.
+**Gate:** the 01:14Z run, fired while a probe run was live, had ONE FAIL ("restricted returned ONLY with explicit consent flag",
+`content_search` v1 — the function's consent clause is intact); re-run 01:29Z **323 PASS, `GATE_EXIT=0`**, no code between.
+**Cleanup:** 104 probe rows (65770–65885) + 68 `olivia_seen` rows deleted by id / wamid pattern; Andy's real thread ends at 65491.
+**Docs:** board — close blocks under #139 · #141 · #142 · #144, a lap-2 block under #175, four at-a-glance rows · handbook §13
+two new traps (same-row links / per-clause naming · author-scoped full-text ranking) + Appendix C Routing / Fact gate rows ·
+handoff STATE 01:35Z. Lock released 01:36Z; the #169 session told "staging is back c28fb532".
+**Lessons:** (1) a row is linked by ANY of its URLs, and a name is named inside ONE clause — a repair that checks one field
+and matches words across punctuation pins the wrong link; (2) an author-scoped full-text search is RANKED by the terms: the
+name as a term buries the person's own posts, generic words dilute, and `hunting/firearm/tactical` is one path token to the
+parser; (3) the router is not deterministic — the same follow-up took two lanes in two runs, so a deterministic carry has to
+cover every lane that runs a raw fetch; (4) one PUT per batch (the runner) instead of four bounces; (5) a single gate FAIL
+during a live probe run is re-run before it is believed.
+**Next:** Andy's promote — one graph: #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144. Then #140's remainder waits on
+#123 / #147; #155 and #132 are size M, own sessions; the list-tool evidence clipping (from #143) is still unfiled.
+
 ## 2026-09-07 (night) · Poor answers check, case 1 · **#174 + #175 BUILT, STAGED and PROVEN on `2d875cb3` — awaiting Andy's promote**
 
 **Trigger (Andy):** "oliva continues. poor answers check" → "case 1" (a WhatsApp screenshot: "Tell me more about Alex Chiru

@@ -11,6 +11,13 @@
 
 # Olivia — next session
 
+## STATE 2026-09-08 01:35Z — #139 · #141 · #142 · #144 BUILT, STAGED and PROVEN on staging `c28fb532` (+ #175 lap 2 · #139 lap 2) · awaiting Andy's promote · branch `174-named-item-drilldown-20260907`
+**Staging `c28fb532`** = the peer's #169 (Tasks 5–6) + #174 + #175 (+ lap 2) + #143 + #139 (+ lap 2) + #142 + #141 (three laps) + #144 · 92 nodes. Prod `30fd7e6f` untouched. Gate 323 checks `GATE_EXIT=0` (01:29Z). Lock released 01:36Z, the #169 session told "staging is back c28fb532".
+**Proof (execs; probe rows 65770–65885 deleted by id, 68 `olivia_seen` rows too):** #141 exec 138001 "Fred's brand is *TLO Outdoors*" + his post link · #139 138004 seven partners with deals and pages (137957: the appended "Euka (15% OFF…)" line, and the "TikTok Shop (TBA)" wart lap 2 removed) · #142 137904 / 137962 real answers (was the canned line, 137871) · #144 137902 / 137954 events lane, consistent with the turn before · #175 lap 2: replay of 137901 / 137902 appends 0 (was 2 / 2), 137953 one legitimate Cancun link · regressions: #174 138007 `offer_bind.mode:'drilldown'` · #143 ordinal 137969, yes 137910, nothing-pending 137914.
+**How it was applied:** `scripts/olivia_loop/apply_batch_139_142_141_144.py` — one GET, both nodes patched by the single-ticket scripts' `patch_code()` (Gate Verdict: 139 → 142 → 175b → 139b · Plan Request: 141 → 144 → 141b), one PUT, one bounce; idempotent per marker — **re-run it after any staging overwrite**. Suites on the live bytes: 175 33/33 · 142 9/9 · 141 23/23 · 144 9/9 · 143 45/45 · 174 30/30.
+**Promote (Andy's call, one graph):** #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144. **Not fixed, in writing:** #140 remainder (6267 → #123, 6498 → #147) · #155 (size M) · #132 (size M) · #142's Haiku half (the fact check itself fails a draft that refuses the typed name; the clamp is untouched) · content_items 104754 unreachable by the term "firearm" (path token, handbook §13) · list-tool evidence clipping (unfiled, from #143) · 6201 dossier lane (out of #143).
+**Not exercised live:** `eventsLaneCarry()` (the router chose events itself both runs) and the #142 rule on a regen lap (137962 passed first lap) — both offline-proven backstops.
+
 ## STATE 2026-09-08 00:55Z — backlog VERIFIED on staging `aa649e7b` (Andy: "verify first if issue is still present"); four fixes BUILT and unit-proven, staging apply pending the #169 handover (asked 00:46Z)
 **Verified, 25 bank C cases in 54 read-only probe turns (rows cleaned by id):** #139 1/5 still fails → `apply_139_partner_link_repair.py` ·
 #140 2/6 fail, both upstream (#123 misroute for 6267; #147 for 6498) · #141 1/3 fails → `apply_141_pronoun_subject.py` · #144 1/3 fails
