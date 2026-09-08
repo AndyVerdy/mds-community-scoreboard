@@ -26,6 +26,31 @@ only a named item that is IN the recorded offer (it bound at 02:17, exec 138068,
 **Found alongside, unfiled:** the offer recorder writes loose `pending_offer.titles` / `items[].name` (exec 138141 recorded a
 whole sentence as an item name plus three stray titles); ids were correct and binding worked.
 
+**03:25Z — Andy: "why two different answers?" (two WhatsApp screenshots of the SAME question, 15:46 CT and 22:21 CT).** Both are
+his own real turns, not probes: 65488/65489 on the OLD prod `30fd7e6f`, and 65940/65941 on `49d4a931` seven minutes after the
+second promote. **`Plan Request` planned them identically** (`content_search`, same `p_terms` / `p_sources` / `raw_params`), so
+every difference is the answer loop: the afternoon run also called the partner tool (Productpinion, Listing Optimization AI with
+offers) and linked both member hypotheses (Casey Xiao-Morris, Ryan Bastuba); the night run called neither and NAMED Casey's
+thread without a link. The afternoon answer also carried the #175 orphan (`…/videos/63e5b874…` above the closing question — the
+same append traced to exec 137508 in case 1); the night answer carried none. Recorded as new evidence under **#155** (whether a
+quote carries its link is decided per run by the model, not by a rule — the sharpest before/after pair we have). Andy's ruling:
+"if we have it as a ticket, then it's fine." Nothing in tonight's eight tickets touches which tools the loop chooses.
+
+**03:20Z — the #169 session disclosed a fail-open in `public_gate.js`; I verified it independently rather than take it on trust.**
+Its report ("accented names, 33 of 5,394 rows") is real but the wrong shape: JS `\b` is ASCII-only, so the miss is names whose
+FIRST or LAST character is non-ASCII — reproduced on the shipped module, **"Émile Dupont" neither masked nor caught, "José Núñez"
+(mid-name accent) fine**. Counted on `member_profiles`: 54 rows contain any non-ASCII, **23 are boundary-evading**, and they are
+wider than Latin accents ("Øun Thaih", "航 杨", math-alphanumerics, Khmer/Arabic, one trailing U+FE0F variation selector). Four
+call sites carry the same `\b` (backed-name test, mask, first-name replace, leftover-name verify) — a verify on the same broken
+boundary passes exactly what the mask missed. Sent the peer the failing/passing cases and the four sites for its tests; the fix,
+its staging apply and a third promote are ITS work, and it will message before touching staging. **No exposure:** the web door is
+header-authenticated (a secret-less POST is refused) and its page has not merged. Trap written into `OLIVIA_HANDBOOK.md` §13.
+
+**Close state 03:30Z (22:30 CT):** prod `49d4a931` (92 nodes, eight tickets + #169 fix round 4) · staging `027bd776` · lock free ·
+no probe rows left (`digest.olivia_messages` for 17866578153 ends at Andy's own 65941) · branch `174-named-item-drilldown-20260907`
+merged to `main`. **Next ticket: #147** — "Is this member registered?" is answered twice, by two sources, and they disagree
+(🔴 S1, size M); it also gates the last unfixed half of #140.
+
 ## 2026-09-08 02:16Z · PROMOTE — one graph, eight tickets · **prod `12wj6h1TWqb0d4Dq` = `f5e9ce5d` (92 nodes): #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144 — LIVE, prod probes green**
 
 **Trigger (Andy):** "you have my go to promove if another agent agees". Asked the #169 session by message; it answered NOT YET

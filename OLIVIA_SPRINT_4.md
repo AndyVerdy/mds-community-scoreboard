@@ -951,6 +951,17 @@ re-run of #6007 · #6064 · #6031 against prod grades pass ✅ · gate GREEN.
 | 6064 Brian Kelsey consulting | ✅ what he posted, dated posts linked, no character read, one third-party account flagged as one experience (row 65759) |
 | 6031 "what info should I know in mds" | ✅ live items from the asker's chats and the group, named people, "this week" — no capability tour; per-item links still missing (row 65763) |
 
+#### 🔎 More evidence 2026-09-08 (Andy's two screenshots of the SAME question, seven hours apart, both real prod turns)
+"Anything in MDS about how to optimize hero images and product titles we want to split test where do I find hypothesis?" asked at 15:46 CT (turns 65488/65489, old prod `30fd7e6f`) and again at 22:21 CT (turns 65940/65941, prod `49d4a931`, seven minutes after tonight's second promote). **`Plan Request` produced the IDENTICAL plan both times** (`content_search`, same `p_terms`, same `p_sources`, same `raw_params`) — so the variation is entirely in the answer loop.
+
+| | 15:46 CT (65489) | 22:21 CT (65941) |
+|---|---|---|
+| member hypotheses | Casey Xiao-Morris + Ryan Bastuba, **both with their post links** | Casey's thread NAMED, **no link** |
+| partner tools | Productpinion + Listing Optimization AI, offers + pages (the partner tool was called) | not called, not mentioned |
+| gate-appended bare link | ❌ `…/videos/63e5b87443688c474cfb0737` above the closing question (the #175 case-1 defect, exec 137508) | ✅ none (#175 live) |
+
+**What this adds to #155:** whether a quoted item carries its link is decided per run by the answer model, not by a rule — the same question linked both member posts in one run and linked neither in the next. That is the ticket's (a) half stated as a reproducible pair, and it is the sharpest before/after we have. **Not a regression from tonight's promote:** the newer answer is cleaner (no orphan link) but thinner (no partner tool call, quote unlinked); nothing in #139/#141/#142/#144/#175 touches which tools the loop chooses.
+
 The ticket's own ruling stands: the link must travel with the quote from the answer loop (the gate repair cannot bind message bodies — proven, rolled back). Size M, own plan.
 
 ### #153 · Intent questions failed on ranking and stated facts — the screenshot probes, run down
