@@ -1433,6 +1433,13 @@ stop list plus generic business words removed); a stemmed full-text index needs 
 variants, and `hunting/firearm/tactical` is one path token to the parser, so a term can miss a row
 that visibly contains it.**
 
+### The saved plan omits `offer_bind` — audit a bind in the execution, not the row (2026-09-08, #174)
+
+`digest.olivia_messages.plan` carries the op and its params but **not** `offer_bind`. Andy's live turn 65943
+reads `plan->'offer_bind' = null` while execution 138168 shows `{mode:'drilldown', named:[…]}` — an auditor
+working from SQL alone would conclude the #174 drill-down never fires. The row's tell is the resulting
+params (`p_video_id` set, `p_query` null); the authority is the `Plan Request` node output in the execution.
+
 ### JavaScript `\b` is ASCII-only — a name-masking gate fails OPEN on it (2026-09-08, #169)
 
 `public_gate.js` masks member names out of public answers with `new RegExp('\\b' + name + '\\b', 'i')`, in four
