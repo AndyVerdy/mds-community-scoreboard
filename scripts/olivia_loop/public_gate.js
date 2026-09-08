@@ -44,11 +44,34 @@ function boundedRe(src, flags, suffix) { return new RegExp(NB_L + src + NB_R + (
 // indexed "Jonathan Jewett"; 337 index rows have 3+ words), a spelled-out middle name, hyphen-vs-space
 // ("Mary Jane Smith" for "Mary-Jane Smith"; 40 hyphenated rows) and doubled spaces. Both sides are
 // normalised here: the index name is split on whitespace AND hyphens, the tokens are re-joined with a
-// separator that accepts either (any number of them), and ONE optional middle token — an initial or a
-// middle name — may sit between the first two. Connector words are barred from that slot so "Anna and
-// Lee" is never read as "Anna Lee". A possessive needs nothing: NB_R already allows a following "'".
+// separator that accepts either (any number of them), and up to two optional middle tokens — an
+// initial and/or a middle name — may sit between the first two (#169 review R2 widened this from one
+// token and restricted what can fill it; see MID_TOKEN below). A possessive needs nothing: NB_R
+// already allows a following "'".
 const NAME_SEP = '[\\s\\-]+';
-const MIDDLE_STOP = 'and|or|the|of|in|at|to|for|with|from|by|on';
+// Review R2 (#169, 2026-09-07 re-review): the middle slot used to accept ANY 1-15-letter word (barred
+// only from an explicit connector-word deny-list), so an ordinary sentence word sitting between two
+// indexed names — "Mike emailed Ross yesterday." for the indexed "Mike Ross" — was read as a middle
+// name and the whole thing masked to "a member yesterday." Fail CLOSED (nobody's real name leaked)
+// but broken copy at index scale: 5,394 names, plenty of them two words sharing an ordinary sentence
+// with an ordinary verb in between. A middle token must now look like part of a name: a single
+// capital letter with an optional period — an initial, "R." or "R" — or a capitalised word that may
+// carry an internal apostrophe, hyphen or period ("Robert", "O'Brien", "Jean-Luc").
+//
+// \p{Lu} only works as an uppercase check on a pattern compiled WITHOUT the `i` flag: under `iu`,
+// Unicode property escapes case-fold, so `/\p{Lu}/iu.test('e')` is `true` in V8 — the redact()/
+// leftoverNames() `'gi'`/`'i'` flags this pattern used to run under would have silently let "emailed"
+// match right back in. nameSource() below therefore builds its OWN case alternation per token
+// (tokenAlt()) and runs with no `i` flag at all, so \p{Lu} here means what it says.
+const MID_TOKEN = '(?:\\p{Lu}\\.?|\\p{Lu}[\\p{L}\'’.-]*)';
+// A token is matched in its NAME-shaped casings only — as indexed, and ALL CAPS — the same idea as
+// firstNameSource() further down, and for the same reason: compiling the whole pattern without `i`
+// (see MID_TOKEN above) means every literal token needs its own case alternation instead of leaning
+// on the caller's flag.
+function tokenAlt(tok) {
+  const forms = [tok, tok.charAt(0).toUpperCase() + tok.slice(1), tok.toUpperCase()];
+  return '(?:' + [...new Set(forms)].map(escapeRe).join('|') + ')';
+}
 // The other half of C1's 33 rows (#169 C1 addendum, #174 session's independent repro): a boundary fix
 // alone does not reach them. An index display name carrying an INVISIBLE code point — "John Pollock"
 // with a trailing U+FE0F variation selector, a zero-width space inside it — or an accent stored
@@ -74,11 +97,12 @@ function normName(s) { return String(s == null ? '' : s).normalize('NFC').replac
 function normText(s) { return String(s == null ? '' : s).normalize('NFC').replace(INVISIBLE_RE, '').replace(/\s+/g, ' '); }
 function nameTokens(nm) { return normName(nm).trim().split(/[\s\-]+/).filter(Boolean); }
 function nameSource(nm) {
-  const toks = nameTokens(nm).map(escapeRe);
+  const toks = nameTokens(nm);
   if (!toks.length) return null;
-  if (toks.length === 1) return toks[0];
-  const mid = '(?:' + NAME_SEP + '(?!(?:' + MIDDLE_STOP + ')' + NB_R + ')\\p{L}{1,15}\\.?)?';
-  return toks[0] + mid + NAME_SEP + toks.slice(1).join(NAME_SEP);
+  if (toks.length === 1) return tokenAlt(toks[0]);
+  // At most two name-shaped middle tokens, joined by a single plain space (#169 review R2).
+  const mid = '(?:' + NAME_SEP + MID_TOKEN + '(?: ' + MID_TOKEN + ')?)?';
+  return tokenAlt(toks[0]) + mid + NAME_SEP + toks.slice(1).map(tokenAlt).join(NAME_SEP);
 }
 
 const COMMON_WORD_FIRST_NAMES_LC = new Set([...COMMON_WORD_FIRST_NAMES].map(s => s.toLowerCase()));
@@ -266,7 +290,10 @@ function redact(draft, names, backed) {
     if (backed.has(full)) continue;
     const toks = nameTokens(full);
     if (!toks.length || low.indexOf(toks[0].toLowerCase()) < 0) continue;
-    const re = boundedRe(nameSource(full), 'gi');
+    // No 'i' here (#169 review R2): nameSource() builds its own per-token case alternation
+    // (tokenAlt()) precisely because \p{Lu} inside MID_TOKEN would case-fold and stop meaning
+    // "uppercase" the moment this pattern carried the flag.
+    const re = boundedRe(nameSource(full), 'g');
     if (!re.test(text)) continue;
     const phrase = ROLE_PHRASES[i++ % ROLE_PHRASES.length];
     text = text.replace(re, phrase);
@@ -301,7 +328,8 @@ function leftoverNames(text, names, backed) {
     if (!nm || seen.has(nm) || backed.has(nm)) continue;
     const toks = nameTokens(nm);
     if (!toks.length || low.indexOf(toks[0].toLowerCase()) < 0) continue;
-    if (boundedRe(nameSource(nm), 'i').test(hay)) { seen.add(nm); out.push(nm); }
+    // No 'i' here either (#169 review R2) — same reason as redact()'s call above.
+    if (boundedRe(nameSource(nm), '').test(hay)) { seen.add(nm); out.push(nm); }
   }
   // A first name the gate would have masked on its own must not survive the smoother either: publishing
   // a partial it could not mask is the same leak as publishing the whole name (#169 review I1). Same

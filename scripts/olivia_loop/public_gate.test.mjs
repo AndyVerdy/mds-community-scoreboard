@@ -336,3 +336,53 @@ test('I1: a first name shared with a BACKED name is left alone so the backed nam
   assert.ok(!r.text.includes('Bryce Smith'), r.text);
   assert.deepEqual(pg.leftoverNames(r.text, both, backed), []);
 });
+
+// --- review R2 (#169, 2026-09-07 re-review): the I1 variant pattern's optional middle slot accepted
+// ANY 1-15-letter word between the first and last name, so an ordinary sentence word between two
+// indexed names — "Bob emailed Ross yesterday." for the indexed "Bob Ross" — was read as a middle
+// name and masked whole to "a member yesterday." Fail CLOSED (nobody's real name leaked) but broken
+// copy at index scale (5,394 names, plenty of two-word ones sharing a sentence with an ordinary
+// verb). The middle slot now accepts only NAME-SHAPED tokens — an initial with an optional period, or
+// a capitalised word — at most two of them, so a lowercase word can never fill it. Fixture uses "Bob"
+// (3 letters) rather than the "Mike"/"Sarah"-style first name used elsewhere in this file, so the
+// separate standalone-first-name pass (review I1, length >= 4) never fires and only the two-word
+// middle-slot pattern under test is in play. ---
+
+test('R2: an ordinary lowercase word between two indexed names is left alone, not masked', () => {
+  const bobRoss = [{ name: 'Bob Ross', kind: 'member' }];
+  const draft = 'Bob emailed Ross yesterday.';
+  const r = pg.redact(draft, bobRoss, new Set());
+  assert.equal(r.text, draft);
+  assert.deepEqual(r.removed, []);
+  assert.deepEqual(pg.leftoverNames(draft, bobRoss, new Set()), []);
+});
+
+test('R2: a middle initial or a spelled-out middle name still masks', () => {
+  const bobRoss = [{ name: 'Bob Ross', kind: 'member' }];
+  assert.ok(!/Ross/.test(pg.redact('Bob A. Ross joined the call.', bobRoss, new Set()).text));
+  assert.ok(!/Ross/.test(pg.redact('Bob Anthony Ross joined the call.', bobRoss, new Set()).text));
+});
+
+test('R2: an accented name with a middle initial still masks', () => {
+  const r = pg.redact('Émile A. Dupont ran the shop.', accented, new Set());
+  assert.ok(!/Dupont/.test(r.text), r.text);
+});
+
+test('R2: redact and leftoverNames never disagree across the middle-slot sweep', () => {
+  const idx = [{ name: 'Bob Ross', kind: 'member' }];
+  const cases = [
+    ['Bob emailed Ross yesterday.', false],
+    ['Bob and Ross both joined the call.', false],
+    ['Bob Ross joined the call.', true],
+    ['BOB ROSS JOINED THE CALL.', true],
+    ['Bob A. Ross joined the call.', true],
+    ['Bob Anthony Ross joined the call.', true],
+    ['Bob J. R. Ross joined the call.', true],
+  ];
+  for (const [draft, shouldMask] of cases) {
+    const r = pg.redact(draft, idx, new Set());
+    const left = pg.leftoverNames(draft, idx, new Set());
+    assert.equal(r.removed.length > 0, shouldMask, `redact disagreement: ${draft}`);
+    assert.equal(left.length > 0, shouldMask, `leftoverNames disagreement: ${draft}`);
+  }
+});
