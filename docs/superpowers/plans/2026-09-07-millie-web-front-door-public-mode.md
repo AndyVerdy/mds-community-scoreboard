@@ -1212,7 +1212,6 @@ export async function GET(req: NextRequest) {
 ```
 (imports: add `isUiTarget, toDoorArgs, listThreads` to the `@/lib/millie/web-chat` import; `isWebMode`/`isWebTarget`
 are no longer used by the route.)
-```
 
 - [ ] **Step 5: Run the tests; then tsc + eslint**
 
