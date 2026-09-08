@@ -37,7 +37,60 @@ function escapeRe(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); 
 // still refuses to match "Anna Lee" inside "Arianna Leeman".
 const NB_L = '(?<![\\p{L}\\p{N}_])';
 const NB_R = '(?![\\p{L}\\p{N}_])';
-function boundedRe(src, flags) { return new RegExp(NB_L + src + NB_R, flags + 'u'); }
+function boundedRe(src, flags, suffix) { return new RegExp(NB_L + src + NB_R + (suffix || ''), flags + 'u'); }
+
+// Variant tolerance (#169 review I1). Only the exact spelling was ever masked, so every ordinary
+// conversational variant of an indexed name published: a middle initial ("Jonathan R. Jewett" for the
+// indexed "Jonathan Jewett"; 337 index rows have 3+ words), a spelled-out middle name, hyphen-vs-space
+// ("Mary Jane Smith" for "Mary-Jane Smith"; 40 hyphenated rows) and doubled spaces. Both sides are
+// normalised here: the index name is split on whitespace AND hyphens, the tokens are re-joined with a
+// separator that accepts either (any number of them), and ONE optional middle token — an initial or a
+// middle name — may sit between the first two. Connector words are barred from that slot so "Anna and
+// Lee" is never read as "Anna Lee". A possessive needs nothing: NB_R already allows a following "'".
+const NAME_SEP = '[\\s\\-]+';
+const MIDDLE_STOP = 'and|or|the|of|in|at|to|for|with|from|by|on';
+function nameTokens(nm) { return String(nm == null ? '' : nm).trim().split(/[\s\-]+/).filter(Boolean); }
+function nameSource(nm) {
+  const toks = nameTokens(nm).map(escapeRe);
+  if (!toks.length) return null;
+  if (toks.length === 1) return toks[0];
+  const mid = '(?:' + NAME_SEP + '(?!(?:' + MIDDLE_STOP + ')' + NB_R + ')\\p{L}{1,15}\\.?)?';
+  return toks[0] + mid + NAME_SEP + toks.slice(1).join(NAME_SEP);
+}
+
+const COMMON_WORD_FIRST_NAMES_LC = new Set([...COMMON_WORD_FIRST_NAMES].map(s => s.toLowerCase()));
+
+// The first names the gate is allowed to mask on their own (#169 review I1). The old first-name pass
+// fired only AFTER the full name had already matched, so "Sarah shared a bundling tip" (index: Sarah
+// Chen) published untouched and leftoverNames() did not refuse it either — the common conversational
+// form was the one form that leaked. Eligible = the first token of an UNBACKED index name, >= 4 chars,
+// not an ordinary English word (COMMON_WORD_FIRST_NAMES), and not shared with a BACKED name: masking
+// "Bryce" would garble the "Bryce Alderson" a public source entitles us to print (review M8).
+function closedFirstNames(names, backed) {
+  const backedFirst = new Set();
+  for (const b of backed) { const t = nameTokens(b)[0]; if (t) backedFirst.add(t.toLowerCase()); }
+  const out = new Map();
+  for (const n of names) {
+    const nm = String((n && n.name != null ? n.name : n) || '').trim();
+    if (!nm || backed.has(nm)) continue;
+    const first = nameTokens(nm)[0] || '';
+    const lc = first.toLowerCase();
+    if (first.length < 4 || COMMON_WORD_FIRST_NAMES_LC.has(lc) || backedFirst.has(lc)) continue;
+    if (!out.has(lc)) out.set(lc, { first: first, full: nm });
+  }
+  return out;
+}
+
+// A lone first name is matched in its NAME-shaped casings only — as indexed, Titlecase, and ALL CAPS
+// (the review's proven miss was "Later JONATHAN added Y"). Deliberately NOT the `i` flag: the index is
+// 5,394 member/speaker display names, not a curated person list, so a plain case-insensitive single
+// token would let one member called e.g. "Prime ..." turn every lowercase "prime" in ordinary copy
+// into "they" — and, via leftoverNames, refuse the turn. Two-token full names carry no such risk and
+// stay case-insensitive.
+function firstNameSource(first) {
+  const forms = [first, first.charAt(0).toUpperCase() + first.slice(1), first.toUpperCase()];
+  return '(?:' + [...new Set(forms)].map(escapeRe).join('|') + ')';
+}
 
 // A video is classified by its 24-hex id, but the retrieval tools hand back only the app link
 // (`video_url: "https://app.mds.co/videos/<id>"`), so the id is read back out of any url field.
@@ -134,29 +187,56 @@ function redact(draft, names, backed) {
   let text = String(draft || '');
   const removed = [];
   let i = 0;
+  // `low` is only a cheap pre-filter: the first token of the index name must appear SOMEWHERE in the
+  // draft before the real (much more expensive) pattern is built at all. 5,394 index rows run through
+  // this on every public turn. Re-taken after each replacement so it never goes stale.
+  let low = text.toLowerCase();
   const sorted = [...names].map(n => String(n.name || '').trim()).filter(Boolean).sort((a, b) => b.length - a.length);
   for (const full of sorted) {
     if (backed.has(full)) continue;
-    const re = boundedRe(escapeRe(full), 'gi');
+    const toks = nameTokens(full);
+    if (!toks.length || low.indexOf(toks[0].toLowerCase()) < 0) continue;
+    const re = boundedRe(nameSource(full), 'gi');
     if (!re.test(text)) continue;
     const phrase = ROLE_PHRASES[i++ % ROLE_PHRASES.length];
     text = text.replace(re, phrase);
+    low = text.toLowerCase();
     removed.push(full);
-    // first-name-only follow-ups ("Later Jonathan added") — only once the full name was present.
-    // Conservative: case-sensitive, length >= 4, and skip words that are also common first names
-    // (COMMON_WORD_FIRST_NAMES) so an unrelated sentence-initial word isn't mangled.
-    const first = full.split(/\s+/)[0];
-    if (first.length >= 4 && !COMMON_WORD_FIRST_NAMES.has(first)) {
-      text = text.replace(boundedRe(escapeRe(first), 'g'), 'they');
-    }
+  }
+  // First-name-only mentions — "Sarah shared a bundling tip", "Later JONATHAN added Y" — over the first
+  // names of ALL unbacked index names, not only the ones whose full name happened to appear in this
+  // draft (#169 review I1). A possessive is absorbed so the sentence stays readable ("Sarah's margins"
+  // -> "their margins"), and the index name is recorded as removed so the GATED strip counts it.
+  for (const ent of closedFirstNames(names, backed).values()) {
+    if (low.indexOf(ent.first.toLowerCase()) < 0) continue;
+    const fre = boundedRe(firstNameSource(ent.first), 'g', "(['’]s)?");
+    if (!fre.test(text)) continue;
+    text = text.replace(fre, (m, poss) => (poss ? 'their' : 'they'));
+    low = text.toLowerCase();
+    if (removed.indexOf(ent.full) < 0) removed.push(ent.full);
   }
   return { text, removed };
 }
 
 function leftoverNames(text, names, backed) {
   const hay = String(text || '');
-  return [...names].map(n => String(n.name || '').trim()).filter(Boolean)
-    .filter(nm => !backed.has(nm) && boundedRe(escapeRe(nm), 'i').test(hay));
+  const low = hay.toLowerCase();
+  const out = [], seen = new Set();
+  for (const n of names) {
+    const nm = String((n && n.name != null ? n.name : n) || '').trim();
+    if (!nm || seen.has(nm) || backed.has(nm)) continue;
+    const toks = nameTokens(nm);
+    if (!toks.length || low.indexOf(toks[0].toLowerCase()) < 0) continue;
+    if (boundedRe(nameSource(nm), 'i').test(hay)) { seen.add(nm); out.push(nm); }
+  }
+  // A first name the gate would have masked on its own must not survive the smoother either: publishing
+  // a partial it could not mask is the same leak as publishing the whole name (#169 review I1). Same
+  // eligibility and same casings as redact(), so this never refuses a form redact() deliberately kept.
+  for (const ent of closedFirstNames(names, backed).values()) {
+    if (seen.has(ent.full) || low.indexOf(ent.first.toLowerCase()) < 0) continue;
+    if (boundedRe(firstNameSource(ent.first), '').test(hay)) { seen.add(ent.full); out.push(ent.full); }
+  }
+  return out;
 }
 // --- PUBLIC_GATE_END ---
 module.exports = { ROLE_PHRASES, parseRows, extractEvidenceRows, backedNames, redact, leftoverNames };

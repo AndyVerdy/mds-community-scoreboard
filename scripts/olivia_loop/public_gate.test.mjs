@@ -171,3 +171,56 @@ test('C1: an accented name is backed only by a public row, same as an ASCII one'
   assert.ok(backed.has('Émile Dupont'));
   assert.ok(!backed.has('Renée Dubé'));
 });
+
+// --- review I1 (#169): only the exact spelling was ever masked. A middle initial, a hyphen-vs-space
+// variant, ALL CAPS, a possessive, or a first-name-only mention all passed BOTH passes — redact()
+// left them in and leftoverNames() did not refuse them, so they published. ---
+
+test('I1: a middle initial or a middle name between the two tokens does not hide the name', () => {
+  const r = pg.redact('Jonathan R. Jewett said X. Jonathan Robert Jewett said it again.', names, new Set());
+  assert.ok(!/Jewett/.test(r.text), r.text);
+  assert.deepEqual(pg.leftoverNames('Jonathan R. Jewett said X.', names, new Set()), ['Jonathan Jewett']);
+});
+
+test('I1: hyphen, space and doubled space are the same separator', () => {
+  const hy = [{ name: 'Mary-Jane Smith', kind: 'member' }];
+  assert.ok(!/Smith/.test(pg.redact('Mary Jane Smith said X.', hy, new Set()).text));
+  assert.ok(!/Smith/.test(pg.redact('Mary-Jane  Smith said X.', hy, new Set()).text));
+  assert.deepEqual(pg.leftoverNames('Mary Jane Smith said X.', hy, new Set()), ['Mary-Jane Smith']);
+});
+
+test('I1: an ALL CAPS full name and an ALL CAPS first-name follow-up are both masked', () => {
+  const r = pg.redact('ÉMILE DUPONT ran the test. Later ÉMILE added Y.', accented, new Set());
+  assert.ok(!/DUPONT|ÉMILE/.test(r.text), r.text);
+});
+
+test('I1: a possessive form is masked and stays grammatical', () => {
+  const r = pg.redact("Émile Dupont's shop grew. Émile's margins doubled.", accented, new Set());
+  assert.ok(!/Dupont|Émile/.test(r.text), r.text);
+  assert.match(r.text, /^a member's shop grew\./);
+  assert.ok(r.text.includes('their margins doubled.'), r.text);
+});
+
+test('I1: a first-name-only mention of an indexed closed name is masked, and refuses if it survives', () => {
+  const sarah = [{ name: 'Sarah Chen', kind: 'member' }];
+  const r = pg.redact('Sarah shared a bundling tip.', sarah, new Set());
+  assert.ok(!/Sarah/.test(r.text), r.text);
+  assert.deepEqual(r.removed, ['Sarah Chen']);
+  assert.deepEqual(pg.leftoverNames('Sarah shared a bundling tip.', sarah, new Set()), ['Sarah Chen']);
+});
+
+test('I1: a short first name, a common word and a lowercase word are all left alone', () => {
+  const mixed = [{ name: 'Bob Lee', kind: 'member' }, { name: 'Will Turner', kind: 'member' }, { name: 'Prime Wilson', kind: 'member' }];
+  const draft = 'Bob is short. Will this ship? The prime slot is 9am.';
+  assert.equal(pg.redact(draft, mixed, new Set()).text, draft);
+  assert.deepEqual(pg.leftoverNames(draft, mixed, new Set()), []);
+});
+
+test('I1: a first name shared with a BACKED name is left alone so the backed name survives intact', () => {
+  const both = [{ name: 'Bryce Alderson', kind: 'member' }, { name: 'Bryce Smith', kind: 'member' }];
+  const backed = new Set(['Bryce Alderson']);
+  const r = pg.redact('Bryce Alderson spoke publicly. Bryce Smith did not.', both, backed);
+  assert.ok(r.text.includes('Bryce Alderson spoke publicly.'), r.text);
+  assert.ok(!r.text.includes('Bryce Smith'), r.text);
+  assert.deepEqual(pg.leftoverNames(r.text, both, backed), []);
+});
