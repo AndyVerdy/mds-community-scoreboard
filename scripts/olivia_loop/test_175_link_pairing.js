@@ -14,7 +14,7 @@
 //   linkCoverageUrls(evRaw, answerText) -> [url, ...]   the URLs the repair may append (max 3)
 const fs = require('fs');
 const src = fs.readFileSync(process.argv[2], 'utf8');
-const m = src.match(/function linkCoverageUrls\(evRaw, answerText\) \{[\s\S]*?\n\}/);
+const m = src.match(/function linkCoverageUrls\(evRaw, answerText(?:, askText)?\) \{[\s\S]*?\n\}/);
 if (!m) { console.error('FAIL: linkCoverageUrls() not found in ' + src.length + '-char dump'); process.exit(1); }
 const linkCoverageUrls = new Function(m[0] + '; return linkCoverageUrls;')();
 
@@ -82,6 +82,84 @@ check('at most three links are appended',
   linkCoverageUrls(EV_MANY, 'Alpha Session One, Bravo Session Two, Charlie Session Three and Delta Session Four all cover it.'), [UA, UB, UC]);
 check('a scattered word match is not a citation',
   linkCoverageUrls(EV, 'Split testing is worth it. Every seller should test. Sales grow when you increase CR by 1% - Anthony said so on a call.'), []);
+
+// ───────── #139: partner rows carry `name` + `offer_value` + `partner_url`, never `title` ─────────
+const P_MEDIA = 'https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa1';
+const P_SOCIAL = 'https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa2';
+const prow = function (name, offer, url, extra) {
+  return '{"name":"' + name + '","offer_value":"' + offer + '","description_snippet":"' + LONG + '","categories":["TikTok Shop","Working with Agencies"],"rating_avg":null,"review_count":0,"claim_count":2,"featured":false,"fresh_deal":false,"partner_url":"' + url + '","reviews_sample":null,"matched_rank":0.03,"fit_reason":null,"strength_note":null,"web_people":[{"name":"Jane Doe","role":"Founder"}]' + (extra || '') + '}';
+};
+const EV_P = 'TOOL partner_lookup (2 rows):\n[' + prow('Media Labs', '15% OFF first 3 months', P_MEDIA) + ',' + prow('Social Tale', 'Free audit', P_SOCIAL) + ']';
+check('#139: a named partner with no link gets its page WITH its offer, as one line',
+  linkCoverageUrls(EV_P, 'There are also TikTok Shop agency partner deals in the directory (Media Labs, Zainith) — none have reviews on file yet.\n\nWant the links?'),
+  ['Media Labs (15% OFF first 3 months): ' + P_MEDIA]);
+check('#139: an already-linked partner is left alone',
+  linkCoverageUrls(EV_P, 'Media Labs (15% OFF first 3 months) is the one people mention.\n' + P_MEDIA), []);
+check('#139: a partner nobody named is never appended',
+  linkCoverageUrls(EV_P, 'Ask in the MDS TikTok chat — plenty of agency talk there.'), []);
+check('#139: the nested web_people "name" never poses as the row name (Jane Doe is not a partner)',
+  linkCoverageUrls(EV_P, 'Jane Doe founded it.'), []);
+check('#139: a partner with no offer on file gets a plain "Name: page" line',
+  linkCoverageUrls('[' + prow('Zainith', '', 'https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa3') + ']', 'Zainith came up too.'),
+  ['Zainith: https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa3']);
+// — #139 lap 2 (staging b82f752e, exec 137957, 2026-09-08 01:19Z): a partner NAMED LIKE THE TOPIC. The directory
+// carries a partner called "TikTok Shop" (offer "TBA"); the draft says "TikTok Shop" in every sentence because
+// the member ASKED about TikTok Shop, so "TikTok Shop (TBA): …" was appended under a list of five agencies.
+// A partner name the member typed themselves is the subject of the question, not a recommendation.
+const P_TTS = 'https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa4';
+const EV_P2 = '[' + prow('TikTok Shop', 'TBA', P_TTS) + ',' + prow('Media Labs', '15% OFF first 3 months', P_MEDIA) + ']';
+const ASK = 'Which MDS partner agencies handle TikTok Shop, and what\'s the deal?';
+check('#139 lap 2: a partner named like the member\'s own question is never appended (the agency still is)',
+  linkCoverageUrls(EV_P2, 'For TikTok Shop management, Media Labs is the one members mention.', ASK),
+  ['Media Labs (15% OFF first 3 months): ' + P_MEDIA]);
+check('#139 lap 2: without the member text the old behaviour stands (both named, both appended)',
+  linkCoverageUrls(EV_P2, 'For TikTok Shop management, Media Labs is the one members mention.'),
+  ['TikTok Shop (TBA): ' + P_TTS, 'Media Labs (15% OFF first 3 months): ' + P_MEDIA]);
+check('#139 lap 2: a partner the member did NOT type is still repaired when the draft names it',
+  linkCoverageUrls(EV_P2, 'Media Labs came up.', 'who should I use for my creator program?'),
+  ['Media Labs (15% OFF first 3 months): ' + P_MEDIA]);
+
+// ───────── #175 lap 2 (staging b39b31ab, execs 137901 / 137902, 2026-09-08): the #1c FIELD repair ─────────
+// The #1c repair (registration_url / event_url) appended a row's event_url when the draft already carried the
+// SAME row's reg_link (Inspire: /s/events/u/… vs /events/u/…; Centurion: go.mdsonly.co vs /events/u/…), and
+// pinned "Register: go.mdsonly.co/MDSSummitSingapore" to an answer about 2027 because "…not a repeat of
+// Singapore:\n*MDS Summit Cancun 2027*" read as naming "MDS Summit Singapore" — the re-ordered-words window ran
+// across a colon, a line break and a bold title, and the Summit had already ended.
+//
+//   _nameInAnswer(name, hay)                          -> the entity is NAMED inside one line / clause
+//   fieldRepairSkip(evRaw, idx, answerText, nowMs)    -> 'linked' | 'past' | ''
+const mN = src.match(/const _nameInAnswer = function \(nm, hay\) \{[\s\S]*?\n\};/);
+if (!mN) { console.error('FAIL: _nameInAnswer not found'); process.exit(1); }
+const nameInAnswer = new Function(mN[0] + '; return _nameInAnswer;')();
+const mF = src.match(/function fieldRepairSkip\(evRaw, idx, answerText, nowMs\) \{[\s\S]*?\n\}/);
+if (!mF) { console.error('FAIL: fieldRepairSkip() not found in ' + src.length + '-char dump'); process.exit(1); }
+const fieldRepairSkip = new Function(mF[0] + '; return fieldRepairSkip;')();
+
+const D2027 = 'Good news — it\'s already been announced! The next MDS Summit is set for *Cancun*, not a repeat of Singapore:\n\n*MDS Summit Cancun 2027*\n📅 Sunday, September 26, 2027\n📍 Cancun, Mexico';
+check('lap 2: "…of Singapore:\\n*MDS Summit Cancun 2027*" does NOT name "MDS Summit Singapore" (exec 137902)', nameInAnswer('MDS Summit Singapore', D2027), false);
+check('lap 2: the same draft DOES name "MDS Summit Cancun 2027"', nameInAnswer('MDS Summit Cancun 2027', D2027), true);
+check('lap 2: the same words re-ordered inside one clause still count ("the MDS Singapore Summit")', nameInAnswer('MDS Summit Singapore', 'Are you going to the MDS Singapore Summit this year?'), true);
+check('lap 2: the exact phrase counts', nameInAnswer('MDS Summit Singapore', 'MDS Summit Singapore ran Aug 23-26.'), true);
+check('lap 2: one word of a three-word name is not a naming', nameInAnswer('MDS Summit Singapore', 'This year is Singapore.'), false);
+
+const INSPIRE = '{"event_name":"MDS Inspire 2027","starts_at":"2027-03-23T01:00:00+00:00","start_display":"Mon Mar 22, 2027, 06:00 PM local time - upcoming","phase":"Registration Open","city":"Las Vegas","is_registered":false,"can_register":true,"reg_link":"https://app.mds.co/s/events/u/6999d19ee1e4872c9bef6ae8","guest_reg_link":null,"spots_left":null,"registered_count":44,"event_url":"https://app.mds.co/events/u/6999d19ee1e4872c9bef6ae8","fit_reason":"the room skews toward what you work on","room":{"niches":[{"niche":"Housewares","members":11}]}}';
+const CENTURION = '{"event_name":"MDS Centurion Summit California 2027","starts_at":"2027-06-02T23:00:00+00:00","start_display":"Wed Jun 02, 2027, 04:00 PM local time - upcoming","phase":"Registration Open","reg_link":"https://go.mdsonly.co/MDSCenturionSummitCalifornia2027","guest_reg_link":null,"event_url":"https://app.mds.co/events/u/6a3ad6dc099f1da75b3b8995","room":null}';
+const SG = '{"event":{"name":"MDS Summit Singapore","venue":"The Ritz-Carlton Hotel","maps_url":"https://www.google.com/maps/search/?api=1&query=1.29,103.85","event_url":"https://app.mds.co/events/u/689cfd00f1f12d7791cf9525","registration_url":"https://go.mdsonly.co/MDSSummitSingapore","starts_on":"Sun 23 Aug, 6:00 am Singapore time","ends_on":"Wed 26 Aug, 6:00 pm Singapore time","phase":"ended","is_over":true,"status_line":"The event has finished."},"day":"2026-09-08"}';
+const EVX = 'TOOL event_lookup:\n[' + INSPIRE + ',' + CENTURION + ']\n' + SG;
+const at = function (ev, url) { return ev.indexOf('"event_url":"' + url) >= 0 ? ev.indexOf('"event_url":"' + url) : ev.indexOf('"registration_url":"' + url); };
+const NOW = Date.parse('2026-09-08T01:00:00Z');
+check('lap 2: Inspire event_url is covered when the draft carries the row\'s reg_link (exec 137901)',
+  fieldRepairSkip(EVX, at(EVX, 'https://app.mds.co/events/u/6999d19ee1e4872c9bef6ae8'), '• *MDS Inspire 2027* — Las Vegas, Mon Mar 22 2027. Registration is open.\nhttps://app.mds.co/s/events/u/6999d19ee1e4872c9bef6ae8', NOW), 'linked');
+check('lap 2: Centurion event_url is covered by its go.mdsonly.co reg_link',
+  fieldRepairSkip(EVX, at(EVX, 'https://app.mds.co/events/u/6a3ad6dc099f1da75b3b8995'), '• *MDS Centurion Summit California 2027*\nhttps://go.mdsonly.co/MDSCenturionSummitCalifornia2027', NOW), 'linked');
+check('lap 2: an upcoming row with nothing of it linked is not skipped',
+  fieldRepairSkip(EVX, at(EVX, 'https://app.mds.co/events/u/6999d19ee1e4872c9bef6ae8'), '• *MDS Inspire 2027* — Las Vegas, Mon Mar 22 2027.', NOW), '');
+check('lap 2: a finished event never gets a Register line (is_over / phase ended)',
+  fieldRepairSkip(EVX, at(EVX, 'https://go.mdsonly.co/MDSSummitSingapore'), D2027, NOW), 'past');
+check('lap 2: a maps_url in the draft does not count as the row being linked',
+  fieldRepairSkip(EVX, at(EVX, 'https://app.mds.co/events/u/689cfd00f1f12d7791cf9525'), 'Venue: https://www.google.com/maps/search/?api=1&query=1.29,103.85', NOW), 'past');
+check('lap 2: an escaped-JSON evidence string (\\" quotes) is read the same way',
+  fieldRepairSkip(JSON.stringify(EVX), JSON.stringify(EVX).indexOf('\\"event_url\\":\\"https://app.mds.co/events/u/6999d19ee1e4872c9bef6ae8'), 'https://app.mds.co/s/events/u/6999d19ee1e4872c9bef6ae8', NOW), 'linked');
 
 console.log(pass + '/' + (pass + fail) + ' pass, ' + fail + ' fail');
 process.exit(fail ? 1 : 0);
