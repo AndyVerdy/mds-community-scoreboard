@@ -83,7 +83,16 @@ function extractEvidenceRows(messages) {
           if (vid) source_ids.add(vid[1]);
         }
         if (sid) source_ids.add(sid);
-        rows.push({ source: r.source || null, source_id: sid, url: url ? String(url) : null, text: JSON.stringify(r) });
+        // Fix round 4 (#169): a partner row classifies 'public' (the directory), but it embeds
+        // reviews_sample (MEMBER reviews) and strength_note/fit_reason (member-judgment text) that
+        // are not the partner's own public website. Only name/web_summary/web_people/web_pricing
+        // are actually world-public (crawled from the partner's own site) — restrict the backing
+        // text to those fields for a partner-shaped row; every other row keeps the full-row text.
+        const isPartnerRow = r.web_summary !== undefined || r.web_people !== undefined || r.partner_url !== undefined;
+        const text = isPartnerRow
+          ? JSON.stringify({ name: r.name, web_summary: r.web_summary, web_people: r.web_people, web_pricing: r.web_pricing })
+          : JSON.stringify(r);
+        rows.push({ source: r.source || null, source_id: sid, url: url ? String(url) : null, text });
       }
     }
   }

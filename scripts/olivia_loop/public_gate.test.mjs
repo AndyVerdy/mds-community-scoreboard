@@ -109,3 +109,40 @@ test('garbage falls back to one text row', () => {
   assert.deepEqual(ev.urls, []);
   assert.deepEqual(ev.source_ids, []);
 });
+
+// --- fix round 4 (#169): a partner row classifies 'public' (the directory), but it embeds
+// reviews_sample (MEMBER reviews) and strength_note/fit_reason (member-judgment text) that are not
+// the partner's own public website. Only name/web_summary/web_people/web_pricing are actually
+// world-public (crawled from the partner's own site) — those alone may back a name. ---
+
+test("a member named only in a partner's reviews_sample is NOT backed by that public partner row", () => {
+  const raw = JSON.stringify([
+    { name: 'Prosperlytics Consultants', partner_url: 'https://app.mds.co/partners/p1',
+      reviews_sample: [{ author: 'Jonathan Jewett', text: 'great' }] },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const classes = { 'https://app.mds.co/partners/p1': 'public' };
+  const backed = pg.backedNames(ev.rows, classes, names);
+  assert.ok(!backed.has('Jonathan Jewett'));
+});
+
+test('a founder named in web_people IS backed', () => {
+  const raw = JSON.stringify([
+    { name: 'Finaloop', partner_url: 'https://app.mds.co/partners/p2',
+      web_people: [{ name: 'Mudit Jain', role: 'Founder' }] },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const classes = { 'https://app.mds.co/partners/p2': 'public' };
+  const backed = pg.backedNames(ev.rows, classes, [{ name: 'Mudit Jain', kind: 'partner_staff' }]);
+  assert.ok(backed.has('Mudit Jain'));
+});
+
+test('a non-partner public row still backs a name found anywhere in it', () => {
+  const raw = JSON.stringify([
+    { source: 'event', public_page_url: 'https://www.mds.co/summit', body: 'Bryce Alderson speaks at the Summit' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const classes = { 'https://www.mds.co/summit': 'public' };
+  const backed = pg.backedNames(ev.rows, classes, names);
+  assert.ok(backed.has('Bryce Alderson'));
+});
