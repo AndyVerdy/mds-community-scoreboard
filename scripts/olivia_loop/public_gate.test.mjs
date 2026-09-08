@@ -1,3 +1,12 @@
+// Unit tests for the deterministic half of the Public Gate (#169). `node --test public_gate.test.mjs`
+// — the leak gate runs this same file, so a case pinned here is pinned on every ship.
+//
+// ORGANISATION ROWS ARE THE RPC'S JOB, NOT THE MODULE'S (#169 review I3). The module masks whatever
+// the name index hands it, by design — there is no NEVER_MASK list here and no test for one. The
+// organisation rows that used to turn "the MDS community" into "the a member" (MDS Community, MDS
+// Partners, MDS Programs, MDS Member, MDS Chapters, MDS Test, Systems MDS, Andy MDS) are excluded at
+// the source by digest.public_gate_name_index(): scripts/sql/20260908_public_gate_name_index_orgs_169.sql
+// (mirrored in db/functions/public_gate_name_index.sql). One guard, in one place, deliberately.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';

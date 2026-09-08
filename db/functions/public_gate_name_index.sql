@@ -12,5 +12,7 @@ AS $function$
     union all
     select display_name,    'speaker'     from digest.speakers          where display_name is not null and kind = 'member'
   ) x
-  where length(trim(n)) >= 5 and position(' ' in trim(n)) > 0;   -- two-word names only; single words over-match
+  where length(trim(n)) >= 5 and position(' ' in trim(n)) > 0   -- two-word names only; single words over-match
+    and trim(n) not ilike 'MDS %'    -- org rows: MDS Community / Partners / Programs / Member / Chapters / Test
+    and trim(n) not ilike '% MDS';   -- org rows: Systems MDS / Andy MDS
 $function$
