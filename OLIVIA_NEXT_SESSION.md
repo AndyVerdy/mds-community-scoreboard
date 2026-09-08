@@ -11,6 +11,31 @@
 
 # Olivia — next session
 
+## STATE 2026-09-08 (close) — #171 + #176 done: prod `15649d68` · web `50ff14b` live · open next: #177 · #170 · #172 · #173
+
+**What is live on the web (`mds-digest-web` main `50ff14b`).** Ask Millie (`/admin/ask-millie`, unchanged from
+#169) plus the Facebook Group tool's new Draft-an-answer modal on every unanswered post — calls the same Public
+door with the WHOLE post text (`GET /api/admin/fb-post-text`, since `snippet` caps at 240 of up to 669 chars),
+editable draft, Copy / Mark answered / Regenerate / Open in Ask Millie; "mark answered" now wired live to `POST
+/api/admin/fb-post` (optimistic + read-back).
+
+**What is live on the workflow (prod `12wj6h1TWqb0d4Dq` = versionId `15649d68`).** Public mode corrected to the
+member audience, not the open internet (Andy: "you do realise that Public means MDS members … the only
+restiriction for public mode is opt in sources"). OPEN = group posts/comments, partner + event pages,
+non-verification WhatsApp chats, recordings flagged public. RESTRICTED = the five verification-required chats
+(Centurion 20M+, Large SKU, Real Estate, Supplements, TikTok), restricted recordings, applications, anything
+unclassifiable. Spine: `digest.chats.verification_required` + `digest.videos_catalog.access_restriction`. A
+30-probe evaluation found and fixed 5 defects; name index 5,384 → 5,320; gate 331 → 345 GREEN. PR:
+https://github.com/AndyVerdy/mds-community-scoreboard/pull/2.
+
+**Open, per Andy's order:** #177 (Ask Millie's Public answer under-names against evidence the Facebook draft
+already names from the same evidence — filed, "lets file it") · #170 (thread memory) · #172 (Team chat) · #173
+(source trail + streaming).
+
+**Standing traps this session added (handbook §13):** a shared Postgres function is live on PROD the moment it
+is applied — no snapshot rides the promote, rollback is re-applying the old body · the `apply_169_*.py` scripts
+now require `--dry-run DIR` or `--apply`; a bare `--help` is inert (it used to be a live write against staging).
+
 ## ✅ SESSION CLOSED 2026-09-08 03:30Z (22:30 CT) — prod `49d4a931` · staging `027bd776` · lock free · next ticket #147
 **Live on prod tonight, two promotes:** `f5e9ce5d` (02:16Z) = #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144, then
 `49d4a931` (03:14Z) = + #169 fix round 4. Both gate-green, both snapshotted, both prod-probed. Rollback points:

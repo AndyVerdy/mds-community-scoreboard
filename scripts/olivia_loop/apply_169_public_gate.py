@@ -160,16 +160,24 @@ const index_incomplete = nameRows.length === 0 || (nameRows.length >= INDEX_CAP 
 const classes = {};
 // Most-RESTRICTIVE wins when one key comes back in several rows (Task 2 review): any 'closed' row closes the key.
 for (const r of classifyRows) { if (r && r.key) classes[r.key] = (classes[r.key] === 'closed' || String(r.klass) !== 'public') ? 'closed' : 'public'; }
-// Facebook content is not in content_items, so a Facebook URL gets NO classify row; rowClass() treats a missing
-// key as closed — the private group stays closed by default, never by luck.
+// Most-restrictive-wins still matters: a call transcript's own url IS the `app.mds.co/videos/<id>`
+// link of the recording it came from, so the library entry and the transcript chunk hand back the
+// SAME key from two branches of the classifier. Since the restriction-spine correction those two
+// branches AGREE (a transcript inherits its recording's access_restriction), so the collapse is no
+// longer what keeps a private call out — the spine is. It stays because it is the rule that holds
+// whatever future branch keys the same url: any 'closed' row closes the key.
+// (The old note here claimed "Facebook content is not in content_items, so a Facebook URL gets NO
+// classify row". Both halves were wrong: fb_post/fb_comment ARE content_items rows, all carrying urls,
+// and under #176 they classify OPEN — the group is the audience, not a source to hide. A url no
+// evidence row produced is still absent from the map, and rowClass() still treats absent as closed.)
 const ev = extractEvidenceRows(ap.messages);
 const backed = backedNames(ev.rows, classes, nameRows);
 // #169 review fix round 5 (I2): strip every closed-source link from the BODY before the name pass.
-// redact() masked names but never removed a link, so a member-only video link, a private
-// Facebook-group post or a WhatsApp invite that the draft carried was published verbatim (sources[]
-// already excluded them — fix round 3 — but the body did not). Same class map the names are judged
-// on; a url no evidence row produced is absent from it, and unknown = closed. redact() then parks
-// the surviving (world-public) urls so the name pass cannot rewrite a /speakers/anna-lee slug.
+// redact() masked names but never removed a link, so a WhatsApp invite or a restricted recording's
+// link that the draft carried was published verbatim (sources[] already excluded them, but the body
+// did not). Same class map the names are judged on; a url no evidence row produced is absent from it,
+// and unknown = closed. redact() then parks the surviving (member-open) urls so the name pass cannot
+// rewrite a /speakers/anna-lee slug. Under #176 a Facebook group link is one of the surviving ones.
 const lk = redactLinks(draft, classes);
 const red = redact(lk.text, nameRows, backed);
 const closedSources = [...new Set(ev.rows.filter(r => rowClass(r, classes) === 'closed').map(r => r.source || 'text'))];
@@ -178,7 +186,30 @@ return [{ json: { draft, text: red.text, removed: red.removed, removed_links: lk
 """
 
 PUBLIC_SMOOTH_BODY = ("={{ JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 900, thinking: { type: 'disabled' }, "
-  "system: 'You edit a DRAFT for publication outside a private community. Some personal names were already replaced by role phrases (a member, a seller in the community, one of the speakers). "
+  # #176: the audience is the MDS membership (a public answer gets posted in the members-only group),
+  # NOT the open internet — the old "outside a private community" framing pushed Haiku to strip and
+  # generalise material the readers can already see for themselves. What it must still protect is
+  # exact detail from a restricted room, which the CLOSED SOURCES notes below already say.
+  # #176 D1 (staging exec 138951): the old prompt said only that SOME names had already been replaced,
+  # and Haiku finished the job — a draft naming Betsy Johnson, Fabio HD, Greg Krakovskiy and Antonio
+  # Bindi off open group threads published as "one community member ... another member ... another
+  # seller". Every name still in the draft has already been vouched for by an open row; the smoother
+  # is told in as many words to keep it. `Public Verify` does not rely on the prompt: it discards the
+  # smoother's rewrite outright if a backed name went missing in it.
+  # #176 D5 (staging exec 139221, and Andy: "You can post such a huge chunk of text w/o any breaks,
+  # w/o any links"): the smoother's job is a MINIMAL edit, and the draft's shape is part of what it
+  # must not touch. It used to be told only to "keep the meaning", which left the layout up for
+  # grabs. PRESERVING IS THE DEFAULT, changing shape is the exception — said first, said explicitly,
+  # and backed deterministically by `repairShape` in Public Verify, which puts an inline-run bullet
+  # list back onto its own lines and restores a link the rewrite dropped (or discards the rewrite).
+  "system: 'You edit a DRAFT for publication to the MDS member community — the readers are MDS members, not the general public. Some personal names were already replaced by role phrases (a member, a seller in the community, one of the speakers). "
+  # No apostrophe anywhere in this system string on purpose: it is a single-quoted JS string inside
+  # an n8n `={{ }}` expression, so a bare "draft's" would close it (the rest of the prompt has always
+  # avoided them for the same reason, using escaped double quotes where it needs a quotation mark).
+  "PRESERVE THE STRUCTURE OF THE DRAFT VERBATIM. Reproduce every line break and blank line exactly where the draft has one; keep each bullet on its own line, starting with the same marker — never join bullets into a running sentence or a single paragraph. "
+  "Keep every link inline exactly where the draft puts it, next to the claim it supports — never move links to the end, never gather them into a list, never drop one. Keep every quotation verbatim, with the name it is attributed to. "
+  "Changing the shape is the exception, not the default: alter only what these rules require. "
+  "Every personal name STILL in the draft is one the sources allow us to print: keep every one of them, spelled exactly as in the draft. Never replace a name with \"a member\" or any other description, and never drop one. "
   "Rules: never add a fact, a name, a number or a link that is not in the draft; fix grammar broken by the replacements; keep every URL exactly; "
   "a \"[link removed]\" marker is deliberate — leave it exactly as it is, and never invent a URL in its place; keep the meaning. "
   "Then write NOTES: one short line per source class listed under CLOSED SOURCES, in plain words, e.g. \"From a closed WhatsApp chat, paraphrased, no names.\" or \"From a call recording, paraphrased.\" — and one line per public URL under PUBLIC SOURCES, e.g. \"Public: MDS Summit schedule page.\". "
@@ -186,8 +217,16 @@ PUBLIC_SMOOTH_BODY = ("={{ JSON.stringify({ model: 'claude-haiku-4-5-20251001', 
   "messages: [{ role: 'user', content: 'DRAFT:\\n' + $json.text + '\\n\\nCLOSED SOURCES: ' + JSON.stringify($json.closed_sources) + '\\nPUBLIC SOURCES: ' + JSON.stringify($json.public_urls) }] }) }}")
 
 PUBLIC_VERIFY = MOD + r"""
-// PUBLIC VERIFY (#169) — deterministic re-check after the smoother. Any unbacked name still present fails
-// the turn CLOSED: the reader gets the refusal text and the notes, never the unredacted answer.
+// PUBLIC VERIFY (#169, rewritten #176 D2) — deterministic re-check after the smoother. What the
+// smoother leaves behind is REPAIRED, not fatal: a closed-room name still in the draft is masked with
+// the same role-phrase pass, a closed or invented link is stripped, and the ANSWER IS KEPT. The
+// 2026-09-08 eval caught q6 and q1 refusing outright ("Refused: a closed-source name or an unknown
+// link survived the public pass") while their own notes listed five open group/partner sources — and
+// a refusal fails the bar on its face (Andy: "still answers, but no details and all the info from
+// public sources"). The invariant is unchanged: a closed-room name or link may NEVER reach the
+// published text, which is why the repair re-checks itself and the turn is still refused when a
+// SECOND pass finds a leak, when the repair leaves nothing worth publishing, or when the name index
+// could not be vouched for at all. Each of those three says which one it is.
 const red = $('Public Redact').first().json;
 const resp = $input.first().json;
 let out = null;
@@ -195,38 +234,107 @@ try { const t = (resp.content || []).filter(c => c.type === 'text').map(c => c.t
 const smoothed = out && typeof out.text === 'string' && out.text.trim() ? out.text : red.text;
 const notes = out && Array.isArray(out.notes) ? out.notes.map(String) : [];
 const names = (red.names || []).map(n => ({ name: n }));
-const left = leftoverNames(smoothed, names, new Set(red.backed || []));
-// the smoother may not add links: every URL in the output must have been in the redacted draft
-const urlsIn = (red.text.match(/https?:\/\/\S+/g) || []);
-const urlsOut = (smoothed.match(/https?:\/\/\S+/g) || []);
-const newUrl = urlsOut.find(u => !urlsIn.includes(u));
-// ...and it may not put a closed-source link back either (#169 review fix round 5, I2). Public Redact
-// removed every non-public url from the body; if one is in the smoother's output, either it survived
-// or Haiku reconstructed it. Same class map, unknown = closed, so a url nothing classified fails too.
-const leftLinks = closedUrls(smoothed, red.classes || {});
+const backed = new Set(red.backed || []);
+const classes = red.classes || {};
+// The urls the smoother was HANDED. Anything else in its output it invented, and an invented url is
+// never publishable however the classifier classes it (#169 review I2, kept and made repairable).
+const draftUrls = extractUrls(red.text || '');
+
+let text = smoothed;
+// THE SMOOTHER MAY NOT DELETE A NAME EITHER (#176 D1, staging exec 138951). Public Redact left
+// Betsy Johnson, Fabio HD, Greg Krakovskiy and Antonio Bindi in the draft — every one of them backed
+// by an open group thread — and Haiku published "one community member ... another member ... another
+// seller". A name an open source entitles us to print is the whole point of the corrected Public
+// mode, so the polish pass does not get to remove one: if any backed name that WAS in the redacted
+// draft is missing from the rewrite, the rewrite is discarded and the redacted draft is published as
+// it stands. Deterministic — the prompt asks for the same thing, this does not depend on it.
+const hasName = (n, s) => boundedRe(escapeRe(normName(n)), 'i').test(String(s || ''));
+const droppedNames = (red.backed || []).filter(n => hasName(n, red.text) && !hasName(n, text));
+if (droppedNames.length > 0) text = red.text;
+// ...AND IT MAY NOT FLATTEN THE ANSWER OR LOSE ITS LINKS (#176 D5, staging exec 139221). Same idea,
+// one step further: the draft now reaches the smoother with its paragraph breaks, its one-bullet-
+// per-line list and its inline links intact (normText no longer collapses newlines), the prompt is
+// told to preserve all three, and this is the deterministic backstop. An inline-run bullet list goes
+// back onto its own lines, three-or-more breaks collapse to a paragraph break, and a link the draft
+// carried but the rewrite dropped is put back on the sentence it belonged to. Only urls that were in
+// the redacted draft can be restored — redactLinks() already judged every one of them open against
+// the class map — so this cannot publish a closed link, and the leak checks below re-read the result
+// either way. If a dropped link cannot be placed honestly, the REWRITE is discarded in favour of the
+// redacted draft, which is already gate-clean and now correctly shaped.
+const shaped = repairShape(red.text, text);
+const shapeRejected = !shaped.ok;
+text = shapeRejected ? shapeText(red.text) : shaped.text;
+const restoredLinks = shapeRejected ? [] : shaped.restored_links;
+let left = leftoverNames(text, names, backed);
+let leftLinks = closedUrls(text, classes);
+let newUrls = extractUrls(text).filter(u => draftUrls.indexOf(u) < 0);
+const repairs = [];
+let repaired_names = [], repaired_links = [];
+if (left.length > 0 || leftLinks.length > 0 || newUrls.length > 0) {
+  const rep = repairPublic(text, names, backed, classes, draftUrls);
+  text = rep.text;
+  left = rep.leftover;                 /* the SECOND pass, over the repaired text */
+  leftLinks = rep.leftover_links;
+  newUrls = extractUrls(text).filter(u => draftUrls.indexOf(u) < 0);
+  repaired_names = rep.removed_names;
+  repaired_links = rep.removed_links;
+  for (const n of repaired_names) repairs.push({ kind: 'name', detail: n, replaced_with: 'a role phrase' });
+  for (const l of repaired_links) repairs.push(l);
+}
+const repaired = repaired_names.length > 0 || repaired_links.length > 0;
+// "Nothing left to say" is deliberately a LOW bar (about four words of real content): a false refusal
+// is the defect this rewrite exists to remove, and a stubby answer leaks nothing.
+const nothing_left = repairedSubstance(text).length < 25;
+const leaked = left.length > 0 || leftLinks.length > 0 || newUrls.length > 0;
 // Fail-closed guard (#169 review fix round 1): red.index_incomplete (set by Public Redact) means the
 // name-index fetch was empty or landed exactly on its pagination cap — we cannot vouch that ANY name
-// is absent from it, so refuse regardless of what leftoverNames() happened to find in this draft.
-const refused = left.length > 0 || !!newUrl || leftLinks.length > 0 || red.index_incomplete === true;
-const text = refused
-  ? 'I could not produce a public-safe version of this answer. The sources it rests on are closed, and a name or link from them would have leaked. Ask me the same thing in Test mode to read it internally.'
-  : smoothed;
-// Design pack (Ask Millie.dc.html, 2026-09-07): every public answer carries a GATED strip — "2 names masked ·
-// 1 link removed · 1 quote paraphrased" — that opens a per-redaction list. Structured here, rendered by the page.
-// The link rows are now the ones Public Redact DELETED on purpose (#169 review fix round 5, I2) —
-// {kind:'link', detail: host+path, replaced_with:'[link removed]'} — not, as before, whichever urls
-// Haiku happened to drop between the draft and its own output, which counted nothing the gate did.
-const redactions = (red.removed || []).map(n => ({ kind: 'name', detail: n, replaced_with: 'a role phrase' }))
-  .concat(red.removed_links || [])
-  .concat((red.closed_sources || []).map(s => ({ kind: 'quote', detail: s, replaced_with: 'paraphrased, no names' })));
-// index_incomplete is called out as its own, more specific note — a bad index is a different failure
-// than a name/link that slipped through the smoother — the other two reasons keep the original note.
+// is absent from it, so no repair is trustworthy either and the turn is refused outright.
+const refused = leaked || nothing_left || red.index_incomplete === true;
 const refusalNote = red.index_incomplete === true
   ? 'Refused: the member name index was incomplete, so no name could be vouched for.'
-  : 'Refused: a closed-source name or an unknown link survived the public pass.';
-return [{ json: { text, notes: refused ? notes.concat([refusalNote]) : notes,
-                  sources: red.public_urls || [], evidence_classes: red.classes || {}, refused, removed: red.removed || [], leftover: left,
-                  leftover_links: leftLinks, redactions } }];
+  : (leaked ? 'Refused: a closed-source name or link was still there after the repair pass.'
+            : 'Refused: everything this answer rested on came from a closed room, so nothing was left to publish.');
+if (refused) {
+  text = red.index_incomplete === true
+    ? 'I could not check this answer against the member directory just now, so I am not posting it. Ask me the same thing in Test mode to read it internally.'
+    : (leaked
+       ? 'I could not produce a public-safe version of this answer: even after masking, a name or a link from a closed room was still in it. Ask me the same thing in Test mode to read it internally.'
+       : 'Everything I have on this came out of restricted rooms — a verification-only chat or a restricted recording — so there is nothing I can say about it publicly without repeating detail that is not open to every member. Ask me the same thing in Test mode to read it internally.');
+}
+// Design pack (Ask Millie.dc.html, 2026-09-07): every public answer carries a GATED strip — "2 names masked ·
+// 1 link removed · 1 quote paraphrased" — that opens a per-redaction list. Structured here, rendered by the page.
+// The link rows are the ones Public Redact DELETED on purpose (#169 review fix round 5, I2) —
+// {kind:'link', detail: host+path, replaced_with:'[link removed]'} — plus whatever the repair pass had
+// to take out afterwards, so the strip counts every redaction the gate actually made.
+const redactions = (red.removed || []).map(n => ({ kind: 'name', detail: n, replaced_with: 'a role phrase' }))
+  .concat(red.removed_links || [])
+  .concat(repairs)
+  .concat((red.closed_sources || []).map(s => ({ kind: 'quote', detail: s, replaced_with: 'paraphrased, no names' })));
+const repairNote = 'Repaired after the public pass: '
+  + [repaired_names.length ? repaired_names.length + ' name' + (repaired_names.length > 1 ? 's' : '') + ' masked' : null,
+     repaired_links.length ? repaired_links.length + ' link' + (repaired_links.length > 1 ? 's' : '') + ' removed' : null]
+    .filter(Boolean).join(', ') + '.';
+const droppedNote = 'Kept the drafted wording: the polish pass had dropped ' + droppedNames.length
+  + ' member name' + (droppedNames.length > 1 ? 's' : '') + ' an open group source lets us print.';
+// #176 D5: the reader is told when the shape backstop had to act, the same way they are told about a
+// dropped name — a link put back, or the whole rewrite dropped because one could not be placed.
+const shapeNote = 'Kept the drafted wording: the polish pass had dropped ' + shaped.missing_links.length
+  + ' source link' + (shaped.missing_links.length > 1 ? 's' : '') + ' that belongs with the claim it backs.';
+const restoreNote = 'Put ' + restoredLinks.length + ' source link' + (restoredLinks.length > 1 ? 's' : '')
+  + ' back where the polish pass had dropped them.';
+const allNotes = notes
+  .concat(droppedNames.length > 0 && !refused ? [droppedNote] : [])
+  .concat(shapeRejected && !refused ? [shapeNote] : [])
+  .concat(restoredLinks.length > 0 && !refused ? [restoreNote] : [])
+  .concat(repaired && !refused ? [repairNote] : [])
+  .concat(refused ? [refusalNote] : []);
+const removed = (red.removed || []).slice();
+for (const n of repaired_names) if (removed.indexOf(n) < 0) removed.push(n);
+return [{ json: { text, notes: allNotes,
+                  sources: red.public_urls || [], evidence_classes: classes, refused, repaired, removed, leftover: left,
+                  leftover_links: leftLinks, redactions,
+                  /* #176 D5: what the shape backstop did, so a probe can read it off the execution */
+                  shape: { rejected: shapeRejected, restored_links: restoredLinks, missing_links: shaped.missing_links } } }];
 """
 
 MOD_ONE_LINE = " ".join(l.strip() for l in MOD.splitlines() if l.strip() and not l.strip().startswith("//"))

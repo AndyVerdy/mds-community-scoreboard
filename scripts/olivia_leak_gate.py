@@ -1916,6 +1916,172 @@ def main():
     _t = subprocess.run(["node", "--test", os.path.join(os.path.dirname(__file__), "olivia_loop", "public_gate.test.mjs")], capture_output=True, text=True)
     check("public_gate.js unit tests pass (redaction + leftover-name fail-closed)", _t.returncode == 0, _t.stderr[-300:])
 
+    # 7. #176: the LIVE classifier encodes the corrected definition of Public mode. Andy, 2026-09-08:
+    #    "public means all members, but not people outside the MDS; restricted means this content is
+    #    restricted to some members. Facebook is open source; it's public by definition. The only
+    #    restricted sources are some WA chats (you should know it) and some videos (we have the spine
+    #    with restriction rules)."
+    #
+    #    Two earlier readings were wrong and both are pinned against here. #169 fix round 3 read
+    #    "public" as WORLD-public and classified EVERY content_items row closed, the Facebook group
+    #    included. The first #176 pass fixed the audience but kept a SOURCE-TYPE allowlist, so it
+    #    closed all 18,363 WhatsApp rows and all 13,507 transcript rows wholesale — twelve open chats
+    #    and 8,022 chunks of member-openable recordings with them. The line is per ROW, off the
+    #    restriction spine the database already carries:
+    #        digest.chats.verification_required           WhatsApp, per chat
+    #        digest.videos_catalog.access_restriction     videos, and the transcripts cut from them
+    #    Every probe below is data-driven off that spine — no chat name and no video id is hardcoded,
+    #    so the checks keep meaning the same thing when the spine changes.
+    #
+    #    THE OPEN-SIDE CHECKS ARE RED UNTIL
+    #    scripts/sql/20260908_public_gate_classify_restriction_spine_176.sql IS APPLIED, deliberately:
+    #    the SQL and the embedded module must move together. A graph carrying the #176 module against
+    #    an older classifier over-masks every open-row-backed name; the reverse publishes one. The
+    #    fail-closed spirit of the section is unchanged — the restricted-side and unknown-source
+    #    checks are still the ones proving a name or link only SOME members may see can never reach a
+    #    published answer, and they must be green in BOTH directions of that migration.
+    _st, _fb = curl("GET", f"{BASE}/content_items?select=url&source=eq.fb_post&url=not.is.null&limit=1",
+                    key, profile_hdr=["Accept-Profile: digest"])
+    _fb_url = _fb[0]["url"] if _st == 200 and _fb else None
+    _st, _app = curl("GET", f"{BASE}/content_items?select=source_id&source=eq.application&limit=1",
+                     key, profile_hdr=["Accept-Profile: digest"])
+    _app_sid = _app[0]["source_id"] if _st == 200 and _app else None
+    # WhatsApp: read the spine, then find one message on each side of it.
+    _st, _chats = curl("GET", f"{BASE}/chats?select=chat_name,verification_required", key,
+                       profile_hdr=["Accept-Profile: digest"])
+    _chat_flag = {c["chat_name"]: c.get("verification_required") for c in (_chats or [])} if _st == 200 else {}
+    _st, _wa = curl("GET", f"{BASE}/content_items?select=source_id,access_rule&source=eq.wa_message&limit=1000",
+                    key, profile_hdr=["Accept-Profile: digest"])
+    _wa_open_sid = _wa_gated_sid = None
+    for _r in (_wa if _st == 200 and isinstance(_wa, list) else []):
+        _flag = _chat_flag.get(((_r.get("access_rule") or {}).get("chat")))
+        if _flag is False and not _wa_open_sid:
+            _wa_open_sid = _r["source_id"]
+        if _flag is True and not _wa_gated_sid:
+            _wa_gated_sid = _r["source_id"]
+    # Videos and their transcripts: same idea, off videos_catalog.access_restriction.
+    _st, _vids = curl("GET", f"{BASE}/videos_catalog?select=video_id,access_restriction&limit=1000",
+                      key, profile_hdr=["Accept-Profile: digest"])
+    _vmap = {v["video_id"]: v.get("access_restriction") for v in (_vids or [])} if _st == 200 else {}
+    _vid_pub = next((v for v, r in _vmap.items() if r == "public"), None)
+    _vid_res = next((v for v, r in _vmap.items() if r == "restricted"), None)
+    _st, _tr = curl("GET", f"{BASE}/content_items?select=url,source_id&source=eq.call_transcript&limit=1000",
+                    key, profile_hdr=["Accept-Profile: digest"])
+    _tr_pub = _tr_res = None
+    for _r in (_tr if _st == 200 and isinstance(_tr, list) else []):
+        _m = re.search(r"app\.mds\.co/videos/([0-9a-f]{24})", _r.get("url") or "")
+        if not _m:
+            continue
+        _k = _vmap.get(_m.group(1))
+        if _k == "public" and not _tr_pub:
+            _tr_pub = _r
+        if _k == "restricted" and not _tr_res:
+            _tr_res = _r
+    _VID_URL = "https://app.mds.co/videos/%s"
+    _probe = {"fb_post_url": _fb_url, "wa_open_sid": _wa_open_sid, "wa_gated_sid": _wa_gated_sid,
+              "video_public_id": _vid_pub, "video_restricted_id": _vid_res,
+              "transcript_public_url": (_tr_pub or {}).get("url"),
+              "transcript_restricted_url": (_tr_res or {}).get("url"), "application_sid": _app_sid}
+    check("gate found a live row on BOTH sides of the restriction spine (fb, open + gated chat, "
+          "public + restricted recording, a transcript of each, an application)",
+          all(_probe.values()), f"probe {_probe}")
+    _UNKNOWN_URL = "https://example.invalid/no-evidence-row-ever-produced-this"
+    _cst, _cls = rpc("public_gate_classify",
+                     {"p_urls": [_u for _u in (_fb_url, _VID_URL % _vid_pub if _vid_pub else None,
+                                               _VID_URL % _vid_res if _vid_res else None,
+                                               (_tr_pub or {}).get("url"), (_tr_res or {}).get("url"),
+                                               _UNKNOWN_URL) if _u],
+                      "p_source_ids": [_s for _s in (_wa_open_sid, _wa_gated_sid, _vid_pub, _vid_res,
+                                                     (_tr_pub or {}).get("source_id"),
+                                                     (_tr_res or {}).get("source_id"), _app_sid) if _s]}, key)
+    # Collapse duplicate keys most-restrictively — byte-for-byte the rule `Public Redact` applies, so
+    # this asserts what the gate NODE will actually see, not just what the RPC happened to emit. A
+    # transcript's own url IS its recording's app.mds.co/videos/<id> link, so two branches key it.
+    _map, _src = {}, {}
+    for _r in (_cls if isinstance(_cls, list) else []):
+        _k = (_r or {}).get("key")
+        if not _k:
+            continue
+        _map[_k] = "closed" if (_map.get(_k) == "closed" or _r.get("klass") != "public") else "public"
+        _src.setdefault(_k, set()).add(str(_r.get("source")))
+
+    def _cls_of(k):
+        return _map.get(k) if k else None
+
+    _APPLY = ("apply scripts/sql/20260908_public_gate_classify_restriction_spine_176.sql, "
+              "then re-run apply_169_public_gate.py")
+    check("#176 classify: a Facebook group post is OPEN — Facebook is open source, public by definition",
+          _cst == 200 and _cls_of(_fb_url) == "public", f"status {_cst}, class {_cls_of(_fb_url)!r} — {_APPLY}")
+    # ---- the two WhatsApp sides. An open-chat name must be printable; a gated one must not.
+    check("#176 classify: a WhatsApp message from a chat that is NOT verification_required is OPEN "
+          "(its names may be printed)",
+          _cst == 200 and _cls_of(_wa_open_sid) == "public",
+          f"status {_cst}, class {_cls_of(_wa_open_sid)!r}, source {sorted(_src.get(_wa_open_sid, []))} — {_APPLY}")
+    check("#176 classify: a WhatsApp message from a verification_required chat stays CLOSED "
+          "(its names are masked)",
+          _cst == 200 and _cls_of(_wa_gated_sid) == "closed",
+          f"status {_cst}, class {_cls_of(_wa_gated_sid)!r}, source {sorted(_src.get(_wa_gated_sid, []))}")
+    # ---- the two recording sides, by id AND by the app link an answer would actually print.
+    check("#176 classify: a recording whose access_restriction is 'public' is OPEN, by id and by link "
+          "(its link survives the link pass)",
+          _cst == 200 and _cls_of(_vid_pub) == "public" and _cls_of(_VID_URL % _vid_pub if _vid_pub else None) == "public",
+          f"status {_cst}, id {_cls_of(_vid_pub)!r}, url {_cls_of(_VID_URL % _vid_pub if _vid_pub else None)!r} — {_APPLY}")
+    check("#176 classify: a 'restricted' recording stays CLOSED, by id and by link (its link is stripped)",
+          _cst == 200 and _cls_of(_vid_res) == "closed" and _cls_of(_VID_URL % _vid_res if _vid_res else None) == "closed",
+          f"status {_cst}, id {_cls_of(_vid_res)!r}, url {_cls_of(_VID_URL % _vid_res if _vid_res else None)!r}")
+    # ---- a transcript inherits the recording it was cut from, both ways.
+    check("#176 classify: a transcript of a PUBLIC recording is OPEN — it inherits its recording",
+          _cst == 200 and _cls_of((_tr_pub or {}).get("url")) == "public"
+          and _cls_of((_tr_pub or {}).get("source_id")) == "public",
+          f"status {_cst}, url {_cls_of((_tr_pub or {}).get('url'))!r}, "
+          f"sid {_cls_of((_tr_pub or {}).get('source_id'))!r} — {_APPLY}")
+    check("#176 classify: a transcript of a RESTRICTED recording stays CLOSED, by chunk id and by its "
+          "recording's own link",
+          _cst == 200 and _cls_of((_tr_res or {}).get("url")) == "closed"
+          and _cls_of((_tr_res or {}).get("source_id")) == "closed",
+          f"status {_cst}, url {_cls_of((_tr_res or {}).get('url'))!r}, "
+          f"sid {_cls_of((_tr_res or {}).get('source_id'))!r}")
+    check("#176 classify: a member's application stays CLOSED (nobody else's submission to read)",
+          _cst == 200 and _cls_of(_app_sid) == "closed", f"status {_cst}, class {_cls_of(_app_sid)!r}")
+    check("#176 classify: a url no source produced is never returned public (unknown = closed)",
+          _map.get(_UNKNOWN_URL) is None, f"class {_map.get(_UNKNOWN_URL)!r}")
+    # The `source` column is the classifier's own account of WHY a key landed where it did. Asserting
+    # on it stops a body that happens to return the right classes for the wrong reason.
+    _want_src = {_wa_open_sid: "wa:open", _wa_gated_sid: "wa:verified",
+                 _vid_pub: "video:public", _vid_res: "video:restricted",
+                 (_tr_pub or {}).get("source_id"): "transcript:public",
+                 (_tr_res or {}).get("source_id"): "transcript:restricted"}
+    _src_bad = {k: sorted(_src.get(k, [])) for k, want in _want_src.items() if k and want not in _src.get(k, set())}
+    check("#176 classify: the `source` column names the reason a key landed where it did "
+          "(wa:open / wa:verified / video:public / video:restricted / transcript:*)",
+          _cst == 200 and not _src_bad, f"mismatched {_src_bad} — {_APPLY}")
+    # 8. #176: the name index carries PEOPLE, not placeholders. A junk row's first token is masked on
+    #    its own by the first-name pass, so "first last" published "you're not the they to get one of
+    #    these letters" and "Your Mom Strueby" published "Great question, they".
+    #    scripts/sql/20260908_public_gate_name_index_junk_176.sql excludes them by predicate.
+    #    PostgREST caps a response at 1000 rows whatever `limit` says, so the index is PAGED here the
+    #    way the n8n node pages it — scanning one page would let a junk row hide on page 4.
+    _idx_names, _idx_ok, _page = [], True, 0
+    while _page < 12:
+        _st, _rows = curl("POST", f"{BASE}/rpc/public_gate_name_index?limit=1000&offset={len(_idx_names)}",
+                          key, body={}, profile_hdr=["Content-Profile: digest", "X-Olivia-Audit: leak-gate"])
+        if _st != 200 or not isinstance(_rows, list):
+            _idx_ok = False
+            break
+        _idx_names += [str((r or {}).get("name") or "") for r in _rows]
+        _page += 1
+        if len(_rows) < 1000:
+            break
+    check("#176 name index: it still returns a real corpus of member names",
+          _idx_ok and len(_idx_names) > 4000, f"ok {_idx_ok}, {len(_idx_names)} rows over {_page} page(s)")
+    _junk = [n for n in _idx_names
+             if re.search(r"[0-9]", n) or "@" in n
+             or re.search(r"(^|[^a-z])test(ing)?([^a-z]|$)", n.lower())
+             or n.strip().split(" ")[0].lower() in ("first", "your", "the", "you", "to", "any", "test")]
+    check("#176 name index: no placeholder row is left to mask an ordinary word "
+          "(a digit, an '@', a 'test' token, or a function-word first name)",
+          _idx_ok and not _junk, f"{len(_junk)} still there, e.g. {_junk[:6]}")
+
     print()
     if failures:
         print(f"GATE FAILED — {len(failures)} failure(s): {failures}")

@@ -5,38 +5,98 @@ CREATE OR REPLACE FUNCTION digest.public_gate_classify(p_urls text[], p_source_i
  STABLE SECURITY DEFINER
  SET search_path TO 'digest', 'pg_temp'
 AS $function$
-  -- content rows: ALWAYS closed for Public mode (fb_post/fb_comment = the private Facebook group;
-  -- call_transcript = a member-only recording). Keep returning them — by url, then by source_id —
-  -- so the key comes back known-closed rather than absent; rowClass() would default an absent key
-  -- to closed too, but an explicit row keeps the classification legible and auditable.
-  select c.url as key, 'closed', 'content:' || c.source
-  from digest.content_items c where c.url = any(coalesce(p_urls, '{}'))
+  with content_hits as (
+    -- two index-friendly scans rather than one `url = any(...) or source_id = any(...)`, which
+    -- would lose both indexes. The row's OWN url travels with it so a transcript matched by
+    -- source_id still finds its recording.
+    select c.url as k, c.source, c.access_rule, c.sensitivity, c.url as row_url
+      from digest.content_items c where c.url = any(coalesce(p_urls, '{}'))
+    union all
+    select c.source_id, c.source, c.access_rule, c.sensitivity, c.url
+      from digest.content_items c where c.source_id = any(coalesce(p_source_ids, '{}'))
+  ),
+  content_class as (
+    select h.k,
+           case
+             -- FACEBOOK. The group is this answer's audience and the group is open source.
+             when h.source in ('fb_post', 'fb_comment')
+                  and h.access_rule->>'type' = 'public'
+                  and coalesce(h.sensitivity, 'normal') = 'normal'
+               then 'public'
+             -- WHATSAPP. Open unless the chat itself is gated. `= false` so NULL (unknown) closes.
+             when h.source in ('wa_message', 'wa_digest')
+                  and ch.verification_required = false
+                  and coalesce(h.sensitivity, 'normal') = 'normal'
+               then 'public'
+             -- CALL TRANSCRIPT. Inherits the recording it was cut from; no recording = closed.
+             when h.source = 'call_transcript'
+                  and v.access_restriction = 'public'
+                  and coalesce(h.sensitivity, 'normal') = 'normal'
+               then 'public'
+             -- applications, and anything new that lands in this table: closed.
+             else 'closed'
+           end as klass,
+           case
+             when h.source in ('wa_message', 'wa_digest')
+               then 'wa:' || case when ch.chat_name is null then 'unknown-chat'
+                                  when ch.verification_required is null then 'unknown'
+                                  when ch.verification_required then 'verified'
+                                  else 'open' end
+             when h.source = 'call_transcript'
+               then 'transcript:' || coalesce(v.access_restriction, 'unknown')
+             else 'content:' || h.source
+           end as src
+      from content_hits h
+      left join digest.chats ch on ch.chat_name = h.access_rule->>'chat'
+      left join digest.videos_catalog v
+             on v.video_id::text = substring(h.row_url from 'app\.mds\.co/videos/([0-9a-f]{24})')
+  )
+  select k, klass, src from content_class
   union all
-  select c.source_id, 'closed', 'content:' || c.source
-  from digest.content_items c where c.source_id = any(coalesce(p_source_ids, '{}'))
-  union all
-  -- partners: the directory is a public website
+  -- partners: a published listing and its page are open to every member. All 509 published rows
+  -- carry access_restriction 'public' and access_detail NULL (verified 2026-09-08), so the guard
+  -- costs nothing today and closes the row the day one of them is restricted.
   -- #169 (verified 2026-09-07): partners_catalog has no partner_url column (only logo_url, an image).
   -- partner_lookup_v2 / partner_lookup both derive their `partner_url` output via
   -- digest.member_partner_url(partner_id), so we build the same key here rather than inventing a column.
   select digest.member_partner_url(p.partner_id), 'public', 'partner' from digest.partners_catalog p
-  where p.status = 'published' and digest.member_partner_url(p.partner_id) = any(coalesce(p_urls, '{}'))
+  where p.status = 'published' and p.access_restriction = 'public'
+    and digest.member_partner_url(p.partner_id) = any(coalesce(p_urls, '{}'))
   union all
-  -- events, by public page url: a public event page IS world-public.
+  -- events, by public page url. events_catalog carries no restriction column of any kind: an event
+  -- and its page are open to every member.
   select e.public_page_url, 'public', 'event'
   from digest.events_catalog e
   where e.public_page_url = any(coalesce(p_urls, '{}'))
   union all
-  -- events, by app url: the SAME event, keyed by the other column — this is the branch event_lookup*
-  -- output actually lands on (fix round 2, #169). The app_url is a members'-app link, not a
-  -- world-public one, so it is ALWAYS closed here regardless of public_page_url/app_is_public —
-  -- an app flag is not world-public (fix round 3).
-  select e.app_url, 'closed', 'event'
+  -- events, by app url: the SAME event keyed by the other column — this is the branch event_lookup*
+  -- output actually lands on (#169 fix round 2, kept).
+  select e.app_url, 'public', 'event'
   from digest.events_catalog e
   where e.app_url = any(coalesce(p_urls, '{}'))
   union all
-  -- videos: ALWAYS closed for Public mode. access_restriction gates visibility INSIDE the members'
-  -- app (app.mds.co/videos/<id>); it says nothing about whether the WORLD can see it (fix round 3).
-  select v.video_id::text, 'closed', 'video'
-  from digest.videos_catalog v where v.video_id::text = any(coalesce(p_source_ids, '{}'));
+  -- videos, by id: the library entry itself, straight off the spine.
+  select v.video_id::text,
+         case when v.access_restriction = 'public' then 'public' else 'closed' end,
+         'video:' || coalesce(v.access_restriction, 'unknown')
+  from digest.videos_catalog v where v.video_id::text = any(coalesce(p_source_ids, '{}'))
+  union all
+  -- videos, by app link: the SAME library entry keyed by the url an answer would actually print, so
+  -- an open library link survives the module's link pass instead of being stripped as unclassified.
+  -- The id is pulled out of the url with the same shape public_gate.js's VIDEO_LINK_RE matches, so
+  -- a trailing slash or a query string cannot hide it.
+  --
+  -- The old body called this branch a "DELIBERATE COLLISION that fails closed": a transcript's own
+  -- url is this same link, so the content arm said 'closed' and this arm said 'public', and `Public
+  -- Redact` collapsed the key to 'closed'. The collision is still here and still collapses the same
+  -- way, but the two arms now AGREE — both read the same videos_catalog row — so a public
+  -- recording's link survives and a restricted one's does not, whether the turn cites the library
+  -- entry, a transcript chunk, or both.
+  select u.url,
+         case when v.access_restriction = 'public' then 'public' else 'closed' end,
+         'video:' || coalesce(v.access_restriction, 'unknown')
+  from (select t.url, substring(t.url from 'app\.mds\.co/videos/([0-9a-f]{24})') as vid
+        from unnest(coalesce(p_urls, '{}')) as t(url)) u
+  join digest.videos_catalog v on v.video_id::text = u.vid
+  where u.vid is not null;
 $function$

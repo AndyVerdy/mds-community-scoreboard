@@ -15,10 +15,16 @@ const require = createRequire(import.meta.url);
 const pg = require('./public_gate.js');
 
 const names = [{ name: 'Jonathan Jewett', kind: 'member' }, { name: 'Bryce Alderson', kind: 'member' }];
+// The closed row here is a WhatsApp message from a verification-required chat — restricted to SOME
+// members under #176, and the kind of row this gate exists to hide. It used to be a Facebook group
+// post, which #169 also treated as closed; #176 corrects that (the group is where a public answer
+// gets POSTED — see the #176 sections at the foot of this file). Class maps in these mechanics tests
+// are supplied by hand; which ROWS really earn `public` is digest.public_gate_classify()'s job, not
+// the module's — WhatsApp is open or restricted per chat, video and transcript per recording.
 const messages = [
   { role: 'assistant', content: [{ type: 'tool_use', name: 'content_search_v2' }] },
   { role: 'user', content: [{ type: 'tool_result', content: JSON.stringify([
-      { source: 'fb', source_id: 'p1', url: 'https://www.facebook.com/groups/699138040189700/posts/1', body: 'Jonathan Jewett shared a TikTok tip' },
+      { source: 'wa_message', source_id: 'p1', url: 'https://chat.whatsapp.com/ABC123', body: 'Jonathan Jewett shared a TikTok tip' },
       { source: 'event', source_id: 'e1', url: 'https://www.mds.co/summit', body: 'Bryce Alderson speaks at the Summit' },
   ]) }] },
 ];
@@ -26,13 +32,13 @@ const messages = [
 test('extractEvidenceRows keeps every row and collects keys', () => {
   const ev = pg.extractEvidenceRows(messages);
   assert.equal(ev.rows.length, 2);
-  assert.deepEqual(ev.urls.sort(), ['https://www.facebook.com/groups/699138040189700/posts/1', 'https://www.mds.co/summit']);
+  assert.deepEqual(ev.urls.sort(), ['https://chat.whatsapp.com/ABC123', 'https://www.mds.co/summit']);
   assert.deepEqual(ev.source_ids.sort(), ['e1', 'p1']);
 });
 
 test('a name is backed only by a PUBLIC row that contains it', () => {
   const ev = pg.extractEvidenceRows(messages);
-  const classes = { 'https://www.facebook.com/groups/699138040189700/posts/1': 'closed', 'https://www.mds.co/summit': 'public' };
+  const classes = { 'https://chat.whatsapp.com/ABC123': 'closed', 'https://www.mds.co/summit': 'public' };
   const backed = pg.backedNames(ev.rows, classes, names);
   assert.ok(backed.has('Bryce Alderson'));
   assert.ok(!backed.has('Jonathan Jewett'));
@@ -120,12 +126,14 @@ test('garbage falls back to one text row', () => {
   assert.deepEqual(ev.source_ids, []);
 });
 
-// --- fix round 4 (#169): a partner row classifies 'public' (the directory), but it embeds
-// reviews_sample (MEMBER reviews) and strength_note/fit_reason (member-judgment text) that are not
-// the partner's own public website. Only name/web_summary/web_people/web_pricing are actually
-// world-public (crawled from the partner's own site) — those alone may back a name. ---
+// --- partner rows: not every field on one comes from the listing. #169 fix round 4 kept only
+// name/web_summary/web_people/web_pricing, on the grounds that those alone are "world-public" —
+// the reading #176 corrects. Partner listings AND THEIR PAGES are open to members, reviews
+// included, so reviews_sample backs a name now. fit_reason/strength_note still do not: they come
+// from digest.entity_dossier (aggregated across content, transcripts included), so their
+// provenance is not one identifiable open source, and unknown provenance stays closed. ---
 
-test("a member named only in a partner's reviews_sample is NOT backed by that public partner row", () => {
+test("#176: a member named in a partner's reviews_sample IS backed — the listing page is open to members", () => {
   const raw = JSON.stringify([
     { name: 'Prosperlytics Consultants', partner_url: 'https://app.mds.co/partners/p1',
       reviews_sample: [{ author: 'Jonathan Jewett', text: 'great' }] },
@@ -133,7 +141,19 @@ test("a member named only in a partner's reviews_sample is NOT backed by that pu
   const ev = pg.extractEvidenceRows(toolResult(raw));
   const classes = { 'https://app.mds.co/partners/p1': 'public' };
   const backed = pg.backedNames(ev.rows, classes, names);
-  assert.ok(!backed.has('Jonathan Jewett'));
+  assert.ok(backed.has('Jonathan Jewett'));
+});
+
+test('#176: a name appearing only in fit_reason / strength_note is NOT backed by the partner row', () => {
+  const raw = JSON.stringify([
+    { name: 'Prosperlytics Consultants', partner_url: 'https://app.mds.co/partners/p1',
+      web_summary: 'Bookkeeping for sellers.',
+      fit_reason: 'Bryce Alderson rated them well on a call',
+      strength_note: 'Jonathan Jewett keeps recommending them' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const backed = pg.backedNames(ev.rows, { 'https://app.mds.co/partners/p1': 'public' }, names);
+  assert.equal(backed.size, 0);
 });
 
 test('a founder named in web_people IS backed', () => {
@@ -279,9 +299,11 @@ test('I1: a short first name, a common word and a lowercase word are all left al
   assert.deepEqual(pg.leftoverNames(draft, mixed, new Set()), []);
 });
 
-// --- review I2 (#169): redact() touched names only, so a member-only video link, a private
-// Facebook-group post or a WhatsApp invite sitting in the draft was published verbatim — Public
-// Verify only ever questioned URLs that were NOT already in the draft, never the ones that were. ---
+// --- review I2 (#169): redact() touched names only, so a restricted recording's link or a WhatsApp
+// invite sitting in the draft was published verbatim — Public Verify only ever questioned URLs that
+// were NOT already in the draft, never the ones that were. Still true under #176; what changed is
+// which urls come back `public`. A Facebook group link NO evidence row produced is still stripped
+// (unknown = closed) — being open as a class is not the same as being cited in this turn. ---
 
 const VIDEO_LINK = 'https://app.mds.co/videos/6a97599308e2e42a631c1a35';
 const linkClasses = { 'https://www.mds.co/summit': 'public', [VIDEO_LINK]: 'closed' };
@@ -300,7 +322,7 @@ test('I2: a url no evidence row classified is closed too (unknown = closed)', ()
   assert.deepEqual(r.removed.map(x => x.kind), ['link', 'link']);
 });
 
-test('I2: a world-public url survives untouched', () => {
+test('I2: a url classified open survives untouched', () => {
   const t = 'The agenda is at https://www.mds.co/summit — see you there.';
   const r = pg.redactLinks(t, linkClasses);
   assert.equal(r.text, t);
@@ -385,4 +407,871 @@ test('R2: redact and leftoverNames never disagree across the middle-slot sweep',
     assert.equal(r.removed.length > 0, shouldMask, `redact disagreement: ${draft}`);
     assert.equal(left.length > 0, shouldMask, `leftoverNames disagreement: ${draft}`);
   }
+});
+
+// ============================================================================================
+// #176 — WHO A PUBLIC ANSWER IS FOR. Andy, 2026-09-08: "public means all members, but not people
+// outside the MDS; restricted means this content is restricted to some members. Facebook is open
+// source; it's public by definition. The only restricted sources are some WA chats (you should know
+// it) and some videos (we have the spine with restriction rules)."
+//
+// #169 read "public" as WORLD-public and closed the Facebook group. The first #176 pass fixed the
+// audience but kept a source-type allowlist, so it closed WhatsApp and call transcripts WHOLESALE —
+// see the restriction-spine section at the foot of this file for the cases that pin the per-row
+// line. Which rows earn `public` is digest.public_gate_classify()'s job
+// (scripts/sql/20260908_public_gate_classify_restriction_spine_176.sql); what these cases pin is
+// that the module honours the buckets it is handed, in both directions. The WhatsApp and transcript
+// rows below are therefore RESTRICTED EXAMPLES (a verification-required chat, a restricted
+// recording), not statements that every row of that source is closed.
+// ============================================================================================
+
+const FB_POST_URL = 'https://www.facebook.com/groups/699138040189700/posts/27179812468362230/';
+const WA_INVITE = 'https://chat.whatsapp.com/ABC123';
+const CALL_URL = 'https://app.mds.co/videos/6a988f8a08e2e42a633350a1';
+
+test('#176: a name that appears ONLY in a Facebook group post is backed, and survives redaction', () => {
+  const raw = JSON.stringify([
+    { source: 'fb_post', source_id: '27179812468362230', url: FB_POST_URL,
+      body: 'Jonathan Jewett shared a TikTok bundling tip that doubled his Q4.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const backed = pg.backedNames(ev.rows, { [FB_POST_URL]: 'public' }, names);
+  assert.ok(backed.has('Jonathan Jewett'));
+  const r = pg.redact('Jonathan Jewett shared a bundling tip.', names, backed);
+  assert.ok(r.text.includes('Jonathan Jewett'), r.text);
+  assert.deepEqual(r.removed, []);
+  assert.deepEqual(pg.leftoverNames(r.text, names, backed), []);
+});
+
+test('#176: a Facebook group post link survives the link pass', () => {
+  const t = `A member walked through it here: ${FB_POST_URL}`;
+  const r = pg.redactLinks(t, { [FB_POST_URL]: 'public' });
+  assert.equal(r.text, t);
+  assert.deepEqual(r.removed, []);
+  assert.deepEqual(pg.closedUrls(t, { [FB_POST_URL]: 'public' }), []);
+});
+
+test('#176: a name that appears ONLY in a closed WhatsApp message is masked, and refused if it survives', () => {
+  const raw = JSON.stringify([
+    { source: 'wa_message', source_id: 'OsvNzPN5RzkBbQ-gjIBq53ljME8mg', url: WA_INVITE,
+      body: 'Jonathan Jewett said his 3PL raised rates 12% in March.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const backed = pg.backedNames(ev.rows, { [WA_INVITE]: 'closed' }, names);
+  assert.equal(backed.size, 0);
+  const r = pg.redact('Jonathan Jewett said his 3PL raised rates.', names, backed);
+  assert.ok(!/Jonathan|Jewett/.test(r.text), r.text);
+  assert.deepEqual(r.removed, ['Jonathan Jewett']);
+  assert.deepEqual(pg.leftoverNames('Thanks to Jonathan Jewett.', names, backed), ['Jonathan Jewett']);
+});
+
+test('#176: a name that appears ONLY in a call transcript is masked, and refused if it survives', () => {
+  const raw = JSON.stringify([
+    { source: 'call_transcript', source_id: 'chunk-42', url: CALL_URL,
+      body: 'Bryce Alderson: we cut our CAC to eleven dollars on that channel.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const backed = pg.backedNames(ev.rows, { [CALL_URL]: 'closed' }, names);
+  assert.equal(backed.size, 0);
+  const r = pg.redact('Bryce Alderson cut CAC to eleven dollars.', names, backed);
+  assert.ok(!/Bryce|Alderson/.test(r.text), r.text);
+  assert.deepEqual(pg.leftoverNames('As Bryce Alderson put it, CAC fell.', names, backed), ['Bryce Alderson']);
+});
+
+test('#176: a verbatim quote from a call transcript is a closed source — the row is closed and its link goes', () => {
+  const raw = JSON.stringify([
+    { source: 'call_transcript', source_id: 'chunk-42', url: CALL_URL,
+      body: 'Bryce Alderson: we cut our CAC to eleven dollars on that channel.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const classes = { [CALL_URL]: 'closed' };
+  // rowClass drives `closed_sources`, which is what puts "From a call recording, paraphrased."
+  // in the notes — the paraphrase-not-quote instruction the smoother is given.
+  assert.equal(pg.rowClass(ev.rows[0], classes), 'closed');
+  assert.deepEqual([...new Set(ev.rows.filter(r => pg.rowClass(r, classes) === 'closed').map(r => r.source))],
+                   ['call_transcript']);
+  // and the recording's own link never publishes
+  const lk = pg.redactLinks(`Full recording: ${CALL_URL}`, classes);
+  assert.ok(!lk.text.includes('app.mds.co'), lk.text);
+  assert.equal(lk.removed.length, 1);
+});
+
+test('#176: a source the classifier never classified is still closed — unknown did not change', () => {
+  const raw = JSON.stringify([
+    { source: 'some_new_feed', source_id: 'n1', url: 'https://example.com/whatever',
+      body: 'Bryce Alderson said something quotable.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.equal(pg.rowClass(ev.rows[0], {}), 'closed');
+  assert.equal(pg.backedNames(ev.rows, {}, names).size, 0);
+  assert.deepEqual(pg.closedUrls('See https://example.com/whatever for more.', {}),
+                   ['https://example.com/whatever']);
+});
+
+// ============================================================================================
+// #176 D1 — AN OPEN POST'S AUTHOR BACKS THEIR OWN NAME. Found by the 30-probe eval (2026-09-08):
+// q10's public answer masked eight members — Daniel Meredith, Dimitri Vorona, Ben Anderson,
+// Travis Reese, Jason Pratt, Richard Lo, Ryan Carey, Claude Jeanloz — that the same question
+// answered ungated named freely off the same open group threads. A poster's name is not in the
+// body of what they wrote; it lives in the row's author/speaker metadata (`meta.author_name` on a
+// content_search row, `author` on an fb_thread row, `speakers` on a library row, `author` inside a
+// partner's `reviews_sample`). Those fields now back a name — for an OPEN row only.
+// ============================================================================================
+
+test('D1: the author of an open Facebook post backs their own name, even when the body never says it', () => {
+  const raw = JSON.stringify([
+    { source: 'fb_post', kind: 'post', source_id: '26794200516923429', url: FB_POST_URL,
+      body: 'Asking for some wisdom from the group about systems and tools.',
+      meta: { has_image: false, author_name: 'Jonathan Jewett', sender_member: 'recN0ejwtEsNEGrvu' } },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.ok(ev.rows[0].authors.includes('Jonathan Jewett'), JSON.stringify(ev.rows[0].authors));
+  const backed = pg.backedNames(ev.rows, { [FB_POST_URL]: 'public' }, names);
+  assert.ok(backed.has('Jonathan Jewett'));
+  const r = pg.redact('Jonathan Jewett asked almost this exact question.', names, backed);
+  assert.ok(r.text.includes('Jonathan Jewett'), r.text);
+  assert.deepEqual(r.removed, []);
+});
+
+test('D1: the author of a CLOSED row does not back their name — the room is what decides', () => {
+  const raw = JSON.stringify([
+    { source: 'wa_message', source_id: 'OsvNzPN5RzkBbQ', url: WA_INVITE,
+      body: 'my 3PL raised rates 12% in March',
+      meta: { author_name: 'Jonathan Jewett', chat_name: '#logistics' } },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.ok(ev.rows[0].authors.includes('Jonathan Jewett'));
+  const backed = pg.backedNames(ev.rows, { [WA_INVITE]: 'closed' }, names);
+  assert.equal(backed.size, 0);
+  const r = pg.redact('Jonathan Jewett said his 3PL raised rates.', names, backed);
+  assert.ok(!/Jonathan|Jewett/.test(r.text), r.text);
+});
+
+test('D1: an fb_thread row carries its author top-level, and that backs the name too', () => {
+  const raw = JSON.stringify([
+    { kind: 'comment', author: 'Bryce Alderson', body: 'We run Slack plus ClickUp.',
+      url: FB_POST_URL + '?comment_id=24609783842031785', post_id: '26794200516923429' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const classes = { [FB_POST_URL + '?comment_id=24609783842031785']: 'public' };
+  assert.ok(pg.backedNames(ev.rows, classes, names).has('Bryce Alderson'));
+});
+
+test('D1: a library row backs the names of its speakers', () => {
+  const raw = JSON.stringify([
+    { title: 'Mogul Call: running two businesses on ClickUp', speakers: ['Jonathan Jewett'],
+      url: 'https://app.mds.co/videos/library-entry', description_snippet: 'How the workspace is laid out.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.ok(ev.rows[0].authors.includes('Jonathan Jewett'), JSON.stringify(ev.rows[0].authors));
+  assert.ok(pg.backedNames(ev.rows, { 'https://app.mds.co/videos/library-entry': 'public' }, names)
+              .has('Jonathan Jewett'));
+});
+
+test('D1: an author-shaped field does NOT widen what a partner row backs — fit_reason still cannot', () => {
+  const raw = JSON.stringify([
+    { name: 'Prosperlytics Consultants', partner_url: 'https://app.mds.co/partners/p1',
+      web_summary: 'Bookkeeping for sellers.',
+      fit_reason: 'Bryce Alderson rated them well on a call',
+      strength_note: 'Jonathan Jewett keeps recommending them' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.equal(pg.backedNames(ev.rows, { 'https://app.mds.co/partners/p1': 'public' }, names).size, 0);
+});
+
+// ============================================================================================
+// #176 D3 — A ROW THE RETRIEVAL LAYER DID NOT LABEL IS MISLABELLED, NOT UNKNOWN. q10's public
+// answer reported `source_summary {"other": 18}`: not one evidence row carried a source tag, so
+// no row could be keyed, nothing classified, and every name in the answer was masked. Two separate
+// causes, both fixed here:
+//   (a) the tools that return a row WITHOUT `source` — video_search (video_url/title/speakers),
+//       partner_lookup (partner_url), fb_thread (kind/author/url/post_id) — were unrecognisable to
+//       the row extractor, and video_search's link field was not even in the url coalesce list, so
+//       a library row could never be keyed at all;
+//   (b) the biggest evidence block of the turn is not a tool_result. `Answer Seed` renders the
+//       deterministic pre-search into the final user message as "RAW MATCHES (n): [...]" TEXT —
+//       40 full content rows, urls and author names included — and the extractor never read it.
+//       That is where q10's eight members and its group link lived.
+// Unknown is unchanged: a row nothing can be derived from is still keyless, and keyless is closed.
+// ============================================================================================
+
+const LIB_URL = 'https://app.mds.co/videos/6a97599308e2e42a631c1a35';
+
+test('D3: a video_search row is keyed by its library id, so an open library entry can back a name', () => {
+  const raw = JSON.stringify([
+    { title: 'Mogul Call: two businesses on ClickUp', call_type: 'Mogul Call',
+      speakers: ['Jonathan Jewett'], description_snippet: 'How the workspace is laid out.',
+      video_url: LIB_URL, is_restricted: false },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.equal(ev.rows[0].source, 'video');
+  assert.equal(ev.rows[0].source_id, '6a97599308e2e42a631c1a35');
+  assert.equal(ev.rows[0].url, LIB_URL);
+  assert.ok(pg.backedNames(ev.rows, { '6a97599308e2e42a631c1a35': 'public' }, names).has('Jonathan Jewett'));
+});
+
+test('D3: a call transcript row is NOT re-keyed by the recording it quotes — it stays closed', () => {
+  // The transcript chunk's own `url` IS the recording's app link, and that link's 24-hex id is the
+  // library entry the classifier calls open. Deriving an id from the url for a row that already
+  // carries `source`/`source_id` would turn every transcript row open. It does not.
+  const raw = JSON.stringify([
+    { source: 'call_transcript', kind: 'chunk', source_id: '6a97599308e2e42a631c1a35#13',
+      url: LIB_URL, body: 'Bryce Alderson: we cut our CAC to eleven dollars.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.equal(ev.rows[0].source, 'call_transcript');
+  assert.equal(ev.rows[0].source_id, '6a97599308e2e42a631c1a35#13');
+  const classes = { '6a97599308e2e42a631c1a35': 'public', [LIB_URL]: 'closed',
+                    '6a97599308e2e42a631c1a35#13': 'closed' };
+  assert.equal(pg.rowClass(ev.rows[0], classes), 'closed');
+  assert.equal(pg.backedNames(ev.rows, classes, names).size, 0);
+});
+
+test('D3: an fb_thread row is labelled from its kind and keyed by its post id', () => {
+  const raw = JSON.stringify([
+    { kind: 'post', author: 'Ben Anderson', body: 'Asking for some wisdom from the group.',
+      url: FB_POST_URL, post_id: '26794200516923429' },
+    { kind: 'comment', author: 'Bryce Alderson', body: 'Slack plus ClickUp.',
+      url: FB_POST_URL + '?comment_id=1', post_id: '26794200516923429' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.deepEqual(ev.rows.map(r => r.source), ['fb_post', 'fb_comment']);
+  assert.deepEqual(ev.rows.map(r => r.source_id), ['26794200516923429', '26794200516923429']);
+});
+
+test('D3: a partner row is labelled `partner`', () => {
+  const raw = JSON.stringify([{ name: 'ClickUp', partner_url: 'https://app.mds.co/partners/p1',
+                                web_summary: 'PM tool.' }]);
+  assert.equal(pg.extractEvidenceRows(toolResult(raw)).rows[0].source, 'partner');
+});
+
+test('D3: a row nothing can be derived from is still keyless, and keyless is still closed', () => {
+  const raw = JSON.stringify([{ blob: 'Bryce Alderson said something quotable.', score: 0.4 }]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.equal(ev.rows[0].source, null);
+  assert.equal(ev.rows[0].source_id, null);
+  assert.equal(ev.rows[0].url, null);
+  assert.equal(pg.rowClass(ev.rows[0], { 'anything': 'public' }), 'closed');
+  assert.equal(pg.backedNames(ev.rows, { 'anything': 'public' }, names).size, 0);
+});
+
+// --- the preloaded evidence block: rows, not prose ---
+
+function preloadMsg(body) {
+  return [{ role: 'user', content: [{ type: 'text', text:
+    'PRELOADED EVIDENCE — a deterministic search already ran for this exact message; treat it as '
+    + 'your first tool result:\n' + body + '\n\nMEMBER MESSAGE:\nwhat do people use for systems?' }] }];
+}
+
+const PRELOAD_ROWS = [
+  { source: 'fb_post', kind: 'post', source_id: '26794200516923429', title: null, tl_dr: null,
+    body: 'Asking for some wisdom from the group about systems and tools.',
+    occurred_at: '2026-08-07T16:58:51+00:00', url: FB_POST_URL, sensitivity: 'normal',
+    meta: { has_image: false, author_name: 'Jonathan Jewett', sender_member: 'recN0ejwtEsNEGrvu' } },
+  { source: 'wa_message', kind: 'message', source_id: 'OsvNzPN5RzkBbQ', body: 'we moved to ClickUp',
+    url: WA_INVITE, meta: { author_name: 'Bryce Alderson', chat_name: '#ops' } },
+];
+
+test('D3: the preloaded RAW MATCHES block is read as evidence, not skipped as prose', () => {
+  const ev = pg.extractEvidenceRows(preloadMsg('RAW MATCHES (2):\n' + JSON.stringify(PRELOAD_ROWS)));
+  assert.equal(ev.rows.length, 2);
+  assert.deepEqual(ev.rows.map(r => r.source), ['fb_post', 'wa_message']);
+  assert.ok(ev.urls.includes(FB_POST_URL));
+  assert.ok(ev.source_ids.includes('26794200516923429'));
+});
+
+test('D3: a preloaded open post backs its author and keeps its link; the preloaded closed chat does not', () => {
+  const ev = pg.extractEvidenceRows(preloadMsg('RAW MATCHES (2):\n' + JSON.stringify(PRELOAD_ROWS)));
+  const classes = { [FB_POST_URL]: 'public', [WA_INVITE]: 'closed' };
+  const backed = pg.backedNames(ev.rows, classes, names);
+  assert.deepEqual([...backed], ['Jonathan Jewett']);
+  const lk = pg.redactLinks(`Jonathan Jewett asked this too: ${FB_POST_URL} — also ${WA_INVITE}`, classes);
+  assert.ok(lk.text.includes(FB_POST_URL), lk.text);
+  assert.ok(!lk.text.includes('whatsapp'), lk.text);
+  const r = pg.redact(lk.text + ' Bryce Alderson answered in the chat.', names, backed);
+  assert.ok(r.text.includes('Jonathan Jewett'), r.text);
+  assert.ok(!/Bryce|Alderson/.test(r.text), r.text);
+});
+
+test('D3: a preload truncated mid-row still yields every complete row before the cut', () => {
+  // Answer Seed hard-caps the preload at 20,000 chars, so the last row is routinely cut in half.
+  const full = 'RAW MATCHES (2):\n' + JSON.stringify(PRELOAD_ROWS);
+  const cut = full.slice(0, full.length - 60) + ' …[truncated]';
+  const ev = pg.extractEvidenceRows(preloadMsg(cut));
+  assert.equal(ev.rows.length, 1);
+  assert.equal(ev.rows[0].source, 'fb_post');
+  assert.ok(ev.urls.includes(FB_POST_URL));
+});
+
+test('D3: a DIGESTS block is read too, and ordinary prose in the same message yields no rows', () => {
+  const ev = pg.extractEvidenceRows(preloadMsg(
+    'ABOUT THE ASKER (their own MDS profile):\n- sells kitchenware\n\nDIGESTS (1):\n'
+    + JSON.stringify([{ source: 'wa_digest', source_id: 'd1', url: WA_INVITE, body: 'weekly roundup' }])));
+  assert.equal(ev.rows.length, 1);
+  assert.equal(ev.rows[0].source, 'wa_digest');
+});
+
+test('D3: a user message with no evidence block contributes nothing', () => {
+  assert.equal(pg.extractEvidenceRows([{ role: 'user', content: [{ type: 'text',
+    text: 'MEMBER MESSAGE:\nwhat do people use for systems? [1, 2, 3] and {a: 1}' }] }]).rows.length, 0);
+});
+
+test('#176: open and restricted rows in the SAME turn split — the group name prints, the call name does not', () => {
+  const raw = JSON.stringify([
+    { source: 'fb_post', source_id: '27179812468362230', url: FB_POST_URL,
+      body: 'Jonathan Jewett shared a TikTok bundling tip.' },
+    { source: 'call_transcript', source_id: 'chunk-42', url: CALL_URL,
+      body: 'Bryce Alderson: we cut our CAC to eleven dollars.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const classes = { [FB_POST_URL]: 'public', [CALL_URL]: 'closed' };
+  const backed = pg.backedNames(ev.rows, classes, names);
+  assert.deepEqual([...backed], ['Jonathan Jewett']);
+  const lk = pg.redactLinks(`See ${FB_POST_URL} and ${CALL_URL}.`, classes);
+  assert.ok(lk.text.includes(FB_POST_URL), lk.text);
+  assert.ok(!lk.text.includes(CALL_URL), lk.text);
+  const r = pg.redact(lk.text + ' Jonathan Jewett and Bryce Alderson both weighed in.', names, backed);
+  assert.ok(r.text.includes('Jonathan Jewett'), r.text);
+  assert.ok(!/Bryce|Alderson/.test(r.text), r.text);
+  assert.deepEqual(pg.leftoverNames(r.text, names, backed), []);
+});
+
+// ============================================================================================
+// #176 D2 — A LEFTOVER IS REPAIRED, NOT A REASON TO REFUSE. The 30-probe eval (2026-09-08) found
+// q6 and q1 refusing outright — "Refused: a closed-source name or an unknown link survived the
+// public pass" — while their own notes listed five open group/partner sources and their
+// source_summary showed 10 fb_post + 12 fb_comment. A refusal fails Andy's bar on its face: "It
+// should be like staging, but it dropped some details from gated sources. still answers, but no
+// details and all the info from public sources." So a closed-room name or an unknown link that
+// survives the smoother is now MASKED and the answer is kept; the turn is refused only when the
+// repair cannot leave an answer behind, or when a second pass still finds a leak.
+// ============================================================================================
+
+test('D2: a closed-source name the smoother reintroduced is masked, and the answer survives', () => {
+  const backed = new Set(['Bryce Alderson']);
+  const smoothed = 'Bryce Alderson ran the numbers and Jonathan Jewett said his 3PL raised rates 12% in March, '
+    + 'which is worth planning around before your next restock window.';
+  const rep = pg.repairPublic(smoothed, names, backed, { [FB_POST_URL]: 'public' }, []);
+  assert.ok(rep.text.includes('Bryce Alderson'), rep.text);
+  assert.ok(!/Jonathan|Jewett/.test(rep.text), rep.text);
+  assert.deepEqual(rep.removed_names, ['Jonathan Jewett']);
+  assert.deepEqual(rep.leftover, []);
+  assert.ok(rep.text.includes('3PL raised rates 12% in March'), rep.text);
+  assert.ok(pg.repairedSubstance(rep.text).length >= 40, rep.text);
+});
+
+test('D2: a closed link the smoother put back is stripped, and the answer survives', () => {
+  const classes = { [FB_POST_URL]: 'public', [WA_INVITE]: 'closed' };
+  const smoothed = `Two threads cover this: ${FB_POST_URL} and the chat invite ${WA_INVITE}. `
+    + 'Both land on the same answer: check the listing copy before the demand letter arrives.';
+  const rep = pg.repairPublic(smoothed, names, new Set(), classes, [FB_POST_URL, WA_INVITE]);
+  assert.ok(rep.text.includes(FB_POST_URL), rep.text);
+  assert.ok(!/whatsapp/.test(rep.text), rep.text);
+  assert.deepEqual(rep.removed_links.map(x => x.kind), ['link']);
+  assert.deepEqual(rep.leftover_links, []);
+});
+
+test('D2: a url the smoother invented is stripped even when the class map calls it public', () => {
+  const classes = { [FB_POST_URL]: 'public' };
+  // FB_POST_URL is classified public, but it was NOT in the redacted draft — the smoother made it up.
+  const rep = pg.repairPublic(`Read it here: ${FB_POST_URL} for the full thread.`, names, new Set(), classes, []);
+  assert.ok(!rep.text.includes('facebook.com'), rep.text);
+  assert.equal(rep.removed_links.length, 1);
+  assert.deepEqual(rep.leftover_links, []);
+});
+
+test('D2: a repair leaves an untouched answer untouched', () => {
+  const classes = { [FB_POST_URL]: 'public' };
+  const clean = `A member walked through the whole playbook here: ${FB_POST_URL} — worth reading in full.`;
+  const rep = pg.repairPublic(clean, names, new Set(), classes, [FB_POST_URL]);
+  assert.equal(rep.text, clean);
+  assert.deepEqual(rep.removed_names, []);
+  assert.deepEqual(rep.removed_links, []);
+});
+
+test('D2: repairedSubstance measures what is left to say, so "nothing remains" is a real test', () => {
+  // an answer that is nothing but role phrases and a stripped link is not an answer
+  assert.ok(pg.repairedSubstance('a member said so.').length < 40);
+  assert.ok(pg.repairedSubstance('a member. one of the speakers. [link removed]').length < 40);
+  assert.ok(pg.repairedSubstance('a member walked through the whole playbook and it is worth reading in full').length >= 40);
+});
+
+test('D2: the repair re-checks itself — leftover and leftover_links are the second pass, not the first', () => {
+  const rep = pg.repairPublic('Jonathan Jewett and Bryce Alderson both weighed in on the 3PL question this week.',
+                              names, new Set(), {}, []);
+  assert.deepEqual(rep.removed_names.sort(), ['Bryce Alderson', 'Jonathan Jewett']);
+  assert.deepEqual(rep.leftover, []);
+  assert.deepEqual(rep.leftover_links, []);
+  assert.ok(!/Jonathan|Jewett|Bryce|Alderson/.test(rep.text), rep.text);
+});
+
+// ============================================================================================
+// #176 D4 — THE SWEEP HAS TO BE AFFORDABLE. The q9 probe came back {"message":"Error in workflow"}.
+// Root cause, from the prod execution log: `Task execution aborted because runner became
+// unresponsive`, lastNodeExecuted `Public Redact` (and the execution behind it timed out at `Gate
+// Verdict` waiting for the same saturated runner). Measured on the real index: backedNames() ran
+// 78 evidence rows x 5,384 index names = 420,000 regex compiles and tests — 19.7 SECONDS of local
+// CPU, and n8n's sandboxed Code-node runner is roughly 15x slower than that. redact() and
+// leftoverNames() built and ran a pattern for every name whose first token appeared as a SUBSTRING
+// anywhere in the draft ("Ana" inside "management", "Sam" inside "same"), 374 of them on a 2.4KB
+// answer.
+//
+// The fix is a pre-filter, not a change of rule: every token of a name must appear in the haystack
+// as a whole alphanumeric run before its pattern is built at all. That is a NECESSARY condition for
+// the pattern to match — the first token sits behind a non-word boundary and every later token is
+// preceded by NAME_SEP, so each one starts and ends a maximal run — so the filter can only skip
+// work, never a match. The cases below pin the behaviour the filter must not change.
+// ============================================================================================
+
+test('D4: a name split across two different rows is not backed by either — matching is per row', () => {
+  const rows = [
+    { source: 'fb_post', url: 'https://x/1', text: 'Jonathan wrote in about margins', authors: [] },
+    { source: 'fb_post', url: 'https://x/2', text: 'Jewett is a common surname here', authors: [] },
+  ];
+  assert.equal(pg.backedNames(rows, { 'https://x/1': 'public', 'https://x/2': 'public' }, names).size, 0);
+});
+
+test('D4: a name backed only by the last of many rows is still found', () => {
+  const rows = [];
+  for (let i = 0; i < 200; i++) rows.push({ source: 'fb_post', url: 'https://x/' + i, text: 'filler row about tools and systems', authors: [] });
+  rows.push({ source: 'fb_post', url: 'https://x/last', text: 'thread started by someone', authors: ['Bryce Alderson'] });
+  const classes = {};
+  for (const r of rows) classes[r.url] = 'public';
+  assert.deepEqual([...pg.backedNames(rows, classes, names)], ['Bryce Alderson']);
+});
+
+test('D4: a substring is not a token — "Ana Lopez" is not backed by the word "management"', () => {
+  const rows = [{ source: 'fb_post', url: 'https://x/1', text: 'our management and ops systems', authors: [] }];
+  assert.equal(pg.backedNames(rows, { 'https://x/1': 'public' }, [{ name: 'Ana Lopez' }]).size, 0);
+});
+
+test('D4: the sweep stays affordable at index scale — 5,000 names over a real-sized turn', () => {
+  const idx = [{ name: 'Jonathan Jewett' }, { name: 'Bryce Alderson' }];
+  const syll = ['an', 'bel', 'cor', 'dan', 'eli', 'fen', 'gar', 'hol', 'ivo', 'jen', 'kal', 'lor', 'mer', 'nor', 'ols'];
+  for (let i = 0; i < 5000; i++) {
+    const a = syll[i % 15] + syll[(i * 7) % 15] + (i % 97);
+    const b = syll[(i * 3) % 15] + syll[(i * 11) % 15] + (i % 89);
+    idx.push({ name: a.charAt(0).toUpperCase() + a.slice(1) + ' ' + b.charAt(0).toUpperCase() + b.slice(1) });
+  }
+  const rows = [], classes = {};
+  for (let i = 0; i < 40; i++) {
+    const u = 'https://www.facebook.com/groups/699138040189700/posts/' + i + '/';
+    rows.push({ source: 'fb_post', url: u, authors: ['Bryce Alderson'],
+      text: JSON.stringify({ body: 'A long-ish group post about systems, ClickUp, Slack, returns and FBA '
+        + 'reimbursements that runs to a couple of hundred words the way a real one does. '.repeat(6) }) });
+    classes[u] = 'public';
+  }
+  const draft = ('Jonathan Jewett and Bryce Alderson both weighed in on the FBA return-fraud question. '
+    + 'Several members described the same pattern and the same workaround, in some detail. ').repeat(8);
+  const t0 = Date.now();
+  const backed = pg.backedNames(rows, classes, idx);
+  const r = pg.redact(draft, idx, backed);
+  const left = pg.leftoverNames(r.text, idx, backed);
+  const ms = Date.now() - t0;
+  assert.deepEqual([...backed], ['Bryce Alderson']);
+  assert.ok(r.text.includes('Bryce Alderson'), r.text.slice(0, 120));
+  assert.ok(!/Jonathan|Jewett/.test(r.text), r.text.slice(0, 120));
+  assert.deepEqual(left, []);
+  assert.ok(ms < 1500, `backedNames + redact + leftoverNames took ${ms}ms at index scale (budget 1500ms) — `
+    + 'this is what made the n8n Code-node runner go unresponsive on q9');
+});
+
+test('D1: an unbacked name never mangles a BACKED name that shares a token — surname included', () => {
+  // staging exec 138940: the index carries "Meredith Hudson"; the open group thread backs "Daniel
+  // Meredith". The first-name pass masked the token "Meredith" inside the backed name, and the
+  // answer published as "Daniel they tried ~15 tools".
+  const idx = [{ name: 'Daniel Meredith' }, { name: 'Meredith Hudson' }];
+  const backed = new Set(['Daniel Meredith']);
+  const r = pg.redact('Daniel Meredith tried about fifteen tools before landing on ClickUp.', idx, backed);
+  assert.equal(r.text, 'Daniel Meredith tried about fifteen tools before landing on ClickUp.');
+  assert.deepEqual(r.removed, []);
+  assert.deepEqual(pg.leftoverNames(r.text, idx, backed), []);
+});
+
+test('D1: the unbacked name itself is still masked in full, token-sharing or not', () => {
+  const idx = [{ name: 'Daniel Meredith' }, { name: 'Meredith Hudson' }];
+  const backed = new Set(['Daniel Meredith']);
+  const r = pg.redact('Meredith Hudson said it on the call, and Daniel Meredith posted it in the group.', idx, backed);
+  assert.ok(!r.text.includes('Hudson'), r.text);
+  assert.ok(r.text.includes('Daniel Meredith'), r.text);
+  assert.deepEqual(r.removed, ['Meredith Hudson']);
+  assert.deepEqual(pg.leftoverNames(r.text, idx, backed), []);
+});
+
+test('D1: a placeholder index row called "first last" does not mask the word "first"', () => {
+  // staging probe of q6: the live index carries a literal "first last" row, and its first-name pass
+  // published "you're not the they to get one of these letters".
+  const idx = [{ name: 'first last' }];
+  const draft = "You're not the first to get one of these letters, and it will not be the last.";
+  assert.equal(pg.redact(draft, idx, new Set()).text, draft);
+  assert.deepEqual(pg.leftoverNames(draft, idx, new Set()), []);
+  // the placeholder row's FULL form is still masked, so nothing fails open
+  assert.ok(!pg.redact('first last said so on the call.', idx, new Set()).text.includes('first last'));
+});
+
+test('D1: a first name followed by a surname is somebody ELSE - it is not mangled', () => {
+  // staging probes of q9: the index carries "Antonio Sanchez" and "Mayank Yadav 23frqw2e4"; the
+  // group thread named Antonio Bindi and the call named Mayank Sharma, and the lone-token pass
+  // published "they Bindi echoed this" and "they Sharma of Returnstack".
+  const idx = [{ name: 'Antonio Sanchez' }, { name: 'Mayank Yadav 23frqw2e4' }];
+  const draft = 'Antonio Bindi echoed this, and Mayank Sharma of Returnstack covered it on the call.';
+  assert.equal(pg.redact(draft, idx, new Set()).text, draft);
+  assert.deepEqual(pg.leftoverNames(draft, idx, new Set()), []);
+});
+
+test('D1: the index name itself still masks, in full and standing alone', () => {
+  const idx = [{ name: 'Antonio Sanchez' }];
+  const full = pg.redact('Antonio Sanchez said it on the call.', idx, new Set());
+  assert.ok(!/Antonio|Sanchez/.test(full.text), full.text);
+  const lone = pg.redact('Later Antonio added that margins doubled.', idx, new Set());
+  assert.ok(!/Antonio/.test(lone.text), lone.text);
+  assert.deepEqual(pg.leftoverNames('Later Antonio added that margins doubled.', idx, new Set()), ['Antonio Sanchez']);
+  // a single initial is not a surname, so an abbreviated form is still masked
+  assert.ok(!/Antonio/.test(pg.redact('Antonio S. said it.', idx, new Set()).text));
+});
+
+test('D1: "Claude" the model is not masked by "Claude Jeanloz" the member', () => {
+  const idx = [{ name: 'Claude Jeanloz' }];
+  const draft = 'He runs two businesses via Claude plus ClickUp, with a morning briefing automation.';
+  assert.equal(pg.redact(draft, idx, new Set()).text, draft);
+  assert.ok(!pg.redact('Claude Jeanloz said it on the call.', idx, new Set()).text.includes('Jeanloz'));
+});
+
+// ============================================================================================
+// #176 CORRECTION 2 — THE RESTRICTION SPINE, NOT THE SOURCE TYPE. Andy, 2026-09-08: "The only
+// restricted sources are some WA chats (you should know it) and some videos (we have the spine with
+// restriction rules)." The first #176 classifier opened Facebook but still closed WhatsApp and call
+// transcripts WHOLESALE — all 18,363 WhatsApp rows and all 13,507 transcript rows, whatever room
+// they came from. The database already carries the line, per row:
+//     digest.chats.verification_required            5 chats true, 12 false, 1 NULL
+//     digest.videos_catalog.access_restriction       655 public, 429 restricted
+//     a call transcript inherits the recording it was cut from (joined by its own url)
+// The SQL is scripts/sql/20260908_public_gate_classify_restriction_spine_176.sql and the live
+// end-to-end proof is in scripts/olivia_leak_gate.py. What these cases pin is the MODULE half: given
+// a class map that now splits WhatsApp and video material both ways, every pass — backing, name
+// redaction, link stripping, closed_sources — follows the row and not the source label.
+// ============================================================================================
+
+const WA_OPEN_SID = 'OsvNzPN5RzkBbQ-gjIBq53ljME8mg';        // MDS AI & Automations (verification_required false)
+const WA_VERIFIED_SID = 'OslZwclJVeRyLQ-giIBq53lcW15cw';    // MDS Centurion 20M+  (verification_required true)
+const VIDEO_PUBLIC_ID = '63f6d3aae3fe53137a1631be';
+const VIDEO_PUBLIC_URL = `https://app.mds.co/videos/${VIDEO_PUBLIC_ID}`;
+const VIDEO_RESTRICTED_ID = '6a691e7ac32aac77a6aa3365';
+const VIDEO_RESTRICTED_URL = `https://app.mds.co/videos/${VIDEO_RESTRICTED_ID}`;
+
+function waRow(sid, body, sender) {
+  return { source: 'wa_message', source_id: sid, url: null, body,
+           meta: { sender_name: sender, chat: 'MDS AI & Automations' } };
+}
+
+test('spine: a WhatsApp message from an OPEN chat backs a name and prints it', () => {
+  const ev = pg.extractEvidenceRows(toolResult(JSON.stringify([
+    waRow(WA_OPEN_SID, 'Jonathan Jewett said his 3PL raised rates 12% in March.', 'Someone Else'),
+  ])));
+  const classes = { [WA_OPEN_SID]: 'public' };
+  assert.equal(pg.rowClass(ev.rows[0], classes), 'public');
+  const backed = pg.backedNames(ev.rows, classes, names);
+  assert.ok(backed.has('Jonathan Jewett'));
+  const r = pg.redact('Jonathan Jewett said his 3PL raised rates 12% in March.', names, backed);
+  assert.ok(r.text.includes('Jonathan Jewett'), r.text);
+  assert.deepEqual(r.removed, []);
+  assert.deepEqual(pg.leftoverNames(r.text, names, backed), []);
+});
+
+test('spine: a WhatsApp message from a VERIFICATION-REQUIRED chat still backs nothing', () => {
+  const ev = pg.extractEvidenceRows(toolResult(JSON.stringify([
+    waRow(WA_VERIFIED_SID, 'Jonathan Jewett said his 3PL raised rates 12% in March.', 'Someone Else'),
+  ])));
+  const classes = { [WA_VERIFIED_SID]: 'closed' };
+  assert.equal(pg.rowClass(ev.rows[0], classes), 'closed');
+  assert.equal(pg.backedNames(ev.rows, classes, names).size, 0);
+  const r = pg.redact('Jonathan Jewett said his 3PL raised rates.', names, new Set());
+  assert.ok(!/Jonathan|Jewett/.test(r.text), r.text);
+  assert.deepEqual(pg.leftoverNames('Thanks to Jonathan Jewett.', names, new Set()), ['Jonathan Jewett']);
+});
+
+test('spine: an OPEN chat message backs the SENDER, whose name is only in the row metadata', () => {
+  // the poster's name is never inside what they posted — #176 D1's finding, now reaching WhatsApp
+  const ev = pg.extractEvidenceRows(toolResult(JSON.stringify([
+    waRow(WA_OPEN_SID, 'Our 3PL raised rates 12% in March.', 'Bryce Alderson'),
+  ])));
+  const backed = pg.backedNames(ev.rows, { [WA_OPEN_SID]: 'public' }, names);
+  assert.ok(backed.has('Bryce Alderson'));
+  // ...and the same row in a verification-required chat backs nobody
+  assert.equal(pg.backedNames(ev.rows, { [WA_OPEN_SID]: 'closed' }, names).size, 0);
+});
+
+test('spine: two WhatsApp rows in one turn split by CHAT, not by source', () => {
+  const ev = pg.extractEvidenceRows(toolResult(JSON.stringify([
+    waRow(WA_OPEN_SID, 'Jonathan Jewett walked through the bundling maths.', 'A Poster'),
+    waRow(WA_VERIFIED_SID, 'Bryce Alderson shared his exact CAC on that channel.', 'A Poster'),
+  ])));
+  const classes = { [WA_OPEN_SID]: 'public', [WA_VERIFIED_SID]: 'closed' };
+  const backed = pg.backedNames(ev.rows, classes, names);
+  assert.ok(backed.has('Jonathan Jewett'));
+  assert.ok(!backed.has('Bryce Alderson'));
+  const r = pg.redact('Jonathan Jewett walked through it; Bryce Alderson gave his CAC.', names, backed);
+  assert.ok(r.text.includes('Jonathan Jewett'), r.text);
+  assert.ok(!/Bryce|Alderson/.test(r.text), r.text);
+  // only the restricted row reaches closed_sources, so only it earns a "paraphrased" note
+  assert.deepEqual(ev.rows.filter(r => pg.rowClass(r, classes) === 'closed').map(r => r.source_id),
+                   [WA_VERIFIED_SID]);
+});
+
+test('spine: a transcript of a PUBLIC recording backs a name and keeps its link', () => {
+  const ev = pg.extractEvidenceRows(toolResult(JSON.stringify([
+    { source: 'call_transcript', source_id: `${VIDEO_PUBLIC_ID}#11`, url: VIDEO_PUBLIC_URL,
+      body: 'Bryce Alderson: we cut our CAC to eleven dollars on that channel.' },
+  ])));
+  // the bare recording id is collected alongside the chunk id, so the classifier can be asked both ways
+  assert.ok(ev.source_ids.includes(VIDEO_PUBLIC_ID), ev.source_ids.join(','));
+  assert.ok(ev.source_ids.includes(`${VIDEO_PUBLIC_ID}#11`), ev.source_ids.join(','));
+  const classes = { [VIDEO_PUBLIC_URL]: 'public', [`${VIDEO_PUBLIC_ID}#11`]: 'public', [VIDEO_PUBLIC_ID]: 'public' };
+  assert.equal(pg.rowClass(ev.rows[0], classes), 'public');
+  const backed = pg.backedNames(ev.rows, classes, names);
+  assert.ok(backed.has('Bryce Alderson'));
+  const lk = pg.redactLinks(`He said it here: ${VIDEO_PUBLIC_URL}`, classes);
+  assert.ok(lk.text.includes(VIDEO_PUBLIC_URL), lk.text);
+  assert.deepEqual(lk.removed, []);
+});
+
+test('spine: a transcript of a RESTRICTED recording backs nothing and loses its link', () => {
+  const ev = pg.extractEvidenceRows(toolResult(JSON.stringify([
+    { source: 'call_transcript', source_id: `${VIDEO_RESTRICTED_ID}#28`, url: VIDEO_RESTRICTED_URL,
+      body: 'Bryce Alderson: we cut our CAC to eleven dollars on that channel.' },
+  ])));
+  const classes = { [VIDEO_RESTRICTED_URL]: 'closed', [`${VIDEO_RESTRICTED_ID}#28`]: 'closed', [VIDEO_RESTRICTED_ID]: 'closed' };
+  assert.equal(pg.rowClass(ev.rows[0], classes), 'closed');
+  assert.equal(pg.backedNames(ev.rows, classes, names).size, 0);
+  const lk = pg.redactLinks(`Full recording: ${VIDEO_RESTRICTED_URL}`, classes);
+  assert.ok(!lk.text.includes('app.mds.co'), lk.text);
+  assert.equal(lk.removed.length, 1);
+});
+
+test('spine: a transcript whose source_id is a base64 call id is still keyed by its url', () => {
+  // 3,204 of 13,507 transcript rows carry '37yVhe+qTbaVUssWHoYOsQ==#41' instead of '<24 hex>#<chunk>',
+  // so the url is the only key that reaches the recording. rowClass must find the row through it.
+  const ev = pg.extractEvidenceRows(toolResult(JSON.stringify([
+    { source: 'call_transcript', source_id: 'rOWlmf5PTseI0dEGWVYpOQ==#11', url: VIDEO_PUBLIC_URL,
+      body: 'Bryce Alderson walked through the CAC maths.' },
+  ])));
+  assert.equal(pg.rowClass(ev.rows[0], { [VIDEO_PUBLIC_URL]: 'public' }), 'public');
+  assert.equal(pg.rowClass(ev.rows[0], { [VIDEO_PUBLIC_URL]: 'closed' }), 'closed');
+});
+
+test('spine: a video_search library row follows its recording both ways', () => {
+  const raw = JSON.stringify([
+    { title: 'Scaling a 3PL', video_url: VIDEO_PUBLIC_URL, speakers: ['Bryce Alderson'] },
+    { title: 'Mastermind session', video_url: VIDEO_RESTRICTED_URL, speakers: ['Jonathan Jewett'] },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const classes = { [VIDEO_PUBLIC_URL]: 'public', [VIDEO_PUBLIC_ID]: 'public',
+                    [VIDEO_RESTRICTED_URL]: 'closed', [VIDEO_RESTRICTED_ID]: 'closed' };
+  assert.equal(pg.rowClass(ev.rows[0], classes), 'public');
+  assert.equal(pg.rowClass(ev.rows[1], classes), 'closed');
+  const backed = pg.backedNames(ev.rows, classes, names);
+  assert.ok(backed.has('Bryce Alderson'));
+  assert.ok(!backed.has('Jonathan Jewett'));
+  const lk = pg.redactLinks(`Watch: ${VIDEO_PUBLIC_URL} and ${VIDEO_RESTRICTED_URL}`, classes);
+  assert.ok(lk.text.includes(VIDEO_PUBLIC_URL), lk.text);
+  assert.ok(!lk.text.includes(VIDEO_RESTRICTED_URL), lk.text);
+  assert.equal(lk.removed.length, 1);
+});
+
+test('spine: the transcript/library collision on one url now agrees, and still collapses closed-wins', () => {
+  // the classifier hands the SAME app.mds.co/videos/<id> key back from two branches. They read the
+  // same videos_catalog row now, so they agree — and `Public Redact`'s most-restrictive collapse
+  // stays the rule for whatever future branch keys the same url.
+  const rows = [{ key: VIDEO_PUBLIC_URL, klass: 'public' }, { key: VIDEO_PUBLIC_URL, klass: 'public' }];
+  const collapse = (rs) => { const c = {}; for (const r of rs) c[r.key] = (c[r.key] === 'closed' || r.klass !== 'public') ? 'closed' : 'public'; return c; };
+  assert.equal(collapse(rows)[VIDEO_PUBLIC_URL], 'public');
+  assert.equal(collapse([{ key: VIDEO_PUBLIC_URL, klass: 'public' }, { key: VIDEO_PUBLIC_URL, klass: 'closed' }])[VIDEO_PUBLIC_URL], 'closed');
+});
+
+test('spine: an unclassifiable WhatsApp or video row is still closed — unknown did not change', () => {
+  const ev = pg.extractEvidenceRows(toolResult(JSON.stringify([
+    waRow('sid-from-a-chat-not-in-digest-chats', 'Bryce Alderson said something quotable.', 'A Poster'),
+    { source: 'call_transcript', source_id: 'chunk-with-no-recording', url: 'https://app.mds.co/videos/deadbeefdeadbeefdeadbeef',
+      body: 'Jonathan Jewett said something quotable.' },
+  ])));
+  assert.equal(pg.rowClass(ev.rows[0], {}), 'closed');
+  assert.equal(pg.rowClass(ev.rows[1], {}), 'closed');
+  assert.equal(pg.backedNames(ev.rows, {}, names).size, 0);
+});
+
+test('spine: a repaired answer keeps the open-chat name and drops the restricted-recording link', () => {
+  const classes = { [WA_OPEN_SID]: 'public', [VIDEO_RESTRICTED_URL]: 'closed' };
+  const backed = new Set(['Jonathan Jewett']);
+  const draft = `Jonathan Jewett walked through the bundling maths in the AI chat. Bryce Alderson covered CAC here: ${VIDEO_RESTRICTED_URL}`;
+  const rp = pg.repairPublic(draft, names, backed, classes, [VIDEO_RESTRICTED_URL]);
+  assert.ok(rp.text.includes('Jonathan Jewett'), rp.text);
+  assert.ok(!/Bryce|Alderson/.test(rp.text), rp.text);
+  assert.ok(!rp.text.includes('app.mds.co'), rp.text);
+  assert.deepEqual(rp.leftover, []);
+  assert.deepEqual(rp.leftover_links, []);
+  assert.ok(pg.repairedSubstance(rp.text).length > 20);
+});
+
+// ============================================================================================
+// #176 D5 — HOW THE ANSWER IS PRESENTED. Andy, 2026-09-08, looking at a Public answer beside the
+// ungated one: "The main issue is how we present data. You can post such a huge chunk of text w/o
+// any breaks, w/o any links. Millie much search from existing content, quote when can, justify and
+// send link to the exact source."
+//
+// The content was already right by then — the q10 probe named five members, quoted Richard Lo
+// verbatim and carried three links. The SHAPE was not. Staging execution 139221 measured where it
+// went: `Public Redact` was HANDED a 1,832-character draft with 16 newlines (a paragraph break
+// after the lead-in, one bullet per line, each link on its own line) and returned 1,827 characters
+// with ZERO newlines, its five bullets run together inline behind " • ". `Public Smooth (Claude)`
+// received a flat draft and returned a flat one; `Public Verify` and `Format Web` passed it through
+// untouched. Same on every public turn of that eval — 139183: 23 newlines in, 0 out; 139171: 26 in,
+// 0 out — against 20 newlines in the ungated answer to the same question.
+//
+// The culprit was normText()'s own `\s+ -> ' '`, and because the normalised text is what gets
+// RETURNED, the collapse was published. These cases pin both halves of the fix: normText keeps line
+// structure (while still doing every job it was collapsing whitespace FOR), and repairShape() is the
+// deterministic backstop for a rewrite that flattens or de-links the answer anyway.
+// ============================================================================================
+
+test('D5: normText keeps line structure — the flatten that shipped one paragraph is gone', () => {
+  const draft = 'Lead-in:\n\n*Heading:*\n• first point\n• second point\n\nFull thread: https://x.test/1';
+  const t = pg.normText(draft);
+  assert.equal((t.match(/\n/g) || []).length, 6, t);
+  assert.ok(t.includes('\n• first point\n• second point'), t);
+  assert.ok(!/ • /.test(t), t);
+});
+
+test('D5: normText still does every job it was collapsing whitespace for', () => {
+  // horizontal runs still collapse, no space is left hugging a break, NFC + invisibles still go,
+  // and three-or-more breaks come back as the one blank line that makes a paragraph.
+  assert.equal(pg.normText('a  \t b'), 'a b');
+  assert.equal(pg.normText('a   \n   b'), 'a\nb');
+  assert.equal(pg.normText('a\n\n\n\n\nb'), 'a\n\nb');
+  assert.equal(pg.normText('a\r\nb\rc'), 'a\nb\nc');
+  assert.equal(pg.normText('Jonathan​ Jewett'), 'Jonathan Jewett');
+});
+
+test('D5: a name split across a line break is still masked — dropping the flatten reopened nothing', () => {
+  // NAME_SEP is `[\s\-]+`, so a newline between the tokens of a name was never what the collapse
+  // was protecting against. This is the case that would prove otherwise.
+  const r = pg.redact('Earlier Jonathan\nJewett said X.', names, new Set());
+  assert.ok(!/Jonathan/.test(r.text), r.text);
+  assert.deepEqual(r.removed, ['Jonathan Jewett']);
+  assert.deepEqual(pg.leftoverNames('Earlier Jonathan\nJewett said X.', names, new Set()), ['Jonathan Jewett']);
+});
+
+test('D5: redact and redactLinks hand back the shape they were given', () => {
+  const draft = 'Lead-in:\n\n• Jonathan Jewett said X.\n• Bryce Alderson said Y.\n\nSource: https://www.mds.co/summit';
+  const lk = pg.redactLinks(draft, { 'https://www.mds.co/summit': 'public' });
+  const r = pg.redact(lk.text, names, new Set(['Bryce Alderson']));
+  assert.equal((r.text.match(/\n/g) || []).length, 5, r.text);
+  assert.ok(r.text.includes('\n• a member said X.\n• Bryce Alderson said Y.'), r.text);
+  assert.ok(r.text.endsWith('Source: https://www.mds.co/summit'), r.text);
+});
+
+test('D5: unflattenBullets puts an inline-run list back onto its own lines', () => {
+  const flat = 'Here is what stood out: • first point • second point • third point';
+  const t = pg.unflattenBullets(flat);
+  assert.equal(t, 'Here is what stood out:\n• first point\n• second point\n• third point');
+});
+
+test('D5: a bullet already at the start of its line is left exactly as it is', () => {
+  const good = 'Lead-in:\n• first point\n• second point';
+  assert.equal(pg.unflattenBullets(good), good);
+  assert.equal(pg.shapeText(good), good);
+});
+
+test('D5: the middot separator is unflattened too, and a decimal point is not a bullet', () => {
+  assert.equal(pg.unflattenBullets('a · b · c'), 'a\n· b\n· c');
+  assert.equal(pg.unflattenBullets('ClickUp is $5.50 a seat · month'), 'ClickUp is $5.50 a seat\n· month');
+  assert.equal(pg.unflattenBullets('4.8 avg over 20 reviews'), '4.8 avg over 20 reviews');
+});
+
+test('D5: tidyBreaks leaves at most one blank line between paragraphs', () => {
+  assert.equal(pg.tidyBreaks('a\n\n\n\nb'), 'a\n\nb');
+  assert.equal(pg.tidyBreaks('a\n\nb'), 'a\n\nb');
+  assert.equal(pg.tidyBreaks('a\nb'), 'a\nb');
+});
+
+test('D5: a link the rewrite dropped goes back to the sentence it supported', () => {
+  const before = 'Several members run Slack plus ClickUp together: https://x.test/thread\n\nA related debate on Google Chat: https://x.test/other';
+  const after = 'A number of members pair Slack with ClickUp.\n\nThere is a related debate about Google Chat: https://x.test/other';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok, JSON.stringify(sh));
+  assert.deepEqual(sh.restored_links, ['https://x.test/thread']);
+  assert.match(sh.text.split('\n')[0], /Slack with ClickUp\.? https:\/\/x\.test\/thread$/, sh.text);
+  assert.ok(sh.text.includes('https://x.test/other'), sh.text);
+});
+
+test('D5: a link on a line of its own is anchored by the lines above it', () => {
+  const before = 'Jason Pratt and Travis Reese both split Slack and ClickUp between comms and tasks.\nFull thread:\nhttps://x.test/thread';
+  const after = 'Jason Pratt and Travis Reese each split Slack and ClickUp across comms and tasks.';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok, JSON.stringify(sh));
+  assert.deepEqual(sh.restored_links, ['https://x.test/thread']);
+  assert.ok(sh.text.trim().endsWith('https://x.test/thread'), sh.text);
+});
+
+test('D5: when the sentence a link belonged to is gone, the rewrite is rejected, never guessed at', () => {
+  const before = 'Daniel Meredith runs his whole company inside ClickUp: https://x.test/thread';
+  const after = 'Members tend to use a chat tool and a task tool side by side.';
+  const sh = pg.repairShape(before, after);
+  assert.equal(sh.ok, false);
+  assert.deepEqual(sh.missing_links, ['https://x.test/thread']);
+  assert.ok(!sh.text.includes('https://x.test/thread'), sh.text);
+  // ...and what the caller publishes instead is the pre-rewrite draft, correctly shaped.
+  assert.ok(pg.shapeText(before).includes('https://x.test/thread'));
+});
+
+test('D5: a faithful rewrite is left alone — the backstop is not a rewriter', () => {
+  const before = 'Lead-in:\n\n• first point: https://x.test/1\n• second point';
+  const after = 'Lead-in:\n\n• first point: https://x.test/1\n• second point';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok);
+  assert.deepEqual(sh.restored_links, []);
+  assert.equal(sh.text, after);
+});
+
+test('D5: the backstop repairs a rewrite that both flattened the list AND dropped a link', () => {
+  const before = 'What members run:\n• Slack for comms plus ClickUp for tasks, per Jason Pratt: https://x.test/a\n• ClickUp on its own, per Daniel Meredith: https://x.test/b';
+  const after = 'What members run: • Slack for comms plus ClickUp for tasks, per Jason Pratt: https://x.test/a • ClickUp on its own, per Daniel Meredith';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok, JSON.stringify(sh));
+  assert.deepEqual(sh.restored_links, ['https://x.test/b']);
+  const lines = sh.text.split('\n');
+  assert.equal(lines.length, 3, sh.text);
+  assert.ok(lines[1].startsWith('• Slack for comms'), sh.text);
+  assert.ok(lines[2].startsWith('• ClickUp on its own') && lines[2].endsWith('https://x.test/b'), sh.text);
+  assert.ok(!/ • /.test(sh.text), sh.text);
+});
+
+test('D5: the backstop never invents a url — it can only put back one the draft carried', () => {
+  const before = 'Members pair Slack and ClickUp for comms and tasks.';
+  const after = 'Members pair Slack and ClickUp for comms and tasks.';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok);
+  assert.deepEqual(pg.extractUrls(sh.text), []);
+});
+
+test('D5: a link the rewrite MOVED is not duplicated — it is already present', () => {
+  const before = 'Jason Pratt splits Slack and ClickUp: https://x.test/a\n\nA related debate: https://x.test/b';
+  const after = 'A related debate: https://x.test/b\n\nJason Pratt splits Slack and ClickUp: https://x.test/a';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok);
+  assert.deepEqual(sh.restored_links, []);
+  assert.equal((sh.text.match(/x\.test\/a/g) || []).length, 1, sh.text);
+});
+
+test('D5: the shape pass runs BEFORE the leak checks, so a repair still sees a shaped answer', () => {
+  // The whole pipeline order in one case: a flattened rewrite that also reintroduced a closed name
+  // comes out shaped, with the name masked and the answer kept.
+  const before = 'Who said what:\n• Bryce Alderson covered CAC.\n• A member covered bundling.';
+  const after = 'Who said what: • Bryce Alderson covered CAC. • Jonathan Jewett covered bundling.';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok);
+  const rp = pg.repairPublic(sh.text, names, new Set(['Bryce Alderson']), {}, []);
+  assert.equal((rp.text.match(/\n/g) || []).length, 2, rp.text);
+  assert.ok(rp.text.includes('Bryce Alderson'), rp.text);
+  assert.ok(!/Jonathan/.test(rp.text), rp.text);
+  assert.deepEqual(rp.leftover, []);
 });

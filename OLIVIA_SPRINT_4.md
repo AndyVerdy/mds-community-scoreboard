@@ -102,7 +102,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#168** | 💬 Millie test chat back in the admin at a new address — `/admin/olivia/test` was retired by #164; component + API survived, only the page died | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 13:20 local** — merge `48851e7`, confirmed via `/api/version`; `/admin/millie/chat` as a Chat tab in the Millie tool, `/admin/olivia/test` 307 → the chat (checked on prod), anon 307, API 403 anon / 200 staff; 1068 tests, `next build` exit 0; not restyled to the kit (legacy Tailwind look kept) |
 | **#169** | 🚪 Millie web front door + Public mode — a real chat for staff (answer in the same request, own conversation table, real asker) and a Public mode whose answers may leave MDS: names only from public sources, notes on where each part came from | 🟡 S2 | L | staging first (`olivia-web` entry), gate +9 checks (323 → 332) | ✅ **SHIPPED 2026-09-08 (Andy: "finish the rest and report")** — workflow in three promotes: `f5e9ce5d` 02:16Z (door + Public Gate, one graph with #174 #175 #143 #139 #141 #142 #144) · `49d4a931` 03:14Z (partner rows back a name from the partner's own site only) · **`69665fc2` 04:20Z (hardened gate: unicode name boundaries, both-sides normalisation, variant + first-name masking, closed links stripped, org rows out of the name index, gate proves the Public path is wired)**; **web `mds-digest-web` main `1987a2e` live on Render 04:23:47Z** (Ask Millie storefront tool `/admin/ask-millie`; old chat URLs forward; polling chat deleted) + `1aad368` (picker stays put, 16px text, Andy's live review); prod probes: secret-less 403, test lane 14 s, Public lane 40.6 s with 3 names → roles + 1 FB link removed; gate 332/332; 41 module tests, 1,129 web tests · close block below |
 | **#170** | 🧠 Millie web chat — long thread memory + many chats: running Haiku summary per thread, a `web_thread_search` tool for exact recall, sidebar of past chats with New chat | 🟡 S2 | M | staging first | 📝 filed 2026-09-07 (Andy: "File it, will do") — after #169 |
-| **#171** | 📣 Public answer from the Facebook tool — for a post without an answer, generate a public-safe reply in a popup (Andy's design pending) | 🟡 S2 | M | n/a (web) + the #169 door | 📝 filed 2026-09-07 (Andy: "delivery 2: generate public answer from facebook tool") — after #169 |
+| **#171** | 📣 Public answer from the Facebook tool — for a post without an answer, generate a public-safe reply in a popup (Andy's design pending) | 🟡 S2 | M | n/a (web) + the #169 door | ✅ **SHIPPED 2026-09-08 — merge `50ff14b`** — "mark answered" wired to `POST /api/admin/fb-post` (optimistic + read-back); new Draft-an-answer modal on every post calls the #169 Public door with the WHOLE post text (new `GET /api/admin/fb-post-text` — `snippet` caps at 240 of up to 669 chars); Copy / Mark answered / Regenerate / Open in Ask Millie; greeting added client-side from the author's first name (never sent to the door); later fixes: no `[link removed]` litter, inline bullets → real lines, no standalone link list, a first-sentence name counts as a greeting (`22c8559`) |
 | **#172** | 🔓 Team chat — everything-access mode for staff (exact revenue, contacts, billing included) behind a huge disclaimer; new team-only SQL the gate proves WhatsApp can never reach | 🔴 S1 | L | staging first, gate | 📝 filed 2026-09-07 (Andy: "I need team mode to include all categories - everything. That's why we need a huge disclaimer" · "delivery 3: Team chat") — after #169 |
 | **#173** | 📡 Ask Millie — live source trail + token streaming: the design's "Reading WhatsApp channels · 38 chats ✓" steps and streamed answer text on one held request; needs a progress hook in the answer loop | 🟡 S2 | M | staging first | 📝 filed 2026-09-07 from the design pack README ("Streaming, not polling") — #169 ships an honest two-event stream (started · answer) first |
 | **#174** | 🎯 A named item from her own list is a drill-down, not a new search — "Tell me more about Alex Chiru video" after a four-video list re-planned as a fresh speaker search (Andy's case 1, prod turn 65490 / exec 137515) | 🔴 S1 | S | ✅ **proven on staging `2d875cb3`** — Andy's exact chain exec 137664 `offer_bind.mode:'drilldown'`, speaker-named 137633, title-named 137645, "yes" 137637 unchanged, gate EXIT 0 | ✅ **LIVE `49d4a931`** (promoted 02:16Z as `f5e9ce5d`, one graph with #169; `49d4a931` = + #169 fix round 4) |
@@ -112,6 +112,8 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#141** | 🧭 "Not on file" when it is on file (bank C 6500: Fred's firearms brand) — `Plan Request` keeps the person of the previous turn on a pronoun follow-up, scopes the raw search to them and ranks it by the message's distinctive words | 🟡 S2 | S | ✅ **proven on staging `c28fb532`** — exec 138001 (row 65875) "Fred's brand is *TLO Outdoors*" with his post; 23/23 unit; gate EXIT 0 | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
 | **#142** | 🚧 The identity second-person rule no longer clamps a draft that refused the typed name (bank C 6483) — `secondPersonAboutOther()`; the clamp itself untouched | 🟡 S2 | S | ✅ **proven on staging `c28fb532`** — execs 137904 · 137962 (rows 65795 · 65845) real answers, was the canned line (137871); 9/9 unit | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
 | **#144** | 📅 A follow-up about events stays in the events lane (bank C 6372) — `eventsLaneCarry()`; the 2027 catalog is reachable since `event_lookup_v3` | 🔴 S1 | S | ✅ **proven on staging `c28fb532`** — execs 137902 · 137954 (rows 65791 · 65833) consistent with the turn before; 9/9 unit (the carry stood by, the router chose events itself) | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
+| **#176** | 🔒 Public mode means MDS members, not the world — corrected scope: OPEN = group posts/comments, partner + event pages, non-verification WA chats, public-flagged recordings; RESTRICTED = the 5 verification chats, restricted recordings, applications | 🔴 S1 | M | n/a (SQL + module) | ✅ **PROMOTED 2026-09-08 — prod `15649d68`** — 30-probe eval found + fixed 5 defects (own-post author unbacked · refusal instead of a no-detail answer · unlabelled evidence read as closed · a 420k-regex/turn 500 → 151ms · a `normText` whitespace bug blamed on the Haiku rewrite); name index 64 junk rows out (5,384→5,320); same-question before/after Public: 1→6 paragraphs, 1→4 links, 0→4 quotes, 8→0 masked (ungated compare 7/6/3); module tests 15→107; gate 331→345 GREEN; migrations applied LIVE; PR #2 |
+| **#177** | 🔓 Ask Millie's Public answer names nobody even when the group backs the name — Facebook draft named Adam Weiler + linked his session, Ask Millie wrote "a member"/"one seller" for the same evidence | 🟡 S2 | S-M | staging + gate + promote | 📝 filed 2026-09-08 (Andy: "lets file it") — after #176 |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -747,6 +749,27 @@ against the post id; mark answered flips the post's state; regenerate asks again
 question over. 4. The no-confident-answer state renders when the door returns a refusal or an honest miss. 5.
 Nothing is posted to Facebook by this ticket.
 
+**✅ SHIPPED 2026-09-08 — merge `50ff14b`, live on Render (`/api/version`).**
+
+*Results.* "Mark answered" wired to the endpoint that already existed (`POST /api/admin/fb-post`) — optimistic
+with a read-back, the row leaves the unanswered list immediately. New "Draft an answer" modal on every post row
+calls the same Public door Ask Millie's Public target uses, with the WHOLE post text — new `GET
+/api/admin/fb-post-text`, because the table's `snippet` column is capped at 240 characters and Millie had been
+answering the first 240 of a 669-character post — then an editable draft, Copy for the group, Mark answered,
+Regenerate, Open in Ask Millie. The greeting is added client-side from the post author's first name, never asked
+of the door, because the gate can mask a name the prompt itself carries. Later fixes: no `[link removed]` litter
+in a draft, inline bullets become real lines, no standalone links list (the answer carries its links inline), a
+name anywhere in the first sentence counts as an existing greeting (`22c8559`).
+
+*ACs.* 1 ✅ Draft-answer popup, post quoted on top, Public preselected · 2 ✅ calls the #169 door with the full
+post text, shows draft + source chips + GATED strip · 3 ✅ draft stored against the post id; mark answered flips
+state; regenerate re-asks; open-in-Ask-Millie carries the question over · 4 ⏳ no-confident-answer state built,
+not separately probed this session · 5 ✅ nothing posted to Facebook by this ticket (Copy is manual, for the
+group).
+
+*Before → after.* Draft answered from the first 240 of up to 669 post characters → the whole post · unanswered
+posts with no path to an answer → a Draft-an-answer action on every row.
+
 ### #172 · Team chat — everything-access mode
 
 **🔴 S1 · size L — filed 2026-09-07 (Andy: "I need team mode to include all categories - everything. That's why we
@@ -854,6 +877,92 @@ composer height not recomputed on rail toggle.
 snapshot, rollback = re-apply the old body · apply scripts must take `--dry-run`/`--apply` (a `--help` on one of them
 mutated staging tonight) · gate check 4 judges the SHIP target, so re-assert prod with a gate run after every promote.
 Still to prove: Andy's first send from the live page (confirms the web secret on Render).
+
+**Addendum — Andy's live review, second wave (same night, folded into the merges landing on `main` at
+`50ff14b`).** Rail toggle and session title moved into the shared header · one chrome row (picker + Clear) ·
+notice dismissible per session · thread full width with a 960px measure column · Public made the default target ·
+16px message body and session titles · per-thread Clear with a two-step confirm plus a staff-scoped DELETE.
+Before → after: chrome above the thread 225px → 122px once the notice is dismissed.
+
+### #176 · Public mode means MDS members, not the world
+
+**🔴 S1 · size M — found + corrected 2026-09-08, same night as #169.**
+
+**Story.** As MDS staff generating a Public answer, I want "Public" to mean the MDS membership the Facebook
+group already reaches — not the open internet — so a fact that is safe in front of any member is not stripped
+as if it were a leak, while anything sourced only from a verification-gated chat, a restricted recording or an
+application still never crosses.
+
+**Andy's rulings.** "you do realise that Public means MDS members … the only restiriction for public mode is
+opt in sources" · "the whole idea behind public is that we hiding exact details from restictat chats."
+
+**The corrected rule, by room rather than reach.** OPEN — named, quoted and linked freely: the group's posts
+and comments, partner listings and pages, events and pages, WhatsApp chats that are not verification-required,
+and recordings whose `access_restriction` is public. RESTRICTED — may inform an answer, no exact detail
+crosses: the five verification-required chats (Centurion 20M+, Large SKU, Real Estate, Supplements, TikTok),
+restricted recordings, applications, and anything unclassifiable. Spine: `digest.chats.verification_required` +
+`digest.videos_catalog.access_restriction`; a call transcript inherits its recording's restriction, joined on
+the row's url.
+
+**Acceptance.**
+1. A name backed only by an OPEN source (its own group post, a partner/event page, a non-verification WA chat,
+   a public-flagged recording) survives in a Public answer, quoted and linked.
+2. A detail sourced only from a RESTRICTED room (the five chats, a restricted recording, an application, or
+   anything unclassifiable) never surfaces as an exact detail — the answer may still use it without naming or
+   quoting it.
+3. Every evidence row a Public answer draws on carries a room label; nothing reaches the answer unlabelled.
+4. Leak gate proves the classify → name-index → redact → verify chain end-to-end; a 30-probe evaluation (10
+   historical group asks × Ask Millie Public / the Facebook draft / the ungated member answer) replays clean.
+5. Migrations ship live; rollback is re-applying the previous function body.
+
+**✅ PROMOTED 2026-09-08 — prod `15649d68`.**
+
+*Results.* A 30-probe evaluation (10 historical group asks, run three ways: Ask Millie Public / the Facebook
+draft tool / the ungated member answer) found and fixed five defects: an open post's AUTHOR did not back their
+own name (one answer masked eight members the ungated answer named) · a leftover restricted detail caused an
+outright refusal instead of an answer without that detail (2 of 30 refused) · evidence rows arrived unlabelled
+and so classified closed (one answer had all 18 sources tagged `other`) · one probe 500'd — `Public Redact`
+compiled 420k regexes per turn, 24,737ms → 151ms with a run-set pre-filter · the shape was being destroyed by a
+whitespace collapse inside `normText` in `public_gate.js`, not by the Haiku rewrite (staging execution 139221:
+16 newlines in, 0 out). The name index dropped 64 junk rows (5,384 → 5,320): "first last", "andy test", "Your
+Mom Strueby" and similar.
+
+*ACs.* 1 ✅ · 2 ✅ · 3 ✅ · 4 ✅ gate 331 → 345 checks, GREEN · 5 ✅ migrations
+`20260908_public_gate_classify_member_audience_176.sql`, `20260908_public_gate_classify_restriction_spine_176.sql`
+and the name-index update all applied live (a shared Postgres function is deployed the moment it runs — no
+snapshot rides the promote; rollback is re-applying the previous definition).
+
+*Before → after* (same question, Public mode). Paragraphs 1 → 6 · links in the body 1 → 4 · attributed quotes
+0 → 4 · names masked 8 → 0. The ungated member answer used as the comparison target: 7 paragraphs, 6 links, 3
+quotes. Module tests 15 → 107.
+
+PR: https://github.com/AndyVerdy/mds-community-scoreboard/pull/2
+
+*Deferred (not blockers).* The lone-name pass protects only a first token — it published a bare "Tudor" while
+masking "Tanase Tudor - Tude" · the GATED strip's link detail strips the query string, so a removed
+`?comment_id=` variant of a link reads as a surviving post link.
+
+### #177 · Ask Millie's Public answer names nobody even when the group backs the name
+
+**🟡 S2 · size S-M — filed 2026-09-08 (Andy: "lets file it").** Needs staging + gate + a promote.
+
+**Story.** As MDS staff, I want Ask Millie's Public answer to name a member when the group itself already
+backs that name — the way the Facebook draft tool does on the identical evidence — so the two Public-mode
+surfaces do not disagree, and a fact-checked public answer is not thinner than it has to be.
+
+**Evidence (tonight, same question through both surfaces).** The Facebook draft named Adam Weiler and linked
+his public catalogue session; Ask Millie's Public answer wrote "a member", "one seller", "a community member"
+throughout, and its own note said names were replaced with role phrases. The links in both were correct (the
+removed one was "Dominating PPC with Variations", `access_restriction = restricted`; the linked one was
+public) — this is about names, not links.
+
+**Acceptance.**
+1. Given the same OPEN evidence the Facebook draft names, Ask Millie's Public answer names it too — same
+   name, same link.
+2. A name still masks when its only backing is RESTRICTED evidence, unchanged from #176.
+3. Staged, gated and promoted like #176's fixes.
+
+📝 filed — after #176.
 
 ### #168 · Millie test chat back in the admin, at a new address
 

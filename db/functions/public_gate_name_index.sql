@@ -14,5 +14,16 @@ AS $function$
   ) x
   where length(trim(n)) >= 5 and position(' ' in trim(n)) > 0   -- two-word names only; single words over-match
     and trim(n) not ilike 'MDS %'    -- org rows: MDS Community / Partners / Programs / Member / Chapters / Test
-    and trim(n) not ilike '% MDS';   -- org rows: Systems MDS / Andy MDS
+    and trim(n) not ilike '% MDS'    -- org rows: Systems MDS / Andy MDS
+    -- #176, three properties that disqualify a row from being a person's name (see header):
+    and trim(n) !~ '[0-9]'           -- a phone number, address, record id or duplicate suffix, not a name
+    and trim(n) not like '%@%'       -- an email glued to (or instead of) a name
+    and lower(trim(n)) !~ '(^|[^[:alpha:]])test(ing)?([^[:alpha:]]|$)'  -- placeholder/test accounts
+    and lower(split_part(trim(n), ' ', 1)) <> all (array[               -- function-word first token
+      'a','an','the','this','that','these','those','my','your','his','her','its','our','their',
+      'they','them','we','you','and','but','because','from','with','without','into','onto','about',
+      'over','under','for','of','to','in','on','at','as','not','none','null','unknown','undefined',
+      'test','testing','first','last','next','other','another','some','any','all','both','each',
+      'every','more','most','much','many','very','just','only','also','here','there','when','where',
+      'what','which','who','whom','whose','how','why','same','such','etc']);
 $function$
