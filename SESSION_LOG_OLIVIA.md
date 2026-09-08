@@ -2,6 +2,140 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-08 03:14Z · SECOND PROMOTE — #169 fix round 4 · **prod `49d4a931`** (92 nodes)
+
+**Trigger:** the #169 session finished `public_gate.js` fix round 4 on staging `027bd776` and asked me to promote under Andy's
+conditional go ("my go to promote if another agent agrees"). **I verified the graph myself before writing to prod:** `olivia_wf.py
+diff prod staging` → changed = `Classify Evidence (Supabase)` (`params.jsonBody`), `Public Redact`, `Public Verify` + the three
+webhook nodes that always differ by path/id; a full parameter comparison of every other node → **NONE differing**; my seven edits
+present on staging (marker check); the change reads as a tightening — a partner row's public name may be backed only by
+`name`/`web_summary`/`web_people`/`web_pricing` (the partner's own crawled site), never `reviews_sample` / `strength_note` /
+`fit_reason` (member text); `node --test scripts/olivia_loop/public_gate.test.mjs` **15 pass / 0 fail**.
+**Promote (03:13–03:14Z, lock held):** gate **GATE PASSED** inside the promote · 3 changed nodes · snapshots
+`prod_2026-09-08T031444Z_pre-promote.json` (`f5e9ce5d`) and `prod_2026-09-08T031449Z_post-promote-169-fix4-20260908.json` ·
+bounce 200/200 · **prod `49d4a931`, graph matches staging: True** · `PROMOTE_EXIT=0`. **WA smoke after the bounce** (5 turns,
+silent path, rows 65928–65937 + `olivia_seen` deleted): all 200; exec 138141 content_search with a recorded 3-video offer, 138144
+video_search, 138146 partner_lookup with deals + pages. Lock released 03:17Z; the #169 session given the prod versionId.
+**Two corrections sent to the #169 session (its handover was inaccurate, neither a blocker):** it described "two Code nodes …
+nothing else differs" — the promote moved **three** nodes (the `Classify Evidence` jsonBody carries the same logic inline); and
+gate check 4 (`1890e62`) now judges staleness on the ship target with a stale **prod** only informational, so prod drift from
+`public_gate.js` while staging is current no longer reddens the gate.
+**Not a regression, recorded because it looks like one:** exec 138144 "Tell me more about Alex Chiru video" planned a FRESH video
+search — the previous turn's offer held three videos, none of them Alex Chiru's, so there was nothing to drill into; #174 binds
+only a named item that is IN the recorded offer (it bound at 02:17, exec 138068, when the previous answer named that video).
+**Found alongside, unfiled:** the offer recorder writes loose `pending_offer.titles` / `items[].name` (exec 138141 recorded a
+whole sentence as an item name plus three stray titles); ids were correct and binding worked.
+
+**03:25Z — Andy: "why two different answers?" (two WhatsApp screenshots of the SAME question, 15:46 CT and 22:21 CT).** Both are
+his own real turns, not probes: 65488/65489 on the OLD prod `30fd7e6f`, and 65940/65941 on `49d4a931` seven minutes after the
+second promote. **`Plan Request` planned them identically** (`content_search`, same `p_terms` / `p_sources` / `raw_params`), so
+every difference is the answer loop: the afternoon run also called the partner tool (Productpinion, Listing Optimization AI with
+offers) and linked both member hypotheses (Casey Xiao-Morris, Ryan Bastuba); the night run called neither and NAMED Casey's
+thread without a link. The afternoon answer also carried the #175 orphan (`…/videos/63e5b874…` above the closing question — the
+same append traced to exec 137508 in case 1); the night answer carried none. Recorded as new evidence under **#155** (whether a
+quote carries its link is decided per run by the model, not by a rule — the sharpest before/after pair we have). Andy's ruling:
+"if we have it as a ticket, then it's fine." Nothing in tonight's eight tickets touches which tools the loop chooses.
+
+**03:20Z — the #169 session disclosed a fail-open in `public_gate.js`; I verified it independently rather than take it on trust.**
+Its report ("accented names, 33 of 5,394 rows") is real but the wrong shape: JS `\b` is ASCII-only, so the miss is names whose
+FIRST or LAST character is non-ASCII — reproduced on the shipped module, **"Émile Dupont" neither masked nor caught, "José Núñez"
+(mid-name accent) fine**. Counted on `member_profiles`: 54 rows contain any non-ASCII, **23 are boundary-evading**, and they are
+wider than Latin accents ("Øun Thaih", "航 杨", math-alphanumerics, Khmer/Arabic, one trailing U+FE0F variation selector). Four
+call sites carry the same `\b` (backed-name test, mask, first-name replace, leftover-name verify) — a verify on the same broken
+boundary passes exactly what the mask missed. Sent the peer the failing/passing cases and the four sites for its tests; the fix,
+its staging apply and a third promote are ITS work, and it will message before touching staging. **No exposure:** the web door is
+header-authenticated (a secret-less POST is refused) and its page has not merged. Trap written into `OLIVIA_HANDBOOK.md` §13.
+
+**03:35Z — #174 proven on Andy's OWN live turn, found while checking the row range was clean.** Two minutes after his screenshot
+question he sent *"Tell me more travis video"* (22:23 CT, rows 65942/65943): **exec 138168** bound it as
+`offer_bind {mode:'drilldown', ids:['69853b20…'], offered:2, named:["How Brands Turn Failed Creative Tests… — Peter-Paul Maan &
+Travis Klabon (Intellivy), Mogul Call, Feb 2026"]}` → `video_search p_video_id=69853b20…` → the full rundown of that one call.
+The bind came off **"Travis"**, a co-speaker's first name sitting MID-LINE in the recorded offer item — Andy's case 1, landing on
+his real usage, not a probe. **Auditing trap recorded (handbook §13):** `olivia_messages.plan` does not carry `offer_bind` — the
+row reads null while the execution shows the drilldown; audit binds in the execution, the row's tell is `p_video_id`.
+
+**Close state 03:30Z (22:30 CT):** prod `49d4a931` (92 nodes, eight tickets + #169 fix round 4) · staging `027bd776` · lock free ·
+no probe rows left (`digest.olivia_messages` for 17866578153 ends at Andy's own 65941) · branch `174-named-item-drilldown-20260907`
+merged to `main`. **Next ticket: #147** — "Is this member registered?" is answered twice, by two sources, and they disagree
+(🔴 S1, size M); it also gates the last unfixed half of #140.
+
+## 2026-09-08 02:16Z · PROMOTE — one graph, eight tickets · **prod `12wj6h1TWqb0d4Dq` = `f5e9ce5d` (92 nodes): #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144 — LIVE, prod probes green**
+
+**Trigger (Andy):** "you have my go to promove if another agent agees". Asked the #169 session by message; it answered NOT YET
+(one SQL-only privacy fix in flight), then ~15 min later "AGREED — staging 4190faa9 is ready, lock is yours" (its Public-mode
+probes green: execs 138030 / 138034 / 138040 / 138051 / 138053; its gate 331 checks GREEN; the classifier fix was SQL-only).
+**Pre-flight:** lock free → staging `4190faa9`, 92 nodes, my seven edits intact on it (marker check) → lock taken under
+"PROMOTE one graph …".
+**Promote (`python3 scripts/olivia_wf.py promote --label post-promote-8-tickets-20260908`, 02:14–02:16Z):** gate GATE PASSED
+inside the promote · snapshot `olivia_snapshots/prod_2026-09-08T021615Z_pre-promote.json` (80 nodes, `30fd7e6f`) · 19 changed
+nodes (the peer's 12 web/public nodes + Load Recent Turns + Log Inbound; my Answer Seed · Format Reply · Gate Verdict · Plan
+Request · Prep Context) · settings preserved · bounce deactivate 200 → activate 200 · **prod versionId `f5e9ce5d`, graph matches
+staging: True** · snapshot `prod_2026-09-08T021621Z_post-promote-8-tickets-20260908.json` (92 nodes) · `PROMOTE_EXIT=0`. Prod
+webhooks now `olivia-wa-live` + `olivia-web-live` (the web door idles until #169's page merges in mds-digest-web).
+**Prod probes (silent path, 18 turns, `Eval (silent)?` on every execution, zero Meta sends; rows 65892–65927 + `olivia_seen`
+deleted by id / wamid):** #174 exec 138068 `offer_bind.mode:'drilldown'` → the Alex Chiru video alone · #143 ordinal 138072
+"the second one" → the Peter-Paul Maan drill-down · #139 138074 The Media Elephant · Media Labs · Consumer Labs · Social Tale ·
+Zainith · Kalodata · Euka, each with its deal and page, nothing appended · #141 138080 raw `{p_author: "Fred McKinnon",
+p_terms: ["firearms"]}` → "Fred's firearms-adjacent brand is *TLO Outdoors* … per his own Facebook post from Jan 9, 2026" +
+the post link · #142 138082 one lap, real answer ("I'm chatting with Andy Verdy here, not Ivan Ong … here's what the schedule
+covered") · #144 138086 "the next MDS Summit is already announced! It's *MDS Summit Cancun 2027* … September 26, 2027" · #175
+lap 2 138085 four 2027 events with their links, no duplicates. **All green.** Lock released 02:23Z; the #169 session told the
+prod versionId and that staging is its again (it has one more module tightening → a second small promote later).
+**Docs:** board Prod column ✅ LIVE `f5e9ce5d` on #174 · #175 · #143 · #139 · #141 · #142 · #144 · handoff STATE 02:16Z (rollback
+= `olivia_wf.py rollback` to the pre-promote snapshot) · this entry + index line.
+**Rollback path, in writing:** `prod_2026-09-08T021615Z_pre-promote.json` (80 nodes, `30fd7e6f`) — predates #174 / #175 / #143 too.
+
+## 2026-09-08 (small hours) · Backlog verified first, then fixed one by one · **#139 · #141 · #142 · #144 BUILT, STAGED and PROVEN on `c28fb532` (+ #175 lap 2 · #139 lap 2) — awaiting Andy's promote**
+
+**Trigger (Andy):** "chaeck if there are more report in the backlog" → "why are you redin eval not backlog?" (the board is the
+backlog, not the eval reports) → "check one by one, and fix one by one, but verify first if issue is still present".
+
+**Verification pass (00:33–00:50Z, staging `aa649e7b`, 25 bank C cases in 54 read-only probe turns, rows cleaned by id):**
+#139 1/5 still failed (6075: five agencies, no deal, no page) · #140 2/6 (6267 → #123 misroute of `event_who`, 6498 → #147;
+not worked) · #141 1/3 (6500: "his" rebound to Tamkin Collins, Fred's own posts never retrieved) · #144 1/3 (6372: the follow-up
+left the events lane; the 2027 catalog IS reachable since `event_lookup_v3`, 6370 / 6400 pass) · #142 1/3 (6483 clamped on an
+identity-rule false positive) · #155 half present (size M) · #132 unchanged by design. Verification tables under each ticket.
+
+**Fixes (TDD — a pure function each, RED watched on the live bytes, an idempotent apply script, GREEN on the dry-run and again on
+the shipped bytes):** #139 `apply_139_partner_link_repair.py` (`linkCoverageUrls` pairs `partner_url` rows by name; repair line
+`Name (offer): page`) · #142 `apply_142_identity_precision.py` (`secondPersonAboutOther()` stands down when the draft names the
+asker or refuses the typed name) · #141 `apply_141_pronoun_subject.py` (`pronounSubject()` keeps the previous plan's person) ·
+#144 `apply_144_events_lane_carry.py` (`eventsLaneCarry()`) · `apply_batch_139_142_141_144.py` composes every `patch_code()` on
+one GET → one PUT → one bounce.
+
+**Staging, four cuts under the lock** (the #169 session had said "staging is yours" but left the lock under its reason;
+`lock` refused without `--force`, which stays forbidden — asked by message, waited on a poll, took it 00:57Z):
+- `b39b31ab` 00:58Z — the batch. 22-turn probe: #144 ✅ exec 137902 · #142 ✅ 137904 (the lap-3 draft carried a typed name +
+  "your profile" and passed; laps 1–2 were the Haiku fact check's own identity ruling) · #143/#174 regressions ✅ (137907 ·
+  137910 · 137914) · #139 not exercised (no partner rows in 137887) · **#141 ❌ 137893** — the router put the follow-up on the
+  member-card lane this time, the carry never ran · **the #1c event repair appended stale links** (137901: the same rows'
+  `event_url` under a list linked by `reg_link`; 137902: "Register: …MDSSummitSingapore" pinned to a 2027 answer because
+  "…of Singapore:\n*MDS Summit Cancun 2027*" read as naming the finished Summit).
+- `b82f752e` 01:09Z — #175 lap 2 `apply_175b_event_repair_precision.py` (`_nameInAnswer` per line / clause;
+  `fieldRepairSkip()` → linked / past) and #141 lap 2 `apply_141b_topic_carry.py` (card lane + `pronounTopicTerms()`).
+  20-turn probe: #175b ✅ 137953 / 137954 (replay of 137901 / 137902 → 0, was 2 / 2) · #139 ✅ 137957 with one wart
+  ("TikTok Shop (TBA): …" — a partner literally named like the question) · #142 ✅ 137962 one lap · #174 ✅ 137965 · #143
+  ordinal ✅ 137969 · **#141 ❌ 137951** — with `p_author` set, the name as a raw TERM ranked forty comments that mention Fred
+  above his own posts; the TLO Outdoors post (content_items 103886, 1,326 chars in) sat past the preload cap.
+- `f4e40708` 01:25Z — #141 lap 3 (`pronounRawTerms()`: distinctive words only, no name pieces) · `c28fb532` 01:26Z — #139
+  lap 2 `apply_139b_partner_ask_guard.py` (`linkCoverageUrls(evRaw, answerText, askText)`). 10-turn probe: **#141 ✅ 138001
+  "Fred's brand is *TLO Outdoors* — he posted about it directly on Facebook … hunting, firearm accessory, and tactical gear"
+  + the post link** · #139 ✅ 138004 seven partners, seven deals, seven pages, nothing appended · #174 ✅ 138007 drilldown.
+**Gate:** the 01:14Z run, fired while a probe run was live, had ONE FAIL ("restricted returned ONLY with explicit consent flag",
+`content_search` v1 — the function's consent clause is intact); re-run 01:29Z **323 PASS, `GATE_EXIT=0`**, no code between.
+**Cleanup:** 104 probe rows (65770–65885) + 68 `olivia_seen` rows deleted by id / wamid pattern; Andy's real thread ends at 65491.
+**Docs:** board — close blocks under #139 · #141 · #142 · #144, a lap-2 block under #175, four at-a-glance rows · handbook §13
+two new traps (same-row links / per-clause naming · author-scoped full-text ranking) + Appendix C Routing / Fact gate rows ·
+handoff STATE 01:35Z. Lock released 01:36Z; the #169 session told "staging is back c28fb532".
+**Lessons:** (1) a row is linked by ANY of its URLs, and a name is named inside ONE clause — a repair that checks one field
+and matches words across punctuation pins the wrong link; (2) an author-scoped full-text search is RANKED by the terms: the
+name as a term buries the person's own posts, generic words dilute, and `hunting/firearm/tactical` is one path token to the
+parser; (3) the router is not deterministic — the same follow-up took two lanes in two runs, so a deterministic carry has to
+cover every lane that runs a raw fetch; (4) one PUT per batch (the runner) instead of four bounces; (5) a single gate FAIL
+during a live probe run is re-run before it is believed.
+**Next:** Andy's promote — one graph: #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144. Then #140's remainder waits on
+#123 / #147; #155 and #132 are size M, own sessions; the list-tool evidence clipping (from #143) is still unfiled.
+
 ## 2026-09-07 (night) · Poor answers check, case 1 · **#174 + #175 BUILT, STAGED and PROVEN on `2d875cb3` — awaiting Andy's promote**
 
 **Trigger (Andy):** "oliva continues. poor answers check" → "case 1" (a WhatsApp screenshot: "Tell me more about Alex Chiru
@@ -150,6 +284,24 @@ fixed in-commit. Review on Corey AND Ryan Pace (#182–#475; 7 rows match the fo
 defects — the shared row took 52px from the name column (27 of 51 names truncated at 375px) and an empty grid row
 added 28px per row — fixed by restoring the dedicated numbers row (3 of 51 truncate, all pre-existing; no 0px
 track), re-review measured it. 901 tests · tsc clean · build 0.
+
+**#165 phase 4 — `self-reported` vs `observed` on every persona line (LIVE, `556b168` → web `main` `18bac76`).**
+Trigger: Andy asked for the sources of Luke Li's gives/asks/focus; every one of his 3 gives, 3 of 4 asks and 6 of 7
+focus lines traced to his 2026-08-05 form or WhatsApp chat memberships; one observed signal (a 2026-09-03 SNS
+question); 14 blue chips from 3 form lines. Andy: "these are important criteria since we are using it to match
+people" → "add self-reported vs observed labels on the card." Rule from the live pointer prefixes (self-reported
+564/398/1914 · authored 685/542/678 · fb · posted · profile · wa_chats_member_of · question(s) · events/attended …):
+self-reported = self-reported/self/profile/attributes/chat membership; observed = authored/posted/comment/fb/
+question/attended; a multi-signal pointer is observed if any signal is; word-bounded scan of each `;`-segment with
+`-` as a boundary (the `post-scaling` bug: 3 of 10,202 lines, fixed zero-regression); census-key fallback. Reviews:
+all 10,202 pointers re-run through an independent port — splits digit-for-digit; 90-line hand audit 90/90. Community
+gives: 987 self-reported / 1,742 observed / 118 untagged (4.1%; free prose with no source word). Tests 33 → suite
+1,120. **Phase 5 — human sentence in the hover — PARKED** (`ff4f234`, `bf1ab62`, unmerged): the rewriter reaches
+~26% of segments; each review sample found a new free-prose shape (bracketed lists, nested parens, compound dates);
+round 2 was stopped on Andy's "you said it was easy, and now you stuck" / "push what we have, and lets pause".
+Owned: the labels should have shipped when they first cleared; "one more commit" was a wrong estimate for parsing
+model prose. Real fix: a structured `signal` pointer from `persona_refresh.py`'s prompt (to file). Persona cadence
+and decay facts written into the handoff.
 
 **Findings for #163 from #165 (reported, untouched):** posts weight 2.0 but 0 of 16,762 rows carry a
 posts evidence key (heaviest weight may be dead) · 1,016 detail-stat rows score under a zero parent ·

@@ -11,6 +11,54 @@
 
 # Olivia — next session
 
+## ✅ SESSION CLOSED 2026-09-08 03:30Z (22:30 CT) — prod `49d4a931` · staging `027bd776` · lock free · next ticket #147
+**Live on prod tonight, two promotes:** `f5e9ce5d` (02:16Z) = #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144, then
+`49d4a931` (03:14Z) = + #169 fix round 4. Both gate-green, both snapshotted, both prod-probed. Rollback points:
+`olivia_snapshots/prod_2026-09-08T031444Z_pre-promote.json` (back to `f5e9ce5d`) and `prod_2026-09-08T021615Z_pre-promote.json`
+(back to `30fd7e6f`, which predates everything from tonight).
+**Owned by the #169 session, not me — do not start it:** a fail-open in `public_gate.js` (ASCII `\b`; see `OLIVIA_HANDBOOK.md`
+§13 for the exact shape and the 23 boundary-evading names). It fixes, stages, probes and gates; it messages before touching
+staging and asks me/the next session to run the third promote. Prod has the flaw today with **no exposure** — the web door is
+header-authenticated and its page has not merged.
+**Evidence added, no new tickets filed:** Andy's two screenshots of the same question (15:46 CT vs 22:21 CT, turns 65489 vs
+65941) are now #155's sharpest evidence — identical plan both times, link-carrying and partner-tool calls varied by run, and the
+#175 orphan link is visibly gone after the promote. Andy: "if we have it as a ticket, then it's fine." Found-alongside and still
+unfiled: loose `pending_offer.titles`/`items[].name` recording, and list-tool evidence clipping (from #143).
+**NEXT TICKET — #147 · "Is this member registered?" is answered twice, by two sources, and they disagree** (🔴 S1, size M).
+*As a member, one answer decides whether I am at an event, and every lane gives me the same answer.* The agenda lane reads the
+GroupOS attendee export keyed by registration email; the who-to-meet lane reads the Airtable roster mirror, Confirmed only —
+different keys, different rules, different sync clocks, and the alias bridge (`digest.member_email_alias`) exists but is not
+consulted by `load_event_graph.py`. It gates the last unfixed half of #140. **Per the session protocol, present it and wait for
+Andy's go before starting.**
+
+## STATE 2026-09-08 03:15Z — second promote: prod `12wj6h1TWqb0d4Dq` = versionId `49d4a931` (#169 fix round 4 on top of the eight tickets)
+The #169 session finished its module tightening on staging `027bd776` and asked for the promote (Andy's conditional go: "my go to promote if another agent agrees"). **Verified before writing to prod, not taken on trust:** prod→staging diff = THREE nodes (`Public Redact`, `Public Verify`, and `Classify Evidence (Supabase)` `params.jsonBody`, which carries the same fix inline) plus the webhook path/id fields that always differ; **every other node byte-identical**; my seven edits intact on staging; the change is a TIGHTENING (a partner row's public name may be backed only by `name`/`web_summary`/`web_people`/`web_pricing` — the partner's own crawled website — never by `reviews_sample`, `strength_note` or `fit_reason`, which are member text); `node --test scripts/olivia_loop/public_gate.test.mjs` 15 pass / 0 fail.
+**Promote 03:13–03:14Z:** gate GATE PASSED inside `olivia_wf.py promote` · snapshots `prod_2026-09-08T031444Z_pre-promote.json` (`f5e9ce5d`) and `prod_2026-09-08T031449Z_post-promote-169-fix4-20260908.json` · bounce 200/200 · **prod `49d4a931`, graph matches staging: True** · `PROMOTE_EXIT=0`. WA smoke after the bounce (5 turns, rows 65928–65937 deleted): all 200, lanes normal.
+**Two facts recorded, both told to the #169 session:** (1) its handover said "two Code nodes … nothing else differs" — it was three nodes; (2) gate check 4 (commit `1890e62`) now judges staleness on the ship target only and treats a stale PROD as informational, so a prod that drifts from `public_gate.js` while staging is current no longer turns the gate red — right for a pre-promote run, thin for drift detection.
+**Found alongside (not a ticket, for priority evaluation):** #174's offer recorder writes loose `pending_offer.titles`/`items[].name` — exec 138141 recorded a sentence as an item name and three stray titles ("before", "Productpinion", "Listing Optimization AI"). Ids were right and binding worked, so nothing failed; it is cosmetic-to-mild. Also observed and NOT a regression: exec 138144 "Tell me more about Alex Chiru video" planned a fresh video search because the previous answer offered three videos, **none of them Alex Chiru's** — the #174 bind is designed to fire only when the named item is in the recorded offer (it did fire at 02:17, exec 138068, when the previous answer named it).
+
+## STATE 2026-09-08 02:16Z — PROMOTED: prod `12wj6h1TWqb0d4Dq` = versionId `f5e9ce5d` (92 nodes) — one graph: #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144
+**Andy's go** ("you have my go to promote if another agent agrees", 02:0xZ) + the #169 session's "AGREED — staging 4190faa9 is ready" (its Public-mode probes green, its gate 331 checks GREEN, its last fix SQL-only). Promote run 02:14–02:16Z under the lock: gate GATE PASSED inside `olivia_wf.py promote` · snapshots `olivia_snapshots/prod_2026-09-08T021615Z_pre-promote.json` (80 nodes, `30fd7e6f`) and `prod_2026-09-08T021621Z_post-promote-8-tickets-20260908.json` (92 nodes, `f5e9ce5d`) · 19 changed nodes (the peer's 12 web/public nodes + Load Recent Turns + Log Inbound; my Answer Seed · Format Reply · Gate Verdict · Plan Request · Prep Context) · bounce 200/200 · graph matches staging `4190faa9`: True · `PROMOTE_EXIT=0`. Prod webhooks now `olivia-wa-live` + `olivia-web-live` (the web door sits unused until #169's page merges in mds-digest-web).
+**Prod probes (silent path, 18 turns 02:16–02:21Z, `Eval (silent)?` on every one, zero sends, rows 65892–65927 deleted by id):** #174 exec 138068 `offer_bind.mode:'drilldown'` → the Alex Chiru video alone · #143 ordinal 138072 "the second one" → Peter-Paul Maan drill-down · #139 138074 seven partners with deals + pages, nothing appended · #141 138080 raw `{p_author: "Fred McKinnon", p_terms: ["firearms"]}` → "Fred's firearms-adjacent brand is *TLO Outdoors*" + his post · #142 138082 one lap, real answer (the Summit's own page link appended once, no Register line — finished event) · #144 138086 events lane, "*MDS Summit Cancun 2027* … September 26, 2027" · #175 lap 2 138085 four 2027 events, no duplicate links. **All green on prod.** Lock released 02:23Z; the #169 session told.
+**Rollback if needed:** `python3 scripts/olivia_wf.py rollback` to `prod_2026-09-08T021615Z_pre-promote.json` (80 nodes) — that graph predates #174/#175/#143 too.
+**Next:** the #169 session takes staging for one more module tightening (public_gate.js partner-name backing) → a second small promote; then its web page merges. Open behind that: #140 remainder (#123 / #147), #155, #132 (size M each).
+
+## STATE 2026-09-08 01:35Z — #139 · #141 · #142 · #144 BUILT, STAGED and PROVEN on staging `c28fb532` (+ #175 lap 2 · #139 lap 2) · awaiting Andy's promote · branch `174-named-item-drilldown-20260907`
+**Staging `c28fb532`** = the peer's #169 (Tasks 5–6) + #174 + #175 (+ lap 2) + #143 + #139 (+ lap 2) + #142 + #141 (three laps) + #144 · 92 nodes. Prod `30fd7e6f` untouched. Gate 323 checks `GATE_EXIT=0` (01:29Z). Lock released 01:36Z, the #169 session told "staging is back c28fb532".
+**Proof (execs; probe rows 65770–65885 deleted by id, 68 `olivia_seen` rows too):** #141 exec 138001 "Fred's brand is *TLO Outdoors*" + his post link · #139 138004 seven partners with deals and pages (137957: the appended "Euka (15% OFF…)" line, and the "TikTok Shop (TBA)" wart lap 2 removed) · #142 137904 / 137962 real answers (was the canned line, 137871) · #144 137902 / 137954 events lane, consistent with the turn before · #175 lap 2: replay of 137901 / 137902 appends 0 (was 2 / 2), 137953 one legitimate Cancun link · regressions: #174 138007 `offer_bind.mode:'drilldown'` · #143 ordinal 137969, yes 137910, nothing-pending 137914.
+**How it was applied:** `scripts/olivia_loop/apply_batch_139_142_141_144.py` — one GET, both nodes patched by the single-ticket scripts' `patch_code()` (Gate Verdict: 139 → 142 → 175b → 139b · Plan Request: 141 → 144 → 141b), one PUT, one bounce; idempotent per marker — **re-run it after any staging overwrite**. Suites on the live bytes: 175 33/33 · 142 9/9 · 141 23/23 · 144 9/9 · 143 45/45 · 174 30/30.
+**Promote (Andy's call, one graph):** #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144. **Not fixed, in writing:** #140 remainder (6267 → #123, 6498 → #147) · #155 (size M) · #132 (size M) · #142's Haiku half (the fact check itself fails a draft that refuses the typed name; the clamp is untouched) · content_items 104754 unreachable by the term "firearm" (path token, handbook §13) · list-tool evidence clipping (unfiled, from #143) · 6201 dossier lane (out of #143).
+**Not exercised live:** `eventsLaneCarry()` (the router chose events itself both runs) and the #142 rule on a regen lap (137962 passed first lap) — both offline-proven backstops.
+
+## STATE 2026-09-08 00:55Z — backlog VERIFIED on staging `aa649e7b` (Andy: "verify first if issue is still present"); four fixes BUILT and unit-proven, staging apply pending the #169 handover (asked 00:46Z)
+**Verified, 25 bank C cases in 54 read-only probe turns (rows cleaned by id):** #139 1/5 still fails → `apply_139_partner_link_repair.py` ·
+#140 2/6 fail, both upstream (#123 misroute for 6267; #147 for 6498) · #141 1/3 fails → `apply_141_pronoun_subject.py` · #144 1/3 fails
+→ `apply_144_events_lane_carry.py` (the 2027 catalog IS reachable now) · #142 1/3 clamps on an identity-rule false positive →
+`apply_142_identity_precision.py` · #155 half present, size M, own session · #132 unchanged by design. Verification tables sit under
+each ticket on the board. **Apply order when staging is ours: 139 → 142 (both Gate Verdict) → 141 → 144 (both Plan Request), then
+re-probe 6075 · the Fred chain · the 2027 chain · 6483 · two regression chains, gate, hand back.** Tests: 175/139 19/19 · 142 9/9 ·
+141 12/12 · 144 9/9 · 143 45/45 · 174 30/30 on the dry-run bytes.
+
 ## STATE 2026-09-08 00:15Z — #174 + #175 + #143 PROVEN ON STAGING `eb99c336` · awaiting Andy's promote · branch `174-named-item-drilldown-20260907` (merged to `main` for #174/#175; #143 docs follow)
 **Staging `eb99c336` = #169 Task 5 + Task 6 (the peer's Public Gate) + #174 + #175 + #143. Prod `30fd7e6f` untouched. Gate EXIT 0
 (four runs, last 00:14Z). Lock free; the #169 session runs its Task 7 gate checks next, then Andy decides one promote for all four.**
@@ -56,6 +104,31 @@ URLs with the wrong row (#175). Both on the board with story + ACs; both filed f
 - **Backlog cases queued after these (Andy: "check backlog for more cases, address them one by one"):** #143 (3 bank C
   follow-ups — 6349 is a bare "yes please" on a billing offer that replays the billing RPC; 6095/6096 are chat-tier
   context; 6201 is the profile lane answering a from-WhatsApp ask) · #155 · #139 · #140 · #141 · #142 (deliberately untouched).
+
+## STATE 2026-09-07 (pause, late) — #165 source tags LIVE (web `main` `18bac76`) · sentence rewriter PARKED · next = #163 Task 2 spend go
+**Andy: "push what we have, and lets pause for today."** Shipped the proven part only:
+- **LIVE:** every GIVES / ASKS / FOCUS line on the Personas sheet carries a `self-reported` or `observed` tag, with a
+  one-line legend per section and one help sentence. Classifier `src/lib/personas/signalSource.ts` (word-bounded
+  keyword scan over each `;`-segment, census-key fallback, hyphen is a boundary), 33 tests. Community-wide gives:
+  **987 self-reported · 1,742 observed · 118 untagged (4.1%)**; asks 487 / 1,778 / 125; focus 2,375 / 2,507 / 83.
+  Merged `556b168` → web `main` `18bac76` (main had moved to `1987a2e` under other sessions; clean merge).
+- **PARKED, unmerged:** the human-sentence "Written from" hover (`signalText.ts`, commits `ff4f234`, `bf1ab62` on
+  `165-source-labels-20260907`). Two review rounds each found a new free-prose pointer shape; `bf1ab62` still garbles
+  7 bracketed-list profile values. Do NOT merge it as is. The real fix is upstream: make `persona_refresh.py`'s
+  prompt emit a structured `signal` pointer (`source | date | field | value`), after which the rewriter is trivial and
+  the 4% untagged bucket disappears. Not filed yet — Andy's call.
+- **Why this dragged (owned):** "add labels" was done and reviewed clean early; the sentence work should have been
+  a separate capped ticket. Parsing model prose does not converge under review-by-sampling.
+- Luke Li `recov3Xb7Vy30JTqC` is the worked example: 3/3 gives self-reported (his 2026-08-05 form), 1 observed ask
+  (a 2026-09-03 WhatsApp SNS question), 14 blue chips from 3 form lines. Persona cadence: nightly 04:15, rebuild on
+  missing / >30d / fingerprint change; windows 180d questions (≤60), 30 most recent authored items (no date window),
+  15 events, form answers never decay — signals fall off a cliff, no half-life in this layer.
+
+### ANDY'S DESK (pause)
+1. **#163 Task 2 spend** — 82 members (60 top + 22 honest control), third-party placements only.
+2. File the persona-prompt structured-pointer change (small, `mds-scorecard-tools/persona_refresh.py`).
+3. Should self-reported-only chips look different from observed ones? (#163 — matching weight.)
+4. Dashed typical-member mark hover text (asked, not built) · RLS disabled on 47 warehouse tables (advisor; #158).
 
 ## STATE 2026-09-07 (scoring session close) — #163 Task 1 DONE · **#165 PROMOTED — rank-led stat bar LIVE on prod (Render `b44e2d7`)**
 **PROD n8n untouched all session (no promote, no lock).** Andy: "lets promote it" (2026-09-07). Both merged:

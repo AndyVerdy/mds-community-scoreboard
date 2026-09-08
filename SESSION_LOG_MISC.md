@@ -6,6 +6,34 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-08 — GroupOS `86e2v989y` empty-cart retry: form capture FAILS on a cancelled order
+
+QA of the empty-cart retry fix on pre-prod `vl223.groupos-test.co`. Ticket status `deployed`; the fix
+strings (`missingApplicationFormTicketIds`) are present on staging, preprod, `Prod-groupos` and
+`release/1.2.1`, so pre-prod and prod carry the same code.
+
+Built a clean fixture: form **QA form 86e2v989y** (`6a9f72932ba5f4c99352049d`, one REQUIRED short answer)
+linked to a free ticket on a new event **QA form gate 86e2v989y** (`6a9f774d2ba5f4c993520d78`).
+
+- **Clean first-time checkout PASSES.** Form presented; blank submit blocked with "This field is required"
+  (02:51:50); filled answer stored and visible in admin as "Vegetarian - QA 86e2v989y", 1 of 1 (02:53:49).
+- **Abandoned-intent retry PASSES.** Leaving checkout at "Awaiting for payment" and returning re-shows the
+  form and still refuses a blank submit — the fix's headline behaviour.
+- **FAILS after an admin cancels the order.** Member reopens the same event, clicks Complete registration
+  (02:57:30) → straight to Checkout, banner "Cancelled order", **no form step at all**. Completing it
+  (02:57:48) yields a succeeded registration whose response reads **"No answer"**, and the previously stored
+  "Vegetarian" answer is gone — response count stays 1, so nothing preserved it. Same shape reproduced
+  earlier at 02:33 on event `6a98e708959c69fd82bc8ba4`. Rated S2: silent loss of member-submitted data on
+  the very path this ticket covers.
+- Side finding (S3): the member event page still reads "Registered / Registration confirmed" after an admin
+  cancels every purchase in the order; a reload does not clear it. Likely belongs to `86e2t7834`.
+- The admin "Missing" count recovery tool in the ticket body is absent, but Andy narrowed scope to the
+  empty-cart retry only and Andrii's completion note does not claim it — recorded as descoped, not a defect.
+- Not tested: paid-ticket Stripe modal close/reopen (cases B and C) — needs a card; and mobile-app-originated
+  orders. Report `GROUPOS_EMPTY_CART_RETRY_QA.md`. Nothing posted to ClickUp.
+
+---
+
 ## 2026-09-03 — GroupOS QA: `86e2ndz5v` check-in export (pre-prod 1.2.1)
 
 Third QA of the night. Full report: `GROUPOS_CHECKIN_EXPORT_QA.md`.

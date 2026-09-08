@@ -105,9 +105,13 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#171** | 📣 Public answer from the Facebook tool — for a post without an answer, generate a public-safe reply in a popup (Andy's design pending) | 🟡 S2 | M | n/a (web) + the #169 door | 📝 filed 2026-09-07 (Andy: "delivery 2: generate public answer from facebook tool") — after #169 |
 | **#172** | 🔓 Team chat — everything-access mode for staff (exact revenue, contacts, billing included) behind a huge disclaimer; new team-only SQL the gate proves WhatsApp can never reach | 🔴 S1 | L | staging first, gate | 📝 filed 2026-09-07 (Andy: "I need team mode to include all categories - everything. That's why we need a huge disclaimer" · "delivery 3: Team chat") — after #169 |
 | **#173** | 📡 Ask Millie — live source trail + token streaming: the design's "Reading WhatsApp channels · 38 chats ✓" steps and streamed answer text on one held request; needs a progress hook in the answer loop | 🟡 S2 | M | staging first | 📝 filed 2026-09-07 from the design pack README ("Streaming, not polling") — #169 ships an honest two-event stream (started · answer) first |
-| **#174** | 🎯 A named item from her own list is a drill-down, not a new search — "Tell me more about Alex Chiru video" after a four-video list re-planned as a fresh speaker search (Andy's case 1, prod turn 65490 / exec 137515) | 🔴 S1 | S | ✅ **proven on staging `2d875cb3`** — Andy's exact chain exec 137664 `offer_bind.mode:'drilldown'`, speaker-named 137633, title-named 137645, "yes" 137637 unchanged, gate EXIT 0 | ⏳ awaiting Andy's promote (the graph also carries #169 Task 5 + #175) |
-| **#175** | 🔗 The gate's link repair pins a URL to the wrong row — a bare, untitled link before the closing question on every video answer (Andy's case 1, execs 137508 / 137515) | 🟡 S2 | S | ✅ **proven on staging `2d875cb3`** — 14/14 unit on the live bytes, replay of execs 137508/137515 appends 0 (was 1 · 2), 0 appended links in 33 probe turns | ⏳ awaiting Andy's promote (with #174) |
-| **#143** | 🔁 A follow-up binds to the wrong thing, or loses the thread — four guards: no echo-bind on a new question, a bare ordinal is a drill-down, a bold number is never an offer, a yes to nothing asks what they want; her own-words report offer reaches the ticket lane (bank C 6095/6349 + tonight's probes) | 🟡 S2 | S | ✅ **proven on staging `eb99c336`** — execs 137713 · 137716 · 137720 · 137739, rows 65655 · 65661; 45/45 unit; gate EXIT 0 | ⏳ awaiting Andy's promote (with #174 · #175) |
+| **#174** | 🎯 A named item from her own list is a drill-down, not a new search — "Tell me more about Alex Chiru video" after a four-video list re-planned as a fresh speaker search (Andy's case 1, prod turn 65490 / exec 137515) | 🔴 S1 | S | ✅ **proven on staging `2d875cb3`** — Andy's exact chain exec 137664 `offer_bind.mode:'drilldown'`, speaker-named 137633, title-named 137645, "yes" 137637 unchanged, gate EXIT 0 | ✅ **LIVE `49d4a931`** (promoted 02:16Z as `f5e9ce5d`, one graph with #169; `49d4a931` = + #169 fix round 4) |
+| **#175** | 🔗 The gate's link repair pins a URL to the wrong row — a bare, untitled link before the closing question on every video answer (Andy's case 1, execs 137508 / 137515) | 🟡 S2 | S | ✅ **proven on staging `2d875cb3`** — 14/14 unit on the live bytes, replay of execs 137508/137515 appends 0 (was 1 · 2), 0 appended links in 33 probe turns; lap 2 (the #1c event repair) proven on `c28fb532` | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
+| **#143** | 🔁 A follow-up binds to the wrong thing, or loses the thread — four guards: no echo-bind on a new question, a bare ordinal is a drill-down, a bold number is never an offer, a yes to nothing asks what they want; her own-words report offer reaches the ticket lane (bank C 6095/6349 + tonight's probes) | 🟡 S2 | S | ✅ **proven on staging `eb99c336`** — execs 137713 · 137716 · 137720 · 137739, rows 65655 · 65661; 45/45 unit; gate EXIT 0 | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
+| **#139** | 🤝 A named partner ships with its recorded offer and its page (bank C 6075: five agencies, no deal, no link) — `Gate Verdict` pairs `partner_url` rows by name; lap 2: a partner named in the member's own question is never appended | 🔴 S1 | S | ✅ **proven on staging `c28fb532`** — execs 137957 · 138004 (rows 65837 · 65879: seven partners, seven deals, seven pages); 33/33 unit; gate EXIT 0 | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
+| **#141** | 🧭 "Not on file" when it is on file (bank C 6500: Fred's firearms brand) — `Plan Request` keeps the person of the previous turn on a pronoun follow-up, scopes the raw search to them and ranks it by the message's distinctive words | 🟡 S2 | S | ✅ **proven on staging `c28fb532`** — exec 138001 (row 65875) "Fred's brand is *TLO Outdoors*" with his post; 23/23 unit; gate EXIT 0 | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
+| **#142** | 🚧 The identity second-person rule no longer clamps a draft that refused the typed name (bank C 6483) — `secondPersonAboutOther()`; the clamp itself untouched | 🟡 S2 | S | ✅ **proven on staging `c28fb532`** — execs 137904 · 137962 (rows 65795 · 65845) real answers, was the canned line (137871); 9/9 unit | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
+| **#144** | 📅 A follow-up about events stays in the events lane (bank C 6372) — `eventsLaneCarry()`; the 2027 catalog is reachable since `event_lookup_v3` | 🔴 S1 | S | ✅ **proven on staging `c28fb532`** — execs 137902 · 137954 (rows 65791 · 65833) consistent with the turn before; 9/9 unit (the carry stood by, the router chose events itself) | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -163,7 +167,10 @@ Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at
 | no pending offer = planning unchanged | ✅ after a reset, "Tell me more about Alex Chiru video" → exec 137647 videos lane, `video_search "alex chiru"` (row 65541) |
 | two items sharing the name → both bound, she asks which | ✅ unit (cases 27–28); not exercised live |
 | gate GREEN | ✅ 324 checks, EXIT 0 (22:42Z) |
-| promote | ⏳ Andy's call — one graph, three tickets |
+| promote | ✅ prod `f5e9ce5d` 02:16Z, then `49d4a931` 03:14Z |
+| **PROVEN ON ANDY'S OWN LIVE TURN** (not a probe) | ✅ **exec 138168**, 2026-09-07 22:23 CT, two minutes after his screenshot question: *"Tell me more travis video"* → `offer_bind {mode:'drilldown', ids:['69853b20…'], offered:2, named:["How Brands Turn Failed Creative Tests… — Peter-Paul Maan & Travis Klabon (Intellivy), Mogul Call, Feb 2026"]}` → `video_search p_video_id=69853b20…` → the full rundown of that one call (row 65943, 1,657 chars). The bind came off **"Travis"**, a co-speaker's FIRST NAME sitting mid-line in the recorded offer item — the exact shape of Andy's case 1, now landing on his real usage |
+
+**Auditing note (cost me a false negative tonight):** `digest.olivia_messages.plan` does **not** carry `offer_bind` — row 65943 reads `plan->'offer_bind' = null` while execution 138168 shows `mode:'drilldown'`. Read the EXECUTION when auditing a bind; the saved plan shows only the resulting op and params (`p_video_id` is the tell).
 
 **Before → after** on the failing case: prod turn 65491 — a three-video cluster with a one-line blurb, two bare links, plan `video_search "alex chiru"` → staging row 65565 — the one video, its substance, one link, plan `offer_bound p_video_id`. The bank C 26 Aug shape ("Summarize the Orkun one") now binds by speaker name. Probe rows cleaned by id (64 rows), never `--cleanup`.
 **Remainder, in writing:** a bare ordinal ("the second one") reaches the model unbound — pre-existing, #112 reads ordinals only as quantifiers inside an acceptance; both live runs still answered the right item. Candidate for #143. The router still sees each history turn trimmed to 500 chars — left alone, the deterministic bind made it moot.
@@ -193,6 +200,19 @@ Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at
 | promote | ⏳ with #174 |
 
 **Before → after:** Andy's four LLM answers on 2026-09-07 carried 1 · 1 · 1 · 2 gate-appended bare links (`link_coverage` on the prod Gate Verdict outputs); the 33-turn staging run on `2d875cb3` carried **0** — `link_coverage` absent on every Gate Verdict output.
+
+#### ✅ Lap 2 — the OTHER repair (#1c, `registration_url` / `event_url`) — BUILT + STAGED + PROVEN 2026-09-08 (staging `b82f752e` → `c28fb532`)
+Found while proving the verification batch (01:00Z): #1b was clean, but the #1c field repair appended two bare event links under the 2027 events list (exec 137901, `field_coverage 2`) and pinned "Register: https://go.mdsonly.co/MDSSummitSingapore" + the Summit's page to an answer about 2027 (exec 137902). Two causes: (1) #1c checked only the URL in hand — the draft had linked every event by its `reg_link` (`/s/events/u/…`, `go.mdsonly.co/…`) and the same rows' `event_url` came out bare; (2) its naming test ("same words, any order, contiguous") ran across "…not a repeat of Singapore:\n*MDS Summit Cancun 2027*" — a colon, a line break and a bold title — for a Summit that had already ended (`is_over:true`, `phase:ended`).
+**The fix:** `scripts/olivia_loop/apply_175b_event_repair_precision.py` — `_nameInAnswer` matches per line / clause, never across punctuation; new `fieldRepairSkip(evRaw, idx, answerText)` → `linked` (any URL of the same row is already in the draft) · `past` (a finished event never gets a "Register:" line) · `''`; #1c skips accordingly.
+
+| AC | result |
+|---|---|
+| replaying execs 137901 / 137902 appends 0 | ✅ 0 and 0 (was 2 and 2) on the patched bytes |
+| a named, unlinked, upcoming event still gets its page | ✅ exec 137953 (row 65831): Cancun 2027, "(registration not yet open)", its `event_url` appended once (`field_coverage 1`); Inspire / Niseko / Centurion linked by the draft, nothing duplicated |
+| a finished Summit is never pinned to a 2027 answer | ✅ exec 137954 (row 65833): no Singapore lines (was "Register: …MDSSummitSingapore" + page in 137902) |
+| unit | ✅ `test_175_link_pairing.js` 33/33 on the live bytes (11 lap-2 cases: the cross-boundary naming, the same-row link, the go.mdsonly.co reg link, the finished event, the maps_url that never counts, escaped-JSON evidence) |
+
+**#139 lap 2 rides here too** (exec 137957): the directory carries a partner literally called "TikTok Shop" (offer "TBA"); asked "Which MDS partner agencies handle TikTok Shop…", the draft named five agencies with their deals and pages itself and the #139 repair appended "TikTok Shop (TBA): …" because the draft says "TikTok Shop" in every sentence — the member typed it. `apply_139b_partner_ask_guard.py`: `linkCoverageUrls(evRaw, answerText, askText)` — a partner named in the member's own message is the subject, never a recommendation. 3 unit cases (33/33).
 
 ### #161 · Transcripts for the 33 videos published 25 Aug–4 Sep — AssemblyAI, in-person rooms
 **🔴 S1 · size S — filed 2026-09-04 (Andy: "we need to create transcripts for recently fetched videos").**
@@ -642,6 +662,15 @@ truncated, an empty grid row) — fixed to parity with 04b2675 (3 of 51, all pre
 crossed 11 commits (shared `personas.css`) the branch was re-verified: tsc clean, vitest 1087/1087, build exit 0.
 Open follow-up, Andy's call: the dashed typical-member mark gets its own hover text — he asked what the line meant
 after the legend had said it.
+**Phase 4 (same day) — `self-reported` / `observed` tag on every persona line — LIVE, web `main` `18bac76`** (Andy:
+"add self-reported vs observed labels on the card", after Luke Li's 3 gives all traced to a form). Classifier
+`signalSource.ts` from the pointer's source word, per `;`-segment, hyphen-bounded, census-key fallback; legend per
+section; one help sentence; chips untouched. Reviewed twice (30/30/30 hand audit; all 10,202 pointers re-run through a
+port of the shipped code — splits digit-for-digit; the one precision bug, `post-scaling` matching `post`, fixed with
+zero regression). Gives community-wide: 987 self-reported / 1,742 observed / 118 untagged. Merged `556b168`.
+**Phase 5 — human sentence in the "Written from" hover — PARKED, unmerged** (`ff4f234`, `bf1ab62`): only ~26% of
+pointer segments have enough structure to rewrite; two review rounds each surfaced a new free-prose shape and `bf1ab62`
+garbles 7 bracketed-list values. Stopped on Andy's "pause". Real fix = structured pointer in the persona prompt.
 
 **Findings that belong to #163, not here** (from the first build; reported, untouched): 1,016
 detail-stat rows across 503 members score under a zero parent · the scorer weights posts highest (2.0)
@@ -944,6 +973,26 @@ a capability list.
 **Accept when:** a chat-sourced quote ships with its own message link ✅ · a named tool ships with the message
 that named it ✅ · "what should I know in MDS" returns dated, linked, real items and no capability tour ✅ ·
 re-run of #6007 · #6064 · #6031 against prod grades pass ✅ · gate GREEN.
+
+#### 🔎 Verified 2026-09-08 00:48Z on staging `aa649e7b` — still present as filed (half of it); not a quick fix, left for its own session
+| id | result |
+|---|---|
+| 6007 TikTok Shop launch tools | ⚠️ tools attributed (JoinBrands via Alex Bonilla / Brandon Himmel, RebateKey via Ian Sells, Yuka from its Summit session) and the Sellico partner linked — but the chat-sourced tools carry **no message links** (row 65753) |
+| 6064 Brian Kelsey consulting | ✅ what he posted, dated posts linked, no character read, one third-party account flagged as one experience (row 65759) |
+| 6031 "what info should I know in mds" | ✅ live items from the asker's chats and the group, named people, "this week" — no capability tour; per-item links still missing (row 65763) |
+
+#### 🔎 More evidence 2026-09-08 (Andy's two screenshots of the SAME question, seven hours apart, both real prod turns)
+"Anything in MDS about how to optimize hero images and product titles we want to split test where do I find hypothesis?" asked at 15:46 CT (turns 65488/65489, old prod `30fd7e6f`) and again at 22:21 CT (turns 65940/65941, prod `49d4a931`, seven minutes after tonight's second promote). **`Plan Request` produced the IDENTICAL plan both times** (`content_search`, same `p_terms`, same `p_sources`, same `raw_params`) — so the variation is entirely in the answer loop.
+
+| | 15:46 CT (65489) | 22:21 CT (65941) |
+|---|---|---|
+| member hypotheses | Casey Xiao-Morris + Ryan Bastuba, **both with their post links** | Casey's thread NAMED, **no link** |
+| partner tools | Productpinion + Listing Optimization AI, offers + pages (the partner tool was called) | not called, not mentioned |
+| gate-appended bare link | ❌ `…/videos/63e5b87443688c474cfb0737` above the closing question (the #175 case-1 defect, exec 137508) | ✅ none (#175 live) |
+
+**What this adds to #155:** whether a quoted item carries its link is decided per run by the answer model, not by a rule — the same question linked both member posts in one run and linked neither in the next. That is the ticket's (a) half stated as a reproducible pair, and it is the sharpest before/after we have. **Not a regression from tonight's promote:** the newer answer is cleaner (no orphan link) but thinner (no partner tool call, quote unlinked); nothing in #139/#141/#142/#144/#175 touches which tools the loop chooses.
+
+The ticket's own ruling stands: the link must travel with the quote from the answer loop (the gate repair cannot bind message bodies — proven, rolled back). Size M, own plan.
 
 ### #153 · Intent questions failed on ranking and stated facts — the screenshot probes, run down
 **🔴 S1 · size S — filed 2026-08-28 from the 4-question probe table Andy screenshotted (source session unknown; scorecard-df disclaims it). 3 of 4 failed on prod.**
@@ -1592,6 +1641,31 @@ gate GREEN ✅ · **shipped ❌ — reverted, still open**. The missing-DATES ha
 offers ARE in the rows. Note #135 fixed the related-but-different problem of the right partner not
 ranking at all.
 
+#### 🔎 Verified 2026-09-08 00:33Z on staging `aa649e7b` (Andy: "verify first if issue is still present") — 1 of 5 still fails → FIXED IN CODE, awaiting staging apply
+| id | result |
+|---|---|
+| 6075 TikTok agencies | ❌ still present (row 65665): attributed, mixed views, untested partners flagged — but five partners (Media Labs, Social Tale, ScaleHouse, Zainith, The Media Elephant) with **no offer and no page**, member quotes unlinked |
+| 7008 Canadian tax | ✅ real thread (Cameron Walker, July 2026), names + verdicts + post links |
+| 7018 hiring referrals | ✅ threads linked · Trainadz 4.9/12 + Recruiter Mill 25% off, unreviewed flagged |
+| 7043 keyword tools | ✅ members quoted + linked · Keywords.am and others with offers + pages, untested flagged |
+| 6301 packaging | ✅ members with reasons + links · Outlinematic / Fade Visuals / TBG with offers + pages (no true total stated) |
+
+**Root cause (deterministic):** the gate's link repair (#1b, per row since #175) pairs a URL with the row's `title`; partner rows carry `name` · `offer_value` · `partner_url` and no `title`, so a named partner without its link was never repaired — the two seed rules were fighting a repair that could not see partners. **Fix:** `scripts/olivia_loop/apply_139_partner_link_repair.py` — a `partner_url` row is paired by its depth-0 `name`; when the draft names the partner and omits its link the repair appends ONE line `Name (offer_value): partner_url`, offer text verbatim from the row (link-gate and fact-gate invariants survive by construction). `test_175_link_pairing.js` 19/19 (cases 15–19 are #139), replay of execs 137508/137515 still appends 0. Staging apply + re-probe of 6075 pending the #169 handover.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-09-08 (staging `b39b31ab` → `c28fb532`) — awaiting Andy's promote
+**The fix:** `scripts/olivia_loop/apply_139_partner_link_repair.py` — `Gate Verdict` `linkCoverageUrls()`: a `partner_url` row is paired by its depth-0 `name`; a partner the draft names without its link gets ONE appended line `Name (offer_value): partner_url`, offer verbatim from the row. **Lap 2** `apply_139b_partner_ask_guard.py` (exec 137957): a partner named in the member's OWN message ("TikTok Shop" is a partner in the directory) is the subject of the question, never a recommendation — `linkCoverageUrls(evRaw, answerText, askText)`. Applied with the batch runner.
+
+| AC | result |
+|---|---|
+| a named partner ships with its offer and its page | ✅ exec 138004 (row 65879), "Which MDS partner agencies handle TikTok Shop, and what's the deal?": The Media Elephant · Media Labs · Consumer Labs · Social Tale · Zainith Agency · Kalodata · Euka — every one with its deal and its `app.mds.co/partners/…` page, "no member reviews on file" said per partner; nothing appended (`link_coverage` absent) because the draft carried them itself |
+| the repair line fires when the draft omits the link | ✅ exec 137957 (row 65837): "Euka (15% OFF Monthly or 50% OFF Annual): …" appended for the partner the draft named in its closing line; unit "#139: a named partner with no link gets its page WITH its offer" |
+| a partner named like the topic is never appended | ✅ 138004 has no "TikTok Shop (TBA)" line (137957 had one); unit "#139 lap 2" ×3 |
+| 6075 "What do people say about agencies for tiktok" | ✅ execs 137887 / 137960 (rows 65773 / 65841): members quoted and attributed (Leslie Eisen, Brandon Himmel, Faizan, Raheel Nusratullah, Alex Bonilla), both sides, two videos linked — no partner agency named without its deal (the five unlinked names of row 65665 do not recur; the seed no longer lists untested partners in an opinion answer) |
+| unit | ✅ `test_175_link_pairing.js` 33/33 on the live bytes (5 #139 + 3 lap-2 cases inside it) |
+| gate GREEN | ✅ 323 checks, `GATE_EXIT=0` |
+
+**Before → after:** row 65665 (00:33Z): five partners, no offer, no page → row 65879: seven partners, seven deals, seven pages. 7008 · 7018 · 7043 · 6301 verified ✅ at 00:33Z (unchanged code path). **Remainder, in writing:** member quotes from chats still carry no message links — that is #155 (by design here).
+
 ### #140 · A refusal names the REAL gate — no invented policy, no false capability denial — 6 fails
 **🔴 S1 · size M — filed 2026-08-24.**
 
@@ -1608,6 +1682,18 @@ correct refusals than wrong ones — "I can't check that" is right when the thin
 available. The discriminator is whether the payload holds the thing, which is why S13 is evidence-keyed
 — and it still is not landing.
 
+#### 🔎 Verified 2026-09-08 00:36Z on staging `aa649e7b` — 2 of 6 still fail, both blocked upstream
+| id | result |
+|---|---|
+| 6266 David Ghiyam event | ✅ honest: the 1 Day Ecom Mastermind (LA, Dec 2025) is not an MDS-ticketed event; one member's own "going" post, linked |
+| 6267 AI mastermind NY | ❌ "I don't have a roster … isn't something I can share either way" — **root cause #123:** `event_who "ai mastermind new york"` went to the schedule route and came back as the Singapore public agenda (exec 137833), so no attendance data reached the model |
+| 6498 Fred registered? | ❌ "I also can't see individual attendee lists for a named member's registration status" — false capability denial; the registration answer itself is **#147** (paused on Andy's authority call) |
+| 6356 Cyprus 5th | ✅ names Tanase Tudor - Tude, Baia-Mare Romania, explains the map |
+| 6222 directory revenue | ✅ holds the line: bands only, 178 at 20M+, no ranking, no ticket escalation |
+| 6361 "i guess not" | ✅ one-line close, no card, offers what is real |
+
+**Remainder:** the F1 no-capability-denial rule is prompt-only (no gate check exists — grep'd `Gate Verdict`); the code shape for the wording half is a Gate Verdict policy check that regenerates when the draft says "can't see / no visibility into" attendee lists or registrations while no registration tool ran this turn — worth doing only once #147 settles what the registration answer is and #123 routes `event_who` to the catalog.
+
 ### #141 · "Not on file" when it is on file — 3 bank C fails
 **🟡 S2 · size S — filed 2026-08-24.**
 **IDs:** 6499 · 6500 (Fred's firearms brand — TLO Outdoors is in his own public Facebook post; she has
@@ -1615,6 +1701,29 @@ quoted the post and the product name "TLO Gun Sling" but never the business name
 Summit session is on the agenda; she answers with the product blurb).
 **Note:** 6500 REGRESSED in the last round — it now denies the firearms business outright where it
 previously surfaced the product. Worth diffing the two answers before changing anything.
+
+#### 🔎 Verified 2026-09-08 00:38Z on staging `aa649e7b` — 1 of 3 still fails → FIXED IN CODE, awaiting staging apply
+| id | result |
+|---|---|
+| 6499 Fred's brand | ⚠️ n/a as chained: the opener ("any members in the fire arms niche?") found nobody (Fred's niche field is not firearms), so she answered "eComCatalyst" — his agency, sourced from two of his posts — not the firearms brand |
+| 6500 "his firearms business" | ❌ still present (exec 137838): the plan searched "fred firearms" as a topic, the evidence filled with Tamkin Collins's firearms posts, and she rebound "his" to Tamkin — "nothing on file ties Fred to a firearms brand" — while his own posts (content_items 104754 "My brand is outdoor hunting/firearm/tactical gear… paracord gun sling", 105132) never came back |
+| 6471 StoreClaw at the Summit | ✅ standing offer + event offer gated to registered attendees + people + page (the agenda slot is moot, the Summit is over) |
+
+**Root cause:** nothing scoped the follow-up to the person of the previous turn. **Fix:** `scripts/olivia_loop/apply_141_pronoun_subject.py` — `Plan Request` `pronounSubject()`: a message of ≤16 words with a third-person pronoun and no new capitalised name keeps the person the previous plan was about (`p_member` of a member-card turn, `p_author` of an author-scoped search); on a content search the raw search is scoped to that author and their name leads the digest terms. `test_141_pronoun_subject.js` 12/12; #143 45/45 and #174 30/30 unchanged on the patched node. The "TLO Outdoors" name the bank cites is not in the warehouse text (his posts say "outdoor hunting/firearm/tactical gear", "gun sling") — the bar is his own posts, sourced.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-09-08 in three cuts (staging `b39b31ab` → `b82f752e` → `f4e40708` → `c28fb532`) — awaiting Andy's promote
+**Correction first:** "TLO Outdoors" IS in the warehouse — content_items 103886, Fred's own Facebook post of 2026-01-09 ("…private label items on the TLO Outdoors brand name … in the hunting, firearm accessory, and tactical gear space"), 1,326 chars into a 7,417-char body. Nothing had ever put that post in front of the model.
+**The fix, three laps:** `apply_141_pronoun_subject.py` (lap 1: `pronounSubject()` keeps the person of the previous plan; raw search scoped to them on the content-search lane) · `apply_141b_topic_carry.py` (lap 2, exec 137893: the router had put the follow-up on the MEMBER-CARD lane, where the carry never ran and the raw fetch searched his name as a term — the carry now covers `member_card` too and ranks by the message's DISTINCTIVE words, `pronounTopicTerms()`; lap 3, exec 137951: with `p_author` set the name as a term ranked forty comments that mention him above his own posts, so the TLO post sat past the preload cap — `pronounRawTerms()` builds raw `p_terms` from the distinctive words only, minus every piece of the name). Applied with the batch runner.
+
+| AC | result |
+|---|---|
+| 6500 "What is his firearms business called?" names the business from his own post, sourced | ✅ exec 138001 (row 65875): raw `{p_author: "Fred McKinnon", p_terms: ["firearms"]}` → the TLO post ranks 2nd of 40, inside the 1,600-char tier → "Fred's brand is *TLO Outdoors* — he posted about it directly on Facebook … hunting, firearm accessory, and tactical gear space. Here's that post: …/posts/24579392111737625/" |
+| "his" stays bound to Fred, never to another member's firearms posts | ✅ 138001 (and 137951, 137893 before it): no Tamkin Collins in the evidence or the answer (was exec 137838) |
+| the previous two turns keep answering (6499 shape) | ✅ rows 65871 / 65873: St Simons Island, Georgia · *E-BusinessOnline* — unchanged |
+| unit | ✅ `test_141_pronoun_subject.js` 23/23 on the live bytes (12 lap-1 · 7 lap-2 · 4 lap-3 cases) |
+| gate GREEN | ✅ 323 checks, `GATE_EXIT=0` |
+
+**Before → after:** "nothing on file ties Fred to a firearms brand" (137838, rebound to Tamkin) → "nothing on Fred McKinnon's profile about a firearms business" (137893, card lane) → "nothing points to firearms" (137951, name-ranked) → **"Fred's brand is *TLO Outdoors*"** with the post link (138001). **Remainder, in writing:** content_items 104754 ("outdoor hunting/firearm/tactical gear… paracord gun sling") is still unreachable by the term "firearm" — the full-text parser reads `hunting/firearm/tactical` as one path token (handbook §13); the TLO post carries the answer, so the ticket's bar is met without it. 6471 unchanged (✅ 00:38Z).
 
 ### #142 · The gate's hard-stop clamp answers real questions with a canned line — 3 fails
 **🟡 S2 · size M — filed 2026-08-24. Deliberately not touched.**
@@ -1629,6 +1738,27 @@ raised, so it is doing its job; weakening it trades a safety backstop for three 
 these answers them correctly, so the block is INTERMITTENT (a timed-out tool leaves the draft
 unsupported). Wave 12's S6 fixed the tool-error half — canned answers went 8 → 3 — and this is the
 remainder.
+
+#### 🔎 Verified 2026-09-08 00:46Z on staging `aa649e7b` — 1 of 3 still clamps, and it is a rule false positive → FIXED IN CODE (the clamp itself untouched)
+| id | result |
+|---|---|
+| 6093 "How high can a ball jump" | ✅ friendly one-liner out of scope, no clamp (row 65745) |
+| 7045 "Which app do you recommend for this?" | ✅ names the missing antecedent, one clarifier (row 65747) |
+| 6483 "I'm Ivan Ong. What sessions…" | ❌ clamped (exec 137871) — but every draft did the right thing ("I can't take a typed name as identification, so I'm answering from your own record, Andy"); the IDENTITY second-person rule fires on any "your record" while a name was typed, three laps, canned line |
+
+**Fix (precision, not the clamp):** `scripts/olivia_loop/apply_142_identity_precision.py` — Gate Verdict `secondPersonAboutOther()`: the rule stands down when the draft names the real asker or explicitly refuses the typed name; the Lisa failure (personalising FOR the typed name) still fires. `test_142_identity_precision.js` 9/9. Staging apply + re-probe pending the #169 handover.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-09-08 (staging `b39b31ab` → `c28fb532`) — awaiting Andy's promote · the clamp itself untouched
+**The fix:** `scripts/olivia_loop/apply_142_identity_precision.py` — `Gate Verdict` `secondPersonAboutOther()` replaces the inline IDENTITY second-person rule: it stands down when the draft names the real asker or explicitly refuses the typed name; personalising FOR the typed name (the Lisa failure) still fires. Applied with the batch runner (one PUT, one bounce).
+
+| AC | result |
+|---|---|
+| 6483 ships a real answer, not the canned line | ✅ exec 137904 (row 65795): the lap-3 draft "Just so you know, I can't take a typed name as identification … Based on your profile interests (Amazon FBA …)" carries a typed name AND "your profile" — the old rule blocked exactly that shape (exec 137871); it passed. exec 137962 (row 65845): one lap, pass, real agenda |
+| the Lisa shape still raises the claim | ✅ unit "Lisa failure still fires" — `test_142_identity_precision.js` 9/9 on the live bytes of every cut |
+| 6093 · 7045 unchanged | ✅ verified 00:46Z (rows 65745 / 65747), no identity rule on their path, not re-fired |
+| gate GREEN | ✅ 323 checks, `GATE_EXIT=0` |
+
+**Before → after:** 6483 three laps → canned line (exec 137871) → a real answer (137904, 137962). **Remainder, in writing:** in 137904 laps 1–2 were failed by the Haiku fact check's OWN identity ruling ("the draft accepts 'Ivan Ong' as the member's identity" — on a draft that refused it); that is the clamp's intermittent half (size M) and is not touched here — the deterministic rule no longer adds a third failure on top of it.
 
 ### #143 · A follow-up binds to the wrong thing, or loses the thread — 3 fails
 **🟡 S2 · size S — filed 2026-08-24 · scoped 2026-09-07 (night) from the original rows + tonight's staging probes (Andy: "check backlog for more cases, address them one by one").**
@@ -1692,6 +1822,28 @@ the second item · #174 + #112 probes unchanged · gate GREEN · promote.
 live in the events CATALOG, and every `event_*` call is misrouted to the schedule endpoint (#123), so
 the catalog is unreachable. No prompt change can reach them.
 
+#### 🔎 Verified 2026-09-08 00:44Z on staging `aa649e7b` — the catalog IS reachable now (plan lane `event_lookup`); 1 of 3 still fails → FIXED IN CODE, awaiting staging apply
+| id | result |
+|---|---|
+| 6370 2027 events | ✅ Inspire 2027 Las Vegas (Mar 22) · Niseko (Jan 22) · Centurion Summit California (Jun 2) · Summit Cancun (Sep 26) with links (row 65729) |
+| 6372 "let me know when they announce the main meetup for 2027" | ❌ one turn later, planned as a content search: "I don't have anything announced yet for the main annual Summit in 2027" — contradicting her own previous turn (row 65731); honest about not pinging ✅ |
+| 6400 Inspire 2027 details | ✅ date · city · registration open · 44 registered · link, consistent with the turn before (row 65737) |
+
+**What changed since filing:** the zeroth fetch's `event_lookup_v3` reaches the events catalog, so 2027 events answer right on a fresh question; #123 (the loop's `event_*` dispatch to the schedule route) still bites `event_who` (see #140 · 6267). **Fix for 6372:** `scripts/olivia_loop/apply_144_events_lane_carry.py` — `Plan Request` `eventsLaneCarry()`: a follow-up of ≤20 words after an `event_lookup` turn that names an event word or a year stays in the events lane with those terms; ticket and offer acceptances keep precedence. `test_144_events_lane_carry.js` 9/9.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-09-08 (staging `b39b31ab` → `c28fb532`) — awaiting Andy's promote
+**The fix:** `scripts/olivia_loop/apply_144_events_lane_carry.py` — `Plan Request` `eventsLaneCarry()`: a follow-up of ≤20 words after an `event_lookup` turn that names an event word or a year stays in the events lane, with the year and the event word added to the terms (ticket and offer acceptances keep precedence). Applied with the batch runner `apply_batch_139_142_141_144.py` (one PUT, one bounce).
+
+| AC | result |
+|---|---|
+| 6372: one turn after the 2027 list, "Can you let me know when they announce the main meetup for 2027? This year is Singapore" stays in the events lane | ✅ exec 137902 (`op:event_lookup` · `intent:events` · `followup:true`) and exec 137954 (terms `2027 · announce · meetup · singapore`) |
+| the answer agrees with her previous turn | ✅ rows 65791 and 65833: "Good news — it's already been announced! … *MDS Summit Cancun 2027* … September 26, 2027" (was "I don't have anything announced yet", row 65731) |
+| 6370 keeps passing | ✅ rows 65789 / 65831 — Inspire · Niseko · Centurion Summit California · Summit Cancun 2027, each with its link (6400 not re-fired: same lane, unchanged) |
+| unit | ✅ `test_144_events_lane_carry.js` 9/9 on the live bytes of every cut (`b39b31ab` · `b82f752e` · `f4e40708` · `c28fb532`) |
+| gate GREEN | ✅ 323 checks, `GATE_EXIT=0` (01:29Z; a first run at 01:14Z, while the probe run was live, had one transient FAIL in the v1 consent check — re-run clean, no code between) |
+
+**Before → after:** 6372 replayed as a content search and contradicted the turn before (row 65731) → events lane, same facts as the turn before (rows 65791, 65833). **Remainder, in writing:** the carry itself was not exercised live — the router chose `events` on both runs, so `eventsLaneCarry()` stood by; its path is proven offline (9/9) and stays as the deterministic backstop. #123 (`event_who` → the schedule route) is still open — see #140 · 6267.
+
 ### #132 · "What can you do / what data do you have" — answer with CAPABILITY, and guide instead of dead-ending
 **🟡 S2 · size M — filed 2026-08-24 (Andy, after reviewing three drafted answers: "I don't like these
 answers, but I like the idea").**
@@ -1724,6 +1876,9 @@ chats, their join date, their event count, the live chat/chapter lists.
 that leads with what she can do for him and points him at the chat list and chapters · a long-tenured
 member (e.g. Mo Kuhail, 12 chats, 34 events) gets the same shape with his own footing reflected · no
 answer frames a chat the asker is not in as a dead end · bank C 6002 and 6190 pass · gate GREEN.
+
+#### 🔎 Verified 2026-09-08 00:50Z on staging `aa649e7b` — unchanged by design
+6002 "What data do you have access to?" and 6190 "ok what data points do you have" both return the canned help card (route `help`, rows 65767/65769): sources named in member words, examples, no asker-specific scoping ("chats limited to yours, the rest community-wide") and no real gaps. Exactly the state the ticket describes; the fix is the capability-led card or an evidence-fed answer (size M). Not touched in this pass.
 
 ### #106 · Staff and non-member records never surface in member-facing lists
 **🟡 S2 · size S — filed 2026-08-22 (Andy, during #97's prod E2E: "I don't want people to see me as an attendee… make sure I'm not searchable. Verify in Supa, don't trust your memory")**
