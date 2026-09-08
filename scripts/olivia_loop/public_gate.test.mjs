@@ -575,6 +575,143 @@ test('D1: an author-shaped field does NOT widen what a partner row backs — fit
   assert.equal(pg.backedNames(ev.rows, { 'https://app.mds.co/partners/p1': 'public' }, names).size, 0);
 });
 
+// ============================================================================================
+// #176 D3 — A ROW THE RETRIEVAL LAYER DID NOT LABEL IS MISLABELLED, NOT UNKNOWN. q10's public
+// answer reported `source_summary {"other": 18}`: not one evidence row carried a source tag, so
+// no row could be keyed, nothing classified, and every name in the answer was masked. Two separate
+// causes, both fixed here:
+//   (a) the tools that return a row WITHOUT `source` — video_search (video_url/title/speakers),
+//       partner_lookup (partner_url), fb_thread (kind/author/url/post_id) — were unrecognisable to
+//       the row extractor, and video_search's link field was not even in the url coalesce list, so
+//       a library row could never be keyed at all;
+//   (b) the biggest evidence block of the turn is not a tool_result. `Answer Seed` renders the
+//       deterministic pre-search into the final user message as "RAW MATCHES (n): [...]" TEXT —
+//       40 full content rows, urls and author names included — and the extractor never read it.
+//       That is where q10's eight members and its group link lived.
+// Unknown is unchanged: a row nothing can be derived from is still keyless, and keyless is closed.
+// ============================================================================================
+
+const LIB_URL = 'https://app.mds.co/videos/6a97599308e2e42a631c1a35';
+
+test('D3: a video_search row is keyed by its library id, so an open library entry can back a name', () => {
+  const raw = JSON.stringify([
+    { title: 'Mogul Call: two businesses on ClickUp', call_type: 'Mogul Call',
+      speakers: ['Jonathan Jewett'], description_snippet: 'How the workspace is laid out.',
+      video_url: LIB_URL, is_restricted: false },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.equal(ev.rows[0].source, 'video');
+  assert.equal(ev.rows[0].source_id, '6a97599308e2e42a631c1a35');
+  assert.equal(ev.rows[0].url, LIB_URL);
+  assert.ok(pg.backedNames(ev.rows, { '6a97599308e2e42a631c1a35': 'public' }, names).has('Jonathan Jewett'));
+});
+
+test('D3: a call transcript row is NOT re-keyed by the recording it quotes — it stays closed', () => {
+  // The transcript chunk's own `url` IS the recording's app link, and that link's 24-hex id is the
+  // library entry the classifier calls open. Deriving an id from the url for a row that already
+  // carries `source`/`source_id` would turn every transcript row open. It does not.
+  const raw = JSON.stringify([
+    { source: 'call_transcript', kind: 'chunk', source_id: '6a97599308e2e42a631c1a35#13',
+      url: LIB_URL, body: 'Bryce Alderson: we cut our CAC to eleven dollars.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.equal(ev.rows[0].source, 'call_transcript');
+  assert.equal(ev.rows[0].source_id, '6a97599308e2e42a631c1a35#13');
+  const classes = { '6a97599308e2e42a631c1a35': 'public', [LIB_URL]: 'closed',
+                    '6a97599308e2e42a631c1a35#13': 'closed' };
+  assert.equal(pg.rowClass(ev.rows[0], classes), 'closed');
+  assert.equal(pg.backedNames(ev.rows, classes, names).size, 0);
+});
+
+test('D3: an fb_thread row is labelled from its kind and keyed by its post id', () => {
+  const raw = JSON.stringify([
+    { kind: 'post', author: 'Ben Anderson', body: 'Asking for some wisdom from the group.',
+      url: FB_POST_URL, post_id: '26794200516923429' },
+    { kind: 'comment', author: 'Bryce Alderson', body: 'Slack plus ClickUp.',
+      url: FB_POST_URL + '?comment_id=1', post_id: '26794200516923429' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.deepEqual(ev.rows.map(r => r.source), ['fb_post', 'fb_comment']);
+  assert.deepEqual(ev.rows.map(r => r.source_id), ['26794200516923429', '26794200516923429']);
+});
+
+test('D3: a partner row is labelled `partner`', () => {
+  const raw = JSON.stringify([{ name: 'ClickUp', partner_url: 'https://app.mds.co/partners/p1',
+                                web_summary: 'PM tool.' }]);
+  assert.equal(pg.extractEvidenceRows(toolResult(raw)).rows[0].source, 'partner');
+});
+
+test('D3: a row nothing can be derived from is still keyless, and keyless is still closed', () => {
+  const raw = JSON.stringify([{ blob: 'Bryce Alderson said something quotable.', score: 0.4 }]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.equal(ev.rows[0].source, null);
+  assert.equal(ev.rows[0].source_id, null);
+  assert.equal(ev.rows[0].url, null);
+  assert.equal(pg.rowClass(ev.rows[0], { 'anything': 'public' }), 'closed');
+  assert.equal(pg.backedNames(ev.rows, { 'anything': 'public' }, names).size, 0);
+});
+
+// --- the preloaded evidence block: rows, not prose ---
+
+function preloadMsg(body) {
+  return [{ role: 'user', content: [{ type: 'text', text:
+    'PRELOADED EVIDENCE — a deterministic search already ran for this exact message; treat it as '
+    + 'your first tool result:\n' + body + '\n\nMEMBER MESSAGE:\nwhat do people use for systems?' }] }];
+}
+
+const PRELOAD_ROWS = [
+  { source: 'fb_post', kind: 'post', source_id: '26794200516923429', title: null, tl_dr: null,
+    body: 'Asking for some wisdom from the group about systems and tools.',
+    occurred_at: '2026-08-07T16:58:51+00:00', url: FB_POST_URL, sensitivity: 'normal',
+    meta: { has_image: false, author_name: 'Jonathan Jewett', sender_member: 'recN0ejwtEsNEGrvu' } },
+  { source: 'wa_message', kind: 'message', source_id: 'OsvNzPN5RzkBbQ', body: 'we moved to ClickUp',
+    url: WA_INVITE, meta: { author_name: 'Bryce Alderson', chat_name: '#ops' } },
+];
+
+test('D3: the preloaded RAW MATCHES block is read as evidence, not skipped as prose', () => {
+  const ev = pg.extractEvidenceRows(preloadMsg('RAW MATCHES (2):\n' + JSON.stringify(PRELOAD_ROWS)));
+  assert.equal(ev.rows.length, 2);
+  assert.deepEqual(ev.rows.map(r => r.source), ['fb_post', 'wa_message']);
+  assert.ok(ev.urls.includes(FB_POST_URL));
+  assert.ok(ev.source_ids.includes('26794200516923429'));
+});
+
+test('D3: a preloaded open post backs its author and keeps its link; the preloaded closed chat does not', () => {
+  const ev = pg.extractEvidenceRows(preloadMsg('RAW MATCHES (2):\n' + JSON.stringify(PRELOAD_ROWS)));
+  const classes = { [FB_POST_URL]: 'public', [WA_INVITE]: 'closed' };
+  const backed = pg.backedNames(ev.rows, classes, names);
+  assert.deepEqual([...backed], ['Jonathan Jewett']);
+  const lk = pg.redactLinks(`Jonathan Jewett asked this too: ${FB_POST_URL} — also ${WA_INVITE}`, classes);
+  assert.ok(lk.text.includes(FB_POST_URL), lk.text);
+  assert.ok(!lk.text.includes('whatsapp'), lk.text);
+  const r = pg.redact(lk.text + ' Bryce Alderson answered in the chat.', names, backed);
+  assert.ok(r.text.includes('Jonathan Jewett'), r.text);
+  assert.ok(!/Bryce|Alderson/.test(r.text), r.text);
+});
+
+test('D3: a preload truncated mid-row still yields every complete row before the cut', () => {
+  // Answer Seed hard-caps the preload at 20,000 chars, so the last row is routinely cut in half.
+  const full = 'RAW MATCHES (2):\n' + JSON.stringify(PRELOAD_ROWS);
+  const cut = full.slice(0, full.length - 60) + ' …[truncated]';
+  const ev = pg.extractEvidenceRows(preloadMsg(cut));
+  assert.equal(ev.rows.length, 1);
+  assert.equal(ev.rows[0].source, 'fb_post');
+  assert.ok(ev.urls.includes(FB_POST_URL));
+});
+
+test('D3: a DIGESTS block is read too, and ordinary prose in the same message yields no rows', () => {
+  const ev = pg.extractEvidenceRows(preloadMsg(
+    'ABOUT THE ASKER (their own MDS profile):\n- sells kitchenware\n\nDIGESTS (1):\n'
+    + JSON.stringify([{ source: 'wa_digest', source_id: 'd1', url: WA_INVITE, body: 'weekly roundup' }])));
+  assert.equal(ev.rows.length, 1);
+  assert.equal(ev.rows[0].source, 'wa_digest');
+});
+
+test('D3: a user message with no evidence block contributes nothing', () => {
+  assert.equal(pg.extractEvidenceRows([{ role: 'user', content: [{ type: 'text',
+    text: 'MEMBER MESSAGE:\nwhat do people use for systems? [1, 2, 3] and {a: 1}' }] }]).rows.length, 0);
+});
+
 test('#176: open and restricted rows in the SAME turn split — the group name prints, the call name does not', () => {
   const raw = JSON.stringify([
     { source: 'fb_post', source_id: '27179812468362230', url: FB_POST_URL,

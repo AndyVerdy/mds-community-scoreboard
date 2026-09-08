@@ -232,21 +232,108 @@ function rowAuthors(r) {
   return [...new Set(out)];
 }
 
+// WHAT KIND OF ROW IS THIS (#176 D3). Not every retrieval tool labels its rows. content_search /
+// content_lookup return a `source` column; video_search, partner_lookup, event_lookup* and fb_thread
+// do not — they are recognisable only by their shape. q10's public answer reported
+// `source_summary {"other": 18}` for exactly that reason, and an unlabelled row could not be keyed,
+// so nothing classified and every name was masked. A row we can recognise is MISLABELLED, not
+// unknown; a row we cannot is still unknown, and unknown is still closed (rowClass decides that, and
+// nothing here hands it a key it did not earn).
+function rowSource(r) {
+  if (r.source) return String(r.source);
+  if (r.partner_url !== undefined || r.web_summary !== undefined || r.web_people !== undefined) return 'partner';
+  if (r.video_url !== undefined) return 'video';
+  if (r.event_url !== undefined || r.event_name !== undefined) return 'event';
+  // fb_thread: kind post|comment alongside a post_id — its rows carry no `source` column at all.
+  if (r.post_id !== undefined && (r.kind === 'post' || r.kind === 'comment')) {
+    return r.kind === 'post' ? 'fb_post' : 'fb_comment';
+  }
+  return null;
+}
+
+// Collect complete JSON objects out of an array literal starting at s[start] === '['. String- and
+// depth-aware, and it stops at whatever is complete: `Answer Seed` hard-caps its preload at 20,000
+// characters, so the last row of a RAW MATCHES block is routinely cut in half and JSON.parse of the
+// whole array is not an option. A half-written row is dropped, never guessed at.
+function scanRowArray(s, start) {
+  const out = [];
+  let depth = 0, objStart = -1, inStr = false, esc = false, i = start + 1;
+  for (; i < s.length; i++) {
+    const ch = s[i];
+    if (inStr) {
+      if (esc) { esc = false; continue; }
+      if (ch === '\\') { esc = true; continue; }
+      if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') { inStr = true; continue; }
+    if (ch === '{' || ch === '[') { if (depth === 0 && ch === '{') objStart = i; depth++; continue; }
+    /* end of the array */
+    if (ch === ']' && depth === 0) break;
+    if (ch === '}' || ch === ']') {
+      depth--;
+      if (depth === 0 && ch === '}' && objStart >= 0) {
+        try { out.push(JSON.parse(s.slice(objStart, i + 1))); } catch (e) { /* half a row: drop it */ }
+        objStart = -1;
+      }
+    }
+  }
+  return out;
+}
+
+// THE PRELOAD IS EVIDENCE (#176 D3). The single biggest evidence block of a turn is not a
+// tool_result: `Answer Seed` runs a deterministic search before the model does and renders those
+// rows into the final user message as TEXT — "PRELOADED EVIDENCE ... RAW MATCHES (40): [ ... ]" and
+// "DIGESTS (n): [ ... ]", full content rows with their urls and their `meta.author_name`. The
+// extractor only ever read tool_result blocks, so on q10 all forty of them were invisible: the group
+// post that answered the question could not classify, its author could not back a name, and its link
+// was stripped as unknown. Only these two named markers are parsed — arbitrary prose in the message
+// is not scanned for JSON — and every row found goes through the SAME classifier as any other, so
+// nothing here loosens the gate.
+const PRELOAD_MARKER_RE = /(?:RAW MATCHES|DIGESTS)\s*\(\d+\)\s*:\s*/g;
+function preloadRows(text) {
+  const s = String(text == null ? '' : text);
+  const out = [];
+  const re = new RegExp(PRELOAD_MARKER_RE.source, 'g');
+  let m;
+  while ((m = re.exec(s))) {
+    const open = s.indexOf('[', m.index + m[0].length - 1);
+    if (open < 0) break;
+    // the marker must be immediately followed by the array, not by prose that merely contains one
+    if (s.slice(m.index + m[0].length, open).trim() !== '') { re.lastIndex = m.index + m[0].length; continue; }
+    for (const r of scanRowArray(s, open)) out.push(r);
+    re.lastIndex = open + 1;
+  }
+  return out;
+}
+
 function extractEvidenceRows(messages) {
   const rows = [], urls = new Set(), source_ids = new Set();
-  for (const m of Array.isArray(messages) ? messages : []) {
-    if (!m || m.role !== 'user' || !Array.isArray(m.content)) continue;
-    for (const c of m.content) {
-      if (!c || c.type !== 'tool_result') continue;
-      const raw = typeof c.content === 'string' ? c.content : JSON.stringify(c.content);
-      const parsed = parseRows(raw);
-      if (parsed === null) { rows.push({ source: 'text', source_id: null, url: null, text: raw, authors: [] }); continue; }
-      const list = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.rows) ? parsed.rows : []);
+  // one row-shaping path, whether the rows arrived as a tool_result or in the preloaded block
+  const take = (list) => {
       for (const r of list) {
         if (!r || typeof r !== 'object') continue;
         // `event_url` is what event_lookup* actually names its link (coalesce(app_url, public_page_url)).
-        const url = r.url || r.public_page_url || r.partner_url || r.link || r.event_url || null;
-        const sid = r.source_id != null ? String(r.source_id) : (r.video_id != null ? String(r.video_id) : null);
+        // #176 D3: `video_url` is what video_search names its own, and it was in NO coalesce list, so a
+        // library row arrived with url null AND source_id null — keyless, therefore closed, always.
+        // rowUrls() catches every other `*_url` shape a tool may grow later.
+        const url = r.url || r.public_page_url || r.partner_url || r.link || r.event_url
+                    || r.video_url || rowUrls(r)[0] || null;
+        const src = rowSource(r);
+        let sid = r.source_id != null ? String(r.source_id) : (r.video_id != null ? String(r.video_id) : null);
+        // #176 D3: a library row's only id is the one inside its own link. Derived ONLY for a row
+        // that carries neither `source` nor `source_id` of its own — i.e. the unlabelled
+        // video_search shape. A call_transcript row's `url` is the SAME app.mds.co/videos/<id> link
+        // (the recording it was cut from) and the classifier calls that bare id open, so deriving an
+        // id from the url for a row that is already labelled would flip every transcript row open.
+        if (sid === null && r.source == null && r.source_id === undefined) {
+          if (src === 'video' && typeof r.video_url === 'string') {
+            const vid = VIDEO_LINK_RE.exec(r.video_url);
+            if (vid) sid = vid[1];
+          } else if ((src === 'fb_post' || src === 'fb_comment') && r.post_id != null) {
+            sid = String(r.post_id);
+          }
+        }
         for (const u of rowUrls(r)) {
           urls.add(u);
           const vid = VIDEO_LINK_RE.exec(u);
@@ -270,9 +357,23 @@ function extractEvidenceRows(messages) {
           ? JSON.stringify({ name: r.name, web_summary: r.web_summary, web_people: r.web_people,
                              web_pricing: r.web_pricing, reviews_sample: r.reviews_sample })
           : JSON.stringify(r);
-        rows.push({ source: r.source || null, source_id: sid, url: url ? String(url) : null, text,
+        rows.push({ source: src, source_id: sid, url: url ? String(url) : null, text,
                     authors: rowAuthors(r) });
       }
+  };
+  for (const m of Array.isArray(messages) ? messages : []) {
+    if (!m || m.role !== 'user') continue;
+    if (typeof m.content === 'string') { take(preloadRows(m.content)); continue; }
+    if (!Array.isArray(m.content)) continue;
+    for (const c of m.content) {
+      if (!c) continue;
+      if (c.type === 'text') { take(preloadRows(c.text)); continue; }
+      if (c.type !== 'tool_result') continue;
+      const raw = typeof c.content === 'string' ? c.content : JSON.stringify(c.content);
+      const parsed = parseRows(raw);
+      if (parsed === null) { rows.push({ source: 'text', source_id: null, url: null, text: raw, authors: [] }); continue; }
+      const list = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.rows) ? parsed.rows : []);
+      take(list);
     }
   }
   return { rows, urls: [...urls], source_ids: [...source_ids] };
