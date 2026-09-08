@@ -196,7 +196,19 @@ PUBLIC_SMOOTH_BODY = ("={{ JSON.stringify({ model: 'claude-haiku-4-5-20251001', 
   # seller". Every name still in the draft has already been vouched for by an open row; the smoother
   # is told in as many words to keep it. `Public Verify` does not rely on the prompt: it discards the
   # smoother's rewrite outright if a backed name went missing in it.
+  # #176 D5 (staging exec 139221, and Andy: "You can post such a huge chunk of text w/o any breaks,
+  # w/o any links"): the smoother's job is a MINIMAL edit, and the draft's shape is part of what it
+  # must not touch. It used to be told only to "keep the meaning", which left the layout up for
+  # grabs. PRESERVING IS THE DEFAULT, changing shape is the exception — said first, said explicitly,
+  # and backed deterministically by `repairShape` in Public Verify, which puts an inline-run bullet
+  # list back onto its own lines and restores a link the rewrite dropped (or discards the rewrite).
   "system: 'You edit a DRAFT for publication to the MDS member community — the readers are MDS members, not the general public. Some personal names were already replaced by role phrases (a member, a seller in the community, one of the speakers). "
+  # No apostrophe anywhere in this system string on purpose: it is a single-quoted JS string inside
+  # an n8n `={{ }}` expression, so a bare "draft's" would close it (the rest of the prompt has always
+  # avoided them for the same reason, using escaped double quotes where it needs a quotation mark).
+  "PRESERVE THE STRUCTURE OF THE DRAFT VERBATIM. Reproduce every line break and blank line exactly where the draft has one; keep each bullet on its own line, starting with the same marker — never join bullets into a running sentence or a single paragraph. "
+  "Keep every link inline exactly where the draft puts it, next to the claim it supports — never move links to the end, never gather them into a list, never drop one. Keep every quotation verbatim, with the name it is attributed to. "
+  "Changing the shape is the exception, not the default: alter only what these rules require. "
   "Every personal name STILL in the draft is one the sources allow us to print: keep every one of them, spelled exactly as in the draft. Never replace a name with \"a member\" or any other description, and never drop one. "
   "Rules: never add a fact, a name, a number or a link that is not in the draft; fix grammar broken by the replacements; keep every URL exactly; "
   "a \"[link removed]\" marker is deliberate — leave it exactly as it is, and never invent a URL in its place; keep the meaning. "
@@ -239,6 +251,20 @@ let text = smoothed;
 const hasName = (n, s) => boundedRe(escapeRe(normName(n)), 'i').test(String(s || ''));
 const droppedNames = (red.backed || []).filter(n => hasName(n, red.text) && !hasName(n, text));
 if (droppedNames.length > 0) text = red.text;
+// ...AND IT MAY NOT FLATTEN THE ANSWER OR LOSE ITS LINKS (#176 D5, staging exec 139221). Same idea,
+// one step further: the draft now reaches the smoother with its paragraph breaks, its one-bullet-
+// per-line list and its inline links intact (normText no longer collapses newlines), the prompt is
+// told to preserve all three, and this is the deterministic backstop. An inline-run bullet list goes
+// back onto its own lines, three-or-more breaks collapse to a paragraph break, and a link the draft
+// carried but the rewrite dropped is put back on the sentence it belonged to. Only urls that were in
+// the redacted draft can be restored — redactLinks() already judged every one of them open against
+// the class map — so this cannot publish a closed link, and the leak checks below re-read the result
+// either way. If a dropped link cannot be placed honestly, the REWRITE is discarded in favour of the
+// redacted draft, which is already gate-clean and now correctly shaped.
+const shaped = repairShape(red.text, text);
+const shapeRejected = !shaped.ok;
+text = shapeRejected ? shapeText(red.text) : shaped.text;
+const restoredLinks = shapeRejected ? [] : shaped.restored_links;
 let left = leftoverNames(text, names, backed);
 let leftLinks = closedUrls(text, classes);
 let newUrls = extractUrls(text).filter(u => draftUrls.indexOf(u) < 0);
@@ -290,15 +316,25 @@ const repairNote = 'Repaired after the public pass: '
     .filter(Boolean).join(', ') + '.';
 const droppedNote = 'Kept the drafted wording: the polish pass had dropped ' + droppedNames.length
   + ' member name' + (droppedNames.length > 1 ? 's' : '') + ' an open group source lets us print.';
+// #176 D5: the reader is told when the shape backstop had to act, the same way they are told about a
+// dropped name — a link put back, or the whole rewrite dropped because one could not be placed.
+const shapeNote = 'Kept the drafted wording: the polish pass had dropped ' + shaped.missing_links.length
+  + ' source link' + (shaped.missing_links.length > 1 ? 's' : '') + ' that belongs with the claim it backs.';
+const restoreNote = 'Put ' + restoredLinks.length + ' source link' + (restoredLinks.length > 1 ? 's' : '')
+  + ' back where the polish pass had dropped them.';
 const allNotes = notes
   .concat(droppedNames.length > 0 && !refused ? [droppedNote] : [])
+  .concat(shapeRejected && !refused ? [shapeNote] : [])
+  .concat(restoredLinks.length > 0 && !refused ? [restoreNote] : [])
   .concat(repaired && !refused ? [repairNote] : [])
   .concat(refused ? [refusalNote] : []);
 const removed = (red.removed || []).slice();
 for (const n of repaired_names) if (removed.indexOf(n) < 0) removed.push(n);
 return [{ json: { text, notes: allNotes,
                   sources: red.public_urls || [], evidence_classes: classes, refused, repaired, removed, leftover: left,
-                  leftover_links: leftLinks, redactions } }];
+                  leftover_links: leftLinks, redactions,
+                  /* #176 D5: what the shape backstop did, so a probe can read it off the execution */
+                  shape: { rejected: shapeRejected, restored_links: restoredLinks, missing_links: shaped.missing_links } } }];
 """
 
 MOD_ONE_LINE = " ".join(l.strip() for l in MOD.splitlines() if l.strip() and not l.strip().startswith("//"))
