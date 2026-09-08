@@ -2,6 +2,59 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-08 (close) · #171 SHIPPED + #176 PROMOTED — Facebook draft tool live, Public mode corrected to the member audience · **web `50ff14b` · prod `15649d68`**
+
+**Trigger (Andy):** continuing the #169 night — "delivery 2: generate public answer from facebook tool" (#171), then on
+reviewing Public mode's answers: "you do realise that Public means MDS members … the only restiriction for public mode
+is opt in sources" and "the whole idea behind public is that we hiding exact details from restictat chats" (#176); on
+the residual gap found while proving #176: "lets file it" (#177).
+
+**Shipped — #171 Facebook tool (merge `50ff14b`, live on Render, `/api/version`):** "mark answered" wired to the
+endpoint that already existed (`POST /api/admin/fb-post`), optimistic with a read-back, row leaves the unanswered list
+at once. New "Draft an answer" modal on every post row calls the same Public door Ask Millie's Public target uses,
+with the WHOLE post text — new `GET /api/admin/fb-post-text`, because the table's `snippet` column caps at 240
+characters and Millie had been answering the first 240 of a 669-character post — then an editable draft, Copy for the
+group, Mark answered, Regenerate, Open in Ask Millie. Greeting added client-side from the post author's first name,
+never asked of the door (the gate can mask a name the prompt itself carries). Later fixes: no `[link removed]` litter
+in a draft, inline bullets become real lines, no standalone links list (links carried inline), a name anywhere in the
+first sentence counts as an existing greeting (`22c8559`).
+
+**Promoted — #176 Public mode corrected to the member audience (prod `12wj6h1TWqb0d4Dq` = versionId `15649d68`):**
+the room-not-reach rule — OPEN (named/quoted/linked freely): the group's posts and comments, partner listings and
+pages, events and pages, WhatsApp chats that are not verification-required, recordings whose `access_restriction` is
+public. RESTRICTED (may inform, no exact detail crosses): the five verification-required chats (Centurion 20M+, Large
+SKU, Real Estate, Supplements, TikTok), restricted recordings, applications, anything unclassifiable. Spine:
+`digest.chats.verification_required` + `digest.videos_catalog.access_restriction`; a call transcript inherits its
+recording's restriction, joined on the row's url. **A 30-probe evaluation (10 historical group asks × Ask Millie
+Public / the Facebook draft / the ungated member answer) found and fixed five defects:** an open post's AUTHOR did not
+back their own name (one answer masked eight members the ungated answer named) · a leftover restricted detail caused
+an outright refusal instead of an answer without that detail (2 of 30 refused) · evidence rows arrived unlabelled and
+so classified closed (one answer had all 18 sources tagged `other`) · one probe 500'd — `Public Redact` compiled 420k
+regexes per turn, 24,737ms → 151ms with a run-set pre-filter · the shape was being destroyed by a whitespace collapse
+inside `normText` in `public_gate.js`, not by the Haiku rewrite (staging execution 139221: 16 newlines in, 0 out).
+Name index dropped 64 junk rows (5,384 → 5,320: "first last", "andy test", "Your Mom Strueby" and similar). Migrations
+`20260908_public_gate_classify_member_audience_176.sql`, `20260908_public_gate_classify_restriction_spine_176.sql` and
+the name-index update all applied LIVE (no snapshot rides a Postgres function change; rollback = re-apply the old
+body). PR: https://github.com/AndyVerdy/mds-community-scoreboard/pull/2.
+
+**Proof.** Same question, Public mode, before → after: paragraphs 1 → 6 · links in the body 1 → 4 · attributed quotes
+0 → 4 · names masked 8 → 0 (the ungated member answer used as the comparison target: 7 paragraphs, 6 links, 3 quotes).
+Module tests (`public_gate.test.mjs`) 15 → 107. Leak gate 331 → 345 checks, GREEN.
+
+**Filed — #177 · Ask Millie's Public answer names nobody even when the group backs the name.** Same question through
+both surfaces tonight: the Facebook draft named Adam Weiler and linked his public catalogue session; Ask Millie's
+Public answer wrote "a member" / "one seller" / "a community member" throughout and its own note said names were
+replaced with role phrases. Links in both were correct (the removed one was "Dominating PPC with Variations",
+`access_restriction = restricted`; the linked one public) — this is about names, not links. Size S-M, needs staging +
+gate + a promote.
+
+**Deferred (minors found during #176's evaluation, not blockers):** the lone-name pass protects only a first token
+(published a bare "Tudor" while masking "Tanase Tudor - Tude") · the GATED strip's link detail strips the query
+string, so a removed `?comment_id=` variant of a link reads as a surviving post link.
+
+**Next:** #177 (filed) · #170 (thread memory) · #172 (Team chat) · #173 (source trail + streaming) — per Andy's
+standing order, Team chat (#172) is delivery 3.
+
 ## 2026-09-08 04:40Z · #169 SHIPPED — Millie web front door + Public mode · **prod `69665fc2` · web `1987a2e` + `1aad368` live**
 
 **Trigger (Andy):** the #169 session's second half — "i need to see chats locally with new design" → "find consensus"
