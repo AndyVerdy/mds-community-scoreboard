@@ -126,12 +126,37 @@ function normName(s) { return String(s == null ? '' : s).normalize('NFC').replac
 // paste or a smoothing pass leaves next to a name) still defeats a pattern built from a perfectly
 // clean index name: redact() finds nothing to replace and leftoverNames() finds nothing to refuse.
 // Fail OPEN, same class as C1, just the other operand. This is the SAME normalisation as normName()
-// (NFC + the same INVISIBLE_RE) plus one more step that only makes sense for running text, not a
-// single name: runs of whitespace collapse to one space, so a stray formatting artifact between
-// tokens can't reopen the same gap. Used at the top of every function that matches names or links
-// against the answer text, and the normalised text is what gets returned/searched — never a copy
-// kept on the side, so a downstream check can't accidentally look at the un-normalised original.
-function normText(s) { return String(s == null ? '' : s).normalize('NFC').replace(INVISIBLE_RE, '').replace(/\s+/g, ' '); }
+// (NFC + the same INVISIBLE_RE) plus the whitespace tidying below. Used at the top of every function
+// that matches names or links against the answer text, and the normalised text is what gets
+// returned/searched — never a copy kept on the side, so a downstream check can't accidentally look
+// at the un-normalised original.
+//
+// STRUCTURE IS PART OF THE ANSWER (#176 D5, Andy 2026-09-08: "The main issue is how we present data.
+// You can post such a huge chunk of text w/o any breaks, w/o any links."). This function used to end
+// `.replace(/\s+/g, ' ')` — every run of whitespace, NEWLINES INCLUDED, collapsed to one space — and
+// because the normalised text is what gets RETURNED, that collapse was published. Measured on
+// staging execution 139221 (the q10 probe): `Public Redact` was handed a 1,832-character draft
+// carrying 16 newlines — a paragraph break after the lead-in, one bullet per line, each link on its
+// own line — and returned 1,827 characters with ZERO newlines and its five bullets run together
+// inline behind " • ". `Public Smooth (Claude)` was innocent: it received a flat draft and returned
+// a flat one; `Public Verify` and `Format Web` passed it through unchanged. The same collapse shows
+// on every public turn of that eval (139183: 23 newlines in, 0 out; 139171: 26 in, 0 out) while the
+// ungated answer to the identical question kept its 20.
+//
+// What the collapse was actually FOR is unchanged: a stray formatting artifact between the tokens of
+// a name must not reopen the R1 gap. Horizontal runs still collapse to one space, so nothing changes
+// WITHIN a line; a line break between two tokens of a name was never at risk in the first place,
+// because every name pattern joins its tokens with NAME_SEP (`[\s\-]+`), which matches a newline
+// like any other space. Line structure now survives: CR/LF and the Unicode line/paragraph separators
+// normalise to \n, no space is left hugging a break, and three or more breaks in a row collapse to
+// the one blank line that makes a paragraph (tidyBreaks, shared with the shape-repair pass below).
+const NEWLINE_RE = /\r\n?|\u2028|\u2029/g;
+const H_SPACE_RE = /[^\S\n]+/g;
+function tidyBreaks(s) { return String(s == null ? '' : s).replace(/\n{3,}/g, '\n\n'); }
+function normText(s) {
+  return tidyBreaks(String(s == null ? '' : s).normalize('NFC').replace(INVISIBLE_RE, '')
+    .replace(NEWLINE_RE, '\n').replace(H_SPACE_RE, ' ').replace(/ ?\n ?/g, '\n'));
+}
 function nameTokens(nm) { return normName(nm).trim().split(/[\s\-]+/).filter(Boolean); }
 
 // THE PRE-FILTER THAT KEEPS THIS AFFORDABLE (#176 D4). The q9 probe came back
@@ -651,6 +676,99 @@ function repairedSubstance(text) {
   for (const p of ROLE_PHRASES) t = t.split(p).join(' ');
   return t.replace(urlsG(), ' ').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 }
+
+// ============================================================================================
+// SHAPE: WHAT A REWRITE MAY NOT LOSE (#176 D5, Andy 2026-09-08: "Millie much search from existing
+// content, quote when can, justify and send link to the exact source.")
+//
+// normText() above no longer flattens the draft, so the smoother is now HANDED the shape it should
+// keep, and the prompt in apply_169_public_gate.py says in as many words to keep it. This is the
+// deterministic half of that pair — the belt to the prompt's braces — and it exists for the same
+// reason `Public Verify` already discards a rewrite that dropped a backed name: a polish pass is
+// allowed to fix grammar, not to throw away the two things that make an answer checkable, its
+// STRUCTURE and its LINKS. Nothing here can loosen the gate: it never introduces a name, and the
+// only urls it can put back are ones that were in the redacted draft, i.e. ones redactLinks() had
+// already judged open against the class map. Everything it emits is re-checked by the caller.
+// ============================================================================================
+
+// A bullet glyph with text before it on the same line belongs on a line of its own. This is the
+// exact damage the old flatten left behind — five bullets run together behind " • " on one line of
+// staging execution 139221 — and a rewrite can reproduce it from a well-shaped draft too.
+const BULLET_GLYPHS = '\\u2022\\u00B7\\u25AA\\u2023\\u2043';
+const INLINE_BULLET_RE = new RegExp('([^\\s])[^\\S\\n]+([' + BULLET_GLYPHS + '])[^\\S\\n]+', 'g');
+function unflattenBullets(text) {
+  return String(text == null ? '' : text).replace(INLINE_BULLET_RE, '$1\n$2 ');
+}
+
+// Everything in `shape` that is safe to do to any text at any time: normalise, put inline bullets
+// back on their own lines, and leave at most one blank line between paragraphs.
+function shapeText(text) { return tidyBreaks(unflattenBullets(normText(text))); }
+
+// The content words of one line, as lowercase runs of 3+ characters with the urls taken out. This is
+// how a sentence is recognised across a rewrite: the smoother re-words, but it keeps the nouns.
+function anchorTokens(line) {
+  const out = new Set();
+  const m = String(line == null ? '' : line).replace(urlsG(), ' ').match(ALNUM_RUN_RE);
+  if (m) for (const t of m) if (t.length >= 3) out.add(t.toLowerCase());
+  return out;
+}
+// The words that identify the line a link sat on. A link often sits on a line of its own under its
+// lead-in ("Full thread:\nhttps://...") so the lines above it are folded in until there is enough to
+// match on, stopping at the blank line that ends the paragraph.
+const ANCHOR_MIN_TOKENS = 4;
+function homeAnchor(lines, i) {
+  const toks = anchorTokens(lines[i]);
+  for (let k = i - 1; k >= 0 && toks.size < ANCHOR_MIN_TOKENS; k--) {
+    if (!lines[k].trim()) break;
+    for (const t of anchorTokens(lines[k])) toks.add(t);
+  }
+  return toks;
+}
+function anchorOverlap(want, have) {
+  if (!want.size) return 0;
+  let n = 0;
+  for (const t of want) if (have.has(t)) n++;
+  return n / want.size;
+}
+
+// A link that was in the draft and is not in the rewrite goes back to the sentence it supported —
+// "a claim that came from a source carries that source's link, inline, next to the claim". The
+// destination line is the one whose content words best match the line the link sat on in the draft;
+// below LINK_ANCHOR_MIN the sentence is judged gone rather than re-worded, and the caller is told
+// (`missing`) so it can fall back to the pre-rewrite draft instead of guessing a home for it.
+const LINK_ANCHOR_MIN = 0.4;
+function restoreLinks(before, after) {
+  const srcLines = normText(before).split('\n');
+  const dstLines = shapeText(after).split('\n');
+  const have = shapeText(after);
+  const restored = [], missing = [];
+  for (let i = 0; i < srcLines.length; i++) {
+    for (const u of extractUrls(srcLines[i])) {
+      if (have.indexOf(u) >= 0 || dstLines.join('\n').indexOf(u) >= 0) continue;
+      const want = homeAnchor(srcLines, i);
+      let best = -1, bestScore = 0;
+      for (let k = 0; k < dstLines.length; k++) {
+        const s = anchorOverlap(want, anchorTokens(dstLines[k]));
+        if (s > bestScore) { bestScore = s; best = k; }
+      }
+      if (best >= 0 && want.size >= 3 && bestScore >= LINK_ANCHOR_MIN) {
+        dstLines[best] = dstLines[best].replace(/\s+$/, '') + ' ' + u;
+        restored.push(u);
+      } else {
+        missing.push(u);
+      }
+    }
+  }
+  return { text: tidyBreaks(dstLines.join('\n')), restored: restored, missing: missing };
+}
+
+// The whole shape pass over a rewrite. `ok` false means a link the draft carried could not be put
+// back anywhere honest — the caller then publishes shapeText(before), which is the pre-rewrite
+// redacted draft and is already gate-clean.
+function repairShape(before, after) {
+  const lr = restoreLinks(before, after);
+  return { text: lr.text, restored_links: lr.restored, missing_links: lr.missing, ok: lr.missing.length === 0 };
+}
 // --- PUBLIC_GATE_END ---
 // rowClass is exported for the tests only (#176): the n8n nodes inline this whole file, so they call
 // it directly. It is what decides a row is restricted, which is what drives `closed_sources` — the
@@ -659,4 +777,5 @@ function repairedSubstance(text) {
 // correction does not change: only SOME rows of those sources are restricted now, and only those
 // reach `closed_sources`, so the wording stays true of every row it actually describes.
 module.exports = { ROLE_PHRASES, parseRows, extractEvidenceRows, rowClass, backedNames, redact, leftoverNames,
-                   extractUrls, closedUrls, redactLinks, linkDetail, repairPublic, repairedSubstance };
+                   extractUrls, closedUrls, redactLinks, linkDetail, repairPublic, repairedSubstance,
+                   normText, tidyBreaks, unflattenBullets, shapeText, restoreLinks, repairShape };

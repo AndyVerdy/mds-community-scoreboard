@@ -1111,3 +1111,167 @@ test('spine: a repaired answer keeps the open-chat name and drops the restricted
   assert.deepEqual(rp.leftover_links, []);
   assert.ok(pg.repairedSubstance(rp.text).length > 20);
 });
+
+// ============================================================================================
+// #176 D5 — HOW THE ANSWER IS PRESENTED. Andy, 2026-09-08, looking at a Public answer beside the
+// ungated one: "The main issue is how we present data. You can post such a huge chunk of text w/o
+// any breaks, w/o any links. Millie much search from existing content, quote when can, justify and
+// send link to the exact source."
+//
+// The content was already right by then — the q10 probe named five members, quoted Richard Lo
+// verbatim and carried three links. The SHAPE was not. Staging execution 139221 measured where it
+// went: `Public Redact` was HANDED a 1,832-character draft with 16 newlines (a paragraph break
+// after the lead-in, one bullet per line, each link on its own line) and returned 1,827 characters
+// with ZERO newlines, its five bullets run together inline behind " • ". `Public Smooth (Claude)`
+// received a flat draft and returned a flat one; `Public Verify` and `Format Web` passed it through
+// untouched. Same on every public turn of that eval — 139183: 23 newlines in, 0 out; 139171: 26 in,
+// 0 out — against 20 newlines in the ungated answer to the same question.
+//
+// The culprit was normText()'s own `\s+ -> ' '`, and because the normalised text is what gets
+// RETURNED, the collapse was published. These cases pin both halves of the fix: normText keeps line
+// structure (while still doing every job it was collapsing whitespace FOR), and repairShape() is the
+// deterministic backstop for a rewrite that flattens or de-links the answer anyway.
+// ============================================================================================
+
+test('D5: normText keeps line structure — the flatten that shipped one paragraph is gone', () => {
+  const draft = 'Lead-in:\n\n*Heading:*\n• first point\n• second point\n\nFull thread: https://x.test/1';
+  const t = pg.normText(draft);
+  assert.equal((t.match(/\n/g) || []).length, 6, t);
+  assert.ok(t.includes('\n• first point\n• second point'), t);
+  assert.ok(!/ • /.test(t), t);
+});
+
+test('D5: normText still does every job it was collapsing whitespace for', () => {
+  // horizontal runs still collapse, no space is left hugging a break, NFC + invisibles still go,
+  // and three-or-more breaks come back as the one blank line that makes a paragraph.
+  assert.equal(pg.normText('a  \t b'), 'a b');
+  assert.equal(pg.normText('a   \n   b'), 'a\nb');
+  assert.equal(pg.normText('a\n\n\n\n\nb'), 'a\n\nb');
+  assert.equal(pg.normText('a\r\nb\rc'), 'a\nb\nc');
+  assert.equal(pg.normText('Jonathan​ Jewett'), 'Jonathan Jewett');
+});
+
+test('D5: a name split across a line break is still masked — dropping the flatten reopened nothing', () => {
+  // NAME_SEP is `[\s\-]+`, so a newline between the tokens of a name was never what the collapse
+  // was protecting against. This is the case that would prove otherwise.
+  const r = pg.redact('Earlier Jonathan\nJewett said X.', names, new Set());
+  assert.ok(!/Jonathan/.test(r.text), r.text);
+  assert.deepEqual(r.removed, ['Jonathan Jewett']);
+  assert.deepEqual(pg.leftoverNames('Earlier Jonathan\nJewett said X.', names, new Set()), ['Jonathan Jewett']);
+});
+
+test('D5: redact and redactLinks hand back the shape they were given', () => {
+  const draft = 'Lead-in:\n\n• Jonathan Jewett said X.\n• Bryce Alderson said Y.\n\nSource: https://www.mds.co/summit';
+  const lk = pg.redactLinks(draft, { 'https://www.mds.co/summit': 'public' });
+  const r = pg.redact(lk.text, names, new Set(['Bryce Alderson']));
+  assert.equal((r.text.match(/\n/g) || []).length, 5, r.text);
+  assert.ok(r.text.includes('\n• a member said X.\n• Bryce Alderson said Y.'), r.text);
+  assert.ok(r.text.endsWith('Source: https://www.mds.co/summit'), r.text);
+});
+
+test('D5: unflattenBullets puts an inline-run list back onto its own lines', () => {
+  const flat = 'Here is what stood out: • first point • second point • third point';
+  const t = pg.unflattenBullets(flat);
+  assert.equal(t, 'Here is what stood out:\n• first point\n• second point\n• third point');
+});
+
+test('D5: a bullet already at the start of its line is left exactly as it is', () => {
+  const good = 'Lead-in:\n• first point\n• second point';
+  assert.equal(pg.unflattenBullets(good), good);
+  assert.equal(pg.shapeText(good), good);
+});
+
+test('D5: the middot separator is unflattened too, and a decimal point is not a bullet', () => {
+  assert.equal(pg.unflattenBullets('a · b · c'), 'a\n· b\n· c');
+  assert.equal(pg.unflattenBullets('ClickUp is $5.50 a seat · month'), 'ClickUp is $5.50 a seat\n· month');
+  assert.equal(pg.unflattenBullets('4.8 avg over 20 reviews'), '4.8 avg over 20 reviews');
+});
+
+test('D5: tidyBreaks leaves at most one blank line between paragraphs', () => {
+  assert.equal(pg.tidyBreaks('a\n\n\n\nb'), 'a\n\nb');
+  assert.equal(pg.tidyBreaks('a\n\nb'), 'a\n\nb');
+  assert.equal(pg.tidyBreaks('a\nb'), 'a\nb');
+});
+
+test('D5: a link the rewrite dropped goes back to the sentence it supported', () => {
+  const before = 'Several members run Slack plus ClickUp together: https://x.test/thread\n\nA related debate on Google Chat: https://x.test/other';
+  const after = 'A number of members pair Slack with ClickUp.\n\nThere is a related debate about Google Chat: https://x.test/other';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok, JSON.stringify(sh));
+  assert.deepEqual(sh.restored_links, ['https://x.test/thread']);
+  assert.match(sh.text.split('\n')[0], /Slack with ClickUp\.? https:\/\/x\.test\/thread$/, sh.text);
+  assert.ok(sh.text.includes('https://x.test/other'), sh.text);
+});
+
+test('D5: a link on a line of its own is anchored by the lines above it', () => {
+  const before = 'Jason Pratt and Travis Reese both split Slack and ClickUp between comms and tasks.\nFull thread:\nhttps://x.test/thread';
+  const after = 'Jason Pratt and Travis Reese each split Slack and ClickUp across comms and tasks.';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok, JSON.stringify(sh));
+  assert.deepEqual(sh.restored_links, ['https://x.test/thread']);
+  assert.ok(sh.text.trim().endsWith('https://x.test/thread'), sh.text);
+});
+
+test('D5: when the sentence a link belonged to is gone, the rewrite is rejected, never guessed at', () => {
+  const before = 'Daniel Meredith runs his whole company inside ClickUp: https://x.test/thread';
+  const after = 'Members tend to use a chat tool and a task tool side by side.';
+  const sh = pg.repairShape(before, after);
+  assert.equal(sh.ok, false);
+  assert.deepEqual(sh.missing_links, ['https://x.test/thread']);
+  assert.ok(!sh.text.includes('https://x.test/thread'), sh.text);
+  // ...and what the caller publishes instead is the pre-rewrite draft, correctly shaped.
+  assert.ok(pg.shapeText(before).includes('https://x.test/thread'));
+});
+
+test('D5: a faithful rewrite is left alone — the backstop is not a rewriter', () => {
+  const before = 'Lead-in:\n\n• first point: https://x.test/1\n• second point';
+  const after = 'Lead-in:\n\n• first point: https://x.test/1\n• second point';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok);
+  assert.deepEqual(sh.restored_links, []);
+  assert.equal(sh.text, after);
+});
+
+test('D5: the backstop repairs a rewrite that both flattened the list AND dropped a link', () => {
+  const before = 'What members run:\n• Slack for comms plus ClickUp for tasks, per Jason Pratt: https://x.test/a\n• ClickUp on its own, per Daniel Meredith: https://x.test/b';
+  const after = 'What members run: • Slack for comms plus ClickUp for tasks, per Jason Pratt: https://x.test/a • ClickUp on its own, per Daniel Meredith';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok, JSON.stringify(sh));
+  assert.deepEqual(sh.restored_links, ['https://x.test/b']);
+  const lines = sh.text.split('\n');
+  assert.equal(lines.length, 3, sh.text);
+  assert.ok(lines[1].startsWith('• Slack for comms'), sh.text);
+  assert.ok(lines[2].startsWith('• ClickUp on its own') && lines[2].endsWith('https://x.test/b'), sh.text);
+  assert.ok(!/ • /.test(sh.text), sh.text);
+});
+
+test('D5: the backstop never invents a url — it can only put back one the draft carried', () => {
+  const before = 'Members pair Slack and ClickUp for comms and tasks.';
+  const after = 'Members pair Slack and ClickUp for comms and tasks.';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok);
+  assert.deepEqual(pg.extractUrls(sh.text), []);
+});
+
+test('D5: a link the rewrite MOVED is not duplicated — it is already present', () => {
+  const before = 'Jason Pratt splits Slack and ClickUp: https://x.test/a\n\nA related debate: https://x.test/b';
+  const after = 'A related debate: https://x.test/b\n\nJason Pratt splits Slack and ClickUp: https://x.test/a';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok);
+  assert.deepEqual(sh.restored_links, []);
+  assert.equal((sh.text.match(/x\.test\/a/g) || []).length, 1, sh.text);
+});
+
+test('D5: the shape pass runs BEFORE the leak checks, so a repair still sees a shaped answer', () => {
+  // The whole pipeline order in one case: a flattened rewrite that also reintroduced a closed name
+  // comes out shaped, with the name masked and the answer kept.
+  const before = 'Who said what:\n• Bryce Alderson covered CAC.\n• A member covered bundling.';
+  const after = 'Who said what: • Bryce Alderson covered CAC. • Jonathan Jewett covered bundling.';
+  const sh = pg.repairShape(before, after);
+  assert.ok(sh.ok);
+  const rp = pg.repairPublic(sh.text, names, new Set(['Bryce Alderson']), {}, []);
+  assert.equal((rp.text.match(/\n/g) || []).length, 2, rp.text);
+  assert.ok(rp.text.includes('Bryce Alderson'), rp.text);
+  assert.ok(!/Jonathan/.test(rp.text), rp.text);
+  assert.deepEqual(rp.leftover, []);
+});
