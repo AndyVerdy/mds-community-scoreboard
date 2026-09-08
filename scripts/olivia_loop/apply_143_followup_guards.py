@@ -140,15 +140,15 @@ PR_NOTHING_PENDING = [
      "    + ' so there is nothing for a yes to land on. Do NOT repeat your last answer and do NOT claim any action was taken:'\n"
      "    + ' in ONE short line, ask what they would like you to do next.';\n"
      "} else if (bareAffirm && ctx.has_history && ctx.prev_plan && ctx.prev_plan.op && !introOfferPending) {"),
-    # A titles-only offer ("MDS has *20 chapters* … Want me to pull the rest?" → "yes", staging 137755) bound with a
-    # ZERO fetch, so the model listed the 14 chapters it remembered and said the tool's response got cut off. Nothing
-    # to fetch by id here — re-issue the previous turn's own plan so the full rows are in front of it again.
-    ("  } else {\n"
-     "    op = 'content_lookup';\n"
-     "    params = { p_phone: mem.to, p_source: 'wa_digest', p_kind: 'daily', p_limit: 0 };\n"
-     "  }\n"
-     "} else if (bareAffirm && ctx.has_history && ctx.last_olivia_asks === false",
-     "  } else if (!offerBind.ids.length && ctx.prev_plan && ctx.prev_plan.op) {\n"
+]
+
+# TRIED AND REVERTED (staging c986f6d0 → exec 137759, 2026-09-08 00:08Z): re-issuing the previous plan for a
+# titles-only offer ("MDS has *20 chapters* … want the full list?" → "yes") put the full chapter_info payload in
+# front of the model — which is TRUNCATED in the evidence after 14 rows — so it invented the remaining names, the
+# fact check failed twice and the clamp fired. The zero-fetch answer from memory (14 of 20, "the rest didn't come
+# through") is the lesser evil until the list-tool clipping is fixed (found alongside, not this ticket).
+PR_TITLES_ONLY_REVERT = [
+    ("  } else if (!offerBind.ids.length && ctx.prev_plan && ctx.prev_plan.op) {\n"
      "    // #143: a titles-only offer has nothing to fetch by id (staging 137755: a zero fetch left the model with the\n"
      "    // 14 chapters it remembered). Re-issue the previous turn's own plan so the full rows are in front of it.\n"
      "    const _pp = ctx.prev_plan;\n"
@@ -156,11 +156,8 @@ PR_NOTHING_PENDING = [
      "    raw_op = _pp.raw_op || raw_op; raw_params = Object.assign({}, _pp.raw_params || {});\n"
      "    if (params.p_phone) { params.p_phone = mem.to; }\n"
      "    if (raw_params.p_phone) { raw_params.p_phone = mem.to; }\n"
-     "  } else {\n"
-     "    op = 'content_lookup';\n"
-     "    params = { p_phone: mem.to, p_source: 'wa_digest', p_kind: 'daily', p_limit: 0 };\n"
-     "  }\n"
-     "} else if (bareAffirm && ctx.has_history && ctx.last_olivia_asks === false"),
+     "  } else {\n",
+     "  } else {\n"),
 ]
 PREP_CONTEXT_EDITS = [
     ("let last_olivia_intro_offer = false;",
@@ -176,7 +173,7 @@ PREP_CONTEXT_EDITS = [
 
 # Upgrades: nodes that carry an earlier #143 cut of the detector get the current one (either anchor).
 UPGRADE = {
-    "Plan Request": list(PR_NOTHING_PENDING),
+    "Plan Request": list(PR_NOTHING_PENDING) + list(PR_TITLES_ONLY_REVERT),
     "Format Reply": [
         (r"""  if (last.toLowerCase().indexOf('open a ticket with the mds team') !== -1) { return true; }
   if (!/\?\s*$/.test(last)) { return false; }
@@ -272,7 +269,8 @@ def patch(wf):
             ups = UPGRADE.get(n["name"], [])
             # a pair whose replacement is already in the node was applied by an earlier cut (its anchor line
             # survives inside the replacement) — never apply it twice
-            hit = [(o, nw) for o, nw in ups if o in code and nw not in code]
+            # (a contraction — a revert pair — applies whenever its anchor is present)
+            hit = [(o, nw) for o, nw in ups if o in code and not (len(nw) > len(o) and nw in code)]
             if not hit:
                 print(f"  {n['name']}: already carries {MARK} (current cut), skipped")
                 continue
