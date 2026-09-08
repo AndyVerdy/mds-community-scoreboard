@@ -230,6 +230,21 @@ Appendix C). The path, in order:
 12. **Save Conversation** — both turns are written to `digest.olivia_messages`, stamped with the
     member record and the retrieval plan (known gap #110: intro-tap turns are not saved).
 
+**The web door (#169, 2026-09-08).** A second entrance on the same graph for the admin portal's *Ask Millie*
+tool: `Web Inbound (POST)` (path `olivia-web-live` / `-staging`, header-auth credential `Olivia Web Secret`,
+`responseMode: lastNode`) feeds `Log Inbound`, whose web branch normalises `{web:true, asker_email, mode, target,
+text, thread_id}` into the WhatsApp shape — the retrieval principal is the probe member phone, set INSIDE the
+node, and the wamid is generated as `wamid.SELFTEST_WEB_…`, so a web turn always takes the silent branch and can
+never reach `Send Reply (Meta)`. `Load Recent Turns` reads `olivia_web_messages` by `thread_id` for web turns
+(16-turn cap, no 24 h cut). After `Eval (silent)?` a `Web?` fork runs `Public?` → **Public Gate** (Public mode
+only: `Classify Evidence (Supabase)` + `Fetch Name Index (Supabase)` → `Public Inputs` → `Public Redact` →
+`Public Smooth (Claude)` [one Haiku call] → `Public Verify`) → `Format Web` → `Save Web (Supabase)` → `Web
+Response` (a code node; **never a `respondToWebhook` node on this fork — one reachable from `WA Inbound (POST)`
+500s every WhatsApp turn**). The deterministic gate lives in `scripts/olivia_loop/public_gate.js` and is embedded
+verbatim; a name survives a public answer only when a PUBLIC evidence row of the turn contains it, unknown =
+closed, and a leftover name or a new link after smoothing fails the turn closed. Applied by
+`scripts/olivia_loop/apply_169_web_door.py` + `apply_169_public_gate.py` (idempotent, staging first).
+
 **Side workflows:**
 - **Holding ladder** (`X1vzrW9Avqff3qRa`) — fires on inbound, sends "on it" / "still working" if an
   answer is slow. Fail-closed: it checks whether the answer already landed before each rung. Wired
@@ -290,6 +305,7 @@ access-tagged. An undefined source does not exist to her.* No crawling raw bases
 | `olivia_intros` | 6 | **#97 consent ledger (live since 2026-08-22):** pending → accepted / declined / expired / unreachable; no number moves before `accepted`. One intro has run end-to-end in the wild (Ben Anderson → Dat Le, 2026-08-31, accepted in 1h51m). |
 | `docs` / `doc_entries` | 4 / 50 | **#18 org knowledge library** — team documents (FAQs, SOPs), audience fail-closed to staff, served by the `/api/olivia/kb` route. |
 | `olivia_messages` | 12,981 (1,385 real member turns from 143 members) | Conversation history, stamped with the member record; the rest is eval/probe traffic (`wamid.SELFTEST*`). |
+| `olivia_web_messages` | new (#169) | **Admin web chat turns** (Ask Millie: modes `test` · `public` · `team`), keyed by `thread_id` + staff `asker_email`; carries `answer_md`, `notes`, `sources`, `evidence_classes`, `redactions`, `source_summary`, `metrics`. service_role only, RLS on. Never member WhatsApp traffic — the daily review must not read it. |
 
 > ⚠️ **`digest.members` is the WhatsApp layer; `digest.member_attributes` is the member
 > population.** Confusing the two has caused repeated bugs — most notably staff counts. Anything
@@ -559,6 +575,7 @@ resolves the asker itself. The main ones:
 | `fb_catchup` / `fb_thread` | Facebook recency browse / full thread pull |
 | `member_card` | One member's public profile card |
 | `member_match` | Members by attribute (city/state/category/band/channel) |
+| `public_gate_classify` / `public_gate_name_index` | **#169 Public Gate** — classify a turn's evidence keys (urls / source ids) as `public` or `closed` (content `access_rule->>'type'='public'` + normal sensitivity · published partners · events with a public page · public videos; everything else closed); the member/speaker name index (two-word names ≥ 5 chars, 5,394 rows) the redaction pass masks against. Called only by the workflow's Public Gate nodes. |
 | `expertise_search` | Members by what they know (keyword + embedding, RRF) |
 | `member_count` | Counting members by attribute, with breakdowns |
 | `member_dossier` / `member_billing` | The asker's own record / own billing |
@@ -816,7 +833,7 @@ python3 scripts/olivia_wf.py unlock
 ### 8.2 The safety gate
 
 ```bash
-python3 scripts/olivia_leak_gate.py     # 323 checks (2026-09-04, +9 personas), ~3 min, free
+python3 scripts/olivia_leak_gate.py     # 331 checks (2026-09-08, +8 web door / Public Gate), ~3 min, free
 ```
 It inserts canary rows with every access rule and sensitivity, asks the real RPCs for them as
 several different members, and asserts what must *not* come back. It also verifies anon lockout,
@@ -1095,6 +1112,8 @@ member-facing copy now names the reason when it IS billing (Answer Parse).
     olivia_link_wa_id.py                                                          ← hidden-number pairing (#146)
     announce_summit_videos.py · olivia_*_template.py                              ← broadcast waves + Meta templates
     olivia_loop/                        ← the answering-loop source (build_loop.py + apply_* seed edits)
+    olivia_loop/apply_169_web_door.py · apply_169_public_gate.py   ← #169: the web door + Public Gate nodes (idempotent, staging first)
+    olivia_loop/public_gate.js (+ public_gate.test.mjs)            ← #169: the deterministic redaction module embedded in the gate nodes (node --test)
     model_bench/                        ← snapshot of the bench harness (#156)
     tests/                              ← unit tests that run the REAL node code out of the live graph
     alarm_watchdog.py, sync_chapter_pages.py, olivia_*.py
@@ -1136,6 +1155,12 @@ edit one while working the other.
 selects them. "Used in a calculation" is not "shareable".
 
 **Standing rulings:**
+- **Public mode (#169 — Andy, 2026-09-07): a public answer may name a person only when a PUBLIC source of that
+  turn backs the name** ("second one, only from public sources"). The MDS Facebook group is private. Retrieval
+  runs wide (the probe member's access until Team mode), the output is gated: unbacked member names become role
+  phrases, closed sources are paraphrased and named in the notes, a leftover name or a new link fails the turn
+  closed. Single-word member names stay unmasked by design ("leave it"). Team mode (#172) = everything, behind a
+  disclaimer — a later ticket.
 - **Public-in-the-app = shareable** (Eugene, final) — anything a member can already see in the MDS
   app about another member may surface. Everything else keeps the structural refusal.
 - **Revenue:** our data yields **bands only**, always. A figure the member or an MDS page *posted
