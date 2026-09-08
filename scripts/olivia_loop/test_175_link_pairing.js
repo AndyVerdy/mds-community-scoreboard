@@ -83,5 +83,25 @@ check('at most three links are appended',
 check('a scattered word match is not a citation',
   linkCoverageUrls(EV, 'Split testing is worth it. Every seller should test. Sales grow when you increase CR by 1% - Anthony said so on a call.'), []);
 
+// ───────── #139: partner rows carry `name` + `offer_value` + `partner_url`, never `title` ─────────
+const P_MEDIA = 'https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa1';
+const P_SOCIAL = 'https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa2';
+const prow = function (name, offer, url, extra) {
+  return '{"name":"' + name + '","offer_value":"' + offer + '","description_snippet":"' + LONG + '","categories":["TikTok Shop","Working with Agencies"],"rating_avg":null,"review_count":0,"claim_count":2,"featured":false,"fresh_deal":false,"partner_url":"' + url + '","reviews_sample":null,"matched_rank":0.03,"fit_reason":null,"strength_note":null,"web_people":[{"name":"Jane Doe","role":"Founder"}]' + (extra || '') + '}';
+};
+const EV_P = 'TOOL partner_lookup (2 rows):\n[' + prow('Media Labs', '15% OFF first 3 months', P_MEDIA) + ',' + prow('Social Tale', 'Free audit', P_SOCIAL) + ']';
+check('#139: a named partner with no link gets its page WITH its offer, as one line',
+  linkCoverageUrls(EV_P, 'There are also TikTok Shop agency partner deals in the directory (Media Labs, Zainith) — none have reviews on file yet.\n\nWant the links?'),
+  ['Media Labs (15% OFF first 3 months): ' + P_MEDIA]);
+check('#139: an already-linked partner is left alone',
+  linkCoverageUrls(EV_P, 'Media Labs (15% OFF first 3 months) is the one people mention.\n' + P_MEDIA), []);
+check('#139: a partner nobody named is never appended',
+  linkCoverageUrls(EV_P, 'Ask in the MDS TikTok chat — plenty of agency talk there.'), []);
+check('#139: the nested web_people "name" never poses as the row name (Jane Doe is not a partner)',
+  linkCoverageUrls(EV_P, 'Jane Doe founded it.'), []);
+check('#139: a partner with no offer on file gets a plain "Name: page" line',
+  linkCoverageUrls('[' + prow('Zainith', '', 'https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa3') + ']', 'Zainith came up too.'),
+  ['Zainith: https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa3']);
+
 console.log(pass + '/' + (pass + fail) + ' pass, ' + fail + ' fail');
 process.exit(fail ? 1 : 0);
