@@ -46,6 +46,14 @@ boundary passes exactly what the mask missed. Sent the peer the failing/passing 
 its staging apply and a third promote are ITS work, and it will message before touching staging. **No exposure:** the web door is
 header-authenticated (a secret-less POST is refused) and its page has not merged. Trap written into `OLIVIA_HANDBOOK.md` §13.
 
+**03:35Z — #174 proven on Andy's OWN live turn, found while checking the row range was clean.** Two minutes after his screenshot
+question he sent *"Tell me more travis video"* (22:23 CT, rows 65942/65943): **exec 138168** bound it as
+`offer_bind {mode:'drilldown', ids:['69853b20…'], offered:2, named:["How Brands Turn Failed Creative Tests… — Peter-Paul Maan &
+Travis Klabon (Intellivy), Mogul Call, Feb 2026"]}` → `video_search p_video_id=69853b20…` → the full rundown of that one call.
+The bind came off **"Travis"**, a co-speaker's first name sitting MID-LINE in the recorded offer item — Andy's case 1, landing on
+his real usage, not a probe. **Auditing trap recorded (handbook §13):** `olivia_messages.plan` does not carry `offer_bind` — the
+row reads null while the execution shows the drilldown; audit binds in the execution, the row's tell is `p_video_id`.
+
 **Close state 03:30Z (22:30 CT):** prod `49d4a931` (92 nodes, eight tickets + #169 fix round 4) · staging `027bd776` · lock free ·
 no probe rows left (`digest.olivia_messages` for 17866578153 ends at Andy's own 65941) · branch `174-named-item-drilldown-20260907`
 merged to `main`. **Next ticket: #147** — "Is this member registered?" is answered twice, by two sources, and they disagree

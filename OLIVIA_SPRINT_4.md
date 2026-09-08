@@ -166,7 +166,10 @@ Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at
 | no pending offer = planning unchanged | ✅ after a reset, "Tell me more about Alex Chiru video" → exec 137647 videos lane, `video_search "alex chiru"` (row 65541) |
 | two items sharing the name → both bound, she asks which | ✅ unit (cases 27–28); not exercised live |
 | gate GREEN | ✅ 324 checks, EXIT 0 (22:42Z) |
-| promote | ⏳ Andy's call — one graph, three tickets |
+| promote | ✅ prod `f5e9ce5d` 02:16Z, then `49d4a931` 03:14Z |
+| **PROVEN ON ANDY'S OWN LIVE TURN** (not a probe) | ✅ **exec 138168**, 2026-09-07 22:23 CT, two minutes after his screenshot question: *"Tell me more travis video"* → `offer_bind {mode:'drilldown', ids:['69853b20…'], offered:2, named:["How Brands Turn Failed Creative Tests… — Peter-Paul Maan & Travis Klabon (Intellivy), Mogul Call, Feb 2026"]}` → `video_search p_video_id=69853b20…` → the full rundown of that one call (row 65943, 1,657 chars). The bind came off **"Travis"**, a co-speaker's FIRST NAME sitting mid-line in the recorded offer item — the exact shape of Andy's case 1, now landing on his real usage |
+
+**Auditing note (cost me a false negative tonight):** `digest.olivia_messages.plan` does **not** carry `offer_bind` — row 65943 reads `plan->'offer_bind' = null` while execution 138168 shows `mode:'drilldown'`. Read the EXECUTION when auditing a bind; the saved plan shows only the resulting op and params (`p_video_id` is the tell).
 
 **Before → after** on the failing case: prod turn 65491 — a three-video cluster with a one-line blurb, two bare links, plan `video_search "alex chiru"` → staging row 65565 — the one video, its substance, one link, plan `offer_bound p_video_id`. The bank C 26 Aug shape ("Summarize the Orkun one") now binds by speaker name. Probe rows cleaned by id (64 rows), never `--cleanup`.
 **Remainder, in writing:** a bare ordinal ("the second one") reaches the model unbound — pre-existing, #112 reads ordinals only as quantifiers inside an acceptance; both live runs still answered the right item. Candidate for #143. The router still sees each history turn trimmed to 500 chars — left alone, the deterministic bind made it moot.
