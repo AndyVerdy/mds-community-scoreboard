@@ -140,6 +140,27 @@ PR_NOTHING_PENDING = [
      "    + ' so there is nothing for a yes to land on. Do NOT repeat your last answer and do NOT claim any action was taken:'\n"
      "    + ' in ONE short line, ask what they would like you to do next.';\n"
      "} else if (bareAffirm && ctx.has_history && ctx.prev_plan && ctx.prev_plan.op && !introOfferPending) {"),
+    # A titles-only offer ("MDS has *20 chapters* … Want me to pull the rest?" → "yes", staging 137755) bound with a
+    # ZERO fetch, so the model listed the 14 chapters it remembered and said the tool's response got cut off. Nothing
+    # to fetch by id here — re-issue the previous turn's own plan so the full rows are in front of it again.
+    ("  } else {\n"
+     "    op = 'content_lookup';\n"
+     "    params = { p_phone: mem.to, p_source: 'wa_digest', p_kind: 'daily', p_limit: 0 };\n"
+     "  }\n"
+     "} else if (bareAffirm && ctx.has_history && ctx.last_olivia_asks === false",
+     "  } else if (!offerBind.ids.length && ctx.prev_plan && ctx.prev_plan.op) {\n"
+     "    // #143: a titles-only offer has nothing to fetch by id (staging 137755: a zero fetch left the model with the\n"
+     "    // 14 chapters it remembered). Re-issue the previous turn's own plan so the full rows are in front of it.\n"
+     "    const _pp = ctx.prev_plan;\n"
+     "    op = _pp.op; params = Object.assign({}, _pp.params || {});\n"
+     "    raw_op = _pp.raw_op || raw_op; raw_params = Object.assign({}, _pp.raw_params || {});\n"
+     "    if (params.p_phone) { params.p_phone = mem.to; }\n"
+     "    if (raw_params.p_phone) { raw_params.p_phone = mem.to; }\n"
+     "  } else {\n"
+     "    op = 'content_lookup';\n"
+     "    params = { p_phone: mem.to, p_source: 'wa_digest', p_kind: 'daily', p_limit: 0 };\n"
+     "  }\n"
+     "} else if (bareAffirm && ctx.has_history && ctx.last_olivia_asks === false"),
 ]
 PREP_CONTEXT_EDITS = [
     ("let last_olivia_intro_offer = false;",
@@ -249,7 +270,9 @@ def patch(wf):
         code = n["parameters"]["jsCode"]
         if MARK in code:
             ups = UPGRADE.get(n["name"], [])
-            hit = [(o, nw) for o, nw in ups if o in code]
+            # a pair whose replacement is already in the node was applied by an earlier cut (its anchor line
+            # survives inside the replacement) — never apply it twice
+            hit = [(o, nw) for o, nw in ups if o in code and nw not in code]
             if not hit:
                 print(f"  {n['name']}: already carries {MARK} (current cut), skipped")
                 continue
