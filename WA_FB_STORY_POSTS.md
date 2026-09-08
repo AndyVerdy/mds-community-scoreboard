@@ -22,7 +22,7 @@ paste is a hard constraint — the system exists to make it cost one glance and 
 | Slack | `#automation-tests` (`C0AQ8USNQK0`) |
 | Ledger | Supabase `digest.fb_group_posts` |
 | Reads | `digest.summaries`, `digest.wa_messages`, `digest.members` |
-| Spec / plan | `docs/superpowers/specs/2026-09-01-…-design.md` · `docs/superpowers/plans/2026-09-01-….md` |
+| Spec / plan | in THIS repo (Scorecard): `docs/superpowers/specs/2026-09-01-wa-to-fb-story-posts-design.md` · `docs/superpowers/plans/2026-09-01-wa-to-fb-story-posts.md` |
 
 **Airtable is never written.** No new data capture — everything read already existed.
 
