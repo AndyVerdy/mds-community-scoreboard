@@ -49,7 +49,17 @@ function boundedRe(src, flags, suffix) { return new RegExp(NB_L + src + NB_R + (
 // Lee" is never read as "Anna Lee". A possessive needs nothing: NB_R already allows a following "'".
 const NAME_SEP = '[\\s\\-]+';
 const MIDDLE_STOP = 'and|or|the|of|in|at|to|for|with|from|by|on';
-function nameTokens(nm) { return String(nm == null ? '' : nm).trim().split(/[\s\-]+/).filter(Boolean); }
+// The other half of C1's 33 rows (#169 C1 addendum, #174 session's independent repro): a boundary fix
+// alone does not reach them. An index display name carrying an INVISIBLE code point — "John Pollock"
+// with a trailing U+FE0F variation selector, a zero-width space inside it — or an accent stored
+// decomposed (NFD) never matches the clean, composed text the model writes, and leftoverNames() does
+// not refuse it either: fail OPEN again. Both sides are normalised before matching. Names are
+// normalised here (they only ever become patterns); the answer text is normalised to NFC where it is
+// searched — canonical composition changes nothing a reader sees, and invisibles are deliberately
+// left in the published text so an emoji keeps its presentation selector.
+const INVISIBLE_RE = /[\u00AD\u200B-\u200F\u2060\uFE0F\uFEFF]/g;
+function normName(s) { return String(s == null ? '' : s).normalize('NFC').replace(INVISIBLE_RE, ''); }
+function nameTokens(nm) { return normName(nm).trim().split(/[\s\-]+/).filter(Boolean); }
 function nameSource(nm) {
   const toks = nameTokens(nm).map(escapeRe);
   if (!toks.length) return null;
@@ -174,10 +184,10 @@ function backedNames(rows, classes, names) {
   const backed = new Set();
   for (const row of rows) {
     if (rowClass(row, classes) !== 'public') continue;
-    const text = String(row.text || '');
+    const text = String(row.text || '').normalize('NFC');
     for (const n of names) {
       const nm = String(n.name || '').trim();
-      if (nm && boundedRe(escapeRe(nm), 'i').test(text)) backed.add(nm);
+      if (nm && boundedRe(escapeRe(normName(nm)), 'i').test(text)) backed.add(nm);
     }
   }
   return backed;
@@ -225,7 +235,7 @@ function redactLinks(text, classes) {
 }
 
 function redact(draft, names, backed) {
-  let text = String(draft || '');
+  let text = String(draft || '').normalize('NFC');
   const removed = [];
   let i = 0;
   // Every url still here is world-public (redactLinks removed the rest), but its path can carry a name
@@ -270,7 +280,7 @@ function leftoverNames(text, names, backed) {
   // URLs are not searched for names: what survives redactLinks() is world-public, so a name in its own
   // path is world-public too, and redact() deliberately leaves it intact — refusing on it would refuse
   // every turn that cites such a page. A CLOSED url is caught by closedUrls(), not here (#169 I2).
-  const hay = String(text || '').replace(urlsG(), ' ');
+  const hay = String(text || '').normalize('NFC').replace(urlsG(), ' ');
   const low = hay.toLowerCase();
   const out = [], seen = new Set();
   for (const n of names) {

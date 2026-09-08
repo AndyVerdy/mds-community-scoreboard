@@ -9,6 +9,7 @@
 // (mirrored in db/functions/public_gate_name_index.sql). One guard, in one place, deliberately.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const pg = require('./public_gate.js');
@@ -179,6 +180,32 @@ test('C1: an accented name is backed only by a public row, same as an ASCII one'
   const backed = pg.backedNames(rows, { 'https://www.mds.co/summit': 'public' }, accented);
   assert.ok(backed.has('Émile Dupont'));
   assert.ok(!backed.has('Renée Dubé'));
+});
+
+// --- C1 addendum (#169, from the #174 session's independent repro): the boundary fix alone leaves
+// the other half of the 33 rows open. An index display name carrying an invisible code point
+// ("John Pollock" + U+FE0F) or a differently-normalised accent never matches the clean text the model
+// writes, and nothing refuses it. BOTH sides are normalised before matching. ---
+
+test('C1: an invisible code point inside the index name does not hide the name', () => {
+  const idx = [{ name: 'John Pollock️', kind: 'member' }, { name: 'Ana​ Lopez', kind: 'member' }];
+  const r = pg.redact('John Pollock said X. Ana Lopez agreed.', idx, new Set());
+  assert.ok(!/Pollock/.test(r.text), r.text);
+  assert.ok(!/Lopez/.test(r.text), r.text);
+  assert.equal(pg.leftoverNames('John Pollock said X.', idx, new Set()).length, 1);
+});
+
+test('C1: a decomposed accent matches a composed one, in both directions', () => {
+  const nfd = 'Émile Dupont'.normalize('NFD'), nfc = 'Émile Dupont'.normalize('NFC');
+  assert.ok(!/Dupont/.test(pg.redact(nfc + ' said X.', [{ name: nfd }], new Set()).text));
+  assert.ok(!/Dupont/.test(pg.redact(nfd + ' said X.', [{ name: nfc }], new Set()).text));
+  assert.deepEqual(pg.leftoverNames(nfd + ' said X.', [{ name: nfc }], new Set()), [nfc]);
+});
+
+test('C1 regression: no ASCII \\b word boundary is left anywhere in the module code', () => {
+  const src = readFileSync(new URL('./public_gate.js', import.meta.url), 'utf8')
+    .split('\n').filter(l => !l.trim().startsWith('//')).join('\n');
+  assert.ok(!/\\b/.test(src), 'a \\b escape is back in public_gate.js — it is ASCII-only (review C1)');
 });
 
 // --- review I1 (#169): only the exact spelling was ever masked. A middle initial, a hyphen-vs-space
