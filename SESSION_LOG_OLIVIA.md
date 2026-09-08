@@ -2,6 +2,30 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-08 03:14Z · SECOND PROMOTE — #169 fix round 4 · **prod `49d4a931`** (92 nodes)
+
+**Trigger:** the #169 session finished `public_gate.js` fix round 4 on staging `027bd776` and asked me to promote under Andy's
+conditional go ("my go to promote if another agent agrees"). **I verified the graph myself before writing to prod:** `olivia_wf.py
+diff prod staging` → changed = `Classify Evidence (Supabase)` (`params.jsonBody`), `Public Redact`, `Public Verify` + the three
+webhook nodes that always differ by path/id; a full parameter comparison of every other node → **NONE differing**; my seven edits
+present on staging (marker check); the change reads as a tightening — a partner row's public name may be backed only by
+`name`/`web_summary`/`web_people`/`web_pricing` (the partner's own crawled site), never `reviews_sample` / `strength_note` /
+`fit_reason` (member text); `node --test scripts/olivia_loop/public_gate.test.mjs` **15 pass / 0 fail**.
+**Promote (03:13–03:14Z, lock held):** gate **GATE PASSED** inside the promote · 3 changed nodes · snapshots
+`prod_2026-09-08T031444Z_pre-promote.json` (`f5e9ce5d`) and `prod_2026-09-08T031449Z_post-promote-169-fix4-20260908.json` ·
+bounce 200/200 · **prod `49d4a931`, graph matches staging: True** · `PROMOTE_EXIT=0`. **WA smoke after the bounce** (5 turns,
+silent path, rows 65928–65937 + `olivia_seen` deleted): all 200; exec 138141 content_search with a recorded 3-video offer, 138144
+video_search, 138146 partner_lookup with deals + pages. Lock released 03:17Z; the #169 session given the prod versionId.
+**Two corrections sent to the #169 session (its handover was inaccurate, neither a blocker):** it described "two Code nodes …
+nothing else differs" — the promote moved **three** nodes (the `Classify Evidence` jsonBody carries the same logic inline); and
+gate check 4 (`1890e62`) now judges staleness on the ship target with a stale **prod** only informational, so prod drift from
+`public_gate.js` while staging is current no longer reddens the gate.
+**Not a regression, recorded because it looks like one:** exec 138144 "Tell me more about Alex Chiru video" planned a FRESH video
+search — the previous turn's offer held three videos, none of them Alex Chiru's, so there was nothing to drill into; #174 binds
+only a named item that is IN the recorded offer (it bound at 02:17, exec 138068, when the previous answer named that video).
+**Found alongside, unfiled:** the offer recorder writes loose `pending_offer.titles` / `items[].name` (exec 138141 recorded a
+whole sentence as an item name plus three stray titles); ids were correct and binding worked.
+
 ## 2026-09-08 02:16Z · PROMOTE — one graph, eight tickets · **prod `12wj6h1TWqb0d4Dq` = `f5e9ce5d` (92 nodes): #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144 — LIVE, prod probes green**
 
 **Trigger (Andy):** "you have my go to promove if another agent agees". Asked the #169 session by message; it answered NOT YET
