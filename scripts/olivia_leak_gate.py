@@ -1916,6 +1916,55 @@ def main():
     _t = subprocess.run(["node", "--test", os.path.join(os.path.dirname(__file__), "olivia_loop", "public_gate.test.mjs")], capture_output=True, text=True)
     check("public_gate.js unit tests pass (redaction + leftover-name fail-closed)", _t.returncode == 0, _t.stderr[-300:])
 
+    # 7. #176: the LIVE classifier encodes the corrected definition of Public mode. Andy, 2026-09-07:
+    #    "you do realise that Public means MDS members ... the only restiriction for public mode is
+    #    opt in sources", and "the whole idea behind public is that we hiding exact details from
+    #    restictat chats". A public answer is posted into the members-only MDS Facebook group, so the
+    #    group's own posts and comments are OPEN; what stays closed is a RESTRICTED ROOM — a closed
+    #    WhatsApp channel or a private call/meeting transcript — plus anything unclassifiable.
+    #    #169 fix round 3 read "public" as WORLD-public and classified every content_items row closed,
+    #    the group included. Nothing here asserted classification semantics at all back then, so that
+    #    reading could have been reintroduced silently; these four checks are what stops it.
+    #
+    #    THE FIRST OF THEM IS RED UNTIL scripts/sql/20260908_public_gate_classify_member_audience_176.sql
+    #    IS APPLIED, deliberately: the SQL and the embedded module must move together. A graph carrying
+    #    the #176 module against a #169 classifier over-masks every group-backed name; the reverse
+    #    publishes one. The fail-closed spirit of the section is unchanged — the restricted-room and
+    #    unknown-source checks below are still the ones proving a name or link from a closed room can
+    #    never reach a published answer, and they must be green in BOTH directions of that migration.
+    _probe = {}
+    for _label, _q in (("fb_post_url", "content_items?select=url&source=eq.fb_post&url=not.is.null&limit=1"),
+                       ("wa_sid",      "content_items?select=source_id&source=eq.wa_message&limit=1"),
+                       ("call_url",    "content_items?select=url&source=eq.call_transcript&url=not.is.null&limit=1")):
+        _st, _rows = curl("GET", f"{BASE}/{_q}", key, profile_hdr=["Accept-Profile: digest"])
+        _probe[_label] = (_rows[0].get("url") or _rows[0].get("source_id")) if _st == 200 and _rows else None
+    check("gate found live rows of each class to classify (fb_post, wa_message, call_transcript)",
+          all(_probe.get(_k) for _k in ("fb_post_url", "wa_sid", "call_url")), f"probe {_probe}")
+    _UNKNOWN_URL = "https://example.invalid/no-evidence-row-ever-produced-this"
+    _cst, _cls = rpc("public_gate_classify",
+                     {"p_urls": [_u for _u in (_probe.get("fb_post_url"), _probe.get("call_url"), _UNKNOWN_URL) if _u],
+                      "p_source_ids": [_s for _s in (_probe.get("wa_sid"),) if _s]}, key)
+    # Collapse duplicate keys most-restrictively — byte-for-byte the rule `Public Redact` applies, so
+    # this asserts what the gate NODE will actually see, not just what the RPC happened to emit. It
+    # matters: a call transcript's own url IS its recording's app.mds.co/videos/<id> link, so the
+    # transcript row and the (open) library row hand back the same key with different classes.
+    _map = {}
+    for _r in (_cls if isinstance(_cls, list) else []):
+        _k = (_r or {}).get("key")
+        if not _k:
+            continue
+        _map[_k] = "closed" if (_map.get(_k) == "closed" or _r.get("klass") != "public") else "public"
+    check("#176 classify: a Facebook group post is OPEN — the group is this answer's audience, not a source to hide",
+          _cst == 200 and bool(_probe.get("fb_post_url")) and _map.get(_probe.get("fb_post_url")) == "public",
+          f"status {_cst}, class {_map.get(_probe.get('fb_post_url'))!r} — apply "
+          f"scripts/sql/20260908_public_gate_classify_member_audience_176.sql, then re-run apply_169_public_gate.py")
+    check("#176 classify: a closed WhatsApp message stays CLOSED (restricted room)",
+          _cst == 200 and _map.get(_probe.get("wa_sid")) == "closed", f"status {_cst}, class {_map.get(_probe.get('wa_sid'))!r}")
+    check("#176 classify: a private call transcript stays CLOSED, even keyed by its own recording link (restricted room)",
+          _cst == 200 and _map.get(_probe.get("call_url")) == "closed", f"status {_cst}, class {_map.get(_probe.get('call_url'))!r}")
+    check("#176 classify: a url no source produced is never returned public (unknown = closed)",
+          _map.get(_UNKNOWN_URL) is None, f"class {_map.get(_UNKNOWN_URL)!r}")
+
     print()
     if failures:
         print(f"GATE FAILED — {len(failures)} failure(s): {failures}")

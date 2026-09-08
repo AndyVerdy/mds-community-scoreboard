@@ -160,16 +160,22 @@ const index_incomplete = nameRows.length === 0 || (nameRows.length >= INDEX_CAP 
 const classes = {};
 // Most-RESTRICTIVE wins when one key comes back in several rows (Task 2 review): any 'closed' row closes the key.
 for (const r of classifyRows) { if (r && r.key) classes[r.key] = (classes[r.key] === 'closed' || String(r.klass) !== 'public') ? 'closed' : 'public'; }
-// Facebook content is not in content_items, so a Facebook URL gets NO classify row; rowClass() treats a missing
-// key as closed — the private group stays closed by default, never by luck.
+// Most-restrictive-wins is load-bearing under #176, not just tidy: a call transcript's own url IS the
+// `app.mds.co/videos/<id>` link of the recording it came from, so a public library entry and a closed
+// transcript chunk can hand back the SAME key with different classes. The line above collapses that
+// pair to 'closed' — the transcript can never back a name, and its link never publishes.
+// (The old note here claimed "Facebook content is not in content_items, so a Facebook URL gets NO
+// classify row". Both halves were wrong: fb_post/fb_comment ARE content_items rows, all carrying urls,
+// and under #176 they classify OPEN — the group is the audience, not a source to hide. A url no
+// evidence row produced is still absent from the map, and rowClass() still treats absent as closed.)
 const ev = extractEvidenceRows(ap.messages);
 const backed = backedNames(ev.rows, classes, nameRows);
 // #169 review fix round 5 (I2): strip every closed-source link from the BODY before the name pass.
-// redact() masked names but never removed a link, so a member-only video link, a private
-// Facebook-group post or a WhatsApp invite that the draft carried was published verbatim (sources[]
-// already excluded them — fix round 3 — but the body did not). Same class map the names are judged
-// on; a url no evidence row produced is absent from it, and unknown = closed. redact() then parks
-// the surviving (world-public) urls so the name pass cannot rewrite a /speakers/anna-lee slug.
+// redact() masked names but never removed a link, so a WhatsApp invite or a restricted recording's
+// link that the draft carried was published verbatim (sources[] already excluded them, but the body
+// did not). Same class map the names are judged on; a url no evidence row produced is absent from it,
+// and unknown = closed. redact() then parks the surviving (member-open) urls so the name pass cannot
+// rewrite a /speakers/anna-lee slug. Under #176 a Facebook group link is one of the surviving ones.
 const lk = redactLinks(draft, classes);
 const red = redact(lk.text, nameRows, backed);
 const closedSources = [...new Set(ev.rows.filter(r => rowClass(r, classes) === 'closed').map(r => r.source || 'text'))];
@@ -178,7 +184,11 @@ return [{ json: { draft, text: red.text, removed: red.removed, removed_links: lk
 """
 
 PUBLIC_SMOOTH_BODY = ("={{ JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 900, thinking: { type: 'disabled' }, "
-  "system: 'You edit a DRAFT for publication outside a private community. Some personal names were already replaced by role phrases (a member, a seller in the community, one of the speakers). "
+  # #176: the audience is the MDS membership (a public answer gets posted in the members-only group),
+  # NOT the open internet — the old "outside a private community" framing pushed Haiku to strip and
+  # generalise material the readers can already see for themselves. What it must still protect is
+  # exact detail from a restricted room, which the CLOSED SOURCES notes below already say.
+  "system: 'You edit a DRAFT for publication to the MDS member community — the readers are MDS members, not the general public. Some personal names were already replaced by role phrases (a member, a seller in the community, one of the speakers). "
   "Rules: never add a fact, a name, a number or a link that is not in the draft; fix grammar broken by the replacements; keep every URL exactly; "
   "a \"[link removed]\" marker is deliberate — leave it exactly as it is, and never invent a URL in its place; keep the meaning. "
   "Then write NOTES: one short line per source class listed under CLOSED SOURCES, in plain words, e.g. \"From a closed WhatsApp chat, paraphrased, no names.\" or \"From a call recording, paraphrased.\" — and one line per public URL under PUBLIC SOURCES, e.g. \"Public: MDS Summit schedule page.\". "

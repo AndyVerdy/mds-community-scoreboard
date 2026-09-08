@@ -15,10 +15,15 @@ const require = createRequire(import.meta.url);
 const pg = require('./public_gate.js');
 
 const names = [{ name: 'Jonathan Jewett', kind: 'member' }, { name: 'Bryce Alderson', kind: 'member' }];
+// The closed row here is a WhatsApp message — a RESTRICTED ROOM under #176, and the kind of source
+// this gate actually exists to hide. It used to be a Facebook group post, which #169 also treated as
+// closed; #176 corrects that (the group is where a public answer gets POSTED — see the #176 section
+// at the foot of this file). Class maps in these mechanics tests are supplied by hand; which sources
+// really earn `public` is digest.public_gate_classify()'s job, not the module's.
 const messages = [
   { role: 'assistant', content: [{ type: 'tool_use', name: 'content_search_v2' }] },
   { role: 'user', content: [{ type: 'tool_result', content: JSON.stringify([
-      { source: 'fb', source_id: 'p1', url: 'https://www.facebook.com/groups/699138040189700/posts/1', body: 'Jonathan Jewett shared a TikTok tip' },
+      { source: 'wa_message', source_id: 'p1', url: 'https://chat.whatsapp.com/ABC123', body: 'Jonathan Jewett shared a TikTok tip' },
       { source: 'event', source_id: 'e1', url: 'https://www.mds.co/summit', body: 'Bryce Alderson speaks at the Summit' },
   ]) }] },
 ];
@@ -26,13 +31,13 @@ const messages = [
 test('extractEvidenceRows keeps every row and collects keys', () => {
   const ev = pg.extractEvidenceRows(messages);
   assert.equal(ev.rows.length, 2);
-  assert.deepEqual(ev.urls.sort(), ['https://www.facebook.com/groups/699138040189700/posts/1', 'https://www.mds.co/summit']);
+  assert.deepEqual(ev.urls.sort(), ['https://chat.whatsapp.com/ABC123', 'https://www.mds.co/summit']);
   assert.deepEqual(ev.source_ids.sort(), ['e1', 'p1']);
 });
 
 test('a name is backed only by a PUBLIC row that contains it', () => {
   const ev = pg.extractEvidenceRows(messages);
-  const classes = { 'https://www.facebook.com/groups/699138040189700/posts/1': 'closed', 'https://www.mds.co/summit': 'public' };
+  const classes = { 'https://chat.whatsapp.com/ABC123': 'closed', 'https://www.mds.co/summit': 'public' };
   const backed = pg.backedNames(ev.rows, classes, names);
   assert.ok(backed.has('Bryce Alderson'));
   assert.ok(!backed.has('Jonathan Jewett'));
@@ -120,12 +125,14 @@ test('garbage falls back to one text row', () => {
   assert.deepEqual(ev.source_ids, []);
 });
 
-// --- fix round 4 (#169): a partner row classifies 'public' (the directory), but it embeds
-// reviews_sample (MEMBER reviews) and strength_note/fit_reason (member-judgment text) that are not
-// the partner's own public website. Only name/web_summary/web_people/web_pricing are actually
-// world-public (crawled from the partner's own site) — those alone may back a name. ---
+// --- partner rows: not every field on one comes from the listing. #169 fix round 4 kept only
+// name/web_summary/web_people/web_pricing, on the grounds that those alone are "world-public" —
+// the reading #176 corrects. Partner listings AND THEIR PAGES are open to members, reviews
+// included, so reviews_sample backs a name now. fit_reason/strength_note still do not: they come
+// from digest.entity_dossier (aggregated across content, transcripts included), so their
+// provenance is not one identifiable open source, and unknown provenance stays closed. ---
 
-test("a member named only in a partner's reviews_sample is NOT backed by that public partner row", () => {
+test("#176: a member named in a partner's reviews_sample IS backed — the listing page is open to members", () => {
   const raw = JSON.stringify([
     { name: 'Prosperlytics Consultants', partner_url: 'https://app.mds.co/partners/p1',
       reviews_sample: [{ author: 'Jonathan Jewett', text: 'great' }] },
@@ -133,7 +140,19 @@ test("a member named only in a partner's reviews_sample is NOT backed by that pu
   const ev = pg.extractEvidenceRows(toolResult(raw));
   const classes = { 'https://app.mds.co/partners/p1': 'public' };
   const backed = pg.backedNames(ev.rows, classes, names);
-  assert.ok(!backed.has('Jonathan Jewett'));
+  assert.ok(backed.has('Jonathan Jewett'));
+});
+
+test('#176: a name appearing only in fit_reason / strength_note is NOT backed by the partner row', () => {
+  const raw = JSON.stringify([
+    { name: 'Prosperlytics Consultants', partner_url: 'https://app.mds.co/partners/p1',
+      web_summary: 'Bookkeeping for sellers.',
+      fit_reason: 'Bryce Alderson rated them well on a call',
+      strength_note: 'Jonathan Jewett keeps recommending them' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const backed = pg.backedNames(ev.rows, { 'https://app.mds.co/partners/p1': 'public' }, names);
+  assert.equal(backed.size, 0);
 });
 
 test('a founder named in web_people IS backed', () => {
@@ -279,9 +298,11 @@ test('I1: a short first name, a common word and a lowercase word are all left al
   assert.deepEqual(pg.leftoverNames(draft, mixed, new Set()), []);
 });
 
-// --- review I2 (#169): redact() touched names only, so a member-only video link, a private
-// Facebook-group post or a WhatsApp invite sitting in the draft was published verbatim — Public
-// Verify only ever questioned URLs that were NOT already in the draft, never the ones that were. ---
+// --- review I2 (#169): redact() touched names only, so a restricted recording's link or a WhatsApp
+// invite sitting in the draft was published verbatim — Public Verify only ever questioned URLs that
+// were NOT already in the draft, never the ones that were. Still true under #176; what changed is
+// which urls come back `public`. A Facebook group link NO evidence row produced is still stripped
+// (unknown = closed) — being open as a class is not the same as being cited in this turn. ---
 
 const VIDEO_LINK = 'https://app.mds.co/videos/6a97599308e2e42a631c1a35';
 const linkClasses = { 'https://www.mds.co/summit': 'public', [VIDEO_LINK]: 'closed' };
@@ -300,7 +321,7 @@ test('I2: a url no evidence row classified is closed too (unknown = closed)', ()
   assert.deepEqual(r.removed.map(x => x.kind), ['link', 'link']);
 });
 
-test('I2: a world-public url survives untouched', () => {
+test('I2: a url classified open survives untouched', () => {
   const t = 'The agenda is at https://www.mds.co/summit — see you there.';
   const r = pg.redactLinks(t, linkClasses);
   assert.equal(r.text, t);
@@ -385,4 +406,120 @@ test('R2: redact and leftoverNames never disagree across the middle-slot sweep',
     assert.equal(r.removed.length > 0, shouldMask, `redact disagreement: ${draft}`);
     assert.equal(left.length > 0, shouldMask, `leftoverNames disagreement: ${draft}`);
   }
+});
+
+// ============================================================================================
+// #176 — WHO A PUBLIC ANSWER IS FOR. Andy, 2026-09-07: "you do realise that Public means MDS
+// members ... the only restiriction for public mode is opt in sources", and "the whole idea behind
+// public is that we hiding exact details from restictat chats". A public answer is posted into the
+// members-only MDS Facebook group, so the group's own posts and comments are OPEN — a name they
+// carry may be printed and their links may be shared ("3 fb links that we can share"). What stays
+// hidden is exact detail from a RESTRICTED ROOM: a closed WhatsApp channel or a private call.
+//
+// #169 read "public" as WORLD-public and therefore closed the group too. Which sources earn `public`
+// is digest.public_gate_classify()'s job (scripts/sql/20260908_public_gate_classify_member_audience_176.sql);
+// what these cases pin is that the module honours the buckets it is handed, in both directions.
+// ============================================================================================
+
+const FB_POST_URL = 'https://www.facebook.com/groups/699138040189700/posts/27179812468362230/';
+const WA_INVITE = 'https://chat.whatsapp.com/ABC123';
+const CALL_URL = 'https://app.mds.co/videos/6a988f8a08e2e42a633350a1';
+
+test('#176: a name that appears ONLY in a Facebook group post is backed, and survives redaction', () => {
+  const raw = JSON.stringify([
+    { source: 'fb_post', source_id: '27179812468362230', url: FB_POST_URL,
+      body: 'Jonathan Jewett shared a TikTok bundling tip that doubled his Q4.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const backed = pg.backedNames(ev.rows, { [FB_POST_URL]: 'public' }, names);
+  assert.ok(backed.has('Jonathan Jewett'));
+  const r = pg.redact('Jonathan Jewett shared a bundling tip.', names, backed);
+  assert.ok(r.text.includes('Jonathan Jewett'), r.text);
+  assert.deepEqual(r.removed, []);
+  assert.deepEqual(pg.leftoverNames(r.text, names, backed), []);
+});
+
+test('#176: a Facebook group post link survives the link pass', () => {
+  const t = `A member walked through it here: ${FB_POST_URL}`;
+  const r = pg.redactLinks(t, { [FB_POST_URL]: 'public' });
+  assert.equal(r.text, t);
+  assert.deepEqual(r.removed, []);
+  assert.deepEqual(pg.closedUrls(t, { [FB_POST_URL]: 'public' }), []);
+});
+
+test('#176: a name that appears ONLY in a closed WhatsApp message is masked, and refused if it survives', () => {
+  const raw = JSON.stringify([
+    { source: 'wa_message', source_id: 'OsvNzPN5RzkBbQ-gjIBq53ljME8mg', url: WA_INVITE,
+      body: 'Jonathan Jewett said his 3PL raised rates 12% in March.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const backed = pg.backedNames(ev.rows, { [WA_INVITE]: 'closed' }, names);
+  assert.equal(backed.size, 0);
+  const r = pg.redact('Jonathan Jewett said his 3PL raised rates.', names, backed);
+  assert.ok(!/Jonathan|Jewett/.test(r.text), r.text);
+  assert.deepEqual(r.removed, ['Jonathan Jewett']);
+  assert.deepEqual(pg.leftoverNames('Thanks to Jonathan Jewett.', names, backed), ['Jonathan Jewett']);
+});
+
+test('#176: a name that appears ONLY in a call transcript is masked, and refused if it survives', () => {
+  const raw = JSON.stringify([
+    { source: 'call_transcript', source_id: 'chunk-42', url: CALL_URL,
+      body: 'Bryce Alderson: we cut our CAC to eleven dollars on that channel.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const backed = pg.backedNames(ev.rows, { [CALL_URL]: 'closed' }, names);
+  assert.equal(backed.size, 0);
+  const r = pg.redact('Bryce Alderson cut CAC to eleven dollars.', names, backed);
+  assert.ok(!/Bryce|Alderson/.test(r.text), r.text);
+  assert.deepEqual(pg.leftoverNames('As Bryce Alderson put it, CAC fell.', names, backed), ['Bryce Alderson']);
+});
+
+test('#176: a verbatim quote from a call transcript is a closed source — the row is closed and its link goes', () => {
+  const raw = JSON.stringify([
+    { source: 'call_transcript', source_id: 'chunk-42', url: CALL_URL,
+      body: 'Bryce Alderson: we cut our CAC to eleven dollars on that channel.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const classes = { [CALL_URL]: 'closed' };
+  // rowClass drives `closed_sources`, which is what puts "From a call recording, paraphrased."
+  // in the notes — the paraphrase-not-quote instruction the smoother is given.
+  assert.equal(pg.rowClass(ev.rows[0], classes), 'closed');
+  assert.deepEqual([...new Set(ev.rows.filter(r => pg.rowClass(r, classes) === 'closed').map(r => r.source))],
+                   ['call_transcript']);
+  // and the recording's own link never publishes
+  const lk = pg.redactLinks(`Full recording: ${CALL_URL}`, classes);
+  assert.ok(!lk.text.includes('app.mds.co'), lk.text);
+  assert.equal(lk.removed.length, 1);
+});
+
+test('#176: a source the classifier never classified is still closed — unknown did not change', () => {
+  const raw = JSON.stringify([
+    { source: 'some_new_feed', source_id: 'n1', url: 'https://example.com/whatever',
+      body: 'Bryce Alderson said something quotable.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.equal(pg.rowClass(ev.rows[0], {}), 'closed');
+  assert.equal(pg.backedNames(ev.rows, {}, names).size, 0);
+  assert.deepEqual(pg.closedUrls('See https://example.com/whatever for more.', {}),
+                   ['https://example.com/whatever']);
+});
+
+test('#176: open and restricted rows in the SAME turn split — the group name prints, the call name does not', () => {
+  const raw = JSON.stringify([
+    { source: 'fb_post', source_id: '27179812468362230', url: FB_POST_URL,
+      body: 'Jonathan Jewett shared a TikTok bundling tip.' },
+    { source: 'call_transcript', source_id: 'chunk-42', url: CALL_URL,
+      body: 'Bryce Alderson: we cut our CAC to eleven dollars.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const classes = { [FB_POST_URL]: 'public', [CALL_URL]: 'closed' };
+  const backed = pg.backedNames(ev.rows, classes, names);
+  assert.deepEqual([...backed], ['Jonathan Jewett']);
+  const lk = pg.redactLinks(`See ${FB_POST_URL} and ${CALL_URL}.`, classes);
+  assert.ok(lk.text.includes(FB_POST_URL), lk.text);
+  assert.ok(!lk.text.includes(CALL_URL), lk.text);
+  const r = pg.redact(lk.text + ' Jonathan Jewett and Bryce Alderson both weighed in.', names, backed);
+  assert.ok(r.text.includes('Jonathan Jewett'), r.text);
+  assert.ok(!/Bryce|Alderson/.test(r.text), r.text);
+  assert.deepEqual(pg.leftoverNames(r.text, names, backed), []);
 });

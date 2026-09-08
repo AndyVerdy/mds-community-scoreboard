@@ -1,8 +1,26 @@
 // scripts/olivia_loop/public_gate.js  (#169)
 // The deterministic half of the Public Gate. Pure functions, no I/O, CommonJS so the
 // SAME text runs under node --test here and inside the n8n code nodes (apply_169_public_gate.py
-// embeds this file verbatim between the markers below). Andy, 2026-09-07: a public answer
-// may name a person only when a PUBLIC source backs the name. Unknown = closed.
+// embeds this file verbatim between the markers below).
+//
+// WHO A PUBLIC ANSWER IS FOR (#176, Andy 2026-09-07 — this REPLACES the #169 reading below):
+// "you do realise that Public means MDS members ... the only restiriction for public mode is opt in
+// sources", and "the whole idea behind public is that we hiding exact details from restictat chats".
+// A Public answer is posted into the members-only MDS Facebook group, so its readers ARE the MDS
+// membership. The only thing this gate hides is exact detail that came out of a RESTRICTED ROOM — a
+// closed WhatsApp channel or a private call/meeting — because that was not said in the open.
+//   OPEN       = anything a member can already see for themselves: the Facebook group's posts and
+//                comments, partner listings and their pages, events and their pages, the app's own
+//                library. Named, quoted and linked freely.
+//   RESTRICTED = closed WhatsApp channels and call/meeting transcripts. They may INFORM an answer;
+//                no exact detail crosses into it — no names, no verbatim quotes, no specifics.
+// #169 originally read "public" as WORLD-public ("safe to leave MDS") and therefore closed the
+// Facebook group too; that was the wrong audience. What is unchanged: a name survives only when an
+// OPEN row of the turn contains it, and unknown is still closed.
+//
+// Nothing in this file decides WHICH sources are open — digest.public_gate_classify() does, and this
+// module keys everything off the class map it returns. That is why the correction above needed no
+// change to the matching logic (see scripts/sql/20260908_public_gate_classify_member_audience_176.sql).
 // --- PUBLIC_GATE_BEGIN ---
 const ROLE_PHRASES = ['a member', 'a seller in the community', 'one of the speakers'];
 
@@ -194,14 +212,22 @@ function extractEvidenceRows(messages) {
           if (vid) source_ids.add(vid[1]);
         }
         if (sid) source_ids.add(sid);
-        // Fix round 4 (#169): a partner row classifies 'public' (the directory), but it embeds
-        // reviews_sample (MEMBER reviews) and strength_note/fit_reason (member-judgment text) that
-        // are not the partner's own public website. Only name/web_summary/web_people/web_pricing
-        // are actually world-public (crawled from the partner's own site) — restrict the backing
-        // text to those fields for a partner-shaped row; every other row keeps the full-row text.
+        // A partner row classifies 'public', but not every field on it comes from the listing.
+        // #169 fix round 4 kept only name/web_summary/web_people/web_pricing, on the grounds that
+        // those alone are "world-public (crawled from the partner's own site)" — the world-public
+        // reading #176 corrects. Partner listings AND THEIR PAGES are open: a member can open the
+        // partner page in the app and read its reviews, so reviews_sample (partner_lookup's
+        // `rv.sample`) is open evidence too and a reviewer named there may be named in the answer.
+        //
+        // fit_reason and strength_note still do NOT back a name. They are not part of the listing:
+        // both are derived from digest.entity_dossier (refresh_entity_dossiers aggregates across
+        // content, transcripts included), so their provenance is not one identifiable open source —
+        // and unknown provenance stays closed. They contain no personal names today, which is why
+        // excluding them costs nothing; it is the rule that matters, not this month's data.
         const isPartnerRow = r.web_summary !== undefined || r.web_people !== undefined || r.partner_url !== undefined;
         const text = isPartnerRow
-          ? JSON.stringify({ name: r.name, web_summary: r.web_summary, web_people: r.web_people, web_pricing: r.web_pricing })
+          ? JSON.stringify({ name: r.name, web_summary: r.web_summary, web_people: r.web_people,
+                             web_pricing: r.web_pricing, reviews_sample: r.reviews_sample })
           : JSON.stringify(r);
         rows.push({ source: r.source || null, source_id: sid, url: url ? String(url) : null, text });
       }
@@ -231,11 +257,12 @@ function backedNames(rows, classes, names) {
 }
 
 // Links (#169 review I2). redact() masked names but never removed a link, and Public Verify only ever
-// questioned URLs that were NOT in the redacted draft — so a member-only video link
-// (app.mds.co/videos/<id>), a private Facebook-group post or a WhatsApp invite that the draft carried
-// was published verbatim, and the GATED strip's "1 link removed" counted whatever Haiku happened to
-// drop. A url may be published only when the classifier called it 'public' (world-public, per fix
-// round 3); a url no evidence row ever produced is not in the map at all, and unknown = closed.
+// questioned URLs that were NOT in the redacted draft — so a WhatsApp invite or a restricted
+// recording's link that the draft carried was published verbatim, and the GATED strip's "1 link
+// removed" counted whatever Haiku happened to drop. A url may be published only when the classifier
+// called it 'public'; a url no evidence row ever produced is not in the map at all, and unknown =
+// closed. Under #176 'public' means OPEN TO MEMBERS, so a Facebook group post link is one we WANT in
+// the answer (Andy: "3 fb links that we can share") — what still goes is a restricted room's link.
 const LINK_PLACEHOLDER = '[link removed]';
 const URL_SRC = 'https?://[^\\s<>"\'`]+';
 const URL_TAIL_RE = /[)\]}>.,;:!?'"]+$/;
@@ -275,7 +302,7 @@ function redact(draft, names, backed) {
   let text = normText(draft);
   const removed = [];
   let i = 0;
-  // Every url still here is world-public (redactLinks removed the rest), but its path can carry a name
+  // Every url still here is open to members (redactLinks removed the rest), but its path can carry a name
   // slug — /speakers/anna-lee — and the name passes below treat '-' as a space. Rewriting it would break
   // a public link AND, because Public Verify re-checks every url against the class map, refuse the turn.
   // Park the urls behind private-use placeholders for the name passes, then put them back verbatim.
@@ -317,8 +344,8 @@ function redact(draft, names, backed) {
 }
 
 function leftoverNames(text, names, backed) {
-  // URLs are not searched for names: what survives redactLinks() is world-public, so a name in its own
-  // path is world-public too, and redact() deliberately leaves it intact — refusing on it would refuse
+  // URLs are not searched for names: what survives redactLinks() is open to members, so a name in its
+  // own path is open too, and redact() deliberately leaves it intact — refusing on it would refuse
   // every turn that cites such a page. A CLOSED url is caught by closedUrls(), not here (#169 I2).
   const hay = normText(text).replace(urlsG(), ' ');
   const low = hay.toLowerCase();
@@ -341,5 +368,8 @@ function leftoverNames(text, names, backed) {
   return out;
 }
 // --- PUBLIC_GATE_END ---
-module.exports = { ROLE_PHRASES, parseRows, extractEvidenceRows, backedNames, redact, leftoverNames,
+// rowClass is exported for the tests only (#176): the n8n nodes inline this whole file, so they call
+// it directly. It is what decides a row is a closed room, which is what drives `closed_sources` —
+// the "From a call recording, paraphrased." line in the notes — so it is worth pinning.
+module.exports = { ROLE_PHRASES, parseRows, extractEvidenceRows, rowClass, backedNames, redact, leftoverNames,
                    extractUrls, closedUrls, redactLinks, linkDetail };

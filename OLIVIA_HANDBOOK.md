@@ -241,8 +241,9 @@ only: `Classify Evidence (Supabase)` + `Fetch Name Index (Supabase)` → `Public
 `Public Smooth (Claude)` [one Haiku call] → `Public Verify`) → `Format Web` → `Save Web (Supabase)` → `Web
 Response` (a code node; **never a `respondToWebhook` node on this fork — one reachable from `WA Inbound (POST)`
 500s every WhatsApp turn**). The deterministic gate lives in `scripts/olivia_loop/public_gate.js` and is embedded
-verbatim; a name survives a public answer only when a PUBLIC evidence row of the turn contains it, unknown =
-closed, and a leftover name or a new link after smoothing fails the turn closed. Applied by
+verbatim; a name survives a public answer only when an OPEN evidence row of the turn contains it (open = what a
+member can already see — #176; unknown is still closed), and a leftover name or a new link after smoothing fails
+the turn closed. Applied by
 `scripts/olivia_loop/apply_169_web_door.py` + `apply_169_public_gate.py` (idempotent, staging first).
 
 **Side workflows:**
@@ -575,7 +576,7 @@ resolves the asker itself. The main ones:
 | `fb_catchup` / `fb_thread` | Facebook recency browse / full thread pull |
 | `member_card` | One member's public profile card |
 | `member_match` | Members by attribute (city/state/category/band/channel) |
-| `public_gate_classify` / `public_gate_name_index` | **#169 Public Gate** — classify a turn's evidence keys (urls / source ids) as `public` or `closed`. Public here means the WORLD can already see it, not "every MDS member can" (fix round 3, 2026-09-08): **public** is exactly published partners (the public partner directory) · events with a `public_page_url` (public event pages). **Closed** is everything else — every `content_items` row (WhatsApp, the private Facebook group, member-only call transcripts) and every video, plus an event's `app_url` (the members' app) — regardless of what `access_rule->>'type'`, `access_restriction` or `app_is_public` reads, because those flags gate visibility inside the app, not to the world. The member/speaker name index (two-word names ≥ 5 chars, organisation rows `MDS %` / `% MDS` excluded — 5,384 people, 2026-09-08) is what the redaction pass masks against; the module (`scripts/olivia_loop/public_gate.js`) matches with unicode-aware boundaries after NFC + invisible-character normalisation on both sides, masks variants (ALL CAPS, middle initial, hyphen/space, possessive, lone first names ≥ 4 chars), strips every non-public link, and `Public Verify` refuses anything that survives. Called only by the workflow's Public Gate nodes. **Trap:** these are shared Postgres functions — a redefinition is live on PROD the moment it is applied; it does not ride staging → promote and has no snapshot (rollback = re-apply the previous body from `db/functions/`). |
+| `public_gate_classify` / `public_gate_name_index` | **#169 Public Gate** — classify a turn's evidence keys (urls / source ids) as `public` or `closed`. **Public means OPEN TO MDS MEMBERS, not to the world (#176, 2026-09-08 — this reverses fix round 3).** A public answer gets posted into the members-only MDS Facebook group, so its readers are the membership; the only thing the gate hides is exact detail from a **restricted room**. Andy: *"you do realise that Public means MDS members … the only restiriction for public mode is opt in sources"* and *"the whole idea behind public is that we hiding exact details from restictat chats"*. **Public (open)** = the MDS Facebook group's posts and comments (`content_items` where `source in ('fb_post','fb_comment')`, still guarded by `access_rule->>'type' = 'public'` + `sensitivity = 'normal'`) · published partner listings via `member_partner_url` · events by `public_page_url` **and** by `app_url` · the app's video library by id **and** by its `app.mds.co/videos/<id>` link, where `access_restriction = 'public'`. **Closed (restricted room)** = `wa_message` / `wa_digest` (closed WhatsApp channels) · `call_transcript` (private calls) · `application` · a `restricted` video (mastermind / chapter / coaching cohort) · anything unclassifiable — unknown is still closed. A closed source may still INFORM an answer: paraphrase only, no names, no verbatim quotes, said so in the notes. **Trap:** a transcript's own url IS its recording's `app.mds.co/videos/<id>` link, so one key comes back both `closed` (transcript) and `public` (library); `Public Redact` collapses duplicate keys most-restrictively, which is what keeps the private call closed. The member/speaker name index (two-word names ≥ 5 chars, organisation rows `MDS %` / `% MDS` excluded — 5,384 people, 2026-09-08) is what the redaction pass masks against; the module (`scripts/olivia_loop/public_gate.js`) matches with unicode-aware boundaries after NFC + invisible-character normalisation on both sides, masks variants (ALL CAPS, middle initial, hyphen/space, possessive, lone first names ≥ 4 chars), strips every non-public link, and `Public Verify` refuses anything that survives. Called only by the workflow's Public Gate nodes. **Trap:** these are shared Postgres functions — a redefinition is live on PROD the moment it is applied; it does not ride staging → promote and has no snapshot (rollback = re-apply the previous body from `db/functions/`). |
 | `expertise_search` | Members by what they know (keyword + embedding, RRF) |
 | `member_count` | Counting members by attribute, with breakdowns |
 | `member_dossier` / `member_billing` | The asker's own record / own billing |
@@ -1155,12 +1156,25 @@ edit one while working the other.
 selects them. "Used in a calculation" is not "shareable".
 
 **Standing rulings:**
-- **Public mode (#169 — Andy, 2026-09-07): a public answer may name a person only when a PUBLIC source of that
-  turn backs the name** ("second one, only from public sources"). The MDS Facebook group is private. Retrieval
-  runs wide (the probe member's access until Team mode), the output is gated: unbacked member names become role
-  phrases, closed sources are paraphrased and named in the notes, a leftover name or a new link fails the turn
-  closed. Single-word member names stay unmasked by design ("leave it"). Team mode (#172) = everything, behind a
-  disclaimer — a later ticket.
+- **Public mode (#176 — Andy, 2026-09-07): "Public" means the MDS MEMBERSHIP, and the only thing the gate hides
+  is exact detail that came out of a RESTRICTED ROOM.** A public answer gets posted in the members-only MDS
+  Facebook group, so its readers are members: *"you do realise that Public means MDS members … the only
+  restiriction for public mode is opt in sources"*, and *"the whole idea behind public is that we hiding exact
+  details from restictat chats"*. Two buckets:
+  - **Open** — anything a member can already see for themselves: the Facebook group's posts and comments,
+    partner listings and their pages, events and their pages, the app's own library. Named, **quoted and linked
+    freely** — a group link is one we want in the answer ("3 fb links that we can share").
+  - **Restricted** — what was said in a closed room: closed WhatsApp channels, private call/meeting transcripts.
+    They may still INFORM the answer; no exact detail crosses into it — no names, no verbatim quotes, no
+    identifying specifics. Paraphrase only, and say so in the notes.
+
+  A source that cannot be classified stays restricted — **unknown is still closed**. Retrieval runs wide (the
+  probe member's access until Team mode), the output is gated: a name no OPEN row of the turn backs becomes a
+  role phrase, closed sources are paraphrased and named in the notes, and a leftover name or a new link after
+  smoothing fails the turn closed. Single-word member names stay unmasked by design ("leave it"). Team mode
+  (#172) = everything, behind a disclaimer — a later ticket.
+  **Superseded:** #169 built this as "safe to leave MDS" — world-public sources only, the Facebook group
+  treated as closed. Wrong audience; see §13 trap 5 and the `public_gate_classify` row in §6.2.
 - **Public-in-the-app = shareable** (Eugene, final) — anything a member can already see in the MDS
   app about another member may surface. Everything else keeps the structural refusal.
 - **Revenue:** our data yields **bands only**, always. A figure the member or an MDS page *posted
@@ -1478,7 +1492,7 @@ redaction regex must be Unicode-aware (`/u` with `\p{L}` lookarounds) and every 
 treatment — a verify built on the same broken boundary passes exactly what the mask missed.** Fix owned by
 #169; the door is header-authenticated and its page had not shipped, so there was no exposure.
 
-### #169 Public Gate — four traps from the ship night (2026-09-08)
+### #169 Public Gate — five traps from the ship night (2026-09-08; trap 5 added by #176)
 
 1. **JS `\b` is ASCII-only.** `new RegExp('\\b' + name + '\\b', 'i')` never matches a name whose first or last
    character is non-ASCII ("Émile Dupont", "航 杨明", "𝕸𝖊𝖍𝖆𝖗 𝕾𝖎𝖓𝖌𝖍", a trailing U+FE0F) — 23 live index rows passed
@@ -1495,6 +1509,19 @@ treatment — a verify built on the same broken boundary passes exactly what the
 4. **Gate check 4 judges the ship target.** It compares the embedded module on STAGING (what is about to ship) with
    the file and reports a stale PROD only informationally, so a pre-promote run stays green; the price is that prod
    drift no longer reddens the gate on its own — run the gate once more right after every promote.
+5. **The world-public reading of "Public mode" was WRONG (#176, 2026-09-08).** #169 built Public mode as "safe to
+   leave MDS" — a person could be named only when a source the open INTERNET can already see backed the name — so
+   the MDS Facebook group, the app's library and everything else internal classified `closed`. Wrong audience: a
+   public answer is posted **into the members-only MDS Facebook group**, so its readers are MDS members, and the
+   only thing to hide is exact detail from a **restricted room** (a closed WhatsApp channel, a private call). Andy:
+   *"the whole idea behind public is that we hiding exact details from restictat chats"*. Two tells the old reading
+   never cohered: partner listings classified `public` while their url is `app.mds.co/partners/<id>` (a members'-app
+   link — world-public and app-only at once), and `content_items.access_rule->>'type' = 'public'` was dismissed as
+   "member-visible, not world-visible" when member-visible is exactly the right test. **Rule: name the AUDIENCE of a
+   gated output before you write the gate.** A gate calibrated for the wrong reader over-masks silently — it looks
+   fail-closed and green while publishing answers visibly worse than the ungated ones the same people already get.
+
+
 
 ## 14. Known limits (2026-09-04)
 
