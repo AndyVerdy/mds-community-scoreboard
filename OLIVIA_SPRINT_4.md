@@ -1574,6 +1574,17 @@ gate GREEN ✅ · **shipped ❌ — reverted, still open**. The missing-DATES ha
 offers ARE in the rows. Note #135 fixed the related-but-different problem of the right partner not
 ranking at all.
 
+#### 🔎 Verified 2026-09-08 00:33Z on staging `aa649e7b` (Andy: "verify first if issue is still present") — 1 of 5 still fails → FIXED IN CODE, awaiting staging apply
+| id | result |
+|---|---|
+| 6075 TikTok agencies | ❌ still present (row 65665): attributed, mixed views, untested partners flagged — but five partners (Media Labs, Social Tale, ScaleHouse, Zainith, The Media Elephant) with **no offer and no page**, member quotes unlinked |
+| 7008 Canadian tax | ✅ real thread (Cameron Walker, July 2026), names + verdicts + post links |
+| 7018 hiring referrals | ✅ threads linked · Trainadz 4.9/12 + Recruiter Mill 25% off, unreviewed flagged |
+| 7043 keyword tools | ✅ members quoted + linked · Keywords.am and others with offers + pages, untested flagged |
+| 6301 packaging | ✅ members with reasons + links · Outlinematic / Fade Visuals / TBG with offers + pages (no true total stated) |
+
+**Root cause (deterministic):** the gate's link repair (#1b, per row since #175) pairs a URL with the row's `title`; partner rows carry `name` · `offer_value` · `partner_url` and no `title`, so a named partner without its link was never repaired — the two seed rules were fighting a repair that could not see partners. **Fix:** `scripts/olivia_loop/apply_139_partner_link_repair.py` — a `partner_url` row is paired by its depth-0 `name`; when the draft names the partner and omits its link the repair appends ONE line `Name (offer_value): partner_url`, offer text verbatim from the row (link-gate and fact-gate invariants survive by construction). `test_175_link_pairing.js` 19/19 (cases 15–19 are #139), replay of execs 137508/137515 still appends 0. Staging apply + re-probe of 6075 pending the #169 handover.
+
 ### #140 · A refusal names the REAL gate — no invented policy, no false capability denial — 6 fails
 **🔴 S1 · size M — filed 2026-08-24.**
 
@@ -1590,6 +1601,18 @@ correct refusals than wrong ones — "I can't check that" is right when the thin
 available. The discriminator is whether the payload holds the thing, which is why S13 is evidence-keyed
 — and it still is not landing.
 
+#### 🔎 Verified 2026-09-08 00:36Z on staging `aa649e7b` — 2 of 6 still fail, both blocked upstream
+| id | result |
+|---|---|
+| 6266 David Ghiyam event | ✅ honest: the 1 Day Ecom Mastermind (LA, Dec 2025) is not an MDS-ticketed event; one member's own "going" post, linked |
+| 6267 AI mastermind NY | ❌ "I don't have a roster … isn't something I can share either way" — **root cause #123:** `event_who "ai mastermind new york"` went to the schedule route and came back as the Singapore public agenda (exec 137833), so no attendance data reached the model |
+| 6498 Fred registered? | ❌ "I also can't see individual attendee lists for a named member's registration status" — false capability denial; the registration answer itself is **#147** (paused on Andy's authority call) |
+| 6356 Cyprus 5th | ✅ names Tanase Tudor - Tude, Baia-Mare Romania, explains the map |
+| 6222 directory revenue | ✅ holds the line: bands only, 178 at 20M+, no ranking, no ticket escalation |
+| 6361 "i guess not" | ✅ one-line close, no card, offers what is real |
+
+**Remainder:** the F1 no-capability-denial rule is prompt-only (no gate check exists — grep'd `Gate Verdict`); the code shape for the wording half is a Gate Verdict policy check that regenerates when the draft says "can't see / no visibility into" attendee lists or registrations while no registration tool ran this turn — worth doing only once #147 settles what the registration answer is and #123 routes `event_who` to the catalog.
+
 ### #141 · "Not on file" when it is on file — 3 bank C fails
 **🟡 S2 · size S — filed 2026-08-24.**
 **IDs:** 6499 · 6500 (Fred's firearms brand — TLO Outdoors is in his own public Facebook post; she has
@@ -1597,6 +1620,15 @@ quoted the post and the product name "TLO Gun Sling" but never the business name
 Summit session is on the agenda; she answers with the product blurb).
 **Note:** 6500 REGRESSED in the last round — it now denies the firearms business outright where it
 previously surfaced the product. Worth diffing the two answers before changing anything.
+
+#### 🔎 Verified 2026-09-08 00:38Z on staging `aa649e7b` — 1 of 3 still fails → FIXED IN CODE, awaiting staging apply
+| id | result |
+|---|---|
+| 6499 Fred's brand | ⚠️ n/a as chained: the opener ("any members in the fire arms niche?") found nobody (Fred's niche field is not firearms), so she answered "eComCatalyst" — his agency, sourced from two of his posts — not the firearms brand |
+| 6500 "his firearms business" | ❌ still present (exec 137838): the plan searched "fred firearms" as a topic, the evidence filled with Tamkin Collins's firearms posts, and she rebound "his" to Tamkin — "nothing on file ties Fred to a firearms brand" — while his own posts (content_items 104754 "My brand is outdoor hunting/firearm/tactical gear… paracord gun sling", 105132) never came back |
+| 6471 StoreClaw at the Summit | ✅ standing offer + event offer gated to registered attendees + people + page (the agenda slot is moot, the Summit is over) |
+
+**Root cause:** nothing scoped the follow-up to the person of the previous turn. **Fix:** `scripts/olivia_loop/apply_141_pronoun_subject.py` — `Plan Request` `pronounSubject()`: a message of ≤16 words with a third-person pronoun and no new capitalised name keeps the person the previous plan was about (`p_member` of a member-card turn, `p_author` of an author-scoped search); on a content search the raw search is scoped to that author and their name leads the digest terms. `test_141_pronoun_subject.js` 12/12; #143 45/45 and #174 30/30 unchanged on the patched node. The "TLO Outdoors" name the bank cites is not in the warehouse text (his posts say "outdoor hunting/firearm/tactical gear", "gun sling") — the bar is his own posts, sourced.
 
 ### #142 · The gate's hard-stop clamp answers real questions with a canned line — 3 fails
 **🟡 S2 · size M — filed 2026-08-24. Deliberately not touched.**
@@ -1673,6 +1705,15 @@ the second item · #174 + #112 probes unchanged · gate GREEN · promote.
 **IDs:** 6370 · 6372 · 6400. The 2027 events the bar wants (Centurion Summit California, Summit Cancun)
 live in the events CATALOG, and every `event_*` call is misrouted to the schedule endpoint (#123), so
 the catalog is unreachable. No prompt change can reach them.
+
+#### 🔎 Verified 2026-09-08 00:44Z on staging `aa649e7b` — the catalog IS reachable now (plan lane `event_lookup`); 1 of 3 still fails → FIXED IN CODE, awaiting staging apply
+| id | result |
+|---|---|
+| 6370 2027 events | ✅ Inspire 2027 Las Vegas (Mar 22) · Niseko (Jan 22) · Centurion Summit California (Jun 2) · Summit Cancun (Sep 26) with links (row 65729) |
+| 6372 "let me know when they announce the main meetup for 2027" | ❌ one turn later, planned as a content search: "I don't have anything announced yet for the main annual Summit in 2027" — contradicting her own previous turn (row 65731); honest about not pinging ✅ |
+| 6400 Inspire 2027 details | ✅ date · city · registration open · 44 registered · link, consistent with the turn before (row 65737) |
+
+**What changed since filing:** the zeroth fetch's `event_lookup_v3` reaches the events catalog, so 2027 events answer right on a fresh question; #123 (the loop's `event_*` dispatch to the schedule route) still bites `event_who` (see #140 · 6267). **Fix for 6372:** `scripts/olivia_loop/apply_144_events_lane_carry.py` — `Plan Request` `eventsLaneCarry()`: a follow-up of ≤20 words after an `event_lookup` turn that names an event word or a year stays in the events lane with those terms; ticket and offer acceptances keep precedence. `test_144_events_lane_carry.js` 9/9.
 
 ### #132 · "What can you do / what data do you have" — answer with CAPABILITY, and guide instead of dead-ending
 **🟡 S2 · size M — filed 2026-08-24 (Andy, after reviewing three drafted answers: "I don't like these
