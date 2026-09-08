@@ -160,10 +160,12 @@ const index_incomplete = nameRows.length === 0 || (nameRows.length >= INDEX_CAP 
 const classes = {};
 // Most-RESTRICTIVE wins when one key comes back in several rows (Task 2 review): any 'closed' row closes the key.
 for (const r of classifyRows) { if (r && r.key) classes[r.key] = (classes[r.key] === 'closed' || String(r.klass) !== 'public') ? 'closed' : 'public'; }
-// Most-restrictive-wins is load-bearing under #176, not just tidy: a call transcript's own url IS the
-// `app.mds.co/videos/<id>` link of the recording it came from, so a public library entry and a closed
-// transcript chunk can hand back the SAME key with different classes. The line above collapses that
-// pair to 'closed' — the transcript can never back a name, and its link never publishes.
+// Most-restrictive-wins still matters: a call transcript's own url IS the `app.mds.co/videos/<id>`
+// link of the recording it came from, so the library entry and the transcript chunk hand back the
+// SAME key from two branches of the classifier. Since the restriction-spine correction those two
+// branches AGREE (a transcript inherits its recording's access_restriction), so the collapse is no
+// longer what keeps a private call out — the spine is. It stays because it is the rule that holds
+// whatever future branch keys the same url: any 'closed' row closes the key.
 // (The old note here claimed "Facebook content is not in content_items, so a Facebook URL gets NO
 // classify row". Both halves were wrong: fb_post/fb_comment ARE content_items rows, all carrying urls,
 // and under #176 they classify OPEN — the group is the audience, not a source to hide. A url no
@@ -271,7 +273,7 @@ if (refused) {
     ? 'I could not check this answer against the member directory just now, so I am not posting it. Ask me the same thing in Test mode to read it internally.'
     : (leaked
        ? 'I could not produce a public-safe version of this answer: even after masking, a name or a link from a closed room was still in it. Ask me the same thing in Test mode to read it internally.'
-       : 'Everything I have on this came out of closed rooms — a members-only chat or a private call — so there is nothing I can say about it publicly without repeating detail that was never said in the open. Ask me the same thing in Test mode to read it internally.');
+       : 'Everything I have on this came out of restricted rooms — a verification-only chat or a restricted recording — so there is nothing I can say about it publicly without repeating detail that is not open to every member. Ask me the same thing in Test mode to read it internally.');
 }
 // Design pack (Ask Millie.dc.html, 2026-09-07): every public answer carries a GATED strip — "2 names masked ·
 // 1 link removed · 1 quote paraphrased" — that opens a per-redaction list. Structured here, rendered by the page.

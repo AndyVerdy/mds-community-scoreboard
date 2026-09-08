@@ -3,35 +3,42 @@
 // SAME text runs under node --test here and inside the n8n code nodes (apply_169_public_gate.py
 // embeds this file verbatim between the markers below).
 //
-// WHO A PUBLIC ANSWER IS FOR (#176, Andy 2026-09-07 — this REPLACES the #169 reading below):
-// "you do realise that Public means MDS members ... the only restiriction for public mode is opt in
-// sources", and "the whole idea behind public is that we hiding exact details from restictat chats".
-// A Public answer is posted into the members-only MDS Facebook group, so its readers ARE the MDS
-// membership. The only thing this gate hides is exact detail that came out of a RESTRICTED ROOM — a
-// closed WhatsApp channel or a private call/meeting — because that was not said in the open.
-//   OPEN       = anything a member can already see for themselves: the Facebook group's posts and
-//                comments, partner listings and their pages, events and their pages, the app's own
-//                library. Named, quoted and linked freely.
-//   RESTRICTED = closed WhatsApp channels and call/meeting transcripts. They may INFORM an answer;
-//                no exact detail crosses into it — no names, no verbatim quotes, no specifics.
-// #169 originally read "public" as WORLD-public ("safe to leave MDS") and therefore closed the
-// Facebook group too; that was the wrong audience. What is unchanged: a name survives only when an
-// OPEN row of the turn contains it, and unknown is still closed.
+// WHO A PUBLIC ANSWER IS FOR (#176, Andy 2026-09-08 — this REPLACES the #169 reading, and corrects
+// the first #176 reading below it):
+// "public means all members, but not people outside the MDS; restricted means this content is
+// restricted to some members. Facebook is open source; it's public by definition. The only
+// restricted sources are some WA chats (you should know it) and some videos (we have the spine with
+// restriction rules)."
+//   OPEN       = open to EVERY member: Facebook group posts and comments, WhatsApp messages and
+//                digests from a chat that is not verification_required, transcripts and videos of a
+//                recording whose access_restriction is 'public', published partner listings and
+//                their pages, events and their pages. Named, quoted and linked freely.
+//   RESTRICTED = restricted to SOME members: WhatsApp in a verification_required chat, transcripts
+//                and videos of a 'restricted' recording, applications. They may INFORM an answer; no
+//                exact detail crosses into it — no names, no verbatim quotes, no specifics.
+// Two readings were wrong before this one. #169 read "public" as WORLD-public ("safe to leave MDS")
+// and closed the Facebook group; that was the wrong AUDIENCE. The first #176 pass fixed the audience
+// but kept a SOURCE-TYPE allowlist, so it closed all 18,363 WhatsApp rows and all 13,507 transcript
+// rows wholesale — including twelve open chats and 8,022 chunks of recordings any member can open.
+// The line is per ROW, off the restriction spine the database already carries. What is unchanged
+// through all three: a name survives only when an OPEN row of the turn contains it, and unknown is
+// still closed.
 //
 // Nothing in this file decides WHICH sources are open — digest.public_gate_classify() does, and this
-// module keys everything off the class map it returns. That is why the correction above needed no
-// change to the matching logic (see scripts/sql/20260908_public_gate_classify_member_audience_176.sql).
+// module keys everything off the class map it returns. That is why neither correction needed a
+// change to the matching logic (see scripts/sql/20260908_public_gate_classify_restriction_spine_176.sql).
 // --- PUBLIC_GATE_BEGIN ---
 const ROLE_PHRASES = ['a member', 'a seller in the community', 'one of the speakers'];
 
 // Capitalised English words that are also common first names — the first-name follow-up
 // pass in redact() skips these so it doesn't mangle an unrelated sentence-initial word.
 // 'First'/'Last' are here for the same reason and a different cause (#176, staging probe of q6): the
-// live index carries a placeholder row literally called "first last", whose first token then masked
+// live index carried a placeholder row literally called "first last", whose first token then masked
 // the ordinary word — "you're not the first to get one of these letters" published as "you're not
-// the they to get one of these letters". The junk rows themselves belong in
-// digest.public_gate_name_index()'s exclusion list, the way the organisation rows already are; this
-// keeps the two commonest English words out of the first-name pass regardless.
+// the they to get one of these letters". That row and 63 others are now excluded at the source
+// (scripts/sql/20260908_public_gate_name_index_junk_176.sql: a row carrying a digit or an '@', a
+// 'test'/'testing' token, or an English function word as its first token). These two stay here
+// anyway — the index is rebuilt from three live tables and the next placeholder is one typo away.
 const COMMON_WORD_FIRST_NAMES = new Set([
   'First', 'Last',
   // 'Claude' is a real member first name AND the name of the model that writes these answers, so the
@@ -387,8 +394,11 @@ function extractEvidenceRows(messages) {
         // #176 D3: a library row's only id is the one inside its own link. Derived ONLY for a row
         // that carries neither `source` nor `source_id` of its own — i.e. the unlabelled
         // video_search shape. A call_transcript row's `url` is the SAME app.mds.co/videos/<id> link
-        // (the recording it was cut from) and the classifier calls that bare id open, so deriving an
-        // id from the url for a row that is already labelled would flip every transcript row open.
+        // (the recording it was cut from), so a labelled row keeps the id IT was given and is never
+        // handed the bare video id instead. That guard used to be load-bearing, because the
+        // classifier called every bare video id open; since the restriction-spine correction the two
+        // agree by construction (a transcript inherits its recording), so the guard now only keeps
+        // the keying honest — a row is classified as the thing it actually is.
         if (sid === null && r.source == null && r.source_id === undefined) {
           if (src === 'video' && typeof r.video_url === 'string') {
             const vid = VIDEO_LINK_RE.exec(r.video_url);
@@ -494,8 +504,10 @@ function backedNames(rows, classes, names) {
 // recording's link that the draft carried was published verbatim, and the GATED strip's "1 link
 // removed" counted whatever Haiku happened to drop. A url may be published only when the classifier
 // called it 'public'; a url no evidence row ever produced is not in the map at all, and unknown =
-// closed. Under #176 'public' means OPEN TO MEMBERS, so a Facebook group post link is one we WANT in
-// the answer (Andy: "3 fb links that we can share") — what still goes is a restricted room's link.
+// closed. Under #176 'public' means OPEN TO EVERY MEMBER, so a Facebook group post link is one we
+// WANT in the answer (Andy: "3 fb links that we can share"), and so is the app link of a recording
+// whose access_restriction is 'public'. What still goes is a link into something only SOME members
+// can open: a verification_required WhatsApp chat, or a 'restricted' recording.
 const LINK_PLACEHOLDER = '[link removed]';
 const URL_SRC = 'https?://[^\\s<>"\'`]+';
 const URL_TAIL_RE = /[)\]}>.,;:!?'"]+$/;
@@ -641,7 +653,10 @@ function repairedSubstance(text) {
 }
 // --- PUBLIC_GATE_END ---
 // rowClass is exported for the tests only (#176): the n8n nodes inline this whole file, so they call
-// it directly. It is what decides a row is a closed room, which is what drives `closed_sources` —
-// the "From a call recording, paraphrased." line in the notes — so it is worth pinning.
+// it directly. It is what decides a row is restricted, which is what drives `closed_sources` — the
+// "From a call recording, paraphrased." line in the notes — so it is worth pinning. Note the note
+// text keys off the row's `source` ('wa_message', 'call_transcript'), which the restriction-spine
+// correction does not change: only SOME rows of those sources are restricted now, and only those
+// reach `closed_sources`, so the wording stays true of every row it actually describes.
 module.exports = { ROLE_PHRASES, parseRows, extractEvidenceRows, rowClass, backedNames, redact, leftoverNames,
                    extractUrls, closedUrls, redactLinks, linkDetail, repairPublic, repairedSubstance };
