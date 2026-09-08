@@ -285,6 +285,24 @@ defects — the shared row took 52px from the name column (27 of 51 names trunca
 added 28px per row — fixed by restoring the dedicated numbers row (3 of 51 truncate, all pre-existing; no 0px
 track), re-review measured it. 901 tests · tsc clean · build 0.
 
+**#165 phase 4 — `self-reported` vs `observed` on every persona line (LIVE, `556b168` → web `main` `18bac76`).**
+Trigger: Andy asked for the sources of Luke Li's gives/asks/focus; every one of his 3 gives, 3 of 4 asks and 6 of 7
+focus lines traced to his 2026-08-05 form or WhatsApp chat memberships; one observed signal (a 2026-09-03 SNS
+question); 14 blue chips from 3 form lines. Andy: "these are important criteria since we are using it to match
+people" → "add self-reported vs observed labels on the card." Rule from the live pointer prefixes (self-reported
+564/398/1914 · authored 685/542/678 · fb · posted · profile · wa_chats_member_of · question(s) · events/attended …):
+self-reported = self-reported/self/profile/attributes/chat membership; observed = authored/posted/comment/fb/
+question/attended; a multi-signal pointer is observed if any signal is; word-bounded scan of each `;`-segment with
+`-` as a boundary (the `post-scaling` bug: 3 of 10,202 lines, fixed zero-regression); census-key fallback. Reviews:
+all 10,202 pointers re-run through an independent port — splits digit-for-digit; 90-line hand audit 90/90. Community
+gives: 987 self-reported / 1,742 observed / 118 untagged (4.1%; free prose with no source word). Tests 33 → suite
+1,120. **Phase 5 — human sentence in the hover — PARKED** (`ff4f234`, `bf1ab62`, unmerged): the rewriter reaches
+~26% of segments; each review sample found a new free-prose shape (bracketed lists, nested parens, compound dates);
+round 2 was stopped on Andy's "you said it was easy, and now you stuck" / "push what we have, and lets pause".
+Owned: the labels should have shipped when they first cleared; "one more commit" was a wrong estimate for parsing
+model prose. Real fix: a structured `signal` pointer from `persona_refresh.py`'s prompt (to file). Persona cadence
+and decay facts written into the handoff.
+
 **Findings for #163 from #165 (reported, untouched):** posts weight 2.0 but 0 of 16,762 rows carry a
 posts evidence key (heaviest weight may be dead) · 1,016 detail-stat rows score under a zero parent ·
 `or weakness > 0` redundant in `personas_sheet` asks · 2,407 of 4,960 focus signals ARE the member's own

@@ -661,6 +661,15 @@ truncated, an empty grid row) — fixed to parity with 04b2675 (3 of 51, all pre
 crossed 11 commits (shared `personas.css`) the branch was re-verified: tsc clean, vitest 1087/1087, build exit 0.
 Open follow-up, Andy's call: the dashed typical-member mark gets its own hover text — he asked what the line meant
 after the legend had said it.
+**Phase 4 (same day) — `self-reported` / `observed` tag on every persona line — LIVE, web `main` `18bac76`** (Andy:
+"add self-reported vs observed labels on the card", after Luke Li's 3 gives all traced to a form). Classifier
+`signalSource.ts` from the pointer's source word, per `;`-segment, hyphen-bounded, census-key fallback; legend per
+section; one help sentence; chips untouched. Reviewed twice (30/30/30 hand audit; all 10,202 pointers re-run through a
+port of the shipped code — splits digit-for-digit; the one precision bug, `post-scaling` matching `post`, fixed with
+zero regression). Gives community-wide: 987 self-reported / 1,742 observed / 118 untagged. Merged `556b168`.
+**Phase 5 — human sentence in the "Written from" hover — PARKED, unmerged** (`ff4f234`, `bf1ab62`): only ~26% of
+pointer segments have enough structure to rewrite; two review rounds each surfaced a new free-prose shape and `bf1ab62`
+garbles 7 bracketed-list values. Stopped on Andy's "pause". Real fix = structured pointer in the persona prompt.
 
 **Findings that belong to #163, not here** (from the first build; reported, untouched): 1,016
 detail-stat rows across 503 members score under a zero parent · the scorer weights posts highest (2.0)

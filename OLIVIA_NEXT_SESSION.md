@@ -105,6 +105,31 @@ URLs with the wrong row (#175). Both on the board with story + ACs; both filed f
   follow-ups — 6349 is a bare "yes please" on a billing offer that replays the billing RPC; 6095/6096 are chat-tier
   context; 6201 is the profile lane answering a from-WhatsApp ask) · #155 · #139 · #140 · #141 · #142 (deliberately untouched).
 
+## STATE 2026-09-07 (pause, late) — #165 source tags LIVE (web `main` `18bac76`) · sentence rewriter PARKED · next = #163 Task 2 spend go
+**Andy: "push what we have, and lets pause for today."** Shipped the proven part only:
+- **LIVE:** every GIVES / ASKS / FOCUS line on the Personas sheet carries a `self-reported` or `observed` tag, with a
+  one-line legend per section and one help sentence. Classifier `src/lib/personas/signalSource.ts` (word-bounded
+  keyword scan over each `;`-segment, census-key fallback, hyphen is a boundary), 33 tests. Community-wide gives:
+  **987 self-reported · 1,742 observed · 118 untagged (4.1%)**; asks 487 / 1,778 / 125; focus 2,375 / 2,507 / 83.
+  Merged `556b168` → web `main` `18bac76` (main had moved to `1987a2e` under other sessions; clean merge).
+- **PARKED, unmerged:** the human-sentence "Written from" hover (`signalText.ts`, commits `ff4f234`, `bf1ab62` on
+  `165-source-labels-20260907`). Two review rounds each found a new free-prose pointer shape; `bf1ab62` still garbles
+  7 bracketed-list profile values. Do NOT merge it as is. The real fix is upstream: make `persona_refresh.py`'s
+  prompt emit a structured `signal` pointer (`source | date | field | value`), after which the rewriter is trivial and
+  the 4% untagged bucket disappears. Not filed yet — Andy's call.
+- **Why this dragged (owned):** "add labels" was done and reviewed clean early; the sentence work should have been
+  a separate capped ticket. Parsing model prose does not converge under review-by-sampling.
+- Luke Li `recov3Xb7Vy30JTqC` is the worked example: 3/3 gives self-reported (his 2026-08-05 form), 1 observed ask
+  (a 2026-09-03 WhatsApp SNS question), 14 blue chips from 3 form lines. Persona cadence: nightly 04:15, rebuild on
+  missing / >30d / fingerprint change; windows 180d questions (≤60), 30 most recent authored items (no date window),
+  15 events, form answers never decay — signals fall off a cliff, no half-life in this layer.
+
+### ANDY'S DESK (pause)
+1. **#163 Task 2 spend** — 82 members (60 top + 22 honest control), third-party placements only.
+2. File the persona-prompt structured-pointer change (small, `mds-scorecard-tools/persona_refresh.py`).
+3. Should self-reported-only chips look different from observed ones? (#163 — matching weight.)
+4. Dashed typical-member mark hover text (asked, not built) · RLS disabled on 47 warehouse tables (advisor; #158).
+
 ## STATE 2026-09-07 (scoring session close) — #163 Task 1 DONE · **#165 PROMOTED — rank-led stat bar LIVE on prod (Render `b44e2d7`)**
 **PROD n8n untouched all session (no promote, no lock).** Andy: "lets promote it" (2026-09-07). Both merged:
 - **mds-digest-web `main` = `b44e2d7`** — merge of `165-personas-sheet-20260907` (rebased on 48851e7 → f3be5ca;
