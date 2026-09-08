@@ -183,10 +183,57 @@ function backedNames(rows, classes, names) {
   return backed;
 }
 
+// Links (#169 review I2). redact() masked names but never removed a link, and Public Verify only ever
+// questioned URLs that were NOT in the redacted draft — so a member-only video link
+// (app.mds.co/videos/<id>), a private Facebook-group post or a WhatsApp invite that the draft carried
+// was published verbatim, and the GATED strip's "1 link removed" counted whatever Haiku happened to
+// drop. A url may be published only when the classifier called it 'public' (world-public, per fix
+// round 3); a url no evidence row ever produced is not in the map at all, and unknown = closed.
+const LINK_PLACEHOLDER = '[link removed]';
+const URL_SRC = 'https?://[^\\s<>"\'`]+';
+const URL_TAIL_RE = /[)\]}>.,;:!?'"]+$/;
+function urlsG() { return new RegExp(URL_SRC, 'g'); }
+
+function extractUrls(text) {
+  const out = [], re = urlsG();
+  let m;
+  while ((m = re.exec(String(text == null ? '' : text)))) {
+    const u = m[0].replace(URL_TAIL_RE, '');
+    if (u && out.indexOf(u) < 0) out.push(u);
+  }
+  return out;
+}
+
+// host + path only: the scheme, any query string and any fragment are dropped (a query can itself
+// carry a token or an email), capped at 80 chars. This string is what the page's GATED strip shows.
+function linkDetail(u) {
+  const s = String(u).replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('#')[0].split('?')[0];
+  return s.length > 80 ? s.slice(0, 80) : s;
+}
+
+function closedUrls(text, classes) {
+  const cl = classes || {};
+  return extractUrls(text).filter(u => cl[u] !== 'public');
+}
+
+function redactLinks(text, classes) {
+  let t = String(text == null ? '' : text);
+  const closed = closedUrls(t, classes);
+  /* longest first: a closed url can be the prefix of another closed url */
+  for (const u of [...closed].sort((a, b) => b.length - a.length)) t = t.split(u).join(LINK_PLACEHOLDER);
+  return { text: t, removed: closed.map(u => ({ kind: 'link', detail: linkDetail(u), replaced_with: LINK_PLACEHOLDER })) };
+}
+
 function redact(draft, names, backed) {
   let text = String(draft || '');
   const removed = [];
   let i = 0;
+  // Every url still here is world-public (redactLinks removed the rest), but its path can carry a name
+  // slug — /speakers/anna-lee — and the name passes below treat '-' as a space. Rewriting it would break
+  // a public link AND, because Public Verify re-checks every url against the class map, refuse the turn.
+  // Park the urls behind private-use placeholders for the name passes, then put them back verbatim.
+  const links = [];
+  text = text.replace(urlsG(), m => { links.push(m); return '\uE000L' + (links.length - 1) + '\uE001'; });
   // `low` is only a cheap pre-filter: the first token of the index name must appear SOMEWHERE in the
   // draft before the real (much more expensive) pattern is built at all. 5,394 index rows run through
   // this on every public turn. Re-taken after each replacement so it never goes stale.
@@ -215,11 +262,15 @@ function redact(draft, names, backed) {
     low = text.toLowerCase();
     if (removed.indexOf(ent.full) < 0) removed.push(ent.full);
   }
+  text = text.replace(/\uE000L(\d+)\uE001/g, (m, k) => links[Number(k)]);
   return { text, removed };
 }
 
 function leftoverNames(text, names, backed) {
-  const hay = String(text || '');
+  // URLs are not searched for names: what survives redactLinks() is world-public, so a name in its own
+  // path is world-public too, and redact() deliberately leaves it intact — refusing on it would refuse
+  // every turn that cites such a page. A CLOSED url is caught by closedUrls(), not here (#169 I2).
+  const hay = String(text || '').replace(urlsG(), ' ');
   const low = hay.toLowerCase();
   const out = [], seen = new Set();
   for (const n of names) {
@@ -239,4 +290,5 @@ function leftoverNames(text, names, backed) {
   return out;
 }
 // --- PUBLIC_GATE_END ---
-module.exports = { ROLE_PHRASES, parseRows, extractEvidenceRows, backedNames, redact, leftoverNames };
+module.exports = { ROLE_PHRASES, parseRows, extractEvidenceRows, backedNames, redact, leftoverNames,
+                   extractUrls, closedUrls, redactLinks, linkDetail };

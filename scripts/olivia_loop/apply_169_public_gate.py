@@ -162,15 +162,23 @@ for (const r of classifyRows) { if (r && r.key) classes[r.key] = (classes[r.key]
 // key as closed — the private group stays closed by default, never by luck.
 const ev = extractEvidenceRows(ap.messages);
 const backed = backedNames(ev.rows, classes, nameRows);
-const red = redact(draft, nameRows, backed);
+// #169 review fix round 5 (I2): strip every closed-source link from the BODY before the name pass.
+// redact() masked names but never removed a link, so a member-only video link, a private
+// Facebook-group post or a WhatsApp invite that the draft carried was published verbatim (sources[]
+// already excluded them — fix round 3 — but the body did not). Same class map the names are judged
+// on; a url no evidence row produced is absent from it, and unknown = closed. redact() then parks
+// the surviving (world-public) urls so the name pass cannot rewrite a /speakers/anna-lee slug.
+const lk = redactLinks(draft, classes);
+const red = redact(lk.text, nameRows, backed);
 const closedSources = [...new Set(ev.rows.filter(r => rowClass(r, classes) === 'closed').map(r => r.source || 'text'))];
 const publicUrls = [...new Set(ev.rows.filter(r => r.url && rowClass(r, classes) === 'public').map(r => r.url))];
-return [{ json: { draft, text: red.text, removed: red.removed, backed: [...backed], classes, closed_sources: closedSources, public_urls: publicUrls, names: nameRows.map(n => n.name), index_incomplete } }];
+return [{ json: { draft, text: red.text, removed: red.removed, removed_links: lk.removed, backed: [...backed], classes, closed_sources: closedSources, public_urls: publicUrls, names: nameRows.map(n => n.name), index_incomplete } }];
 """
 
 PUBLIC_SMOOTH_BODY = ("={{ JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 900, thinking: { type: 'disabled' }, "
   "system: 'You edit a DRAFT for publication outside a private community. Some personal names were already replaced by role phrases (a member, a seller in the community, one of the speakers). "
-  "Rules: never add a fact, a name, a number or a link that is not in the draft; fix grammar broken by the replacements; keep every URL exactly; keep the meaning. "
+  "Rules: never add a fact, a name, a number or a link that is not in the draft; fix grammar broken by the replacements; keep every URL exactly; "
+  "a \"[link removed]\" marker is deliberate — leave it exactly as it is, and never invent a URL in its place; keep the meaning. "
   "Then write NOTES: one short line per source class listed under CLOSED SOURCES, in plain words, e.g. \"From a closed WhatsApp chat, paraphrased, no names.\" or \"From a call recording, paraphrased.\" — and one line per public URL under PUBLIC SOURCES, e.g. \"Public: MDS Summit schedule page.\". "
   "Return ONLY JSON: {\"text\": string, \"notes\": string[]}.', "
   "messages: [{ role: 'user', content: 'DRAFT:\\n' + $json.text + '\\n\\nCLOSED SOURCES: ' + JSON.stringify($json.closed_sources) + '\\nPUBLIC SOURCES: ' + JSON.stringify($json.public_urls) }] }) }}")
@@ -190,17 +198,24 @@ const left = leftoverNames(smoothed, names, new Set(red.backed || []));
 const urlsIn = (red.text.match(/https?:\/\/\S+/g) || []);
 const urlsOut = (smoothed.match(/https?:\/\/\S+/g) || []);
 const newUrl = urlsOut.find(u => !urlsIn.includes(u));
+// ...and it may not put a closed-source link back either (#169 review fix round 5, I2). Public Redact
+// removed every non-public url from the body; if one is in the smoother's output, either it survived
+// or Haiku reconstructed it. Same class map, unknown = closed, so a url nothing classified fails too.
+const leftLinks = closedUrls(smoothed, red.classes || {});
 // Fail-closed guard (#169 review fix round 1): red.index_incomplete (set by Public Redact) means the
 // name-index fetch was empty or landed exactly on its pagination cap — we cannot vouch that ANY name
 // is absent from it, so refuse regardless of what leftoverNames() happened to find in this draft.
-const refused = left.length > 0 || !!newUrl || red.index_incomplete === true;
+const refused = left.length > 0 || !!newUrl || leftLinks.length > 0 || red.index_incomplete === true;
 const text = refused
   ? 'I could not produce a public-safe version of this answer. The sources it rests on are closed, and a name or link from them would have leaked. Ask me the same thing in Test mode to read it internally.'
   : smoothed;
 // Design pack (Ask Millie.dc.html, 2026-09-07): every public answer carries a GATED strip — "2 names masked ·
 // 1 link removed · 1 quote paraphrased" — that opens a per-redaction list. Structured here, rendered by the page.
+// The link rows are now the ones Public Redact DELETED on purpose (#169 review fix round 5, I2) —
+// {kind:'link', detail: host+path, replaced_with:'[link removed]'} — not, as before, whichever urls
+// Haiku happened to drop between the draft and its own output, which counted nothing the gate did.
 const redactions = (red.removed || []).map(n => ({ kind: 'name', detail: n, replaced_with: 'a role phrase' }))
-  .concat(urlsIn.filter(u => !urlsOut.includes(u)).map(u => ({ kind: 'link', detail: u, replaced_with: 'removed' })))
+  .concat(red.removed_links || [])
   .concat((red.closed_sources || []).map(s => ({ kind: 'quote', detail: s, replaced_with: 'paraphrased, no names' })));
 // index_incomplete is called out as its own, more specific note — a bad index is a different failure
 // than a name/link that slipped through the smoother — the other two reasons keep the original note.
@@ -209,7 +224,7 @@ const refusalNote = red.index_incomplete === true
   : 'Refused: a closed-source name or an unknown link survived the public pass.';
 return [{ json: { text, notes: refused ? notes.concat([refusalNote]) : notes,
                   sources: red.public_urls || [], evidence_classes: red.classes || {}, refused, removed: red.removed || [], leftover: left,
-                  redactions } }];
+                  leftover_links: leftLinks, redactions } }];
 """
 
 MOD_ONE_LINE = " ".join(l.strip() for l in MOD.splitlines() if l.strip() and not l.strip().startswith("//"))

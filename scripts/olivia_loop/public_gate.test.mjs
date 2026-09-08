@@ -216,6 +216,55 @@ test('I1: a short first name, a common word and a lowercase word are all left al
   assert.deepEqual(pg.leftoverNames(draft, mixed, new Set()), []);
 });
 
+// --- review I2 (#169): redact() touched names only, so a member-only video link, a private
+// Facebook-group post or a WhatsApp invite sitting in the draft was published verbatim — Public
+// Verify only ever questioned URLs that were NOT already in the draft, never the ones that were. ---
+
+const VIDEO_LINK = 'https://app.mds.co/videos/6a97599308e2e42a631c1a35';
+const linkClasses = { 'https://www.mds.co/summit': 'public', [VIDEO_LINK]: 'closed' };
+
+test('I2: a closed-source link is removed from the body and recorded as a redaction', () => {
+  const r = pg.redactLinks(`Watch ${VIDEO_LINK} for the panel.`, linkClasses);
+  assert.ok(!r.text.includes('app.mds.co'), r.text);
+  assert.ok(r.text.includes('[link removed]'), r.text);
+  assert.deepEqual(r.removed, [{ kind: 'link', detail: 'app.mds.co/videos/6a97599308e2e42a631c1a35', replaced_with: '[link removed]' }]);
+});
+
+test('I2: a url no evidence row classified is closed too (unknown = closed)', () => {
+  const r = pg.redactLinks('Join https://chat.whatsapp.com/ABC123 or https://www.facebook.com/groups/699138040189700/posts/1 today.', linkClasses);
+  assert.ok(!/whatsapp|facebook/.test(r.text), r.text);
+  assert.equal(r.removed.length, 2);
+  assert.deepEqual(r.removed.map(x => x.kind), ['link', 'link']);
+});
+
+test('I2: a world-public url survives untouched', () => {
+  const t = 'The agenda is at https://www.mds.co/summit — see you there.';
+  const r = pg.redactLinks(t, linkClasses);
+  assert.equal(r.text, t);
+  assert.deepEqual(r.removed, []);
+});
+
+test('I2: trailing punctuation and markdown wrapping do not hide a closed link', () => {
+  const r = pg.redactLinks(`See [the panel](${VIDEO_LINK}).`, linkClasses);
+  assert.ok(!r.text.includes('app.mds.co'), r.text);
+  assert.equal(r.removed[0].detail, 'app.mds.co/videos/6a97599308e2e42a631c1a35');
+});
+
+test('I2: a closed link the smoother re-introduced refuses the turn', () => {
+  assert.deepEqual(pg.closedUrls(`Watch ${VIDEO_LINK} now.`, linkClasses), [VIDEO_LINK]);
+  assert.deepEqual(pg.closedUrls('The agenda is at https://www.mds.co/summit.', linkClasses), []);
+});
+
+test('I2: a name slug inside a surviving public url is neither rewritten nor a refusal reason', () => {
+  const speakers = [{ name: 'Anna Lee', kind: 'member' }];
+  const classes = { 'https://www.mds.co/speakers/anna-lee': 'public' };
+  const t = 'Details: https://www.mds.co/speakers/anna-lee';
+  const lk = pg.redactLinks(t, classes);
+  const r = pg.redact(lk.text, speakers, new Set());
+  assert.equal(r.text, t);
+  assert.deepEqual(pg.leftoverNames(r.text, speakers, new Set()), []);
+});
+
 test('I1: a first name shared with a BACKED name is left alone so the backed name survives intact', () => {
   const both = [{ name: 'Bryce Alderson', kind: 'member' }, { name: 'Bryce Smith', kind: 'member' }];
   const backed = new Set(['Bryce Alderson']);
