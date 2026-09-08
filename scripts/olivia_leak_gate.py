@@ -1826,32 +1826,43 @@ def main():
     #    has been idle since.
     st, rows = curl("GET", f"{BASE}/olivia_messages?select=id&wamid=like.wamid.SELFTEST_WEB_*&created_at=gte.2026-09-07T21:30:00Z&limit=1", key, profile_hdr=["Accept-Profile: digest"])
     check("no SELFTEST_WEB wamid in olivia_messages since the web door (web turns save to their own table)", st == 200 and rows == [], f"status {st} rows {rows}")
-    # 4. wherever the Public Gate nodes exist (prod after promote, staging before), they embed the TESTED
-    #    module — a staleness check against public_gate.js. Reads both targets so the gate can be green
-    #    before the promote that carries the nodes to prod (olivia_wf.py promote runs this gate first).
+    # 4. wherever the Public Gate nodes exist, they embed the TESTED module — but staleness is judged
+    #    against the target about to ship (staging first, prod only as fallback), not every target.
     _mod = open(os.path.join(os.path.dirname(__file__), "olivia_loop", "public_gate.js")).read()
-    _n8n = load_env(); _present, _stale = {}, []
+    _n8n = load_env(); _present, _stale_by_wid, _marker_stale = {}, {}, []
+    _PROD_WID, _STAGING_WID = "12wj6h1TWqb0d4Dq", "bqHstPDi84uOhTCJ"
     try:
         _mod = _mod.split("// --- PUBLIC_GATE_BEGIN ---")[1].split("// --- PUBLIC_GATE_END ---")[0].strip()
     except (KeyError, IndexError, TypeError) as _e:
-        _stale.append(f"public_gate.js marker split failed: {_e!r}")
+        _marker_stale.append(f"public_gate.js marker split failed: {_e!r}")
         _mod = None
     if _mod is not None:
-        for _wid in ("12wj6h1TWqb0d4Dq", "bqHstPDi84uOhTCJ"):
+        for _wid in (_PROD_WID, _STAGING_WID):
             _wf = subprocess.run(["curl", "-s", "-m", "60", f"{_n8n['N8N_API_URL'].rstrip('/')}/api/v1/workflows/{_wid}", "-H", f"X-N8N-API-KEY: {_n8n['N8N_API_KEY']}"], capture_output=True, text=True)
             try:
                 _nodes = {n["name"]: n for n in json.loads(_wf.stdout)["nodes"]}
             except Exception:
                 _nodes = {}
-            _present[_wid] = set()
+            _present[_wid] = set(); _stale_by_wid[_wid] = []
             for nm in ("Public Redact", "Public Verify"):
                 if nm in _nodes:
                     _present[_wid].add(nm)
                     try:
-                        if _mod not in _nodes[nm]["parameters"]["jsCode"]: _stale.append(f"{_wid}:{nm}")
+                        if _mod not in _nodes[nm]["parameters"]["jsCode"]: _stale_by_wid[_wid].append(f"{_wid}:{nm}")
                     except (KeyError, IndexError, TypeError) as _e:
-                        _stale.append(f"{_wid}:{nm}:{_e!r}")
-    check("Public Redact + Public Verify exist on at least one target and embed the tested public_gate.js", any(len(s) == 2 for s in _present.values()) and not _stale, f"present {dict((k, sorted(v)) for k, v in _present.items())}, stale {_stale}")
+                        _stale_by_wid[_wid].append(f"{_wid}:{nm}:{_e!r}")
+    # A promote copies staging to prod, so a prod embed one revision behind the file is the expected pre-promote state, not drift;
+    # drift is staging (or prod when staging has no gate) disagreeing with the file.
+    _ship_wid = _STAGING_WID if len(_present.get(_STAGING_WID, set())) == 2 else _PROD_WID
+    _ship_stale = _marker_stale + _stale_by_wid.get(_ship_wid, [])
+    if _ship_wid == _STAGING_WID:
+        _prod_ok = len(_present.get(_PROD_WID, set())) == 2
+        _prod_embed = ("behind" if _stale_by_wid.get(_PROD_WID) else "current") if _prod_ok else "n/a (nodes absent)"
+    else:
+        _prod_embed = "n/a (prod is the ship target)"
+    check("Public Redact + Public Verify embed the tested public_gate.js on the target about to ship (staging first, prod fallback)",
+          any(len(s) == 2 for s in _present.values()) and not _ship_stale,
+          f"present {dict((k, sorted(v)) for k, v in _present.items())}, ship target {_ship_wid}, stale {_ship_stale}, prod embed: {_prod_embed}")
     # 5. the module's own tests pass (the fail-closed path is one of them)
     _t = subprocess.run(["node", "--test", os.path.join(os.path.dirname(__file__), "olivia_loop", "public_gate.test.mjs")], capture_output=True, text=True)
     check("public_gate.js unit tests pass (redaction + leftover-name fail-closed)", _t.returncode == 0, _t.stderr[-300:])
