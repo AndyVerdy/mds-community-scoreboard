@@ -927,6 +927,15 @@ a capability list.
 that named it ✅ · "what should I know in MDS" returns dated, linked, real items and no capability tour ✅ ·
 re-run of #6007 · #6064 · #6031 against prod grades pass ✅ · gate GREEN.
 
+#### 🔎 Verified 2026-09-08 00:48Z on staging `aa649e7b` — still present as filed (half of it); not a quick fix, left for its own session
+| id | result |
+|---|---|
+| 6007 TikTok Shop launch tools | ⚠️ tools attributed (JoinBrands via Alex Bonilla / Brandon Himmel, RebateKey via Ian Sells, Yuka from its Summit session) and the Sellico partner linked — but the chat-sourced tools carry **no message links** (row 65753) |
+| 6064 Brian Kelsey consulting | ✅ what he posted, dated posts linked, no character read, one third-party account flagged as one experience (row 65759) |
+| 6031 "what info should I know in mds" | ✅ live items from the asker's chats and the group, named people, "this week" — no capability tour; per-item links still missing (row 65763) |
+
+The ticket's own ruling stands: the link must travel with the quote from the answer loop (the gate repair cannot bind message bodies — proven, rolled back). Size M, own plan.
+
 ### #153 · Intent questions failed on ranking and stated facts — the screenshot probes, run down
 **🔴 S1 · size S — filed 2026-08-28 from the 4-question probe table Andy screenshotted (source session unknown; scorecard-df disclaims it). 3 of 4 failed on prod.**
 
@@ -1644,6 +1653,15 @@ these answers them correctly, so the block is INTERMITTENT (a timed-out tool lea
 unsupported). Wave 12's S6 fixed the tool-error half — canned answers went 8 → 3 — and this is the
 remainder.
 
+#### 🔎 Verified 2026-09-08 00:46Z on staging `aa649e7b` — 1 of 3 still clamps, and it is a rule false positive → FIXED IN CODE (the clamp itself untouched)
+| id | result |
+|---|---|
+| 6093 "How high can a ball jump" | ✅ friendly one-liner out of scope, no clamp (row 65745) |
+| 7045 "Which app do you recommend for this?" | ✅ names the missing antecedent, one clarifier (row 65747) |
+| 6483 "I'm Ivan Ong. What sessions…" | ❌ clamped (exec 137871) — but every draft did the right thing ("I can't take a typed name as identification, so I'm answering from your own record, Andy"); the IDENTITY second-person rule fires on any "your record" while a name was typed, three laps, canned line |
+
+**Fix (precision, not the clamp):** `scripts/olivia_loop/apply_142_identity_precision.py` — Gate Verdict `secondPersonAboutOther()`: the rule stands down when the draft names the real asker or explicitly refuses the typed name; the Lisa failure (personalising FOR the typed name) still fires. `test_142_identity_precision.js` 9/9. Staging apply + re-probe pending the #169 handover.
+
 ### #143 · A follow-up binds to the wrong thing, or loses the thread — 3 fails
 **🟡 S2 · size S — filed 2026-08-24 · scoped 2026-09-07 (night) from the original rows + tonight's staging probes (Andy: "check backlog for more cases, address them one by one").**
 **IDs:** 6095 (names the 20M+ chat now but not its verification bar or application route) · 6201 (gives
@@ -1747,6 +1765,9 @@ chats, their join date, their event count, the live chat/chapter lists.
 that leads with what she can do for him and points him at the chat list and chapters · a long-tenured
 member (e.g. Mo Kuhail, 12 chats, 34 events) gets the same shape with his own footing reflected · no
 answer frames a chat the asker is not in as a dead end · bank C 6002 and 6190 pass · gate GREEN.
+
+#### 🔎 Verified 2026-09-08 00:50Z on staging `aa649e7b` — unchanged by design
+6002 "What data do you have access to?" and 6190 "ok what data points do you have" both return the canned help card (route `help`, rows 65767/65769): sources named in member words, examples, no asker-specific scoping ("chats limited to yours, the rest community-wide") and no real gaps. Exactly the state the ticket describes; the fix is the capability-led card or an evidence-fed answer (size M). Not touched in this pass.
 
 ### #106 · Staff and non-member records never surface in member-facing lists
 **🟡 S2 · size S — filed 2026-08-22 (Andy, during #97's prod E2E: "I don't want people to see me as an attendee… make sure I'm not searchable. Verify in Supa, don't trust your memory")**

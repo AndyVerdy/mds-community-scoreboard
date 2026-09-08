@@ -11,6 +11,15 @@
 
 # Olivia — next session
 
+## STATE 2026-09-08 00:55Z — backlog VERIFIED on staging `aa649e7b` (Andy: "verify first if issue is still present"); four fixes BUILT and unit-proven, staging apply pending the #169 handover (asked 00:46Z)
+**Verified, 25 bank C cases in 54 read-only probe turns (rows cleaned by id):** #139 1/5 still fails → `apply_139_partner_link_repair.py` ·
+#140 2/6 fail, both upstream (#123 misroute for 6267; #147 for 6498) · #141 1/3 fails → `apply_141_pronoun_subject.py` · #144 1/3 fails
+→ `apply_144_events_lane_carry.py` (the 2027 catalog IS reachable now) · #142 1/3 clamps on an identity-rule false positive →
+`apply_142_identity_precision.py` · #155 half present, size M, own session · #132 unchanged by design. Verification tables sit under
+each ticket on the board. **Apply order when staging is ours: 139 → 142 (both Gate Verdict) → 141 → 144 (both Plan Request), then
+re-probe 6075 · the Fred chain · the 2027 chain · 6483 · two regression chains, gate, hand back.** Tests: 175/139 19/19 · 142 9/9 ·
+141 12/12 · 144 9/9 · 143 45/45 · 174 30/30 on the dry-run bytes.
+
 ## STATE 2026-09-08 00:15Z — #174 + #175 + #143 PROVEN ON STAGING `eb99c336` · awaiting Andy's promote · branch `174-named-item-drilldown-20260907` (merged to `main` for #174/#175; #143 docs follow)
 **Staging `eb99c336` = #169 Task 5 + Task 6 (the peer's Public Gate) + #174 + #175 + #143. Prod `30fd7e6f` untouched. Gate EXIT 0
 (four runs, last 00:14Z). Lock free; the #169 session runs its Task 7 gate checks next, then Andy decides one promote for all four.**
