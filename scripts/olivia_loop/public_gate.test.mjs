@@ -208,6 +208,33 @@ test('C1 regression: no ASCII \\b word boundary is left anywhere in the module c
   assert.ok(!/\\b/.test(src), 'a \\b escape is back in public_gate.js — it is ASCII-only (review C1)');
 });
 
+// --- review R1 (#169, 2026-09-07 re-review): the C1 addendum normalised the INDEX name (normName())
+// but never the ANSWER text itself. An invisible code point sitting inside the model's own draft —
+// not the index — still defeats the match: the pattern built from a clean index name has nothing to
+// find in text carrying a stray ZWSP, so redact() leaves it untouched AND leftoverNames() does not
+// refuse either. Fail OPEN, same failure class as C1, just the other operand. Both sides now run
+// through the same normalisation, and the normalised text is what gets returned/searched. ---
+
+const ZWSP_NAME = 'Joh​n Pollock'; // U+200B sitting inside the ANSWER text itself, not the index
+
+test('R1: an invisible code point inside the ANSWER text does not defeat the mask', () => {
+  const r = pg.redact(ZWSP_NAME + ' walked through it.', [{ name: 'John Pollock' }], new Set());
+  assert.ok(!/Pollock/.test(r.text), r.text);
+  assert.deepEqual(r.removed, ['John Pollock']);
+});
+
+test('R1: leftoverNames refuses when an invisible code point sits inside a surviving name', () => {
+  assert.deepEqual(pg.leftoverNames('Thanks to ' + ZWSP_NAME + '.', [{ name: 'John Pollock' }], new Set()), ['John Pollock']);
+});
+
+test('R1: an NFD-spelled name in the answer text still masks against an NFC index name', () => {
+  const nfc = 'Renée Dubé'.normalize('NFC'), nfd = 'Renée Dubé'.normalize('NFD');
+  const r = pg.redact(nfd + ' walked through it.', [{ name: nfc }], new Set());
+  assert.ok(!/Dub/.test(r.text), r.text);
+  assert.deepEqual(r.removed, ['Renée Dubé']);
+  assert.deepEqual(pg.leftoverNames(nfd + ' walked through it.', [{ name: nfc }], new Set()), ['Renée Dubé']);
+});
+
 // --- review I1 (#169): only the exact spelling was ever masked. A middle initial, a hyphen-vs-space
 // variant, ALL CAPS, a possessive, or a first-name-only mention all passed BOTH passes — redact()
 // left them in and leftoverNames() did not refuse them, so they published. ---

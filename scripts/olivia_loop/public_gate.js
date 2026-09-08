@@ -54,11 +54,24 @@ const MIDDLE_STOP = 'and|or|the|of|in|at|to|for|with|from|by|on';
 // with a trailing U+FE0F variation selector, a zero-width space inside it — or an accent stored
 // decomposed (NFD) never matches the clean, composed text the model writes, and leftoverNames() does
 // not refuse it either: fail OPEN again. Both sides are normalised before matching. Names are
-// normalised here (they only ever become patterns); the answer text is normalised to NFC where it is
-// searched — canonical composition changes nothing a reader sees, and invisibles are deliberately
-// left in the published text so an emoji keeps its presentation selector.
+// normalised here (they only ever become patterns); the answer text goes through the identical
+// recipe in normText() below (review R1 closed the gap where the answer text itself carried the
+// invisible code point — see that comment) — canonical composition changes nothing a reader sees,
+// and stripping an invisible code point from a published answer is harmless too.
 const INVISIBLE_RE = /[\u00AD\u200B-\u200F\u2060\uFE0F\uFEFF]/g;
 function normName(s) { return String(s == null ? '' : s).normalize('NFC').replace(INVISIBLE_RE, ''); }
+
+// Review R1 (#169, 2026-09-07 re-review): the C1 addendum above normalises the INDEX name but never
+// the ANSWER text — an invisible code point sitting inside the model's OWN draft (a stray ZWSP a
+// paste or a smoothing pass leaves next to a name) still defeats a pattern built from a perfectly
+// clean index name: redact() finds nothing to replace and leftoverNames() finds nothing to refuse.
+// Fail OPEN, same class as C1, just the other operand. This is the SAME normalisation as normName()
+// (NFC + the same INVISIBLE_RE) plus one more step that only makes sense for running text, not a
+// single name: runs of whitespace collapse to one space, so a stray formatting artifact between
+// tokens can't reopen the same gap. Used at the top of every function that matches names or links
+// against the answer text, and the normalised text is what gets returned/searched — never a copy
+// kept on the side, so a downstream check can't accidentally look at the un-normalised original.
+function normText(s) { return String(s == null ? '' : s).normalize('NFC').replace(INVISIBLE_RE, '').replace(/\s+/g, ' '); }
 function nameTokens(nm) { return normName(nm).trim().split(/[\s\-]+/).filter(Boolean); }
 function nameSource(nm) {
   const toks = nameTokens(nm).map(escapeRe);
@@ -227,7 +240,7 @@ function closedUrls(text, classes) {
 }
 
 function redactLinks(text, classes) {
-  let t = String(text == null ? '' : text);
+  let t = normText(text);
   const closed = closedUrls(t, classes);
   /* longest first: a closed url can be the prefix of another closed url */
   for (const u of [...closed].sort((a, b) => b.length - a.length)) t = t.split(u).join(LINK_PLACEHOLDER);
@@ -235,7 +248,7 @@ function redactLinks(text, classes) {
 }
 
 function redact(draft, names, backed) {
-  let text = String(draft || '').normalize('NFC');
+  let text = normText(draft);
   const removed = [];
   let i = 0;
   // Every url still here is world-public (redactLinks removed the rest), but its path can carry a name
@@ -280,7 +293,7 @@ function leftoverNames(text, names, backed) {
   // URLs are not searched for names: what survives redactLinks() is world-public, so a name in its own
   // path is world-public too, and redact() deliberately leaves it intact — refusing on it would refuse
   // every turn that cites such a page. A CLOSED url is caught by closedUrls(), not here (#169 I2).
-  const hay = String(text || '').normalize('NFC').replace(urlsG(), ' ');
+  const hay = normText(text).replace(urlsG(), ' ');
   const low = hay.toLowerCase();
   const out = [], seen = new Set();
   for (const n of names) {
