@@ -1810,8 +1810,6 @@ def main():
     # webhook call this section makes.
     print()
     print("— #169 web door + Public mode: secret, silence, fail-closed —")
-    _env = load_env()
-    _web_secret = _env.get("OLIVIA_WEB_SECRET", "")
     # 1. the web webhook refuses a call without the secret before any node runs (staging AND prod paths)
     for _path in ("olivia-web-staging", "olivia-web-live"):
         _p = subprocess.run(["curl", "-s", "-o", "/dev/null", "-m", "20", "-w", "%{http_code}", "-X", "POST",
@@ -1832,19 +1830,28 @@ def main():
     #    module — a staleness check against public_gate.js. Reads both targets so the gate can be green
     #    before the promote that carries the nodes to prod (olivia_wf.py promote runs this gate first).
     _mod = open(os.path.join(os.path.dirname(__file__), "olivia_loop", "public_gate.js")).read()
-    _mod = _mod.split("// --- PUBLIC_GATE_BEGIN ---")[1].split("// --- PUBLIC_GATE_END ---")[0].strip()
-    _n8n = load_env(); _seen, _stale = 0, []
-    for _wid in ("12wj6h1TWqb0d4Dq", "bqHstPDi84uOhTCJ"):
-        _wf = subprocess.run(["curl", "-s", "-m", "60", f"{_n8n['N8N_API_URL'].rstrip('/')}/api/v1/workflows/{_wid}", "-H", f"X-N8N-API-KEY: {_n8n['N8N_API_KEY']}"], capture_output=True, text=True)
-        try:
-            _nodes = {n["name"]: n for n in json.loads(_wf.stdout)["nodes"]}
-        except Exception:
-            _nodes = {}
-        for nm in ("Public Redact", "Public Verify"):
-            if nm in _nodes:
-                _seen += 1
-                if _mod not in _nodes[nm]["parameters"]["jsCode"]: _stale.append(f"{_wid}:{nm}")
-    check("Public Redact + Public Verify exist on at least one target and embed the tested public_gate.js", _seen >= 2 and not _stale, f"seen {_seen}, stale {_stale}")
+    _n8n = load_env(); _present, _stale = {}, []
+    try:
+        _mod = _mod.split("// --- PUBLIC_GATE_BEGIN ---")[1].split("// --- PUBLIC_GATE_END ---")[0].strip()
+    except (KeyError, IndexError, TypeError) as _e:
+        _stale.append(f"public_gate.js marker split failed: {_e!r}")
+        _mod = None
+    if _mod is not None:
+        for _wid in ("12wj6h1TWqb0d4Dq", "bqHstPDi84uOhTCJ"):
+            _wf = subprocess.run(["curl", "-s", "-m", "60", f"{_n8n['N8N_API_URL'].rstrip('/')}/api/v1/workflows/{_wid}", "-H", f"X-N8N-API-KEY: {_n8n['N8N_API_KEY']}"], capture_output=True, text=True)
+            try:
+                _nodes = {n["name"]: n for n in json.loads(_wf.stdout)["nodes"]}
+            except Exception:
+                _nodes = {}
+            _present[_wid] = set()
+            for nm in ("Public Redact", "Public Verify"):
+                if nm in _nodes:
+                    _present[_wid].add(nm)
+                    try:
+                        if _mod not in _nodes[nm]["parameters"]["jsCode"]: _stale.append(f"{_wid}:{nm}")
+                    except (KeyError, IndexError, TypeError) as _e:
+                        _stale.append(f"{_wid}:{nm}:{_e!r}")
+    check("Public Redact + Public Verify exist on at least one target and embed the tested public_gate.js", any(len(s) == 2 for s in _present.values()) and not _stale, f"present {dict((k, sorted(v)) for k, v in _present.items())}, stale {_stale}")
     # 5. the module's own tests pass (the fail-closed path is one of them)
     _t = subprocess.run(["node", "--test", os.path.join(os.path.dirname(__file__), "olivia_loop", "public_gate.test.mjs")], capture_output=True, text=True)
     check("public_gate.js unit tests pass (redaction + leftover-name fail-closed)", _t.returncode == 0, _t.stderr[-300:])
