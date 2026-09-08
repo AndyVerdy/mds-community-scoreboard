@@ -196,8 +196,16 @@ PUBLIC_SMOOTH_BODY = ("={{ JSON.stringify({ model: 'claude-haiku-4-5-20251001', 
   "messages: [{ role: 'user', content: 'DRAFT:\\n' + $json.text + '\\n\\nCLOSED SOURCES: ' + JSON.stringify($json.closed_sources) + '\\nPUBLIC SOURCES: ' + JSON.stringify($json.public_urls) }] }) }}")
 
 PUBLIC_VERIFY = MOD + r"""
-// PUBLIC VERIFY (#169) — deterministic re-check after the smoother. Any unbacked name still present fails
-// the turn CLOSED: the reader gets the refusal text and the notes, never the unredacted answer.
+// PUBLIC VERIFY (#169, rewritten #176 D2) — deterministic re-check after the smoother. What the
+// smoother leaves behind is REPAIRED, not fatal: a closed-room name still in the draft is masked with
+// the same role-phrase pass, a closed or invented link is stripped, and the ANSWER IS KEPT. The
+// 2026-09-08 eval caught q6 and q1 refusing outright ("Refused: a closed-source name or an unknown
+// link survived the public pass") while their own notes listed five open group/partner sources — and
+// a refusal fails the bar on its face (Andy: "still answers, but no details and all the info from
+// public sources"). The invariant is unchanged: a closed-room name or link may NEVER reach the
+// published text, which is why the repair re-checks itself and the turn is still refused when a
+// SECOND pass finds a leak, when the repair leaves nothing worth publishing, or when the name index
+// could not be vouched for at all. Each of those three says which one it is.
 const red = $('Public Redact').first().json;
 const resp = $input.first().json;
 let out = null;
@@ -205,37 +213,67 @@ try { const t = (resp.content || []).filter(c => c.type === 'text').map(c => c.t
 const smoothed = out && typeof out.text === 'string' && out.text.trim() ? out.text : red.text;
 const notes = out && Array.isArray(out.notes) ? out.notes.map(String) : [];
 const names = (red.names || []).map(n => ({ name: n }));
-const left = leftoverNames(smoothed, names, new Set(red.backed || []));
-// the smoother may not add links: every URL in the output must have been in the redacted draft
-const urlsIn = (red.text.match(/https?:\/\/\S+/g) || []);
-const urlsOut = (smoothed.match(/https?:\/\/\S+/g) || []);
-const newUrl = urlsOut.find(u => !urlsIn.includes(u));
-// ...and it may not put a closed-source link back either (#169 review fix round 5, I2). Public Redact
-// removed every non-public url from the body; if one is in the smoother's output, either it survived
-// or Haiku reconstructed it. Same class map, unknown = closed, so a url nothing classified fails too.
-const leftLinks = closedUrls(smoothed, red.classes || {});
+const backed = new Set(red.backed || []);
+const classes = red.classes || {};
+// The urls the smoother was HANDED. Anything else in its output it invented, and an invented url is
+// never publishable however the classifier classes it (#169 review I2, kept and made repairable).
+const draftUrls = extractUrls(red.text || '');
+
+let text = smoothed;
+let left = leftoverNames(text, names, backed);
+let leftLinks = closedUrls(text, classes);
+let newUrls = extractUrls(text).filter(u => draftUrls.indexOf(u) < 0);
+const repairs = [];
+let repaired_names = [], repaired_links = [];
+if (left.length > 0 || leftLinks.length > 0 || newUrls.length > 0) {
+  const rep = repairPublic(text, names, backed, classes, draftUrls);
+  text = rep.text;
+  left = rep.leftover;                 /* the SECOND pass, over the repaired text */
+  leftLinks = rep.leftover_links;
+  newUrls = extractUrls(text).filter(u => draftUrls.indexOf(u) < 0);
+  repaired_names = rep.removed_names;
+  repaired_links = rep.removed_links;
+  for (const n of repaired_names) repairs.push({ kind: 'name', detail: n, replaced_with: 'a role phrase' });
+  for (const l of repaired_links) repairs.push(l);
+}
+const repaired = repaired_names.length > 0 || repaired_links.length > 0;
+// "Nothing left to say" is deliberately a LOW bar (about four words of real content): a false refusal
+// is the defect this rewrite exists to remove, and a stubby answer leaks nothing.
+const nothing_left = repairedSubstance(text).length < 25;
+const leaked = left.length > 0 || leftLinks.length > 0 || newUrls.length > 0;
 // Fail-closed guard (#169 review fix round 1): red.index_incomplete (set by Public Redact) means the
 // name-index fetch was empty or landed exactly on its pagination cap — we cannot vouch that ANY name
-// is absent from it, so refuse regardless of what leftoverNames() happened to find in this draft.
-const refused = left.length > 0 || !!newUrl || leftLinks.length > 0 || red.index_incomplete === true;
-const text = refused
-  ? 'I could not produce a public-safe version of this answer. The sources it rests on are closed, and a name or link from them would have leaked. Ask me the same thing in Test mode to read it internally.'
-  : smoothed;
-// Design pack (Ask Millie.dc.html, 2026-09-07): every public answer carries a GATED strip — "2 names masked ·
-// 1 link removed · 1 quote paraphrased" — that opens a per-redaction list. Structured here, rendered by the page.
-// The link rows are now the ones Public Redact DELETED on purpose (#169 review fix round 5, I2) —
-// {kind:'link', detail: host+path, replaced_with:'[link removed]'} — not, as before, whichever urls
-// Haiku happened to drop between the draft and its own output, which counted nothing the gate did.
-const redactions = (red.removed || []).map(n => ({ kind: 'name', detail: n, replaced_with: 'a role phrase' }))
-  .concat(red.removed_links || [])
-  .concat((red.closed_sources || []).map(s => ({ kind: 'quote', detail: s, replaced_with: 'paraphrased, no names' })));
-// index_incomplete is called out as its own, more specific note — a bad index is a different failure
-// than a name/link that slipped through the smoother — the other two reasons keep the original note.
+// is absent from it, so no repair is trustworthy either and the turn is refused outright.
+const refused = leaked || nothing_left || red.index_incomplete === true;
 const refusalNote = red.index_incomplete === true
   ? 'Refused: the member name index was incomplete, so no name could be vouched for.'
-  : 'Refused: a closed-source name or an unknown link survived the public pass.';
-return [{ json: { text, notes: refused ? notes.concat([refusalNote]) : notes,
-                  sources: red.public_urls || [], evidence_classes: red.classes || {}, refused, removed: red.removed || [], leftover: left,
+  : (leaked ? 'Refused: a closed-source name or link was still there after the repair pass.'
+            : 'Refused: everything this answer rested on came from a closed room, so nothing was left to publish.');
+if (refused) {
+  text = red.index_incomplete === true
+    ? 'I could not check this answer against the member directory just now, so I am not posting it. Ask me the same thing in Test mode to read it internally.'
+    : (leaked
+       ? 'I could not produce a public-safe version of this answer: even after masking, a name or a link from a closed room was still in it. Ask me the same thing in Test mode to read it internally.'
+       : 'Everything I have on this came out of closed rooms — a members-only chat or a private call — so there is nothing I can say about it publicly without repeating detail that was never said in the open. Ask me the same thing in Test mode to read it internally.');
+}
+// Design pack (Ask Millie.dc.html, 2026-09-07): every public answer carries a GATED strip — "2 names masked ·
+// 1 link removed · 1 quote paraphrased" — that opens a per-redaction list. Structured here, rendered by the page.
+// The link rows are the ones Public Redact DELETED on purpose (#169 review fix round 5, I2) —
+// {kind:'link', detail: host+path, replaced_with:'[link removed]'} — plus whatever the repair pass had
+// to take out afterwards, so the strip counts every redaction the gate actually made.
+const redactions = (red.removed || []).map(n => ({ kind: 'name', detail: n, replaced_with: 'a role phrase' }))
+  .concat(red.removed_links || [])
+  .concat(repairs)
+  .concat((red.closed_sources || []).map(s => ({ kind: 'quote', detail: s, replaced_with: 'paraphrased, no names' })));
+const repairNote = 'Repaired after the public pass: '
+  + [repaired_names.length ? repaired_names.length + ' name' + (repaired_names.length > 1 ? 's' : '') + ' masked' : null,
+     repaired_links.length ? repaired_links.length + ' link' + (repaired_links.length > 1 ? 's' : '') + ' removed' : null]
+    .filter(Boolean).join(', ') + '.';
+const allNotes = notes.concat(repaired && !refused ? [repairNote] : []).concat(refused ? [refusalNote] : []);
+const removed = (red.removed || []).slice();
+for (const n of repaired_names) if (removed.indexOf(n) < 0) removed.push(n);
+return [{ json: { text, notes: allNotes,
+                  sources: red.public_urls || [], evidence_classes: classes, refused, repaired, removed, leftover: left,
                   leftover_links: leftLinks, redactions } }];
 """
 

@@ -731,3 +731,72 @@ test('#176: open and restricted rows in the SAME turn split — the group name p
   assert.ok(!/Bryce|Alderson/.test(r.text), r.text);
   assert.deepEqual(pg.leftoverNames(r.text, names, backed), []);
 });
+
+// ============================================================================================
+// #176 D2 — A LEFTOVER IS REPAIRED, NOT A REASON TO REFUSE. The 30-probe eval (2026-09-08) found
+// q6 and q1 refusing outright — "Refused: a closed-source name or an unknown link survived the
+// public pass" — while their own notes listed five open group/partner sources and their
+// source_summary showed 10 fb_post + 12 fb_comment. A refusal fails Andy's bar on its face: "It
+// should be like staging, but it dropped some details from gated sources. still answers, but no
+// details and all the info from public sources." So a closed-room name or an unknown link that
+// survives the smoother is now MASKED and the answer is kept; the turn is refused only when the
+// repair cannot leave an answer behind, or when a second pass still finds a leak.
+// ============================================================================================
+
+test('D2: a closed-source name the smoother reintroduced is masked, and the answer survives', () => {
+  const backed = new Set(['Bryce Alderson']);
+  const smoothed = 'Bryce Alderson ran the numbers and Jonathan Jewett said his 3PL raised rates 12% in March, '
+    + 'which is worth planning around before your next restock window.';
+  const rep = pg.repairPublic(smoothed, names, backed, { [FB_POST_URL]: 'public' }, []);
+  assert.ok(rep.text.includes('Bryce Alderson'), rep.text);
+  assert.ok(!/Jonathan|Jewett/.test(rep.text), rep.text);
+  assert.deepEqual(rep.removed_names, ['Jonathan Jewett']);
+  assert.deepEqual(rep.leftover, []);
+  assert.ok(rep.text.includes('3PL raised rates 12% in March'), rep.text);
+  assert.ok(pg.repairedSubstance(rep.text).length >= 40, rep.text);
+});
+
+test('D2: a closed link the smoother put back is stripped, and the answer survives', () => {
+  const classes = { [FB_POST_URL]: 'public', [WA_INVITE]: 'closed' };
+  const smoothed = `Two threads cover this: ${FB_POST_URL} and the chat invite ${WA_INVITE}. `
+    + 'Both land on the same answer: check the listing copy before the demand letter arrives.';
+  const rep = pg.repairPublic(smoothed, names, new Set(), classes, [FB_POST_URL, WA_INVITE]);
+  assert.ok(rep.text.includes(FB_POST_URL), rep.text);
+  assert.ok(!/whatsapp/.test(rep.text), rep.text);
+  assert.deepEqual(rep.removed_links.map(x => x.kind), ['link']);
+  assert.deepEqual(rep.leftover_links, []);
+});
+
+test('D2: a url the smoother invented is stripped even when the class map calls it public', () => {
+  const classes = { [FB_POST_URL]: 'public' };
+  // FB_POST_URL is classified public, but it was NOT in the redacted draft — the smoother made it up.
+  const rep = pg.repairPublic(`Read it here: ${FB_POST_URL} for the full thread.`, names, new Set(), classes, []);
+  assert.ok(!rep.text.includes('facebook.com'), rep.text);
+  assert.equal(rep.removed_links.length, 1);
+  assert.deepEqual(rep.leftover_links, []);
+});
+
+test('D2: a repair leaves an untouched answer untouched', () => {
+  const classes = { [FB_POST_URL]: 'public' };
+  const clean = `A member walked through the whole playbook here: ${FB_POST_URL} — worth reading in full.`;
+  const rep = pg.repairPublic(clean, names, new Set(), classes, [FB_POST_URL]);
+  assert.equal(rep.text, clean);
+  assert.deepEqual(rep.removed_names, []);
+  assert.deepEqual(rep.removed_links, []);
+});
+
+test('D2: repairedSubstance measures what is left to say, so "nothing remains" is a real test', () => {
+  // an answer that is nothing but role phrases and a stripped link is not an answer
+  assert.ok(pg.repairedSubstance('a member said so.').length < 40);
+  assert.ok(pg.repairedSubstance('a member. one of the speakers. [link removed]').length < 40);
+  assert.ok(pg.repairedSubstance('a member walked through the whole playbook and it is worth reading in full').length >= 40);
+});
+
+test('D2: the repair re-checks itself — leftover and leftover_links are the second pass, not the first', () => {
+  const rep = pg.repairPublic('Jonathan Jewett and Bryce Alderson both weighed in on the 3PL question this week.',
+                              names, new Set(), {}, []);
+  assert.deepEqual(rep.removed_names.sort(), ['Bryce Alderson', 'Jonathan Jewett']);
+  assert.deepEqual(rep.leftover, []);
+  assert.deepEqual(rep.leftover_links, []);
+  assert.ok(!/Jonathan|Jewett|Bryce|Alderson/.test(rep.text), rep.text);
+});

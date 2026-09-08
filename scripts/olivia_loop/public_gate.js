@@ -522,9 +522,45 @@ function leftoverNames(text, names, backed) {
   }
   return out;
 }
+// REPAIR, DON'T REFUSE (#176 D2). Until now a closed-source name or an unknown link that survived
+// the smoother made the whole turn fail closed: the reader got "I could not produce a public-safe
+// version of this answer" and nothing else. The 2026-09-08 eval caught q6 and q1 doing exactly that
+// while their own notes listed five open group and partner sources. That is not the bar — Andy:
+// "It should be like staging, but it dropped some details from gated sources. still answers, but no
+// details and all the info from public sources." A leftover is a smoothing defect, not a reason to
+// throw the answer away: mask the name with the same role-phrase pass, strip the link, KEEP the
+// answer, and say so in the notes.
+//
+// The invariant is untouched — a closed-room name or link may never reach the published text. That
+// is why this function RE-CHECKS its own output (`leftover`, `leftover_links`): the caller refuses
+// only when a second pass still finds one, or when the repair leaves nothing worth publishing.
+//
+// `draftUrls` is the set of urls that were in the redacted draft handed to the smoother. A url that
+// is not among them is one the smoother INVENTED, and an invented url is never publishable however
+// the classifier happens to class it — so it is dropped from the map before the link pass runs.
+function repairPublic(text, names, backed, classes, draftUrls) {
+  const before = normText(text);
+  const cls = {};
+  for (const k of Object.keys(classes || {})) cls[k] = classes[k];
+  const allowed = new Set((draftUrls || []).map(String));
+  for (const u of extractUrls(before)) if (!allowed.has(u)) delete cls[u];
+  const lk = redactLinks(before, cls);
+  const rd = redact(lk.text, names, backed);
+  return { text: rd.text, removed_names: rd.removed, removed_links: lk.removed,
+           leftover: leftoverNames(rd.text, names, backed), leftover_links: closedUrls(rd.text, cls) };
+}
+
+// What is left to say once the repair has run. A "repaired" answer that is nothing but role phrases
+// and [link removed] markers is not an answer, and that — not a single leftover name — is the one
+// case the gate still refuses outright, with wording that says so.
+function repairedSubstance(text) {
+  let t = normText(text).split(LINK_PLACEHOLDER).join(' ');
+  for (const p of ROLE_PHRASES) t = t.split(p).join(' ');
+  return t.replace(urlsG(), ' ').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
 // --- PUBLIC_GATE_END ---
 // rowClass is exported for the tests only (#176): the n8n nodes inline this whole file, so they call
 // it directly. It is what decides a row is a closed room, which is what drives `closed_sources` —
 // the "From a call recording, paraphrased." line in the notes — so it is worth pinning.
 module.exports = { ROLE_PHRASES, parseRows, extractEvidenceRows, rowClass, backedNames, redact, leftoverNames,
-                   extractUrls, closedUrls, redactLinks, linkDetail };
+                   extractUrls, closedUrls, redactLinks, linkDetail, repairPublic, repairedSubstance };
