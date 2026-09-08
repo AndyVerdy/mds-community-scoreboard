@@ -68,3 +68,44 @@ test('the first-name pass leaves an unrelated capitalised word alone', () => {
   assert.ok(r.text.includes('Will this feature ship soon?'));
   assert.ok(!r.text.includes('Turner'));
 });
+
+// --- fix round 2 (#169): every real tool_result appends a plain-text coverage note after the JSON
+// array, so a bare JSON.parse() throws "Extra data" and every row was being thrown away. ---
+
+function toolResult(content) {
+  return [{ role: 'user', content: [{ type: 'tool_result', content }] }];
+}
+
+test('a tool result with a trailing note still yields its rows', () => {
+  const raw = JSON.stringify([
+    { source: 'wa_message', source_id: 'O.yyUJPiRYBSWQ', body: 'Jonathan Jewett shared a bundling tip' },
+    { source: 'wa_message', source_id: 'OtcoR4suDFb47w', body: 'a reply' },
+  ]) + '\n\nNOTE: coverage ends 2026-09-05';
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.equal(ev.rows.length, 2);
+  assert.deepEqual(ev.rows.map(r => r.source), ['wa_message', 'wa_message']);
+  assert.deepEqual(ev.source_ids.sort(), ['O.yyUJPiRYBSWQ', 'OtcoR4suDFb47w'].sort());
+});
+
+test('an app.mds.co video link yields its video id as a source id', () => {
+  const raw = JSON.stringify([
+    { video_url: 'https://app.mds.co/videos/6a97599308e2e42a631c1a35', title: 'TikTok Shop panel' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.ok(ev.source_ids.includes('6a97599308e2e42a631c1a35'));
+});
+
+test('event_url is collected as a url', () => {
+  const raw = JSON.stringify([{ source: 'event', event_url: 'https://app.mds.co/events/summit-sg' }]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.ok(ev.urls.includes('https://app.mds.co/events/summit-sg'));
+  assert.equal(ev.rows[0].url, 'https://app.mds.co/events/summit-sg');
+});
+
+test('garbage falls back to one text row', () => {
+  const ev = pg.extractEvidenceRows(toolResult('no rows at all, just prose about the Summit'));
+  assert.equal(ev.rows.length, 1);
+  assert.equal(ev.rows[0].source, 'text');
+  assert.deepEqual(ev.urls, []);
+  assert.deepEqual(ev.source_ids, []);
+});

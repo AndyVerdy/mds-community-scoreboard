@@ -28,6 +28,40 @@ const COMMON_WORD_FIRST_NAMES = new Set([
 
 function escapeRe(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
+// A video is classified by its 24-hex id, but the retrieval tools hand back only the app link
+// (`video_url: "https://app.mds.co/videos/<id>"`), so the id is read back out of any url field.
+const VIDEO_LINK_RE = /app\.mds\.co\/videos\/([0-9a-f]{24})/;
+
+// Fix round 2 (#169, exec 137783): a tool_result's `content` is the JSON array of rows FOLLOWED by
+// a plain-text coverage note the retrieval layer appends ("... never imply coverage past
+// 2026-09-05."), so a bare JSON.parse throws "Extra data" on EVERY real result — every row was
+// being discarded and replaced by one unclassifiable {source:'text'} row, which is why `classes`
+// came back {} and every member name was masked even when a public row backed it. Retry on the
+// substring from the first bracket to the LAST one; the trailing note lives outside it. Returns
+// null only when the text genuinely isn't rows — the one case the text fallback may apply to.
+function parseRows(raw) {
+  const s = String(raw == null ? '' : raw);
+  try { return JSON.parse(s); } catch (e) { /* fall through to the slice retry below */ }
+  const opens = [s.indexOf('['), s.indexOf('{')].filter(i => i >= 0);
+  if (!opens.length) return null;
+  const first = Math.min(...opens);
+  const last = Math.max(s.lastIndexOf(']'), s.lastIndexOf('}'));
+  if (last <= first) return null;
+  try { return JSON.parse(s.slice(first, last + 1)); } catch (e) { return null; }
+}
+
+// Every url-shaped field on a row, whatever the tool called it (`url`, `link`, `event_url`,
+// `video_url`, `public_page_url`, `partner_url`, ...) — all of them are worth classifying.
+function rowUrls(row) {
+  const out = [];
+  for (const k of Object.keys(row)) {
+    const v = row[k];
+    if (typeof v !== 'string' || !v) continue;
+    if (k === 'url' || k === 'link' || k.slice(-4) === '_url') out.push(v);
+  }
+  return out;
+}
+
 function extractEvidenceRows(messages) {
   const rows = [], urls = new Set(), source_ids = new Set();
   for (const m of Array.isArray(messages) ? messages : []) {
@@ -35,15 +69,19 @@ function extractEvidenceRows(messages) {
     for (const c of m.content) {
       if (!c || c.type !== 'tool_result') continue;
       const raw = typeof c.content === 'string' ? c.content : JSON.stringify(c.content);
-      let parsed = null;
-      try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+      const parsed = parseRows(raw);
+      if (parsed === null) { rows.push({ source: 'text', source_id: null, url: null, text: raw }); continue; }
       const list = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.rows) ? parsed.rows : []);
-      if (!list.length) { rows.push({ source: 'text', source_id: null, url: null, text: raw }); continue; }
       for (const r of list) {
         if (!r || typeof r !== 'object') continue;
-        const url = r.url || r.public_page_url || r.partner_url || r.link || null;
+        // `event_url` is what event_lookup* actually names its link (coalesce(app_url, public_page_url)).
+        const url = r.url || r.public_page_url || r.partner_url || r.link || r.event_url || null;
         const sid = r.source_id != null ? String(r.source_id) : (r.video_id != null ? String(r.video_id) : null);
-        if (url) urls.add(String(url));
+        for (const u of rowUrls(r)) {
+          urls.add(u);
+          const vid = VIDEO_LINK_RE.exec(u);
+          if (vid) source_ids.add(vid[1]);
+        }
         if (sid) source_ids.add(sid);
         rows.push({ source: r.source || null, source_id: sid, url: url ? String(url) : null, text: JSON.stringify(r) });
       }
@@ -101,4 +139,4 @@ function leftoverNames(text, names, backed) {
     .filter(nm => !backed.has(nm) && new RegExp('\\b' + escapeRe(nm) + '\\b', 'i').test(hay));
 }
 // --- PUBLIC_GATE_END ---
-module.exports = { ROLE_PHRASES, extractEvidenceRows, backedNames, redact, leftoverNames };
+module.exports = { ROLE_PHRASES, parseRows, extractEvidenceRows, backedNames, redact, leftoverNames };
