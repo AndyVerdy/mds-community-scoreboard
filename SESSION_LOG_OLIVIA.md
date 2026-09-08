@@ -2,6 +2,32 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-08 02:16Z · PROMOTE — one graph, eight tickets · **prod `12wj6h1TWqb0d4Dq` = `f5e9ce5d` (92 nodes): #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144 — LIVE, prod probes green**
+
+**Trigger (Andy):** "you have my go to promove if another agent agees". Asked the #169 session by message; it answered NOT YET
+(one SQL-only privacy fix in flight), then ~15 min later "AGREED — staging 4190faa9 is ready, lock is yours" (its Public-mode
+probes green: execs 138030 / 138034 / 138040 / 138051 / 138053; its gate 331 checks GREEN; the classifier fix was SQL-only).
+**Pre-flight:** lock free → staging `4190faa9`, 92 nodes, my seven edits intact on it (marker check) → lock taken under
+"PROMOTE one graph …".
+**Promote (`python3 scripts/olivia_wf.py promote --label post-promote-8-tickets-20260908`, 02:14–02:16Z):** gate GATE PASSED
+inside the promote · snapshot `olivia_snapshots/prod_2026-09-08T021615Z_pre-promote.json` (80 nodes, `30fd7e6f`) · 19 changed
+nodes (the peer's 12 web/public nodes + Load Recent Turns + Log Inbound; my Answer Seed · Format Reply · Gate Verdict · Plan
+Request · Prep Context) · settings preserved · bounce deactivate 200 → activate 200 · **prod versionId `f5e9ce5d`, graph matches
+staging: True** · snapshot `prod_2026-09-08T021621Z_post-promote-8-tickets-20260908.json` (92 nodes) · `PROMOTE_EXIT=0`. Prod
+webhooks now `olivia-wa-live` + `olivia-web-live` (the web door idles until #169's page merges in mds-digest-web).
+**Prod probes (silent path, 18 turns, `Eval (silent)?` on every execution, zero Meta sends; rows 65892–65927 + `olivia_seen`
+deleted by id / wamid):** #174 exec 138068 `offer_bind.mode:'drilldown'` → the Alex Chiru video alone · #143 ordinal 138072
+"the second one" → the Peter-Paul Maan drill-down · #139 138074 The Media Elephant · Media Labs · Consumer Labs · Social Tale ·
+Zainith · Kalodata · Euka, each with its deal and page, nothing appended · #141 138080 raw `{p_author: "Fred McKinnon",
+p_terms: ["firearms"]}` → "Fred's firearms-adjacent brand is *TLO Outdoors* … per his own Facebook post from Jan 9, 2026" +
+the post link · #142 138082 one lap, real answer ("I'm chatting with Andy Verdy here, not Ivan Ong … here's what the schedule
+covered") · #144 138086 "the next MDS Summit is already announced! It's *MDS Summit Cancun 2027* … September 26, 2027" · #175
+lap 2 138085 four 2027 events with their links, no duplicates. **All green.** Lock released 02:23Z; the #169 session told the
+prod versionId and that staging is its again (it has one more module tightening → a second small promote later).
+**Docs:** board Prod column ✅ LIVE `f5e9ce5d` on #174 · #175 · #143 · #139 · #141 · #142 · #144 · handoff STATE 02:16Z (rollback
+= `olivia_wf.py rollback` to the pre-promote snapshot) · this entry + index line.
+**Rollback path, in writing:** `prod_2026-09-08T021615Z_pre-promote.json` (80 nodes, `30fd7e6f`) — predates #174 / #175 / #143 too.
+
 ## 2026-09-08 (small hours) · Backlog verified first, then fixed one by one · **#139 · #141 · #142 · #144 BUILT, STAGED and PROVEN on `c28fb532` (+ #175 lap 2 · #139 lap 2) — awaiting Andy's promote**
 
 **Trigger (Andy):** "chaeck if there are more report in the backlog" → "why are you redin eval not backlog?" (the board is the
