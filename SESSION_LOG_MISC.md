@@ -27,9 +27,13 @@ the ops fix is still owed; the agent does not write Airtable.
   **1** (the one-message Kendall "story", offered 09-02 and again 09-04); DTC 09-05 (today's
   Option 1) 16 → 8; AI 09-04 45 → 67. Nothing after the thread is built checks it is still a
   conversation.
-- **#6 (S3)** `rank.ts` feeds every `skipped` row to the ranker as "rejected because …"; the
-  09-02 release note ("Eugene rated this the best story…") was read as instruction —
-  `why_picked` ended "Human already rated it the best story; needs the rewrite."
+- **#6 (S3) — FILED THEN DROPPED the same day on Andy's call.** `rank.ts` feeds every `skipped`
+  row to the ranker as "Rejected by a human before"; the 09-02 release note ("Eugene rated this
+  the best story…") was read as instruction — `why_picked` ended "Human already rated it the best
+  story; needs the rewrite." Andy: there is no Skip button, so this is not a ticket. He is right
+  that it was over-filed — and with no button, **every** `skipped` row is a system release, so the
+  prompt section is wrong whenever it is non-empty (1 row in the 60-day window today). The few-line
+  fix became AC 6 of #5; telling a human skip apart from a system release became AC 7 of #2.
 
 **Docs drift fixed:** the handoff's "Old notes (still true)" still described the retired footer;
 the chat lists are defaults in `src/lib/config.ts` with env overrides (memory said "config.ts,

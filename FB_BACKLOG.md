@@ -99,30 +99,16 @@ mints the story key from these messages, so the key — and dedupe — moves wit
    one-message row is released (`skipped`), not left `offered`.
 5. Before/after drafts for the 09-07 DTC pick shown side by side in the close — the story, not
    just the counts.
-
----
-
-### #6 · 🗣️ The ranker reads every `skipped` row as a human rejection · 🟡 S3
-
-**Story.** As MDS, we want the ranker to learn only from what a human actually rejected, so
-that a bookkeeping release or a Slack failure never teaches it that a story was bad — or good.
-
-**Seen live 2026-09-04.** `rank.ts` lists every `skipped` ledger row in the prompt as
-`picked for "…" — rejected because "<skip_reason>"`. The 2026-09-02 release of the helpdesk
-story carried *"Released 2026-09-02: Eugene rated this the best story so far … Freed so the
-current pipeline can rewrite it properly."* The ranker took it as instruction and re-picked
-DTC 08-30, its `why_picked` ending *"Human already rated it the best story; needs the
-rewrite."* — and the pick landed on the one-message thread (#5). `route.ts` writes `skipped`
-for a Slack failure too (`Slack post failed: …`), which the next run would read the same way.
-
-**Acceptance criteria**
-1. A `skipped` row reaches the prompt only when a human skipped it (the #2 button path). System
-   releases — a Slack failure, a manual release — carry a distinct marker (column or reason
-   prefix, say which) and are left out.
-2. Unit tests: a released row and a Slack-failed row are absent from the prompt; a human skip
-   with its reason is present.
-3. The two system-released rows already in the ledger are re-marked so the next run's prompt is
-   clean, proven with a `?dry=1` run that logs or returns the prompt's rejection lines.
+6. The ranker stops being told a system release was a human rejection. `rank.ts` lists every
+   `skipped` ledger row under "Rejected by a human before — learn from these", but the Skip button
+   does not exist (#2), so **every** such row is a system release: a Slack failure, or a manual
+   free. The one row in the window is the 2026-09-02 release note *"Eugene rated this the best
+   story so far … Freed so the current pipeline can rewrite it"* — the ranker read it as Eugene's
+   verdict and re-picked DTC 08-30, `why_picked` ending "Human already rated it the best story;
+   needs the rewrite", which is how it landed on the one-message thread above. While no human
+   skip path exists, those rows do not reach the prompt as rejections. Proven with a `?dry=1` run.
+   (Filed as #6 2026-09-07, dropped the same day — Andy: too small for a ticket. The lasting half,
+   telling a human skip apart from a system release, is AC 7 of #2.)
 
 ---
 
@@ -161,6 +147,9 @@ recorded the moment it is offered.
    **Skip** captures a reason that appears in the next run's ranker prompt.
 6. Proven that the click no longer reaches WA Approvals — n8n `ib7g9bBddhzCbj4X` records no
    execution for it.
+7. A human Skip is distinguishable in the ledger from a system release (a Slack failure, a manual
+   free), which today share the status `skipped`. Only the human one reaches the ranker prompt as
+   a rejection — until this ticket ships, none of them do (#5 AC 6).
 
 **Already built, nothing to write.** `/api/fbstory/interactivity` exists, handles both
 buttons and the skip-reason modal, verifies the Slack signature via the shared

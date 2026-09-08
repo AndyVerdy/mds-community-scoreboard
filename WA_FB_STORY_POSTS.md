@@ -158,8 +158,7 @@ another run genuinely got there first.
 Tickets live in `FB_BACKLOG.md` (Facebook stream: capture · admin tab · story posts).
 **#1 S1** member-spine gap · **#5 S2** the thread is built from the UTC calendar day while the
 summary is a digest day (a story can be written from part of the conversation — one was written
-from a single message) · **#6 S3** the ranker reads system releases as human rejections ·
-**#2 S4** dedicated Slack app to re-enable the card buttons.
+from a single message) · **#2 S4** dedicated Slack app to re-enable the card buttons.
 
 ## Open questions for Andy
 
