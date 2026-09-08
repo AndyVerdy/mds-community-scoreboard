@@ -800,3 +800,74 @@ test('D2: the repair re-checks itself — leftover and leftover_links are the se
   assert.deepEqual(rep.leftover_links, []);
   assert.ok(!/Jonathan|Jewett|Bryce|Alderson/.test(rep.text), rep.text);
 });
+
+// ============================================================================================
+// #176 D4 — THE SWEEP HAS TO BE AFFORDABLE. The q9 probe came back {"message":"Error in workflow"}.
+// Root cause, from the prod execution log: `Task execution aborted because runner became
+// unresponsive`, lastNodeExecuted `Public Redact` (and the execution behind it timed out at `Gate
+// Verdict` waiting for the same saturated runner). Measured on the real index: backedNames() ran
+// 78 evidence rows x 5,384 index names = 420,000 regex compiles and tests — 19.7 SECONDS of local
+// CPU, and n8n's sandboxed Code-node runner is roughly 15x slower than that. redact() and
+// leftoverNames() built and ran a pattern for every name whose first token appeared as a SUBSTRING
+// anywhere in the draft ("Ana" inside "management", "Sam" inside "same"), 374 of them on a 2.4KB
+// answer.
+//
+// The fix is a pre-filter, not a change of rule: every token of a name must appear in the haystack
+// as a whole alphanumeric run before its pattern is built at all. That is a NECESSARY condition for
+// the pattern to match — the first token sits behind a non-word boundary and every later token is
+// preceded by NAME_SEP, so each one starts and ends a maximal run — so the filter can only skip
+// work, never a match. The cases below pin the behaviour the filter must not change.
+// ============================================================================================
+
+test('D4: a name split across two different rows is not backed by either — matching is per row', () => {
+  const rows = [
+    { source: 'fb_post', url: 'https://x/1', text: 'Jonathan wrote in about margins', authors: [] },
+    { source: 'fb_post', url: 'https://x/2', text: 'Jewett is a common surname here', authors: [] },
+  ];
+  assert.equal(pg.backedNames(rows, { 'https://x/1': 'public', 'https://x/2': 'public' }, names).size, 0);
+});
+
+test('D4: a name backed only by the last of many rows is still found', () => {
+  const rows = [];
+  for (let i = 0; i < 200; i++) rows.push({ source: 'fb_post', url: 'https://x/' + i, text: 'filler row about tools and systems', authors: [] });
+  rows.push({ source: 'fb_post', url: 'https://x/last', text: 'thread started by someone', authors: ['Bryce Alderson'] });
+  const classes = {};
+  for (const r of rows) classes[r.url] = 'public';
+  assert.deepEqual([...pg.backedNames(rows, classes, names)], ['Bryce Alderson']);
+});
+
+test('D4: a substring is not a token — "Ana Lopez" is not backed by the word "management"', () => {
+  const rows = [{ source: 'fb_post', url: 'https://x/1', text: 'our management and ops systems', authors: [] }];
+  assert.equal(pg.backedNames(rows, { 'https://x/1': 'public' }, [{ name: 'Ana Lopez' }]).size, 0);
+});
+
+test('D4: the sweep stays affordable at index scale — 5,000 names over a real-sized turn', () => {
+  const idx = [{ name: 'Jonathan Jewett' }, { name: 'Bryce Alderson' }];
+  const syll = ['an', 'bel', 'cor', 'dan', 'eli', 'fen', 'gar', 'hol', 'ivo', 'jen', 'kal', 'lor', 'mer', 'nor', 'ols'];
+  for (let i = 0; i < 5000; i++) {
+    const a = syll[i % 15] + syll[(i * 7) % 15] + (i % 97);
+    const b = syll[(i * 3) % 15] + syll[(i * 11) % 15] + (i % 89);
+    idx.push({ name: a.charAt(0).toUpperCase() + a.slice(1) + ' ' + b.charAt(0).toUpperCase() + b.slice(1) });
+  }
+  const rows = [], classes = {};
+  for (let i = 0; i < 40; i++) {
+    const u = 'https://www.facebook.com/groups/699138040189700/posts/' + i + '/';
+    rows.push({ source: 'fb_post', url: u, authors: ['Bryce Alderson'],
+      text: JSON.stringify({ body: 'A long-ish group post about systems, ClickUp, Slack, returns and FBA '
+        + 'reimbursements that runs to a couple of hundred words the way a real one does. '.repeat(6) }) });
+    classes[u] = 'public';
+  }
+  const draft = ('Jonathan Jewett and Bryce Alderson both weighed in on the FBA return-fraud question. '
+    + 'Several members described the same pattern and the same workaround, in some detail. ').repeat(8);
+  const t0 = Date.now();
+  const backed = pg.backedNames(rows, classes, idx);
+  const r = pg.redact(draft, idx, backed);
+  const left = pg.leftoverNames(r.text, idx, backed);
+  const ms = Date.now() - t0;
+  assert.deepEqual([...backed], ['Bryce Alderson']);
+  assert.ok(r.text.includes('Bryce Alderson'), r.text.slice(0, 120));
+  assert.ok(!/Jonathan|Jewett/.test(r.text), r.text.slice(0, 120));
+  assert.deepEqual(left, []);
+  assert.ok(ms < 1500, `backedNames + redact + leftoverNames took ${ms}ms at index scale (budget 1500ms) — `
+    + 'this is what made the n8n Code-node runner go unresponsive on q9');
+});

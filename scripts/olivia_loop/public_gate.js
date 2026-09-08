@@ -114,6 +114,38 @@ function normName(s) { return String(s == null ? '' : s).normalize('NFC').replac
 // kept on the side, so a downstream check can't accidentally look at the un-normalised original.
 function normText(s) { return String(s == null ? '' : s).normalize('NFC').replace(INVISIBLE_RE, '').replace(/\s+/g, ' '); }
 function nameTokens(nm) { return normName(nm).trim().split(/[\s\-]+/).filter(Boolean); }
+
+// THE PRE-FILTER THAT KEEPS THIS AFFORDABLE (#176 D4). The q9 probe came back
+// {"message":"Error in workflow"}; the prod execution said `Task execution aborted because runner
+// became unresponsive`, lastNodeExecuted `Public Redact`. Measured on the real index: backedNames()
+// ran 78 evidence rows x 5,384 names = 420,000 regex compiles and tests, 19.7 SECONDS of local CPU,
+// and n8n's sandboxed Code-node runner is roughly 15x slower again; redact() and leftoverNames()
+// built a pattern for every name whose first token appeared as a SUBSTRING anywhere in the draft
+// ("Ana" inside "management", "Sam" inside "same") — 374 of them on a 2.4KB answer.
+//
+// Every pattern this module builds from a name — nameSource(), firstNameSource(), and the exact
+// literal backedNames() uses — is bounded by NB_L on the left and NB_R on the right, and joins its
+// tokens with NAME_SEP (`[\s\-]+`). So each alphanumeric run of the name begins right after a
+// non-alphanumeric character in the text and ends right before one: it is a MAXIMAL alphanumeric
+// run of the text. Requiring every run of the name to be present in the text's own run set is
+// therefore a NECESSARY condition for the pattern to match — the filter can skip work, never a
+// match. On the same q9 turn it takes the candidate set from 374 to 17 and the sweep from ~800ms to
+// ~30ms; backedNames drops from 19.7s to well under a tenth of a second.
+const ALNUM_RUN_RE = /[\p{L}\p{N}]+/gu;
+function runSet(text) {
+  const out = new Set();
+  const m = String(text == null ? '' : text).match(ALNUM_RUN_RE);
+  if (m) for (const t of m) out.add(t.toLowerCase());
+  return out;
+}
+function nameRuns(nm) {
+  const m = normName(nm).match(ALNUM_RUN_RE);
+  return m ? m.map(s => s.toLowerCase()) : [];
+}
+function runsPresent(runs, set) {
+  for (const r of runs) if (!set.has(r)) return false;
+  return true;
+}
 function nameSource(nm) {
   const toks = nameTokens(nm);
   if (!toks.length) return null;
@@ -390,10 +422,25 @@ function rowClass(row, classes) {
 // Split out of backedNames() so the open-row bodies and the open-row author metadata run through
 // one matcher, and so the pre-filter that keeps this affordable lives in one place (#176 D4).
 function matchNamesIn(haystacks, names, backed) {
+  // One pass over the whole corpus first (#176 D4): a name that matches inside ONE haystack has all
+  // of its runs in that haystack, hence in the union — so filtering on the union skips no match.
+  const union = runSet(haystacks.join('\n'));
+  const cands = [];
+  for (const n of names) {
+    const nm = String((n && n.name != null ? n.name : n) || '').trim();
+    if (!nm || backed.has(nm)) continue;
+    const runs = nameRuns(nm);
+    if (!runsPresent(runs, union)) continue;
+    cands.push({ nm: nm, runs: runs, re: boundedRe(escapeRe(normName(nm)), 'i') });
+  }
+  if (!cands.length) return backed;
   for (const hay of haystacks) {
-    for (const n of names) {
-      const nm = String((n && n.name != null ? n.name : n) || '').trim();
-      if (nm && !backed.has(nm) && boundedRe(escapeRe(normName(nm)), 'i').test(hay)) backed.add(nm);
+    // ...and matching stays STRICTLY PER ROW: a name is backed only when one open row carries the
+    // whole of it. Half a name in one row and half in another backs nothing.
+    const rs = runSet(hay);
+    for (const c of cands) {
+      if (backed.has(c.nm) || !runsPresent(c.runs, rs)) continue;
+      if (c.re.test(hay)) backed.add(c.nm);
     }
   }
   return backed;
@@ -463,15 +510,18 @@ function redact(draft, names, backed) {
   // Park the urls behind private-use placeholders for the name passes, then put them back verbatim.
   const links = [];
   text = text.replace(urlsG(), m => { links.push(m); return '\uE000L' + (links.length - 1) + '\uE001'; });
-  // `low` is only a cheap pre-filter: the first token of the index name must appear SOMEWHERE in the
-  // draft before the real (much more expensive) pattern is built at all. 5,394 index rows run through
-  // this on every public turn. Re-taken after each replacement so it never goes stale.
-  let low = text.toLowerCase();
+  // `runs` is only a cheap pre-filter: EVERY alphanumeric run of the index name must appear as a whole
+  // run of the draft before the real (much more expensive) pattern is built at all — a necessary
+  // condition for the bounded pattern to match, so it skips work and never a match (#176 D4; it used
+  // to be a substring test on the first token alone, which let "Ana" through on "management"). 5,394
+  // index rows run through this on every public turn. Re-taken after each replacement so it never
+  // goes stale.
+  let runs = runSet(text);
   const sorted = [...names].map(n => String(n.name || '').trim()).filter(Boolean).sort((a, b) => b.length - a.length);
   for (const full of sorted) {
     if (backed.has(full)) continue;
     const toks = nameTokens(full);
-    if (!toks.length || low.indexOf(toks[0].toLowerCase()) < 0) continue;
+    if (!toks.length || !runsPresent(nameRuns(full), runs)) continue;
     // No 'i' here (#169 review R2): nameSource() builds its own per-token case alternation
     // (tokenAlt()) precisely because \p{Lu} inside MID_TOKEN would case-fold and stop meaning
     // "uppercase" the moment this pattern carried the flag.
@@ -479,7 +529,7 @@ function redact(draft, names, backed) {
     if (!re.test(text)) continue;
     const phrase = ROLE_PHRASES[i++ % ROLE_PHRASES.length];
     text = text.replace(re, phrase);
-    low = text.toLowerCase();
+    runs = runSet(text);
     removed.push(full);
   }
   // First-name-only mentions — "Sarah shared a bundling tip", "Later JONATHAN added Y" — over the first
@@ -487,11 +537,11 @@ function redact(draft, names, backed) {
   // draft (#169 review I1). A possessive is absorbed so the sentence stays readable ("Sarah's margins"
   // -> "their margins"), and the index name is recorded as removed so the GATED strip counts it.
   for (const ent of closedFirstNames(names, backed).values()) {
-    if (low.indexOf(ent.first.toLowerCase()) < 0) continue;
+    if (!runs.has(ent.first.toLowerCase())) continue;
     const fre = boundedRe(firstNameSource(ent.first), 'g', "(['’]s)?");
     if (!fre.test(text)) continue;
     text = text.replace(fre, (m, poss) => (poss ? 'their' : 'they'));
-    low = text.toLowerCase();
+    runs = runSet(text);
     if (removed.indexOf(ent.full) < 0) removed.push(ent.full);
   }
   text = text.replace(/\uE000L(\d+)\uE001/g, (m, k) => links[Number(k)]);
@@ -503,13 +553,13 @@ function leftoverNames(text, names, backed) {
   // own path is open too, and redact() deliberately leaves it intact — refusing on it would refuse
   // every turn that cites such a page. A CLOSED url is caught by closedUrls(), not here (#169 I2).
   const hay = normText(text).replace(urlsG(), ' ');
-  const low = hay.toLowerCase();
+  const runs = runSet(hay);
   const out = [], seen = new Set();
   for (const n of names) {
     const nm = String((n && n.name != null ? n.name : n) || '').trim();
     if (!nm || seen.has(nm) || backed.has(nm)) continue;
     const toks = nameTokens(nm);
-    if (!toks.length || low.indexOf(toks[0].toLowerCase()) < 0) continue;
+    if (!toks.length || !runsPresent(nameRuns(nm), runs)) continue;
     // No 'i' here either (#169 review R2) — same reason as redact()'s call above.
     if (boundedRe(nameSource(nm), '').test(hay)) { seen.add(nm); out.push(nm); }
   }
@@ -517,7 +567,7 @@ function leftoverNames(text, names, backed) {
   // a partial it could not mask is the same leak as publishing the whole name (#169 review I1). Same
   // eligibility and same casings as redact(), so this never refuses a form redact() deliberately kept.
   for (const ent of closedFirstNames(names, backed).values()) {
-    if (seen.has(ent.full) || low.indexOf(ent.first.toLowerCase()) < 0) continue;
+    if (seen.has(ent.full) || !runs.has(ent.first.toLowerCase())) continue;
     if (boundedRe(firstNameSource(ent.first), '').test(hay)) { seen.add(ent.full); out.push(ent.full); }
   }
   return out;
