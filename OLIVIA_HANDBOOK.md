@@ -575,7 +575,7 @@ resolves the asker itself. The main ones:
 | `fb_catchup` / `fb_thread` | Facebook recency browse / full thread pull |
 | `member_card` | One member's public profile card |
 | `member_match` | Members by attribute (city/state/category/band/channel) |
-| `public_gate_classify` / `public_gate_name_index` | **#169 Public Gate** — classify a turn's evidence keys (urls / source ids) as `public` or `closed`. Public here means the WORLD can already see it, not "every MDS member can" (fix round 3, 2026-09-08): **public** is exactly published partners (the public partner directory) · events with a `public_page_url` (public event pages). **Closed** is everything else — every `content_items` row (WhatsApp, the private Facebook group, member-only call transcripts) and every video, plus an event's `app_url` (the members' app) — regardless of what `access_rule->>'type'`, `access_restriction` or `app_is_public` reads, because those flags gate visibility inside the app, not to the world. The member/speaker name index (two-word names ≥ 5 chars, 5,394 rows) is what the redaction pass masks against. Called only by the workflow's Public Gate nodes. |
+| `public_gate_classify` / `public_gate_name_index` | **#169 Public Gate** — classify a turn's evidence keys (urls / source ids) as `public` or `closed`. Public here means the WORLD can already see it, not "every MDS member can" (fix round 3, 2026-09-08): **public** is exactly published partners (the public partner directory) · events with a `public_page_url` (public event pages). **Closed** is everything else — every `content_items` row (WhatsApp, the private Facebook group, member-only call transcripts) and every video, plus an event's `app_url` (the members' app) — regardless of what `access_rule->>'type'`, `access_restriction` or `app_is_public` reads, because those flags gate visibility inside the app, not to the world. The member/speaker name index (two-word names ≥ 5 chars, organisation rows `MDS %` / `% MDS` excluded — 5,384 people, 2026-09-08) is what the redaction pass masks against; the module (`scripts/olivia_loop/public_gate.js`) matches with unicode-aware boundaries after NFC + invisible-character normalisation on both sides, masks variants (ALL CAPS, middle initial, hyphen/space, possessive, lone first names ≥ 4 chars), strips every non-public link, and `Public Verify` refuses anything that survives. Called only by the workflow's Public Gate nodes. **Trap:** these are shared Postgres functions — a redefinition is live on PROD the moment it is applied; it does not ride staging → promote and has no snapshot (rollback = re-apply the previous body from `db/functions/`). |
 | `expertise_search` | Members by what they know (keyword + embedding, RRF) |
 | `member_count` | Counting members by attribute, with breakdowns |
 | `member_dossier` / `member_billing` | The asker's own record / own billing |
@@ -833,7 +833,7 @@ python3 scripts/olivia_wf.py unlock
 ### 8.2 The safety gate
 
 ```bash
-python3 scripts/olivia_leak_gate.py     # 331 checks (2026-09-08, +8 web door / Public Gate), ~3 min, free
+python3 scripts/olivia_leak_gate.py     # 332 checks (2026-09-08, +9 web door / Public Gate: secret · no Meta send · no olivia_messages write · module embed fresh on the SHIP target · Public path wired · strict 401/403), ~3 min, free — run it again AFTER a promote to re-assert prod (check 4 judges staging first)
 ```
 It inserts canary rows with every access rule and sensitivity, asks the real RPCs for them as
 several different members, and asserts what must *not* come back. It also verifies anon lockout,
@@ -1477,6 +1477,24 @@ have a boundary-evading name, and they are wider than Latin accents — "Øun Th
 redaction regex must be Unicode-aware (`/u` with `\p{L}` lookarounds) and every call site must get the same
 treatment — a verify built on the same broken boundary passes exactly what the mask missed.** Fix owned by
 #169; the door is header-authenticated and its page had not shipped, so there was no exposure.
+
+### #169 Public Gate — four traps from the ship night (2026-09-08)
+
+1. **JS `\b` is ASCII-only.** `new RegExp('\\b' + name + '\\b', 'i')` never matches a name whose first or last
+   character is non-ASCII ("Émile Dupont", "航 杨明", "𝕸𝖊𝖍𝖆𝖗 𝕾𝖎𝖓𝖌𝖍", a trailing U+FE0F) — 23 live index rows passed
+   both the mask and the verify, fail-OPEN, until the whole-branch review caught it. Rule: every name match goes
+   through one shared `boundedRe()` (`(?<![\p{L}\p{N}_])…(?![\p{L}\p{N}_])`, flag `u`) after normalising BOTH the
+   index name and the text (NFC, strip U+FE0F / U+200B–U+200D / U+2060 / U+FEFF, collapse whitespace). Also: `\p{Lu}`
+   case-folds under the `iu` flag pair — a "capitalised token" pattern must be compiled without `i`.
+2. **A script without argparse treats `--help` as "run".** `apply_169_public_gate.py --help` rewrote staging (under
+   the lock, staging only). Every apply script takes `--dry-run DIR` (GET + patched graph to disk, no write) and
+   `--apply` (the live PUT + bounce); read a script's docstring before running it at all.
+3. **SQL functions do not ride the promote.** `public_gate_name_index()` was redefined live to drop organisation rows;
+   that changed prod at once, with no snapshot. Graph changes have `olivia_wf.py` snapshots; SQL changes have
+   `db/functions/` as the only rollback source — say which kind a fix is in the ticket.
+4. **Gate check 4 judges the ship target.** It compares the embedded module on STAGING (what is about to ship) with
+   the file and reports a stale PROD only informationally, so a pre-promote run stays green; the price is that prod
+   drift no longer reddens the gate on its own — run the gate once more right after every promote.
 
 ## 14. Known limits (2026-09-04)
 
