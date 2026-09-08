@@ -11,6 +11,13 @@
 
 # Olivia — next session
 
+## STATE 2026-09-08 00:15Z — #174 + #175 + #143 PROVEN ON STAGING `eb99c336` · awaiting Andy's promote · branch `174-named-item-drilldown-20260907` (merged to `main` for #174/#175; #143 docs follow)
+**Staging `eb99c336` = #169 Task 5 + Task 6 (the peer's Public Gate) + #174 + #175 + #143. Prod `30fd7e6f` untouched. Gate EXIT 0
+(four runs, last 00:14Z). Lock free; the #169 session runs its Task 7 gate checks next, then Andy decides one promote for all four.**
+**#143 close block on the board (AC table, execs 137713 · 137716 · 137720 · 137739). Tried and reverted: re-issuing the previous
+plan for a titles-only offer — the `chapter_info` payload is truncated in the evidence after 14 rows, the model invented the rest
+and the clamp fired (137759). Found alongside, unfiled: list-tool evidence clipping.** Earlier state below kept for the story.
+
 ## STATE 2026-09-07 (night) — #174 + #175 PROVEN ON STAGING `2d875cb3` · awaiting Andy's promote · branch `174-named-item-drilldown-20260907`
 **Staging `2d875cb3` = #169 Task 5 + #174 + #175 (the #169 session stacks Task 6 next; one promote carries all three — or
 re-stage from prod and re-apply `apply_174_…` + `apply_175_…` for a one-ticket graph). Prod `30fd7e6f` untouched. Gate 324 / EXIT 0.**
@@ -21,7 +28,9 @@ Board close blocks under #174 / #175 carry the AC tables. Lock released 22:52Z; 
 ### ANDY'S DESK
 1. **Promote** — `python3 scripts/olivia_wf.py lock … && promote` (gate re-runs inside). Then re-probe prod: your exact
    chain, and read `olivia_messages.plan.period = 'offer_bound'` on the follow-up.
-2. **#143 findings from tonight's probes (not fixed, your priority call):** "Yes please" after a billing answer bound to the
+2. **#143 BUILT offline after the probes (Andy: "address them one by one") — `apply_143_followup_guards.py`, 37/37 +
+   #174 regression 30/30 on the dry-run of staging `2d875cb3`; staging apply + probes wait for the #169 session's next
+   handover (asked). The findings it addresses:** "Yes please" after a billing answer bound to the
    bold `*$3,615.00*` as if it were an offered item — Format Reply records any bold span as a title (#112 recorder); "Is
    there any bigger revenue group" echo-bound on the word *revenue* and narrowed the PEOPLE list by band, where bank C
    expected the revenue-gated CHAT; "What do you know about me from WhatsApp?" went to the dossier lane (profile + a

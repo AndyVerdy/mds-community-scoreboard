@@ -106,6 +106,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#172** | 🔓 Team chat — everything-access mode for staff (exact revenue, contacts, billing included) behind a huge disclaimer; new team-only SQL the gate proves WhatsApp can never reach | 🔴 S1 | L | staging first, gate | 📝 filed 2026-09-07 (Andy: "I need team mode to include all categories - everything. That's why we need a huge disclaimer" · "delivery 3: Team chat") — after #169 |
 | **#174** | 🎯 A named item from her own list is a drill-down, not a new search — "Tell me more about Alex Chiru video" after a four-video list re-planned as a fresh speaker search (Andy's case 1, prod turn 65490 / exec 137515) | 🔴 S1 | S | ✅ **proven on staging `2d875cb3`** — Andy's exact chain exec 137664 `offer_bind.mode:'drilldown'`, speaker-named 137633, title-named 137645, "yes" 137637 unchanged, gate EXIT 0 | ⏳ awaiting Andy's promote (the graph also carries #169 Task 5 + #175) |
 | **#175** | 🔗 The gate's link repair pins a URL to the wrong row — a bare, untitled link before the closing question on every video answer (Andy's case 1, execs 137508 / 137515) | 🟡 S2 | S | ✅ **proven on staging `2d875cb3`** — 14/14 unit on the live bytes, replay of execs 137508/137515 appends 0 (was 1 · 2), 0 appended links in 33 probe turns | ⏳ awaiting Andy's promote (with #174) |
+| **#143** | 🔁 A follow-up binds to the wrong thing, or loses the thread — four guards: no echo-bind on a new question, a bare ordinal is a drill-down, a bold number is never an offer, a yes to nothing asks what they want; her own-words report offer reaches the ticket lane (bank C 6095/6349 + tonight's probes) | 🟡 S2 | S | ✅ **proven on staging `eb99c336`** — execs 137713 · 137716 · 137720 · 137739, rows 65655 · 65661; 45/45 unit; gate EXIT 0 | ⏳ awaiting Andy's promote (with #174 · #175) |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -1612,10 +1613,60 @@ unsupported). Wave 12's S6 fixed the tool-error half — canned answers went 8 �
 remainder.
 
 ### #143 · A follow-up binds to the wrong thing, or loses the thread — 3 fails
-**🟡 S2 · size S — filed 2026-08-24.**
+**🟡 S2 · size S — filed 2026-08-24 · scoped 2026-09-07 (night) from the original rows + tonight's staging probes (Andy: "check backlog for more cases, address them one by one").**
 **IDs:** 6095 (names the 20M+ chat now but not its verification bar or application route) · 6201 (gives
 the profile instead of the WhatsApp footprint) · 6349 ("yes please" restates the credit balance instead
 of acting on the offer she just made).
+
+> **In plain words:** four small ways a "yes" or a short follow-up lands on the wrong thing — all deterministic
+> binding code, none of them the model.
+
+*As a member, my short reply lands on what she just put in front of me: a yes to "file this with the team" files it,
+"the second one" opens the second item, a new question is never mistaken for a yes, and a bold number is never treated
+as something she offered.*
+
+**What the original rows show (read 2026-09-07, `olivia_messages`):** 6349 = Etienne 2026-08-04 (23044–23047): she found no
+credit balance and offered *"Want me to file this as a report so the team can check…?"* — her own wording, not the seed's
+exact ticket sentence, so `ticketYes` (which needs `open a ticket with the mds team` in her last turn) never fired; the
+bank re-run replayed the billing plan and restated the balance; the live turn claimed "Done — I've filed that" without a
+ticket. 6095 = 2026-08-01 (17095–17098): the original run answered it RIGHT (route `chats`, the +1M TTM step-up chat with its
+verification bar and Typeform); tonight's staging probe (exec 137656) echo-bound "Is there any bigger revenue group" on the
+word *revenue* from her offer line ("narrow this list by niche or revenue band") — `_poEcho` only refuses a trailing "?" and
+the member typed none — and narrowed the PEOPLE list by band instead. Tonight also: "How much MDS credit do I have?" → "Yes
+please" (exec 137650) bound to the bold `*$3,615.00*` as an offered item (the #112 recorder counts every bold span, and a
+bare affirmation binds whatever it recorded); and "the second one" after a three-video list (exec 137667) reached the model
+unbound (ordinals are read only as quantifiers inside an acceptance) — the seed rule still answered the right item both times.
+6201 is a LANE question (the dossier lane answers a from-WhatsApp ask with the profile) — out of this ticket, see the
+handoff desk.
+
+**Shape of the fix (code, four guards — `test_143_followup_guards.js` runs them against the shipped bytes):** ① `Plan Request`
+`isNewQuestion()` — the #174 opener guard applied to the echo signal too: a message opening any/who/when/where/how many/is
+there/… never binds as an acceptance · ② `Format Reply` records bold spans as offered titles only when the reply ENDS with an
+offer question, and a numeric/currency bold never · ③ `Format Reply` records a report/ticket offer in her own words as
+`pending_offer.kind:'ticket'` (the reply's last line offers to file/open/flag a report/ticket/issue); `Plan Request`'s
+`ticketYes` accepts that kind on a yes, so the two-step ticket lane fires and the ticket is actually created · ④ `Plan
+Request` `bareOrdinalPick()` — "the second one" / "first" / "the last one" after an offer of ≥2 items binds to that item as a
+drill-down (same bound path as #174).
+
+**Accept when:** staging chains — "How much MDS credit do I have?" → "Yes please" no longer binds to the balance (no offer:
+answered as a nudge; with her ticket offer: a ticket row) · "…tiktok ballers" → "Is there any bigger revenue group" is not
+echo-bound (fresh plan, the step-up chat or a clarifier) · a list then "the second one" → `offer_bind.mode:'drilldown'` on
+the second item · #174 + #112 probes unchanged · gate GREEN · promote.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-09-08 00:14Z — awaiting Andy's promote (staging `eb99c336` = #169 Task 5+6 + #174 + #175 + #143)
+**The fix:** `scripts/olivia_loop/apply_143_followup_guards.py` (idempotent, carries its own upgrade path — five cuts landed on staging tonight, each probed): `Plan Request` `isNewQuestion()` on the echo signal · `bareOrdinalPick()` · `ticketYes` on `pending_offer.kind:'ticket'` · a `nothing_pending` lane for a yes after a turn that asked nothing (`Prep Context.last_olivia_asks` — a trailing "?" OR a statement-form offer on the last line) · `Format Reply` `offerTitlesOf()` (bold is a title only under an offer question, never a number) + `ticketOfferLine()` (verb-based: flag / file / raise / escalate / open a ticket / pass on / let the team know) · `Answer Seed`: the exact ticket sentence is the ONLY way she offers to flag anything to the team, and she never claims a request was filed unless the ticket lane ran. Offline: `test_143_followup_guards.js` 45/45 on the shipped bytes, `test_174` 30/30 regression.
+
+| AC | result |
+|---|---|
+| "How much MDS credit do I have?" → "Yes please" no longer binds to the balance | ✅ exec 137713: no `pending_offer` recorded (the bold `*$3,615.00*` is not a title) · exec 137739 (she asked nothing): `nothing_pending` → "Just to double check — what would you like me to do next?" · rows 65653/65655 (she offered "let me know if you'd like to put in a request"): no fake "Done" — a two-step ticket offer ending "reply YES and I'll file it with the MDS team" |
+| "…tiktok ballers" → "Is there any bigger revenue group" is not echo-bound | ✅ execs 137716 and 137752: `offer_bind` absent, fresh `member_match` by band (the step-up chat vs people is a content preference, not binding — left) |
+| a list then "the second one" → `offer_bind.mode:'drilldown'` on the second item | ✅ exec 137720: `drilldown ids:['69853b…']`, full Peter-Paul Maan summary (row 65589) |
+| #174 + #112 probes unchanged | ✅ list + "yes" → exec 137746 `accept`, 3 ids · Andy's chain after a list without the Chiru video → videos lane (137723) · "How many MDS chapters" → "yes" → rows 65659/65661 delivered (offer question → bound as before) |
+| gate GREEN | ✅ four runs tonight, last 00:14Z, EXIT 0 |
+| promote | ⏳ Andy's call — one graph, four tickets |
+
+**Before → after:** bank C 6349 shape: a yes to her own-words report offer → plan replay restating the balance (bank) / a fake "Done — I've filed that" (live 23047, and staging 65577 before the cut) → the two-step ticket lane, or an honest "what would you like me to do next?" when nothing was offered. 6095 shape: "Is there any bigger revenue group" echo-bound on *revenue* (137656) → fresh plan. Bare ordinal: unbound (137667) → drill-down (137720).
+**Tried and reverted, in writing:** re-issuing the previous plan for a titles-only offer ("20 chapters … want the full list?" → yes) put the full `chapter_info` payload in front of the model — it is TRUNCATED in the evidence after 14 rows — so it invented the remaining names, the fact check failed twice and the clamp fired (exec 137759). The zero-fetch answer from memory is the lesser evil; **list-tool evidence clipping** is a found-alongside defect (unfiled). **Not exercised live:** `pending_offer.kind:'ticket'` → `ticket_create` end to end (her exact-sentence offer takes the older `TICKET_OFFER_MARK` path; unit cases 36–45 cover the own-words detector). 6201 (dossier lane on a from-WhatsApp ask) is out of this ticket.
 
 ### #144 · 2027 events answered wrong — BLOCKED on #123
 **🔴 S1 — filed 2026-08-24. Cannot be fixed until #123 lands.**
