@@ -28,6 +28,17 @@ const COMMON_WORD_FIRST_NAMES = new Set([
 
 function escapeRe(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
+// Unicode-aware word boundary (#169 review C1). JavaScript's `\b` is defined against ASCII `\w`, so a
+// name whose FIRST or LAST character is not [A-Za-z0-9_] — Émile Dupont, Renée Dubé, Ólafur Jónsson —
+// has no boundary at that end, and `\b...\b` therefore never matches it anywhere in ordinary prose.
+// Measured on the live index: 33 of 5,394 rows. For those members redact() masked nothing AND
+// leftoverNames() refused nothing, i.e. the gate failed OPEN and published the full name verbatim.
+// `[\p{L}\p{N}_]` under the `u` flag is the same idea over the whole Unicode letter/number space; it
+// still refuses to match "Anna Lee" inside "Arianna Leeman".
+const NB_L = '(?<![\\p{L}\\p{N}_])';
+const NB_R = '(?![\\p{L}\\p{N}_])';
+function boundedRe(src, flags) { return new RegExp(NB_L + src + NB_R, flags + 'u'); }
+
 // A video is classified by its 24-hex id, but the retrieval tools hand back only the app link
 // (`video_url: "https://app.mds.co/videos/<id>"`), so the id is read back out of any url field.
 const VIDEO_LINK_RE = /app\.mds\.co\/videos\/([0-9a-f]{24})/;
@@ -113,7 +124,7 @@ function backedNames(rows, classes, names) {
     const text = String(row.text || '');
     for (const n of names) {
       const nm = String(n.name || '').trim();
-      if (nm && new RegExp('\\b' + escapeRe(nm) + '\\b', 'i').test(text)) backed.add(nm);
+      if (nm && boundedRe(escapeRe(nm), 'i').test(text)) backed.add(nm);
     }
   }
   return backed;
@@ -126,7 +137,7 @@ function redact(draft, names, backed) {
   const sorted = [...names].map(n => String(n.name || '').trim()).filter(Boolean).sort((a, b) => b.length - a.length);
   for (const full of sorted) {
     if (backed.has(full)) continue;
-    const re = new RegExp('\\b' + escapeRe(full) + '\\b', 'gi');
+    const re = boundedRe(escapeRe(full), 'gi');
     if (!re.test(text)) continue;
     const phrase = ROLE_PHRASES[i++ % ROLE_PHRASES.length];
     text = text.replace(re, phrase);
@@ -136,7 +147,7 @@ function redact(draft, names, backed) {
     // (COMMON_WORD_FIRST_NAMES) so an unrelated sentence-initial word isn't mangled.
     const first = full.split(/\s+/)[0];
     if (first.length >= 4 && !COMMON_WORD_FIRST_NAMES.has(first)) {
-      text = text.replace(new RegExp('\\b' + escapeRe(first) + '\\b', 'g'), 'they');
+      text = text.replace(boundedRe(escapeRe(first), 'g'), 'they');
     }
   }
   return { text, removed };
@@ -145,7 +156,7 @@ function redact(draft, names, backed) {
 function leftoverNames(text, names, backed) {
   const hay = String(text || '');
   return [...names].map(n => String(n.name || '').trim()).filter(Boolean)
-    .filter(nm => !backed.has(nm) && new RegExp('\\b' + escapeRe(nm) + '\\b', 'i').test(hay));
+    .filter(nm => !backed.has(nm) && boundedRe(escapeRe(nm), 'i').test(hay));
 }
 // --- PUBLIC_GATE_END ---
 module.exports = { ROLE_PHRASES, parseRows, extractEvidenceRows, backedNames, redact, leftoverNames };

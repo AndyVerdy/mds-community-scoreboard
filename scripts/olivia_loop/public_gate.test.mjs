@@ -146,3 +146,28 @@ test('a non-partner public row still backs a name found anywhere in it', () => {
   const backed = pg.backedNames(ev.rows, classes, names);
   assert.ok(backed.has('Bryce Alderson'));
 });
+
+// --- review C1 (#169): JS `\b` is ASCII-only, so a name whose FIRST or LAST character is accented
+// had no word boundary at that end and never matched — 33 live index rows were published verbatim
+// and leftoverNames() did not refuse either (the gate failed OPEN). ---
+
+const accented = [{ name: 'Émile Dupont', kind: 'member' }, { name: 'Renée Dubé', kind: 'member' }];
+
+test('C1: a name that starts or ends with an accented letter is masked', () => {
+  const r = pg.redact('Émile Dupont runs a 7-figure shop. Renée Dubé agreed.', accented, new Set());
+  assert.ok(!/Dupont/.test(r.text), r.text);
+  assert.ok(!/Dubé/.test(r.text), r.text);
+  assert.deepEqual(r.removed.sort(), ['Renée Dubé', 'Émile Dupont'].sort());
+});
+
+test('C1: an accented name the smoother left in refuses the turn', () => {
+  assert.deepEqual(pg.leftoverNames('Thanks to Renée Dubé.', accented, new Set()), ['Renée Dubé']);
+  assert.deepEqual(pg.leftoverNames('Émile Dupont said so.', accented, new Set()), ['Émile Dupont']);
+});
+
+test('C1: an accented name is backed only by a public row, same as an ASCII one', () => {
+  const rows = [{ source: 'event', source_id: 'e9', url: 'https://www.mds.co/summit', text: 'Émile Dupont speaks at the Summit' }];
+  const backed = pg.backedNames(rows, { 'https://www.mds.co/summit': 'public' }, accented);
+  assert.ok(backed.has('Émile Dupont'));
+  assert.ok(!backed.has('Renée Dubé'));
+});
