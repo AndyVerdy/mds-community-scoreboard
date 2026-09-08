@@ -185,6 +185,35 @@ text above, each chosen to reuse the existing chain instead of duplicating it:
   that matter stay: never `Send Reply (Meta)`, never `olivia_messages`.
 - `Mark Read + Typing` still fires on the probe phone for web turns, exactly as the current test chat does.
 
+**Design pack received 2026-09-07** (`~/Downloads/chats.zip` → `~/Downloads/chats_design/mds-admin-export/`,
+`Ask Millie.dc.html` + README) — supersedes §Page above:
+- The chat is its own storefront tool, **Ask Millie** (`/admin/ask-millie`, cover `tool-covers/ask-millie.png`),
+  not a tab under the Millie dashboard; the two link to each other. `/admin/millie/chat` (#168) redirects.
+- A **sessions rail**: New session, Search sessions, threads grouped Today / Yesterday / Earlier, each with its
+  target. The rail ships in #169 because the design is built around it; Millie's long memory per thread is #170.
+- **Four targets in one picker**, `Staging · Prod | MDS Team · Public`. Staging and Prod are the Test experience on
+  the two workflows; Public is the gated mode on the live workflow; MDS Team is disabled until #172. The target
+  belongs to the session: switching inside a session with answers starts a new session.
+- Every public answer carries a **GATED strip** ("2 names masked · 1 link removed · 1 quote paraphrased") opening
+  a per-redaction list, **source chips** by class ("Recorded call · 3 Facebook threads · #ppc channel · 2 partner
+  records") and a sources panel; Copy copies the gated text and the notes. The ungated draft never leaves the
+  workflow.
+- The design assumes a **streamed source trail** ("Reading WhatsApp channels · 38 chats ✓") and streamed tokens on
+  one held request. #169 ships the same single held request with an honest "Millie is reading…" and elapsed
+  counter; the live per-step trail and token streaming need a progress hook in the answer loop and are **#173**.
+
+**Fix round 3 ruling (2026-09-08, #169) — `access_rule.public` is member-wide, not world-public:**
+`content_items.access_rule->>'type' = 'public'` (and `videos_catalog.access_restriction = 'public'`) mean
+visible to every MDS member inside the app — the rows carrying it are `fb_post`/`fb_comment` (the private
+Facebook group) and `call_transcript` (member-only recordings on app.mds.co). `digest.public_gate_classify`
+had been treating that flag as "safe to say to the world," which is a different and much bigger claim; found
+live when probe 1 kept `Brandon Himmel`, `Alex Bonilla` and `Jon Jewett` off a member-only call transcript and
+published its `app.mds.co/videos/<id>` link as a "source." Andy's ruling: Public mode's `public` means only
+what the world could already find on its own — the partner directory and events with a `public_page_url` —
+nothing gated by an in-app flag. `public_gate_classify` now returns `closed` unconditionally for every
+`content_items` row, every video, and an event's `app_url`, regardless of `access_rule`/`access_restriction`/
+`app_is_public`. See `OLIVIA_HANDBOOK.md` §6.2 and `scripts/sql/20260908_public_gate_classify_world_public_169.sql`.
+
 ## Open questions
 
 None blocking. Two to confirm at plan time: the exact role phrases used for redacted names (proposed above) and

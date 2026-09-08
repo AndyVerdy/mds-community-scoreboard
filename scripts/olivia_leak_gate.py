@@ -56,6 +56,7 @@ Secrets come from /Users/Born/mds-digest-web/.env.local (parsed here — sourcin
 in bash breaks). Requests go through curl: python-urllib SSL is broken on this Mac.
 """
 import argparse
+import os
 import re
 import json
 import subprocess
@@ -1798,6 +1799,122 @@ def main():
     st, body = find({"phone": phone, "where": {"all": [{"segment": "reseller"}, {"event": "MDS Summit Singapore"}]}})
     check("find withholds attendee names from a non-registered asker (R5)",
           not body.get("people") and int(body.get("total", 0)) > 0)
+
+    # 14. #169 web front door + Public Gate mode: the web webhook is secret-gated (staging AND
+    # prod paths — prod's answers 404 until the promote creates it, which is itself proof the
+    # door is closed, not open), the new RPCs/table are service_role only, no web turn ever
+    # lands in the member conversation table, and the Public Redact/Public Verify nodes
+    # (wherever they currently exist — staging before the promote, prod after) embed the same
+    # public_gate.js module this gate's own unit tests just exercised. No model call anywhere
+    # here: a POST without the secret is refused before any node runs, so that's the only
+    # webhook call this section makes.
+    print()
+    print("— #169 web door + Public mode: secret, silence, fail-closed —")
+    # 1. the web webhook refuses a call without the secret before any node runs (staging AND prod paths).
+    #    #169 review I4: the PROD door must answer with an AUTH refusal, 401/403 and nothing else. A 404
+    #    was accepted here as "closed", which it is — but it is equally what a down, renamed or
+    #    never-promoted door returns, so the check could not tell an enforced secret from a missing
+    #    webhook. Staging keeps the looser set on purpose: it is a scratch target whose path comes and
+    #    goes between stages, and it is not what the world can call.
+    for _path, _okset in (("olivia-web-staging", ("401", "403", "404")), ("olivia-web-live", ("401", "403"))):
+        _p = subprocess.run(["curl", "-s", "-o", "/dev/null", "-m", "20", "-w", "%{http_code}", "-X", "POST",
+                             f"https://mdsco.app.n8n.cloud/webhook/{_path}", "-H", "Content-Type: application/json",
+                             "-d", '{"web":true,"text":"gate"}'], capture_output=True, text=True)
+        check(f"web door {_path} refuses a call without the secret", _p.stdout.strip() in _okset,
+              f"status {_p.stdout.strip()}, expected one of {_okset}")
+    # 2. the two RPCs and the table are service_role only
+    st, _b = rpc("public_gate_name_index", {}, ANON_KEY);                 check("anon denied on public_gate_name_index", st in (401, 403, 404), f"status {st}")
+    st, _b = rpc("public_gate_classify", {"p_urls": [], "p_source_ids": []}, ANON_KEY); check("anon denied on public_gate_classify", st in (401, 403, 404), f"status {st}")
+    st, _b = curl("GET", f"{BASE}/olivia_web_messages?select=id&limit=1", ANON_KEY, profile_hdr=["Accept-Profile: digest"]); check("anon denied on olivia_web_messages", st in (401, 403, 404), f"status {st}")
+    # 3. no web turn ever landed in the member conversation table or reached Meta. Scoped to rows
+    #    created since the web door's first deploy (2026-09-07 ~21:59Z) — 34 historical rows share
+    #    this wamid prefix from the OLD /api/olivia/test-chat route, which predates this ticket and
+    #    has been idle since.
+    st, rows = curl("GET", f"{BASE}/olivia_messages?select=id&wamid=like.wamid.SELFTEST_WEB_*&created_at=gte.2026-09-07T21:30:00Z&limit=1", key, profile_hdr=["Accept-Profile: digest"])
+    check("no SELFTEST_WEB wamid in olivia_messages since the web door (web turns save to their own table)", st == 200 and rows == [], f"status {st} rows {rows}")
+    # 4. wherever the Public Gate nodes exist, they embed the TESTED module — but staleness is judged
+    #    against the target about to ship (staging first, prod only as fallback), not every target.
+    _mod = open(os.path.join(os.path.dirname(__file__), "olivia_loop", "public_gate.js")).read()
+    _n8n = load_env(); _present, _stale_by_wid, _marker_stale, _conns = {}, {}, [], {}
+    _PROD_WID, _STAGING_WID = "12wj6h1TWqb0d4Dq", "bqHstPDi84uOhTCJ"
+    try:
+        _mod = _mod.split("// --- PUBLIC_GATE_BEGIN ---")[1].split("// --- PUBLIC_GATE_END ---")[0].strip()
+    except (KeyError, IndexError, TypeError) as _e:
+        _marker_stale.append(f"public_gate.js marker split failed: {_e!r}")
+        _mod = None
+    if _mod is not None:
+        for _wid in (_PROD_WID, _STAGING_WID):
+            _wf = subprocess.run(["curl", "-s", "-m", "60", f"{_n8n['N8N_API_URL'].rstrip('/')}/api/v1/workflows/{_wid}", "-H", f"X-N8N-API-KEY: {_n8n['N8N_API_KEY']}"], capture_output=True, text=True)
+            try:
+                _graph = json.loads(_wf.stdout)
+                _nodes = {n["name"]: n for n in _graph["nodes"]}
+                _conns[_wid] = _graph.get("connections") or {}
+            except Exception:
+                _nodes = {}; _conns[_wid] = {}
+            _present[_wid] = set(); _stale_by_wid[_wid] = []
+            for nm in ("Public Redact", "Public Verify"):
+                if nm in _nodes:
+                    _present[_wid].add(nm)
+                    try:
+                        if _mod not in _nodes[nm]["parameters"]["jsCode"]: _stale_by_wid[_wid].append(f"{_wid}:{nm}")
+                    except (KeyError, IndexError, TypeError) as _e:
+                        _stale_by_wid[_wid].append(f"{_wid}:{nm}:{_e!r}")
+    # A promote copies staging to prod, so a prod embed one revision behind the file is the expected pre-promote state, not drift;
+    # drift is staging (or prod when staging has no gate) disagreeing with the file.
+    _ship_wid = _STAGING_WID if len(_present.get(_STAGING_WID, set())) == 2 else _PROD_WID
+    _ship_stale = _marker_stale + _stale_by_wid.get(_ship_wid, [])
+    if _ship_wid == _STAGING_WID:
+        _prod_ok = len(_present.get(_PROD_WID, set())) == 2
+        _prod_embed = ("behind" if _stale_by_wid.get(_PROD_WID) else "current") if _prod_ok else "n/a (nodes absent)"
+    else:
+        _prod_embed = "n/a (prod is the ship target)"
+    check("Public Redact + Public Verify embed the tested public_gate.js on the target about to ship (staging first, prod fallback)",
+          any(len(s) == 2 for s in _present.values()) and not _ship_stale,
+          f"present {dict((k, sorted(v)) for k, v in _present.items())}, ship target {_ship_wid}, stale {_ship_stale}, prod embed: {_prod_embed}")
+    # 5. the gate is ON THE PATH, not merely present (#169 review I4). Checks 1-4 prove the nodes exist
+    #    and carry the tested module; none of them proved a public answer actually goes THROUGH them. A
+    #    graph where the gate sits there disconnected and `Web?` true -> `Format Web` (exactly the
+    #    pre-gate wiring the apply script tolerates on a fresh run) publishes ungated answers with this
+    #    section green. Hand-editing n8n is what this check exists to catch — the apply script's own
+    #    docstring describes hand-editing `Public Verify` to prove fail-closed. Same ship target as
+    #    check 4 (staging first, prod fallback). The false branch of `Public?` (Test/Team mode) still
+    #    goes straight to `Format Web` and is not part of the chain.
+    def _out(_c, _node, _idx=0):
+        _main = (_c.get(_node) or {}).get("main") or []
+        return sorted(e.get("node") for e in ((_main[_idx] if len(_main) > _idx else []) or []) if isinstance(e, dict))
+
+    _c = _conns.get(_ship_wid) or {}
+    _chain = [("Web?", 0, ["Public?"]),
+              ("Public?", 0, ["Classify Evidence (Supabase)", "Fetch Name Index (Supabase)"]),
+              ("Classify Evidence (Supabase)", 0, ["Public Inputs"]),
+              ("Fetch Name Index (Supabase)", 0, ["Public Inputs"]),
+              ("Public Inputs", 0, ["Public Redact"]),
+              ("Public Redact", 0, ["Public Smooth (Claude)"]),
+              ("Public Smooth (Claude)", 0, ["Public Verify"]),
+              ("Public Verify", 0, ["Format Web"])]
+    _wiring = [f"{_s}[{_i}] -> {_out(_c, _s, _i)} (expected {sorted(_w)})" for _s, _i, _w in _chain if _out(_c, _s, _i) != sorted(_w)]
+    # ...and nothing else on the true branch reaches `Format Web` first: walk every node reachable from
+    # `Public?`'s true output and refuse any edge into `Format Web` that does not leave `Public Verify`.
+    _seed = _out(_c, "Public?", 0)
+    if "Format Web" in _seed:
+        _wiring.append("bypass: Public? true -> Format Web without passing Public Verify")
+    _seen, _queue = set(), [_n for _n in _seed if _n != "Format Web"]
+    while _queue:
+        _n = _queue.pop()
+        if _n in _seen:
+            continue
+        _seen.add(_n)
+        for _i in range(len(((_c.get(_n) or {}).get("main") or []))):
+            for _t2 in _out(_c, _n, _i):
+                if _t2 == "Format Web" and _n != "Public Verify":
+                    _wiring.append(f"bypass: {_n} -> Format Web without passing Public Verify")
+                elif _t2 != "Format Web":
+                    _queue.append(_t2)
+    check("the Public Gate is wired on the web path: Web? -> Public? -> classify+index -> Redact -> Smooth -> Verify -> Format Web, with no bypass",
+          not _wiring, f"ship target {_ship_wid}: " + "; ".join(_wiring[:6]))
+    # 6. the module's own tests pass (the fail-closed path is one of them)
+    _t = subprocess.run(["node", "--test", os.path.join(os.path.dirname(__file__), "olivia_loop", "public_gate.test.mjs")], capture_output=True, text=True)
+    check("public_gate.js unit tests pass (redaction + leftover-name fail-closed)", _t.returncode == 0, _t.stderr[-300:])
 
     print()
     if failures:

@@ -2,6 +2,65 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-08 04:40Z · #169 SHIPPED — Millie web front door + Public mode · **prod `69665fc2` · web `1987a2e` + `1aad368` live**
+
+**Trigger (Andy):** the #169 session's second half — "i need to see chats locally with new design" → "find consensus"
+(shared-graph promote with the #174 session) → "finish the rest and report" (the third promote + the web merge ran on
+that) → live review: "1. we have text input issue 2. missing collapse side menu button 3. missing clear button" ·
+"lets switch ordr to MDS team / Public / stage /prod" · "whats with jumping nav?" · "also, make body 16px" · "can you
+release other agent so he can promote" · "stop messaging Digest Redesign his session is clsoed".
+
+**Shipped — workflow (`12wj6h1TWqb0d4Dq`), three promotes, all gate-green inside `olivia_wf.py promote`:**
+`f5e9ce5d` 02:16Z (door + Public Gate; one graph with #174 #175 #143 #139 #141 #142 #144, run by the #174 session on
+my AGREED) · `49d4a931` 03:14Z (fix round 4: partner rows back a name only from `name/web_summary/web_people/
+web_pricing`; three nodes moved — Public Redact, Public Verify, Classify Evidence jsonBody; run by the #174 session) ·
+**`69665fc2` 04:20Z (fix round 5, run by me): 4 nodes — Classify Evidence, Public Redact, Public Smooth, Public
+Verify; snapshots `prod_2026-09-08T042011Z_pre-promote` (49d4a931) / `…042017Z_post-promote`; bounce 200/200; graph
+matches staging `d5a370b6`.** Prod probes on `69665fc2`: secret-less POST → 403; test lane turn (14.0 s, 880 chars);
+Public lane turn 60 (40.6 s): 3 closed-source names → role phrases, 1 FB group link removed, 1 quote paraphrased, no
+refusal. Probe rows (asker `probe-169@mds.co`) deleted (14 rows over the night). Lock released.
+
+**Shipped — SQL (live on prod the moment applied, no snapshot):** `public_gate_name_index()` redefined
+(`scripts/sql/20260908_public_gate_name_index_orgs_169.sql`, `db/functions` mirror) — org rows out (`MDS %`, `% MDS`):
+5,394 → 5,384 names, 0 org rows, 51 non-ASCII.
+
+**Shipped — web (`mds-digest-web`):** merge `1987a2e` (branch `169-millie-web-20260907`, 12 commits: route + Ask
+Millie tool + Task 11 retirement + final-review fix + Andy's four UI fixes + per-thread Clear busy) live on Render
+04:23:47Z (`/api/version`); live checks: `/admin/ask-millie` anon 307 → login · `/admin/millie/chat` and
+`/admin/olivia/test` 307 → `/admin/ask-millie` · `/api/olivia/test-chat` 404 · `/api/admin/millie/chat` anon 403 (GET
+and POST). Then merge `1aad368` (branch `169-nav-fix-20260908`): picker row no longer wraps (Andy: "whats with jumping
+nav?"), message text 16px (Andy: "make body 16px") — deploy poll running at close. Tests 1,129/1,129; `next build`
+exit 0 at every merged head (built in a scratch worktree with an APFS-cloned `node_modules` — a symlinked
+`node_modules` trips Turbopack: "Symlink [project]/node_modules is invalid").
+
+**Reviews.** Whole-branch review of the web side (opus): With fixes → `"ok" in door` threw on a scalar body / passed
+`ok:false` as 200 (fixed a55c1cb), no build at HEAD (built), secret undocumented (`.env.local.example`). Whole-branch
+review of the workflow side (opus): **C1 `\b` is ASCII-only → 33 index names with a non-ASCII first/last character
+passed both the mask and the verify (fail-OPEN)**; I1 variants; I2 closed links never stripped; I3 seven `MDS *` org
+rows ("the MDS community" → "the a member"); I4 gate proved presence, not path. Fixed in 8 commits (8345626..7cda603
++ ebd5b1c): `boundedRe()` on all four sites, `normText`/`normName` (NFC + U+FE0F/U+200B–D/U+2060/U+FEFF) on both sides,
+name-shaped middle slot (`\p{Lu}` case-folds under `iu` — compiled without `i`), link pass wired into Redact/Verify,
+org-row SQL, gate check 5 (walks `connections`, forbids a `Format Web` bypass) + strict check 1 (401/403 only); re-review
+(opus): all ADDRESSED + R1/R2 fixed; module tests 15 → 41; gate 331 → **332/332 PASS**. The #174 session's independent
+repro sharpened C1: the evading set is names whose FIRST or LAST character is non-ASCII (23 live rows: leading accents,
+CJK, math-alphanumerics, Khmer/Arabic, a trailing U+FE0F).
+
+**Incidents.** (1) `python3 scripts/olivia_loop/apply_169_public_gate.py --help` RAN — no argparse; staging got the
+module early, under my lock, staging only; both #169 apply scripts now take `--dry-run DIR` / `--apply` and `--help`
+is inert (ebd5b1c). (2) Gate check 4 was RED (330/331) after the peer's promote because prod embedded the previous
+module; check 4 now judges the SHIP target (staging first) and reports prod informationally (1890e62) — so re-assert
+prod with a gate run after each promote. (3) Rebase avoided: `origin/main` moved 23 commits under the branch (docs +
+the #174 session's scripts); merged `origin/main` INTO the branch (cedcd0b), one conflict in the board's ticket table
+(kept #173 + main's LIVE rows).
+
+**Deferred (on the board):** partner founders over-masked when `web_people` lacks them · product names in the index
+("Hector AI") masked · CJK-in-CJK unbounded · chips say "other" for partner rows · Public latency 40–55 s (#173) ·
+cost AC unsummed · composer height on rail toggle · `isPendingHere` narrowing. **Still to prove:** Andy's first send
+from the live page (the web secret on Render).
+
+**Next:** #170 (thread memory) · #171 (Facebook public answer) · #172 (Team mode) — Andy's order was 1 Public chat
+(done) · 2 Facebook tool · 3 Team chat.
+
 ## 2026-09-08 03:14Z · SECOND PROMOTE — #169 fix round 4 · **prod `49d4a931`** (92 nodes)
 
 **Trigger:** the #169 session finished `public_gate.js` fix round 4 on staging `027bd776` and asked me to promote under Andy's

@@ -55,8 +55,10 @@ LOCK_PATH = os.path.join(REPO, ".olivia_wf.lock")
 GATE = os.path.join(REPO, "scripts", "olivia_leak_gate.py")
 
 PROD_ID = "12wj6h1TWqb0d4Dq"
-PROD_WEBHOOK_PATH = "olivia-wa-live"
-STAGING_WEBHOOK_PATH = "olivia-wa-staging"
+WEBHOOK_PATHS = {  # prod path : staging path — the TARGET's path always wins on a copy
+    "olivia-wa-live": "olivia-wa-staging",
+    "olivia-web-live": "olivia-web-staging",
+}
 STAGING_NAME = "Olivia WA — STAGING (test copy · Meta must never point here)"
 LOCK_TTL_MIN = 120
 
@@ -315,14 +317,44 @@ def cmd_diff(args):
 
 def apply_webhook_identity(graph, target_wf):
     """The TARGET's webhook path + webhookId always win — a graph can never carry
-    the live Meta path onto staging, or the staging path onto prod."""
+    the live Meta path onto staging, or the staging path onto prod.
+
+    Every entry in WEBHOOK_PATHS is handled identically, so a second webhook
+    (olivia-web-*) needs no branch of its own, only a second table row. A node
+    already present on the target (matched by name) always inherits the target's
+    OWN current path; the table is only consulted as a fallback — for a node the
+    target doesn't have yet (first-ever stage, or promoting a brand-new webhook).
+
+    The fallback resolves by testing the node's OWN current path for membership
+    on EITHER side of every WEBHOOK_PATHS pair, then taking that pair's
+    target-appropriate value. This must NOT be a single direction-locked dict
+    (prod path -> staging path, or its reverse, keyed on "the other side" only):
+    `rollback` always targets prod, but its source is a snapshot that is very
+    often ALSO prod-shaped (pre-promote/pre-rollback/post-promote snapshots all
+    carry -live paths already), so a node's current path can legitimately
+    already equal the resolved value. A direction-locked mapping would miss
+    that path entirely and fall through to a single shared default —
+    corrupting a second webhook's path into a collision with the first. A path
+    matching no pair at all is left exactly as it is; only a node with no path
+    whatsoever falls back to the WA pair's default (unchanged from before)."""
     live = {n["name"]: n for n in (target_wf.get("nodes") or [])
             if n["type"] == "n8n-nodes-base.webhook"}
-    fallback_path = STAGING_WEBHOOK_PATH if target_wf["id"] != PROD_ID else PROD_WEBHOOK_PATH
+    target_is_prod = target_wf["id"] == PROD_ID
+    # olivia-wa-* is the one pair every graph is guaranteed to carry (required on both
+    # prod and staging), so it is the last-resort default for a node with NO path at
+    # all — the web pair stays optional until its node exists
+    default_path = "olivia-wa-live" if target_is_prod else WEBHOOK_PATHS["olivia-wa-live"]
     for node in graph["nodes"]:
         if node["type"] != "n8n-nodes-base.webhook":
             continue
         twin = live.get(node["name"])
+        current_path = node["parameters"].get("path")
+        # membership on BOTH sides of every pair — not one direction-locked dict
+        matched = next((prod if target_is_prod else staging
+                         for prod, staging in WEBHOOK_PATHS.items()
+                         if current_path in (prod, staging)), None)
+        fallback_path = matched if matched is not None else (
+            current_path if current_path is not None else default_path)
         if twin:
             node["parameters"]["path"] = twin["parameters"].get("path", fallback_path)
             node["webhookId"] = twin.get("webhookId") or str(uuid.uuid4())
@@ -422,7 +454,11 @@ def cmd_stage(args):
         print(f"staging CREATED {created['id']} ({len(graph['nodes'])} nodes), inactive")
         print(f"activate it when you want to fire probes: "
               f"python3 scripts/olivia_wf.py activate --target staging")
-    print(f"staging webhook: {env('N8N_API_URL')}/webhook/{STAGING_WEBHOOK_PATH}")
+    base = env("N8N_API_URL")
+    staging_paths = sorted({n["parameters"].get("path") for n in graph["nodes"]
+                            if n["type"] == "n8n-nodes-base.webhook"})
+    for path in staging_paths:
+        print(f"staging webhook: {base}/webhook/{path}")
 
 
 def cmd_promote(args):

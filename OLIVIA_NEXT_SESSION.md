@@ -31,6 +31,34 @@ different keys, different rules, different sync clocks, and the alias bridge (`d
 consulted by `load_event_graph.py`. It gates the last unfixed half of #140. **Per the session protocol, present it and wait for
 Andy's go before starting.**
 
+## STATE 2026-09-08 04:40Z — #169 SHIPPED: prod `12wj6h1TWqb0d4Dq` = versionId `69665fc2` · web main `1987a2e` + `1aad368` live · branch `169-web-door-20260907` merged
+
+**What is live.** Millie's web front door (`Web Inbound (POST)`, header secret, same-request answer, rows in
+`digest.olivia_web_messages` under the staff email) and the Public Gate (classify → name index → redact → Haiku smooth
+→ verify → format) on prod `69665fc2`; the Ask Millie storefront tool at `digest.mds.co/admin/ask-millie` (sessions
+rail, MDS Team · Public | Staging · Prod, GATED strip, Clear); `/admin/millie/chat` and `/admin/olivia/test` forward
+there; the polling test chat is gone. Gate: `python3 scripts/olivia_leak_gate.py` → **332/332** (a 9-check #169
+section). Module: `node --test scripts/olivia_loop/public_gate.test.mjs` → 41/41.
+
+**Verify first (live, not the docs):** `python3 scripts/olivia_wf.py status` should show prod `69665fc2`, staging
+`d5a370b6`, no lock · a secret-less `POST https://mdsco.app.n8n.cloud/webhook/olivia-web-live` → 403 ·
+`curl -s https://digest.mds.co/api/version` contains `1aad368` (or later) · gate 332 PASS.
+
+**Open proof:** Andy's first send from the live page — it confirms `OLIVIA_WEB_SECRET` on Render (a 503 "web door not
+configured" means the env var is missing; the value is in `mds-digest-web/.env.local`, never in the repo).
+
+**Traps learned tonight (handbook §13):** a Postgres function is live on prod the moment it is applied (the name-index
+RPC change did not ride staging → promote; rollback = re-apply the old body) · `apply_169_*.py` now need `--apply`
+(a `--help` used to be a live write) · gate check 4 judges the SHIP target — run the gate once more after every
+promote to re-assert prod · never `--help` a script you have not read.
+
+**Deferred from #169 (on the board's close block):** partner founders over-masked when `web_people` lacks them ·
+product names in the name index ("Hector AI") masked as people · CJK name inside CJK prose unbounded · source chips say
+"other" for partner rows · Public latency 40–55 s → #173 · cost AC (metrics jsonb) unsummed.
+
+**Next ticket, Andy's order:** #171 · Public answer from the Facebook tool (delivery 2) — or #170 / #172 if he
+re-orders. Present NUMBER + NAME + STORY and wait for his go.
+
 ## STATE 2026-09-08 03:15Z — second promote: prod `12wj6h1TWqb0d4Dq` = versionId `49d4a931` (#169 fix round 4 on top of the eight tickets)
 The #169 session finished its module tightening on staging `027bd776` and asked for the promote (Andy's conditional go: "my go to promote if another agent agrees"). **Verified before writing to prod, not taken on trust:** prod→staging diff = THREE nodes (`Public Redact`, `Public Verify`, and `Classify Evidence (Supabase)` `params.jsonBody`, which carries the same fix inline) plus the webhook path/id fields that always differ; **every other node byte-identical**; my seven edits intact on staging; the change is a TIGHTENING (a partner row's public name may be backed only by `name`/`web_summary`/`web_people`/`web_pricing` — the partner's own crawled website — never by `reviews_sample`, `strength_note` or `fit_reason`, which are member text); `node --test scripts/olivia_loop/public_gate.test.mjs` 15 pass / 0 fail.
 **Promote 03:13–03:14Z:** gate GATE PASSED inside `olivia_wf.py promote` · snapshots `prod_2026-09-08T031444Z_pre-promote.json` (`f5e9ce5d`) and `prod_2026-09-08T031449Z_post-promote-169-fix4-20260908.json` · bounce 200/200 · **prod `49d4a931`, graph matches staging: True** · `PROMOTE_EXIT=0`. WA smoke after the bounce (5 turns, rows 65928–65937 deleted): all 200, lanes normal.

@@ -100,10 +100,11 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#166** | 🔲 Personas and Digest have no tool switcher — every other tool got the header grid button in #164; these two never render `ToolHeader` | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "166 is good, we can promote it")** — merge `b91f2a4`, confirmed live via `/api/version`; switcher in the Personas top bar and both Digest headers, `← All tools` link retired, 1–7 jumps with no storefront round trip; fixed on the way: dismiss layer shrunk to header height under `backdrop-filter`; 920 tests, `next build` exit 0; open call: two grid icons (switcher + Browse) in the Personas header |
 | **#167** | 🔟 Team pulse survey — the rating popup where every number but 10 runs away from your cursor; design pack approved on sight, logic (when to ask, where answers land) agreed | 🟡 S2 | M | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "if u r sure, lets promote")** — merge `41da9e7`, confirmed live via `/api/version` 02:14 local; once per person ever (wave `survey_key`), from the 2nd login after `SURVEY_STARTED_AT` 2026-09-07, card centred (`Popup align="center"`, opt-in), `?pulse=1` for `SURVEY_TESTER_EMAILS` only (default Andy), `is_test` rows excluded everywhere, Team pulse results popup on the storefront, Slack `#automation-tests`; 1047 tests, 22/22 mutations killed, e2e script 32/32, `next build` exit 0; table holds 6 rows, all Andy's tests. **Roster fix same night (Andy: "no, its only people who r using now, but we have team of 30"): M = `member_attributes.membership_status = 'Staff'` (30 rows), not the 17 `@mds.co` portal logins — merge `491a968`, live 02:24 local, storefront reads 0 OF 30.** **Second-day rule (Andy: "go"): merge `e2d933d`, live 12:42 local — asked on the 2nd distinct UTC day the person opens `/admin` since launch, visits recorded in new `digest.admin_survey_visits` (RLS on, service_role only), `member_sessions` no longer read; 1068 tests, e2e 45/45, mutation 4/4 classes killed** |
 | **#168** | 💬 Millie test chat back in the admin at a new address — `/admin/olivia/test` was retired by #164; component + API survived, only the page died | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 13:20 local** — merge `48851e7`, confirmed via `/api/version`; `/admin/millie/chat` as a Chat tab in the Millie tool, `/admin/olivia/test` 307 → the chat (checked on prod), anon 307, API 403 anon / 200 staff; 1068 tests, `next build` exit 0; not restyled to the kit (legacy Tailwind look kept) |
-| **#169** | 🚪 Millie web front door + Public mode — a real chat for staff (answer in the same request, own conversation table, real asker) and a Public mode whose answers may leave MDS: names only from public sources, notes on where each part came from | 🟡 S2 | L | staging first (`olivia-web` entry), gate +6 checks | 📝 **PLANNED 2026-09-07** — spec `docs/superpowers/specs/2026-09-07-millie-web-front-door-public-mode-design.md` (Andy: "go, write the plan") · plan `docs/superpowers/plans/2026-09-07-millie-web-front-door-public-mode.md`, 11 tasks: table → RPCs → tested gate module → `olivia_wf.py` → web door on staging → Public Gate on staging → 6 gate checks → API route → page → promote + docs → retire old route |
+| **#169** | 🚪 Millie web front door + Public mode — a real chat for staff (answer in the same request, own conversation table, real asker) and a Public mode whose answers may leave MDS: names only from public sources, notes on where each part came from | 🟡 S2 | L | staging first (`olivia-web` entry), gate +9 checks (323 → 332) | ✅ **SHIPPED 2026-09-08 (Andy: "finish the rest and report")** — workflow in three promotes: `f5e9ce5d` 02:16Z (door + Public Gate, one graph with #174 #175 #143 #139 #141 #142 #144) · `49d4a931` 03:14Z (partner rows back a name from the partner's own site only) · **`69665fc2` 04:20Z (hardened gate: unicode name boundaries, both-sides normalisation, variant + first-name masking, closed links stripped, org rows out of the name index, gate proves the Public path is wired)**; **web `mds-digest-web` main `1987a2e` live on Render 04:23:47Z** (Ask Millie storefront tool `/admin/ask-millie`; old chat URLs forward; polling chat deleted) + `1aad368` (picker stays put, 16px text, Andy's live review); prod probes: secret-less 403, test lane 14 s, Public lane 40.6 s with 3 names → roles + 1 FB link removed; gate 332/332; 41 module tests, 1,129 web tests · close block below |
 | **#170** | 🧠 Millie web chat — long thread memory + many chats: running Haiku summary per thread, a `web_thread_search` tool for exact recall, sidebar of past chats with New chat | 🟡 S2 | M | staging first | 📝 filed 2026-09-07 (Andy: "File it, will do") — after #169 |
 | **#171** | 📣 Public answer from the Facebook tool — for a post without an answer, generate a public-safe reply in a popup (Andy's design pending) | 🟡 S2 | M | n/a (web) + the #169 door | 📝 filed 2026-09-07 (Andy: "delivery 2: generate public answer from facebook tool") — after #169 |
 | **#172** | 🔓 Team chat — everything-access mode for staff (exact revenue, contacts, billing included) behind a huge disclaimer; new team-only SQL the gate proves WhatsApp can never reach | 🔴 S1 | L | staging first, gate | 📝 filed 2026-09-07 (Andy: "I need team mode to include all categories - everything. That's why we need a huge disclaimer" · "delivery 3: Team chat") — after #169 |
+| **#173** | 📡 Ask Millie — live source trail + token streaming: the design's "Reading WhatsApp channels · 38 chats ✓" steps and streamed answer text on one held request; needs a progress hook in the answer loop | 🟡 S2 | M | staging first | 📝 filed 2026-09-07 from the design pack README ("Streaming, not polling") — #169 ships an honest two-event stream (started · answer) first |
 | **#174** | 🎯 A named item from her own list is a drill-down, not a new search — "Tell me more about Alex Chiru video" after a four-video list re-planned as a fresh speaker search (Andy's case 1, prod turn 65490 / exec 137515) | 🔴 S1 | S | ✅ **proven on staging `2d875cb3`** — Andy's exact chain exec 137664 `offer_bind.mode:'drilldown'`, speaker-named 137633, title-named 137645, "yes" 137637 unchanged, gate EXIT 0 | ✅ **LIVE `49d4a931`** (promoted 02:16Z as `f5e9ce5d`, one graph with #169; `49d4a931` = + #169 fix round 4) |
 | **#175** | 🔗 The gate's link repair pins a URL to the wrong row — a bare, untitled link before the closing question on every video answer (Andy's case 1, execs 137508 / 137515) | 🟡 S2 | S | ✅ **proven on staging `2d875cb3`** — 14/14 unit on the live bytes, replay of execs 137508/137515 appends 0 (was 1 · 2), 0 appended links in 33 probe turns; lap 2 (the #1c event repair) proven on `c28fb532` | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
 | **#143** | 🔁 A follow-up binds to the wrong thing, or loses the thread — four guards: no echo-bind on a new question, a bare ordinal is a drill-down, a bold number is never an offer, a yes to nothing asks what they want; her own-words report offer reaches the ticket lane (bank C 6095/6349 + tonight's probes) | 🟡 S2 | S | ✅ **proven on staging `eb99c336`** — execs 137713 · 137716 · 137720 · 137739, rows 65655 · 65661; 45/45 unit; gate EXIT 0 | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
@@ -731,9 +732,19 @@ or something, ill give you the design").** Depends on #169's Public mode. Design
 public-safe reply for it in a popup — drawn from everything we hold, names only from public sources, notes on
 where each part came from — so that answering the group takes minutes and never leaks a closed source.
 
-**Acceptance (to firm up with the design).** 1. A control on unanswered posts opens a popup over the page (kit
-rule: never navigates away). 2. The popup calls the #169 door in Public mode with the post text as the question
-and shows answer + notes + Copy. 3. The generated answer is stored against the post id for later review. 4.
+**Design received 2026-09-07** (`~/Downloads/chats.zip` → `~/Downloads/chats_design/mds-admin-export/`, README
+"Facebook Group — draft an answer" + `Facebook Group.dc.html`): unanswered posts carry a **Draft answer** action in
+the last column; it opens a popup over the table with the post quoted on top, a Public / MDS Team target picker
+(Public by default), the same streaming trail as Ask Millie, then an editable draft, source chips and a source
+note. Actions: copy · mark answered · regenerate · open the question in Ask Millie. A deliberate "no confident
+answer" state for posts the record does not cover — it says so and suggests posting the question back to the group
+rather than inventing one.
+
+**Acceptance.** 1. Draft answer on unanswered posts opens a popup (kit rule: never navigates away), post quoted
+on top, Public preselected; MDS Team only once #172 ships. 2. The popup calls the #169 door with the post text as
+the question and shows the editable draft, source chips, source note and the GATED strip. 3. The draft is stored
+against the post id; mark answered flips the post's state; regenerate asks again; "open in Ask Millie" carries the
+question over. 4. The no-confident-answer state renders when the door returns a refusal or an honest miss. 5.
 Nothing is posted to Facebook by this ticket.
 
 ### #172 · Team chat — everything-access mode
@@ -756,6 +767,13 @@ filtered by the public-source rule on the way out.
 Anonymous, member and WhatsApp paths get nothing new (gate checks). 3. Disclaimer shown and acknowledged per
 session; every Team turn stored with asker email and mode. 4. `OLIVIA_SHAREABLE_FIELDS.md` gains a "Team mode"
 column documenting exactly what opens.
+
+**Design received 2026-09-07** (`Ask Millie.dc.html`): the MDS Team target shows a persistent amber notice —
+"Unrestricted — MDS team only. Reads closed WhatsApp groups, private call transcripts, member records and partner
+terms, and it will name people. Never paste it anywhere outside the team." — with an **I understand** button; the
+composer is locked ("Read the notice above, then acknowledge to start") until acknowledged once per session; the
+copy button reads **Copy (internal)**; the target belongs to the session, so switching target inside a session that
+already has answers starts a new session — one thread never mixes an unrestricted answer with a gated one.
 
 ### #169 · Millie web front door + Public mode
 
@@ -791,6 +809,51 @@ every turn lands in his real thread.
 
 **Out of scope.** Team mode + disclaimer (own ticket) · Facebook "answer this post" popup (design pending) ·
 `/api/olivia/ask` (iOS) migration · publishing from the page.
+
+**✅ CLOSED 2026-09-08 04:40Z — prod workflow `69665fc2` · web main `1987a2e` (+ `1aad368`) live on Render.**
+Andy: "finish the rest and report" (the third promote and the merge ran on that word).
+
+*Results.* Workflow: `Web Inbound (POST)` door behind the `X-Olivia-Web-Secret` header (403 without it) → the
+existing answer loop → `Format Web` → `Save Web` → `Web Response` in the same request, rows in
+`digest.olivia_web_messages` under the staff session's email, nothing to WhatsApp or `olivia_messages`. Public Gate:
+`Classify Evidence` (`public_gate_classify`: world-public = published partners + event public pages; unknown = closed) +
+`Fetch Name Index` (`public_gate_name_index`: 5,384 people, org rows excluded) → `Public Redact` → `Public Smooth`
+(Haiku) → `Public Verify` (refuses anything the mask should have caught) → `Format Web`. Module `public_gate.js`:
+unicode-aware boundaries, NFC + invisible-character normalisation on both sides, variant / ALL-CAPS / middle-initial /
+possessive / first-name masking, closed-link stripping, fail-closed verify — 41 tests. Web: Ask Millie storefront tool
+(`/admin/ask-millie`: sessions rail with Today / Yesterday / Earlier, MDS Team · Public | Staging · Prod picker, GATED
+strip with details, source chips, Copy, Clear with two-click confirm, per-thread in-flight so no double-send), route
+`/api/admin/millie/chat` (POST / GET / DELETE, staff-gated, asker = session, 504 on a door timeout, 502 on a bad door
+body), `/admin/millie/chat` and `/admin/olivia/test` forward there, `OliviaTestChat` + `/api/olivia/test-chat` deleted.
+
+*ACs.* 1 ✅ prod turn 60: answer in the same request (40.6 s), stored under the asker, no WA write (gate checks) ·
+2 ✅ staging turn 58: 8 partner sources public, 4 closed-source names → role phrases, 2 closed links removed, notes say
+what was paraphrased and from where · 3 ✅ a surviving unbacked name or closed link → refusal text (module tests + the
+Verify node simulation) · 4 ✅ gate 332/332 GATE PASSED (secret · no Meta send · no `olivia_messages` write · name
+gate · fail-closed · staff-only route · embed freshness on the ship target · Public path wired · strict 401/403) ·
+5 ⏳ cost — `metrics` jsonb is recorded per turn; not yet summed (one extra Haiku pass per Public answer; Public lane
+40–55 s, test lane 14–20 s).
+
+*Before → after.* Polling requests per answer ~10–48 → 1 · turns in Andy's WhatsApp thread per staff question 2 → 0 ·
+gate 323 → 332 · name index 5,394 → 5,384 (10 org rows out) · module tests 15 → 41 · web tests 1,068 → 1,129 ·
+fail-open name shapes in the index 23 → 0 (proven by tests: leading accent, CJK, math-alphanumerics, trailing U+FE0F,
+NFD).
+
+*Reviews caught (11 tasks, task reviews + two whole-branch reviews):* substring name backing ("Anna Lee" in "Arianna
+Leeman") · ASCII-only `\b` failing OPEN on 33 index rows · one-sided normalisation · closed links left in the body ·
+"MDS Community" mangled to "a member" · gate proving node presence, not the path · `respondToWebhook` 500 on the WA
+path · double-send on one thread · `"ok" in door` throwing on a scalar body and passing `ok:false` as 200 · global
+Clear busy flag.
+
+*Deferred (filed here, not blockers):* partner founders masked when `web_people` does not list them (over-mask) ·
+product names in the index ("Hector AI") masked as people · a CJK name inside CJK prose has no boundary · source chips
+say "other" for partner rows · Public latency (#173 streaming) · cost AC unsummed · `isPendingHere` type narrowing ·
+composer height not recomputed on rail toggle.
+
+*Traps written to the handbook (§13):* a Postgres function change is live on PROD the moment it is applied — no
+snapshot, rollback = re-apply the old body · apply scripts must take `--dry-run`/`--apply` (a `--help` on one of them
+mutated staging tonight) · gate check 4 judges the SHIP target, so re-assert prod with a gate run after every promote.
+Still to prove: Andy's first send from the live page (confirms the web secret on Render).
 
 ### #168 · Millie test chat back in the admin, at a new address
 
