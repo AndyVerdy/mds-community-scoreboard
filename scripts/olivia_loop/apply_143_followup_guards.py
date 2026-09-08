@@ -159,6 +159,16 @@ PR_TITLES_ONLY_REVERT = [
      "  } else {\n",
      "  } else {\n"),
 ]
+# "Did her last turn ask anything?" — a trailing question mark OR a statement-form offer on the last line
+# ("happy to share more about it if you'd like!", staging 65647): a yes to either has something to land on.
+PREP_ASKS_LINE = (
+    "  if (lastOlivia) {\n"
+    "    const _lt = String(lastOlivia.text || '').trim();\n"
+    "    const _ll = _lt.split(String.fromCharCode(10)).map(function (l) { return l.trim(); }).filter(Boolean).pop() || '';\n"
+    "    last_olivia_asks = /\\?\\s*$/.test(_lt)\n"
+    "      || /\\b(happy to|let me know if|just say|want me to|if you.?d like|if you want|shall i|should i|i can (pull|share|send|dig|get|open|flag|file))\\b/i.test(_ll);\n"
+    "  }"
+)
 PREP_CONTEXT_EDITS = [
     ("let last_olivia_intro_offer = false;",
      "let last_olivia_intro_offer = false;\n"
@@ -166,7 +176,7 @@ PREP_CONTEXT_EDITS = [
      "let last_olivia_asks = null;"),
     ("  last_olivia_intro_offer = !!(lastOlivia && INTRO_OFFER_RE.test(String(lastOlivia.text || '').trim()));",
      "  last_olivia_intro_offer = !!(lastOlivia && INTRO_OFFER_RE.test(String(lastOlivia.text || '').trim()));\n"
-     "  if (lastOlivia) { last_olivia_asks = /\\?\\s*$/.test(String(lastOlivia.text || '').trim()); }"),
+     + PREP_ASKS_LINE),
     ("last_olivia_intro_offer: last_olivia_intro_offer } }];",
      "last_olivia_intro_offer: last_olivia_intro_offer, last_olivia_asks: last_olivia_asks } }];"),
 ]
@@ -174,6 +184,10 @@ PREP_CONTEXT_EDITS = [
 # Upgrades: nodes that carry an earlier #143 cut of the detector get the current one (either anchor).
 UPGRADE = {
     "Plan Request": list(PR_NOTHING_PENDING) + list(PR_TITLES_ONLY_REVERT),
+    "Prep Context": [
+        ("  if (lastOlivia) { last_olivia_asks = /\\?\\s*$/.test(String(lastOlivia.text || '').trim()); }",
+         PREP_ASKS_LINE),
+    ],
     "Format Reply": [
         (r"""  if (last.toLowerCase().indexOf('open a ticket with the mds team') !== -1) { return true; }
   if (!/\?\s*$/.test(last)) { return false; }
