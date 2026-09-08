@@ -16,6 +16,25 @@ uses `responseMode: "lastNode"` (`responseData: "firstEntryJson"`), and the web 
 plain Code node, `Web Response`, after `Save Web (Supabase)` — `lastNode` mode answers the HTTP
 caller with that node's first output item JSON. No `respondToWebhook` node exists anywhere on the
 graph, so `WA Inbound (POST)` has nothing to trip on.
+
+Fix round 2 (2026-09-07): `FORMAT_WEB`'s `source_summary` block parsed each tool_result with a bare
+`JSON.parse`, which throws "Extra data" on EVERY real result — the retrieval layer appends a
+plain-text coverage sentence ("... never imply coverage past 2026-09-05.") AFTER the JSON array of
+rows, so the parse of the whole string always failed and `source_summary` was always `{}` (no
+source chips on the page). Confirmed on staging execution 137783. Now parses tolerantly: full
+parse first, then a retry on the slice from the first `[` to the LAST `]`, which leaves the
+trailing note outside. Same defect and same fix as `public_gate.js`'s `parseRows` (that module is
+NOT embedded in this node — `Format Web` is plain, standalone JS).
+
+IDEMPOTENT (fix round 2): this script used to be single-shot — it `extend()`ed its five nodes onto
+the graph unconditionally and asserted the pre-edit text of both nodes it patches, so a second run
+would have appended five duplicates (or died on an assertion). It now behaves like
+`apply_169_public_gate.py`: nodes are upserted BY EXACT NAME (existing ones updated in place, only
+genuinely new ones appended); the `Log Inbound` patch is skipped when its web block is already
+there instead of appending it twice; `Load Recent Turns`' url and `Eval (silent)?`'s true-output
+each accept both the pre-apply and the already-applied value; and `Web?`'s TRUE output is
+preserved when it already points somewhere (that is where `apply_169_public_gate.py` inserts
+`Public?` — this script must never rip the Public Gate back out of the graph).
 """
 import json, os, subprocess, sys, tempfile, time
 STAGING_ID = "bqHstPDi84uOhTCJ"
@@ -108,7 +127,16 @@ try {
     if (!m || m.role !== 'user' || !Array.isArray(m.content)) continue;
     for (const c of m.content) {
       if (!c || c.type !== 'tool_result') continue;
-      let rows = null; try { rows = JSON.parse(typeof c.content === 'string' ? c.content : JSON.stringify(c.content)); } catch (e) { rows = null; }
+      const raw = typeof c.content === 'string' ? c.content : JSON.stringify(c.content);
+      let rows = null;
+      try { rows = JSON.parse(raw); } catch (e) { rows = null; }
+      // Fix round 2 (#169, exec 137783): the rows are followed by a plain-text coverage note, so the
+      // parse above throws "Extra data" on every real tool_result and source_summary was always {}.
+      // Retry on the slice from the first '[' to the LAST ']' — the note sits outside it.
+      if (rows === null) {
+        const a = raw.indexOf('['), b = raw.lastIndexOf(']');
+        if (a >= 0 && b > a) { try { rows = JSON.parse(raw.slice(a, b + 1)); } catch (e) { rows = null; } }
+      }
       for (const r of (Array.isArray(rows) ? rows : [])) { const k = String((r && (r.source || r.kind)) || 'other'); source_summary[k] = (source_summary[k] || 0) + 1; }
     }
   }
@@ -170,10 +198,14 @@ def main():
     # staging graph 2026-09-07): id QHLDE4VHvm8jrVds, name "Supabase secret (digest mirror)". Match by exact name.
     sb = next(c for c in creds if c["type"] == "httpHeaderAuth" and c["name"] == "Supabase secret (digest mirror)")
 
+    # Idempotent (fix round 2): LOG_INBOUND_NEW starts WITH LOG_INBOUND_OLD, so a blind re-replace on
+    # an already-patched node would append the whole web block a second time. Skip when it's there.
     li = nodes["Log Inbound"]["parameters"]["jsCode"]
-    assert li.count(LOG_INBOUND_OLD) == 1, "Log Inbound anchor not unique"
-    nodes["Log Inbound"]["parameters"]["jsCode"] = li.replace(LOG_INBOUND_OLD, LOG_INBOUND_NEW)
-    assert nodes["Load Recent Turns"]["parameters"]["url"] == LRT_OLD, "Load Recent Turns url drifted — re-read it"
+    if LOG_INBOUND_NEW not in li:
+        assert li.count(LOG_INBOUND_OLD) == 1, "Log Inbound anchor not unique"
+        nodes["Log Inbound"]["parameters"]["jsCode"] = li.replace(LOG_INBOUND_OLD, LOG_INBOUND_NEW)
+    lrt = nodes["Load Recent Turns"]["parameters"]["url"]
+    assert lrt in (LRT_OLD, LRT_NEW), "Load Recent Turns url drifted — re-read it"
     nodes["Load Recent Turns"]["parameters"]["url"] = LRT_NEW
 
     for code in (nodes["Log Inbound"]["parameters"]["jsCode"], FORMAT_WEB, WEB_RESPONSE):
@@ -198,15 +230,32 @@ def main():
       {"name": "Web Response", "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [x0 + 1100, y0 + 200],
        "parameters": {"jsCode": WEB_RESPONSE}},
     ]
-    wf["nodes"].extend(new_nodes)
+    # ---- idempotent upsert by exact name: update in place if present, append only if truly new ----
+    by_name = {n["name"]: n for n in wf["nodes"]}
+    added, updated = [], []
+    for nd in new_nodes:
+        if nd["name"] in by_name:
+            by_name[nd["name"]].update(nd)
+            updated.append(nd["name"])
+        else:
+            wf["nodes"].append(nd)
+            by_name[nd["name"]] = nd
+            added.append(nd["name"])
+
     conn = wf["connections"]
     # web webhook feeds the same chain as the WA webhook (Log Inbound only — the raw-event/status/reaction
     # branches are WhatsApp-only and would misparse a web payload)
     conn["Web Inbound (POST)"] = {"main": [[{"node": "Log Inbound", "type": "main", "index": 0}]]}
     # Eval (silent)? true-output used to go straight to Save Conversation; it now goes through Web?
-    assert conn["Eval (silent)?"]["main"][0] == [{"node": "Save Conversation", "type": "main", "index": 0}], "Eval wiring drifted"
-    conn["Eval (silent)?"]["main"][0] = [{"node": "Web?", "type": "main", "index": 0}]
-    conn["Web?"] = {"main": [[{"node": "Format Web", "type": "main", "index": 0}],          # true  → web path (Task 6 inserts Public? before Format Web)
+    EVAL_PRE = [{"node": "Save Conversation", "type": "main", "index": 0}]
+    EVAL_POST = [{"node": "Web?", "type": "main", "index": 0}]
+    assert conn["Eval (silent)?"]["main"][0] in (EVAL_PRE, EVAL_POST), "Eval wiring drifted"
+    conn["Eval (silent)?"]["main"][0] = EVAL_POST
+    # Web?'s TRUE output: 'Format Web' on a fresh graph, but 'Public?' once apply_169_public_gate.py has
+    # run (Task 6 inserts the Public Gate between them). PRESERVE whatever is already wired there — this
+    # script must never rip the gate back out. Only the false branch is re-asserted unconditionally.
+    web_true = conn.get("Web?", {}).get("main", [[]])[0] or [{"node": "Format Web", "type": "main", "index": 0}]
+    conn["Web?"] = {"main": [web_true,
                              [{"node": "Save Conversation", "type": "main", "index": 0}]]}   # false → WhatsApp silent path as before
     conn["Format Web"] = {"main": [[{"node": "Save Web (Supabase)", "type": "main", "index": 0}]]}
     conn["Save Web (Supabase)"] = {"main": [[{"node": "Web Response", "type": "main", "index": 0}]]}
@@ -215,7 +264,7 @@ def main():
     body = {k: wf[k] for k in ("name", "nodes", "connections", "settings", "staticData") if k in wf}
     api("PUT", f"/workflows/{STAGING_ID}", body)
     api("POST", f"/workflows/{STAGING_ID}/deactivate"); time.sleep(1); api("POST", f"/workflows/{STAGING_ID}/activate")
-    print("staging updated + bounced: web door in place")
+    print(f"staging updated + bounced: web door in place ({len(wf['nodes'])} nodes) — added {added}, updated {updated}")
 
 if __name__ == "__main__":
     main()
