@@ -37,5 +37,25 @@ check('first-person pronouns never bind ("what did I post")', pronounSubject('wh
 check('a long message (17+ words) never binds', pronounSubject('What is his firearms business called and also tell me everything about the brands of everyone else in the group please', FRED), null);
 check('"their" after a people search with no single person -> null', pronounSubject('what is their revenue?', { op: 'member_match', params: { p_dims: ['band'] } }), null);
 
+// — lap 2 (staging b39b31ab, exec 137893, 2026-09-08 01:00Z): the router put "What is his firearms business
+// called?" on the MEMBER-CARD lane this time; the card has no firearms, his own posts do (content_items 103886
+// "TLO Outdoors", 104754 "outdoor hunting/firearm/tactical gear"), and she said "nothing on file". The carry
+// now covers the card lane too and narrows the raw search to the person plus the message's DISTINCTIVE words.
+// The raw search is full-text: generic words dilute the ranking (with [firearms, business, brand] his firearm
+// posts fell out of the top 40; with [firearms] alone the TLO Outdoors post ranks first).
+//
+//   pronounTopicTerms(rawText) -> the distinctive words to rank his items by (max 4), [] when none
+const m2 = src.match(/function pronounTopicTerms\(rawText\) \{[\s\S]*?\n\}/);
+if (!m2) { console.error('FAIL: pronounTopicTerms() not found in ' + src.length + '-char dump'); process.exit(1); }
+const pronounTopicTerms = new Function(m2[0] + '; return pronounTopicTerms;')();
+
+check('6500: "What is his firearms business called?" -> [firearms] (business/called are generic)', pronounTopicTerms('What is his firearms business called?'), ['firearms']);
+check('"Where is he based?" -> [] (nothing distinctive; the author scope alone carries it)', pronounTopicTerms('Where is he based?'), []);
+check('"Tell me about his TikTok agency" -> [tiktok, agency]', pronounTopicTerms('Tell me about his TikTok agency'), ['tiktok', 'agency']);
+check('"what did she post about paracord slings" -> [paracord, slings]', pronounTopicTerms('what did she post about paracord slings'), ['paracord', 'slings']);
+check('"What is his brand name?" -> [] (brand/name are generic)', pronounTopicTerms('What is his brand name?'), []);
+check('capped at 4 distinctive words', pronounTopicTerms('did he mention tariffs, freight, customs, duties, brokers and warehouses').length, 4);
+check('short and stop words never count ("is he in the NY chat?")', pronounTopicTerms('is he in the NY chat?'), []);
+
 console.log(pass + '/' + (pass + fail) + ' pass, ' + fail + ' fail');
 process.exit(fail ? 1 : 0);
