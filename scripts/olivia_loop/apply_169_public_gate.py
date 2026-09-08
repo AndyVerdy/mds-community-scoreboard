@@ -7,7 +7,9 @@ reads it via `$('Public Verify').isExecuted` (Task 5's `try{...}catch{}` guard) 
 turn skips this whole fork (`Public?` false -> straight to `Format Web`, exactly as it did before
 this script ever ran).
 
-  python3 scripts/olivia_loop/apply_169_public_gate.py            # edits STAGING, one bounce
+  python3 scripts/olivia_loop/apply_169_public_gate.py                 # dry run (default): computes + prints the patch, no write
+  python3 scripts/olivia_loop/apply_169_public_gate.py --dry-run DIR   # dry run, also writes DIR/staging_before.json + DIR/staging_after.json
+  python3 scripts/olivia_loop/apply_169_public_gate.py --apply         # edits STAGING, one bounce
 
 IDEMPOTENT: re-running this script GETs the graph fresh, and for each of the seven nodes below —
 by exact name — UPDATES its type/typeVersion/position/parameters/credentials IN PLACE if the node
@@ -69,7 +71,7 @@ FIX ROUND 1 (2026-09-07, task review): two defects found in review, both fixed h
   string so the check and the node parameter can never drift apart).
 See task-6-report.md's "Fix round 1" section for the live re-apply and probe trail.
 """
-import json, os, subprocess, sys, tempfile, time
+import argparse, json, os, subprocess, sys, tempfile, time
 
 STAGING_ID = "bqHstPDi84uOhTCJ"
 ENV = "/Users/Born/mds-digest-web/.env.local"
@@ -277,9 +279,20 @@ PUBLIC_IF_LEFTVALUE = "={{ String($('Log Inbound').first().json.mode || '') }}"
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="#169 Public Gate on STAGING — insert/refresh the public-gate node chain (see module docstring).")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--dry-run", metavar="DIR", default=None,
+                       help="compute the patched graph and print the summary; if DIR is given, also write "
+                            "DIR/staging_before.json and DIR/staging_after.json. Never writes to n8n. Default when no flag is given.")
+    mode.add_argument("--apply", action="store_true",
+                       help="PUT the patched graph to STAGING and bounce the workflow — the live write.")
+    args = parser.parse_args()
+
     wf = api("GET", f"/workflows/{STAGING_ID}")
     if not isinstance(wf, dict) or "nodes" not in wf:
         sys.exit(f"NEEDS_CONTEXT: GET /workflows/{STAGING_ID} did not return a graph: {str(wf)[:500]}")
+    before_json = json.dumps(wf, indent=2)
     nodes = {n["name"]: n for n in wf["nodes"]}
     conn = wf["connections"]
 
@@ -385,6 +398,19 @@ def main():
         sys.exit(f"NEEDS_CONTEXT: unexpected respondToWebhook node set after edit: {rtw} (expected only ['Respond Challenge'])")
 
     body = {k: wf[k] for k in ("name", "nodes", "connections", "settings", "staticData") if k in wf}
+
+    if not args.apply:
+        if args.dry_run:
+            os.makedirs(args.dry_run, exist_ok=True)
+            before_path = os.path.join(args.dry_run, "staging_before.json")
+            after_path = os.path.join(args.dry_run, "staging_after.json")
+            open(before_path, "w").write(before_json)
+            open(after_path, "w").write(json.dumps(body, indent=2))
+            print(f"  wrote {before_path}")
+            print(f"  wrote {after_path}")
+        print(f"DRY RUN — public gate in place ({len(wf['nodes'])} nodes) — added {added}, updated {updated} (staging NOT written, no bounce)")
+        return
+
     api("PUT", f"/workflows/{STAGING_ID}", body)
     bounce(STAGING_ID)
     print(f"staging updated + bounced: public gate in place ({len(wf['nodes'])} nodes) — added {added}, updated {updated}")

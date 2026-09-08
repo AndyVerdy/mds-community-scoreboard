@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """#169 web door on STAGING: second webhook feeding the same chain; Web? fork after Eval (silent)?.
-  python3 scripts/olivia_loop/apply_169_web_door.py            # edits STAGING, one bounce
+  python3 scripts/olivia_loop/apply_169_web_door.py                 # dry run (default): computes + prints the patch, no write
+  python3 scripts/olivia_loop/apply_169_web_door.py --dry-run DIR   # dry run, also writes DIR/staging_before.json + DIR/staging_after.json
+  python3 scripts/olivia_loop/apply_169_web_door.py --apply         # edits STAGING, one bounce
 
 Fix round 1 (2026-09-07): the first version of this script gave `Web Inbound (POST)`
 `responseMode: "responseNode"` and terminated the web branch in a `respondToWebhook`-type
@@ -36,7 +38,7 @@ each accept both the pre-apply and the already-applied value; and `Web?`'s TRUE 
 preserved when it already points somewhere (that is where `apply_169_public_gate.py` inserts
 `Public?` — this script must never rip the Public Gate back out of the graph).
 """
-import json, os, subprocess, sys, tempfile, time
+import argparse, json, os, subprocess, sys, tempfile, time
 STAGING_ID = "bqHstPDi84uOhTCJ"
 ENV = "/Users/Born/mds-digest-web/.env.local"
 PROBE_PHONE = "17866578153"   # retrieval principal for web turns until Team mode (#169 spec)
@@ -188,7 +190,18 @@ return [{ json: {
 """
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="#169 web door on STAGING — insert/refresh the web-door node chain (see module docstring).")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--dry-run", metavar="DIR", default=None,
+                       help="compute the patched graph and print the summary; if DIR is given, also write "
+                            "DIR/staging_before.json and DIR/staging_after.json. Never writes to n8n. Default when no flag is given.")
+    mode.add_argument("--apply", action="store_true",
+                       help="PUT the patched graph to STAGING and bounce the workflow — the live write.")
+    args = parser.parse_args()
+
     wf = api("GET", f"/workflows/{STAGING_ID}")
+    before_json = json.dumps(wf, indent=2)
     nodes = {n["name"]: n for n in wf["nodes"]}
     # header-auth credential id, by name
     creds = api("GET", "/credentials?limit=250").get("data", [])
@@ -262,6 +275,19 @@ def main():
     # Web Response is terminal — no connection leaves it. lastNode mode reads its first output item.
 
     body = {k: wf[k] for k in ("name", "nodes", "connections", "settings", "staticData") if k in wf}
+
+    if not args.apply:
+        if args.dry_run:
+            os.makedirs(args.dry_run, exist_ok=True)
+            before_path = os.path.join(args.dry_run, "staging_before.json")
+            after_path = os.path.join(args.dry_run, "staging_after.json")
+            open(before_path, "w").write(before_json)
+            open(after_path, "w").write(json.dumps(body, indent=2))
+            print(f"  wrote {before_path}")
+            print(f"  wrote {after_path}")
+        print(f"DRY RUN — web door in place ({len(wf['nodes'])} nodes) — added {added}, updated {updated} (staging NOT written, no bounce)")
+        return
+
     api("PUT", f"/workflows/{STAGING_ID}", body)
     api("POST", f"/workflows/{STAGING_ID}/deactivate"); time.sleep(1); api("POST", f"/workflows/{STAGING_ID}/activate")
     print(f"staging updated + bounced: web door in place ({len(wf['nodes'])} nodes) — added {added}, updated {updated}")
