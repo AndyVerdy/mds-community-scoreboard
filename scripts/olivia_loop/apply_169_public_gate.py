@@ -50,6 +50,24 @@ Redact` still reads both named upstream nodes directly (`$('Classify Evidence (S
 read) merged output — `Public Inputs` exists purely as a synchronization barrier, not a data source.
 This makes seven new nodes, not six: one `if` (`Public?`), one `merge` (`Public Inputs`), two
 `httpRequest`, two `code`. See task-6-report.md for the full empirical trail.
+
+FIX ROUND 1 (2026-09-07, task review): two defects found in review, both fixed here.
+  Important — `Fetch Name Index (Supabase)`'s pagination cap (`maxRequests`) was 10 (10,000 rows):
+  comfortably above today's 5,394 rows, but a hard cap all the same, and nothing asserted the
+  fetched count — if the index ever grew past it, this node would silently hand `Public Redact` a
+  truncated `names` list and reintroduce the exact silent-truncation failure this node exists to
+  prevent, just at a higher ceiling ("fails LOUD" was claimed in a comment but not actually
+  enforced anywhere). Fixed two ways: (1) raised `maxRequests` to 50 (50,000 rows of headroom); (2)
+  made the "fails loud" claim true — `Public Redact` now computes `index_incomplete` (the fetch
+  came back empty, or landed exactly on the cap on a clean 1000-row page boundary) and includes it
+  in its output; `Public Verify` now folds `red.index_incomplete === true` into `refused`, with its
+  own note ('Refused: the member name index was incomplete, so no name could be vouched for.') so a
+  truncated fetch fails the turn closed instead of silently under-masking.
+  Minor — the pre-flight `check_code`/`check_expr` calls covered five of the six embedded
+  expressions/code bodies but never the `Public?` IF-condition's own `leftValue` expression. Added a
+  sixth `check_expr` call for it (now `PUBLIC_IF_LEFTVALUE`, a named constant instead of an inline
+  string so the check and the node parameter can never drift apart).
+See task-6-report.md's "Fix round 1" section for the live re-apply and probe trail.
 """
 import json, os, subprocess, sys, tempfile, time
 
@@ -127,6 +145,16 @@ const draft = $('Gate Verdict').isExecuted
   : String(ap.answer_text || '');
 const classifyRows = $('Classify Evidence (Supabase)').all().map(i => i.json);
 const nameRows = $('Fetch Name Index (Supabase)').all().map(i => i.json);
+// Fail-closed guard (#169 review fix round 1): 'Fetch Name Index (Supabase)' pagination is bounded
+// (maxRequests: 50, 50,000 rows). In plain words: an index that comes back EMPTY (indistinguishable
+// here from a real outage — nobody being in the index looks the same as the fetch having failed),
+// or one that ends EXACTLY on that 50,000 cap on a clean 1000-row page boundary (every single page
+// came back full, so more members could exist just past the last page we fetched), both mean we
+// cannot vouch that a given name is truly absent from the index — only that it wasn't in the part
+// we saw. Either case must fail the turn CLOSED downstream (Public Verify reads this flag), never
+// silently under-mask.
+const INDEX_CAP = 50 * 1000;
+const index_incomplete = nameRows.length === 0 || (nameRows.length >= INDEX_CAP && nameRows.length % 1000 === 0);
 const classes = {};
 // Most-RESTRICTIVE wins when one key comes back in several rows (Task 2 review): any 'closed' row closes the key.
 for (const r of classifyRows) { if (r && r.key) classes[r.key] = (classes[r.key] === 'closed' || String(r.klass) !== 'public') ? 'closed' : 'public'; }
@@ -137,7 +165,7 @@ const backed = backedNames(ev.rows, classes, nameRows);
 const red = redact(draft, nameRows, backed);
 const closedSources = [...new Set(ev.rows.filter(r => rowClass(r, classes) === 'closed').map(r => r.source || 'text'))];
 const publicUrls = [...new Set(ev.rows.filter(r => r.url && rowClass(r, classes) === 'public').map(r => r.url))];
-return [{ json: { draft, text: red.text, removed: red.removed, backed: [...backed], classes, closed_sources: closedSources, public_urls: publicUrls, names: nameRows.map(n => n.name) } }];
+return [{ json: { draft, text: red.text, removed: red.removed, backed: [...backed], classes, closed_sources: closedSources, public_urls: publicUrls, names: nameRows.map(n => n.name), index_incomplete } }];
 """
 
 PUBLIC_SMOOTH_BODY = ("={{ JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 900, thinking: { type: 'disabled' }, "
@@ -162,7 +190,10 @@ const left = leftoverNames(smoothed, names, new Set(red.backed || []));
 const urlsIn = (red.text.match(/https?:\/\/\S+/g) || []);
 const urlsOut = (smoothed.match(/https?:\/\/\S+/g) || []);
 const newUrl = urlsOut.find(u => !urlsIn.includes(u));
-const refused = left.length > 0 || !!newUrl;
+// Fail-closed guard (#169 review fix round 1): red.index_incomplete (set by Public Redact) means the
+// name-index fetch was empty or landed exactly on its pagination cap — we cannot vouch that ANY name
+// is absent from it, so refuse regardless of what leftoverNames() happened to find in this draft.
+const refused = left.length > 0 || !!newUrl || red.index_incomplete === true;
 const text = refused
   ? 'I could not produce a public-safe version of this answer. The sources it rests on are closed, and a name or link from them would have leaked. Ask me the same thing in Test mode to read it internally.'
   : smoothed;
@@ -171,7 +202,12 @@ const text = refused
 const redactions = (red.removed || []).map(n => ({ kind: 'name', detail: n, replaced_with: 'a role phrase' }))
   .concat(urlsIn.filter(u => !urlsOut.includes(u)).map(u => ({ kind: 'link', detail: u, replaced_with: 'removed' })))
   .concat((red.closed_sources || []).map(s => ({ kind: 'quote', detail: s, replaced_with: 'paraphrased, no names' })));
-return [{ json: { text, notes: refused ? notes.concat(['Refused: a closed-source name or an unknown link survived the public pass.']) : notes,
+// index_incomplete is called out as its own, more specific note — a bad index is a different failure
+// than a name/link that slipped through the smoother — the other two reasons keep the original note.
+const refusalNote = red.index_incomplete === true
+  ? 'Refused: the member name index was incomplete, so no name could be vouched for.'
+  : 'Refused: a closed-source name or an unknown link survived the public pass.';
+return [{ json: { text, notes: refused ? notes.concat([refusalNote]) : notes,
                   sources: red.public_urls || [], evidence_classes: red.classes || {}, refused, removed: red.removed || [], leftover: left,
                   redactions } }];
 """
@@ -201,12 +237,28 @@ CLASSIFY_JSONBODY = ("={{ (() => { " + MOD_ONE_LINE + " const ev = extractEviden
 # incrementing a `Range` header by 1000 each page, stopping when a page comes back empty — n8n
 # accumulates every page's split-out items into one combined output (`$pageCount` starts at 0 per
 # n8n's own docs), giving `Public Redact` all 5,394 rows in the same `{name, kind}`-per-item shape
-# the brief's code already expects from `$('Fetch Name Index (Supabase)').all()`. `limitPagesFetched`
-# / `maxRequests: 10` is a defensive cap (10,000 rows) in case the index ever grows unexpectedly or
-# `responseIsEmpty` ever misfires, so a misconfiguration fails LOUD (an incomplete but bounded
-# fetch) rather than looping forever. Validated structurally with n8n-mcp `validate_node` (valid:
-# true, 0 errors) before ever being written to staging.
+# the brief's code already expects from `$('Fetch Name Index (Supabase)').all()`.
+#
+# FIX ROUND 1 (2026-09-07 review): `limitPagesFetched`/`maxRequests` is a HARD CAP on this fetch,
+# not a soft hint — the original `maxRequests: 10` (10,000 rows) comfortably covered today's 5,394
+# rows, but if the index ever grew past the cap, this node would silently hand `Public Redact` a
+# TRUNCATED `names` list, and any member past the last fetched page would never be checked by
+# `backedNames`/`redact`/`leftoverNames` — the exact silent-truncation failure this node exists to
+# prevent, just at a higher ceiling. The previous comment here claimed this "fails LOUD"; nothing
+# actually asserted the fetched count, so it did not. Raised to `maxRequests: 50` (50,000 rows of
+# headroom, ~9x today's size) AND made the claim true: `Public Redact` (below) now computes
+# `index_incomplete` from `nameRows.length` — true when the fetch came back EMPTY (indistinguishable
+# here from a real outage) or landed EXACTLY on the 50,000 cap on a clean 1000-row page boundary
+# (every page came back full, so more members could exist past the last page fetched) — and
+# `Public Verify` forces `refused: true` whenever that flag is set, with its own note. A truncated
+# fetch now fails the turn closed instead of silently under-masking. Validated structurally with
+# n8n-mcp `validate_node` (valid: true, 0 errors) before ever being written to staging.
 NAME_INDEX_RANGE_EXPR = "={{ ($pageCount * 1000) + '-' + ($pageCount * 1000 + 999) }}"
+
+# The `Public?` IF-node's own condition `leftValue` — named so the pre-flight `check_expr` call
+# below and the node's own `parameters` can never drift apart (#169 review fix round 1: this
+# expression previously had no syntax check at all).
+PUBLIC_IF_LEFTVALUE = "={{ String($('Log Inbound').first().json.mode || '') }}"
 
 
 def main():
@@ -239,6 +291,7 @@ def main():
     wx, wy = nodes["Web?"]["position"]
 
     # ---- pre-flight JS syntax checks (defense in depth; MOD_ONE_LINE's own check already ran at import time) ----
+    check_expr("Public? condition leftValue", PUBLIC_IF_LEFTVALUE)  # #169 review fix round 1: was uncovered
     check_code("Public Redact", PUBLIC_REDACT)
     check_code("Public Verify", PUBLIC_VERIFY)
     check_expr("Classify Evidence (Supabase) jsonBody", CLASSIFY_JSONBODY)
@@ -248,7 +301,7 @@ def main():
     new_nodes = [
         {"name": "Public?", "type": "n8n-nodes-base.if", "typeVersion": 2, "position": [wx + 220, wy - 200],
          "parameters": {"conditions": {"combinator": "and", "options": {"caseSensitive": True, "leftValue": "", "typeValidation": "loose", "version": 2},
-             "conditions": [{"id": "is_public", "leftValue": "={{ String($('Log Inbound').first().json.mode || '') }}", "operator": {"operation": "equals", "type": "string"}, "rightValue": "public"}]}, "options": {}}},
+             "conditions": [{"id": "is_public", "leftValue": PUBLIC_IF_LEFTVALUE, "operator": {"operation": "equals", "type": "string"}, "rightValue": "public"}]}, "options": {}}},
         {"name": "Classify Evidence (Supabase)", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [wx + 440, wy - 320],
          "alwaysOutputData": True,
          "parameters": {"method": "POST", "url": f"{SUPA}/rpc/public_gate_classify", "authentication": "genericCredentialType", "genericAuthType": "httpHeaderAuth",
@@ -265,7 +318,7 @@ def main():
                  "paginationMode": "updateAParameterInEachRequest",
                  "parameters": {"parameters": [{"type": "headers", "name": "Range", "value": NAME_INDEX_RANGE_EXPR}]},
                  "paginationCompleteWhen": "responseIsEmpty",
-                 "limitPagesFetched": True, "maxRequests": 10, "requestInterval": 0,
+                 "limitPagesFetched": True, "maxRequests": 50, "requestInterval": 0,  # #169 fix round 1: 10 -> 50 (50,000-row headroom)
              }}}}, "credentials": {"httpHeaderAuth": {"id": sb["id"], "name": sb["name"]}}},
         # Synchronization barrier, not a data source — Public Redact reads both httpRequest nodes
         # above by NAME, never through this node's own (irrelevant) merged output. Restores the node
