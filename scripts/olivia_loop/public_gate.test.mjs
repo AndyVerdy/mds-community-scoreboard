@@ -871,3 +871,36 @@ test('D4: the sweep stays affordable at index scale — 5,000 names over a real-
   assert.ok(ms < 1500, `backedNames + redact + leftoverNames took ${ms}ms at index scale (budget 1500ms) — `
     + 'this is what made the n8n Code-node runner go unresponsive on q9');
 });
+
+test('D1: an unbacked name never mangles a BACKED name that shares a token — surname included', () => {
+  // staging exec 138940: the index carries "Meredith Hudson"; the open group thread backs "Daniel
+  // Meredith". The first-name pass masked the token "Meredith" inside the backed name, and the
+  // answer published as "Daniel they tried ~15 tools".
+  const idx = [{ name: 'Daniel Meredith' }, { name: 'Meredith Hudson' }];
+  const backed = new Set(['Daniel Meredith']);
+  const r = pg.redact('Daniel Meredith tried about fifteen tools before landing on ClickUp.', idx, backed);
+  assert.equal(r.text, 'Daniel Meredith tried about fifteen tools before landing on ClickUp.');
+  assert.deepEqual(r.removed, []);
+  assert.deepEqual(pg.leftoverNames(r.text, idx, backed), []);
+});
+
+test('D1: the unbacked name itself is still masked in full, token-sharing or not', () => {
+  const idx = [{ name: 'Daniel Meredith' }, { name: 'Meredith Hudson' }];
+  const backed = new Set(['Daniel Meredith']);
+  const r = pg.redact('Meredith Hudson said it on the call, and Daniel Meredith posted it in the group.', idx, backed);
+  assert.ok(!r.text.includes('Hudson'), r.text);
+  assert.ok(r.text.includes('Daniel Meredith'), r.text);
+  assert.deepEqual(r.removed, ['Meredith Hudson']);
+  assert.deepEqual(pg.leftoverNames(r.text, idx, backed), []);
+});
+
+test('D1: a placeholder index row called "first last" does not mask the word "first"', () => {
+  // staging probe of q6: the live index carries a literal "first last" row, and its first-name pass
+  // published "you're not the they to get one of these letters".
+  const idx = [{ name: 'first last' }];
+  const draft = "You're not the first to get one of these letters, and it will not be the last.";
+  assert.equal(pg.redact(draft, idx, new Set()).text, draft);
+  assert.deepEqual(pg.leftoverNames(draft, idx, new Set()), []);
+  // the placeholder row's FULL form is still masked, so nothing fails open
+  assert.ok(!pg.redact('first last said so on the call.', idx, new Set()).text.includes('first last'));
+});

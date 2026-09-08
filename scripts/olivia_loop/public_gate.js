@@ -26,7 +26,14 @@ const ROLE_PHRASES = ['a member', 'a seller in the community', 'one of the speak
 
 // Capitalised English words that are also common first names — the first-name follow-up
 // pass in redact() skips these so it doesn't mangle an unrelated sentence-initial word.
+// 'First'/'Last' are here for the same reason and a different cause (#176, staging probe of q6): the
+// live index carries a placeholder row literally called "first last", whose first token then masked
+// the ordinary word — "you're not the first to get one of these letters" published as "you're not
+// the they to get one of these letters". The junk rows themselves belong in
+// digest.public_gate_name_index()'s exclusion list, the way the organisation rows already are; this
+// keeps the two commonest English words out of the first-name pass regardless.
 const COMMON_WORD_FIRST_NAMES = new Set([
+  'First', 'Last',
   'Ace', 'Amber', 'Angel', 'April', 'Austin', 'Autumn', 'Baron', 'Bear',
   'Bill', 'Blaze', 'Brook', 'Brooklyn', 'Buck', 'Carolina', 'Carter', 'Chance',
   'Chase', 'Chelsea', 'Chip', 'Christian', 'Cliff', 'Colt', 'Cooper', 'Crystal',
@@ -163,9 +170,17 @@ const COMMON_WORD_FIRST_NAMES_LC = new Set([...COMMON_WORD_FIRST_NAMES].map(s =>
 // form was the one form that leaked. Eligible = the first token of an UNBACKED index name, >= 4 chars,
 // not an ordinary English word (COMMON_WORD_FIRST_NAMES), and not shared with a BACKED name: masking
 // "Bryce" would garble the "Bryce Alderson" a public source entitles us to print (review M8).
+//
+// #176 D1 follow-up (staging exec 138940): "shared with a BACKED name" used to mean shared with its
+// FIRST token only, so an unbacked "Meredith Hudson" still masked the token "Meredith" wherever it
+// stood — including inside the backed "Daniel Meredith", which published as "Daniel they tried ~15
+// tools". A backed name is one an open group post entitles us to print; mangling its surname
+// defeats the whole point of backing it. Every token of a backed name is protected now, not just the
+// first. leftoverNames() shares this function, so the two passes still cannot disagree, and the FULL
+// unbacked name ("Meredith Hudson") is still masked by the full-name pass either way.
 function closedFirstNames(names, backed) {
   const backedFirst = new Set();
-  for (const b of backed) { const t = nameTokens(b)[0]; if (t) backedFirst.add(t.toLowerCase()); }
+  for (const b of backed) for (const t of nameTokens(b)) backedFirst.add(t.toLowerCase());
   const out = new Map();
   for (const n of names) {
     const nm = String((n && n.name != null ? n.name : n) || '').trim();

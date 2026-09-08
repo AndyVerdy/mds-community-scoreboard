@@ -188,7 +188,14 @@ PUBLIC_SMOOTH_BODY = ("={{ JSON.stringify({ model: 'claude-haiku-4-5-20251001', 
   # NOT the open internet — the old "outside a private community" framing pushed Haiku to strip and
   # generalise material the readers can already see for themselves. What it must still protect is
   # exact detail from a restricted room, which the CLOSED SOURCES notes below already say.
+  # #176 D1 (staging exec 138951): the old prompt said only that SOME names had already been replaced,
+  # and Haiku finished the job — a draft naming Betsy Johnson, Fabio HD, Greg Krakovskiy and Antonio
+  # Bindi off open group threads published as "one community member ... another member ... another
+  # seller". Every name still in the draft has already been vouched for by an open row; the smoother
+  # is told in as many words to keep it. `Public Verify` does not rely on the prompt: it discards the
+  # smoother's rewrite outright if a backed name went missing in it.
   "system: 'You edit a DRAFT for publication to the MDS member community — the readers are MDS members, not the general public. Some personal names were already replaced by role phrases (a member, a seller in the community, one of the speakers). "
+  "Every personal name STILL in the draft is one the sources allow us to print: keep every one of them, spelled exactly as in the draft. Never replace a name with \"a member\" or any other description, and never drop one. "
   "Rules: never add a fact, a name, a number or a link that is not in the draft; fix grammar broken by the replacements; keep every URL exactly; "
   "a \"[link removed]\" marker is deliberate — leave it exactly as it is, and never invent a URL in its place; keep the meaning. "
   "Then write NOTES: one short line per source class listed under CLOSED SOURCES, in plain words, e.g. \"From a closed WhatsApp chat, paraphrased, no names.\" or \"From a call recording, paraphrased.\" — and one line per public URL under PUBLIC SOURCES, e.g. \"Public: MDS Summit schedule page.\". "
@@ -220,6 +227,16 @@ const classes = red.classes || {};
 const draftUrls = extractUrls(red.text || '');
 
 let text = smoothed;
+// THE SMOOTHER MAY NOT DELETE A NAME EITHER (#176 D1, staging exec 138951). Public Redact left
+// Betsy Johnson, Fabio HD, Greg Krakovskiy and Antonio Bindi in the draft — every one of them backed
+// by an open group thread — and Haiku published "one community member ... another member ... another
+// seller". A name an open source entitles us to print is the whole point of the corrected Public
+// mode, so the polish pass does not get to remove one: if any backed name that WAS in the redacted
+// draft is missing from the rewrite, the rewrite is discarded and the redacted draft is published as
+// it stands. Deterministic — the prompt asks for the same thing, this does not depend on it.
+const hasName = (n, s) => boundedRe(escapeRe(normName(n)), 'i').test(String(s || ''));
+const droppedNames = (red.backed || []).filter(n => hasName(n, red.text) && !hasName(n, text));
+if (droppedNames.length > 0) text = red.text;
 let left = leftoverNames(text, names, backed);
 let leftLinks = closedUrls(text, classes);
 let newUrls = extractUrls(text).filter(u => draftUrls.indexOf(u) < 0);
@@ -269,7 +286,12 @@ const repairNote = 'Repaired after the public pass: '
   + [repaired_names.length ? repaired_names.length + ' name' + (repaired_names.length > 1 ? 's' : '') + ' masked' : null,
      repaired_links.length ? repaired_links.length + ' link' + (repaired_links.length > 1 ? 's' : '') + ' removed' : null]
     .filter(Boolean).join(', ') + '.';
-const allNotes = notes.concat(repaired && !refused ? [repairNote] : []).concat(refused ? [refusalNote] : []);
+const droppedNote = 'Kept the drafted wording: the polish pass had dropped ' + droppedNames.length
+  + ' member name' + (droppedNames.length > 1 ? 's' : '') + ' an open group source lets us print.';
+const allNotes = notes
+  .concat(droppedNames.length > 0 && !refused ? [droppedNote] : [])
+  .concat(repaired && !refused ? [repairNote] : [])
+  .concat(refused ? [refusalNote] : []);
 const removed = (red.removed || []).slice();
 for (const n of repaired_names) if (removed.indexOf(n) < 0) removed.push(n);
 return [{ json: { text, notes: allNotes,
