@@ -1,37 +1,46 @@
 #!/usr/bin/env python3
-"""#141 lap 2: the pronoun carry covers the member-card lane and ranks the person's items by the message's
-DISTINCTIVE words — apply to STAGING (on top of #141 + #144).
+"""#141 laps 2 + 3: the pronoun carry covers the member-card lane and ranks the person's items by the message's
+DISTINCTIVE words, never by their name — apply to STAGING (on top of #141 + #144).
 
-Found while proving the batch on staging b39b31ab (2026-09-08 01:00Z, exec 137893): this time the router put
-"What is his firearms business called?" on the MEMBER-CARD lane (`op: member_card`, `p_member: Fred McKinnon`),
-so the #141 carry (content_search only) never ran; the card has no firearms and the raw fetch searched his
-NAME as a term (20 items that mention him) — his own posts (content_items 103886 "TLO Outdoors", 104754
-"outdoor hunting/firearm/tactical gear") never came back and she said "nothing on file".
+Lap 2 (staging b39b31ab, exec 137893, 2026-09-08 01:00Z): the router put "What is his firearms business
+called?" on the MEMBER-CARD lane (`op: member_card`, `p_member: Fred McKinnon`), so the #141 carry (content_search
+only) never ran; the card has no firearms and the raw fetch searched his NAME as a term (20 items that mention
+him) — his own posts (content_items 103886 "TLO Outdoors", 104754 "outdoor hunting/firearm/tactical gear")
+never came back and she said "nothing on file".
 
-The raw search (`content_search_v2`) is full-text with an author filter: with `p_author` set, the rows that
-match the terms rank first and the rest of the person's items fill the limit. Terms decide the ranking —
-with [firearms, business, brand] his firearm posts fell out of the top 40; with [firearms] alone the TLO
-Outdoors post ranks first. So only the message's distinctive words go in.
+Lap 3 (staging b82f752e, exec 137951, 01:18Z): the carry ran on the content-search lane with raw p_terms
+["Fred McKinnon", "firearms", "fred"] — and the NAME as a term ranked forty comments that mention him above his
+own posts (which never contain his name), so the TLO Outdoors post sat past the preload's snippet cap and she
+still said "nothing points to firearms". With `p_author` set the name is the FILTER, never a ranking term.
 
-  Plan Request  pronounTopicTerms(rawText)   the distinctive words of the message (stop list + generic words
-                                              such as business / brand / called removed), max 4 — pure,
-                                              test_141_pronoun_subject.js runs it against this node's bytes.
-                CARRY (both return sites)     op content_search OR member_card, raw_op content_search:
-                                              raw p_author = the person, raw p_terms = [person] + distinctive
-                                              words (+ the router's own distinctive terms), p_limit ≥ 40,
-                                              default sources; the digest terms keep leading with the name
-                                              on the content_search lane (unchanged from #141).
+The raw search (`content_search_v2`) is full-text with an author scope: the rows that match the terms rank
+first and the rest of the person's items fill the limit; the preload shows the first five rows at 1,600 chars
+and the rest at 500 / 220. Terms decide what the model can see — with [firearms] alone the TLO Outdoors post
+ranks first and its "TLO Outdoors … hunting, firearm accessory, and tactical gear" sits inside the 1,600.
+
+  Plan Request  pronounTopicTerms(rawText)                the distinctive words of the message (stop list +
+                                                          generic words such as business / brand / called
+                                                          removed), max 4 — pure, test_141 runs it.
+                pronounRawTerms(who, rawText, routerTerms) the raw-search p_terms: distinctive words + the
+                                                          router's own distinctive terms, minus any piece of
+                                                          the person's name — pure, test_141 runs it.
+                CARRY (both return sites)                 op content_search OR member_card, raw_op content_search:
+                                                          raw p_author = the person, raw p_terms =
+                                                          pronounRawTerms(), p_limit ≥ 40, default sources;
+                                                          the digest terms keep leading with the name on the
+                                                          content_search lane (unchanged from #141).
 
   python3 scripts/olivia_loop/apply_141b_topic_carry.py --dry-run DIR
   python3 scripts/olivia_loop/apply_141b_topic_carry.py            # edits STAGING, one bounce
 
-Idempotent: skipped when the node already carries pronounTopicTerms(); requires the #141 CARRY (its anchor).
+Idempotent: skipped when the node already carries pronounRawTerms(); upgrades a node that carries the lap-2
+CARRY or the original #141 CARRY (both anchors known); requires #141 (`pronounSubject`).
 """
 import json, os, subprocess, sys, tempfile
 
 STAGING_ID = "bqHstPDi84uOhTCJ"
 ENV = "/Users/Born/mds-digest-web/.env.local"
-MARK = "pronounTopicTerms"
+MARK = "pronounRawTerms"
 NODE = "Plan Request"
 
 
@@ -57,7 +66,7 @@ def api(method, path, payload=None):
     return json.loads(r.stdout)
 
 
-FUNC = r"""// #141 lap 2 (exec 137893): the router put "What is his firearms business called?" on the member-card lane;
+FUNC_TOPIC = r"""// #141 lap 2 (exec 137893): the router put "What is his firearms business called?" on the member-card lane;
 // the card has no firearms, his own posts do. The raw search is full-text, so only the message's DISTINCTIVE
 // words rank his items (generic words such as business / brand / called dilute the ranking — with them his
 // firearm posts fell out of the top 40). Pure function; test_141_pronoun_subject.js runs it.
@@ -74,7 +83,26 @@ function pronounTopicTerms(rawText) {
 }
 """
 
-CARRY_OLD = (
+FUNC_RAW = r"""// #141 lap 3 (exec 137951): with p_author set the NAME is the filter, never a ranking term — as a term it
+// ranked forty comments that mention him above his own posts (which never contain his name), so the TLO
+// Outdoors post sat past the snippet cap. Raw p_terms carry the distinctive words only; the router's own
+// terms ride along minus generic words and pieces of the name. Pure function; test_141 runs it.
+function pronounRawTerms(who, rawText, routerTerms) {
+  const name = String(who || '').toLowerCase();
+  const out = pronounTopicTerms(rawText);
+  (Array.isArray(routerTerms) ? routerTerms : []).forEach(function (t) {
+    const s = String(t || '').trim();
+    const l = s.toLowerCase();
+    if (!s || out.length >= 6) { return; }
+    if (name.indexOf(l) !== -1) { return; }
+    if (!pronounTopicTerms(s).length) { return; }
+    if (out.indexOf(l) === -1 && out.indexOf(s) === -1) { out.push(s); }
+  });
+  return out;
+}
+"""
+
+CARRY_ORIG = (
     "// #141: a bare third-person follow-up keeps the previous plan's person — scope the raw search to them and\n"
     "// lead the digest terms with their name, so their own posts are in front of the model.\n"
     "try {\n"
@@ -89,7 +117,7 @@ CARRY_OLD = (
     "} catch (e) {}\n"
 )
 
-CARRY_NEW = (
+CARRY_LAP2 = (
     "// #141: a bare third-person follow-up keeps the previous plan's person — scope the raw search to them and\n"
     "// lead the digest terms with their name, so their own posts are in front of the model.\n"
     "// #141 lap 2 (exec 137893): the member-card lane too — the card has no \"firearms business\", his posts do.\n"
@@ -101,6 +129,29 @@ CARRY_NEW = (
     "    ((raw_params && Array.isArray(raw_params.p_terms)) ? raw_params.p_terms : []).forEach(function (t) {\n"
     "      if (_rt.length < 8 && pronounTopicTerms(t).length && _rt.indexOf(String(t)) === -1) { _rt.push(String(t)); }\n"
     "    });\n"
+    "    raw_params = Object.assign({}, raw_params || {}, { p_author: _pronounWho, p_terms: _rt,\n"
+    "      p_limit: Math.max(Number((raw_params || {}).p_limit) || 0, 40) });\n"
+    "    if (!Array.isArray(raw_params.p_sources) || !raw_params.p_sources.length) { raw_params.p_sources = ['fb_post', 'fb_comment', 'wa_message']; }\n"
+    "    if (op === 'content_search') {\n"
+    "      const _pt = Array.isArray(params.p_terms) ? params.p_terms.slice() : [];\n"
+    "      if (_pt.indexOf(_pronounWho) === -1) { _pt.unshift(_pronounWho); }\n"
+    "      params = Object.assign({}, params, { p_terms: _pt });\n"
+    "    }\n"
+    "    followup = true;\n"
+    "  }\n"
+    "} catch (e) {}\n"
+)
+
+CARRY_LAP3 = (
+    "// #141: a bare third-person follow-up keeps the previous plan's person — scope the raw search to them and\n"
+    "// lead the digest terms with their name, so their own posts are in front of the model.\n"
+    "// #141 lap 2 (exec 137893): the member-card lane too — the card has no \"firearms business\", his posts do.\n"
+    "// #141 lap 3 (exec 137951): with p_author set the name is the FILTER, never a ranking term — the raw\n"
+    "// search ranks the person's items by the message's DISTINCTIVE words only (pronounRawTerms()).\n"
+    "try {\n"
+    "  const _pronounWho = pronounSubject(rawText, ctx.prev_plan);\n"
+    "  if (_pronounWho && raw_op === 'content_search' && (op === 'content_search' || op === 'member_card')) {\n"
+    "    const _rt = pronounRawTerms(_pronounWho, rawText, (raw_params && raw_params.p_terms) || []);\n"
     "    raw_params = Object.assign({}, raw_params || {}, { p_author: _pronounWho, p_terms: _rt,\n"
     "      p_limit: Math.max(Number((raw_params || {}).p_limit) || 0, 40) });\n"
     "    if (!Array.isArray(raw_params.p_sources) || !raw_params.p_sources.length) { raw_params.p_sources = ['fb_post', 'fb_comment', 'wa_message']; }\n"
@@ -134,11 +185,15 @@ def patch_code(code):
     c = code.count(ANCHOR)
     if c != 1:
         sys.exit(f"ABORT {NODE}: expected 1 anchor, found {c}")
-    c = code.count(CARRY_OLD)
-    if c != 2:
-        sys.exit(f"ABORT {NODE}: expected the #141 CARRY at both return sites (2), found {c}")
-    code = code.replace(ANCHOR, FUNC + ANCHOR).replace(CARRY_OLD, CARRY_NEW)
-    return code, True
+    funcs = FUNC_RAW if "pronounTopicTerms" in code else FUNC_TOPIC + FUNC_RAW
+    for carry in (CARRY_LAP2, CARRY_ORIG):
+        n = code.count(carry)
+        if n == 2:
+            code = code.replace(ANCHOR, funcs + ANCHOR).replace(carry, CARRY_LAP3)
+            return code, True
+        if n != 0:
+            sys.exit(f"ABORT {NODE}: expected the CARRY at both return sites (2), found {n}")
+    sys.exit(f"ABORT {NODE}: neither the #141 CARRY nor its lap-2 form is present")
 
 
 def main():
@@ -156,7 +211,7 @@ def main():
         if not ok:
             sys.exit(f"ABORT {NODE}: node --check failed\n{err}")
         node["parameters"]["jsCode"] = code
-        print(f"  {NODE}: pronounTopicTerms() in, CARRY widened to the member-card lane (both return sites), node --check OK")
+        print(f"  {NODE}: pronounTopicTerms()/pronounRawTerms() in, CARRY at lap 3 (both return sites), node --check OK")
     else:
         print(f"  {NODE}: already carries {MARK}, skipped")
     if dry:

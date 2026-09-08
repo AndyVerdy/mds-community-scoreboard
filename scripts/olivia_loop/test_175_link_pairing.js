@@ -14,7 +14,7 @@
 //   linkCoverageUrls(evRaw, answerText) -> [url, ...]   the URLs the repair may append (max 3)
 const fs = require('fs');
 const src = fs.readFileSync(process.argv[2], 'utf8');
-const m = src.match(/function linkCoverageUrls\(evRaw, answerText\) \{[\s\S]*?\n\}/);
+const m = src.match(/function linkCoverageUrls\(evRaw, answerText(?:, askText)?\) \{[\s\S]*?\n\}/);
 if (!m) { console.error('FAIL: linkCoverageUrls() not found in ' + src.length + '-char dump'); process.exit(1); }
 const linkCoverageUrls = new Function(m[0] + '; return linkCoverageUrls;')();
 
@@ -102,6 +102,22 @@ check('#139: the nested web_people "name" never poses as the row name (Jane Doe 
 check('#139: a partner with no offer on file gets a plain "Name: page" line',
   linkCoverageUrls('[' + prow('Zainith', '', 'https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa3') + ']', 'Zainith came up too.'),
   ['Zainith: https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa3']);
+// — #139 lap 2 (staging b82f752e, exec 137957, 2026-09-08 01:19Z): a partner NAMED LIKE THE TOPIC. The directory
+// carries a partner called "TikTok Shop" (offer "TBA"); the draft says "TikTok Shop" in every sentence because
+// the member ASKED about TikTok Shop, so "TikTok Shop (TBA): …" was appended under a list of five agencies.
+// A partner name the member typed themselves is the subject of the question, not a recommendation.
+const P_TTS = 'https://app.mds.co/partners/aaaaaaaaaaaaaaaaaaaaaaa4';
+const EV_P2 = '[' + prow('TikTok Shop', 'TBA', P_TTS) + ',' + prow('Media Labs', '15% OFF first 3 months', P_MEDIA) + ']';
+const ASK = 'Which MDS partner agencies handle TikTok Shop, and what\'s the deal?';
+check('#139 lap 2: a partner named like the member\'s own question is never appended (the agency still is)',
+  linkCoverageUrls(EV_P2, 'For TikTok Shop management, Media Labs is the one members mention.', ASK),
+  ['Media Labs (15% OFF first 3 months): ' + P_MEDIA]);
+check('#139 lap 2: without the member text the old behaviour stands (both named, both appended)',
+  linkCoverageUrls(EV_P2, 'For TikTok Shop management, Media Labs is the one members mention.'),
+  ['TikTok Shop (TBA): ' + P_TTS, 'Media Labs (15% OFF first 3 months): ' + P_MEDIA]);
+check('#139 lap 2: a partner the member did NOT type is still repaired when the draft names it',
+  linkCoverageUrls(EV_P2, 'Media Labs came up.', 'who should I use for my creator program?'),
+  ['Media Labs (15% OFF first 3 months): ' + P_MEDIA]);
 
 // ───────── #175 lap 2 (staging b39b31ab, execs 137901 / 137902, 2026-09-08): the #1c FIELD repair ─────────
 // The #1c repair (registration_url / event_url) appended a row's event_url when the draft already carried the

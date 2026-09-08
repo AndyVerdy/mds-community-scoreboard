@@ -36,7 +36,7 @@ def load(name):
 PLAN = [
     # lap 2 (found on staging b39b31ab, 2026-09-08 01:00Z): #175b (the #1c event repair) and #141b (the
     # pronoun carry on the member-card lane) ride the same runner — each patch_code() skips on its own marker.
-    ("Gate Verdict", ["apply_139_partner_link_repair", "apply_142_identity_precision", "apply_175b_event_repair_precision"], "Gate_Verdict.js"),
+    ("Gate Verdict", ["apply_139_partner_link_repair", "apply_142_identity_precision", "apply_175b_event_repair_precision", "apply_139b_partner_ask_guard"], "Gate_Verdict.js"),
     ("Plan Request", ["apply_141_pronoun_subject", "apply_144_events_lane_carry", "apply_141b_topic_carry"], "Plan_Request.js"),
 ]
 

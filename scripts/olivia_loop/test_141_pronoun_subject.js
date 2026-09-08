@@ -57,5 +57,21 @@ check('"What is his brand name?" -> [] (brand/name are generic)', pronounTopicTe
 check('capped at 4 distinctive words', pronounTopicTerms('did he mention tariffs, freight, customs, duties, brokers and warehouses').length, 4);
 check('short and stop words never count ("is he in the NY chat?")', pronounTopicTerms('is he in the NY chat?'), []);
 
+// — lap 3 (staging b82f752e, exec 137951, 2026-09-08 01:18Z): the carry ran on the content-search lane with raw
+// p_terms ["Fred McKinnon", "firearms", "fred"] — and the person's NAME as a term ranked forty comments that
+// mention him above his own posts (which never contain his name), so the TLO Outdoors post sat past the
+// snippet cap and she said "nothing points to firearms". With p_author set, the name is the filter, never a
+// ranking term: raw p_terms carry the distinctive words only (the router's own terms too, minus name pieces).
+//
+//   pronounRawTerms(who, rawText, routerTerms) -> the raw-search p_terms (no name pieces, distinctive only)
+const m3 = src.match(/function pronounRawTerms\(who, rawText, routerTerms\) \{[\s\S]*?\n\}/);
+if (!m3) { console.error('FAIL: pronounRawTerms() not found in ' + src.length + '-char dump'); process.exit(1); }
+const pronounRawTerms = new Function(m2[0] + '\n' + m3[0] + '; return pronounRawTerms;')();
+
+check('6500 lap 3: ["Fred McKinnon", "firearms", "fred"] from the router -> [firearms] (name pieces out)', pronounRawTerms('Fred McKinnon', 'What is his firearms business called?', ['Fred McKinnon', 'firearms', 'fred']), ['firearms']);
+check('the member-card lane\'s ["Fred McKinnon"] -> [] (author scope alone, ranked by recency)', pronounRawTerms('Fred McKinnon', 'Where is he based?', ['Fred McKinnon']), []);
+check('the router\'s distinctive term is kept, its generic one dropped', pronounRawTerms('Ryan Ebel', 'what did she post about paracord slings', ['paracord', 'business', 'ebel']), ['paracord', 'slings']);
+check('a last name alone never becomes a term ("mckinnon")', pronounRawTerms('Fred McKinnon', 'what does he sell?', ['mckinnon', 'sell']), []);
+
 console.log(pass + '/' + (pass + fail) + ' pass, ' + fail + ' fail');
 process.exit(fail ? 1 : 0);
