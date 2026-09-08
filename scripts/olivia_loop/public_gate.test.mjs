@@ -504,6 +504,77 @@ test('#176: a source the classifier never classified is still closed — unknown
                    ['https://example.com/whatever']);
 });
 
+// ============================================================================================
+// #176 D1 — AN OPEN POST'S AUTHOR BACKS THEIR OWN NAME. Found by the 30-probe eval (2026-09-08):
+// q10's public answer masked eight members — Daniel Meredith, Dimitri Vorona, Ben Anderson,
+// Travis Reese, Jason Pratt, Richard Lo, Ryan Carey, Claude Jeanloz — that the same question
+// answered ungated named freely off the same open group threads. A poster's name is not in the
+// body of what they wrote; it lives in the row's author/speaker metadata (`meta.author_name` on a
+// content_search row, `author` on an fb_thread row, `speakers` on a library row, `author` inside a
+// partner's `reviews_sample`). Those fields now back a name — for an OPEN row only.
+// ============================================================================================
+
+test('D1: the author of an open Facebook post backs their own name, even when the body never says it', () => {
+  const raw = JSON.stringify([
+    { source: 'fb_post', kind: 'post', source_id: '26794200516923429', url: FB_POST_URL,
+      body: 'Asking for some wisdom from the group about systems and tools.',
+      meta: { has_image: false, author_name: 'Jonathan Jewett', sender_member: 'recN0ejwtEsNEGrvu' } },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.ok(ev.rows[0].authors.includes('Jonathan Jewett'), JSON.stringify(ev.rows[0].authors));
+  const backed = pg.backedNames(ev.rows, { [FB_POST_URL]: 'public' }, names);
+  assert.ok(backed.has('Jonathan Jewett'));
+  const r = pg.redact('Jonathan Jewett asked almost this exact question.', names, backed);
+  assert.ok(r.text.includes('Jonathan Jewett'), r.text);
+  assert.deepEqual(r.removed, []);
+});
+
+test('D1: the author of a CLOSED row does not back their name — the room is what decides', () => {
+  const raw = JSON.stringify([
+    { source: 'wa_message', source_id: 'OsvNzPN5RzkBbQ', url: WA_INVITE,
+      body: 'my 3PL raised rates 12% in March',
+      meta: { author_name: 'Jonathan Jewett', chat_name: '#logistics' } },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.ok(ev.rows[0].authors.includes('Jonathan Jewett'));
+  const backed = pg.backedNames(ev.rows, { [WA_INVITE]: 'closed' }, names);
+  assert.equal(backed.size, 0);
+  const r = pg.redact('Jonathan Jewett said his 3PL raised rates.', names, backed);
+  assert.ok(!/Jonathan|Jewett/.test(r.text), r.text);
+});
+
+test('D1: an fb_thread row carries its author top-level, and that backs the name too', () => {
+  const raw = JSON.stringify([
+    { kind: 'comment', author: 'Bryce Alderson', body: 'We run Slack plus ClickUp.',
+      url: FB_POST_URL + '?comment_id=24609783842031785', post_id: '26794200516923429' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  const classes = { [FB_POST_URL + '?comment_id=24609783842031785']: 'public' };
+  assert.ok(pg.backedNames(ev.rows, classes, names).has('Bryce Alderson'));
+});
+
+test('D1: a library row backs the names of its speakers', () => {
+  const raw = JSON.stringify([
+    { title: 'Mogul Call: running two businesses on ClickUp', speakers: ['Jonathan Jewett'],
+      url: 'https://app.mds.co/videos/library-entry', description_snippet: 'How the workspace is laid out.' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.ok(ev.rows[0].authors.includes('Jonathan Jewett'), JSON.stringify(ev.rows[0].authors));
+  assert.ok(pg.backedNames(ev.rows, { 'https://app.mds.co/videos/library-entry': 'public' }, names)
+              .has('Jonathan Jewett'));
+});
+
+test('D1: an author-shaped field does NOT widen what a partner row backs — fit_reason still cannot', () => {
+  const raw = JSON.stringify([
+    { name: 'Prosperlytics Consultants', partner_url: 'https://app.mds.co/partners/p1',
+      web_summary: 'Bookkeeping for sellers.',
+      fit_reason: 'Bryce Alderson rated them well on a call',
+      strength_note: 'Jonathan Jewett keeps recommending them' },
+  ]);
+  const ev = pg.extractEvidenceRows(toolResult(raw));
+  assert.equal(pg.backedNames(ev.rows, { 'https://app.mds.co/partners/p1': 'public' }, names).size, 0);
+});
+
 test('#176: open and restricted rows in the SAME turn split — the group name prints, the call name does not', () => {
   const raw = JSON.stringify([
     { source: 'fb_post', source_id: '27179812468362230', url: FB_POST_URL,

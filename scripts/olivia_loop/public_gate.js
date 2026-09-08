@@ -191,6 +191,47 @@ function rowUrls(row) {
   return out;
 }
 
+// WHO WROTE THE ROW (#176 D1). A poster's name is not in the body of what they wrote — it is in the
+// row's author/speaker metadata, and `backedNames` only ever searched the body. Measured on the
+// 2026-09-08 eval: q10's public answer masked eight members (Daniel Meredith, Dimitri Vorona, Ben
+// Anderson, Travis Reese, Jason Pratt, Richard Lo, Ryan Carey, Claude Jeanloz) that the ungated
+// answer named freely off the same open group threads, because every one of them was the AUTHOR of
+// the post/comment cited, never a name inside it. These keys are collected per row and — for an
+// OPEN row only — back a name exactly as the body does.
+//
+// This is a WHITELIST on purpose, not a sweep of every string on the row. A partner row's
+// `fit_reason`/`strength_note` are derived from digest.entity_dossier (aggregated across content,
+// transcripts included), so their provenance is not one identifiable open source and they must keep
+// backing nothing (see the partner-row comment in extractEvidenceRows below).
+const AUTHOR_KEYS = ['author', 'author_name', 'authored_by', 'speaker', 'speakers', 'speaker_names',
+                     'member', 'member_name', 'members_named', 'from', 'from_name', 'sender',
+                     'sender_name', 'post_author', 'posted_by', 'commenter', 'full_name',
+                     'display_name', 'host', 'hosts', 'name'];
+
+function pushWho(out, v, depth) {
+  if (v == null) return;
+  if (typeof v === 'string') { const s = v.trim(); if (s && s.length < 120) out.push(s); return; }
+  if (Array.isArray(v)) { for (const x of v) pushWho(out, x, depth); return; }
+  // one level of nesting: web_people/[{name, role}], reviews_sample/[{author, text}]
+  if (typeof v === 'object' && depth > 0) {
+    for (const k of AUTHOR_KEYS) if (v[k] !== undefined) pushWho(out, v[k], depth - 1);
+  }
+}
+
+// Every author-shaped value on a row: top-level, one level inside `meta` (content_search puts
+// author_name/sender_name/post_author there), and inside the two list-of-people fields an open
+// partner listing carries (web_people, reviews_sample).
+function rowAuthors(r) {
+  const out = [];
+  for (const k of AUTHOR_KEYS) if (r[k] !== undefined) pushWho(out, r[k], 1);
+  const meta = r.meta;
+  if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
+    for (const k of AUTHOR_KEYS) if (meta[k] !== undefined) pushWho(out, meta[k], 1);
+  }
+  for (const k of ['web_people', 'reviews_sample']) if (r[k] !== undefined) pushWho(out, r[k], 1);
+  return [...new Set(out)];
+}
+
 function extractEvidenceRows(messages) {
   const rows = [], urls = new Set(), source_ids = new Set();
   for (const m of Array.isArray(messages) ? messages : []) {
@@ -199,7 +240,7 @@ function extractEvidenceRows(messages) {
       if (!c || c.type !== 'tool_result') continue;
       const raw = typeof c.content === 'string' ? c.content : JSON.stringify(c.content);
       const parsed = parseRows(raw);
-      if (parsed === null) { rows.push({ source: 'text', source_id: null, url: null, text: raw }); continue; }
+      if (parsed === null) { rows.push({ source: 'text', source_id: null, url: null, text: raw, authors: [] }); continue; }
       const list = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.rows) ? parsed.rows : []);
       for (const r of list) {
         if (!r || typeof r !== 'object') continue;
@@ -229,7 +270,8 @@ function extractEvidenceRows(messages) {
           ? JSON.stringify({ name: r.name, web_summary: r.web_summary, web_people: r.web_people,
                              web_pricing: r.web_pricing, reviews_sample: r.reviews_sample })
           : JSON.stringify(r);
-        rows.push({ source: r.source || null, source_id: sid, url: url ? String(url) : null, text });
+        rows.push({ source: r.source || null, source_id: sid, url: url ? String(url) : null, text,
+                    authors: rowAuthors(r) });
       }
     }
   }
@@ -243,17 +285,29 @@ function rowClass(row, classes) {
   return byUrl === 'public' || bySid === 'public' ? 'public' : 'closed';
 }
 
-function backedNames(rows, classes, names) {
-  const backed = new Set();
-  for (const row of rows) {
-    if (rowClass(row, classes) !== 'public') continue;
-    const text = String(row.text || '').normalize('NFC');
+// Every index name that appears verbatim (exact spelling, any case) in any of `haystacks`.
+// Split out of backedNames() so the open-row bodies and the open-row author metadata run through
+// one matcher, and so the pre-filter that keeps this affordable lives in one place (#176 D4).
+function matchNamesIn(haystacks, names, backed) {
+  for (const hay of haystacks) {
     for (const n of names) {
-      const nm = String(n.name || '').trim();
-      if (nm && boundedRe(escapeRe(normName(nm)), 'i').test(text)) backed.add(nm);
+      const nm = String((n && n.name != null ? n.name : n) || '').trim();
+      if (nm && !backed.has(nm) && boundedRe(escapeRe(normName(nm)), 'i').test(hay)) backed.add(nm);
     }
   }
   return backed;
+}
+
+function backedNames(rows, classes, names) {
+  const backed = new Set();
+  // #176 D1: an OPEN row's own author/speaker metadata backs that name as surely as its body does —
+  // the poster's name is never inside the post. A closed row's authors are not searched at all: the
+  // `rowClass(...) !== 'public'` skip above this line is the only thing that decides.
+  const open = rows.filter(row => rowClass(row, classes) === 'public')
+                   .map(row => String(row.text || '').normalize('NFC')
+                        + '   ' + (row.authors || []).map(a => normName(a)).join('   '));
+  if (!open.length) return backed;
+  return matchNamesIn(open, names, backed);
 }
 
 // Links (#169 review I2). redact() masked names but never removed a link, and Public Verify only ever
