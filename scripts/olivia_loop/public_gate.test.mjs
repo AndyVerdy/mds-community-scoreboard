@@ -904,3 +904,31 @@ test('D1: a placeholder index row called "first last" does not mask the word "fi
   // the placeholder row's FULL form is still masked, so nothing fails open
   assert.ok(!pg.redact('first last said so on the call.', idx, new Set()).text.includes('first last'));
 });
+
+test('D1: a first name followed by a surname is somebody ELSE - it is not mangled', () => {
+  // staging probes of q9: the index carries "Antonio Sanchez" and "Mayank Yadav 23frqw2e4"; the
+  // group thread named Antonio Bindi and the call named Mayank Sharma, and the lone-token pass
+  // published "they Bindi echoed this" and "they Sharma of Returnstack".
+  const idx = [{ name: 'Antonio Sanchez' }, { name: 'Mayank Yadav 23frqw2e4' }];
+  const draft = 'Antonio Bindi echoed this, and Mayank Sharma of Returnstack covered it on the call.';
+  assert.equal(pg.redact(draft, idx, new Set()).text, draft);
+  assert.deepEqual(pg.leftoverNames(draft, idx, new Set()), []);
+});
+
+test('D1: the index name itself still masks, in full and standing alone', () => {
+  const idx = [{ name: 'Antonio Sanchez' }];
+  const full = pg.redact('Antonio Sanchez said it on the call.', idx, new Set());
+  assert.ok(!/Antonio|Sanchez/.test(full.text), full.text);
+  const lone = pg.redact('Later Antonio added that margins doubled.', idx, new Set());
+  assert.ok(!/Antonio/.test(lone.text), lone.text);
+  assert.deepEqual(pg.leftoverNames('Later Antonio added that margins doubled.', idx, new Set()), ['Antonio Sanchez']);
+  // a single initial is not a surname, so an abbreviated form is still masked
+  assert.ok(!/Antonio/.test(pg.redact('Antonio S. said it.', idx, new Set()).text));
+});
+
+test('D1: "Claude" the model is not masked by "Claude Jeanloz" the member', () => {
+  const idx = [{ name: 'Claude Jeanloz' }];
+  const draft = 'He runs two businesses via Claude plus ClickUp, with a morning briefing automation.';
+  assert.equal(pg.redact(draft, idx, new Set()).text, draft);
+  assert.ok(!pg.redact('Claude Jeanloz said it on the call.', idx, new Set()).text.includes('Jeanloz'));
+});

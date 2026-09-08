@@ -34,6 +34,11 @@ const ROLE_PHRASES = ['a member', 'a seller in the community', 'one of the speak
 // keeps the two commonest English words out of the first-name pass regardless.
 const COMMON_WORD_FIRST_NAMES = new Set([
   'First', 'Last',
+  // 'Claude' is a real member first name AND the name of the model that writes these answers, so the
+  // lone-token pass turned "running two businesses via Claude + ClickUp" into "via they + ClickUp"
+  // (staging probe of q10). The full name still masks; only the bare token is exempt, exactly as it
+  // is for Mark, Grace, Frank, Will and the rest of this list.
+  'Claude',
   'Ace', 'Amber', 'Angel', 'April', 'Austin', 'Autumn', 'Baron', 'Bear',
   'Bill', 'Blaze', 'Brook', 'Brooklyn', 'Buck', 'Carolina', 'Carter', 'Chance',
   'Chase', 'Chelsea', 'Chip', 'Christian', 'Cliff', 'Colt', 'Cooper', 'Crystal',
@@ -199,6 +204,17 @@ function closedFirstNames(names, backed) {
 // token would let one member called e.g. "Prime ..." turn every lowercase "prime" in ordinary copy
 // into "they" — and, via leftoverNames, refuse the turn. Two-token full names carry no such risk and
 // stay case-insensitive.
+//
+// ...and it must be LONE (#176 D1, staging probes of q9/q10). The pass fired on the token wherever it
+// stood, so an unbacked index name masked the first name of a DIFFERENT person: "Antonio Sanchez" in
+// the index published "they Bindi echoed this" over Antonio Bindi, and "Mayank Yadav 23frqw2e4"
+// published "they Sharma of Returnstack" over Mayank Sharma. A first name followed by another
+// capitalised word is not a lone first name — it is somebody's FULL name, and if that full name were
+// an index name the full-name pass above would already have masked it. A person the index does not
+// carry is not one this gate redacts anywhere else either (an unindexed speaker's name has always
+// published verbatim), so leaving it whole is the consistent reading, and mangling half of it was
+// never protecting anyone. A single initial does not count as a surname, so "Sarah C." still masks.
+const NOT_A_SURNAME_AHEAD = '(?![\\s\\-]+\\p{Lu}[\\p{L}])';
 function firstNameSource(first) {
   const forms = [first, first.charAt(0).toUpperCase() + first.slice(1), first.toUpperCase()];
   return '(?:' + [...new Set(forms)].map(escapeRe).join('|') + ')';
@@ -553,7 +569,7 @@ function redact(draft, names, backed) {
   // -> "their margins"), and the index name is recorded as removed so the GATED strip counts it.
   for (const ent of closedFirstNames(names, backed).values()) {
     if (!runs.has(ent.first.toLowerCase())) continue;
-    const fre = boundedRe(firstNameSource(ent.first), 'g', "(['’]s)?");
+    const fre = boundedRe(firstNameSource(ent.first), 'g', "(['’]s)?" + NOT_A_SURNAME_AHEAD);
     if (!fre.test(text)) continue;
     text = text.replace(fre, (m, poss) => (poss ? 'their' : 'they'));
     runs = runSet(text);
@@ -583,7 +599,7 @@ function leftoverNames(text, names, backed) {
   // eligibility and same casings as redact(), so this never refuses a form redact() deliberately kept.
   for (const ent of closedFirstNames(names, backed).values()) {
     if (seen.has(ent.full) || !runs.has(ent.first.toLowerCase())) continue;
-    if (boundedRe(firstNameSource(ent.first), '').test(hay)) { seen.add(ent.full); out.push(ent.full); }
+    if (boundedRe(firstNameSource(ent.first), '', "(['’]s)?" + NOT_A_SURNAME_AHEAD).test(hay)) { seen.add(ent.full); out.push(ent.full); }
   }
   return out;
 }
