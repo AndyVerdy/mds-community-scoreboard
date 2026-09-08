@@ -241,9 +241,9 @@ only: `Classify Evidence (Supabase)` + `Fetch Name Index (Supabase)` → `Public
 `Public Smooth (Claude)` [one Haiku call] → `Public Verify`) → `Format Web` → `Save Web (Supabase)` → `Web
 Response` (a code node; **never a `respondToWebhook` node on this fork — one reachable from `WA Inbound (POST)`
 500s every WhatsApp turn**). The deterministic gate lives in `scripts/olivia_loop/public_gate.js` and is embedded
-verbatim; a name survives a public answer only when an OPEN evidence row of the turn contains it (open = what a
-member can already see — #176; unknown is still closed), and a leftover name or a new link after smoothing fails
-the turn closed. Applied by
+verbatim; a name survives a public answer only when an OPEN evidence row of the turn contains it (open = what
+EVERY member can see — decided per row off the restriction spine, #176; unknown is still closed), and a leftover
+name or a new link after smoothing is repaired and, if it survives a second pass, fails the turn closed. Applied by
 `scripts/olivia_loop/apply_169_web_door.py` + `apply_169_public_gate.py` (idempotent, staging first).
 
 **Side workflows:**
@@ -576,7 +576,7 @@ resolves the asker itself. The main ones:
 | `fb_catchup` / `fb_thread` | Facebook recency browse / full thread pull |
 | `member_card` | One member's public profile card |
 | `member_match` | Members by attribute (city/state/category/band/channel) |
-| `public_gate_classify` / `public_gate_name_index` | **#169 Public Gate** — classify a turn's evidence keys (urls / source ids) as `public` or `closed`. **Public means OPEN TO MDS MEMBERS, not to the world (#176, 2026-09-08 — this reverses fix round 3).** A public answer gets posted into the members-only MDS Facebook group, so its readers are the membership; the only thing the gate hides is exact detail from a **restricted room**. Andy: *"you do realise that Public means MDS members … the only restiriction for public mode is opt in sources"* and *"the whole idea behind public is that we hiding exact details from restictat chats"*. **Public (open)** = the MDS Facebook group's posts and comments (`content_items` where `source in ('fb_post','fb_comment')`, still guarded by `access_rule->>'type' = 'public'` + `sensitivity = 'normal'`) · published partner listings via `member_partner_url` · events by `public_page_url` **and** by `app_url` · the app's video library by id **and** by its `app.mds.co/videos/<id>` link, where `access_restriction = 'public'`. **Closed (restricted room)** = `wa_message` / `wa_digest` (closed WhatsApp channels) · `call_transcript` (private calls) · `application` · a `restricted` video (mastermind / chapter / coaching cohort) · anything unclassifiable — unknown is still closed. A closed source may still INFORM an answer: paraphrase only, no names, no verbatim quotes, said so in the notes. **Trap:** a transcript's own url IS its recording's `app.mds.co/videos/<id>` link, so one key comes back both `closed` (transcript) and `public` (library); `Public Redact` collapses duplicate keys most-restrictively, which is what keeps the private call closed. The member/speaker name index (two-word names ≥ 5 chars, organisation rows `MDS %` / `% MDS` excluded — 5,384 people, 2026-09-08) is what the redaction pass masks against; the module (`scripts/olivia_loop/public_gate.js`) matches with unicode-aware boundaries after NFC + invisible-character normalisation on both sides, masks variants (ALL CAPS, middle initial, hyphen/space, possessive, lone first names ≥ 4 chars), strips every non-public link, and `Public Verify` refuses anything that survives. Called only by the workflow's Public Gate nodes. **Trap:** these are shared Postgres functions — a redefinition is live on PROD the moment it is applied; it does not ride staging → promote and has no snapshot (rollback = re-apply the previous body from `db/functions/`). |
+| `public_gate_classify` / `public_gate_name_index` | **#169 Public Gate** — classify a turn's evidence keys (urls / source ids) as `public` or `closed`. **Public = OPEN TO EVERY MDS MEMBER; closed = restricted to SOME members. The line is per ROW, off the restriction spine, never per source type (#176 correction 2, 2026-09-08 — this reverses BOTH fix round 3 and the first #176 pass).** Andy: *"public means all members, but not people outside the MDS; restricted means this content is restricted to some members. Facebook is open source; it's public by definition. The only restricted sources are some WA chats (you should know it) and some videos (we have the spine with restriction rules)."* **Public (open)** = `fb_post` / `fb_comment` · `wa_message` / `wa_digest` whose `access_rule->>'chat'` joins a `digest.chats` row with `verification_required = false` (12 of 18 chats) · `call_transcript` whose recording — found by the `app.mds.co/videos/<24 hex>` in the row's OWN url — has `videos_catalog.access_restriction = 'public'` · the video library by id **and** by that link, same column · published partner listings via `member_partner_url` (guarded by `status = 'published'` + `access_restriction = 'public'`) · events by `public_page_url` **and** by `app_url`. All content branches keep `sensitivity = 'normal'` as a secondary fail-closed guard — it is load-bearing on 401 transcript rows where the two spines disagree, and the more restrictive of the two wins. **Closed (restricted)** = a `verification_required` chat (Centurion 20M+, Large SKU, Real Estate, Supplements, TikTok) · a `restricted` recording and its transcripts · `application` · **unknown**: a NULL `verification_required` (MDS 2026 New Members), a chat name absent from `digest.chats`, a transcript with no recording, a key no evidence row produced. A restricted source may still INFORM an answer: paraphrase only, no names, no verbatim quotes, said so in the notes. The `source` column names the REASON (`wa:open` · `wa:verified` · `wa:unknown` · `wa:unknown-chat` · `transcript:public` · `transcript:restricted` · `video:public` · `video:restricted` · `content:fb_post` · `partner` · `event`) and `scripts/olivia_leak_gate.py` asserts on it. **Trap:** join a transcript to its recording by the row's URL, not its `source_id` — 3,204 of 13,507 transcript source_ids are a base64 call id (`37yVhe+qTbaVUssWHoYOsQ==#41`), not `<24 hex>#<chunk>`; the url is right on all 13,507. **Trap:** a transcript's own url IS its recording's `app.mds.co/videos/<id>` link, so one key comes back from two branches; they agree now (both read the same `videos_catalog` row) and `Public Redact` still collapses duplicate keys most-restrictively. The member/speaker name index (two-word names ≥ 5 chars; organisation rows `MDS %` / `% MDS` and placeholder rows — a digit, an `@`, a `test`/`testing` token, or an English function word as the first token — excluded; **5,320 people, 2026-09-08**) is what the redaction pass masks against; the module (`scripts/olivia_loop/public_gate.js`) matches with unicode-aware boundaries after NFC + invisible-character normalisation on both sides, masks variants (ALL CAPS, middle initial, hyphen/space, possessive, LONE first names ≥ 4 chars), strips every non-public link, and `Public Verify` repairs or refuses anything that survives. Called only by the workflow's Public Gate nodes. **Trap:** these are shared Postgres functions — a redefinition is live on PROD the moment it is applied; it does not ride staging → promote and has no snapshot (rollback = re-apply the previous body from `db/functions/`). |
 | `expertise_search` | Members by what they know (keyword + embedding, RRF) |
 | `member_count` | Counting members by attribute, with breakdowns |
 | `member_dossier` / `member_billing` | The asker's own record / own billing |
@@ -834,7 +834,7 @@ python3 scripts/olivia_wf.py unlock
 ### 8.2 The safety gate
 
 ```bash
-python3 scripts/olivia_leak_gate.py     # 332 checks (2026-09-08, +9 web door / Public Gate: secret · no Meta send · no olivia_messages write · module embed fresh on the SHIP target · Public path wired · strict 401/403), ~3 min, free — run it again AFTER a promote to re-assert prod (check 4 judges staging first)
+python3 scripts/olivia_leak_gate.py     # 345 checks (2026-09-08, +9 web door / Public Gate: secret · no Meta send · no olivia_messages write · module embed fresh on the SHIP target · Public path wired · strict 401/403; +13 from #176 correction 2: both sides of the restriction spine + the paged name index), ~3 min, free — run it again AFTER a promote to re-assert prod (check 4 judges staging first)
 ```
 It inserts canary rows with every access rule and sensitivity, asks the real RPCs for them as
 several different members, and asserts what must *not* come back. It also verifies anon lockout,
@@ -1156,25 +1156,32 @@ edit one while working the other.
 selects them. "Used in a calculation" is not "shareable".
 
 **Standing rulings:**
-- **Public mode (#176 — Andy, 2026-09-07): "Public" means the MDS MEMBERSHIP, and the only thing the gate hides
-  is exact detail that came out of a RESTRICTED ROOM.** A public answer gets posted in the members-only MDS
-  Facebook group, so its readers are members: *"you do realise that Public means MDS members … the only
-  restiriction for public mode is opt in sources"*, and *"the whole idea behind public is that we hiding exact
-  details from restictat chats"*. Two buckets:
-  - **Open** — anything a member can already see for themselves: the Facebook group's posts and comments,
-    partner listings and their pages, events and their pages, the app's own library. Named, **quoted and linked
-    freely** — a group link is one we want in the answer ("3 fb links that we can share").
-  - **Restricted** — what was said in a closed room: closed WhatsApp channels, private call/meeting transcripts.
-    They may still INFORM the answer; no exact detail crosses into it — no names, no verbatim quotes, no
-    identifying specifics. Paraphrase only, and say so in the notes.
+- **Public mode (#176 — Andy, 2026-09-08): "Public" = OPEN TO EVERY MEMBER. "Restricted" = open to only SOME
+  members. The line is per ROW, off the restriction spine the database already carries — never per source type.**
+  *"public means all members, but not people outside the MDS; restricted means this content is restricted to some
+  members. Facebook is open source; it's public by definition. The only restricted sources are some WA chats (you
+  should know it) and some videos (we have the spine with restriction rules)."* Two buckets:
+  - **Open** — Facebook group posts and comments · WhatsApp messages and digests whose chat is **not**
+    `digest.chats.verification_required` (12 of 18 chats) · call transcripts and videos whose recording is
+    `digest.videos_catalog.access_restriction = 'public'` (655 of 1,084) · published partner listings and their
+    pages · events and their pages. Named, **quoted and linked freely** — a group link is one we want in the
+    answer ("3 fb links that we can share"), and so is a public recording's `app.mds.co/videos/<id>`.
+  - **Restricted** — WhatsApp in a `verification_required` chat (MDS Centurion 20M+, Large SKU, Real Estate,
+    Supplements, TikTok) · transcripts and videos of a `restricted` recording (mastermind / chapter / coaching
+    cohort) · applications. They may still INFORM the answer; no exact detail crosses into it — no names, no
+    verbatim quotes, no identifying specifics. Paraphrase only, and say so in the notes.
 
-  A source that cannot be classified stays restricted — **unknown is still closed**. Retrieval runs wide (the
-  probe member's access until Team mode), the output is gated: a name no OPEN row of the turn backs becomes a
-  role phrase, closed sources are paraphrased and named in the notes, and a leftover name or a new link after
-  smoothing fails the turn closed. Single-word member names stay unmasked by design ("leave it"). Team mode
-  (#172) = everything, behind a disclaimer — a later ticket.
-  **Superseded:** #169 built this as "safe to leave MDS" — world-public sources only, the Facebook group
-  treated as closed. Wrong audience; see §13 trap 5 and the `public_gate_classify` row in §6.2.
+  A row that cannot be classified stays restricted — **unknown is still closed**: a chat whose
+  `verification_required` is NULL (MDS 2026 New Members), a chat name not in `digest.chats`, a transcript with no
+  recording. Retrieval runs wide (the probe member's access until Team mode), the output is gated: a name no OPEN
+  row of the turn backs becomes a role phrase, restricted sources are paraphrased and named in the notes, and a
+  leftover name or a new link after smoothing is repaired (#176 D2) or, on a second pass, refused. Single-word
+  member names stay unmasked by design ("leave it"). Team mode (#172) = everything, behind a disclaimer — a later
+  ticket.
+  **Superseded twice:** #169 built this as "safe to leave MDS" — world-public sources only, the Facebook group
+  treated as closed (wrong AUDIENCE). The first #176 pass fixed the audience but kept a source-type allowlist and
+  so closed all 18,363 WhatsApp rows and all 13,507 transcript rows wholesale (wrong GRANULARITY). See §13 traps 5
+  and 6 and the `public_gate_classify` row in §6.2.
 - **Public-in-the-app = shareable** (Eugene, final) — anything a member can already see in the MDS
   app about another member may surface. Everything else keeps the structural refusal.
 - **Revenue:** our data yields **bands only**, always. A figure the member or an MDS page *posted
@@ -1492,7 +1499,7 @@ redaction regex must be Unicode-aware (`/u` with `\p{L}` lookarounds) and every 
 treatment — a verify built on the same broken boundary passes exactly what the mask missed.** Fix owned by
 #169; the door is header-authenticated and its page had not shipped, so there was no exposure.
 
-### #169 Public Gate — five traps from the ship night (2026-09-08; trap 5 added by #176)
+### #169 Public Gate — six traps from the ship night (2026-09-08; traps 5 and 6 added by #176)
 
 1. **JS `\b` is ASCII-only.** `new RegExp('\\b' + name + '\\b', 'i')` never matches a name whose first or last
    character is non-ASCII ("Émile Dupont", "航 杨明", "𝕸𝖊𝖍𝖆𝖗 𝕾𝖎𝖓𝖌𝖍", a trailing U+FE0F) — 23 live index rows passed
@@ -1513,13 +1520,26 @@ treatment — a verify built on the same broken boundary passes exactly what the
    leave MDS" — a person could be named only when a source the open INTERNET can already see backed the name — so
    the MDS Facebook group, the app's library and everything else internal classified `closed`. Wrong audience: a
    public answer is posted **into the members-only MDS Facebook group**, so its readers are MDS members, and the
-   only thing to hide is exact detail from a **restricted room** (a closed WhatsApp channel, a private call). Andy:
+   only thing to hide is exact detail from a **restricted room** — which trap 6 then had to sharpen from a source
+   type into a per-row test. Andy:
    *"the whole idea behind public is that we hiding exact details from restictat chats"*. Two tells the old reading
    never cohered: partner listings classified `public` while their url is `app.mds.co/partners/<id>` (a members'-app
    link — world-public and app-only at once), and `content_items.access_rule->>'type' = 'public'` was dismissed as
    "member-visible, not world-visible" when member-visible is exactly the right test. **Rule: name the AUDIENCE of a
    gated output before you write the gate.** A gate calibrated for the wrong reader over-masks silently — it looks
    fail-closed and green while publishing answers visibly worse than the ungated ones the same people already get.
+6. **A SOURCE-TYPE allowlist is not an access rule (#176 correction 2, 2026-09-08).** Trap 5's fix opened the
+   Facebook group, but kept #169's shape: an allowlist of open SOURCES, everything else closed. So it closed all
+   18,363 WhatsApp rows and all 13,507 call-transcript rows wholesale — twelve open chats (the great majority of
+   the WhatsApp corpus) and 8,022 chunks of recordings any member can open in the app. Andy: *"the only restricted
+   sources are some WA chats … and some videos (we have the spine with restriction rules)."* The spine was already
+   in the database and nobody read it: `digest.chats.verification_required` (5 true, 12 false, 1 NULL) and
+   `digest.videos_catalog.access_restriction` (655 public, 429 restricted), with a call transcript inheriting the
+   recording it was cut from. **Rule: before writing a gate, look for the access column the product already
+   has.** A source TYPE is a guess at access; a restriction column IS access. Two corollaries proven here: join a
+   transcript to its recording by the row's own URL (3,204 of 13,507 `source_id`s are a base64 call id, not
+   `<24 hex>#<chunk>`), and when two restriction signals disagree — 401 rows where `sensitivity` and
+   `access_restriction` differ — take the more restrictive one.
 
 
 
