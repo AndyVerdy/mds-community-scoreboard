@@ -11,6 +11,26 @@
 
 # Olivia — next session
 
+## ✅ SESSION CLOSED 2026-09-08 03:30Z (22:30 CT) — prod `49d4a931` · staging `027bd776` · lock free · next ticket #147
+**Live on prod tonight, two promotes:** `f5e9ce5d` (02:16Z) = #169 + #174 + #175 + #143 + #139 + #141 + #142 + #144, then
+`49d4a931` (03:14Z) = + #169 fix round 4. Both gate-green, both snapshotted, both prod-probed. Rollback points:
+`olivia_snapshots/prod_2026-09-08T031444Z_pre-promote.json` (back to `f5e9ce5d`) and `prod_2026-09-08T021615Z_pre-promote.json`
+(back to `30fd7e6f`, which predates everything from tonight).
+**Owned by the #169 session, not me — do not start it:** a fail-open in `public_gate.js` (ASCII `\b`; see `OLIVIA_HANDBOOK.md`
+§13 for the exact shape and the 23 boundary-evading names). It fixes, stages, probes and gates; it messages before touching
+staging and asks me/the next session to run the third promote. Prod has the flaw today with **no exposure** — the web door is
+header-authenticated and its page has not merged.
+**Evidence added, no new tickets filed:** Andy's two screenshots of the same question (15:46 CT vs 22:21 CT, turns 65489 vs
+65941) are now #155's sharpest evidence — identical plan both times, link-carrying and partner-tool calls varied by run, and the
+#175 orphan link is visibly gone after the promote. Andy: "if we have it as a ticket, then it's fine." Found-alongside and still
+unfiled: loose `pending_offer.titles`/`items[].name` recording, and list-tool evidence clipping (from #143).
+**NEXT TICKET — #147 · "Is this member registered?" is answered twice, by two sources, and they disagree** (🔴 S1, size M).
+*As a member, one answer decides whether I am at an event, and every lane gives me the same answer.* The agenda lane reads the
+GroupOS attendee export keyed by registration email; the who-to-meet lane reads the Airtable roster mirror, Confirmed only —
+different keys, different rules, different sync clocks, and the alias bridge (`digest.member_email_alias`) exists but is not
+consulted by `load_event_graph.py`. It gates the last unfixed half of #140. **Per the session protocol, present it and wait for
+Andy's go before starting.**
+
 ## STATE 2026-09-08 03:15Z — second promote: prod `12wj6h1TWqb0d4Dq` = versionId `49d4a931` (#169 fix round 4 on top of the eight tickets)
 The #169 session finished its module tightening on staging `027bd776` and asked for the promote (Andy's conditional go: "my go to promote if another agent agrees"). **Verified before writing to prod, not taken on trust:** prod→staging diff = THREE nodes (`Public Redact`, `Public Verify`, and `Classify Evidence (Supabase)` `params.jsonBody`, which carries the same fix inline) plus the webhook path/id fields that always differ; **every other node byte-identical**; my seven edits intact on staging; the change is a TIGHTENING (a partner row's public name may be backed only by `name`/`web_summary`/`web_people`/`web_pricing` — the partner's own crawled website — never by `reviews_sample`, `strength_note` or `fit_reason`, which are member text); `node --test scripts/olivia_loop/public_gate.test.mjs` 15 pass / 0 fail.
 **Promote 03:13–03:14Z:** gate GATE PASSED inside `olivia_wf.py promote` · snapshots `prod_2026-09-08T031444Z_pre-promote.json` (`f5e9ce5d`) and `prod_2026-09-08T031449Z_post-promote-169-fix4-20260908.json` · bounce 200/200 · **prod `49d4a931`, graph matches staging: True** · `PROMOTE_EXIT=0`. WA smoke after the bounce (5 turns, rows 65928–65937 deleted): all 200, lanes normal.

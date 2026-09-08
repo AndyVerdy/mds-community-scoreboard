@@ -1433,6 +1433,19 @@ stop list plus generic business words removed); a stemmed full-text index needs 
 variants, and `hunting/firearm/tactical` is one path token to the parser, so a term can miss a row
 that visibly contains it.**
 
+### JavaScript `\b` is ASCII-only — a name-masking gate fails OPEN on it (2026-09-08, #169)
+
+`public_gate.js` masks member names out of public answers with `new RegExp('\\b' + name + '\\b', 'i')`, in four
+places (the backed-name test, the mask, the first-name replace, and the leftover-name verify that is supposed to
+fail closed). `\b` is a boundary between an ASCII word char and a non-word char, so a name whose FIRST or LAST
+character is not ASCII never matches: **"Émile Dupont" is neither masked nor caught**, while "José Núñez"
+(accent in the middle) is fine. Verified on the shipped module 2026-09-08; 23 of 5,847 `member_profiles` rows
+have a boundary-evading name, and they are wider than Latin accents — "Øun Thaih", "航 杨", math-alphanumerics
+(𝕸𝖊𝖍𝖆𝖗), Khmer and Arabic rows, and one name ending in a variation selector (U+FE0F). **A masking or
+redaction regex must be Unicode-aware (`/u` with `\p{L}` lookarounds) and every call site must get the same
+treatment — a verify built on the same broken boundary passes exactly what the mask missed.** Fix owned by
+#169; the door is header-authenticated and its page had not shipped, so there was no exposure.
+
 ## 14. Known limits (2026-09-04)
 
 - **Transcripts cover 2025 and 2026, not before** (#70/#101, the 2025 batch 2026-08-21, the 16
