@@ -53,7 +53,7 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#186** | 🅿️ **SPRINT 5** · 🗺️ Roadmap tool — a dev index and a live task list, both pulled from the repo, never hand-maintained (Andy 2026-09-09) | 🔵 S3 | M-L | — | — |
 | **#184** | 🙈 Part 1 — unindex Tony Brink's post + MajestIQ/TraceFuse from Millie, nothing deleted for members ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🔴 S1 | S | — | — |
 | **#185** | 🚧 Part 2 — a general way to keep restricted content out of Millie: blacklist, detection, or both ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🟡 S2 | M | — | — |
-| **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | — |
+| **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | ✅ **CLOSED 2026-09-09** — shipped `0fcb6df`, merged `6a31026`, live on Render (`/api/version`) |
 | **#180** | 🩺 Millie's niche data frozen since 7 Sep — `derive_niches` times out on Anthropic after 3.5h, nightly | 🟡 S2 | S-M | n/a (launchd job) | — |
 | **#181** | 🅿️ **SPRINT 5** · Events catalog hourly on paper, four-hourly in fact — 9 of 13 intervals in the down band, 14/14 runs green | 🔵 S3 | S | n/a (GH Action) | ⛔ blocked: GitHub PAT `actions:write` (Andy) |
 | **#182** | 🅿️ **SPRINT 5** · Five days of recordings invisible to Millie — `zoom_weekly` runs on time but skips videos, no `GROUPOS_PAT` | 🟡 S2 | S | n/a (weekly job) | ⛔ blocked: GroupOS PAT (Andy) |
@@ -272,6 +272,55 @@ A parser that is wrong is worse than no tool, because people will trust it. This
 3. A `status: 2` execution renders `degraded` and the tile text says warning, not failed.
 4. A unit test in `make.test.ts` covers all three codes.
 5. `tsc`, lint, tests and `next build` clean. Merge = Render deploy, verified on `/api/version`.
+
+
+#### ✅ #179 CLOSED 2026-09-09 — shipped `0fcb6df`, merged `6a31026`, live on Render
+
+**Story:** *As MDS staff, I want a red tile to mean something is actually broken, so that I do not learn to ignore the health alert.*
+
+**Root cause, from Make's own API reference rather than from the ticket.** Make grades a finished execution
+with a number: "1 is for success, 2 is for warning, and 3 is for error", and the execution-detail endpoint
+spells the same three out as SUCCESS / WARNING / ERROR. `make.ts` read that number as
+`Number(log.status) === 1 ? "success" : "error"`, and `classifyMakeTool()` turned `"error"` into `down`.
+Guest Multi-Event Alert (scenario `4676457`) has one execution in its whole life, `3f286739…` at
+2026-09-02T13:11:43Z, graded 2. Make's detail endpoint calls it `"WARNING"`. Verified live this session, both
+the numeric grade and the string.
+
+**The fix.** `makeRunStatus()` maps the grades Make documents, and a warning gets its own display state:
+amber, worded "warning" rather than "failed", counted as degraded rather than down. An unrecognised grade
+still reads as an error on purpose — Make also has a RUNNING state and may add more, and a false green hides
+a real failure, which is worse than a false red.
+
+**Before → after, the shipped code run against the live Make API, same data through both versions:**
+
+| | Guest Multi-Event Alert | other three Make tiles |
+|---|---|---|
+| before | `DOWN` · `✕ failed 7d ago` | Luma healthy · Slack→Luma healthy · Stripe syncs healthy |
+| after | `DEGRADED` · `⚠ warning 7d ago` | identical, byte for byte |
+
+**AC checklist:**
+1. Guest Multi-Event no longer `down`, scenario untouched — ✅ live run reads `DEGRADED`; nothing was changed in Make.
+2. A `status: 3` execution still renders `down` — ✅ unit test, and so does any grade we do not recognise.
+3. A `status: 2` renders `degraded` and says warning, not failed — ✅ live text is `⚠ warning 7d ago`.
+4. Unit test covering all three codes — ✅ `make.test.ts`, 13 tests, plus the unknown grade, the pipeline roll-up and the real Guest Multi-Event case.
+5. `tsc`, lint, tests, `next build` clean; merge = Render deploy verified on `/api/version` — ✅ 1270 tests pass, tsc/eslint/build exit 0, `/api/version` = `6a31026`.
+
+**⚠️ One thing I did NOT verify, stated plainly: the rendered dashboard tile.** `/tools-health` needs a
+member session and `GET /api/health/report?secret=…&dry=1` returns `{"error":"forbidden"}` — the stale
+`HEALTH_REPORT_SECRET` the 2026-09-09 triage already recorded. I did not sign in as Andy. What is proven is
+the shipped classifier against the live Make API, before and after, plus the deploy. **Andy or the next
+session should open `digest.mds.co/tools-health` once and confirm the tile is amber.** The stale secret is
+the chore already sitting in the #179 + #181 + #183 cluster.
+
+**Found alongside, NOT chased, no ticket filed yet — two repo traps:**
+- **`node_modules` is a broken symlink committed into `mds-digest-web`** (`0b932ce`, 2026-09-08, mode
+  120000, target `../../../node_modules` which resolves to `/node_modules`). `next build` dies on it with
+  "Symlink [project]/node_modules is invalid, it points out of the filesystem root", and a worktree created
+  *inside* the repo inherits it. Render is unaffected because its `npm install` replaces it. Workaround
+  that works: put the worktree OUTSIDE the repo, as the #178 session did — `/Users/Born/wt-179-make-warning`.
+- **Make's `pg[limit]` caps below 100 and fails silently.** `?pg[limit]=100` returns an empty
+  `scenarioLogs` array rather than an error; 50 returns 50. The health checker asks for 1, so it is
+  unaffected, but any future census code would read "no runs" and call a live scenario unknown.
 
 ### #180 · Millie's niche data has been frozen since 7 Sep — the nightly derive times out
 **🟡 S2 · size S-M — filed 2026-09-09 (health alert 13:15 UTC; Andy: "s2").** Runs on the Mac launchd job `com.mds.olivia.derivations`.
