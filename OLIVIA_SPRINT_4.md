@@ -30,7 +30,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
-| **#186** | 🗺️ Roadmap tool — a dev index and a live task list, both pulled from the repo, never hand-maintained (Andy 2026-09-09) | 🔵 S3 | M-L | — | — |
+| **#186** | 🅿️ **SPRINT 5** · 🗺️ Roadmap tool — a dev index and a live task list, both pulled from the repo, never hand-maintained (Andy 2026-09-09) | 🔵 S3 | M-L | — | — |
 | **#184** | 🙈 Part 1 — unindex Tony Brink's post + MajestIQ/TraceFuse from Millie, nothing deleted for members ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🟡 S2 | S | — | — |
 | **#185** | 🚧 Part 2 — a general way to keep restricted content out of Millie: blacklist, detection, or both ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🟡 S2 | M | — | — |
 | **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | — |
@@ -154,8 +154,8 @@ Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
 
-### #186 · Roadmap — one place that shows the work, built from the repo rather than maintained by hand
-**🔵 S3 · size M-L — filed 2026-09-09 (Andy: "build another tool - roadmap or something like this … 1 is for real human devs, 2 is for anyone on the team to stay on track").** Repo `mds-digest-web`, the eighth tool in the #164 storefront. Priority chosen by me, not by Andy.
+### #186 · 🅿️ SPRINT 5 · Roadmap — one place that shows the work, built from the repo rather than maintained by hand
+**🔵 S3 · size M-L — filed 2026-09-09 · CARRIES TO SPRINT 5 (Andy: "build another tool - roadmap or something like this … 1 is for real human devs, 2 is for anyone on the team to stay on track").** Repo `mds-digest-web`, the eighth tool in the #164 storefront. Priority chosen by me, not by Andy.
 
 > **In plain words:** two views on one page. A technical index a new developer can start from, and a live task list anyone on the team can read without asking Andy.
 
