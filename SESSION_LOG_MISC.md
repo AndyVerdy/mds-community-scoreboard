@@ -32,6 +32,41 @@ linked to a free ticket on a new event **QA form gate 86e2v989y** (`6a9f774d2ba5
 - Not tested: paid-ticket Stripe modal close/reopen (cases B and C) — needs a card; and mobile-app-originated
   orders. Report `GROUPOS_EMPTY_CART_RETRY_QA.md`. Nothing posted to ClickUp.
 
+## 2026-09-07 — WA → FB story posts: session-start verification, two defects filed (#5 · #6)
+
+Andy: "Need to continue working on WA stories." Briefing session — verified live, nothing shipped.
+
+**Verified live.** n8n `iX7cEFrCW5apa7CS` ran 09-02, 09-04 and 09-07 (execs 128290 · 132394 ·
+137124, all success); prod `/api/version` = `b44e2d7` (last fbstory change `dfd2c98`); ledger
+`digest.fb_group_posts` — 09-04 offered 2, 09-07 offered 3 (DTC 09-05 · AI 09-04 · Retail 09-04),
+0 rejected. Eugene's first FB post (`27114645448212266`, 09-02) has 1 comment (EJ Ball) and no
+reach/reactions captured. No new human feedback in `#automation-tests` since 09-02. Airtable
+JoinRequests `recgrlkagHhDZH3Iv` (base `appT9TVZWhv7io4CN` — NOT the Members DB, as
+`MDS_TOOLS_REVIEW_WhatsApp.md` implies) STILL reads `rejected` from the 09-01 button hijack —
+the ops fix is still owed; the agent does not write Airtable.
+
+**Found by verification — filed in `FB_BACKLOG.md`, not chased:**
+- **#5 (S2)** `digest.summaries.date` is a digest day (roughly D 11:00 UTC → D+1 11:00 UTC; the
+  06:05 CDT digest labels the previous 24 h with the previous date) while `thread.ts` and
+  `signals.ts` fetch the UTC calendar day. 9 of the 11 stories offered since the rebuild were
+  written from a different message set than the ranker judged: DTC 08-30 summary 14 → thread
+  **1** (the one-message Kendall "story", offered 09-02 and again 09-04); DTC 09-05 (today's
+  Option 1) 16 → 8; AI 09-04 45 → 67. Nothing after the thread is built checks it is still a
+  conversation.
+- **#6 (S3) — FILED THEN DROPPED the same day on Andy's call.** `rank.ts` feeds every `skipped`
+  row to the ranker as "Rejected by a human before"; the 09-02 release note ("Eugene rated this
+  the best story…") was read as instruction — `why_picked` ended "Human already rated it the best
+  story; needs the rewrite." Andy: there is no Skip button, so this is not a ticket. He is right
+  that it was over-filed — and with no button, **every** `skipped` row is a system release, so the
+  prompt section is wrong whenever it is non-empty (1 row in the 60-day window today). The few-line
+  fix became AC 6 of #5; telling a human skip apart from a system release became AC 7 of #2.
+
+**Docs drift fixed:** the handoff's "Old notes (still true)" still described the retired footer;
+the chat lists are defaults in `src/lib/config.ts` with env overrides (memory said "config.ts,
+not env"); handoff + memory updated. Branch `fbstory-20260907`, own worktree.
+
+**Next:** Andy's call between #5 (story quality, S2) and #1 (member spine, S1). Nothing shipped.
+
 ---
 
 ## 2026-09-03 — GroupOS QA: `86e2ndz5v` check-in export (pre-prod 1.2.1)

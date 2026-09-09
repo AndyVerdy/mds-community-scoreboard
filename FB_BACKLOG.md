@@ -57,6 +57,61 @@ a misleading 72%.
 
 ## OPEN — THE REST
 
+### #5 · ⏱️ The story is written from the wrong 24 hours — the thread window is the UTC calendar day, the summary is a digest day · 🟠 S2
+
+**Story.** As the person posting a WhatsApp story, I want the post written from the whole
+conversation the ranker picked, so that a story never reads thinner than the chat it came
+from — and never quietly blends in the previous day's conversation.
+
+**Measured 2026-09-07 (live).** The ranker chooses from `digest.summaries`, whose `date` is a
+*digest* day: the 06:05 CDT digest labels the previous 24 hours with the previous date (Slack:
+"MDS Daily Digest · 2026-09-05" was posted 09-06 06:04 CDT), so summary `D` holds messages from
+roughly `D 11:00 UTC` to `D+1 11:00 UTC` (DTC 09-05: 6 text messages on 09-05 18:00–23:59 UTC
+plus 10 on 09-06 00:00–02:59 UTC = the summary's 16). `thread.ts` `loadThread` and `signals.ts`
+then fetch `D 00:00:00Z`–`D 23:59:59Z`. The two overlap for 13 hours: the US evening (from
+20:00 ET) is cut off and the previous digest day's morning is pulled in.
+
+Of the 11 stories offered or drafted since the 2026-09-02 rebuild, **9 were written from a
+message set that differs from the summarised conversation**; only Retail 09-04 (9 = 9) and
+AI 08-28 (8 = 8) matched.
+
+| Card | Chat · summary day | Summary msgs | Thread msgs | What the writer saw |
+|---|---|---|---|---|
+| 09-02 and 09-04, Option 2 | DTC/Shopify · 08-30 | 14 | **1** | EJ Ball's single Kendall message; the helpdesk conversation Eugene rated best sits at 08-31 06:00–08:00 UTC and never reached the writer |
+| 09-07 Option 1 | DTC/Shopify · 09-05 | 16 | **8** | half the AOV/bundle exchange — the 10 messages after 00:00 UTC were cut, 2 from 09-05 03:00 UTC (the previous day) were added |
+| 09-07 Option 2 | AI & Automations · 09-04 | 45 | **67** | the previous digest day's morning blended in |
+
+The one-message Kendall "story" was offered twice as a five-paragraph post, with signals
+reading `1 messages, 1 people`. Nothing after the thread is built checks that it is still a
+conversation: `MIN_MSGS = 5` in `candidates.ts` applies to the summary row only. `pickRoot`
+mints the story key from these messages, so the key — and dedupe — moves with the window too.
+
+**Acceptance criteria**
+1. The thread window and the signals window equal the summary window for that chat-day. The
+   digest's real boundary is read from the digest workflow (`qo3qzeVtprhTW88F`), stated in the
+   close, and defined ONCE, shared by `thread.ts` and `signals.ts`.
+2. Re-measured on the 11 rows above with `?dry=1&asof=`: every thread's message ids fall inside
+   its summary window; the DTC 08-30 pick builds the 14-message helpdesk thread and the DTC
+   09-05 pick the 16-message AOV thread. Before **2 of 11** match, after stated.
+3. A built thread with fewer than 5 text messages or fewer than 2 voices is never written or
+   offered; the run says so in its Slack no-pick line.
+4. Dedupe holds across the change: the two already-correct threads keep their story keys; the
+   one-message row is released (`skipped`), not left `offered`.
+5. Before/after drafts for the 09-07 DTC pick shown side by side in the close — the story, not
+   just the counts.
+6. The ranker stops being told a system release was a human rejection. `rank.ts` lists every
+   `skipped` ledger row under "Rejected by a human before — learn from these", but the Skip button
+   does not exist (#2), so **every** such row is a system release: a Slack failure, or a manual
+   free. The one row in the window is the 2026-09-02 release note *"Eugene rated this the best
+   story so far … Freed so the current pipeline can rewrite it"* — the ranker read it as Eugene's
+   verdict and re-picked DTC 08-30, `why_picked` ending "Human already rated it the best story;
+   needs the rewrite", which is how it landed on the one-message thread above. While no human
+   skip path exists, those rows do not reach the prompt as rejections. Proven with a `?dry=1` run.
+   (Filed as #6 2026-09-07, dropped the same day — Andy: too small for a ticket. The lasting half,
+   telling a human skip apart from a system release, is AC 7 of #2.)
+
+---
+
 ### #2 · 🔘 Give the story card its own Slack app so the buttons work · 🔵 S4
 
 **Story.** As the person posting these, I want to click "Mark posted" or "Skip" on the
@@ -92,6 +147,9 @@ recorded the moment it is offered.
    **Skip** captures a reason that appears in the next run's ranker prompt.
 6. Proven that the click no longer reaches WA Approvals — n8n `ib7g9bBddhzCbj4X` records no
    execution for it.
+7. A human Skip is distinguishable in the ledger from a system release (a Slack failure, a manual
+   free), which today share the status `skipped`. Only the human one reaches the ranker prompt as
+   a rejection — until this ticket ships, none of them do (#5 AC 6).
 
 **Already built, nothing to write.** `/api/fbstory/interactivity` exists, handles both
 buttons and the skip-reason modal, verifies the Slack signature via the shared

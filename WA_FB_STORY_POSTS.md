@@ -17,12 +17,12 @@ paste is a hard constraint — the system exists to make it cost one glance and 
 | Route | `GET /api/fbstory/draft?secret=…[&dry=1][&days=N][&asof=YYYY-MM-DD]` |
 | Buttons | `POST /api/fbstory/interactivity` (not wired yet — see Open questions) |
 | Schedule | n8n `iX7cEFrCW5apa7CS`, cron `0 9 * * 1,3,5`, tz `America/New_York`, retry OFF |
-| Priority chats | **DTC/Shopify, TikTok, AI & Automations** — preferred, not exclusive (`FB_STORY_PRIORITY_CHATS`) |
-| Excluded chats | **Centurion 20M+** and **Credit Card & Travel Hacks** — never surfaced (`FB_STORY_EXCLUDED_CHATS`) |
+| Priority chats | **DTC/Shopify, TikTok, AI & Automations** — preferred, not exclusive (defaults in `src/lib/config.ts`; env `FB_STORY_PRIORITY_CHATS` overrides) |
+| Excluded chats | **Centurion 20M+** and **Credit Card & Travel Hacks** — never surfaced (defaults in `src/lib/config.ts`; env `FB_STORY_EXCLUDED_CHATS` overrides) |
 | Slack | `#automation-tests` (`C0AQ8USNQK0`) |
 | Ledger | Supabase `digest.fb_group_posts` |
 | Reads | `digest.summaries`, `digest.wa_messages`, `digest.members` |
-| Spec / plan | `docs/superpowers/specs/2026-09-01-…-design.md` · `docs/superpowers/plans/2026-09-01-….md` |
+| Spec / plan | in THIS repo (Scorecard): `docs/superpowers/specs/2026-09-01-wa-to-fb-story-posts-design.md` · `docs/superpowers/plans/2026-09-01-wa-to-fb-story-posts.md` |
 
 **Airtable is never written.** No new data capture — everything read already existed.
 
@@ -38,6 +38,12 @@ resolve on Andy's Mac** (n8n and public resolvers are fine).
 
 Add `&asof=YYYY-MM-DD` to see what it would have said on a past week — this is how the twelve
 sample drafts were reviewed before launch.
+
+⚠️ **Until #5 ships, read the signals line on the card.** `digest.summaries` dates a summary by
+*digest* day (roughly 11:00 UTC to 11:00 UTC the next day), but `thread.ts` and `signals.ts`
+fetch the UTC calendar day — so the writer can see a different message set than the ranker
+judged. Measured 2026-09-07: 9 of the 11 stories offered since the rebuild, one of them written
+from a single message. Ticket #5 in `FB_BACKLOG.md`.
 
 ## What the post looks like (rewritten 2026-09-02 after Eugene posted one by hand)
 
@@ -68,12 +74,11 @@ discussion on that conversation. Dropping other themes in this post is a
 distraction and will lead to more confusion."* Andy had asked for the activity
 footer earlier; Eugene's reasoning superseded it. Do not put it back without them.
 
-## Old notes on the post (still true)
+## Old notes on the post
 
-A chat name, then a hook built on the most concrete fact in the thread (a price, a
-result, a reversal), then two to four short paragraphs, a question to the group, a
-divider, and an "Also this week in the member chats" section of three or four
-one-line hooks from OTHER chats. Roughly 200 words.
+Until 2026-09-02 the post ended with a divider and an "Also this week in the member chats"
+footer of three or four one-line hooks from other chats. **That footer is gone** (see above).
+The shape rules below still hold.
 
 Hard-won shape, from Andy's feedback on the first live cards:
 - **Keep the numbers.** The first version stripped vendor pricing because the
@@ -151,7 +156,9 @@ another run genuinely got there first.
 ## Backlog
 
 Tickets live in `FB_BACKLOG.md` (Facebook stream: capture · admin tab · story posts).
-**#1 S1** member-spine gap · **#2 S4** dedicated Slack app to re-enable the card buttons.
+**#1 S1** member-spine gap · **#5 S2** the thread is built from the UTC calendar day while the
+summary is a digest day (a story can be written from part of the conversation — one was written
+from a single message) · **#2 S4** dedicated Slack app to re-enable the card buttons.
 
 ## Open questions for Andy
 
