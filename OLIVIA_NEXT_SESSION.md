@@ -20,15 +20,14 @@ priorities and evidence only. All of it is on branch `health-tickets-20260909`, 
 **Andy's word at close: "for the next one we are following your plan."** That plan is written into
 `OLIVIA_SPRINT_4.md` at the top, in the **🔗 WORK THESE TOGETHER** block. Read that block before picking anything up.
 
-**Start here — #105 + #97, together.** #97 brokered intros is BUILT and waiting only on Andy's promote. #105 says
+**Start here — #105.** ⚠️ Corrected 2026-09-09 against live: **#97 was already promoted on 2026-08-22** (`7e4be40a`) and the 7 intro nodes are on prod `15649d68` today — the "waiting on Andy's promote" line below was 18 days stale. The cluster is really #105 alone, and what waits on it is the wide intros ANNOUNCEMENT, not a promote. #105 says
 the WhatsApp webhook accepts any POST from anyone and never verifies `X-Hub-Signature-256`, and the board's own
 note is "BEFORE any wide intros announcement". Promoting and announcing intros while that endpoint is
 unauthenticated is the wrong order. Ship them as one piece.
 
 **The board after the 2026-09-09 re-evaluation.** 46 open — **S1 5 · S2 14 · S3 18 · S4 6 · standing 3** (was
 S1 7 · S2 26 · S3 4 · S4 5); 21 priorities changed. The bar is stated on the board: S1 = a member or member-facing
-surface is wrong today, or we are exposed. Three tickets are BUILT and awaiting Andy's promote, not work: **#97**
-(intros), **#108** (the Finder), **#165** (the Personas sheet).
+surface is wrong today, or we are exposed. ONE ticket is BUILT and awaiting Andy's promote: **#108** (the Finder). The board claimed three; two of those had already shipped and the rows were stale — corrected 2026-09-09 against live. **#97** was promoted 2026-08-22 (`7e4be40a`) and its 7 intro nodes are on prod `15649d68`. **#165** is merged into `mds-digest-web` main (`18bac76`) and live at `digest.mds.co` (`/api/version` = `15700f2e`).
 
 **8 tickets filed 2026-09-09** — #179 Make WARNING renders DOWN · #180 `derive_niches` times out, niches frozen
 since 07 Sep · #181 events cron (Sprint 5, blocked) · #182 `GROUPOS_PAT` (Sprint 5, blocked) · #183 storefront
