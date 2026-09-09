@@ -2,6 +2,51 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+## 2026-09-08 (evening) · Olivia / MDS Personas — **#178 SHIPPED: the rails and the cohort page rank by rank, so #1 is first** (Render `15700f2`)
+
+**Trigger (Slack, 21:27).** Eugene, under a "Strong in Logistics & 3PL" screenshot: *"How come Mo isnt at the
+top of this list"*. Andy: *"He is. It's just this list, not in the exact order"*. Both were right, and the two
+surfaces disagreed in front of staff.
+
+**Root cause, live before the fix.** `personas_cohort` ordered `s.value desc, l.name` and the rails sorted on
+`strong[topic]` — both the ROUNDED percentile, which ties. Four members sit at 100 in Logistics & 3PL, so the
+alphabet decided: Alex Yale, Fernando Becattini, Mo Kuhail, William Langford. By score it is Mo 27.37, William
+23.09, Fernando 21.19, Alex Yale 17.07. The sheet has led with rank since #165, so it said `#1 of 674` while
+the rail put him third.
+
+**Shipped.** Migration `personas_rank_led_178` — two NEW functions (a `RETURNS TABLE` cannot grow without a
+DROP, and a DROP discards the ACL; same reasoning as #161's `personas_strong`/`personas_fading`/
+`personas_topic_peaks`): `digest.personas_ranks()` giving each member `{topic: [rank, pool]}` on the same
+population and the same ≥ 60 floor as `personas_strong()`, and `digest.personas_cohort_v2(p_stat)` giving the
+cohort rows plus rank + pool ordered by rank with `at_member_id` breaking a shared rank. Grants
+`{postgres, service_role}` on both, `db/` re-exported. Web (`mds-digest-web` `15700f2`, merge of
+`178-cohort-rank-20260908`): `railMembers` sorts the "strong" and "top10" kinds on rank (a missing rank sorts
+last), `getLibraryV2` merges the ranks map from the new RPC, `getCohort` reads v2, and the new pure
+`statCardLabels()` makes a stat card read `#1` with the subline `Logistics & 3PL · #1 of 674` — the sheet's
+own words. Badge colour still keys off the 0-100 value so gold means what it always did; Top 10 keeps its big
+numeral and drops the badge, which had become the same number twice; the cohort subtitle now reads "ranked,
+best first".
+
+**Verified.** SQL: `personas_cohort_v2('Logistics & 3PL')` → Mo 1, William 2, Fernando 3, Alex Yale 4, 280 rows
+(same as v1), `proacl` `{postgres=X/postgres,service_role=X/postgres}` on both functions. Dev server on the
+worktree (:3178): cohort page cards `#1 of 674` … `#7 of 674` in order; the lazy-mounted logistics rail read
+back through Playwright as `#1 Mo Kuhail`, `#2 William Langford`, `#3 Fernando Becattini`, `#4 Alex Yale`, no
+page errors; screenshots in the session scratchpad. 1257 tests (13 new/changed, TDD red first), tsc + eslint
+clean, `npm run build` exit 0. Prod: `/api/version` = `15700f2`, `/personas/stat/logistics-3pl` 307 for
+anonymous (staff gate intact).
+
+**Two environment notes for the next session.** (1) `mds-digest-web/node_modules` in the SHARED checkout is a
+broken symlink pointing at `/Users/node_modules`, created 2026-09-08 19:59 by something outside this session —
+any build run from that checkout or from a worktree inside it dies with a Turbopack panic ("Symlink
+[project]/node_modules is invalid"). This session worked around it with its own worktree at
+`/Users/Born/wt-178-cohort-rank` and its own `npm ci`; the shared checkout still needs `npm ci`. (2)
+`scripts/db_export_schema.py` resolves `REPO` from its own path, so running it from a worktree writes into the
+MAIN checkout — the files were moved into the worktree and the main checkout restored, but the script deserves
+a `--repo` flag or a cwd-relative root.
+
+**Note for #163.** This fixed the ORDER, not the score. Four members reading 100 in one category is the
+percentile-display problem #163 already documents; rank is now the number staff read on every surface.
+
 ## 2026-09-08 (close) · #171 SHIPPED + #176 PROMOTED — Facebook draft tool live, Public mode corrected to the member audience · **web `50ff14b` · prod `15649d68`**
 
 **Trigger (Andy):** continuing the #169 night — "delivery 2: generate public answer from facebook tool" (#171), then on
