@@ -30,6 +30,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
+| **#186** | 🗺️ Roadmap tool — a dev index and a live task list, both pulled from the repo, never hand-maintained (Andy 2026-09-09) | 🔵 S3 | M-L | — | — |
 | **#184** | 🙈 Part 1 — unindex Tony Brink's post + MajestIQ/TraceFuse from Millie, nothing deleted for members ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🟡 S2 | S | — | — |
 | **#185** | 🚧 Part 2 — a general way to keep restricted content out of Millie: blacklist, detection, or both ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🟡 S2 | M | — | — |
 | **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | — |
@@ -152,6 +153,35 @@ Millie is live.
 Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at Meta ⏳ watcher-gated.
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
+
+### #186 · Roadmap — one place that shows the work, built from the repo rather than maintained by hand
+**🔵 S3 · size M-L — filed 2026-09-09 (Andy: "build another tool - roadmap or something like this … 1 is for real human devs, 2 is for anyone on the team to stay on track").** Repo `mds-digest-web`, the eighth tool in the #164 storefront. Priority chosen by me, not by Andy.
+
+> **In plain words:** two views on one page. A technical index a new developer can start from, and a live task list anyone on the team can read without asking Andy.
+
+*As a new developer, I want one page that points me at every repo, schema and technical doc, so that I can start without a handover call. As anyone on the team, I want to see what is closed, in progress and scheduled, with the story behind each one, so that I do not have to ask what is happening.*
+
+**Why it has to pull, not copy.** This repo alone holds **271 markdown docs** across a dozen unrelated projects (Census, GroupOS, Application v3, Olivia, MRR, TikTok, Singapore, Member 360, WA digest, tools-health, the Scorecard), plus 8 more in `mds-digest-web`, four session logs, and the `db/` schema export. Nobody will hand-maintain a second copy of that, and a stale index is worse than none. Andy: *"Ideally, if these somehow can be pulled automatically, so we dont need to update them separately."*
+
+**Part 1 — the developer index.** Rendered from the repos at request time: `mds-community-scoreboard` and `mds-digest-web` (both `github.com/AndyVerdy/…`), their READMEs and handbooks, `OLIVIA_HANDBOOK.md` as Olivia's front door, `CLAUDE.md`, the `db/` schema export (tables, views, functions, grants, RLS), and per-project docs grouped by project rather than dumped alphabetically. Every entry carries a link straight to the file on GitHub and its last-commit date, so staleness is visible instead of assumed.
+
+**Part 2 — the task list.** Built from the boards that already exist and are already canonical: `OLIVIA_SPRINT_4.md` (**92 tickets today — 45 open, 47 closed**), `OLIVIA_BACKLOG_ARCHIVE.md` (34 shipped, evidence intact), `FB_BACKLOG.md` (8). Each ticket shows its number, title, priority, size, story, acceptance criteria, current state and — for closed ones — the evidence block. Grouped closed · in progress · scheduled, exactly as Andy asked.
+
+**The fork to decide before building — do not choose this in code.** The board is one large hand-written markdown file whose format has drifted (my own count of open tickets was wrong on the first pass because closed markers are written several different ways).
+- **Parse it as-is** — no change to how sessions write, but the parser will keep breaking on formatting drift.
+- **Give tickets structure** — frontmatter or one file per ticket, so the tool reads data instead of guessing. Robust, but it changes the sprint ritual and every session that writes to the board.
+A parser that is wrong is worse than no tool, because people will trust it. This is Andy's call.
+
+**Scope note.** The board covers Olivia and Facebook. The other projects in this repo have handoff docs but no ticket board, so part 2 starts Olivia-only and part 1 covers everything.
+
+**Accept when:**
+1. Both views live behind the existing staff gate as one tool in the storefront, consistent with #164.
+2. Nothing is duplicated: every doc and every ticket is read from the repo at request time, and no copy is stored that could go stale.
+3. Part 1 lists every repo and every project's docs, each with a working GitHub link and a last-commit date.
+4. Part 2 shows all 92 current tickets with story, acceptance criteria and state, grouped closed · in progress · scheduled.
+5. Ticket counts on the page match a manual count of the board on the same day — proven once, in writing.
+6. The page degrades honestly: if a source cannot be read, it says so rather than showing a shorter list.
+7. `tsc`, lint, tests and `next build` clean. Merge = Render deploy.
 
 ### #184 · Part 1 — take Tony's post and the two partner profiles out of Millie's reach, now
 **🟡 S2 · size S — filed 2026-09-09 · CU [`86e35hm1p` — Response to Joe Nilsen (MajestIQ)](https://app.clickup.com/t/86e35hm1p) (Eugene Khayman → Andy).** Part 2 is #185.
