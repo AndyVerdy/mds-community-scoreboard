@@ -30,6 +30,11 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
+| **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | — |
+| **#180** | 🩺 Millie's niche data frozen since 7 Sep — `derive_niches` times out on Anthropic after 3.5h, nightly | 🟡 S2 | S-M | n/a (launchd job) | — |
+| **#181** | 🅿️ **SPRINT 5** · Events catalog hourly on paper, four-hourly in fact — 9 of 13 intervals in the down band, 14/14 runs green | 🔵 S3 | S | n/a (GH Action) | ⛔ blocked: GitHub PAT `actions:write` (Andy) |
+| **#182** | 🅿️ **SPRINT 5** · Five days of recordings invisible to Millie — `zoom_weekly` runs on time but skips videos, no `GROUPOS_PAT` | 🟡 S2 | S | n/a (weekly job) | ⛔ blocked: GroupOS PAT (Andy) |
+| **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | — |
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
 | **#158** | 🏗️ Foreign keys on what we own + nightly orphan check *(the #61 follow-up; external architecture review 2026-09-02)* | 🟡 S2 | M | n/a (SQL) | — |
@@ -145,6 +150,104 @@ Millie is live.
 Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at Meta ⏳ watcher-gated.
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
+
+### #179 · A Make WARNING shows as a tool DOWN on the health dashboard
+**🔴 S1 · size XS — filed 2026-09-09 (health alert 13:15 UTC; Andy: "s1 sprint 5" → moved to Sprint 4, it is a one-liner).** Repo `mds-digest-web`.
+
+> **In plain words:** Make has three run outcomes — success, warning, error. We treat everything that is not success as an error, so a warning lights the dashboard red.
+
+*As MDS staff, I want a red tile to mean something is actually broken, so that I do not learn to ignore the health alert.*
+
+**Evidence it is real.** "Guest Multi-Event Alert (3+ events)" (Make scenario `4676457`) has read DOWN since 2026-09-02. Its only execution that day returned `status: 2`, and Make's own execution-detail endpoint reports that execution as `"status": "WARNING"`. `src/lib/tools-health/make.ts` does `Number(log.status) === 1 ? "success" : "error"`, and `classifyMakeTool()` turns `"error"` into `down`. The scenario is Airtable-triggered on a guest's third Ecom registration, so no clean run is coming to clear it — the red is permanent and the Slack "3 down" count is inflated by it.
+
+**Shape of the fix.** Map Make's status codes as Make defines them (1 success · 2 warning · 3 error) and give warning its own display state instead of collapsing it into failure. This touches every Make-backed tile, not just this one: Luma Manual Add, Slack → Luma, the Stripe subscription syncs.
+
+**Accept when:**
+1. Guest Multi-Event Alert is no longer `down`, with no change made to the scenario itself.
+2. A Make execution with `status: 3` still renders `down`.
+3. A `status: 2` execution renders `degraded` and the tile text says warning, not failed.
+4. A unit test in `make.test.ts` covers all three codes.
+5. `tsc`, lint, tests and `next build` clean. Merge = Render deploy, verified on `/api/version`.
+
+### #180 · Millie's niche data has been frozen since 7 Sep — the nightly derive times out
+**🟡 S2 · size S-M — filed 2026-09-09 (health alert 13:15 UTC; Andy: "s2").** Runs on the Mac launchd job `com.mds.olivia.derivations`.
+
+> **In plain words:** the nightly job that works out what each member does has been failing for two days, so anyone who joined or changed their niche since Sunday is missing from those answers.
+
+*As a member, when I ask who works in a niche, I want the answer to include the people who joined or changed niche this week.*
+
+**Evidence it is real.** `digest.olivia_job_heartbeats`: `derive_niches` last succeeded **2026-09-07 09:31:39 UTC**, 53h before this alert against a 26h limit. It ran again **2026-09-09 13:50:02 UTC** and failed, so this is live, not a stuck flag. Heartbeat detail: `anthropic failed after 3 tries: curl exit 28` — curl 28 is a timeout. The run length is **growing**: 9,345s on 08 Sep, **12,657s** on 09 Sep, so it burns three and a half hours before giving up, nightly, for nothing. `digest.member_niches` holds 1,930 rows over 694 members with `max(derived_at) = 2026-09-07 09:31`. It feeds `profile_texts_for_embedding()`, `member_count()` and `chapter_info()`.
+
+**Shape of the fix.** Find why one call runs 3.5h before timing out — batch size, a missing page bound, or a retry that re-sends the whole set each time — then bound the work per call and make a partial run **commit what it finished** instead of discarding it. Structural, not a longer timeout.
+
+**Also fix while in here (folded in, not its own ticket):** the derivations tile prints the *freshest* of its four job heartbeats, so a failing job displayed as "last success <1h ago" on 2026-09-09 and read as a contradiction. It must print the oldest failing job.
+
+**Accept when:**
+1. `derive_niches` completes and `last_success_at` advances.
+2. `member_niches.derived_at` is same-day after a run.
+3. One run finishes inside a stated wall-clock budget, and that budget is written into the job.
+4. A timeout on one batch no longer discards the batches that already succeeded — proven by forcing a mid-run failure.
+5. The derivations tile shows the oldest failing job's timestamp, not the freshest.
+
+### #181 · 🅿️ SPRINT 5 · The events catalog is hourly on paper and four-hourly in fact
+**🔵 S3 · size S — filed 2026-09-09 · CARRIES TO SPRINT 5 (Andy: "s3 sprint 5"). BLOCKED on a credential only Andy can create.**
+
+> **In plain words:** the tile that watches our events data goes red most nights while nothing is wrong, because GitHub does not run its hourly schedule hourly.
+
+*As MDS staff, I want the events tile red only when the catalog is genuinely stale, so that a real events outage is visible instead of buried in noise.*
+
+**Evidence it is real.** `events-catalog-hourly.yml` declares cron `17 * * * *`. The last 14 runs **all succeeded** and were delivered between 2.4h and 5.6h apart. Of those 13 intervals, measured against `freshnessHourly` (healthy <1.75h · degraded <3.5h · else down): **0 healthy, 4 degraded, 9 in the down band.** The same measurement on 2026-07-29 over 60 runs gave 41% healthy; it is now zero. `olivia-at-sync` shows the worse of its two legs, so this is what reds the "Member profiles ← Airtable sync" tile — member_profiles itself is healthy.
+
+**Shape of the fix.** Stop depending on GitHub's scheduler. Trigger the workflow from n8n via the `workflow_dispatch` API (n8n's cron is punctual to the second) and keep the freshness check as the backstop. **Do NOT widen the freshness bands** — that would hide a genuinely 4h-stale catalog that Millie answers events from.
+
+**Blocked on:** a GitHub PAT with `actions:write`, created by Andy, stored as an n8n credential.
+
+**Accept when:**
+1. n8n fires the workflow every hour and GitHub's own schedule is removed or ignored.
+2. Over 24 consecutive runs, the median delivered interval is under 1.75h.
+3. The tile's healthy band is unchanged.
+4. A failed dispatch from n8n is itself visible, not silent.
+
+### #182 · 🅿️ SPRINT 5 · Five days of recordings are invisible to Millie — `GROUPOS_PAT` is missing
+**🟡 S2 · size S — filed 2026-09-09 · CARRIES TO SPRINT 5 (Andy: "we hve weekly job, so its fine? decide for me" — it is not fine, see below). BLOCKED on a credential only Andy can create.**
+
+> **In plain words:** the weekly video sync runs on time but skips videos entirely, because the token it needs is not on the machine. The cadence is fine; the credential is missing.
+
+*As a member, when I ask about a recent call or session, I want Millie to find the recording rather than answer as if it does not exist.*
+
+**Evidence it is real.** `digest.olivia_job_heartbeats`: `zoom_weekly` has been `degraded` since **2026-09-07 10:22 UTC** with detail `videos NOT synced (no GROUPOS_PAT, catalog newest 2026-09-02)`. `digest.videos_catalog` holds 1,084 rows with `max(synced_at) = 2026-09-04 16:21 UTC`. The job's `max_age_hours` is 216, so **staleness alone will never flag this** — the degradation exists only inside the detail string, which is why it went unnoticed. Recordings published since 2026-09-02 cannot be cited, linked or transcribed. The Public gate treats an unknown video as restricted, so this fails safe rather than leaking.
+
+**Shape of the fix.** Create the GroupOS token, place it on the host that runs `zoom_weekly`, and make a **missing credential fail the job loudly** instead of degrading quietly past a 9-day staleness window.
+
+**Blocked on:** a GroupOS PAT, created by Andy.
+
+**Accept when:**
+1. `videos_catalog.synced_at` is same-day after a run.
+2. Every recording published since 2026-09-02 is present in the catalog.
+3. A missing credential makes the job **error**, not degrade — proven by unsetting the variable once.
+4. New recordings carry a populated `access_restriction`.
+
+### #183 · The admin storefront reshuffles its tiles 10-15s after load, and the pinned band disappears
+**⚪ S4 · size S — filed 2026-09-09 (Andy: "when uploading storefront, I see that the page loads the content for 10-15 sec and then changes the tiles' order. s4").** Repo `mds-digest-web`, follow-up to #164.
+
+> **In plain words:** the storefront draws one layout, then rearranges itself in front of you once the health checks come back.
+
+*As MDS staff, I want the storefront to settle into its final layout on first paint, so that I do not click a tile that moves out from under me.*
+
+**Evidence it is real.** Andy's two screenshots of `digest.mds.co/admin`, the same page seconds apart:
+- **During load** — header reads `9 tools · checking health…`; a **PINNED** band is present, `3 pinned · ★ to unpin`, holding Digest, WhatsApp and Millie; below it `ALL TOOLS · 6 unpinned`. Every tile shows `CHECKING…`.
+- **After health resolves** (`HEALTH CHECKED 10:59:07 AM`, `9 tools · 4 healthy`) — the **PINNED band is gone entirely**, the header now reads `ALL TOOLS · 9 unpinned`, and the tiles sit in a different order, with Millie moved from the pinned row down to the second row.
+
+So it is not only the health labels arriving late: the **pinned set is shown during loading and absent afterwards**, which is what produces the visible reshuffle. Root cause not yet established — reproducing it is the first job, not assuming it.
+
+**Shape of the fix.** Decide the tile order from state that is known at first paint, and let the health result fill labels in place without re-sorting. Whatever the pinned set is, it must be the same before and after the health fetch resolves.
+
+**Accept when:**
+1. The behaviour is reproduced and the cause named in the ticket before any fix.
+2. Tile order and grouping are identical before and after the health checks resolve.
+3. The pinned band does not appear and then vanish; the pinned count is stable across the load.
+4. Health results still update the tiles in place.
+5. `tsc`, lint, tests and `next build` clean. Merge = Render deploy.
 
 ### #174 · A named item from her own list is a drill-down, not a new search
 **🔴 S1 · size S — filed 2026-09-07 (Andy's "poor answers check", case 1 — prod turns 65488–65491, execs 137508 / 137515).**
