@@ -2,6 +2,94 @@
 
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
+
+## 2026-09-09 (close) · Triage + backlog session — no code shipped · **8 tickets filed (#179-#186), 21 priorities changed, board branch `health-tickets-20260909`**
+
+**Trigger (Andy):** a Slack screenshot from Eugene — "Millie cant find any mention of Roman Khan in the WA or FB but ian
+says he saw members talking about him, can you double check the raw data" — then "check WA health", the 13:15 UTC
+tools-health alert, "give me a list of issues", "i need to know what these are impacting", his own S-level calls with
+"agree or disagee?", "feel free to spread these betweek sprint 4 and 5", the CU unindex request, "we are way to s2
+heavy, but i need you to eval all", "check tasks with potential dependencies that workt fixign together", the roadmap
+tool, and "for the next one we are following your plan".
+
+**Roman Khan — Millie was right, and so was Ian.** Swept EVERY text column in the `digest` schema (column list from
+`information_schema`, one `query_to_xml` counting query per column in a single statement): zero "Roman Khan" anywhere
+except Millie's own transcript of the question. Call transcripts too — 13,507 chunks, Jan 2025 → Sep 2026, zero "khan".
+Nearest names are Roman Maksimenko/Maximenko and unrelated Khans. **Ian's guess ("probably because it was a YouTube
+link") was the key.** Pulled every YouTube id out of posts, comments, WhatsApp and `fb_post_links` with one regex (85
+unique videos), fetched all 85 via the public oEmbed endpoint (85/85 titles, no hit — his name is not in the title),
+then fetched the 85 watch pages and grepped: **exactly one hit, `SCJ9XYOQ-ho`**, "How To Get Rich Running An Ecom
+Business (3-Hour Masterclass)" from Open Residency — Roman Khan is the GUEST. His name lives in the page's
+`og:description` (which links `openresidency.com/roman-khan-playbook`) and in a JSON-LD comment where he replies
+himself. The MDS post is **Maximiliano Abreu, 2026-09-05, post `27144574381886039`** (33 reactions, 380 views, 309
+reach), text "One of the best episodes from Open Residency…" plus a bare link. Its 3 comments were fetched 2026-09-08
+21:38 and praise him **without ever naming him**: "Love this man", "Guy is a beast.", "Thank you for sharing!".
+**Root cause: nothing reads link metadata.** `fb_post_links` holds image_url, post_id, domain, target_url, first_seen,
+display_name — no title, no description, and `display_name` is the literal string "youtube" on all 31 YouTube rows.
+Scale if we ever enrich: 1,760 distinct URLs over 505 hosts ever, 240 new in 30 days, 77 YouTube ever / 8 in 30 days.
+Recommendation recorded, not filed: a narrow host allowlist, YouTube first — NOT a general fetcher (x.com is the
+biggest bucket at 222 and blocks anonymous reads). **Coverage holes found while proving it:** FB comments were never
+fetched for 1,737 posts Jul–Dec 2025 (100% unchecked; Jan 2026 onward is 0-2%), FB posts effectively start Jul 2025
+(5 rows before), WhatsApp starts 2026-04-23. No ticket filed for the comment backfill — flagged only.
+
+**WA health — green.** Last ingest 2026-09-08 11:03 UTC, daily at 11:00 UTC confirmed five days running; 100 messages
+in 24h, 1,115 in 7d; `chats_mirror` 18 chats at 02:00 UTC; summaries synced 11:15 UTC. Only quiet chat is MDS Large SKU
+(34 days), which is a quiet chat, not a broken feed — 67 messages total since April.
+
+**The 13:15 UTC health alert — 1 real, 2 monitor bugs, 1 already cleared.** The triage endpoint 403s because the local
+`HEALTH_REPORT_SECRET` no longer matches Render, so everything below came from n8n, Make, GitHub and Supabase directly.
+- **REAL — `derive_niches`**: last success 2026-09-07 09:31 UTC (53h vs a 26h limit), ran again 2026-09-09 13:50 and
+  failed. `anthropic failed after 3 tries: curl exit 28`. Run length GROWING: 9,345s → 12,657s. `member_niches` frozen
+  at 1,930 rows / 694 members. `graph_ledger` recovered on its own.
+- **FALSE RED — the Airtable sync tile** shows the worse of two legs; member_profiles is fine, the hourly events leg is
+  the red. GitHub delivered its 14 last runs ALL GREEN but 2.4-5.6h apart: **0 of 13 intervals healthy, 4 degraded, 9 in
+  the down band.** Same measurement 2026-07-29 gave 41% healthy — now zero.
+- **FALSE RED — Guest Multi-Event**: its one execution (2026-09-02) is `status: 2`, and Make's own detail endpoint calls
+  that **`WARNING`**. `make.ts` does `Number(log.status) === 1 ? "success" : "error"`, so a warning renders DOWN — on
+  every Make tile, and this scenario only fires on a guest's 3rd registration so nothing will clear it.
+- **CLEARED — delivery**: one failed send 2026-09-08 13:19 UTC, Meta 131026 undeliverable, to Robert Tierney; 23.9h old
+  at alert time, since aged out. Now 42 sends, 0 failed.
+- Also found, unflagged by the monitor: **`zoom_weekly` degraded since 2026-09-07** — `videos NOT synced (no
+  GROUPOS_PAT)`, `videos_catalog.synced_at` 2026-09-04, and its `max_age_hours` is 216 so staleness alone never fires.
+
+**Filed — 8 tickets.** #179 Make WARNING→DOWN (S1, XS) · #180 `derive_niches` timeout (S2) · #181 events cron, Sprint 5,
+blocked on a GitHub PAT `actions:write` (S3) · #182 `GROUPOS_PAT`, Sprint 5, blocked (S3 after re-eval) · #183 storefront
+reshuffles its tiles and loses the PINNED band, from Andy's two screenshots (S4) · **#184 + #185** the Millie unindex,
+split on Andy's ruling into the act and the capability, CU `86e35hm1p` linked on both (S1 / S2) · #186 Roadmap tool,
+Sprint 5 (S3). Numbering started at #179 because **#178 was already taken** by the shipped Strong-in-X rails ticket —
+caught and renumbered before commit.
+
+**#184/#185 — what the CU replies changed.** I read the task and its 4 top-level comments but not the 4 threaded
+replies; Andy caught it ("Did you check the CU?"). In them Juancho had DELETED MajestIQ and TraceFuse from Wild Apricot
+and Airtable, Eugene reversed it ("Nothing should be deleted… they should also be searchable in our app"), and Juancho
+restored both. **Deleting is explicitly wrong here.** Verified live: Tony Brink's post `27155813964095414` (2026-09-05)
+is embedded in `content_items`; MajestIQ `6a7ef5653e2bb7bb29849b61` and TraceFuse `671b2e4695467ac97883bcbb` are both
+`published`/`public` with a `search_tsv` and an `embedding`. **Our mirror predates the 2026-09-08 profile revision** —
+`partners_catalog.synced_at` 2026-08-01 (TraceFuse) / 2026-08-17 (MajestIQ), `partner_web_profile.crawled_at`
+2026-09-03 for both, and TraceFuse's rows STILL match review-removal wording. Nothing suppresses retrieval today:
+`fb_post_overrides` is post-type/answered only, and flipping `partners_catalog.status` reverts at `partners_refresh`.
+
+**Re-evaluated all 46 open tickets (Andy: "we are way to s2 heavy… eval all").** 21 priorities changed. **S1 7→5 ·
+S2 26→14 · S3 4→18 · S4 5→6 · standing 3.** Promotes: **#105** (the WhatsApp webhook accepts any POST from anyone and
+intros are live) and **#184**. Demotes: the forms epic #68/#66/#73 to S3, #64 to S2, and twelve S2s nobody is currently
+hurt by. #71 S3→S2 (Andy personally got February for "last virtual event"). Bar written into the board.
+
+**Dependency clusters, now a block at the top of the board.** The three that change what happens next: **#105 gates
+#97**, which is BUILT and waiting on the promote — do not announce intros before the signature check · **#180 is one of
+eight launchd plists that live only on Andy's Mac and in no repo (#64)** · **#116 retires the very lanes #111/#118
+patch**. Plus #182+#17 (one GroupOS token), #184→#185, the forms epic, one web deploy for #179/#181/#183, and a caveat
+that #158 keeps mirrors FK-free so it may not cover #148.
+
+**Not filed, by Andy's call:** the derivations card label (folded into #180) · the stale `HEALTH_REPORT_SECRET` (a
+chore, needs the Render value) · Robert Tierney's undeliverable number (a Slack message, not engineering) · the
+Jul–Dec 2025 FB comment backfill (flagged only) · link-metadata enrichment (recommendation recorded in #186's session,
+no ticket).
+
+**Blocked on Andy:** GitHub PAT `actions:write` (#181) · GroupOS PAT (#182 + #17) · Circleback details (#36) · the
+parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call (#157, a decision not a ticket).
+
+**Next:** Andy's word — "for the next one we are following your plan". Top of the queue is **#105 + #97 together**.
+
 ## 2026-09-08 (evening) · Olivia / MDS Personas — **#178 SHIPPED: the rails and the cohort page rank by rank, so #1 is first** (Render `15700f2`)
 
 **Trigger (Slack, 21:27).** Eugene, under a "Strong in Logistics & 3PL" screenshot: *"How come Mo isnt at the

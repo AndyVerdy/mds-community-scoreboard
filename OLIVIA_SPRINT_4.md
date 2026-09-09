@@ -26,20 +26,48 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 
 ## 🎯 QUEUE (Andy 2026-08-20 close): ~~① 2025 transcript batch~~ **① DONE 2026-08-21** (232/233 videos · 144.8 hr · $33.42 AAI · 6,429 chunks · 232 in-session summaries · embedded · gate 0 · entitlement probed both ways; the 1 skip = a 10-second silent teaser; no fresh export was needed — links alive to 08-27) → ~~② smoke~~ **② DONE 2026-08-21 overnight** (`OLIVIA_SMOKE_2026-08-21.md`: bank 90/100 effective · slice v2 11/11 videos found problem-first · timestamps now cited · Eugene case dead) → ③ #97 brokered-intros build (POC proven; matching restrictions LOCKED 2026-08-21 — see #97) → ~~④ rename bot to "Millie"~~ **④ CLOSED 2026-08-21** (close block below — staging says Millie, checker knows the name; Meta flip rides the watcher). **<2024 years: Andy undecided ("Not sure about <2024").**
 
+## 🔗 WORK THESE TOGETHER (Andy 2026-09-09: "we are following your plan")
+Re-prioritised 2026-09-09 — open 46: **S1 5 · S2 14 · S3 18 · S4 6 · standing 3** (was S1 7 · S2 26 · S3 4 · S4 5).
+Bar used: **S1** = a member or member-facing surface is wrong today, or we are exposed · **S2** = real defect, nobody
+wrong right now · **S3** = worth doing, no pressure, or blocked on someone else · **S4** = no cost to leaving it.
+
+| Cluster | Why together |
+|---|---|
+| **#105 + #97** | #97 is BUILT and waiting on the promote; #105 is "before any wide intros announcement" and the webhook still accepts any POST from anyone. Do not announce intros first. |
+| **#180 + #64** | `derive_niches` is one of the eight launchd plists that exist only on Andy's Mac and in no repo. Fixing #180 alone fixes one of eight. |
+| **#116 before #111 / #118** | Finder phase 2-3 retires `member_match` / `member_count` / the schedule matcher — the very lanes #111 and #118 patch. Confirm the overlap or the work is thrown away. |
+| **#182 + #17** | One GroupOS PAT unblocks both; #17 is "stop pulling videos and partners by hand", so #182 alone means pulling by hand again next week. |
+| **#184 → #185** | A hand edit for #184 reverts at the next re-embed — exactly what #185 exists to prevent. Build the smallest real mechanism, then apply it to the three keys. |
+| **#68 → #66 → #73 (+ #74, #67)** | One forms epic: #66's mapping was split out to #68, #67 depends on #66, #73 needs the mapping, #74's orphans only matter once forms are wired. |
+| **#179 + #181 + #183** | All `mds-digest-web`; one branch, one Render deploy. The stale `HEALTH_REPORT_SECRET` chore rides along. |
+| **#158 vs #148 / #74** | All orphan problems, but #158 states mirrors stay FK-free on purpose and #148 IS a mirror — check the nightly orphan check reaches mirrors before merging them. |
+
+**Blocked on Andy:** GitHub PAT `actions:write` (#181) · GroupOS PAT (#182, #17) · Circleback details (#36) ·
+the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, which is a decision not a ticket (#157).
+
+
 ## 📋 At a glance
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
+| **#186** | 🅿️ **SPRINT 5** · 🗺️ Roadmap tool — a dev index and a live task list, both pulled from the repo, never hand-maintained (Andy 2026-09-09) | 🔵 S3 | M-L | — | — |
+| **#184** | 🙈 Part 1 — unindex Tony Brink's post + MajestIQ/TraceFuse from Millie, nothing deleted for members ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🔴 S1 | S | — | — |
+| **#185** | 🚧 Part 2 — a general way to keep restricted content out of Millie: blacklist, detection, or both ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🟡 S2 | M | — | — |
+| **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | — |
+| **#180** | 🩺 Millie's niche data frozen since 7 Sep — `derive_niches` times out on Anthropic after 3.5h, nightly | 🟡 S2 | S-M | n/a (launchd job) | — |
+| **#181** | 🅿️ **SPRINT 5** · Events catalog hourly on paper, four-hourly in fact — 9 of 13 intervals in the down band, 14/14 runs green | 🔵 S3 | S | n/a (GH Action) | ⛔ blocked: GitHub PAT `actions:write` (Andy) |
+| **#182** | 🅿️ **SPRINT 5** · Five days of recordings invisible to Millie — `zoom_weekly` runs on time but skips videos, no `GROUPOS_PAT` | 🟡 S2 | S | n/a (weekly job) | ⛔ blocked: GroupOS PAT (Andy) |
+| **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | — |
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
-| **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🔴 S1 | M | — | — |
-| **#158** | 🏗️ Foreign keys on what we own + nightly orphan check *(the #61 follow-up; external architecture review 2026-09-02)* | 🟡 S2 | M | n/a (SQL) | — |
-| **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔴 S1 | M | — | — |
+| **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🟡 S2 | M | — | — |
+| **#158** | 🏗️ Foreign keys on what we own + nightly orphan check *(the #61 follow-up; external architecture review 2026-09-02)* | 🔵 S3 | M | n/a (SQL) | — |
+| **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔵 S3 | M | — | — |
 | **#100** | 🔑 Identity aliases — one member, all their known emails | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED 2026-08-20** — 5,763 aliases, resolver live, 12/12 verify, gate 0 |
 | **#101** | 🎬 Video transcripts + real access gating | 🔴 S1 | L | n/a (SQL+data) | ✅ **CLOSED 2026-08-20** — 2,730 chunks, video_access live, gate 263/0 · NEXT: 2025 batch |
 | **#162** | 🎬 Transcripts for the 33 videos published 25 Aug–4 Sep (AI Mastermind · AI Scaling Live · Summit day 2) — AssemblyAI from the S3 links the dev opened 2026-09-04 | 🔴 S1 | S | n/a (data) | ✅ **CLOSED 2026-09-04** — 33/33 transcribed ($2.62), 697 chunks, 33 summaries, 5 new restricted videos → 44 grants each, 2026 = 212/212, E2E quote proven, gate 313/0 |
 | **#72** | 🚦 LOAD TEST — **NOW the announcement, not the Mille demo. Biggest open risk; never run** | 🔴 S1 | M | — | — |
-| **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔴 S1 | M | — | — |
-| **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔴 S1 | L | — | — |
+| **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔵 S3 | M | — | — |
+| **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔵 S3 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
 | **#94** | 🧠 Expertise Ledger v2 — the living skill sheet (Eugene #2 finale) | 🔴 S1 | M | ✅ probed | ✅ **CLOSED 2026-08-19** — 51 topics live, verify 9/9, gate 0 |
 | **#95** | Equalizer for the members lane — BOTH advice lanes wired | 🔴 S1 | S | ✅ probed ×2 | ✅ **CLOSED 2026-08-19** — repeat asks 8/8→0/8 shared, gate 0 |
@@ -47,32 +75,32 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#97** | Brokered intros — "message the person she recommends", consent-first | 🔴 S1 | M | ✅ route matrix · staging taps/tool · fix-wave re-reviews | ✅ **BUILT 2026-08-22 — READY FOR PROMOTE (Andy); real tap E2E closes it** |
 | **#98** | Who-to-meet gates on registrations ledger (smoke Q37) | 🔴 S1 | S | ✅ E2E re-probed | ✅ **CLOSED 2026-08-20** — ledger authority both branches |
 | **#99** | "Show me the rest" for who-to-meet (smoke Q49) | 🟡 S2 | S | ✅ E2E via canary | ✅ **CLOSED 2026-08-20** — continuation note in-tool, fresh re-call proven |
-| **#102** | 🎬 Video recommendation ranking — time decay · speaker weight · event bonus (Andy/Eugene Slack 2026-08-21) | 🟡 S2 | M | — | ⏸ AFTER the big smoke test |
+| **#102** | 🎬 Video recommendation ranking — time decay · speaker weight · event bonus (Andy/Eugene Slack 2026-08-21) | 🔵 S3 | M | — | ⏸ AFTER the big smoke test |
 | **#112** | 🔗 Offer→answer binding | 🔴 S1 | S | ✅ exact failing sequence returns BOTH summaries | ✅ **CLOSED 2026-08-22** — the #80 binding existed; its ACCEPT_RE end-anchor made "yes booth" miss. Fix: affirmative may carry a quantifier/typo (both·booth·all·either·that one) while a topic word still routes normally; binding now covers EVERY offered video, not just the last. Prod `e175c5a3`, gate 0 |
 | **#104** | Adjacent-turn topic lag | 🔴 S1 | S-M | ✅ **VERIFIED: rerun of all 3 original fail-chains with recreated adjacency = 3/3 on-topic PASS** | ⛔ rides the Millie promote — **root cause: FC caught all 3, Gate Verdict pass-postfilter neutralized the catch (topic-mismatch is not a fact-claim); fix = off_topic field in FC rubric + non-filterable in Gate Verdict (regenerate, cap 2). Probe: exact failing sequence now on-topic, off_topic field live in FC output, gate 263/exit 0. Bonus same session: load_speakers.py --rescan (guest-becomes-member promotion in place, 27 checked/0 due)** |
-| **#105** | 🔐 Verify Meta's webhook signature (`X-Hub-Signature-256`) on every inbound — filed from #97's final review (Andy OK 2026-08-22) | 🟡 S2 | S | — | ⏸ next session, BEFORE any wide intros announcement |
+| **#105** | 🔐 Verify Meta's webhook signature (`X-Hub-Signature-256`) on every inbound — filed from #97's final review (Andy OK 2026-08-22) | 🔴 S1 | S | — | ⏸ next session, BEFORE any wide intros announcement |
 | **#106** | 🙈 Staff / non-member records must never surface in member-facing lists (event_who names, who-to-meet, intro picker) — Andy 2026-08-22: "make sure I'm not searchable" | 🟡 S2 | S | SQL-verified exposure map | ✅ **LIVE 2026-08-24** (SQL, prod-shared) — 5 `#106` checks in the leak gate pass: `member_card`, `member_card_v2`, `expertise_search`, `member_match_v2`, finder |
 | **#107** | 🗣️ Millie-only self-name (Format Reply PS still says Olivia) + who-to-meet ends with "connect you with one of them?" Yes/No buttons → Yes = intro picker (Andy 2026-08-22: "Millie and only Millie — official name"; "ask if he would like to connect… if yes provide a list") | 🔴 S1 | S-M | — | ✅ **PROMOTED 2026-08-22 ~05:24Z (Andy) — prod `8f48fdb8`**: Millie PS (prepended when button-eligible) · who-to-meet ends with the exact offer + Yes/No buttons (96779) · Yes → member_intro, no plan replay (review caught the 500-char-trim defeat → `last_olivia_intro_offer` flag, proven 96864) · non-attendee no offer (96787) · gate 267 EXIT 0 |
 | **#109** | 📨 Requester-side intro notices must be TEMPLATES (accept / decline / 7-day lapse) — free-form text dies outside the 24h window (Meta 131047); found 2026-08-22 when Andy questioned the lapse promise | 🔴 S1 | S-M | n/a (route — no staging tier) | ✅ **SHIPPED 2026-09-01** `cae87c1` — `src/lib/intro-notices.ts` + template-first route with free-form fallback; 15 unit tests incl. a standing guard that no requester path can be text, 144/144 on main; live sweep probe expired=1 failed=0, lapse notice accepted by Meta (wamid …9B34A86B928F28CF3C). ⚠️ closed-window delivery not yet observed (probe requester's window was open) · lapsed template is MARKETING, so 131049 can still cap it |
-| **#110** | 🧾 Intro-tap turns are not saved to conversation history — `Save Conversation` on the intro-tap path errors on a `$('Resolve Member')` reference (swallowed by onError); SQL-proven zero rows for tap turns; no member impact, no effect on no-replay flag | 🟡 S2 | S | SQL + exec 97071 | ⏸ next session |
+| **#110** | 🧾 Intro-tap turns are not saved to conversation history — `Save Conversation` on the intro-tap path errors on a `$('Resolve Member')` reference (swallowed by onError); SQL-proven zero rows for tap turns; no member impact, no effect on no-replay flag | 🔵 S3 | S | SQL + exec 97071 | ⏸ next session |
 | **#111** | 🎯 Who-to-meet results swing with the model's free-text topic query (Aaron: q="Retail, PPC, Amazon Ads, Sourcing, AI Automation" → 7 matches; q="Amazon PPC, Retail & Wholesale, Credit Cards & Travel Hacks, AI & Automation, Sourcing & Suppliers" → 1) — matcher should use the asker's own ledger topics deterministically + alias-normalize free text (execs 97152 vs 97286, same day) | 🟡 S2 | S-M | exec diff | ⏸ next session (or fold into #102) |
 | **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 292 EXIT 0, 26 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
 | **#113** | 🔄 Summit event refresh — the whole event (activities, sessions, rooms, access, rosters) reloads from a GroupOS export, removals included | 🔴 S1 | M | ✅ LOADED 2026-08-23 from the 09:52Z scan: activities 50→86 · access edges 180→227 · grants 183→698 · full descriptions; idempotent; self-test 7/8 | ✅ CLOSED — live lane serves the new day one |
 | **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ route live (`9d0ec41`) · seed PROMOTED `bbd597b7` 2026-08-23 02:49 ET · prod probe Sunday/Monday + full day | ✅ CLOSED — Andy tested on WhatsApp 2026-08-23 (ET afternoon, Singapore already on the next day): correct |
-| **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🟡 S2 | S | — | ⏸ next session |
-| **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🟡 S2 | L | — | ⏸ own plan |
-| **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
+| **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🔵 S3 | S | — | ⏸ next session |
+| **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🔵 S3 | L | — | ⏸ own plan |
+| **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | ⚪ S4 | S | — | ⏸ next session |
 | **#118** | 🗺️ `event_who`'s `op=people` returns a ranked/personalized subset (#99 behavior), not a flat roster, for a plain "who is coming" ask — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
-| **#119** | 🧪 Bank B — a second eval bank for everything built since the 100-question bank was frozen (2026-08-16): schedule + venue-day, Summit registration & who-to-meet, intros, 2025-26 transcripts/quotes, speakers, offer binding, the finder — ORGANIC questions only (real member asks from `olivia_messages` since 08-16), `expect` from the tickets' ACs/rulings, sized by the questions not padded; runner gets `--bank`; first staging run scored against the tickets' truth | 🟡 S2 | M | ticket ACs + `olivia_question_labels` | 🔨 building 2026-08-23 (Andy: "file #119, do it while bank A runs") |
-| **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🟡 S2 | S | — | ⏸ waits for event #2's export |
-| **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🟡 S2 | M | — | — |
-| **#74** | Identity: 51% of form submissions belong to nobody | 🟡 S2 | M | — | — |
+| **#119** | 🧪 Bank B — a second eval bank for everything built since the 100-question bank was frozen (2026-08-16): schedule + venue-day, Summit registration & who-to-meet, intros, 2025-26 transcripts/quotes, speakers, offer binding, the finder — ORGANIC questions only (real member asks from `olivia_messages` since 08-16), `expect` from the tickets' ACs/rulings, sized by the questions not padded; runner gets `--bank`; first staging run scored against the tickets' truth | 🔵 S3 | M | ticket ACs + `olivia_question_labels` | 🔨 building 2026-08-23 (Andy: "file #119, do it while bank A runs") |
+| **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🔵 S3 | S | — | ⏸ waits for event #2's export |
+| **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🔵 S3 | M | — | — |
+| **#74** | Identity: 51% of form submissions belong to nobody | 🔵 S3 | M | — | — |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
-| **#71** | "Virtual event" vs "call" vs "recording" — two contradicting "latest" answers | 🔵 S3 | M | — | — |
+| **#71** | "Virtual event" vs "call" vs "recording" — two contradicting "latest" answers | 🟡 S2 | M | — | — |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
 | **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
-| **#36** | New data source — CIRCLEBACK | 🚀 S4 | L | — | — |
+| **#36** | New data source — CIRCLEBACK | ⚪ S4 | L | — | — |
 | **#32** | What Olivia costs | 🔥 — | S | — | — |
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
@@ -80,7 +108,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#147** | 🔀 "Is this member registered?" answered twice by two sources that disagree (agenda says yes, who-to-meet says no) | 🔴 S1 | M | n/a (SQL) | ⏸ **PAUSED mid-ticket 2026-08-25 — HALF LIVE**: measured 36 disagreements (S1 confirmed); `member_alias_ids` + `registration_status` + `is_registered` shipped and `event_who` wired (130 → 145 registered, 15 recognised, 0 lost, gate 306 EXIT 0). BLOCKED on Andy's choice of authority shape; event resolver + schedule route not started |
 | **#146** | 🔇 A member who hides their WhatsApp number is invisible — silent drop, no answer, no error (Danson Hui) | 🔴 S1 | M | ✅ built + probed | ✅ **PROMOTED 2026-08-25** `64995b68` — Danson live. Remainders open: silent-drop alarm · hidden-number history keyed by the opaque id · ~~refusal path bypasses the SELFTEST silent gate~~ **fixed under #125** |
 | **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | ✅ 319 graded, 8 regressions fixed | ✅ **CLOSED + PROMOTED 2026-08-25** — 311/319 hold (97.5%); links 654→808, dead links 5→0, dates 641→862, route changes 0; prod `8bb0827d` |
-| **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🟡 S3 | S | — | ⏸ filed 2026-08-25 |
+| **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🔵 S3 | S | — | ⏸ filed 2026-08-25 |
 | **#126** | 🧾 WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id` | 🟡 S3 | XS | n/a (audit) | ✅ **CLOSED 2026-08-25 — NOT REPRODUCIBLE**: field map proven correct against mirror exec 110330; all 57/671 NULLs are genuinely unmatched. Audit found 11 matched members with no `AT Database Status` (Airtable-side, Andy/ops) and the stale-row gap, filed as #148 |
 | **#149** | 🗣️ Two real answers were wrong in shape — a live event called finished, a yes/no answered with machinery | 🔴 S1 | M | ✅ staging turns 52883/52885 | ✅ **PROMOTED 2026-08-26** `7abb9fc9` (rules+clamp) · route `eventPhase` pushed `102bf14` (Render deploys on push) |
 | **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
@@ -90,11 +118,11 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#155** | 💬 A chat quote carries its own message link, and "what should I know" is not a capability tour | 🟡 S2 | M | — | — |
 | **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ✅ **PROMOTED 2026-08-26** `15ff4978` — verified 2026-08-28: prod/staging graphs identical (only webhook path differs), gate 306 PASS · 0 FAIL · EXIT 0; re-embed of 7 still awaits Andy |
 | **#156** | 💸 Sonnet 5 vs GPT-5.6 Terra on the locked 100 bank — price + quality, dual judge, prod untouched (bench harness, no n8n) | 🟡 S2 | S | — (harvest run only, no edits) | ✅ **DELIVERED 2026-09-02** `OLIVIA_MODEL_COMPARE_2026-09-02.md` — Sonnet 5.4% / $0.0211 · Terra-medium 3.3% / $0.0310 · Terra-none 7.6% / $0.0237 (Sonnet judge); nothing promoted |
-| **#157** | 🧑‍⚖️ Review the Sonnet 5 vs GPT-5.6 Terra bench (#156) — Andy's vendor call: stay on Claude, port to OpenAI, or re-test | 🟡 S2 | S | — (reading + decision) | — |
+| **#157** | 🧑‍⚖️ Review the Sonnet 5 vs GPT-5.6 Terra bench (#156) — Andy's vendor call: stay on Claude, port to OpenAI, or re-test | 🔵 S3 | S | — (reading + decision) | — |
 | **#159** | 🕳️ Partners and events go dark in meaning search — 75 partners without a vector (35% of reviews, 48% of claims), the weekly delta missed 28 of 142 changed partners (Prosperlytics 5.0★ never shown for "bookkeeping") | 🔴 S1 | S | n/a (data + scripts) | ✅ **CLOSED 2026-09-03** — 75 partners + 36 events re-embedded (dark 0/0), nightly `embed_catalogs` + weekly re-embed, gate +2 checks (313/0), `partner_lookup_v2("bookkeeping accounting")` → Prosperlytics #1 |
 | **#160** | 🌐 Partner web profiles — crawl every partner site (services · pricing · people · proof) so Millie knows what a partner does and who runs it; founder ↔ partner link (Mudit Jain → Prosperlytics) | 🟡 S2 | M | ✅ staging `cefe0133` — probes: cost + who-runs-it answered from the site | ✅ **PROMOTED 2026-09-04 00:17Z (Andy: "promote") — prod `30fd7e6f`**, gate green in-promote, prod probe exec 131383: Shea's question → Prosperlytics 5.0★ first with site facts + pricing; 506 profiles, 1,173 people, 52 speakers linked, web text in the partner vectors |
 | **#161** | 🎴 MDS Personas — staff library of members (library v2 · character sheet · cohort) on the persona + 51-stat ledger, Claude Design handoffs v1 + v2 | 🟡 S2 | L | ✅ built + reviewed LOCALLY | ✅ **SHIPPED 2026-09-04 (Andy: "lets promote personas")** — merged to `main` in both repos, Render deploy `e212bcf` — 3 screens live on `localhost:3000/personas`, 7 read-only RPCs, 639/760 portraits in Storage, 758/758 blurbs, gate 323/0, 359 tests, `npm run build` exit 0; 13 tasks + 5 feedback rounds + final review wave on `personas-20260904` (both repos); merge to main = Render deploy |
-| **#163** | 🔢 Personas scoring review — what each number means (level · stat value · today/peak · rank), cohort floor 60 hides the tail, "peak floor applied", asks = gives overlap. Andy 2026-09-04: "the worst performer in each category never goes below 60" | 🟡 S2 | M | filed | 📝 filed 2026-09-04 (Andy: "file it, we will check these things later, the whole scoring system") — after #161 ships |
+| **#163** | 🔢 Personas scoring review — what each number means (level · stat value · today/peak · rank), cohort floor 60 hides the tail, "peak floor applied", asks = gives overlap. Andy 2026-09-04: "the worst performer in each category never goes below 60" | 🔵 S3 | M | filed | 📝 filed 2026-09-04 (Andy: "file it, we will check these things later, the whole scoring system") — after #161 ships |
 | **#164** | 🎨 Admin storefront + seven self-contained tools — split the shared nav bar into a launcher plus per-tool navigation, merge the three WhatsApp pages into one tabbed tool (design handoff `~/Downloads/design_handoff_mds_admin/`) | 🟡 S2 | L | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 00:19** — `mds-digest-web` `main` = `cfb3350`, Render live 00:22; 7 admin routes answer, `/dashboard` unaffected, all 12 retired URLs redirect; 91 commits, 200 files, 882 tests, `next build` clean. Open items (not blocking) in that repo's `docs/ADMIN_OPEN_ITEMS.md` |
 | **#165** | 🃏 The Personas sheet does not explain itself — FOCUS / GIVES / ASKS carry no source, "In their words" is a model paraphrase, 11 silent categories hide in a grey footer, "Top 6" reads as a filter and is an expand control | 🟡 S2 | M | n/a (web — Render, no staging tier) | ✅ **BUILT on `165-personas-sheet-20260907` (`50c7a4a`), awaiting Andy's look before merge** — all 18 categories as rows, provenance on every block (`docs/PERSONAS_FIELD_PROVENANCE.md`), "In their words" gone, "Top 6" → "Open top 6"; found 1,016 detail stats across 503 members that were unreachable; Ryan Pace's Member 360 correctly empty (Stripe sync lag); 892 tests, `next build` exit 0; open call: bar marker at 70 vs "60 is strong" copy |
 | **#166** | 🔲 Personas and Digest have no tool switcher — every other tool got the header grid button in #164; these two never render `ToolHeader` | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "166 is good, we can promote it")** — merge `b91f2a4`, confirmed live via `/api/version`; switcher in the Personas top bar and both Digest headers, `← All tools` link retired, 1–7 jumps with no storefront round trip; fixed on the way: dismiss layer shrunk to header height under `backdrop-filter`; 920 tests, `next build` exit 0; open call: two grid icons (switcher + Browse) in the Personas header |
@@ -145,6 +173,185 @@ Millie is live.
 Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at Meta ⏳ watcher-gated.
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
+
+### #186 · 🅿️ SPRINT 5 · Roadmap — one place that shows the work, built from the repo rather than maintained by hand
+**🔵 S3 · size M-L — filed 2026-09-09 · CARRIES TO SPRINT 5 (Andy: "build another tool - roadmap or something like this … 1 is for real human devs, 2 is for anyone on the team to stay on track").** Repo `mds-digest-web`, the eighth tool in the #164 storefront. Priority chosen by me, not by Andy.
+
+> **In plain words:** two views on one page. A technical index a new developer can start from, and a live task list anyone on the team can read without asking Andy.
+
+*As a new developer, I want one page that points me at every repo, schema and technical doc, so that I can start without a handover call. As anyone on the team, I want to see what is closed, in progress and scheduled, with the story behind each one, so that I do not have to ask what is happening.*
+
+**Why it has to pull, not copy.** This repo alone holds **271 markdown docs** across a dozen unrelated projects (Census, GroupOS, Application v3, Olivia, MRR, TikTok, Singapore, Member 360, WA digest, tools-health, the Scorecard), plus 8 more in `mds-digest-web`, four session logs, and the `db/` schema export. Nobody will hand-maintain a second copy of that, and a stale index is worse than none. Andy: *"Ideally, if these somehow can be pulled automatically, so we dont need to update them separately."*
+
+**Part 1 — the developer index.** Rendered from the repos at request time: `mds-community-scoreboard` and `mds-digest-web` (both `github.com/AndyVerdy/…`), their READMEs and handbooks, `OLIVIA_HANDBOOK.md` as Olivia's front door, `CLAUDE.md`, the `db/` schema export (tables, views, functions, grants, RLS), and per-project docs grouped by project rather than dumped alphabetically. Every entry carries a link straight to the file on GitHub and its last-commit date, so staleness is visible instead of assumed.
+
+**Part 2 — the task list.** Built from the boards that already exist and are already canonical: `OLIVIA_SPRINT_4.md` (**92 tickets today — 45 open, 47 closed**), `OLIVIA_BACKLOG_ARCHIVE.md` (34 shipped, evidence intact), `FB_BACKLOG.md` (8). Each ticket shows its number, title, priority, size, story, acceptance criteria, current state and — for closed ones — the evidence block. Grouped closed · in progress · scheduled, exactly as Andy asked.
+
+**The fork to decide before building — do not choose this in code.** The board is one large hand-written markdown file whose format has drifted (my own count of open tickets was wrong on the first pass because closed markers are written several different ways).
+- **Parse it as-is** — no change to how sessions write, but the parser will keep breaking on formatting drift.
+- **Give tickets structure** — frontmatter or one file per ticket, so the tool reads data instead of guessing. Robust, but it changes the sprint ritual and every session that writes to the board.
+A parser that is wrong is worse than no tool, because people will trust it. This is Andy's call.
+
+**Scope note.** The board covers Olivia and Facebook. The other projects in this repo have handoff docs but no ticket board, so part 2 starts Olivia-only and part 1 covers everything.
+
+**Accept when:**
+1. Both views live behind the existing staff gate as one tool in the storefront, consistent with #164.
+2. Nothing is duplicated: every doc and every ticket is read from the repo at request time, and no copy is stored that could go stale.
+3. Part 1 lists every repo and every project's docs, each with a working GitHub link and a last-commit date.
+4. Part 2 shows all 92 current tickets with story, acceptance criteria and state, grouped closed · in progress · scheduled.
+5. Ticket counts on the page match a manual count of the board on the same day — proven once, in writing.
+6. The page degrades honestly: if a source cannot be read, it says so rather than showing a shorter list.
+7. `tsc`, lint, tests and `next build` clean. Merge = Render deploy.
+
+### #184 · Part 1 — take Tony's post and the two partner profiles out of Millie's reach, now
+**🔴 S1 · size S — filed 2026-09-09 · CU [`86e35hm1p` — Response to Joe Nilsen (MajestIQ)](https://app.clickup.com/t/86e35hm1p) (Eugene Khayman → Andy).** Part 2 is #185.
+
+> **In plain words:** one post and two partner profiles must stop coming back in Millie's answers, while staying exactly where they are for members.
+
+*As MDS staff, I want Millie to stop surfacing this specific post and these two partners when a member asks about reviews, without anything being deleted anywhere else.*
+
+**The request, verbatim (CU comment, Eugene → Andy, 2026-09-09):** "Andy from Millie, please remove that post, like Tony's post, so it doesn't get surfaced if anybody asks about reviews and stuff like that. It's not indexable. Can we unindex the post? and also unindex the partner profile."
+
+**What already happened in the CU thread, and must not be repeated.** Juancho deleted MajestIQ and TraceFuse from Wild Apricot and Airtable and revised their MDS app profiles. Eugene reversed it: *"no, MajestIQ and TraceFuse should still be records in Wild Apricot and Airtable, and they should also be searchable in our app. Nothing should be deleted. We simply said that we would revise the profiles to not mention review manipulation."* Juancho then restored both. **Deleting is explicitly wrong here.** Eugene has asked Ian Sells and Anita Petrov to double-check it landed.
+
+**The three things, verified live 2026-09-09.**
+- **Tony Brink's post** `27155813964095414`, 2026-09-05, "Improving Star Rating – New Vendor Is Crushing It". In `digest.fb_posts`, mirrored to `digest.content_items` as `fb_post`, `embedding` populated — keyword and semantic retrieval both reach it. Eugene turned off commenting on it and is deliberately not deleting it.
+- **MajestIQ** (`6a7ef5653e2bb7bb29849b61`) and **TraceFuse** (`671b2e4695467ac97883bcbb`) — both `status = published`, `access_restriction = public`, both carrying a `search_tsv` and an `embedding`, so `partner_lookup_v2` and the finder reach them.
+- **Our mirror predates the revision.** The app profiles were revised on 2026-09-08. `partners_catalog.synced_at` is **2026-08-01** for TraceFuse and 2026-08-17 for MajestIQ; `partner_web_profile.crawled_at` is 2026-09-03 for both. TraceFuse's catalog row **and** its crawled profile still match review-removal language today. So even setting the unindex aside, Millie is holding the wording Eugene ordered removed.
+
+**Shape of the fix.** Suppress the three keys at the retrieval layer, and separately re-sync the catalog and re-crawl both web profiles so the revised wording replaces the old text rather than sitting behind a flag. Nothing is deleted from Facebook, Wild Apricot, Airtable or the MDS app.
+
+**Open question for Andy and Eugene — do not decide in code.** Eugene wrote "Tracefuse should receive similar treatment." Suppressing a partner's own profile is one thing; suppressing **members' own posts** about that partner is another, and there are at least five live ones (Maxwell Sigurdson-Scott 2026-08-28, Keith Mander 2026-08-04, Justin Beck 2026-04-14, Craig Brockie 2026-03-24, Eric Hulli 2025-12-09). This ticket covers the two partner profiles and Tony's single post only.
+
+**Accept when:**
+1. Post `27155813964095414` is returned by no Millie retrieval path — proven with the question that surfaced it, before and after.
+2. MajestIQ and TraceFuse are returned by neither `partner_lookup_v2` nor the finder, proven with a real query vector.
+3. The post is still live on Facebook; both partners are still records in Wild Apricot and Airtable and still searchable in the MDS app.
+4. `partners_catalog` and `partner_web_profile` carry the post-revision text for both partners, with no review-removal wording left in either row.
+5. A leak-gate check asserts none of the three keys appears in any answer's evidence.
+
+### #185 · Part 2 — a general way to keep restricted content out of Millie: blacklist, detection, or both
+**🟡 S2 · size M — filed 2026-09-09 · CU [`86e35hm1p`](https://app.clickup.com/t/86e35hm1p) (Andy 2026-09-09: "this is a two-part job. unindex post, and in general process of either blacklist things or teach bot on how to detect restricted content").** #184 is the one-off act; this is the capability.
+
+> **In plain words:** doing this by hand once is fine. Doing it every time somebody flags something is not, so we need either a proper blacklist or a bot that recognises the topic itself.
+
+*As MDS staff, I want a standing way to keep a class of content out of Millie's answers, so that the next flagged post does not need an engineer and does not silently come back.*
+
+**Why a one-off is not enough.** Nothing in the schema suppresses retrieval today: `digest.fb_post_overrides` carries post type and answered state only. Flipping `partners_catalog.status` reverts at the next `partners_refresh` and would also pull the offer from members, which Eugene explicitly rejected. Any manual edit is undone by the nightly re-embed. So a hand fix quietly expires, which is the worst failure mode — it looks done.
+
+**The fork to decide, with Andy and Eugene.**
+- **Blacklist** — an explicit, auditable list of suppressed keys. Precise, reversible, no false positives, but only as good as who remembers to add to it.
+- **Detection** — Millie recognises the restricted class itself (review manipulation, and whatever classes come next) and declines to surface it, list or no list. Catches the cases nobody flagged, and risks suppressing legitimate discussion. Note this is a **topic** rule, distinct from the #176 restriction spine, which is about who may see a source.
+- Likely both: a list for what we know, detection for what we do not.
+
+**Shape of the fix.** Whichever branch, it must be enforced once at the retrieval layer so every lane inherits it (content search, partner lookup, the finder, the Facebook draft tool, Ask Millie), survive the nightly re-embed and every catalog refresh, be reversible in one edit, carry who and why, and be visible to staff in the admin rather than living in a migration.
+
+**Accept when:**
+1. The fork above is decided in writing by Andy and Eugene before any code.
+2. Adding a suppression is a staff action in the admin, not an engineering task.
+3. A suppressed key survives a nightly re-embed and a `partners_refresh` run, proven by running both.
+4. Lifting a suppression restores retrieval in the same edit.
+5. Every entry records who, when and why, and the list is readable by staff.
+6. The leak gate asserts the whole list, not one hand-picked key.
+7. If detection ships, it is measured on a labelled set with its false-positive rate stated, not assumed.
+
+### #179 · A Make WARNING shows as a tool DOWN on the health dashboard
+**🔴 S1 · size XS — filed 2026-09-09 (health alert 13:15 UTC; Andy: "s1 sprint 5" → moved to Sprint 4, it is a one-liner).** Repo `mds-digest-web`.
+
+> **In plain words:** Make has three run outcomes — success, warning, error. We treat everything that is not success as an error, so a warning lights the dashboard red.
+
+*As MDS staff, I want a red tile to mean something is actually broken, so that I do not learn to ignore the health alert.*
+
+**Evidence it is real.** "Guest Multi-Event Alert (3+ events)" (Make scenario `4676457`) has read DOWN since 2026-09-02. Its only execution that day returned `status: 2`, and Make's own execution-detail endpoint reports that execution as `"status": "WARNING"`. `src/lib/tools-health/make.ts` does `Number(log.status) === 1 ? "success" : "error"`, and `classifyMakeTool()` turns `"error"` into `down`. The scenario is Airtable-triggered on a guest's third Ecom registration, so no clean run is coming to clear it — the red is permanent and the Slack "3 down" count is inflated by it.
+
+**Shape of the fix.** Map Make's status codes as Make defines them (1 success · 2 warning · 3 error) and give warning its own display state instead of collapsing it into failure. This touches every Make-backed tile, not just this one: Luma Manual Add, Slack → Luma, the Stripe subscription syncs.
+
+**Accept when:**
+1. Guest Multi-Event Alert is no longer `down`, with no change made to the scenario itself.
+2. A Make execution with `status: 3` still renders `down`.
+3. A `status: 2` execution renders `degraded` and the tile text says warning, not failed.
+4. A unit test in `make.test.ts` covers all three codes.
+5. `tsc`, lint, tests and `next build` clean. Merge = Render deploy, verified on `/api/version`.
+
+### #180 · Millie's niche data has been frozen since 7 Sep — the nightly derive times out
+**🟡 S2 · size S-M — filed 2026-09-09 (health alert 13:15 UTC; Andy: "s2").** Runs on the Mac launchd job `com.mds.olivia.derivations`.
+
+> **In plain words:** the nightly job that works out what each member does has been failing for two days, so anyone who joined or changed their niche since Sunday is missing from those answers.
+
+*As a member, when I ask who works in a niche, I want the answer to include the people who joined or changed niche this week.*
+
+**Evidence it is real.** `digest.olivia_job_heartbeats`: `derive_niches` last succeeded **2026-09-07 09:31:39 UTC**, 53h before this alert against a 26h limit. It ran again **2026-09-09 13:50:02 UTC** and failed, so this is live, not a stuck flag. Heartbeat detail: `anthropic failed after 3 tries: curl exit 28` — curl 28 is a timeout. The run length is **growing**: 9,345s on 08 Sep, **12,657s** on 09 Sep, so it burns three and a half hours before giving up, nightly, for nothing. `digest.member_niches` holds 1,930 rows over 694 members with `max(derived_at) = 2026-09-07 09:31`. It feeds `profile_texts_for_embedding()`, `member_count()` and `chapter_info()`.
+
+**Shape of the fix.** Find why one call runs 3.5h before timing out — batch size, a missing page bound, or a retry that re-sends the whole set each time — then bound the work per call and make a partial run **commit what it finished** instead of discarding it. Structural, not a longer timeout.
+
+**Also fix while in here (folded in, not its own ticket):** the derivations tile prints the *freshest* of its four job heartbeats, so a failing job displayed as "last success <1h ago" on 2026-09-09 and read as a contradiction. It must print the oldest failing job.
+
+**Accept when:**
+1. `derive_niches` completes and `last_success_at` advances.
+2. `member_niches.derived_at` is same-day after a run.
+3. One run finishes inside a stated wall-clock budget, and that budget is written into the job.
+4. A timeout on one batch no longer discards the batches that already succeeded — proven by forcing a mid-run failure.
+5. The derivations tile shows the oldest failing job's timestamp, not the freshest.
+
+### #181 · 🅿️ SPRINT 5 · The events catalog is hourly on paper and four-hourly in fact
+**🔵 S3 · size S — filed 2026-09-09 · CARRIES TO SPRINT 5 (Andy: "s3 sprint 5"). BLOCKED on a credential only Andy can create.**
+
+> **In plain words:** the tile that watches our events data goes red most nights while nothing is wrong, because GitHub does not run its hourly schedule hourly.
+
+*As MDS staff, I want the events tile red only when the catalog is genuinely stale, so that a real events outage is visible instead of buried in noise.*
+
+**Evidence it is real.** `events-catalog-hourly.yml` declares cron `17 * * * *`. The last 14 runs **all succeeded** and were delivered between 2.4h and 5.6h apart. Of those 13 intervals, measured against `freshnessHourly` (healthy <1.75h · degraded <3.5h · else down): **0 healthy, 4 degraded, 9 in the down band.** The same measurement on 2026-07-29 over 60 runs gave 41% healthy; it is now zero. `olivia-at-sync` shows the worse of its two legs, so this is what reds the "Member profiles ← Airtable sync" tile — member_profiles itself is healthy.
+
+**Shape of the fix.** Stop depending on GitHub's scheduler. Trigger the workflow from n8n via the `workflow_dispatch` API (n8n's cron is punctual to the second) and keep the freshness check as the backstop. **Do NOT widen the freshness bands** — that would hide a genuinely 4h-stale catalog that Millie answers events from.
+
+**Blocked on:** a GitHub PAT with `actions:write`, created by Andy, stored as an n8n credential.
+
+**Accept when:**
+1. n8n fires the workflow every hour and GitHub's own schedule is removed or ignored.
+2. Over 24 consecutive runs, the median delivered interval is under 1.75h.
+3. The tile's healthy band is unchanged.
+4. A failed dispatch from n8n is itself visible, not silent.
+
+### #182 · 🅿️ SPRINT 5 · Five days of recordings are invisible to Millie — `GROUPOS_PAT` is missing
+**🟡 S2 · size S — filed 2026-09-09 · CARRIES TO SPRINT 5 (Andy: "we hve weekly job, so its fine? decide for me" — it is not fine, see below). BLOCKED on a credential only Andy can create.**
+
+> **In plain words:** the weekly video sync runs on time but skips videos entirely, because the token it needs is not on the machine. The cadence is fine; the credential is missing.
+
+*As a member, when I ask about a recent call or session, I want Millie to find the recording rather than answer as if it does not exist.*
+
+**Evidence it is real.** `digest.olivia_job_heartbeats`: `zoom_weekly` has been `degraded` since **2026-09-07 10:22 UTC** with detail `videos NOT synced (no GROUPOS_PAT, catalog newest 2026-09-02)`. `digest.videos_catalog` holds 1,084 rows with `max(synced_at) = 2026-09-04 16:21 UTC`. The job's `max_age_hours` is 216, so **staleness alone will never flag this** — the degradation exists only inside the detail string, which is why it went unnoticed. Recordings published since 2026-09-02 cannot be cited, linked or transcribed. The Public gate treats an unknown video as restricted, so this fails safe rather than leaking.
+
+**Shape of the fix.** Create the GroupOS token, place it on the host that runs `zoom_weekly`, and make a **missing credential fail the job loudly** instead of degrading quietly past a 9-day staleness window.
+
+**Blocked on:** a GroupOS PAT, created by Andy.
+
+**Accept when:**
+1. `videos_catalog.synced_at` is same-day after a run.
+2. Every recording published since 2026-09-02 is present in the catalog.
+3. A missing credential makes the job **error**, not degrade — proven by unsetting the variable once.
+4. New recordings carry a populated `access_restriction`.
+
+### #183 · The admin storefront reshuffles its tiles 10-15s after load, and the pinned band disappears
+**⚪ S4 · size S — filed 2026-09-09 (Andy: "when uploading storefront, I see that the page loads the content for 10-15 sec and then changes the tiles' order. s4").** Repo `mds-digest-web`, follow-up to #164.
+
+> **In plain words:** the storefront draws one layout, then rearranges itself in front of you once the health checks come back.
+
+*As MDS staff, I want the storefront to settle into its final layout on first paint, so that I do not click a tile that moves out from under me.*
+
+**Evidence it is real.** Andy's two screenshots of `digest.mds.co/admin`, the same page seconds apart:
+- **During load** — header reads `9 tools · checking health…`; a **PINNED** band is present, `3 pinned · ★ to unpin`, holding Digest, WhatsApp and Millie; below it `ALL TOOLS · 6 unpinned`. Every tile shows `CHECKING…`.
+- **After health resolves** (`HEALTH CHECKED 10:59:07 AM`, `9 tools · 4 healthy`) — the **PINNED band is gone entirely**, the header now reads `ALL TOOLS · 9 unpinned`, and the tiles sit in a different order, with Millie moved from the pinned row down to the second row.
+
+So it is not only the health labels arriving late: the **pinned set is shown during loading and absent afterwards**, which is what produces the visible reshuffle. Root cause not yet established — reproducing it is the first job, not assuming it.
+
+**Shape of the fix.** Decide the tile order from state that is known at first paint, and let the health result fill labels in place without re-sorting. Whatever the pinned set is, it must be the same before and after the health fetch resolves.
+
+**Accept when:**
+1. The behaviour is reproduced and the cause named in the ticket before any fix.
+2. Tile order and grouping are identical before and after the health checks resolve.
+3. The pinned band does not appear and then vanish; the pinned count is stable across the load.
+4. Health results still update the tiles in place.
+5. `tsc`, lint, tests and `next build` clean. Merge = Render deploy.
 
 ### #174 · A named item from her own list is a drill-down, not a new search
 **🔴 S1 · size S — filed 2026-09-07 (Andy's "poor answers check", case 1 — prod turns 65488–65491, execs 137508 / 137515).**
@@ -243,7 +450,7 @@ gets Kevan's quote with a timestamp + `app.mds.co/videos/6a95ecb56c44f146b77f494
 gets nothing from an AI Mastermind talk · gate GREEN, exit 0.
 
 ### #119 · Bank B — a regression bank for everything built after the 100-question bank froze
-**🟡 S2 · size M — filed 2026-08-23 (Andy, during the #108 close: "wow. old… we need one more bank around everything we built since then").**
+**🔵 S3 · size M — filed 2026-08-23 (Andy, during the #108 close: "wow. old… we need one more bank around everything we built since then").**
 
 > **In plain words:** the 100-question bank (`eval_bank_100_2026-08-16.json`) holds organic asks from 2026-07-19 → 08-16. Everything since — the Summit schedule lane and venue-day "today", registration-gated who-to-meet, brokered intros, the 2025-26 transcripts with quotes + timestamps, speaker matching, offer binding, the finder — has no regression net. A change can break any of it and the bank would not notice.
 
@@ -284,7 +491,7 @@ search · no pending offer = normal planning · #104 protection unaffected · pr
 `yes booth` sequence returns the two summaries.
 
 ### #102 · Video recommendation ranking — how she picks WHICH videos to serve
-**🟡 S2 · size M — filed 2026-08-21 from Andy's Slack ruling to Eugene · ⏸ sequenced AFTER the big smoke test**
+**🔵 S3 · size M — filed 2026-08-21 from Andy's Slack ruling to Eugene · ⏸ sequenced AFTER the big smoke test**
 
 > ⛔ **CAPTURED, NOT LOCKED (Andy 2026-08-21): confirm with Andy before applying ANY of this —
 > the criteria below may change and the ticket starts with a BRAINSTORM session, not a build.**
@@ -439,7 +646,7 @@ have the lapse notice capped (131049); the free-form fallback only rescues that 
 **Accept when:** PS says Millie ✅ · attendee who-to-meet reply carries Yes/No buttons on a real phone ✅ · Yes → picker ✅ · non-attendee gets no intro offer ✅ · gate GREEN ✅.
 
 ### #157 · Review the Sonnet 5 vs GPT-5.6 Terra bench — the vendor call
-**🟡 S2 · size S** · filed by Andy 2026-09-02 ("this task is completed; file S2 ticket to review it")
+**🔵 S3 · size S** · filed by Andy 2026-09-02 ("this task is completed; file S2 ticket to review it")
 
 > **In plain words:** Andy reads the #156 comparison and rules whether Olivia stays on Claude, moves to OpenAI, or gets one more test first.
 
@@ -2158,7 +2365,7 @@ excluded from `member_card`'s subject set ② the never-were-members classes (`R
 scope for "the team" but sit in the same subject position.
 
 ### #105 · Verify Meta's webhook signature on every inbound message
-**🟡 S2 · size S — filed 2026-08-22 from #97's final whole-branch review (I7); Andy: "ok" to file + ship as its own ticket, not inside #97**
+**🔴 S1 · size S — filed 2026-08-22 from #97's final whole-branch review (I7); Andy: "ok" to file + ship as its own ticket, not inside #97**
 
 > **In plain words:** the n8n webhook that receives WhatsApp messages accepts ANY post from anyone — it never checks the delivery really came from Meta. Before intros, a forged post could only make Mille answer a fake question; now a forged "Accept intro" tap could release two members' numbers to each other. Meta signs every delivery; we ignore the signature.
 
@@ -2464,7 +2671,7 @@ migration proven by a real run (never "should work").
 
 
 ### #66 · Forms warehouse — the remaining gaps (mapping split out to #68)
-**🔴 S1 · size M — filed 2026-08-06. Architecture is CORRECT (Andy confirmed); these are gaps
+**🔵 S3 · size M — filed 2026-08-06. Architecture is CORRECT (Andy confirmed); these are gaps
 inside it. Fixing any of them changes nothing about the two tables.**
 
 > **In plain words:** The forms warehouse works. Five things inside it are unfinished, and I found
@@ -2509,7 +2716,7 @@ same webhook.
 ---
 
 ### #73 · Connect the useful forms to Olivia — she reads 5 of 161
-**🔴 S1 · size M — filed 2026-08-08**
+**🔵 S3 · size M — filed 2026-08-08**
 
 > **In plain words:** 88 forms sync into Supabase every day. Olivia can read five of them.
 
@@ -2555,7 +2762,7 @@ the business info actually worth having.
 ---
 
 ### #68 · 🔑 Canonical question dictionary — make mapping scale before the form count does
-**🔴 S1 · size L — filed 2026-08-06 (Andy: "mapping becomes a paramount task… this number will go up rapidly")**
+**🔵 S3 · size L — filed 2026-08-06 (Andy: "mapping becomes a paramount task… this number will go up rapidly")**
 
 > **In plain words:** Questions asking the same thing on different forms must resolve to one field —
 > and that has to keep working when we have twenty forms, not five.
@@ -2748,7 +2955,7 @@ named for a follow-up · gate green, no sync job broken — met (COMMENT-only mi
 ---
 
 ### #158 · Foreign keys on what we own, and a nightly orphan check — the #61 follow-up
-**🟡 S2 · size M — filed 2026-09-02 from the external architecture review (second finding: "the majority of tables are not connected") · Andy: "go"**
+**🔵 S3 · size M — filed 2026-09-02 from the external architecture review (second finding: "the majority of tables are not connected") · Andy: "go"**
 
 > **In plain words:** 73 tables, and only 17 carry a foreign key. 28 tables hold a member id; 25 of them are joined by
 > convention, nothing in the database checks it. #61 proved the joins are clean TODAY (0 orphans). This ticket makes the
@@ -2836,7 +3043,7 @@ questions in #9.
 ---
 
 ### #67 · Cohort and trend comparison — per field, panel AND cross-section
-**🟡 S2 · size M — filed 2026-08-06 (Andy: "comparing last year's cohort to this year's, on every single field")**
+**🔵 S3 · size M — filed 2026-08-06 (Andy: "comparing last year's cohort to this year's, on every single field")**
 
 > **In plain words:** Show how any answer moved year over year — and be clear whether that's the
 > same people changing, or a different crowd answering.
@@ -2882,7 +3089,7 @@ loop rule: any "how has X changed / compared to last year" question routes here.
 ---
 
 ### #74 · Identity: half of every form submission belongs to nobody
-**🟡 S2 · size M — filed 2026-08-08**
+**🔵 S3 · size M — filed 2026-08-08**
 
 > **In plain words:** 4,617 of 9,089 form submissions are not attached to any member, so whatever
 > those people said cannot inform anything.
@@ -2918,7 +3125,7 @@ remainder is stated in writing rather than chased.
 ---
 
 ### #92 · Event selection for a multi-event world — she must pick the RIGHT schedule
-**🟡 S2 · size S — filed 2026-08-19 (Andy: "we connected singapore, but we will have more") · ⏸ builds when event #2's export exists**
+**🔵 S3 · size S — filed 2026-08-19 (Andy: "we connected singapore, but we will have more") · ⏸ builds when event #2's export exists**
 
 > **In plain words:** with two events loaded, "what's on?" must answer about the right one — today she can't choose at all.
 
@@ -2962,7 +3169,7 @@ security exposure: restricted decks are publicly downloadable.
 ---
 
 ### #71 · "Virtual event", "call", "recording" — three words, three systems, two contradicting answers
-**🔵 S3 · size M — filed 2026-08-07 from Andy's own WhatsApp session (18:11–18:13 local)**
+**🟡 S2 · size M — filed 2026-08-07 from Andy's own WhatsApp session (18:11–18:13 local)**
 
 > **In plain words:** Andy asked for the last virtual event and got February. He asked for the last
 > Mogul Call — the same kind of thing — and got August. Both in the same breath, both confident.
@@ -3125,7 +3332,7 @@ restriction handling + embeddings + gate checks. Filed by Andy 2026-08-01.
 ---
 
 ### #36 · Connect new data source — CIRCLEBACK
-**🚀 S4 · size L**
+**⚪ S4 · size L**
 
 > **In plain words:** Meeting notes become a source. **Blocked on Andy's Circleback details.**
 
@@ -3570,7 +3777,7 @@ the Members DB record, which is Airtable and therefore Andy's or ops' to make, n
 space) is not in `ACTIVE` and keeps the inactive copy — correct today, flagged to #115 as hygiene.
 
 ### #148 · The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever
-**🟡 S3 · size S — filed 2026-08-25 from #126's audit.**
+**🔵 S3 · size S — filed 2026-08-25 from #126's audit.**
 
 > **In plain words:** the mirror copies Airtable's WA member records into Supabase every 15 minutes,
 > but it only ever adds and updates. When a record stops coming back from Airtable, its Supabase copy
