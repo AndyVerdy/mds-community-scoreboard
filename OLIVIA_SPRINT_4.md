@@ -30,7 +30,8 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
-| **#184** | 🙈 Unindex a post or partner from Millie without taking it down for members — Eugene via CU `86e35hm1p` (Tony Brink's post + MajestIQ/TraceFuse) | 🟡 S2 | S-M | — | — |
+| **#184** | 🙈 Part 1 — unindex Tony Brink's post + MajestIQ/TraceFuse from Millie, nothing deleted for members ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🟡 S2 | S | — | — |
+| **#185** | 🚧 Part 2 — a general way to keep restricted content out of Millie: blacklist, detection, or both ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🟡 S2 | M | — | — |
 | **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | — |
 | **#180** | 🩺 Millie's niche data frozen since 7 Sep — `derive_niches` times out on Anthropic after 3.5h, nightly | 🟡 S2 | S-M | n/a (launchd job) | — |
 | **#181** | 🅿️ **SPRINT 5** · Events catalog hourly on paper, four-hourly in fact — 9 of 13 intervals in the down band, 14/14 runs green | 🔵 S3 | S | n/a (GH Action) | ⛔ blocked: GitHub PAT `actions:write` (Andy) |
@@ -152,30 +153,57 @@ Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
 
-### #184 · Unindex a post or a partner from Millie without taking it down anywhere else
-**🟡 S2 · size S-M — filed 2026-09-09 from ClickUp `86e35hm1p` (Eugene Khayman → Andy): "Andy from Millie, please remove that post, like Tony's post, so it doesn't get surfaced if anybody asks about reviews and stuff like that. It's not indexable. Can we unindex the post? and also unindex the partner profile."** Priority chosen by me, not by Andy.
+### #184 · Part 1 — take Tony's post and the two partner profiles out of Millie's reach, now
+**🟡 S2 · size S — filed 2026-09-09 · CU [`86e35hm1p` — Response to Joe Nilsen (MajestIQ)](https://app.clickup.com/t/86e35hm1p) (Eugene Khayman → Andy).** Part 2 is #185.
 
-> **In plain words:** we need a switch that keeps a post and a partner live for members, but stops Millie from ever retrieving or citing them.
+> **In plain words:** one post and two partner profiles must stop coming back in Millie's answers, while staying exactly where they are for members.
 
-*As MDS staff, I want to mark specific posts and partners as not-retrievable by Millie, so that a member asking about reviews is not handed content we have deliberately stopped promoting, while the content itself stays up on Facebook and in the app.*
+*As MDS staff, I want Millie to stop surfacing this specific post and these two partners when a member asks about reviews, without anything being deleted anywhere else.*
 
-**The two things to suppress, verified live 2026-09-09.**
-- **Tony Brink's post** `27155813964095414`, 2026-09-05, "Improving Star Rating – New Vendor Is Crushing It". Present in `digest.fb_posts`, mirrored into `digest.content_items` as `source = fb_post`, and its `embedding` is populated — so both keyword and semantic retrieval reach it today.
-- **The partner profiles** MajestIQ (`6a7ef5653e2bb7bb29849b61`) and TraceFuse (`671b2e4695467ac97883bcbb`). Both are `status = published`, `access_restriction = public` in `digest.partners_catalog`, and both carry a `search_tsv` and an `embedding`, so `partner_lookup_v2` and the finder both reach them.
+**The request, verbatim (CU comment, Eugene → Andy, 2026-09-09):** "Andy from Millie, please remove that post, like Tony's post, so it doesn't get surfaced if anybody asks about reviews and stuff like that. It's not indexable. Can we unindex the post? and also unindex the partner profile."
 
-**Why nothing existing does this.** `digest.fb_post_overrides` only carries post type and answered state, not retrievability. Flipping `partners_catalog.status` away from `published` would work for one night and then be **overwritten by the next `partners_refresh` sync**, and it would also pull the offer from members, which Eugene explicitly does not want — his instruction in the same task is "Turn the offer back on. Turn the partner profile back on." The suppression has to live on Millie's side of the line.
+**What already happened in the CU thread, and must not be repeated.** Juancho deleted MajestIQ and TraceFuse from Wild Apricot and Airtable and revised their MDS app profiles. Eugene reversed it: *"no, MajestIQ and TraceFuse should still be records in Wild Apricot and Airtable, and they should also be searchable in our app. Nothing should be deleted. We simply said that we would revise the profiles to not mention review manipulation."* Juancho then restored both. **Deleting is explicitly wrong here.** Eugene has asked Ian Sells and Anita Petrov to double-check it landed.
 
-**Shape of the fix.** A first-class suppression list — a row per suppressed key with who set it, when, and why — enforced at the **retrieval layer** so every lane honours it at once (content search, partner lookup, the finder, the Facebook draft tool, Ask Millie) rather than in one tool's prompt. It must survive the nightly re-embed and the partner refresh, be reversible in one edit, and never alter what members see in Facebook or the app.
+**The three things, verified live 2026-09-09.**
+- **Tony Brink's post** `27155813964095414`, 2026-09-05, "Improving Star Rating – New Vendor Is Crushing It". In `digest.fb_posts`, mirrored to `digest.content_items` as `fb_post`, `embedding` populated — keyword and semantic retrieval both reach it. Eugene turned off commenting on it and is deliberately not deleting it.
+- **MajestIQ** (`6a7ef5653e2bb7bb29849b61`) and **TraceFuse** (`671b2e4695467ac97883bcbb`) — both `status = published`, `access_restriction = public`, both carrying a `search_tsv` and an `embedding`, so `partner_lookup_v2` and the finder reach them.
+- **Our mirror predates the revision.** The app profiles were revised on 2026-09-08. `partners_catalog.synced_at` is **2026-08-01** for TraceFuse and 2026-08-17 for MajestIQ; `partner_web_profile.crawled_at` is 2026-09-03 for both. TraceFuse's catalog row **and** its crawled profile still match review-removal language today. So even setting the unindex aside, Millie is holding the wording Eugene ordered removed.
 
-**Open question for Andy and Eugene — do not decide this in code.** Eugene wrote "Tracefuse should receive similar treatment." Suppressing a partner's own profile is one thing; suppressing **members' own posts** about that partner is another, and there are at least five live ones (Maxwell Sigurdson-Scott 2026-08-28, Keith Mander 2026-08-04, Justin Beck 2026-04-14, Craig Brockie 2026-03-24, Eric Hulli 2025-12-09). This ticket covers the partner profiles plus Tony's single post. Anything wider needs an explicit ruling.
+**Shape of the fix.** Suppress the three keys at the retrieval layer, and separately re-sync the catalog and re-crawl both web profiles so the revised wording replaces the old text rather than sitting behind a flag. Nothing is deleted from Facebook, Wild Apricot, Airtable or the MDS app.
+
+**Open question for Andy and Eugene — do not decide in code.** Eugene wrote "Tracefuse should receive similar treatment." Suppressing a partner's own profile is one thing; suppressing **members' own posts** about that partner is another, and there are at least five live ones (Maxwell Sigurdson-Scott 2026-08-28, Keith Mander 2026-08-04, Justin Beck 2026-04-14, Craig Brockie 2026-03-24, Eric Hulli 2025-12-09). This ticket covers the two partner profiles and Tony's single post only.
 
 **Accept when:**
-1. Post `27155813964095414` cannot be returned by any Millie retrieval path — proven by asking the question that surfaced it before and after.
-2. MajestIQ and TraceFuse are not returned by `partner_lookup_v2` or the finder, proven with a real query vector.
-3. The post is still live on Facebook and both partners are still `published` and visible to members in the app.
-4. Suppression survives a nightly re-embed and a `partners_refresh` run, proven by running both.
-5. Every suppression row records who set it, when, and why, and lifting one restores retrieval.
-6. The leak gate gains a check asserting no suppressed key appears in any answer's evidence.
+1. Post `27155813964095414` is returned by no Millie retrieval path — proven with the question that surfaced it, before and after.
+2. MajestIQ and TraceFuse are returned by neither `partner_lookup_v2` nor the finder, proven with a real query vector.
+3. The post is still live on Facebook; both partners are still records in Wild Apricot and Airtable and still searchable in the MDS app.
+4. `partners_catalog` and `partner_web_profile` carry the post-revision text for both partners, with no review-removal wording left in either row.
+5. A leak-gate check asserts none of the three keys appears in any answer's evidence.
+
+### #185 · Part 2 — a general way to keep restricted content out of Millie: blacklist, detection, or both
+**🟡 S2 · size M — filed 2026-09-09 · CU [`86e35hm1p`](https://app.clickup.com/t/86e35hm1p) (Andy 2026-09-09: "this is a two-part job. unindex post, and in general process of either blacklist things or teach bot on how to detect restricted content").** #184 is the one-off act; this is the capability.
+
+> **In plain words:** doing this by hand once is fine. Doing it every time somebody flags something is not, so we need either a proper blacklist or a bot that recognises the topic itself.
+
+*As MDS staff, I want a standing way to keep a class of content out of Millie's answers, so that the next flagged post does not need an engineer and does not silently come back.*
+
+**Why a one-off is not enough.** Nothing in the schema suppresses retrieval today: `digest.fb_post_overrides` carries post type and answered state only. Flipping `partners_catalog.status` reverts at the next `partners_refresh` and would also pull the offer from members, which Eugene explicitly rejected. Any manual edit is undone by the nightly re-embed. So a hand fix quietly expires, which is the worst failure mode — it looks done.
+
+**The fork to decide, with Andy and Eugene.**
+- **Blacklist** — an explicit, auditable list of suppressed keys. Precise, reversible, no false positives, but only as good as who remembers to add to it.
+- **Detection** — Millie recognises the restricted class itself (review manipulation, and whatever classes come next) and declines to surface it, list or no list. Catches the cases nobody flagged, and risks suppressing legitimate discussion. Note this is a **topic** rule, distinct from the #176 restriction spine, which is about who may see a source.
+- Likely both: a list for what we know, detection for what we do not.
+
+**Shape of the fix.** Whichever branch, it must be enforced once at the retrieval layer so every lane inherits it (content search, partner lookup, the finder, the Facebook draft tool, Ask Millie), survive the nightly re-embed and every catalog refresh, be reversible in one edit, carry who and why, and be visible to staff in the admin rather than living in a migration.
+
+**Accept when:**
+1. The fork above is decided in writing by Andy and Eugene before any code.
+2. Adding a suppression is a staff action in the admin, not an engineering task.
+3. A suppressed key survives a nightly re-embed and a `partners_refresh` run, proven by running both.
+4. Lifting a suppression restores retrieval in the same edit.
+5. Every entry records who, when and why, and the list is readable by staff.
+6. The leak gate asserts the whole list, not one hand-picked key.
+7. If detection ships, it is measured on a labelled set with its false-positive rate stated, not assumed.
 
 ### #179 · A Make WARNING shows as a tool DOWN on the health dashboard
 **🔴 S1 · size XS — filed 2026-09-09 (health alert 13:15 UTC; Andy: "s1 sprint 5" → moved to Sprint 4, it is a one-liner).** Repo `mds-digest-web`.
