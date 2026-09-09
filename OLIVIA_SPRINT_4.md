@@ -30,6 +30,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 
 | # | Ticket | Priority | Size | Staging | Prod |
 |---|---|---|---|---|---|
+| **#184** | 🙈 Unindex a post or partner from Millie without taking it down for members — Eugene via CU `86e35hm1p` (Tony Brink's post + MajestIQ/TraceFuse) | 🟡 S2 | S-M | — | — |
 | **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | — |
 | **#180** | 🩺 Millie's niche data frozen since 7 Sep — `derive_niches` times out on Anthropic after 3.5h, nightly | 🟡 S2 | S-M | n/a (launchd job) | — |
 | **#181** | 🅿️ **SPRINT 5** · Events catalog hourly on paper, four-hourly in fact — 9 of 13 intervals in the down band, 14/14 runs green | 🔵 S3 | S | n/a (GH Action) | ⛔ blocked: GitHub PAT `actions:write` (Andy) |
@@ -150,6 +151,31 @@ Millie is live.
 Andy's promote) · name survives the fact-check lane ✅ · "MDS Millie" live at Meta ⏳ watcher-gated.
 **Before/after:** help card "I'm *Mille*" → **"I'm *Millie*"** · "what is your name?" nameless →
 **"I'm Millie 👋 — the MDS AI assistant"** (probed staging, rows cleaned) · gate 263 checks EXIT 0.
+
+### #184 · Unindex a post or a partner from Millie without taking it down anywhere else
+**🟡 S2 · size S-M — filed 2026-09-09 from ClickUp `86e35hm1p` (Eugene Khayman → Andy): "Andy from Millie, please remove that post, like Tony's post, so it doesn't get surfaced if anybody asks about reviews and stuff like that. It's not indexable. Can we unindex the post? and also unindex the partner profile."** Priority chosen by me, not by Andy.
+
+> **In plain words:** we need a switch that keeps a post and a partner live for members, but stops Millie from ever retrieving or citing them.
+
+*As MDS staff, I want to mark specific posts and partners as not-retrievable by Millie, so that a member asking about reviews is not handed content we have deliberately stopped promoting, while the content itself stays up on Facebook and in the app.*
+
+**The two things to suppress, verified live 2026-09-09.**
+- **Tony Brink's post** `27155813964095414`, 2026-09-05, "Improving Star Rating – New Vendor Is Crushing It". Present in `digest.fb_posts`, mirrored into `digest.content_items` as `source = fb_post`, and its `embedding` is populated — so both keyword and semantic retrieval reach it today.
+- **The partner profiles** MajestIQ (`6a7ef5653e2bb7bb29849b61`) and TraceFuse (`671b2e4695467ac97883bcbb`). Both are `status = published`, `access_restriction = public` in `digest.partners_catalog`, and both carry a `search_tsv` and an `embedding`, so `partner_lookup_v2` and the finder both reach them.
+
+**Why nothing existing does this.** `digest.fb_post_overrides` only carries post type and answered state, not retrievability. Flipping `partners_catalog.status` away from `published` would work for one night and then be **overwritten by the next `partners_refresh` sync**, and it would also pull the offer from members, which Eugene explicitly does not want — his instruction in the same task is "Turn the offer back on. Turn the partner profile back on." The suppression has to live on Millie's side of the line.
+
+**Shape of the fix.** A first-class suppression list — a row per suppressed key with who set it, when, and why — enforced at the **retrieval layer** so every lane honours it at once (content search, partner lookup, the finder, the Facebook draft tool, Ask Millie) rather than in one tool's prompt. It must survive the nightly re-embed and the partner refresh, be reversible in one edit, and never alter what members see in Facebook or the app.
+
+**Open question for Andy and Eugene — do not decide this in code.** Eugene wrote "Tracefuse should receive similar treatment." Suppressing a partner's own profile is one thing; suppressing **members' own posts** about that partner is another, and there are at least five live ones (Maxwell Sigurdson-Scott 2026-08-28, Keith Mander 2026-08-04, Justin Beck 2026-04-14, Craig Brockie 2026-03-24, Eric Hulli 2025-12-09). This ticket covers the partner profiles plus Tony's single post. Anything wider needs an explicit ruling.
+
+**Accept when:**
+1. Post `27155813964095414` cannot be returned by any Millie retrieval path — proven by asking the question that surfaced it before and after.
+2. MajestIQ and TraceFuse are not returned by `partner_lookup_v2` or the finder, proven with a real query vector.
+3. The post is still live on Facebook and both partners are still `published` and visible to members in the app.
+4. Suppression survives a nightly re-embed and a `partners_refresh` run, proven by running both.
+5. Every suppression row records who set it, when, and why, and lifting one restores retrieval.
+6. The leak gate gains a check asserting no suppressed key appears in any answer's evidence.
 
 ### #179 · A Make WARNING shows as a tool DOWN on the health dashboard
 **🔴 S1 · size XS — filed 2026-09-09 (health alert 13:15 UTC; Andy: "s1 sprint 5" → moved to Sprint 4, it is a one-liner).** Repo `mds-digest-web`.
