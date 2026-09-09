@@ -119,6 +119,24 @@ re-probe 6075 · the Fred chain · the 2027 chain · 6483 · two regression chai
 plan for a titles-only offer — the `chapter_info` payload is truncated in the evidence after 14 rows, the model invented the rest
 and the clamp fired (137759). Found alongside, unfiled: list-tool evidence clipping.** Earlier state below kept for the story.
 
+## STATE 2026-09-08 (evening) — #178 SHIPPED (Render `15700f2`): every Personas surface is rank-led
+- Eugene's Slack question closed the loop #165 opened: the sheet said `#1 of 674`, the rails and the cohort
+  page still ordered on the rounded percentile (four members tie at 100 in Logistics & 3PL, so the alphabet
+  decided and Mo Kuhail rendered third). Rails, Top 10 and the cohort page now order by rank and the cards
+  read `#1` / `Logistics & 3PL · #1 of 674`. Live: `personas_cohort_v2('Logistics & 3PL')` = Mo 1, William 2,
+  Fernando 3, Alex Yale 4; prod `/api/version` `15700f2`.
+- New RPCs, both additive (a `RETURNS TABLE` cannot grow without a DROP, and a DROP loses the ACL):
+  `digest.personas_ranks()` → `{topic: [rank, pool]}` per member · `digest.personas_cohort_v2(p_stat)` →
+  cohort rows + rank + pool, ordered by rank. `personas_cohort` (v1) is now unread but stays.
+- **Environment, needs a hand:** `mds-digest-web/node_modules` in the shared checkout is a broken symlink to
+  `/Users/node_modules` (created 2026-09-08 19:59, not by this session) — builds from that checkout, and from
+  any worktree inside it, die with a Turbopack panic. Run `npm ci` there. This session used its own worktree
+  at `/Users/Born/wt-178-cohort-rank` (safe to delete once the shared checkout is fixed).
+- **Trap found:** `scripts/db_export_schema.py` resolves the repo from its own path, so running it inside a
+  worktree writes `db/` into the MAIN checkout. Worth a `--repo` flag.
+- Next is unchanged: **#163 Task 2 spend** (82 members, third-party placements only), then the persona-prompt
+  structured-pointer change.
+
 ## STATE 2026-09-07 (night) — #174 + #175 PROVEN ON STAGING `2d875cb3` · awaiting Andy's promote · branch `174-named-item-drilldown-20260907`
 **Staging `2d875cb3` = #169 Task 5 + #174 + #175 (the #169 session stacks Task 6 next; one promote carries all three — or
 re-stage from prod and re-apply `apply_174_…` + `apply_175_…` for a one-ticket graph). Prod `30fd7e6f` untouched. Gate 324 / EXIT 0.**

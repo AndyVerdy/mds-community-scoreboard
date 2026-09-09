@@ -114,6 +114,7 @@ intros, unblocks on Andy's ruling). Every ticket carries Eugene's exact words as
 | **#144** | 📅 A follow-up about events stays in the events lane (bank C 6372) — `eventsLaneCarry()`; the 2027 catalog is reachable since `event_lookup_v3` | 🔴 S1 | S | ✅ **proven on staging `c28fb532`** — execs 137902 · 137954 (rows 65791 · 65833) consistent with the turn before; 9/9 unit (the carry stood by, the router chose events itself) | ✅ **LIVE `49d4a931`** (02:16Z, one graph) |
 | **#176** | 🔒 Public mode means MDS members, not the world — corrected scope: OPEN = group posts/comments, partner + event pages, non-verification WA chats, public-flagged recordings; RESTRICTED = the 5 verification chats, restricted recordings, applications | 🔴 S1 | M | n/a (SQL + module) | ✅ **PROMOTED 2026-09-08 — prod `15649d68`** — 30-probe eval found + fixed 5 defects (own-post author unbacked · refusal instead of a no-detail answer · unlabelled evidence read as closed · a 420k-regex/turn 500 → 151ms · a `normText` whitespace bug blamed on the Haiku rewrite); name index 64 junk rows out (5,384→5,320); same-question before/after Public: 1→6 paragraphs, 1→4 links, 0→4 quotes, 8→0 masked (ungated compare 7/6/3); module tests 15→107; gate 331→345 GREEN; migrations applied LIVE; PR #2 |
 | **#177** | 🔓 Ask Millie's Public answer names nobody even when the group backs the name — Facebook draft named Adam Weiler + linked his session, Ask Millie wrote "a member"/"one seller" for the same evidence | 🟡 S2 | S-M | staging + gate + promote | 📝 filed 2026-09-08 (Andy: "lets file it") — after #176 |
+| **#178** | 🥇 The Strong-in-X rails and the cohort page ranked by the rounded percentile, so the real #1 landed third — Eugene in Slack: "How come Mo isn't at the top of this list" | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED 2026-09-08** — rails, Top 10 and the cohort page order by rank; cards read `#1` / `Logistics & 3PL · #1 of 674`; Render `15700f2`, prod verified |
 | — | *— closed tickets live in `OLIVIA_BACKLOG_ARCHIVE.md` —* | | | | |
 
 ## 🔁 Sprint ritual + Definition of Done (travels with every sprint)
@@ -941,6 +942,50 @@ PR: https://github.com/AndyVerdy/mds-community-scoreboard/pull/2
 *Deferred (not blockers).* The lone-name pass protects only a first token — it published a bare "Tudor" while
 masking "Tanase Tudor - Tude" · the GATED strip's link detail strips the query string, so a removed
 `?comment_id=` variant of a link reads as a surviving post link.
+
+### #178 · The rails and the cohort page ranked by the rounded percentile, so the real #1 landed third
+
+**Trigger.** Eugene, Slack, 2026-09-08 21:27, with a screenshot of "Strong in Logistics & 3PL": *"How come
+Mo isnt at the top of this list"*. Andy: *"He is. It's just this list, not in the exact order"*, with the
+sheet showing `#1 of 674`.
+
+**STORY.** As MDS staff scanning "Strong in Logistics & 3PL", I want the faces in real rank order with the
+same number the sheet shows, so that Mo sits first and nobody asks why the top expert is third.
+
+**Root cause (live, before the fix).** `personas_cohort` ordered `s.value desc, l.name` and the rails
+sorted on `strong[topic]` — both the ROUNDED percentile. It ties: four members sit at 100 in Logistics &
+3PL, so the alphabet decided. True order by score: Mo Kuhail 27.37, William Langford 23.09, Fernando
+Becattini 21.19, Alex Yale 17.07. Alphabetical put Mo third. The sheet has led with rank since #165, so
+the two surfaces disagreed in front of staff.
+
+**Shipped.** Migration `personas_rank_led_178`: `digest.personas_ranks()` (per member, `{topic: [rank,
+pool]}`, same population and same ≥ 60 floor as `personas_strong()`) and `digest.personas_cohort_v2(p_stat)`
+(the cohort rows plus rank + pool, ordered by rank, `at_member_id` breaking a shared rank). Both are NEW
+functions, not replacements: a `RETURNS TABLE` cannot grow without a DROP and a DROP discards the ACL —
+same reasoning as #161's `personas_strong` / `personas_fading` / `personas_topic_peaks`. Web: `railMembers`
+sorts on rank for the "strong" and "top10" kinds (no rank sorts last), `getLibraryV2` merges the ranks map,
+`getCohort` reads v2, and `statCardLabels()` in `PosterCard` makes the badge and subline read `#1` and
+`Logistics & 3PL · #1 of 674` — the sheet's own words. Badge colour still keys off the 0-100 value, so gold
+means what it always did. Top 10 keeps its big numeral and drops the badge, which was the same number twice.
+Cohort subtitle now says "ranked, best first" instead of "sorted by today's value".
+
+**AC checklist.**
+1. Cohort orders by rank, not the percentile — ✅ `personas_cohort_v2('Logistics & 3PL')` returns Mo 1,
+   William 2, Fernando 3, Alex Yale 4; 280 rows, same as v1.
+2. Rails use that same order — ✅ live rail read back through Playwright: `#1 Mo Kuhail`, `#2 William
+   Langford`, `#3 Fernando Becattini`, `#4 Alex Yale`, no page errors.
+3. Card shows rank, not the percentile — ✅ badge `#1`, subline `Logistics & 3PL · #1 of 674`.
+4. Cohort header keeps the 60th-percentile cutoff as its own rule — ✅ "280 members at 60 or above · ranked,
+   best first".
+5. Live proof — ✅ dev server screenshots (cohort + rail + library), then Render `15700f2` on prod.
+
+**Before / after.** Logistics & 3PL first four: `Alex Yale, Fernando Becattini, Mo Kuhail, William Langford`
+→ `Mo Kuhail, William Langford, Fernando Becattini, Alex Yale`. Card number: `100` (tied four ways) → `#1`.
+Tests 1256 → 1257 (13 new/changed), tsc + eslint clean, `npm run build` exit 0.
+
+**Note for #163.** This fixes the ORDER, not the score. Four members reading 100 in one category is the
+percentile-display problem #163 already documents; the rank is now the number staff read, which is what
+#165 concluded for the sheet.
 
 ### #177 · Ask Millie's Public answer names nobody even when the group backs the name
 
