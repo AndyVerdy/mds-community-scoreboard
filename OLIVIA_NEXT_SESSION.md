@@ -11,6 +11,45 @@
 
 # Olivia — next session
 
+## STATE 2026-09-09 (close) — triage + backlog session, NO code shipped · board re-evaluated · next = **#105 + #97 together**
+
+**Nothing was promoted, merged to a live service, or changed in the workflow this session.** Prod is still
+`15649d68`, web still `50ff14b` — see the 2026-09-08 state below, it is unchanged. This session produced tickets,
+priorities and evidence only. All of it is on branch `health-tickets-20260909`, merged to `main`.
+
+**Andy's word at close: "for the next one we are following your plan."** That plan is written into
+`OLIVIA_SPRINT_4.md` at the top, in the **🔗 WORK THESE TOGETHER** block. Read that block before picking anything up.
+
+**Start here — #105 + #97, together.** #97 brokered intros is BUILT and waiting only on Andy's promote. #105 says
+the WhatsApp webhook accepts any POST from anyone and never verifies `X-Hub-Signature-256`, and the board's own
+note is "BEFORE any wide intros announcement". Promoting and announcing intros while that endpoint is
+unauthenticated is the wrong order. Ship them as one piece.
+
+**The board after the 2026-09-09 re-evaluation.** 46 open — **S1 5 · S2 14 · S3 18 · S4 6 · standing 3** (was
+S1 7 · S2 26 · S3 4 · S4 5); 21 priorities changed. The bar is stated on the board: S1 = a member or member-facing
+surface is wrong today, or we are exposed. Three tickets are BUILT and awaiting Andy's promote, not work: **#97**
+(intros), **#108** (the Finder), **#165** (the Personas sheet).
+
+**8 tickets filed 2026-09-09** — #179 Make WARNING renders DOWN · #180 `derive_niches` times out, niches frozen
+since 07 Sep · #181 events cron (Sprint 5, blocked) · #182 `GROUPOS_PAT` (Sprint 5, blocked) · #183 storefront
+reshuffle · **#184 + #185** the Millie unindex, act and capability, CU `86e35hm1p` · #186 Roadmap (Sprint 5).
+Numbering starts at #179: **#178 was already taken** — check the highest number in use before filing.
+
+**Blocked on Andy, nothing moves without these:** GitHub PAT `actions:write` (#181) · GroupOS PAT (#182 **and**
+#17 — one token, two tickets) · Circleback details (#36) · the parse-vs-restructure fork on #186 · the Sonnet 5 vs
+GPT-5.6 vendor call (#157 — a decision, not a ticket).
+
+**Three traps this session proved, do not re-learn them:**
+1. **Nothing reads link metadata.** `fb_post_links` has no title and no description, and its `display_name` is the
+   literal string "youtube" on every YouTube row. A name that appears only on the far side of a link is invisible
+   to Millie — which is exactly why "Roman Khan" was genuinely absent while members really had discussed him.
+2. **A monitor can be the bug.** Two of three reds on 2026-09-09 were monitor defects, not outages. Get the real
+   error from the source system; the triage endpoint 403s because the local `HEALTH_REPORT_SECRET` no longer
+   matches Render.
+3. **Read the threaded replies on a ClickUp task, not just the top-level comments.** The #184 replies reversed the
+   whole instruction: MajestIQ and TraceFuse had been deleted from Wild Apricot and Airtable, Eugene reversed it,
+   and both were restored. Deleting is explicitly wrong there.
+
 ## STATE 2026-09-08 (close) — #171 + #176 done: prod `15649d68` · web `50ff14b` live · open next: #177 · #170 · #172 · #173
 
 **What is live on the web (`mds-digest-web` main `50ff14b`).** Ask Millie (`/admin/ask-millie`, unchanged from
