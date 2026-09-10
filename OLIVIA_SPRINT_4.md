@@ -90,7 +90,7 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ route live (`9d0ec41`) · seed PROMOTED `bbd597b7` 2026-08-23 02:49 ET · prod probe Sunday/Monday + full day | ✅ CLOSED — Andy tested on WhatsApp 2026-08-23 (ET afternoon, Singapore already on the next day): correct |
 | **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🔵 S3 | S | — | ⏸ next session ✅ **CLOSED 2026-09-10** — `IS` folded to Iceland, so 5 Israeli members were counted as Icelandic; fixed. 8 corrupt rows repaired at derive time, 0 left. The 38 non-current resellers were already excluded by the gate. |
 | **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🔵 S3 | L | — | ⏸ own plan |
-| **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | ⚪ S4 | S | — | ⏸ next session |
+| **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | ⚪ S4 | S | — | ⏸ next session ✅ **CLOSED 2026-09-10** — cause was `+` in a URL being a space, so the bound matched nothing; **5,104 probe turns had piled up**. Exact rule now, proven on a real-vs-probe pair. Purging the 5,104 backlog waits on Andy. |
 | **#118** | 🗺️ `event_who`'s `op=people` returns a ranked/personalized subset (#99 behavior), not a flat roster, for a plain "who is coming" ask — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
 | **#119** | 🧪 Bank B — a second eval bank for everything built since the 100-question bank was frozen (2026-08-16): schedule + venue-day, Summit registration & who-to-meet, intros, 2025-26 transcripts/quotes, speakers, offer binding, the finder — ORGANIC questions only (real member asks from `olivia_messages` since 08-16), `expect` from the tickets' ACs/rulings, sized by the questions not padded; runner gets `--bank`; first staging run scored against the tickets' truth | 🔵 S3 | M | ticket ACs + `olivia_question_labels` | 🔨 building 2026-08-23 (Andy: "file #119, do it while bank A runs") |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🔵 S3 | S | — | ⏸ waits for event #2's export |
@@ -4034,6 +4034,43 @@ worried about.
 
 **Before → after:** 5 members on the wrong continent · 8 rows carrying a value no filter could match → both fixed
 at the source so the next derive keeps them fixed, gate GREEN.
+
+
+#### ✅ #117 CLOSED 2026-09-10 — a `+` in a URL is a space, and it was guarding Andy's own history
+
+**Story:** *As whoever runs the self-test, `--cleanup` removes the turns it created and nothing else.*
+
+**Cause.** The cleanup hand-built a PostgREST URL carrying `created_at=gte.<timestamp>`, and a timestamp ends
+`+00:00`. **A `+` in a URL query string IS A SPACE**, so the filter was malformed, matched nothing, and every run
+printed "cleanup done" while deleting no messages at all. That trap is already written down in this project
+(`reference_postgrest_plus_is_space`) — it bit its own tooling.
+
+**It had piled up: 5,104 probe questions and 5,104 answers were sitting in `digest.olivia_messages`** — more than a
+third of all 13,309 turns — plus 91 orphaned `olivia_seen` rows. Not neutral: `prod_pulse` and the outage alarm both
+read that table to ask "is Millie answering".
+
+**Sharper than the ticket said.** `PROBE_PHONE` is **Andy's own number** — "the only member whose phone may be
+simulated" — so that bound was the only thing between the cleanup and his real conversation. Matching nothing was
+the *lucky* failure; the same defect parsed differently deletes real member turns, and that cannot be undone.
+
+**The fix removes the bound entirely.** `digest.selftest_cleanup(p_dry_run, p_phone)` identifies test turns exactly:
+a probe question by its `wamid.SELFTEST…` wamid, which a real inbound can never carry; its answer by sitting between
+that question and the next member row, since `id` is a sequence. `--cleanup` now **dry-runs by default** and needs
+`--yes` to delete.
+
+**Proven end to end on the hardest case** — a probe answer and a real answer side by side, both with no wamid:
+| row | outcome |
+|---|---|
+| probe question (`wamid.SELFTEST_117PROOF`) | deleted |
+| its answer, no wamid | deleted |
+| REAL question (`wamid.HBgLREAL117`) | **survived** |
+| its answer, no wamid | **survived** |
+
+The 1:1 dry-run count across the whole table (5,104 questions ↔ 5,104 answers) corroborates the rule.
+
+**⚠️ Left for Andy, deliberately.** Purging the 5,104-turn backlog is 10,208 irreversible deletions on his own
+conversation history. The tool is fixed and proven; the one-time purge is his call:
+`python3 scripts/olivia_selftest.py --cleanup --yes`.
 
 ### #148 · The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever
 **🔵 S3 · size S — filed 2026-08-25 from #126's audit.**

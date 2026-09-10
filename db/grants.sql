@@ -432,6 +432,10 @@ grant execute on function digest.resolve_member_by_email(p_email text) to postgr
 grant execute on function digest.resolve_member_by_email(p_email text) to service_role;
 grant execute on function digest.schema_source() to postgres;
 grant execute on function digest.schema_source() to service_role;
+grant execute on function digest.selftest_cleanup(p_dry_run boolean) to postgres;
+grant execute on function digest.selftest_cleanup(p_dry_run boolean) to service_role;
+grant execute on function digest.selftest_cleanup(p_dry_run boolean, p_phone text) to postgres;
+grant execute on function digest.selftest_cleanup(p_dry_run boolean, p_phone text) to service_role;
 grant execute on function digest.session_rollup() to postgres;
 grant execute on function digest.session_rollup() to public;
 grant execute on function digest.set_relay_secret(p_secret text) to postgres;
