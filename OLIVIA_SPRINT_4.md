@@ -88,7 +88,7 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 292 EXIT 0, 26 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** · row re-verified against live 2026-09-09 and it is accurate: prod `15649d68` has no Finder — `member_finder`, `find_members` and the node name all return zero across the 92 nodes, and the only "finder" strings on prod are two code comments. — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
 | **#113** | 🔄 Summit event refresh — the whole event (activities, sessions, rooms, access, rosters) reloads from a GroupOS export, removals included | 🔴 S1 | M | ✅ LOADED 2026-08-23 from the 09:52Z scan: activities 50→86 · access edges 180→227 · grants 183→698 · full descriptions; idempotent; self-test 7/8 | ✅ CLOSED — live lane serves the new day one |
 | **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ route live (`9d0ec41`) · seed PROMOTED `bbd597b7` 2026-08-23 02:49 ET · prod probe Sunday/Monday + full day | ✅ CLOSED — Andy tested on WhatsApp 2026-08-23 (ET afternoon, Singapore already on the next day): correct |
-| **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🔵 S3 | S | — | ⏸ next session |
+| **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🔵 S3 | S | — | ⏸ next session ✅ **CLOSED 2026-09-10** — `IS` folded to Iceland, so 5 Israeli members were counted as Icelandic; fixed. 8 corrupt rows repaired at derive time, 0 left. The 38 non-current resellers were already excluded by the gate. |
 | **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🔵 S3 | L | — | ⏸ own plan |
 | **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | ⚪ S4 | S | — | ⏸ next session |
 | **#118** | 🗺️ `event_who`'s `op=people` returns a ranked/personalized subset (#99 behavior), not a flat roster, for a plain "who is coming" ask — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
@@ -4004,6 +4004,36 @@ Staging `01c8670d` → **prod `c20c1811`**. Re-verified ON PROD after the bounce
 the Members DB record, which is Airtable and therefore Andy's or ops' to make, never the agent's
 (2026-08-25 rule). The list of 21 is in the session log. `Current Member- Paused ` (2 rows, trailing
 space) is not in `ACTIVE` and keeps the inactive copy — correct today, flagged to #115 as hygiene.
+
+
+#### ✅ #115 CLOSED 2026-09-10 — one real wrong answer, one real corruption, one non-issue
+
+**Story:** *As a member, the attributes Millie counts and matches me by are the ones I actually gave, spelled one way.*
+
+**Part 1 — country. The ticket asked for a fold at derive time; that turns out not to be the problem.**
+`member_count` and `member_match_v2` already call `digest.country_fold()` at query time, so `US` (2,216 rows) and
+`United States` (454) have never been two different answers to a member. Folding at derive would be tidier, not
+more correct.
+
+**What WAS wrong, and it was answering members wrongly: `IS` folded to `iceland`.** Five members were counted and
+matched as Icelandic. Every `IS` row carries an Israeli city or state — Jerusalem, Herzlia, Ness Ziona,
+Rishon LeZion, state "Israel" — and there is no Icelandic member. Evidence beats the ISO table, and the function
+already had this precedent: `ne` was mapped to netherlands for exactly the same reason in August. Also folded the
+three values that are not countries at all (`N/A` ×11, `hello`, a settings URL) to NULL — unknown is honest.
+
+**Part 2 — 8 corrupt business-model rows, real and now gone.** They carried a single array element that should be
+two: `OEM Design & Development'Wholesale and/or Arbitrage`, an apostrophe where a delimiter belonged upstream.
+`digest.attr_list()` now splits on **lowercase-apostrophe-uppercase only**, which that value matches and ordinary
+apostrophes do not — proven: `Men's Health` and `L'Oreal` survive intact. The 8 stored rows were repaired to match;
+**0 corrupt rows remain**, and the two real values now count 159 and 127 members.
+
+**Part 3 — the "4 WA-layer resellers with non-current AT status" need no fix.** The two layers agree on every one,
+and there are 38 non-current resellers in total, not 4. `digest.is_active_member_status()` returns **false for
+every single one**, so none is reachable by a member-facing lane. The guard already does the job the ticket was
+worried about.
+
+**Before → after:** 5 members on the wrong continent · 8 rows carrying a value no filter could match → both fixed
+at the source so the next derive keeps them fixed, gate GREEN.
 
 ### #148 · The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever
 **🔵 S3 · size S — filed 2026-08-25 from #126's audit.**
