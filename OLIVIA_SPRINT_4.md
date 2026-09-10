@@ -101,7 +101,7 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#189** | 🃏 The persona builder fails intermittently and cannot say why — 19 of 31 on 2026-09-09, reported only as "no valid JSON" | 🟡 S2 | S | n/a (launchd job) | ✅ **CLOSED 2026-09-10** — cause found and fixed: the answer parser broke on a stray brace after the JSON. 40/40 built, 0 failed. |
 | **#190** | 🧪 The nightly eval is at **9.5% FAIL** against Andy's **<1%** bar — 21 of 220 on 2026-09-09 | 🔴 S1 | M | n/a (report) | 📝 filed 2026-09-10, needs a session 🔎 **ANALYSED 2026-09-10** — two classes are **86%** of it (`false_denial` 10, `wrong_fact` 8 of 21), and **3 of the 21 are one known bug, #123**, proven: every denied answer was sitting in `events_catalog`. |
 | **#191** | 🧪 The nightly eval is DEAD since this morning — #105's webhook secret 403s all 220 posts, no report for 2026-09-10 | 🔴 S1 | XS | n/a (local job) | 📝 filed 2026-09-10 |
-| **#123** | 🗺️ `event_lookup` never reaches the events catalog — every `event_*` call is prefix-routed to the Summit schedule endpoint | 🟡 S2 | M | — | ⏸ ROOT CAUSE CONFIRMED 2026-09-10 on prod `22d81380` |
+| **#123** | 🗺️ `event_lookup` never reaches the events catalog — every `event_*` call is prefix-routed to the Summit schedule endpoint | 🟡 S2 | M | ✅ **PROVEN** staging `9d91109e` — 3/3 denied questions answered, gate 346 EXIT 0 | ⏸ awaiting promote (the `start_display` half is ALREADY live: shared SQL) |
 | **#188** | 🩺 One tile, two writers — "Member profiles ← Airtable sync" reported the events catalog's staleness under the member-profiles name | ⚪ S4 | XS | n/a (app code) | ✅ **CLOSED 2026-09-10** — the worse half now names its writer; 5 tests, live `2208d78`. |
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🟡 S2 | M | — | — 🟡 **INVENTORY DONE 2026-09-10 → `RUNTIME_INVENTORY.md`**, plists copied to `ops/launchd/`. **Headline: 7 of 9 jobs are scheduled 02:15–05:40, inside the window the laptop spends asleep** — that one fact produced #180. Five jobs have no heartbeat at all. `mds-scorecard-tools` is not a git repo. The moves that remain need Andy. |
@@ -4437,6 +4437,49 @@ in the answer, so the wrong label is contained — but it is one prompt away fro
 event's catalog row shows a correct start and a live registration link (no "already happened") · A4071
 still passes for the right reason, from the right source · a side event asked about by name answers from
 the catalog with its own RSVP link · `event_history` reaches its RPC too · gate EXIT 0.
+
+#### ✅ BUILT + STAGED + PROVEN 2026-09-10 — awaiting Andy's promote
+**The fix:** `Answer Tool` routed by `String($json.tool_name||'').startsWith('event_')`, so all four event
+tools landed on `https://digest.mds.co/api/olivia/schedule`. That route parses only
+op/phone/q/at/event_id/lead/in_minutes — **`p_terms` is dropped** — and always loads
+`events?order=starts_at.desc&limit=1` from the `event` schema, which today is the single row **MDS Summit
+Singapore, ended 2026-08-26**. Every event question therefore got an over-event's agenda. Now the two
+schedule-backed tools are named explicitly (`event_schedule`, `event_who`) and the two catalog tools fall
+through to PostgREST, where `Attach Embedding`'s `EXEC_NAME` has always renamed them
+(`event_lookup → event_lookup_v3`, `event_history → event_history_v2`); both are granted to `service_role`,
+and `Answer Parse` already injects `p_phone`, so the RPC path needed nothing else.
+`scripts/olivia_loop/apply_123_event_catalog_routing.py` (`--dry-run DIR` first), staging `9d91109e`.
+An offline check of the patched expression routes all 8 tool names correctly.
+
+**Fold-in, and it is LIVE now, not staged:** `digest.event_lookup` printed `(time as listed: 18:30 UTC)`
+for rows with no `app_starts_at`, and the routing fix put that in a member answer as "6:30 PM UTC" for a
+Miami evening event. The catalog stores the **listed clock time**, not a UTC instant, and only 19 of 1,455
+rows carry `app_timezone`, so the honest fix is to claim no zone: `(time as listed: 18:30)`. Applied with
+`CREATE OR REPLACE` (the ACL stays); a shared function is live on prod the moment it is applied, so this
+half is already in front of members. Rollback is the inverse one-token replace.
+
+| AC | result |
+|---|---|
+| an `event_lookup` call reaches the catalog RPC and returns catalog rows | ✅ staging turns 67946/67947 and the two before it — 3/3 of #190's EVENT failures now answered |
+| the running event's catalog row shows a correct start and a live registration link (no "already happened") | ✅ "MDS Ecom Founder Dinner at Accelerate 2026" → Tue Sep 22 2026, 7:00 PM, Seattle, 32 spots left, member RSVP + guest luma link |
+| A4071 still passes for the right reason, from the right source | ⚠️ **not testable as written** — A4071 is not in the live bank (`eval_bank_v2.json`). Its live equivalent is **2035** "What city is the MDS Summit being held in?", which now answers **MDS Summit Cancun 2027, Cancun, Mexico, Sep 26 2027** from the catalog. Correct today, since Singapore is past — but if the bank's stored truth still says Singapore, the judge will mark it FAIL. **Bank truth needs a look, the routing does not.** |
+| a side event asked about by name answers from the catalog with its own RSVP link | ✅ same Accelerate dinner answer, both links |
+| `event_history` reaches its RPC too | ✅ "what events am i registered for?" → the asker's own 4 past events, no upcoming, from `event_history_v2` |
+| gate EXIT 0 | ✅ `scripts/olivia_leak_gate.py` — **346 checks, 0 FAIL, exit 0** (exit code read directly, not through `tail`) |
+
+**Before → after** on the three EVENT failures from the 2026-09-09 eval:
+
+| question | before (17:35Z) | after (17:40Z+) |
+|---|---|---|
+| what time does the SoFlo Chapter TikTok Tour Afterparty start | *"I'm not finding a 'SoFlo Chapter TikTok Tour Afterparty' on file anywhere"* | *"it took place Thursday, November 13, 2025 at 6:30 PM, in Miami, as part of the SoFlo Chapter"* |
+| what type of event is the TikTok Shop (Verified Sellers) Channel Meetup | denied | *"was a virtual event — Thursday, November 7, 2024"* |
+| where is the Billion Dollar Seller Summit Recommended Event | denied | *"held in Kaua'i, Hawaii — a past event, from Saturday, May 18, 2024"* plus its event page |
+
+**Left alone deliberately:** `Answer Merge` still carries the A4077 workaround that detects a schedule-shaped
+payload coming back from an `event_lookup*` call and tells Millie not to narrate the mismatch. With routing
+fixed it never fires; it stays as the tripwire if anyone re-broadens that route. The duplicate `event_lookup`
+key in `Attach Embedding`'s `EXEC_NAME` literal (v2 then v3, last one wins) is untouched — it is confusing
+but correct, and #123 is not the place to re-open that node.
 
 ### #113 · Summit event refresh — reload the whole event from a GroupOS export, removals included
 **🔴 S1 · size M — filed + built + loaded 2026-08-23.**
