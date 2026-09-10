@@ -36,14 +36,15 @@ flip back: `update digest.olivia_alarm_config set v = '0' where k = 'meta_webhoo
 **Dead end, do not retry:** Meta will not self-trigger a delivery (`subscriptions_sample` = "Unknown path
 components" on v18-v21, even with an app token).
 
-**Live state.** prod n8n `12wj6h1TWqb0d4Dq` = `4cea7bc8` (92 nodes, the rolled-back graph **plus** `rawBody` on
-`WA Inbound`, harmless and now unused — remove it when convenient) · staging `6067cd65` still carries the
-**abandoned** 97-node n8n version of #105; **re-stage from prod before using staging for anything else** ·
-`mds-digest-web` main `d5d6bff` · gate 346 GREEN · lock free.
+**Live state.** prod n8n `12wj6h1TWqb0d4Dq` = `2b568155` (92 nodes; `rawBody` removed, `WA Inbound` header-authed) ·
+staging `5a6b30c5`, re-staged from prod, clean · `mds-digest-web` main `5df00c7` · gate GREEN · lock free.
+
+**Both doors are now locked.** The n8n side door was closed the same night (prod `2b568155`): `WA Inbound (POST)`
+requires `X-Olivia-Relay`, and all four callers send it — the relay, the in-app widget, the iOS ask route and the
+liveness probe — plus the Postgres health ping. A direct post without it gets 403.
 
 **Open behind it:** ⚠️ **the app secret was pasted into chat — reset it in the Meta dashboard and update the Vault
-row** (`vault.update_secret`); the n8n webhook is still reachable directly, so this closes Meta's front door and
-not the side door our health ping uses — **worth its own ticket**, not a widening of #105.
+row** (`vault.update_secret`, name `META_APP_SECRET`). Nothing else.
 
 **Board drift fixed this session, four stale rows:** #97 (promoted 2026-08-22, not awaiting one), #165 (merged
 and live), #104 (shipped 2026-08-22), and the "#105 + #97" cluster line. Verify rows against live before trusting

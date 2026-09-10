@@ -2467,9 +2467,21 @@ effective within the 5-minute config cache. Watch `digest.meta_webhook_verdicts`
 **Dead end, do not retry:** Meta will not self-trigger a delivery — `subscriptions_sample` is "Unknown path
 components" on v18/v19/v20/v21 even with an app token built inside Postgres.
 
-**Residual, deliberately not widened into this ticket.** The n8n webhook is still reachable directly — this
-closes Meta's front door, not the side door our own health ping uses. Closing it means a shared secret between
-relay and n8n. **Worth its own ticket.**
+**The side door is shut too (2026-09-10 05:22Z, prod `2b568155`).** Locking Meta's front door still left the n8n
+webhook reachable directly by anyone who knew its URL, so a forgery could have skipped the signature check by
+going straight there. `WA Inbound (POST)` now requires a shared secret (`X-Olivia-Relay`, n8n credential
+`kKOzVnAzRFE0ZiVN`), minted into Vault as `OLIVIA_RELAY_SECRET` — its value was never printed or written to disk.
+
+**Checking before locking found three more callers**, not one: the in-app widget, the iOS ask route, and the
+webhook-liveness probe the health dashboard reads. Locking without them would have broken all three, and the
+liveness tile would have gone red while probing a door that always said no. All four now go through one helper
+(`n8nWebhookHeaders()`), and the health ping (a Postgres function) carries it too. **Senders first, then the lock**
+— both halves were live and verified before `WA Inbound` started refusing.
+
+**Proven on prod:** a direct post with no secret → **403** · health ping, liveness probe and a genuine
+signature-verified delivery through the relay → all **200**, `X-Olivia-Relay` present, exec 141997/141996/141992.
+`rawBody` removed from `WA Inbound` in the same promote — the signature check lives at the relay now and nothing
+downstream reads the raw bytes.
 
 **Artefacts:** `src/lib/meta-signature.ts` · `meta-webhook-config.ts` · the relay route, 21+7+4 tests written
 before the code · `scripts/olivia_loop/meta_signature.js` + gate check · `digest.meta_signature_ok()` ·
