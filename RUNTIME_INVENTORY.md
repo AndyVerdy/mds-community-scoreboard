@@ -82,7 +82,29 @@ reading two files can tell**, which is the point of the ticket.
 - **The sleep window** — the biggest one, needs a password.
 - **`mds-scorecard-tools` under version control** — Andy's call.
 - **Five jobs with no heartbeat** (`olivia-eval`, `persona.refresh`, `wa.dailydigest`, `watchdog`,
-  `scorecard.heartbeat`). Each could die and only a log mtime would say so. Cheapest fix: have them stamp
-  `digest.olivia_job_heartbeats` like the derivations do, which makes the existing 26h alarm cover them for free.
+  `scorecard.heartbeat`). Each could die and only a log mtime would say so.
+  **The tool is built and proven; applying it is a manual step.** `scripts/run_with_heartbeat.py` runs any job,
+  stamps `digest.olivia_job_heartbeats` with the exit code and the real error line, and exits with the child's own
+  code so launchd still sees the truth. That is all the pg_cron alarm needs — it fires on any row whose
+  `last_success_at` falls behind `max_age_hours`, so these five would be covered for free.
+
+  Proven both ways before shipping: a success stamped `ok` with the output, and a failure stamped `error` with
+  **the stderr line, not the last progress line** — the exact mistake the derivations runner used to make.
+
+  **To wire one job**, edit its plist's `ProgramArguments` so the original argv follows `--`, then reload it:
+
+  ```
+  <string>/usr/bin/python3</string>
+  <string>/Users/Born/Scorecard/scripts/run_with_heartbeat.py</string>
+  <string>persona_refresh</string>   <!-- heartbeat name -->
+  <string>30</string>                <!-- max_age_hours -->
+  <string>--</string>
+  …the original ProgramArguments, unchanged…
+  ```
+
+  Suggested names and ages: `olivia_eval` 30 · `persona_refresh` 30 · `wa_daily_digest` 30 ·
+  `alarm_watchdog` 2 · `scorecard_heartbeat` 200. Unmodified copies of all nine plists are in `ops/launchd/`.
+
+  *(Editing and reloading launchd agents is a system change, so it is Andy's to run, not mine.)*
 - **Thirteen channel-call opt-in forms still collect into nothing** (carried from the 2026-08-08 note, unverified
   tonight).
