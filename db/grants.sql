@@ -424,6 +424,9 @@ grant execute on function digest.registration_status(p_member text, p_event text
 grant execute on function digest.registration_status(p_member text, p_event text) to postgres;
 grant execute on function digest.registration_status(p_member text, p_event text) to public;
 grant execute on function digest.registration_status(p_member text, p_event text) to service_role;
+grant execute on function digest.registration_status_v2(p_member text, p_event text) to postgres;
+grant execute on function digest.registration_status_v2(p_member text, p_event text) to public;
+grant execute on function digest.registration_status_v2(p_member text, p_event text) to service_role;
 grant execute on function digest.report_create(p_phone text, p_text text, p_context text) to postgres;
 grant execute on function digest.report_create(p_phone text, p_text text, p_context text) to service_role;
 grant execute on function digest.resolve_asker(p_phone text) to postgres;

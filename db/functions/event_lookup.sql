@@ -61,7 +61,7 @@ begin
     coalesce(c.app_starts_at, c.start_at) as o_starts_at,
     case when c.event_type = 'Virtual' or c.app_starts_at is null then
       to_char(c.start_at at time zone 'UTC', 'Dy Mon DD, YYYY') || ' (time as listed: ' ||
-      to_char(c.start_at at time zone 'UTC', 'HH24:MI') || ' UTC)'
+      to_char(c.start_at at time zone 'UTC', 'HH24:MI') || ')'
     else
       to_char(c.app_starts_at at time zone coalesce(c.app_timezone,'UTC'), 'Dy Mon DD, YYYY, HH12:MI AM') || ' local time'
     end || case when coalesce(c.app_starts_at, c.start_at) < now()

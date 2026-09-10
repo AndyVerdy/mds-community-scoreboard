@@ -151,7 +151,7 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#14** | Conversational, not robotic | 🔥 — | M | — | — |
 | **#34** | Finalize the QA doc set | 🏁 — | M | — | — |
 | **#125** | 🚫 "Not currently active" is sent to ACTIVE members whose number simply isn't linked (Shyam Murali, live at the Summit launch) | 🔴 S1 | S | ✅ proven `01c8670d` — execs 110321/110322/110324 | ✅ **PROMOTED 2026-08-25** `c20c1811` — prod execs **110345** (unlinked, new copy) + **110346** (inactive, unchanged); gate 306 EXIT 0; 53 false claims → 0 |
-| **#147** | 🔀 "Is this member registered?" answered twice by two sources that disagree (agenda says yes, who-to-meet says no) | 🔴 S1 | M | n/a (SQL) | ⏸ **PAUSED mid-ticket 2026-08-25 — HALF LIVE**: measured 36 disagreements (S1 confirmed); `member_alias_ids` + `registration_status` + `is_registered` shipped and `event_who` wired (130 → 145 registered, 15 recognised, 0 lost, gate 306 EXIT 0). BLOCKED on Andy's choice of authority shape; event resolver + schedule route not started |
+| **#147** | 🔀 "Is this member registered?" answered twice by two sources that disagree (agenda says yes, who-to-meet says no) | 🔴 S1 | M | n/a (SQL) | ✅ **LIVE 2026-09-10** — `registration_status_v2` is the one authority (roster `has_ticket` gates, GroupOS `is_attending` drives the agenda, per Andy's ruling), `event_who` resolves on place as well as title, 13 + 5 contract checks green, gate 346 EXIT 0. ⏸ one lane left: the web schedule route (`mds-digest-web`, no staging tier — needs his go) |
 | **#146** | 🔇 A member who hides their WhatsApp number is invisible — silent drop, no answer, no error (Danson Hui) | 🔴 S1 | M | ✅ built + probed | ✅ **PROMOTED 2026-08-25** `64995b68` — Danson live. Remainders open: silent-drop alarm · hidden-number history keyed by the opaque id · ~~refusal path bypasses the SELFTEST silent gate~~ **fixed under #125** |
 | **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | ✅ 319 graded, 8 regressions fixed | ✅ **CLOSED + PROMOTED 2026-08-25** — 311/319 hold (97.5%); links 654→808, dead links 5→0, dates 641→862, route changes 0; prod `8bb0827d` |
 | **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🔵 S3 | S | — | ⏸ filed 2026-08-25 ✅ **CLOSED 2026-09-10** — `stale_since` + `mark_stale_members()` (guarded), nightly job, `prod_pulse` reports it. **The 11 rows CAME BACK on their own** — absence is intermittent, not permanent. |
@@ -1981,6 +1981,56 @@ decision and an explicit go.
 
 **Do not touch Airtable to fix this (Andy 2026-08-25):** it is the source of truth and he tests against it.
 Corrections that need the source get raised with him or ops, never written by the agent.
+
+
+#### ✅ SECOND LAP DONE 2026-09-10 — the authority now answers both questions, and the resolver reads place
+**Andy's ruling (2026-09-10):** *"AT roster, but we need to read the data from Supa, not AT since at has
+bottle necks"* — the roster is the authority and it is read from its Supabase mirror, never the Airtable API.
+Taken with the paused decision above, that is **option 2, one function with two facets**: the roster answer
+gates, and GroupOS attendance drives a personal agenda. Reading it as option 1 instead would have stripped
+the agenda from the nine people who attend without a member ticket — two speakers, two partners, guests —
+which is a regression for a real person, not a tidier number.
+
+**What is live (SQL is prod-shared, so this is already serving members):**
+- **`digest.registration_status_v2(p_member, p_event)`** — `has_ticket` (roster mirror, GATES who-to-meet and
+  attendee names) · `is_attending` (GroupOS export, or any ticket holder — drives the AGENDA) · `matched_via`
+  and `attending_via` naming which rule fired · `roster_synced_at` + `roster_stale_days` +
+  `attendees_synced_at`, so a stale snapshot can never gate someone silently. Both facets resolve a person
+  through `member_alias_ids` + `member_email_alias`, so a duplicate record cannot split one human. `p_event`
+  takes either the Airtable record id or the GroupOS event id; `events_catalog` bridges them.
+- **`digest.registration_status`** is now a thin wrapper over v2's roster facet — one implementation, so the
+  four-column callers (`event_who`, the gates) can never drift from the authority.
+- **`digest.is_registered`** is untouched and still roster-only, which keeps every existing gate's meaning
+  and the leak gate's deliberate non-attendee control intact.
+- **`digest.event_who` resolves on PLACE, not only title words** — it now matches `city_state`, `location`,
+  `app_city` and `chapter_hint` the way `event_lookup` always has, and a title match outranks a place-only
+  match so a named event still wins its own question.
+
+| AC | result |
+|---|---|
+| one function answers the question and every gated lane calls it | ✅ `registration_status_v2` is the only implementation; v1 is a wrapper over it; `is_registered` unchanged. **Not done: the web schedule route** still computes `registered = myTypes.size > 0` itself — `mds-digest-web` has no staging tier, so it waits for an explicit go |
+| a member with duplicate records resolves the same way in both lanes | ✅ both facets run over `member_alias_ids`; Andy's four records answer identically |
+| the disagreement count for the Summit is reported before and after | ✅ **before: 36** members got a different answer depending on the lane (23 GroupOS-only, 13 roster-only). **After: 0 contradictions** — of 155 people, 146 hold a ticket, 155 attend, **9 attend without a ticket** and are now described that way rather than answered two ways, and **0** hold a ticket without attending |
+| roster staleness is visible, not a silent month | ✅ `roster_synced_at`, `roster_stale_days`, plus `attendees_synced_at` for the GroupOS side |
+| gate GREEN | ✅ **346 checks, 0 FAIL, exit 0** (read directly) |
+
+**Before → after on the resolver**, measured live on 2026-09-10:
+
+| a member asks | before | after |
+|---|---|---|
+| who to meet in **Seattle** | *Private Experience - Dinner at Ltd Edition Sushi Seattle*, **2024-09-17** — two years past, and the only match because the city is in its title | *MDS Ecom Founder Dinner at Accelerate 2026*, **2026-09-22**, twelve days out, Registration Open |
+| who to meet in **las vegas** | Las Vegas Chapter Boardroom Sept 2026 | unchanged — the title match still outranks Inspire 2027, which now also matches on its city |
+| **singapore** / **inspire** | Summit Singapore / Inspire 2027 | unchanged |
+
+**Tests, written before the code and watched to fail:** `scripts/test_147_registration_authority.py`
+(13 checks — the facets, the legacy column, the gate control, freshness, and `is_registered()` not drifting)
+and `scripts/test_147b_event_resolver.py` (5 checks — the place question, and three resolutions that must not
+move). The first run of each failed for the right reason: no `registration_status_v2`, and a 2024 dinner
+winning a place question. `db/` re-exported (161 files).
+
+**The ticket's own stale example, corrected:** it said `event_who('vegas')` lands on a **Feb 2025** chapter
+dinner. Measured today it landed on the **Sept 2026** Vegas boardroom — the ordering already preferred
+upcoming events. The bug was real, but its sharpest live case was Seattle, which is what the test pins.
 
 ### #146 · A member who hides their WhatsApp number becomes INVISIBLE — she never answers, and nothing errors
 **🔴 S1 · size M — filed 2026-08-25 from Danson Hui's report (Doina, Slack), diagnosed the same night.**

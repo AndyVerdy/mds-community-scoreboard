@@ -5,38 +5,9 @@ CREATE OR REPLACE FUNCTION digest.registration_status(p_member text, p_event tex
  STABLE SECURITY DEFINER
  SET search_path TO 'digest', 'pg_temp'
 AS $function$
-  with me as (select nullif(btrim(p_member), '') as at_member_id),
-  my_ids as (select unnest(digest.member_alias_ids(p_member)) as at_member_id),
-  my_emails as (
-    select distinct lower(btrim(a.email)) as email
-      from digest.member_email_alias a, me
-     where a.at_member_id = me.at_member_id
-       and nullif(btrim(a.email), '') is not null
-  ),
-  roster as (
-    select r.member_at_id, lower(btrim(r.email)) as email, r.synced_at
-      from digest.event_registrations_live r
-     where r.event_at_id = nullif(btrim(p_event), '')
-  ),
-  hit as (
-    select
-      bool_or(r.member_at_id is not null
-              and r.member_at_id = (select at_member_id from me))              as by_own_id,
-      bool_or(r.member_at_id is not null
-              and r.member_at_id in (select at_member_id from my_ids))         as by_alias_id,
-      bool_or(r.email is not null and r.email in (select email from my_emails)) as by_email,
-      max(r.synced_at)                                                          as synced_at
-    from roster r
-  )
-  select
-    coalesce(by_own_id or by_alias_id or by_email, false),
-    case
-      when coalesce(by_own_id, false)   then 'member_id'
-      when coalesce(by_alias_id, false) then 'alias_member_id'
-      when coalesce(by_email, false)    then 'alias_email'
-    end,
-    synced_at,
-    case when synced_at is not null
-         then greatest(0, extract(day from (now() - synced_at))::integer) end
-  from hit
+  -- #147: one implementation lives in registration_status_v2. This keeps the original four-column
+  -- shape for callers that only ever needed the roster answer (event_who, the gates), so the two can
+  -- never drift apart — same rows, same alias bridge, same freshness fields.
+  select v.has_ticket, v.matched_via, v.roster_synced_at, v.roster_stale_days
+  from digest.registration_status_v2(p_member, p_event) v
 $function$
