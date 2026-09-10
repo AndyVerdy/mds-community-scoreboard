@@ -306,12 +306,18 @@ a real failure, which is worse than a false red.
 4. Unit test covering all three codes — ✅ `make.test.ts`, 13 tests, plus the unknown grade, the pipeline roll-up and the real Guest Multi-Event case.
 5. `tsc`, lint, tests, `next build` clean; merge = Render deploy verified on `/api/version` — ✅ 1270 tests pass, tsc/eslint/build exit 0, `/api/version` = `6a31026`.
 
-**⚠️ One thing I did NOT verify, stated plainly: the rendered dashboard tile.** `/tools-health` needs a
-member session and `GET /api/health/report?secret=…&dry=1` returns `{"error":"forbidden"}` — the stale
-`HEALTH_REPORT_SECRET` the 2026-09-09 triage already recorded. I did not sign in as Andy. What is proven is
-the shipped classifier against the live Make API, before and after, plus the deploy. **Andy or the next
-session should open `digest.mds.co/tools-health` once and confirm the tile is amber.** The stale secret is
-the chore already sitting in the #179 + #181 + #183 cluster.
+**✅ The rendered tile is now verified too** (2026-09-10 01:35). It could not be reached at first — the report
+endpoint 403'd on the stale `HEALTH_REPORT_SECRET`, the chore the cluster already carried. That chore was fixed
+the same night (the endpoint now also accepts a Vault-held secret, so aligning it needs no deploy), and the live
+report reads:
+
+```
+🟡 *Guest Multi-Event Alert (3+ events)* — ⚠ warning 8d ago (Sep 02, 2026)
+*39* tools · 🟢 37 healthy · 🟡 2 need attention · 🔴 0 down
+```
+
+Amber, worded "warning", and **the down count is no longer inflated by it**. The other amber tile is unrelated
+(Member profiles ← Airtable sync).
 
 **Found alongside, NOT chased, no ticket filed yet — two repo traps:**
 - **`node_modules` is a broken symlink committed into `mds-digest-web`** (`0b932ce`, 2026-09-08, mode
@@ -379,6 +385,8 @@ location.
    batch 1: **893 rows rewritten for the 391 members it finished, 1,013 rows left untouched for the other 306, no
    member lost.** Exit 1, so the heartbeat still says error — saved data must never look like a clean night.
 5. The tile shows the oldest failing job, not the freshest — ✅ `summarizeDerivations()`, 8 tests, live `e7c18d9`.
+   Confirmed on the live report the same night: the derivations tile is **green**, so it no longer appears among
+   the amber ones at all.
 
 **Before → after:** niche data 3 days stale, nightly burning 3.5h for nothing, tile reading "last success <1h ago"
 beside a DOWN status → data current, run 93s, a cut-short run keeps its work, tile names the worst offender.
