@@ -109,12 +109,12 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#147** | 🔀 "Is this member registered?" answered twice by two sources that disagree (agenda says yes, who-to-meet says no) | 🔴 S1 | M | n/a (SQL) | ⏸ **PAUSED mid-ticket 2026-08-25 — HALF LIVE**: measured 36 disagreements (S1 confirmed); `member_alias_ids` + `registration_status` + `is_registered` shipped and `event_who` wired (130 → 145 registered, 15 recognised, 0 lost, gate 306 EXIT 0). BLOCKED on Andy's choice of authority shape; event resolver + schedule route not started |
 | **#146** | 🔇 A member who hides their WhatsApp number is invisible — silent drop, no answer, no error (Danson Hui) | 🔴 S1 | M | ✅ built + probed | ✅ **PROMOTED 2026-08-25** `64995b68` — Danson live. Remainders open: silent-drop alarm · hidden-number history keyed by the opaque id · ~~refusal path bypasses the SELFTEST silent gate~~ **fixed under #125** |
 | **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | ✅ 319 graded, 8 regressions fixed | ✅ **CLOSED + PROMOTED 2026-08-25** — 311/319 hold (97.5%); links 654→808, dead links 5→0, dates 641→862, route changes 0; prod `8bb0827d` |
-| **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🔵 S3 | S | — | ⏸ filed 2026-08-25 |
+| **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🔵 S3 | S | — | ⏸ filed 2026-08-25 ✅ **CLOSED 2026-09-10** — `stale_since` + `mark_stale_members()` (guarded), nightly job, `prod_pulse` reports it. **The 11 rows CAME BACK on their own** — absence is intermittent, not permanent. |
 | **#126** | 🧾 WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id` | 🟡 S3 | XS | n/a (audit) | ✅ **CLOSED 2026-08-25 — NOT REPRODUCIBLE**: field map proven correct against mirror exec 110330; all 57/671 NULLs are genuinely unmatched. Audit found 11 matched members with no `AT Database Status` (Airtable-side, Andy/ops) and the stale-row gap, filed as #148 |
 | **#149** | 🗣️ Two real answers were wrong in shape — a live event called finished, a yes/no answered with machinery | 🔴 S1 | M | ✅ staging turns 52883/52885 | ✅ **PROMOTED 2026-08-26** `7abb9fc9` (rules+clamp) · route `eventPhase` pushed `102bf14` (Render deploys on push) |
 | **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
 | **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list + dangling old-event links (Andy, prod 52891/52893/52935/52941/52951) | 🔴 S1 | S | ✅ probe wave 8/8 · orphan-strip unit 6/6 | ✅ **PROMOTED 2026-08-26** `06df948a` — prod turn 52959: 1 link, Denver gone; gate 306 EXIT 0 |
-| **#152** | ⏱️ `refresh_entity_dossiers` statement-timeout — `zoom_weekly` heartbeat error, last success 2026-08-07; video chain exits 1 every run (found by scorecard-df) | 🟡 S2 | S | — | ⏸ filed 2026-08-28 |
+| **#152** | ⏱️ `refresh_entity_dossiers` statement-timeout — `zoom_weekly` heartbeat error, last success 2026-08-07; video chain exits 1 every run (found by scorecard-df) | 🟡 S2 | S | — | ⏸ filed 2026-08-28 ✅ **CLOSED 2026-09-02, row was stale — verified live 2026-09-10:** `refresh_entity_dossiers` carries `statement_timeout=900s` in `proconfig`, and the `entity_dossiers` heartbeat is `ok` on tonight's full nightly run. |
 | **#154** | 🔗 People she names carry NO link — `member_match_v2` / `expertise_search` return no url column at all | 🔴 S1 | S-M | ✅ proven `e55a45c6` — 4/4 and 10/10 linked; gate 312/0 | ✅ **LIVE 2026-09-02** prod `d40a837d` (seed) + Render `8f368b3` (finder) — prod probe 5/5 linked, live finder 5/5 linked; 718/741 actives resolve |
 | **#155** | 💬 A chat quote carries its own message link, and "what should I know" is not a capability tour | 🟡 S2 | M | — | — |
 | **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ✅ **PROMOTED 2026-08-26** `15ff4978` — verified 2026-08-28: prod/staging graphs identical (only webhook path differs), gate 306 PASS · 0 FAIL · EXIT 0; re-embed of 7 still awaits Andy |
@@ -1528,6 +1528,43 @@ re-verified 2026-08-28: `olivia_wf.py diff prod staging` = identical bar the web
 **Remainder:** the 7 metadata-only re-embeds (scorecard-df executes on Andy's go) · the cited
 timestamp read "(at 00:00:00)" because early chunks carry start_sec 0 — cosmetic, filed under #103's
 umbrella rather than new.
+
+
+#### ✅ #148 CLOSED 2026-09-10 — and the ticket's premise was half wrong
+
+**Story:** *As a member, the system never answers me out of a record it stopped being able to check.*
+
+**What the ticket said, and what is actually true.** It said 12 rows "Airtable stopped returning are frozen
+forever". Live on 2026-09-10 it was **11 rows, all last synced 2026-08-05 — 36 days**. Then, mid-ticket, the 06:00
+sync wave **returned every one of them**. So the rows are **intermittently absent, not permanently gone**. That is a
+different failure and arguably a nastier one: a record can go quiet for five weeks, keep answering out of its last
+known state, and then reappear as if nothing happened.
+
+**The triage also cleared the scariest claim.** The ticket warned one of them was "a COMPLETE row (name, status,
+`at_member_id`) that the front door will happily match a phone against and treat as current". Not any more: all 11
+carried **only a phone and an `airtable_id`** — no name, no `membership_status`, no `at_member_id`, no email. They
+could not be matched to a member identity, so the front-door exposure it feared did not exist.
+
+**What shipped.** `digest.members.stale_since` + `digest.mark_stale_members(p_stale_after, p_min_healthy_share)`,
+`SECURITY DEFINER`, service_role only. It **marks, never deletes** — a row that vanishes on one bad Airtable call
+must never be removed. The guard is a *share* of the table, not a raw count, so it keeps working as the roster
+grows: below 80% freshness it marks nothing and says why. Clearing a mark always runs, even on an unhealthy wave,
+because un-marking can never hide a live member. Nightly via `scripts/mark_stale_members.py`.
+
+**AC checklist:**
+1. Rows absent from a run are marked, not silently kept — ✅ a healthy wave marked **11**.
+2. A one-run Airtable failure cannot mark everything stale — ✅ at a 0.99 threshold against 0.984 real freshness it
+   marked **0** and returned `sync wave looks unhealthy`.
+3. Stale count visible in `prod_pulse.py` — ✅ its own section, compared against baseline.
+4. The current rows triaged — ✅ all 11 phone-only Airtable shells, and they returned at 06:00.
+5. Gate GREEN — ✅.
+
+**Both transitions were observed on live data, not simulated:** mark set (11), mark cleared (11), and the mirror
+wave that made it true. Current state: 684 rows, 0 stale.
+
+**Not done, deliberately.** The ticket's prose also wanted the front door and member lanes to *skip* stale rows.
+That changes who Millie will answer, and getting the threshold wrong refuses real members — not a thing to ship
+unattended overnight. **It is not in the ACs**, and it wants Andy's ruling on the threshold.
 
 ### #152 · `refresh_entity_dossiers` times out — dossiers 20 days stale for every new video
 

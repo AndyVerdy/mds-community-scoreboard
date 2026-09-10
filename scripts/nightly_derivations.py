@@ -26,6 +26,9 @@ ENV = "/Users/Born/mds-digest-web/.env.local"
 JOBS = [
     ("derive_niches",        [f"{REPO}/scripts/olivia_derive_niches.py"]),
     ("label_questions",      [f"{REPO}/scripts/olivia_label_questions.py"]),
+    # #148: mark the Airtable mirror rows that stopped coming back. Marks, never deletes, and
+    # refuses to mark at all when the sync wave looks unhealthy.
+    ("mark_stale_members",   [f"{REPO}/scripts/mark_stale_members.py"]),
     ("sync_chapter_pages",   [f"{REPO}/scripts/sync_chapter_pages.py"]),
     # #161: nightly photo cache (GroupOS avatar -> Airtable attachment -> nothing/initials).
     # No --groupos-roster here: that dump only exists inside a Claude session (same reason

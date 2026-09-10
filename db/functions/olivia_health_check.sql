@@ -3,7 +3,7 @@ CREATE OR REPLACE FUNCTION digest.olivia_health_check()
  RETURNS void
  LANGUAGE plpgsql
  SECURITY DEFINER
- SET search_path TO 'digest', 'net', 'extensions', 'pg_temp'
+ SET search_path TO 'digest', 'net', 'extensions', 'vault', 'pg_temp'
 AS $function$
 declare
   v_token text; v_channel text; v_n int;
@@ -50,7 +50,7 @@ begin
     end if;
     v_req := net.http_post(
       url := 'https://mdsco.app.n8n.cloud/webhook/olivia-wa-live',
-      headers := '{"Content-Type":"application/json"}'::jsonb,
+      headers := jsonb_build_object('Content-Type', 'application/json') || coalesce((select jsonb_build_object('X-Olivia-Relay', s.decrypted_secret) from vault.decrypted_secrets s where s.name = 'OLIVIA_RELAY_SECRET'), '{}'::jsonb),
       body := '{"object":"whatsapp_business_account","entry":[{"id":"healthping","changes":[{"value":{"messaging_product":"whatsapp","statuses":[{"id":"wamid.HEALTHPING","status":"delivered","recipient_id":"10000000000"}]},"field":"messages"}]}]}'::jsonb,
       timeout_milliseconds := 15000);
     insert into digest.olivia_alarm_state(kind, ping_request_id) values ('webhook-ping', v_req)

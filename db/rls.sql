@@ -48,6 +48,7 @@ alter table digest.member_sessions enable row level security;
 -- digest.member_state_snapshot: row level security DISABLED
 -- digest.member_wa_ids: row level security DISABLED
 alter table digest.members enable row level security;
+-- digest.meta_webhook_verdicts: row level security DISABLED
 alter table digest.olivia_alarm_config enable row level security;
 alter table digest.olivia_alarm_state enable row level security;
 alter table digest.olivia_billing_nudges enable row level security;

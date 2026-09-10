@@ -359,6 +359,7 @@ CREATE UNIQUE INDEX fb_comments_pkey ON digest.fb_comments USING btree (comment_
 --   tags                               jsonb
 --   run_at                             timestamp with time zone
 --   rewrites                           integer not null default 0
+--   draft_history                      jsonb not null default '[]'::jsonb
 alter table digest.fb_group_posts add constraint fb_group_posts_pkey PRIMARY KEY (story_key);
 alter table digest.fb_group_posts add constraint fb_group_posts_status_chk CHECK ((status = ANY (ARRAY['draft'::text, 'offered'::text, 'posted'::text, 'rejected'::text, 'skipped'::text, 'blocked'::text])));
 CREATE INDEX fb_group_posts_created_idx ON digest.fb_group_posts USING btree (created_at DESC);
@@ -781,12 +782,22 @@ CREATE UNIQUE INDEX member_wa_ids_pkey ON digest.member_wa_ids USING btree (wa_u
 --   olivia_interactions                integer not null default 0
 --   olivia_last_used_at                timestamp with time zone
 --   olivia_optout_at                   timestamp with time zone
+--   stale_since                        timestamp with time zone
 alter table digest.members add constraint members_phone_key UNIQUE (phone);
 alter table digest.members add constraint members_pkey PRIMARY KEY (airtable_id);
 CREATE INDEX members_email_idx ON digest.members USING btree (lower(email));
 CREATE INDEX members_phone_idx ON digest.members USING btree (phone);
 CREATE UNIQUE INDEX members_phone_key ON digest.members USING btree (phone);
 CREATE UNIQUE INDEX members_pkey ON digest.members USING btree (airtable_id);
+
+-- digest.meta_webhook_verdicts
+--   day                                date not null
+--   reason                             text not null
+--   n                                  bigint not null default 0
+--   first_at                           timestamp with time zone not null default now()
+--   last_at                            timestamp with time zone not null default now()
+alter table digest.meta_webhook_verdicts add constraint meta_webhook_verdicts_pkey PRIMARY KEY (day, reason);
+CREATE UNIQUE INDEX meta_webhook_verdicts_pkey ON digest.meta_webhook_verdicts USING btree (day, reason);
 
 -- digest.olivia_alarm_config
 --   k                                  text not null
