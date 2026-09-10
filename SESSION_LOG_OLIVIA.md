@@ -4,6 +4,79 @@
 
 
 
+## 2026-09-10 (day) · #191 + #123 — the eval was dead by breakfast, and event questions were answering from the wrong event
+
+**Andy's asks, in order:** "continue working on Millie" (a briefing, per the protocol) → review the open
+Sprint 4 backlog for dependencies and parallel lanes → "lets check Waiting on you tickets" → the GitHub PAT
+→ "go" on #191 then #123 → "so why not to push the second part of 123" → he ran the promote.
+
+**Session open caught real drift, then a peer corrected me.** The shared checkout `/Users/Born/Scorecard`
+was parked on another session's `186-design-request-20260909` branch, so the working-tree board and handoff
+were yesterday's: they said prod `15649d68` and "start with #105 + #97". I reported #105 as owned by a peer.
+The peer session messaged to correct it — #105 was FINISHED, its worktree deleted, and `main` said so. I
+verified rather than taking it on trust: `git show main:OLIVIA_NEXT_SESSION.md` reads "#105 ENFORCING", and
+an unsigned POST to `digest.mds.co/api/olivia/webhook` returned `403 {"ok":false,"error":"bad signature"}`.
+**Lesson worth keeping: in a shared checkout, read the docs from `main` (`git show main:<file>`), never from
+the working tree.**
+
+**Backlog review (from `main`, 38 open).** 17 workable, 12 waiting on a person, 5 needing a product ruling.
+Three of the 2026-09-09 clusters are dead (#105, #179+#183, #180 all closed). New clusters offered: #123+#92
+(both event-source routing), #111+#118 (same who-to-meet lane), #170+#173 (one Ask Millie surface). Parallel
+lanes without collisions: the n8n graph is the only hard mutex (one lock), Postgres is safe only across
+DIFFERENT functions since a `CREATE OR REPLACE` is instantly prod, `mds-digest-web` serialises at the Render
+deploy, and a docs/decisions lane collides with nothing. **Board defects found:** #123 had no at-a-glance row
+at all, #102 is still gated "AFTER the big smoke test" which was retired with #72, and #108's row says
+"awaiting promote" while prod already routes `find` to `/api/olivia/find`.
+
+**Andy's four rulings, recorded on the board and in the handoff:** #147 = Airtable roster is the authority
+but read it from the Supabase mirror, "at has bottle necks" — so mirror freshness is now part of that ticket
+· #184 = hold for Eugene · #157 = stay on Sonnet 5 · #71 = the recording is the answer. **#190 is the
+sprint-closure eval, not mid-sprint work** ("its like a logical sprint closure - do a eval test").
+
+**#181's token exists.** A fine-grained PAT on `AndyVerdy/mds-digest-web`; read proven (`200` on the workflow
+endpoint, id `318489341`); the dispatch POST that would prove `actions:write` was refused by this session's
+permission classifier, and his own screenshot then showed Read and Write on the whole repo — broader than the
+job needs, raised once, his call, recorded. **Expires 2026-10-10.** He pasted the value in chat, so it wants
+regenerating once n8n holds it.
+
+**#191 — filed and closed the same session.** The 2026-09-10 08:30:05Z eval run fired 220 questions at
+`webhook/olivia-wa-live` and logged **180 × `403`, zero answers, no report**; the three runs before it each
+logged 220 × `200`. Cause: #105 put `authentication: headerAuth` with the `Olivia Relay Secret` credential on
+the `WA Inbound (POST)` node, and the relay sends `X-Olivia-Relay` from
+`digest.meta_webhook_config()` (`secret, enforce, relay_secret`, enforce true) while `olivia_eval.py` sent
+only a content type. Fixed by `scripts/olivia_relay.py`, which reads the secret at call time; three other
+posting scripts had the same gap (`olivia_selftest.py`, `olivia_reaction_canary.py`,
+`smoke_manual_suite.py`) and are fixed too. Three refusals in a row now abort with a Slack line and exit 2.
+**Proven 25/25 `200`.** Commits `2f55021` (Scorecard) and `52e6921` (`mds-scorecard-tools`, branch
+`191-webhook-header-20260910`). Found and not filed: the spend ledger booked $6.71 for the dead run.
+
+**#123 — closed, live on prod `b4db92d0`.** `Answer Tool`'s URL expression picked its target with
+`String($json.tool_name||'').startsWith('event_')`, so every event tool hit
+`https://digest.mds.co/api/olivia/schedule` — a route that parses only op/phone/q/at/event_id/lead/in_minutes
+(**`p_terms` is dropped**) and always loads `events?order=starts_at.desc&limit=1`, which is the one row **MDS
+Summit Singapore, ended 2026-08-26**. Reproduced live before touching anything: *"I'm not finding a 'SoFlo
+Chapter TikTok Tour Afterparty' on file anywhere"* while `event_lookup_v3` returned it (2025-11-13 18:30,
+Miami). `event_schedule` and `event_who` are now named explicitly and the catalog pair falls through to
+PostgREST, where `EXEC_NAME` already renamed them; both RPCs are granted to `service_role` and `Answer Parse`
+already injects `p_phone`. Applied with `scripts/olivia_loop/apply_123_event_catalog_routing.py` (dry-run
+first), staging `9d91109e`, offline check of all 8 routes, promoted by Andy at 17:56Z.
+**After, on prod:** SoFlo → *"Thu, Nov 13, 2025, listed at 6:30 PM, in Miami"* (turn 68019) · Verified Sellers
+meetup → *"a Virtual event — Thu, Nov 7, 2024"* · BDSS Recommended Event → *"Kaua'i, Hawaii"* · an upcoming
+side event answers with its member RSVP and guest luma links and its spots-left · `event_history` answers
+from its own RPC. Gate **346 EXIT 0** before and after the promote.
+
+**The fold-in went to prod without a staging tier, deliberately.** `digest.event_lookup` printed
+`(time as listed: 18:30 UTC)` for rows with no `app_starts_at`, and with routing fixed that reached a member
+answer as "6:30 PM UTC" for a Miami evening event. The catalog stores the **listed clock time**, not a UTC
+instant, and only **19 of 1,455** rows carry `app_timezone`. Applied with `CREATE OR REPLACE` (never DROP —
+the ACL stays); a shared function is live the moment it is applied. Rollback is the inverse one-token replace.
+
+**Left for the next session, both from #123's own ACs:** bank question **2035** now answers Cancun 2027
+instead of the finished Singapore summit — correct today, a FAIL if the stored truth still says Singapore —
+and **A4071, named in the ticket, is not in the live bank at all**. Also untouched on purpose: `Answer
+Merge`'s A4077 workaround (it never fires now, and it is the tripwire if anyone re-broadens that route) and
+the duplicate `event_lookup` key in `EXEC_NAME` (confusing, correct, not this ticket's node).
+
 ## 2026-09-10 (overnight) — 8 tickets closed · #105 finished and enforcing · a sleeping Mac, a `+` that is a space
 
 **Andy's brief:** work through the night on small and medium tickets, make my own calls, report in the morning.

@@ -41,6 +41,48 @@ history) and #148's lane-skipping (refusing stale rows changes who Millie answer
 the RELAY and the handbook's line 72 has said so since July. **Verify a ticket's architecture claim against the
 handbook and against live before building to it** — and read payloads before announcing what they are.
 
+## STATE 2026-09-10 (evening) — #123 + #191 CLOSED · prod `b4db92d0` · gate 346 EXIT 0 · lock free
+
+**Read this first.** Prod n8n `b4db92d0` (promoted 17:56Z by Andy, snapshot
+`olivia_snapshots/prod_2026-09-10T175648Z_123-event-catalog-routing.json`) · staging `9d91109e` · gate
+**346 checks, 0 FAIL, exit 0**, re-run against prod after the promote.
+
+**#191 — the nightly eval was dead and is not any more.** #105's header auth on `WA Inbound (POST)` refused
+every post from the local harnesses: the 2026-09-10 08:30:05Z run fired 220 questions, logged 180 × `403`
+and wrote no report. `scripts/olivia_relay.py` now reads `relay_secret` from `digest.meta_webhook_config()`
+at call time and hands back the curl args; `olivia_eval.py`, `olivia_selftest.py`,
+`olivia_reaction_canary.py` and `smoke_manual_suite.py` all send `X-Olivia-Relay`. Proven 25/25 `200`.
+Three refusals in a row now abort with a Slack line and exit 2. **Tonight's 03:30 nightly is the first full
+220-question report since the outage — read it.**
+
+**#123 — event questions reach the events catalog.** `Answer Tool` routed by `startsWith('event_')`, so all
+four event tools hit the Summit schedule route, which drops `p_terms` and always loads the newest row in the
+`event` schema (MDS Summit Singapore, ended 2026-08-26). `event_schedule` and `event_who` are now named
+explicitly; `event_lookup` and `event_history` fall through to `event_lookup_v3` / `event_history_v2`. All
+three EVENT failures from the 09-09 eval now answer correctly, on prod.
+
+**Already live and NOT staged, know this before you touch events SQL:** `digest.event_lookup` labelled the
+listed clock time "UTC" and that reached an answer as "6:30 PM UTC" for a Miami evening event. It now claims
+no zone. Only 19 of 1,455 catalog rows carry `app_timezone`, so rendering a real zone is not available.
+A shared function is live on prod the moment it is applied — rollback is the inverse one-token replace.
+
+**Two things for the next session, both from #123's own ACs:**
+1. **Bank truth may now be stale, and the eval will blame the wrong thing.** Question 2035 "What city is the
+   MDS Summit being held in?" now answers **Cancun 2027** from the catalog instead of the finished Singapore
+   summit. Correct today; if the stored truth still says Singapore the judge marks it FAIL. A4071, named in
+   #123's ACs, is not in the live bank at all.
+2. **Andy's four rulings from this session are on the board**: #147 takes the Airtable roster as the
+   authority but reads it from the Supabase mirror, which makes the mirror's freshness part of that ticket ·
+   #184 holds until Eugene rules on whether members' own posts are in scope · #157 stays on Sonnet 5 (the
+   OpenAI key from 2026-09-02 still wants rotating) · #71 answers "the last call" with the recording.
+   **#190 is the sprint-closure eval — run it when everything else is done, not mid-sprint.**
+
+**Still blocked on Andy:** GroupOS PAT (#182, #17) · Circleback details (#36) · #186's two-docs call ·
+#118 needs him and Eugene together (it moves #96's name-disclosure rules) · #32's send. The GitHub PAT for
+#181 exists now and n8n holds it once he pastes the credential — the token is broader than the job needs
+(his call, recorded) and **expires 2026-10-10**, so #181's fourth AC (a failed dispatch must be loud) earns
+its keep.
+
 ## STATE 2026-09-10 (close) — #179 SHIPPED · #105 SHIPPED and ENFORCING
 
 **#179 closed and live.** A Make WARNING (`status: 2`) was mapped to error, so "Guest Multi-Event Alert" had
