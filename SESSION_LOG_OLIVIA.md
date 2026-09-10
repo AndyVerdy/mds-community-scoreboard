@@ -3,6 +3,70 @@
 # Session Log — Olivia (the WhatsApp assistant: workflow, eval bank, gates, sources, promotes)
 
 
+
+## 2026-09-09 (evening) — #179 shipped · #105 built twice, live at the relay, not enforcing
+
+**Two tickets worked, one closed. Four stale board rows fixed before starting, all verified against live.**
+
+**Session-start drift check.** The board and handoff said three tickets awaited Andy's promote. Two had already
+shipped: **#97** was promoted 2026-08-22 (`7e4be40a`; its seven intro nodes are on prod today) and **#165** was
+merged and live (`mds-digest-web` `18bac76`, `/api/version` `15700f2e`). **#104** was also stale — it rode the
+Millie promote on 2026-08-22 and `off_topic` appears 22 times on prod. Only **#108** genuinely awaits a promote,
+re-verified: prod has no Finder, zero hits for `member_finder` or `find_members` across 92 nodes. The
+"#105 + #97" cluster line collapsed to #105 alone; the peer session that wrote it agreed and handed me the edit.
+
+**#179 — a Make WARNING rendered as a tool DOWN. CLOSED.** Root cause from Make's own API reference rather than
+the ticket: grades are 1 success · 2 warning · 3 error, and `make.ts` read `status === 1 ? success : error`, which
+`classifyMakeTool` turned into `down`. Scenario `4676457` has one execution ever, 2026-09-02, graded 2 — Make's
+detail endpoint calls it `WARNING` — and being Airtable-triggered, no clean run was coming to clear it. Fixed with
+an explicit grade map; an unrecognised grade still reads error, deliberately. Live before/after on the same data:
+`DOWN ✕ failed 7d ago` → `DEGRADED ⚠ warning 7d ago`, the other three Make tiles byte-identical. 1270 tests
+(13 new), tsc/lint/build clean. `0fcb6df` → merged `6a31026` → live. **Unverified: the rendered tile** (session-gated
+page, and `/api/health/report` 403s on the stale `HEALTH_REPORT_SECRET`).
+
+**#105 — built against the wrong front door, then rebuilt against the right one.**
+The ticket said "one Code node, first after `WA Inbound (POST)`". **Meta does not post to n8n.** Its callback URL
+is the relay at `digest.mds.co/api/olivia/webhook`, which forwards without the signature header — `OLIVIA_HANDBOOK.md`
+line 72, true since 2026-07-21. I did not check it and built the whole thing on the ticket's word.
+
+Built it anyway on n8n: 5 nodes, staging `6067cd65`, four probes green (unsigned dropped 5 nodes, wrong signature
+dropped, genuine delivery and genuine message both through), Ask Millie proven unaffected (22.7 s live turn),
+gate green. Promoted to prod `021bb4b6`. Saw real deliveries dropping, **rolled back inside eight minutes** to
+`4cea7bc8`. I then told Andy the drops were only our own probes — **that was wrong**, and Andy's own test message
+proved it: `user-agent: node`, via `74.220.48.55`, no `x-hub-signature-256`. Real member traffic is unsigned by
+the time it reaches n8n. Enforcing would have refused every member. The rollback was right for a reason I had not
+yet found.
+
+Rebuilt at the relay, where the raw bytes and the signature both exist. n8n could not have held the secret anyway:
+`$env` and `$vars` read empty on this plan, `$secrets` undefined, Variables 404s (enterprise). Secret now in
+**Supabase Vault**, switch in `olivia_alarm_config`, both through `digest.meta_webhook_config()`, cached 5 minutes,
+so enforcing or rotating needs **no deploy**. Three stages each pinned by tests; an unreachable database degrades
+to "not configured" and forwards. 403 on refusal, never 502 — 502 asks Meta to retry and a forgery must not be.
+Every verdict counted in `digest.meta_webhook_verdicts`, successes included, because the relay's logs live on
+Render and are unreadable from here. Deployed `59f8fc4` → `d5d6bff`. 1311 tests, tsc/lint/build clean, gate 346.
+
+**Not done.** Enforcement is off and the hole is open. It waits on ONE genuine Meta delivery recorded `ok`; only
+my own harmless test post is in the table (`missing_signature`, which does prove the secret reads — an unreadable
+one records `missing_secret`). Meta will not self-trigger: `subscriptions_sample` is "Unknown path components" on
+v18/v19/v20/v21 even with an app token built inside Postgres. An outbound send would generate signed callbacks but
+the permission guard refused it, and routing around that refusal is not on.
+
+**Lessons worth keeping.** Read the handbook's own architecture line before building to a ticket's spec — the
+ticket was written against a stale model and the correction was one line away the whole time. And when live
+traffic looks like it is being dropped, read the payloads before announcing what they are; I called ours
+"real member traffic", then called it "only probes", and both were wrong in different directions.
+
+**Also this session:** the shared checkout moved onto a peer's branch mid-work and one docs commit landed there;
+the fix was refused by the permission guard, the peer declined to run it from its side (correctly, as laundering
+a refusal), and Andy was told. Found alongside, unfiled: a broken `node_modules` symlink committed in
+`mds-digest-web` (`0b932ce`) that kills `next build` for any worktree made inside the repo, and Make's `pg[limit]`
+returning an empty array above 50 rather than an error.
+
+**Next:** one real WhatsApp message → confirm `ok` → `update digest.olivia_alarm_config set v='1' where
+k='meta_webhook_enforce';`. Then: reset the pasted app secret and update the Vault row; file the n8n side-door
+ticket; remove the now-unused `rawBody` from prod's `WA Inbound`; re-stage staging from prod (it still holds the
+abandoned 97-node graph).
+
 ## 2026-09-09 (close) · Triage + backlog session — no code shipped · **8 tickets filed (#179-#186), 21 priorities changed, board branch `health-tickets-20260909`**
 
 **Trigger (Andy):** a Slack screenshot from Eugene — "Millie cant find any mention of Roman Khan in the WA or FB but ian

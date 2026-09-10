@@ -78,7 +78,7 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#102** | 🎬 Video recommendation ranking — time decay · speaker weight · event bonus (Andy/Eugene Slack 2026-08-21) | 🔵 S3 | M | — | ⏸ AFTER the big smoke test |
 | **#112** | 🔗 Offer→answer binding | 🔴 S1 | S | ✅ exact failing sequence returns BOTH summaries | ✅ **CLOSED 2026-08-22** — the #80 binding existed; its ACCEPT_RE end-anchor made "yes booth" miss. Fix: affirmative may carry a quantifier/typo (both·booth·all·either·that one) while a topic word still routes normally; binding now covers EVERY offered video, not just the last. Prod `e175c5a3`, gate 0 |
 | **#104** | Adjacent-turn topic lag | 🔴 S1 | S-M | ✅ **VERIFIED: rerun of all 3 original fail-chains with recreated adjacency = 3/3 on-topic PASS** | ✅ **SHIPPED 2026-08-22** — it rode the Millie promote that same day, which the #97 block records at line 2399 ("15 nodes incl. the Millie/#104 set that rode along"). Verified live 2026-09-09: `off_topic` appears 22 times on prod `15649d68`. The "⛔ rides the Millie promote" note was stale by 18 days. **Root cause: FC caught all 3, Gate Verdict pass-postfilter neutralized the catch (topic-mismatch is not a fact-claim); fix = off_topic field in FC rubric + non-filterable in Gate Verdict (regenerate, cap 2). Probe: exact failing sequence now on-topic, off_topic field live in FC output, gate 263/exit 0. Bonus same session: load_speakers.py --rescan (guest-becomes-member promotion in place, 27 checked/0 due)** |
-| **#105** | 🔐 Verify Meta's webhook signature (`X-Hub-Signature-256`) on every inbound — filed from #97's final review (Andy OK 2026-08-22) | 🔴 S1 | S | — | ⏸ next session, BEFORE any wide intros announcement |
+| **#105** | 🔐 Verify Meta's webhook signature (`X-Hub-Signature-256`) on every inbound — filed from #97's final review (Andy OK 2026-08-22) | 🔴 S1 | S | n/a (relay — Render) | ✅ **ENFORCING 2026-09-10 04:47Z** — live at the relay (`d5d6bff`). 3 genuine Meta deliveries verified `ok`, then the switch was flipped; a forged post now gets 403 and is never forwarded. |
 | **#106** | 🙈 Staff / non-member records must never surface in member-facing lists (event_who names, who-to-meet, intro picker) — Andy 2026-08-22: "make sure I'm not searchable" | 🟡 S2 | S | SQL-verified exposure map | ✅ **LIVE 2026-08-24** (SQL, prod-shared) — 5 `#106` checks in the leak gate pass: `member_card`, `member_card_v2`, `expertise_search`, `member_match_v2`, finder |
 | **#107** | 🗣️ Millie-only self-name (Format Reply PS still says Olivia) + who-to-meet ends with "connect you with one of them?" Yes/No buttons → Yes = intro picker (Andy 2026-08-22: "Millie and only Millie — official name"; "ask if he would like to connect… if yes provide a list") | 🔴 S1 | S-M | — | ✅ **PROMOTED 2026-08-22 ~05:24Z (Andy) — prod `8f48fdb8`**: Millie PS (prepended when button-eligible) · who-to-meet ends with the exact offer + Yes/No buttons (96779) · Yes → member_intro, no plan replay (review caught the 500-char-trim defeat → `last_olivia_intro_offer` flag, proven 96864) · non-attendee no offer (96787) · gate 267 EXIT 0 |
 | **#109** | 📨 Requester-side intro notices must be TEMPLATES (accept / decline / 7-day lapse) — free-form text dies outside the 24h window (Meta 131047); found 2026-08-22 when Andy questioned the lapse promise | 🔴 S1 | S-M | n/a (route — no staging tier) | ✅ **SHIPPED 2026-09-01** `cae87c1` — `src/lib/intro-notices.ts` + template-first route with free-form fallback; 15 unit tests incl. a standing guard that no requester path can be text, 144/144 on main; live sweep probe expired=1 failed=0, lapse notice accepted by Meta (wamid …9B34A86B928F28CF3C). ⚠️ closed-window delivery not yet observed (probe requester's window was open) · lapsed template is MARKETING, so 131049 can still cap it |
@@ -2423,6 +2423,58 @@ scope for "the team" but sit in the same subject position.
 **Spec (one Code node, first after `WA Inbound (POST)`, staging → promote):** compute `HMAC-SHA256(raw request body, META_APP_SECRET)`; compare constant-time to the `X-Hub-Signature-256` header (`sha256=<hex>`); mismatch/missing → return null (drop) + one Slack `Notify Team` line with the source IP; match → pass through unchanged. The app secret lives in n8n as a credential/env, never in node JS. Needs the RAW body (n8n webhook `rawBody` option) — verify the staging webhook node exposes it before writing the node. Probe: a crafted unsigned post (the exact T4/T5 probe technique) must now be dropped; a real member message must still flow; Meta's own deliveries carry the header (verify on a live event in `olivia_webhook_events` payload headers if persisted, else on the webhook node's input). Mitigation already shipped in #97: taps bind to the exact template wamid (`consent_wamid`), so a forged Accept without the real wamid does nothing.
 
 **Accept when:** unsigned probe dropped (execution shows the drop, zero downstream nodes) · real inbound unaffected (one live turn) · selftest/probe tooling updated to sign its crafted posts (or use a staging-only bypass secret — Andy's call) · gate GREEN · promote.
+
+
+#### ✅ #105 ENFORCING 2026-09-10 — a forged webhook post is refused before anything runs
+
+**Story:** *As the owner, every inbound the assistant acts on is provably from Meta — a forged webhook post is dropped before any node runs.*
+
+**The ticket's spec was wrong, and finding that out was most of the day.** It said "one Code node, first
+after `WA Inbound (POST)`". Meta does not post to n8n. Its callback URL is the relay at
+`digest.mds.co/api/olivia/webhook`, which forwards to n8n **without** the signature header — `OLIVIA_HANDBOOK.md`
+line 72 has said so since 2026-07-21. Built to spec, promoted to prod `021bb4b6`, and **rolled back within
+eight minutes**. Andy's own test message settled it: `user-agent: node`, forwarded via `74.220.48.55`, no
+`x-hub-signature-256`. A check anywhere downstream of the relay sees no signature on ANY real delivery and
+would refuse every member.
+
+**Where it lives now.** The relay verifies the raw bytes it already reads. The app secret is in **Supabase
+Vault**, the on-switch in an `olivia_alarm_config` row, both read through `digest.meta_webhook_config()` and
+cached 5 minutes — so rotating the secret or enforcing needs **no deploy** and puts no plaintext in Render.
+n8n could not hold it at all: `$env` and `$vars` read empty on this plan, `$secrets` is undefined, and the
+Variables page 404s.
+
+**Three stages, each pinned by a test.** No secret → forward. Secret, no enforce → verify, record, forward
+(**where we are**). Enforce → refuse, 403 never 502, because 502 asks Meta to retry and a forgery must not be.
+Enforcement is ignored without a secret, and an unreachable database degrades to "not configured" and forwards
+— a blip must never become every member refused.
+
+**AC checklist:**
+1. Unsigned probe dropped, zero downstream — ✅ **live**: an unsigned post to the relay returns **403** and is never forwarded to n8n.
+2. Real inbound unaffected — ✅ nothing is refused; a live relay post returned 200 and forwarded.
+3. Probe tooling signs — ✅ **moot**: the health ping and uptime probe post to n8n directly and never touch the relay.
+4. Gate GREEN — ✅ 346 checks, including the new `meta_signature.js` check.
+5. Promote — ✅ deployed `d5d6bff`, enforcement ON (`meta_webhook_enforce = '1'`, 2026-09-10 04:47Z).
+
+**How it was proven.** Andy sent one WhatsApp message; Meta's delivery and its status callbacks recorded
+**`ok` × 3** in `digest.meta_webhook_verdicts` — genuine Meta traffic verifying against the Vault secret. Only then
+was the switch flipped. An unsigned post to the relay now returns **403**. `missing_signature × 2` in the table is
+my own two test posts, nothing legitimate.
+
+**Rollback, no deploy:** `update digest.olivia_alarm_config set v = '0' where k = 'meta_webhook_enforce';` —
+effective within the 5-minute config cache. Watch `digest.meta_webhook_verdicts`: a rising `mismatch` or
+`missing_signature` alongside falling `ok` is the signal to flip it back.
+
+**Dead end, do not retry:** Meta will not self-trigger a delivery — `subscriptions_sample` is "Unknown path
+components" on v18/v19/v20/v21 even with an app token built inside Postgres.
+
+**Residual, deliberately not widened into this ticket.** The n8n webhook is still reachable directly — this
+closes Meta's front door, not the side door our own health ping uses. Closing it means a shared secret between
+relay and n8n. **Worth its own ticket.**
+
+**Artefacts:** `src/lib/meta-signature.ts` · `meta-webhook-config.ts` · the relay route, 21+7+4 tests written
+before the code · `scripts/olivia_loop/meta_signature.js` + gate check · `digest.meta_signature_ok()` ·
+`meta_webhook_config()` · `meta_webhook_record()` · `meta_webhook_verdicts`. Rollback point:
+`olivia_snapshots/prod_2026-09-10T032618Z_pre-promote.json`.
 
 ### #97 · Brokered intros — message the person she recommends
 
