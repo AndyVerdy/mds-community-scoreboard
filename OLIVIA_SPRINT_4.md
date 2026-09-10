@@ -65,7 +65,8 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#100** | 🔑 Identity aliases — one member, all their known emails | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED 2026-08-20** — 5,763 aliases, resolver live, 12/12 verify, gate 0 |
 | **#101** | 🎬 Video transcripts + real access gating | 🔴 S1 | L | n/a (SQL+data) | ✅ **CLOSED 2026-08-20** — 2,730 chunks, video_access live, gate 263/0 · NEXT: 2025 batch |
 | **#162** | 🎬 Transcripts for the 33 videos published 25 Aug–4 Sep (AI Mastermind · AI Scaling Live · Summit day 2) — AssemblyAI from the S3 links the dev opened 2026-09-04 | 🔴 S1 | S | n/a (data) | ✅ **CLOSED 2026-09-04** — 33/33 transcribed ($2.62), 697 chunks, 33 summaries, 5 new restricted videos → 44 grants each, 2026 = 212/212, E2E quote proven, gate 313/0 |
-| **#72** | 🚦 LOAD TEST — **NOW the announcement, not the Mille demo. Biggest open risk; never run** | 🔴 S1 | M | — | — |
+| **#72** | 🚦 LOAD TEST — 100 concurrent probes | ⚪ **RETIRED 2026-09-10** | M | — | ❌ **Andy: "I think this is an old ticket. I don't want to do a 100-probe."** Filed for a demo two weeks out; that demo was the August Summit and it has passed. The measurement half survives as **#187**. |
+| **#187** | 🅿️ **SPRINT 5** · ⏱️ Millie has never recorded how long a turn takes — `latency_ms` is NULL on all 13,309 rows | 🔵 S3 | S | — | — |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔵 S3 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔵 S3 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
@@ -2645,7 +2646,41 @@ concept map — verify against its own executions · **#106** stays open for lan
 `.superpowers/sdd/2026-08-22-finder/progress.md` (10 tasks, each built + independently reviewed; 8
 fix rounds in total (Tasks 3/4/5: one each · Task 9: three · the Task 8 geo fix: two)).
 
+### #187 · Millie has never recorded how long a turn takes
+**🅿️ SPRINT 5 · 🔵 S3 · size S — filed 2026-09-10 (Andy: "move it to sprint 5 - s3"), carved out of the retired #72 (Andy: "I think this is an old ticket. I don't want to do a 100-probe.")**
+
+> **In plain words:** we cannot answer "is Millie slower this week than last", because nothing has ever written down how long an answer took.
+
+*As the owner, I can see how long Millie is taking to answer, so a slowdown shows up as a number instead of as a member complaint.*
+
+**Verified live 2026-09-10:** `digest.olivia_messages` holds **13,309 turns and 0 with a `latency_ms`**, from
+2026-07-17 to today. The column exists and nothing has ever written to it. Every latency figure this project has
+ever quoted — median 22.8s, worst 56.1s — came from **eight hand-timed staging probes** during #23. The one live
+number we do have is incidental: the web door returns `latency_ms` in its own response (22,756 ms on the #105
+probe), and it is thrown away.
+
+**Why it survived #72's retirement.** The load test was aimed at a demo that has since happened. This half is not:
+it pays off on an ordinary Tuesday, it needs no load and no hundred of anything, and it turns any future
+"how does she cope under pressure" question into a query rather than a project.
+
+**Accept when:**
+1. `latency_ms` is written on 100% of new turns, WhatsApp and web alike.
+2. Queue wait is recorded separately from generation time — a turn that waited 30s and answered in 3 is a different
+   problem from the reverse, and one number cannot tell them apart.
+3. A single query returns p50, p95 and max over a window, and it is written down where the next session will find it.
+4. Nothing in the answer path gets slower to measure it, and a failure to record can never fail a turn.
+5. Gate GREEN.
+
+**Not in scope, deliberately:** any load generation, any concurrency target, any go/no-go. Those were #72's and
+they are retired with it.
+
 ### #72 · LOAD TEST before the Mille demo — 100 people at once, on a system that has never seen 6
+**❌ RETIRED 2026-09-10 by Andy: "I think this is an old ticket. I don't want to do a 100-probe."** It was filed
+for a demo two weeks out — the August Summit, which has been and gone — and the board later re-aimed it at the
+announcement without re-examining whether a 100-probe run was still the right instrument. It is not. **The
+telemetry half is carved out as #187 and is the part that still pays.** Everything below is kept for the
+measurements, which are still the best picture of real load we have.
+
 **🔴 S1 · size M — filed 2026-08-07 (Andy: "in 2 weeks we present Mille, we might get 100 people using it")**
 
 > **In plain words:** Olivia has never had more than five people message her in the same minute. In
