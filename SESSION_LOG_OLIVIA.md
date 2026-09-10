@@ -88,6 +88,39 @@ wrong call to that route **messages a real member**. Those are for daylight.
 **Final state:** prod n8n `22d81380` · staging `ae74d26d` · `mds-digest-web` main `2208d78` · gate GREEN · lock
 free · 9 closed, 1 drift-verified, 1 retired, 2 re-verified and re-scoped.
 
+
+**Third stretch (Andy: "keep going, you have 4 h left").** Went after the tickets that need no ruling.
+
+- **#64 — the runtime inventory exists now** (`RUNTIME_INVENTORY.md`), built from the live machine, and all nine
+  MDS plists are copied into `ops/launchd/` so they are no longer single-copy. **Headline: seven of the nine are
+  scheduled 02:15–05:40, inside the window the laptop spends asleep** — the one fact behind #180. Second finding,
+  worse than the ticket's own: **`mds-scorecard-tools/` is not a git repository**, so `persona_refresh.py` and
+  `olivia_eval.py` are single-copy untracked production scripts.
+- **#189 filed and closed** — `launchctl` said `persona.refresh` last exited 1. Its history: 61 built / 0 failed
+  → 122 / 28 → **12 built / 19 failed (61%)**, every failure reported identically as "no valid JSON" because
+  `haiku()` wrapped everything in `except Exception: pass`. Probed at the job's own concurrency: API healthy,
+  nothing truncating, **intermittent parse failures on clean 200s**. The parser sliced from the first brace to the
+  **last**, so any sentence after the JSON containing a brace swallowed it. Fixed with a string-aware brace walker
+  plus a real reason on every failure. **59 personas rebuilt, 0 failed**, staleness now 0 missing.
+- **#190 filed AND analysed** — the eval is at **9.5% FAIL against Andy's <1% bar**. Not diffuse: `false_denial`
+  (10) and `wrong_fact` (8) are **86%** of the 21. **Three of the 21 are one known bug, proven** — all three EVENT
+  false-denials are answers sitting in `events_catalog` (the afterparty's 18:30 start, the meetup being Virtual,
+  the summit event in Kaua'i). That is **#123**, so it is 14% of the eval's failures on its own.
+- **#188 filed and closed** — one tile covering two writers reported the events catalog's staleness under the
+  member-profiles name.
+- **The `HEALTH_REPORT_SECRET` chore is fixed** (Vault-held secret accepted alongside the env one, constant-time),
+  which is what finally let #179's and #180's tiles be verified **on the rendered report** rather than inferred.
+- **#116's overlap CONFIRMED** — retiring `member_match`/`member_count`/`event_who` is an explicit **phase-1
+  non-goal**, so #108 does not throw #111/#118 away; #116 (size L, unplanned) eventually does.
+- **#74 and #71 re-verified** and re-scoped on their rows; a **triage block** at the top of the board sorts every
+  remaining ticket.
+- **A heartbeat wrapper is built and proven** (`scripts/run_with_heartbeat.py`) for the five jobs that stamp
+  nothing. Wiring it edits launchd agents — a system change I am not permitted to make — so the inventory carries
+  the exact plist edit for Andy.
+
+**Blocked by permission twice, and correctly:** editing and reloading launchd agents. Both times I stopped and
+wrote down the exact command rather than routing around it.
+
 ## 2026-09-09 (evening) — #179 shipped · #105 built twice, live at the relay, not enforcing
 
 **Two tickets worked, one closed. Four stale board rows fixed before starting, all verified against live.**

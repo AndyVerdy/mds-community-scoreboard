@@ -99,7 +99,7 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#182** | 🅿️ **SPRINT 5** · Five days of recordings invisible to Millie — `zoom_weekly` runs on time but skips videos, no `GROUPOS_PAT` | 🟡 S2 | S | n/a (weekly job) | ⛔ blocked: GroupOS PAT (Andy) |
 | **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | ✅ **CLOSED 2026-09-10** — cause was NOT the health checks: pins load from localStorage after mount. `pinLayout()`, 6 tests, live `588ef08`. |
 | **#189** | 🃏 The persona builder fails intermittently and cannot say why — 19 of 31 on 2026-09-09, reported only as "no valid JSON" | 🟡 S2 | S | n/a (launchd job) | ✅ **CLOSED 2026-09-10** — cause found and fixed: the answer parser broke on a stray brace after the JSON. 40/40 built, 0 failed. |
-| **#190** | 🧪 The nightly eval is at **9.5% FAIL** against Andy's **<1%** bar — 21 of 220 on 2026-09-09 | 🔴 S1 | M | n/a (report) | 📝 filed 2026-09-10, needs a session |
+| **#190** | 🧪 The nightly eval is at **9.5% FAIL** against Andy's **<1%** bar — 21 of 220 on 2026-09-09 | 🔴 S1 | M | n/a (report) | 📝 filed 2026-09-10, needs a session 🔎 **ANALYSED 2026-09-10** — two classes are **86%** of it (`false_denial` 10, `wrong_fact` 8 of 21), and **3 of the 21 are one known bug, #123**, proven: every denied answer was sitting in `events_catalog`. |
 | **#188** | 🩺 One tile, two writers — "Member profiles ← Airtable sync" reported the events catalog's staleness under the member-profiles name | ⚪ S4 | XS | n/a (app code) | ✅ **CLOSED 2026-09-10** — the worse half now names its writer; 5 tests, live `2208d78`. |
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🟡 S2 | M | — | — 🟡 **INVENTORY DONE 2026-09-10 → `RUNTIME_INVENTORY.md`**, plists copied to `ops/launchd/`. **Headline: 7 of 9 jobs are scheduled 02:15–05:40, inside the window the laptop spends asleep** — that one fact produced #180. Five jobs have no heartbeat at all. `mds-scorecard-tools` is not a git repo. The moves that remain need Andy. |
@@ -4210,6 +4210,45 @@ roster, not the rebuild queue — only 59 were actually stale.)
 **⚠️ Where this lives.** `/Users/Born/mds-scorecard-tools/` is **not a git repository** — `persona_refresh.py` and
 `olivia_eval.py` are single-copy untracked files on Andy's Mac. A `.bak-20260910` was taken before editing. That
 is a #64 finding in its own right and worse than the ticket's "eight plists exist only on Andy's Mac".
+
+
+#### 📝 #190 · The nightly eval sits at 9.5% FAIL against Andy's <1% bar
+
+**🔴 S1 · size M — filed 2026-09-10 from #64's inventory (`launchctl` said `com.mds.olivia-eval` last exited 1).**
+
+**Story:** *As the owner, the eval tells me the answer quality is where I set it, and when it is not it tells me which failures to fix first.*
+
+**The number:** 2026-09-09, **220 judged · PASS 195 · PARTIAL 4 · FAIL 21 = 9.5%**, against a **<1%** bar
+(`feedback_olivia_quality_target_1pct`). Nearly ten times over.
+
+**It is not diffuse — two classes are 86% of it:**
+| class | fails | rate |
+|---|---|---|
+| `false_denial` — she says she cannot find what she has | **10** | 4.5% |
+| `wrong_fact` | **8** | 3.6% |
+| everything else (`no_answer`, `over_refusal`, `fabrication`) | 3 | 1.4% |
+
+**And it clusters by source:** CROSS 31% · VIDEO 30% · EVENT 27% · WA_DIGEST 17%, while PARTNER, FORM, DECLINE and
+REAL are all at **0%**. So the refusal behaviour and the partner lane are healthy; the multi-source and
+catalog-backed lanes are not.
+
+**🔴 Three of the 21 are ONE known bug, and I proved it rather than assuming.** All three EVENT failures are
+`false_denial`, and every answer she denied is in `digest.events_catalog`:
+
+| eval question | denied | the catalog holds |
+|---|---|---|
+| Q2040 what time the *SoFlo Chapter TikTok Tour Afterparty* starts | the time | **18:30**, 2025-11-13, Miami |
+| Q2042 what type the *TikTok Shop (Verified Sellers) Channel Meetup* is | the type | **Virtual** |
+| Q2023 where the *Billion Dollar Seller Summit Recommended Event* is | the place | **Kaua'i, Hawaii** |
+
+That is **#123**: the four `event_*` tool names all route to the schedule route by prefix match, so `event_lookup`
+and `event_history` answer from the Summit `event` schema and **never consult the events catalog**. The handbook
+says so in §6.2. **#123 is worth more than its current priority** — it is 14% of the eval's failures on its own.
+
+**Where to start:** #123 first (proven, 3 fails, already understood), then the CROSS class (5 fails, the worst
+rate at 31%) which is multi-source retrieval, then VIDEO (3 fails, 30%).
+
+**Not started.** Needs a session; the analysis above is the map.
 
 ### #148 · The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever
 **🔵 S3 · size S — filed 2026-08-25 from #126's audit.**
