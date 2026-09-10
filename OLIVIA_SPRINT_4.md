@@ -98,6 +98,8 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#181** | 🅿️ **SPRINT 5** · Events catalog hourly on paper, four-hourly in fact — 9 of 13 intervals in the down band, 14/14 runs green | 🔵 S3 | S | n/a (GH Action) | ⛔ blocked: GitHub PAT `actions:write` (Andy) |
 | **#182** | 🅿️ **SPRINT 5** · Five days of recordings invisible to Millie — `zoom_weekly` runs on time but skips videos, no `GROUPOS_PAT` | 🟡 S2 | S | n/a (weekly job) | ⛔ blocked: GroupOS PAT (Andy) |
 | **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | ✅ **CLOSED 2026-09-10** — cause was NOT the health checks: pins load from localStorage after mount. `pinLayout()`, 6 tests, live `588ef08`. |
+| **#189** | 🃏 The persona builder fails intermittently and cannot say why — 19 of 31 on 2026-09-09, reported only as "no valid JSON" | 🟡 S2 | S | n/a (launchd job) | ✅ **CLOSED 2026-09-10** — cause found and fixed: the answer parser broke on a stray brace after the JSON. 40/40 built, 0 failed. |
+| **#190** | 🧪 The nightly eval is at **9.5% FAIL** against Andy's **<1%** bar — 21 of 220 on 2026-09-09 | 🔴 S1 | M | n/a (report) | 📝 filed 2026-09-10, needs a session |
 | **#188** | 🩺 One tile, two writers — "Member profiles ← Airtable sync" reported the events catalog's staleness under the member-profiles name | ⚪ S4 | XS | n/a (app code) | ✅ **CLOSED 2026-09-10** — the worse half now names its writer; 5 tests, live `2208d78`. |
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🟡 S2 | M | — | — |
@@ -4164,6 +4166,48 @@ extra when both are fine. 5 tests written first. 1,345 pass, tsc/eslint/build cl
 **Worth knowing:** the amber itself is **not** a new problem — the events catalog running ~2h behind an hourly
 schedule is **#181**, which is blocked on a GitHub PAT with `actions:write`. This ticket is only about the tile
 telling the truth about which one it means.
+
+
+#### ✅ #189 CLOSED 2026-09-10 — the persona builder could not say why it failed, so nobody knew
+
+**🟡 S2 · size S — found 2026-09-10 doing #64's runtime inventory (`launchctl` said `com.mds.persona.refresh` last exited 1).**
+
+**Story:** *As MDS staff, when the persona builder fails I can see why, and it does not fail for a reason we could have fixed months ago.*
+
+**How bad it was.** The log's own history: `built 61 · failed 0` → `built 122 · failed 28` → `built 740 · failed 16`
+→ **`built 12 · failed 19`** — a **61% failure rate** on the last real run, and 229 FAIL lines in the log overall.
+Every one reported identically: *"builder returned no valid JSON"*.
+
+**Why nobody knew the cause.** `haiku()` wrapped the whole call in `except Exception: pass`. An API error, a curl
+timeout, a truncated answer and a genuinely unparseable one all came out as the same sentence. The failure was
+**unobservable** — the same theme as #180 and #117 tonight.
+
+**What it actually was, probed rather than guessed.** At the job's own concurrency of 5: the API is healthy, no
+call errors, nothing truncates (output 1.9-3.6k against a 6,000 cap), and failures are **intermittent parse
+failures on clean 200s**, about 1 in 20. The parser was
+`json.loads(txt[txt.index("{"):txt.rindex("}")+1])` — which breaks the moment the model adds a closing sentence
+containing a brace, or wraps the JSON in a fence and says something after it. `rindex` reaches past the object and
+takes the stray brace with it.
+
+**Fix.** A string- and escape-aware brace walker takes the **first complete** JSON object and ignores whatever
+follows; and every failure now reports its real reason — `curl exit N`, `api overloaded_error: …`,
+`truncated (raise max_tokens)`, `missing focus/summary`, or the unparseable text itself.
+
+**Proof, old parser vs new, on the shapes that matter:**
+| answer shape | old | new |
+|---|---|---|
+| plain object | ✅ | ✅ |
+| fenced, prose after | ❌ | ✅ |
+| prose after with a stray brace | ❌ | ✅ |
+| braces inside strings / escaped quotes | ✅ | ✅ |
+| no object / truncated | correctly fails | correctly fails |
+
+**Live:** `persona_refresh.py --limit 40` → **built 40 · failed 0** (previous real run: 12 built, 19 failed). The
+759-member backlog was then rebuilt in the same session.
+
+**⚠️ Where this lives.** `/Users/Born/mds-scorecard-tools/` is **not a git repository** — `persona_refresh.py` and
+`olivia_eval.py` are single-copy untracked files on Andy's Mac. A `.bak-20260910` was taken before editing. That
+is a #64 finding in its own right and worse than the ticket's "eight plists exist only on Andy's Mac".
 
 ### #148 · The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever
 **🔵 S3 · size S — filed 2026-08-25 from #126's audit.**
