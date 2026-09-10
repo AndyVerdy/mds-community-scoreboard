@@ -46,6 +46,46 @@ wrong right now · **S3** = worth doing, no pressure, or blocked on someone else
 the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, which is a decision not a ticket (#157).
 
 
+
+## 🌙 OVERNIGHT TRIAGE 2026-09-10 — where the other tickets actually stand
+
+Worked through the open list rather than only the ones I closed. **Nine closed** (#179 #105 #180 #183 #148 #115
+#117 #187 #188), **#152 verified as already-fixed drift**, **#72 retired**, and the rest sorted below with what is
+actually true today rather than what the row said.
+
+**⛔ BLOCKED ON ANDY — nothing moves without these, and each is minutes of his time**
+| # | the exact ask |
+|---|---|
+| **#181** | GitHub PAT with `actions:write`. Its symptom is live right now: the events catalog ~2h behind an hourly schedule is the amber tile on the health report. |
+| **#182**, **#17** | One GroupOS PAT unblocks both. |
+| **#184**, **#185** | Eugene's ruling on whether members' own posts are in scope, not just the two partner profiles. |
+| **#36** | Circleback details. |
+| **#157** | The Sonnet 5 vs GPT-5.6 vendor call — a decision, not a ticket. |
+| **#32** | Rides the Big Smoke and reports to Pavel; Andy sends. |
+
+**⚖️ NEEDS A PRODUCT RULING BEFORE ANY CODE — verified, not guessed**
+- **#71** — re-probed tonight, still contradicting (above). What counts as a "call" spans two catalogs.
+- **#118** — a plain "who is coming" returns a ranked, personalised subset. Touching it moves the **name-disclosure**
+  rules Andy and Eugene set in #96, so it is not a solo change.
+- **#148's lane-skipping** — refusing stale mirror rows changes **who Millie will answer**; a wrong threshold
+  refuses real members. The rest of #148 shipped.
+
+**🔎 RE-SCOPE BEFORE WORKING — the premise changed**
+- **#74** — see the row: mostly non-members by design, and matching does not work (above).
+- **#72** — RETIRED tonight; its measurement half is #187, closed.
+
+**🧱 REAL WORK, NO BLOCKER, JUST SIZE** — #172 (L, team chat) · #170 (thread memory) · #173 (source trail) ·
+#177 (Public answer under-names) · #116 → #111/#118 (the Finder retires the lanes they patch — confirm the overlap
+first or the work is thrown away) · #68 → #66 → #73 (one forms epic) · #64 (runtime inventory — **tonight proved
+why it matters**) · #158 (FKs) · #102 · #92 · #119 (Bank B) · #186 (roadmap, peer-owned).
+
+**🪫 LOW VALUE / STALE FRAMING** — #14, #19, #34, #35, #48, #67 are bare rows with no story, no ACs and no recent
+evidence. Worth a sweep with Andy to decide which still matter rather than carrying them.
+
+**⚠️ Two things that will bite if left:** the Meta app secret is in a chat transcript and needs rotating, and
+`derive_niches` refreezes on the next night the laptop lid is shut (`sudo pmset repeat wakeorpoweron MTWRFSU
+04:25:00`).
+
 ## 📋 At a glance
 
 | # | Ticket | Priority | Size | Staging | Prod |
@@ -57,7 +97,8 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#180** | 🩺 Millie's niche data frozen since 7 Sep — `derive_niches` times out on Anthropic after 3.5h, nightly | 🟡 S2 | S-M | n/a (launchd job) | ✅ **CLOSED 2026-09-10** — root cause was the Mac ASLEEP at 04:30, not the work. Data current, job resumable, tile fixed (`e7c18d9`). One thing left for Andy: a scheduled wake. |
 | **#181** | 🅿️ **SPRINT 5** · Events catalog hourly on paper, four-hourly in fact — 9 of 13 intervals in the down band, 14/14 runs green | 🔵 S3 | S | n/a (GH Action) | ⛔ blocked: GitHub PAT `actions:write` (Andy) |
 | **#182** | 🅿️ **SPRINT 5** · Five days of recordings invisible to Millie — `zoom_weekly` runs on time but skips videos, no `GROUPOS_PAT` | 🟡 S2 | S | n/a (weekly job) | ⛔ blocked: GroupOS PAT (Andy) |
-| **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | — |
+| **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | ✅ **CLOSED 2026-09-10** — cause was NOT the health checks: pins load from localStorage after mount. `pinLayout()`, 6 tests, live `588ef08`. |
+| **#188** | 🩺 One tile, two writers — "Member profiles ← Airtable sync" reported the events catalog's staleness under the member-profiles name | ⚪ S4 | XS | n/a (app code) | ✅ **CLOSED 2026-09-10** — the worse half now names its writer; 5 tests, live `2208d78`. |
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🟡 S2 | M | — | — |
 | **#158** | 🏗️ Foreign keys on what we own + nightly orphan check *(the #61 follow-up; external architecture review 2026-09-02)* | 🔵 S3 | M | n/a (SQL) | — |
@@ -95,9 +136,9 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#119** | 🧪 Bank B — a second eval bank for everything built since the 100-question bank was frozen (2026-08-16): schedule + venue-day, Summit registration & who-to-meet, intros, 2025-26 transcripts/quotes, speakers, offer binding, the finder — ORGANIC questions only (real member asks from `olivia_messages` since 08-16), `expect` from the tickets' ACs/rulings, sized by the questions not padded; runner gets `--bank`; first staging run scored against the tickets' truth | 🔵 S3 | M | ticket ACs + `olivia_question_labels` | 🔨 building 2026-08-23 (Andy: "file #119, do it while bank A runs") |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🔵 S3 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🔵 S3 | M | — | — |
-| **#74** | Identity: 51% of form submissions belong to nobody | 🔵 S3 | M | — | — |
+| **#74** | Identity: 51% of form submissions belong to nobody | 🔵 S3 | M | — | — 🔎 **RE-VERIFIED 2026-09-10, and the premise is mostly a category error.** 58.2% orphaned now (8,011 of 13,759), not 51% — but the 100%-orphan forms are *MDS Inspire 2024/2025*, *Best in Show* and raw public form ids, filled by **non-members**, and *Start your MDS journey* is the application form, 65% orphan **by definition**. Matching them up does not work either: only **108 of 8,011** are claimable via the alias resolver and **76 of those matches are ambiguous** (one email, several members). Re-scope before working. |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
-| **#71** | "Virtual event" vs "call" vs "recording" — two contradicting "latest" answers | 🟡 S2 | M | — | — |
+| **#71** | "Virtual event" vs "call" vs "recording" — two contradicting "latest" answers | 🟡 S2 | M | — | — 🔎 **RE-VERIFIED 2026-09-10, still real.** Two silent probes, same minute: *"latest MDS virtual event"* → **MDS 9 Call, 14 Aug 2026** (events catalog); *"most recent MDS call"* → **a recording published 2 Sep 2026** (video library). Two sources, two "latest", three weeks apart, both plausible to a member. **Needs Andy's ruling on what "call" means across the two catalogs** before it can be fixed. |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
 | **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
@@ -306,12 +347,18 @@ a real failure, which is worse than a false red.
 4. Unit test covering all three codes — ✅ `make.test.ts`, 13 tests, plus the unknown grade, the pipeline roll-up and the real Guest Multi-Event case.
 5. `tsc`, lint, tests, `next build` clean; merge = Render deploy verified on `/api/version` — ✅ 1270 tests pass, tsc/eslint/build exit 0, `/api/version` = `6a31026`.
 
-**⚠️ One thing I did NOT verify, stated plainly: the rendered dashboard tile.** `/tools-health` needs a
-member session and `GET /api/health/report?secret=…&dry=1` returns `{"error":"forbidden"}` — the stale
-`HEALTH_REPORT_SECRET` the 2026-09-09 triage already recorded. I did not sign in as Andy. What is proven is
-the shipped classifier against the live Make API, before and after, plus the deploy. **Andy or the next
-session should open `digest.mds.co/tools-health` once and confirm the tile is amber.** The stale secret is
-the chore already sitting in the #179 + #181 + #183 cluster.
+**✅ The rendered tile is now verified too** (2026-09-10 01:35). It could not be reached at first — the report
+endpoint 403'd on the stale `HEALTH_REPORT_SECRET`, the chore the cluster already carried. That chore was fixed
+the same night (the endpoint now also accepts a Vault-held secret, so aligning it needs no deploy), and the live
+report reads:
+
+```
+🟡 *Guest Multi-Event Alert (3+ events)* — ⚠ warning 8d ago (Sep 02, 2026)
+*39* tools · 🟢 37 healthy · 🟡 2 need attention · 🔴 0 down
+```
+
+Amber, worded "warning", and **the down count is no longer inflated by it**. The other amber tile is unrelated
+(Member profiles ← Airtable sync).
 
 **Found alongside, NOT chased, no ticket filed yet — two repo traps:**
 - **`node_modules` is a broken symlink committed into `mds-digest-web`** (`0b932ce`, 2026-09-08, mode
@@ -379,6 +426,8 @@ location.
    batch 1: **893 rows rewritten for the 391 members it finished, 1,013 rows left untouched for the other 306, no
    member lost.** Exit 1, so the heartbeat still says error — saved data must never look like a clean night.
 5. The tile shows the oldest failing job, not the freshest — ✅ `summarizeDerivations()`, 8 tests, live `e7c18d9`.
+   Confirmed on the live report the same night: the derivations tile is **green**, so it no longer appears among
+   the amber ones at all.
 
 **Before → after:** niche data 3 days stale, nightly burning 3.5h for nothing, tile reading "last success <1h ago"
 beside a DOWN status → data current, run 93s, a cut-short run keeps its work, tile names the worst offender.
@@ -4092,6 +4141,29 @@ The 1:1 dry-run count across the whole table (5,104 questions ↔ 5,104 answers)
 **⚠️ Left for Andy, deliberately.** Purging the 5,104-turn backlog is 10,208 irreversible deletions on his own
 conversation history. The tool is fixed and proven; the one-time purge is his call:
 `python3 scripts/olivia_selftest.py --cleanup --yes`.
+
+
+#### ✅ #188 CLOSED 2026-09-10 — a tile that reported one writer under another's name
+
+**🩺 ⚪ S4 · size XS — found 2026-09-10 while verifying #179's tile on the live health report.**
+
+**Story:** *As MDS staff, when a tile says something is behind, the name on it is the thing that is behind.*
+
+One tile covers TWO writers — `member_profiles` (daily) and `events_catalog` (hourly) — because one GitHub job
+writes both and an events-only staleness is a real failure mode. It surfaced whichever half was worse, but only
+that half's **timestamp**, under the tile's member-profiles **name**.
+
+**Live at the moment it was found:** `member_profiles` 13.2h old and healthy, `events_catalog` ~2h old and
+degraded, and the tile read *"Member profiles ← Airtable sync — last write 2h ago"*. Anyone acting on it would
+check `member_profiles`, find it perfectly fresh, and never learn the events catalog was behind. Same family as
+#180 — a headline that does not describe what it is reporting.
+
+**Fix:** `worseOfSyncHalves()` names the writer in the line when the worse half is unhealthy, and says nothing
+extra when both are fine. 5 tests written first. 1,345 pass, tsc/eslint/build clean, live `2208d78`.
+
+**Worth knowing:** the amber itself is **not** a new problem — the events catalog running ~2h behind an hourly
+schedule is **#181**, which is blocked on a GitHub PAT with `actions:write`. This ticket is only about the tile
+telling the truth about which one it means.
 
 ### #148 · The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever
 **🔵 S3 · size S — filed 2026-08-25 from #126's audit.**
