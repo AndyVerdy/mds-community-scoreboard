@@ -40,8 +40,20 @@ That single fact produced #180 and explains its whole symptom set — three and 
 120s-capped calls, `subprocess.run(timeout=1800)` never firing (monotonic stops during sleep on Darwin, wall
 clock does not), and `cache_member_photos` at 5,749s against a normal 106s.
 
-**Unfixed, and it needs Andy's password:** `sudo pmset repeat wakeorpoweron MTWRFSU 04:25:00`.
-Confirm any suspicion with `pmset -g log | grep -E "Entering Sleep|DarkWake"`.
+**✅ FIXED 2026-09-10** — Andy ran `sudo pmset repeat wakeorpoweron MTWRFSU 04:25:00`. Verified live:
+
+```
+Repeating power events:
+  wakepoweron at 4:25AM every day
+```
+
+Note it reads **every day**, not weekdays: `MTWRFSU` is all seven letters. That is the right outcome, since the
+derivations run nightly. **The machine now wakes five minutes before the 04:30 job.**
+
+An earlier attempt looked done and was not — `pmset -g sched` showed only the calendar/analytics/DND alarms with
+no *Repeating power events* heading, which is what a run without `sudo` leaves behind. **Verify by that heading**,
+never by the command exiting quietly. Confirm any future suspicion with
+`pmset -g log | grep -E "Entering Sleep|DarkWake"`.
 
 ### ✅ Second finding, now fixed: `mds-scorecard-tools/` had no version control
 
