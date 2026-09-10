@@ -102,7 +102,7 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#190** | 🧪 The nightly eval is at **9.5% FAIL** against Andy's **<1%** bar — 21 of 220 on 2026-09-09 | 🔴 S1 | M | n/a (report) | 📝 filed 2026-09-10, needs a session |
 | **#188** | 🩺 One tile, two writers — "Member profiles ← Airtable sync" reported the events catalog's staleness under the member-profiles name | ⚪ S4 | XS | n/a (app code) | ✅ **CLOSED 2026-09-10** — the worse half now names its writer; 5 tests, live `2208d78`. |
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
-| **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🟡 S2 | M | — | — |
+| **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🟡 S2 | M | — | — 🟡 **INVENTORY DONE 2026-09-10 → `RUNTIME_INVENTORY.md`**, plists copied to `ops/launchd/`. **Headline: 7 of 9 jobs are scheduled 02:15–05:40, inside the window the laptop spends asleep** — that one fact produced #180. Five jobs have no heartbeat at all. `mds-scorecard-tools` is not a git repo. The moves that remain need Andy. |
 | **#158** | 🏗️ Foreign keys on what we own + nightly orphan check *(the #61 follow-up; external architecture review 2026-09-02)* | 🔵 S3 | M | n/a (SQL) | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔵 S3 | M | — | — |
 | **#100** | 🔑 Identity aliases — one member, all their known emails | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED 2026-08-20** — 5,763 aliases, resolver live, 12/12 verify, gate 0 |

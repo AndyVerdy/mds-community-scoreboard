@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.mds.db.drift</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/Born/Scorecard/scripts/db_export_schema.py</string>
+    <string>--check</string>
+    <string>--alert</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/Born/Scorecard</string>
+  <!-- Daily 05:40: after the nightly derivations, before the working day. An out-of-band
+       `create or replace` is caught within a day, which is the whole point of #65. -->
+  <key>StartCalendarInterval</key>
+  <dict><key>Hour</key><integer>5</integer><key>Minute</key><integer>40</integer></dict>
+  <key>StandardOutPath</key><string>/Users/Born/Scorecard/scripts/db_drift.log</string>
+  <key>StandardErrorPath</key><string>/Users/Born/Scorecard/scripts/db_drift.log</string>
+</dict>
+</plist>
