@@ -58,6 +58,36 @@ feature branch tonight, predating a fix already on main. Now resolves from its o
 **State at hand-off.** prod n8n `22d81380` · staging `ae74d26d` · `mds-digest-web` main `588ef08` · gate GREEN ·
 lock free · all 11 nightly jobs green on a forced full run.
 
+
+**Continued past the first report (Andy: "keep going ... close as much as you can, skip where you need me").**
+
+- **#188 filed and closed** — found while verifying #179's tile. One tile covers `member_profiles` (daily) and
+  `events_catalog` (hourly) and reported the events catalog's staleness under the member-profiles name. Live at
+  the time: member_profiles 13.2h and healthy, events 2h and degraded, tile reading "Member profiles — last write
+  2h ago". `worseOfSyncHalves()`, 5 tests, live `2208d78`.
+- **The `HEALTH_REPORT_SECRET` chore is fixed** — the board carried it for days and it is what blocked verifying
+  #179's tile. `/api/health/report` now accepts a **Vault-held** secret alongside the env one, compared in
+  **constant time** (it was a plain `!==` on a secret), and a length mismatch is answered without comparing so it
+  cannot surface as a 500. Aligning or rotating needs no deploy. Live `ae9e76c`.
+- **#179's last AC is therefore now verified on the rendered surface**, not inferred: `🟡 Guest Multi-Event Alert
+  — ⚠ warning 8d ago`, and `39 tools · 37 healthy · 2 need attention · 0 down`. **#180's tile AC too** — the
+  derivations tile is green and no longer appears among the amber.
+- **#74 re-verified and re-scoped.** 58.2% orphaned (8,011 of 13,759), not 51% — but the 100%-orphan forms are
+  Inspire 2024/2025, Best in Show and public form ids filled by **non-members**, and the application form is
+  orphaned **by definition**. Matching does not rescue it: **108 of 8,011** claimable via the alias resolver,
+  **76 of those ambiguous**.
+- **#71 re-verified, still real.** Two silent probes one minute apart: "latest MDS virtual event" → MDS 9 Call,
+  14 Aug; "most recent MDS call" → a recording published 2 Sep. Needs a ruling on what "call" means.
+- **A full triage block is now at the top of the board** sorting every remaining ticket into blocked-on-Andy (with
+  the exact ask), needs-a-ruling, re-scope-first, real-work-just-large, and bare rows worth sweeping.
+
+**Deliberately not touched, and why:** #118 and #148's lane-skipping both move **who Millie answers or names** —
+the same class of change I got wrong at the start of the night. #110 needs a live intro record to exercise, and a
+wrong call to that route **messages a real member**. Those are for daylight.
+
+**Final state:** prod n8n `22d81380` · staging `ae74d26d` · `mds-digest-web` main `2208d78` · gate GREEN · lock
+free · 9 closed, 1 drift-verified, 1 retired, 2 re-verified and re-scoped.
+
 ## 2026-09-09 (evening) — #179 shipped · #105 built twice, live at the relay, not enforcing
 
 **Two tickets worked, one closed. Four stale board rows fixed before starting, all verified against live.**
