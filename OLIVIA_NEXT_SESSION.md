@@ -23,12 +23,14 @@ turn ever timed). #152 was verified as already-fixed drift; **#72 was RETIRED** 
 measurement half became #187.
 
 **⚠️ TWO THINGS WAIT ON ANDY — the second one recurs tonight if it is not done.**
-1. **Reset the Meta app secret.** It was pasted into a chat transcript. Meta app `955961257089837`, Settings →
-   Basic. Then the Vault row needs `vault.update_secret` on `META_APP_SECRET`, and the signature check starts
-   failing the moment he rotates until that is done.
-2. **`sudo pmset repeat wakeorpoweron MTWRFSU 04:25:00`.** #180's root cause is that the nightly job runs at
-   04:30 on a closed laptop. Tonight's run only worked because the Mac was awake. Without a scheduled wake it
-   freezes again. Moving these jobs off the laptop is **#64**.
+1. ~~Reset the Meta app secret.~~ **ANDY'S RULING 2026-09-10: "secret stays".** Not rotating. The value is in the
+   chat transcript and in Vault; it is not in the repo. **Do not raise this again** — if it is ever rotated, the
+   Vault row needs `vault.update_secret` on `META_APP_SECRET` in the same minutes or the signature check fails.
+2. **`sudo pmset repeat wakeorpoweron MTWRFSU 04:25:00`** — ⚠️ **still not in effect as of 2026-09-10 morning.**
+   Andy said it was done; `pmset -g sched` shows no *Repeating power events* section, only calendar/analytics
+   alarms, which is what it looks like when the command ran without `sudo`. **Verify by looking for that heading**,
+   not by the command exiting quietly. Without it #180 refreezes the next night the lid is shut. Moving these jobs
+   off the laptop is **#64**.
 
 **Two more his call, neither urgent:** the 10,208-row selftest purge (`--cleanup --yes`, irreversible, his own
 history) and #148's lane-skipping (refusing stale rows changes who Millie answers).
