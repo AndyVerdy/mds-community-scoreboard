@@ -54,7 +54,7 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#184** | 🙈 Part 1 — unindex Tony Brink's post + MajestIQ/TraceFuse from Millie, nothing deleted for members ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🔴 S1 | S | — | — |
 | **#185** | 🚧 Part 2 — a general way to keep restricted content out of Millie: blacklist, detection, or both ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🟡 S2 | M | — | — |
 | **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | ✅ **CLOSED 2026-09-09** — shipped `0fcb6df`, merged `6a31026`, live on Render (`/api/version`) |
-| **#180** | 🩺 Millie's niche data frozen since 7 Sep — `derive_niches` times out on Anthropic after 3.5h, nightly | 🟡 S2 | S-M | n/a (launchd job) | — |
+| **#180** | 🩺 Millie's niche data frozen since 7 Sep — `derive_niches` times out on Anthropic after 3.5h, nightly | 🟡 S2 | S-M | n/a (launchd job) | ✅ **CLOSED 2026-09-10** — root cause was the Mac ASLEEP at 04:30, not the work. Data current, job resumable, tile fixed (`e7c18d9`). One thing left for Andy: a scheduled wake. |
 | **#181** | 🅿️ **SPRINT 5** · Events catalog hourly on paper, four-hourly in fact — 9 of 13 intervals in the down band, 14/14 runs green | 🔵 S3 | S | n/a (GH Action) | ⛔ blocked: GitHub PAT `actions:write` (Andy) |
 | **#182** | 🅿️ **SPRINT 5** · Five days of recordings invisible to Millie — `zoom_weekly` runs on time but skips videos, no `GROUPOS_PAT` | 🟡 S2 | S | n/a (weekly job) | ⛔ blocked: GroupOS PAT (Andy) |
 | **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | — |
@@ -342,6 +342,50 @@ the chore already sitting in the #179 + #181 + #183 cluster.
 3. One run finishes inside a stated wall-clock budget, and that budget is written into the job.
 4. A timeout on one batch no longer discards the batches that already succeeded — proven by forcing a mid-run failure.
 5. The derivations tile shows the oldest failing job's timestamp, not the freshest.
+
+
+#### ✅ #180 CLOSED 2026-09-10 — the job was fine, the machine was asleep
+
+**Story:** *As a member, when I ask who works in a niche, I want the answer to include the people who joined or changed niche this week.*
+
+**The ticket's three hypotheses were all wrong.** It proposed batch size, a missing page bound, or a retry
+re-sending the whole set. The real cause: `derive_niches` is scheduled for **04:30 on a laptop that is closed and
+asleep**. macOS wakes ~8s an hour for maintenance, so the job starts, gets a few seconds, and the machine sleeps
+mid-request. Evidence, `pmset -g log` for both failing nights: sleep at 03:17, then hourly DarkWakes of 8-9s,
+straight through 04:30.
+
+That one fact explains every oddity at once:
+- **3.5 hours of wall clock for ten model calls** — each call is capped at 120s, so the work cannot cost that.
+- **The runner's `timeout=1800` never firing** — it measures a monotonic clock, which stops during sleep on Darwin;
+  the reported elapsed uses wall clock, which does not.
+- **Other jobs in the same file showing wild times** — `cache_member_photos` at 5,749s against a normal 106s.
+- Reproduced the opposite way: the same script, unchanged, **awake: 2m30s, exit 0, 1,907 rows**.
+
+**What shipped.** A failed model call no longer `sys.exit`s the run; it returns and the run commits what it
+finished. A wall-clock budget (default 1500s) stops it starting new batches. Committing partially is **not** "write
+the dictionary as it stands": the write DELETEs a member's rows first, and step 1 fills that dictionary for
+everyone from controlled categories while only step 2 adds what they typed themselves — so writing everyone after
+batch 3 of 10 would delete the stated niches of the members in batches 4-10 and replace them with the thinner set.
+`writable_ids()` commits exactly the members who needed no model call plus the batches that completed.
+**Also fixed:** `nightly_derivations.py` hardcoded `REPO = /Users/Born/Scorecard`, a working tree sessions switch
+branches in — so "the live nightly script" was whichever branch was checked out. It now resolves from its own
+location.
+
+**AC checklist:**
+1. `derive_niches` completes and `last_success_at` advances — ✅ `2026-09-10 05:49:19`, detail `done [93s]`, status `ok`.
+2. `member_niches.derived_at` same-day after a run — ✅ 1,936 rows / 697 members, freshest today.
+3. One run inside a stated budget, written into the job — ✅ 93s against the 1500s default.
+4. A timeout no longer discards finished batches, **proven by forcing a mid-run failure** — ✅ forced a stop after
+   batch 1: **893 rows rewritten for the 391 members it finished, 1,013 rows left untouched for the other 306, no
+   member lost.** Exit 1, so the heartbeat still says error — saved data must never look like a clean night.
+5. The tile shows the oldest failing job, not the freshest — ✅ `summarizeDerivations()`, 8 tests, live `e7c18d9`.
+
+**Before → after:** niche data 3 days stale, nightly burning 3.5h for nothing, tile reading "last success <1h ago"
+beside a DOWN status → data current, run 93s, a cut-short run keeps its work, tile names the worst offender.
+
+**⚠️ Left open, needs Andy — this WILL recur otherwise.** The machine must be awake at 04:30. That means
+`sudo pmset repeat wakeorpoweron MTWRFSU 04:25:00`, which needs his password. Tonight's run only succeeded because
+the Mac was awake. **Moving these jobs off the laptop is #64.**
 
 ### #181 · 🅿️ SPRINT 5 · The events catalog is hourly on paper and four-hourly in fact
 **🔵 S3 · size S — filed 2026-09-09 · CARRIES TO SPRINT 5 (Andy: "s3 sprint 5"). BLOCKED on a credential only Andy can create.**

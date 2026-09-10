@@ -12,9 +12,14 @@ unattended.
 
 launchd: com.mds.olivia.derivations (nightly 04:30, after persona 04:15). Manual: python3 this.
 """
-import json, subprocess, sys, time
+import json, os, subprocess, sys, time
 
-REPO = "/Users/Born/Scorecard"
+# #180: was hardcoded to /Users/Born/Scorecard. That path is a working tree sessions switch
+# branches in, so "the live nightly script" was whichever branch someone last checked out —
+# on 2026-09-10 it was a peer's feature branch, which predated a fix that was already merged.
+# Resolving from this file's own location makes the runner honest: it runs the jobs that sit
+# beside it. launchd points at the same path, so nothing changes there.
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENV = "/Users/Born/mds-digest-web/.env.local"
 
 # (heartbeat job name, argv) — names match the rows seeded in the migration
