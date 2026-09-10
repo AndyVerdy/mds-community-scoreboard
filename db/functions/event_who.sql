@@ -30,7 +30,16 @@ begin
   from digest.events_catalog c
   where coalesce(c.phase,'') not in ('Tentative','Awaiting Feedback')
     and (select bool_and(c.name ilike '%'||w||'%'
-                          or coalesce(c.app_title,'') ilike '%'||w||'%')
+                          or coalesce(c.app_title,'') ilike '%'||w||'%'
+                          -- #147: a place question must reach an event whose city is only in its
+                          -- LOCATION, not its title. event_lookup has always matched these fields;
+                          -- event_who was the odd one out, so 'seattle' could only find a 2024
+                          -- dinner with the city in its name. Ordering below still prefers a running,
+                          -- then an upcoming event, so the nearest real one wins.
+                          or coalesce(c.city_state,'') ilike '%'||w||'%'
+                          or coalesce(c.location,'') ilike '%'||w||'%'
+                          or coalesce(c.app_city,'') ilike '%'||w||'%'
+                          or coalesce(c.chapter_hint,'') ilike '%'||w||'%')
            from regexp_split_to_table(trim(p_event), '[[:space:]]+') w)
   order by
            -- 2026-08-24 (launch, Belen): a RUNNING event outranks everything — during the Summit,
@@ -38,6 +47,12 @@ begin
            (coalesce(c.app_starts_at, c.start_at) <= now()
              and now() <= coalesce(c.end_at, coalesce(c.app_starts_at, c.start_at) + interval '3 days')) desc,
            (coalesce(c.app_starts_at, c.start_at) >= now()) desc,
+           -- #147: an event NAMED by the member outranks one matched only on its place. Without this,
+           -- widening the match to city fields made "las vegas" answer with Inspire 2027 (six months
+           -- out, Registration Open) instead of the Las Vegas boardroom twenty days away.
+           (select bool_and(c.name ilike '%'||w||'%'
+                            or coalesce(c.app_title,'') ilike '%'||w||'%')
+              from regexp_split_to_table(trim(p_event), '[[:space:]]+') w) desc,
            case c.phase when 'Registration Open' then 0 when 'Confirmed' then 1 else 2 end,
            length(c.name) asc,
            coalesce(c.app_starts_at, c.start_at) asc
