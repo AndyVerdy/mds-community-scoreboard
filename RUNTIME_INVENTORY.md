@@ -43,11 +43,20 @@ clock does not), and `cache_member_photos` at 5,749s against a normal 106s.
 **Unfixed, and it needs Andy's password:** `sudo pmset repeat wakeorpoweron MTWRFSU 04:25:00`.
 Confirm any suspicion with `pmset -g log | grep -E "Entering Sleep|DarkWake"`.
 
-### 🔴 Second finding: `mds-scorecard-tools/` is not a git repository
+### ✅ Second finding, now fixed: `mds-scorecard-tools/` had no version control
 
-`persona_refresh.py` and `olivia_eval.py` are **single-copy untracked files**. That is worse than the ticket's
-"eight plists exist only on Andy's Mac" — these are production scripts with no history and no second copy.
-`persona_refresh.py.bak-20260910` was taken before #189's fix. **Decide whether this becomes a repo.**
+`persona_refresh.py` and `olivia_eval.py` were **single-copy untracked files** — production scripts with no
+history and no second copy. Fixing #189 meant taking `persona_refresh.py.bak-20260910` by hand, because there was
+nothing to revert to. That is worse than the ticket's "eight plists exist only on Andy's Mac".
+
+**Made a repository 2026-09-10** (Andy: *"it can. you decide"*). **59 files, 1.3MB, source only.** The directory
+is 163MB and most of it is not source, so the ignore rules **deny everything and allow source back in** — a new
+scrape, log or data dump cannot be committed by accident. Audited before the first commit: **no literal
+credentials** in any `.py`, `.js`, `.html` or `.md`; secrets are read from `mds-digest-web/.env.local`, and
+`.apify_token` is ignored.
+
+⚠️ **Local only — there is no remote.** History and revert now exist; a second *machine* does not. Creating a
+GitHub repo publishes the code, so that is Andy's call, not mine.
 
 ### Last exit status, 2026-09-10 04:0xZ
 

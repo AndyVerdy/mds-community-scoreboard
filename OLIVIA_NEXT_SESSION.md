@@ -32,6 +32,10 @@ measurement half became #187.
    not by the command exiting quietly. Without it #180 refreezes the next night the lid is shut. Moving these jobs
    off the laptop is **#64**.
 
+**✅ `mds-scorecard-tools` is now a git repository** (2026-09-10, his call) — 59 source files, 1.3MB, deny-by-default
+ignores, no credentials in history. **Local only: no remote**, so revert exists but a second machine does not.
+Pushing it anywhere publishes the code and is his call.
+
 **Two more his call, neither urgent:** the 10,208-row selftest purge (`--cleanup --yes`, irreversible, his own
 history) and #148's lane-skipping (refusing stale rows changes who Millie answers).
 
