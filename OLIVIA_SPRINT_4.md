@@ -4202,8 +4202,10 @@ follows; and every failure now reports its real reason — `curl exit N`, `api o
 | braces inside strings / escaped quotes | ✅ | ✅ |
 | no object / truncated | correctly fails | correctly fails |
 
-**Live:** `persona_refresh.py --limit 40` → **built 40 · failed 0** (previous real run: 12 built, 19 failed). The
-759-member backlog was then rebuilt in the same session.
+**Live:** `persona_refresh.py --limit 40` → **built 40 · failed 0** (previous real run: 12 built, 19 failed), then
+a full pass → **built 19 · failed 0**, ending `staleness after: missing 0 · older-than-35d 0`. **59 personas rebuilt
+tonight, zero failures**, and the staleness backlog is clear. (The "759 due" in the fingerprint list is the active
+roster, not the rebuild queue — only 59 were actually stale.)
 
 **⚠️ Where this lives.** `/Users/Born/mds-scorecard-tools/` is **not a git repository** — `persona_refresh.py` and
 `olivia_eval.py` are single-copy untracked files on Andy's Mac. A `.bak-20260910` was taken before editing. That
