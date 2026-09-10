@@ -336,6 +336,8 @@ grant execute on function digest.member_personas_archive() to service_role;
 grant execute on function digest.member_topic_profile(p_atid text) to postgres;
 grant execute on function digest.member_video_url(p_video_id text) to postgres;
 grant execute on function digest.member_video_url(p_video_id text) to service_role;
+grant execute on function digest.meta_signature_ok(p_raw text, p_signature text) to postgres;
+grant execute on function digest.meta_signature_ok(p_raw text, p_signature text) to service_role;
 grant execute on function digest.multi_source(p_phone text, p_query text, p_terms text[], p_city text, p_want text[]) to postgres;
 grant execute on function digest.multi_source(p_phone text, p_query text, p_terms text[], p_city text, p_want text[]) to service_role;
 grant execute on function digest.multi_source_v2(p_phone text, p_query text, p_terms text[], p_city text, p_want text[]) to postgres;

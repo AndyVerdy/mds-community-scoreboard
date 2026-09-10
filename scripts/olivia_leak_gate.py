@@ -1916,6 +1916,14 @@ def main():
     _t = subprocess.run(["node", "--test", os.path.join(os.path.dirname(__file__), "olivia_loop", "public_gate.test.mjs")], capture_output=True, text=True)
     check("public_gate.js unit tests pass (redaction + leftover-name fail-closed)", _t.returncode == 0, _t.stderr[-300:])
 
+    # 6b. #105: Meta's webhook signature. The module is pure, so the gate can prove it on every
+    #     ship without touching the workflow. The cases that matter are the fail-closed ones: an
+    #     unconfigured secret and a re-serialised body must BOTH refuse, because the first would
+    #     silently disable the check and the second is the tempting shortcut when the raw bytes
+    #     are awkward to reach.
+    _t105 = subprocess.run(["node", "--test", os.path.join(os.path.dirname(__file__), "olivia_loop", "meta_signature.test.mjs")], capture_output=True, text=True)
+    check("meta_signature.js unit tests pass (#105 — forged post refused, missing secret refuses)", _t105.returncode == 0, _t105.stderr[-300:])
+
     # 7. #176: the LIVE classifier encodes the corrected definition of Public mode. Andy, 2026-09-08:
     #    "public means all members, but not people outside the MDS; restricted means this content is
     #    restricted to some members. Facebook is open source; it's public by definition. The only

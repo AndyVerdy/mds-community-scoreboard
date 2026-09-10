@@ -33,7 +33,7 @@ wrong right now · **S3** = worth doing, no pressure, or blocked on someone else
 
 | Cluster | Why together |
 |---|---|
-| **#105 + #97** | #97 is BUILT and waiting on the promote; #105 is "before any wide intros announcement" and the webhook still accepts any POST from anyone. Do not announce intros first. |
+| **#105** *(alone — was "#105 + #97", corrected 2026-09-09)* | #97 needs no promote: it shipped 2026-08-22 (`7e4be40a`) and its seven intro nodes are on prod `15649d68`, verified live. So the pairing was built on a stale row. #105 stands on its own as the engineering: the WhatsApp webhook still accepts any POST from anyone and never verifies `X-Hub-Signature-256`. What waits on it is Andy's wide intros ANNOUNCEMENT, not a promote. Note the exposure is narrower than the old row implied — a forged intro Accept is already inert, because taps bind to the exact template `consent_wamid`; the real hole is unsigned inbound in general. |
 | **#180 + #64** | `derive_niches` is one of the eight launchd plists that exist only on Andy's Mac and in no repo. Fixing #180 alone fixes one of eight. |
 | **#116 before #111 / #118** | Finder phase 2-3 retires `member_match` / `member_count` / the schedule matcher — the very lanes #111 and #118 patch. Confirm the overlap or the work is thrown away. |
 | **#182 + #17** | One GroupOS PAT unblocks both; #17 is "stop pulling videos and partners by hand", so #182 alone means pulling by hand again next week. |
@@ -53,7 +53,7 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#186** | 🅿️ **SPRINT 5** · 🗺️ Roadmap tool — a dev index and a live task list, both pulled from the repo, never hand-maintained (Andy 2026-09-09) | 🔵 S3 | M-L | — | — |
 | **#184** | 🙈 Part 1 — unindex Tony Brink's post + MajestIQ/TraceFuse from Millie, nothing deleted for members ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🔴 S1 | S | — | — |
 | **#185** | 🚧 Part 2 — a general way to keep restricted content out of Millie: blacklist, detection, or both ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🟡 S2 | M | — | — |
-| **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | — |
+| **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | ✅ **CLOSED 2026-09-09** — shipped `0fcb6df`, merged `6a31026`, live on Render (`/api/version`) |
 | **#180** | 🩺 Millie's niche data frozen since 7 Sep — `derive_niches` times out on Anthropic after 3.5h, nightly | 🟡 S2 | S-M | n/a (launchd job) | — |
 | **#181** | 🅿️ **SPRINT 5** · Events catalog hourly on paper, four-hourly in fact — 9 of 13 intervals in the down band, 14/14 runs green | 🔵 S3 | S | n/a (GH Action) | ⛔ blocked: GitHub PAT `actions:write` (Andy) |
 | **#182** | 🅿️ **SPRINT 5** · Five days of recordings invisible to Millie — `zoom_weekly` runs on time but skips videos, no `GROUPOS_PAT` | 🟡 S2 | S | n/a (weekly job) | ⛔ blocked: GroupOS PAT (Andy) |
@@ -72,19 +72,19 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#94** | 🧠 Expertise Ledger v2 — the living skill sheet (Eugene #2 finale) | 🔴 S1 | M | ✅ probed | ✅ **CLOSED 2026-08-19** — 51 topics live, verify 9/9, gate 0 |
 | **#95** | Equalizer for the members lane — BOTH advice lanes wired | 🔴 S1 | S | ✅ probed ×2 | ✅ **CLOSED 2026-08-19** — repeat asks 8/8→0/8 shared, gate 0 |
 | **#96** | Attendee-name disclosure — Eugene's ≤10-names cap | 🔴 S1 | S | ✅ E2E probed | ✅ **CLOSED 2026-08-20** — cap 10 in code, attendee-gated, gate 0 |
-| **#97** | Brokered intros — "message the person she recommends", consent-first | 🔴 S1 | M | ✅ route matrix · staging taps/tool · fix-wave re-reviews | ✅ **BUILT 2026-08-22 — READY FOR PROMOTE (Andy); real tap E2E closes it** |
+| **#97** | Brokered intros — "message the person she recommends", consent-first | 🔴 S1 | M | ✅ route matrix · staging taps/tool · fix-wave re-reviews | ✅ **CLOSED — PROMOTED 2026-08-22 by Andy (`7e4be40a`); prod E2E tap proven (exec 96653).** Verified live 2026-09-09: the 7 intro nodes are on prod `15649d68`. Open behind it is the wide intros ANNOUNCEMENT, which waits on #105 — not a promote. |
 | **#98** | Who-to-meet gates on registrations ledger (smoke Q37) | 🔴 S1 | S | ✅ E2E re-probed | ✅ **CLOSED 2026-08-20** — ledger authority both branches |
 | **#99** | "Show me the rest" for who-to-meet (smoke Q49) | 🟡 S2 | S | ✅ E2E via canary | ✅ **CLOSED 2026-08-20** — continuation note in-tool, fresh re-call proven |
 | **#102** | 🎬 Video recommendation ranking — time decay · speaker weight · event bonus (Andy/Eugene Slack 2026-08-21) | 🔵 S3 | M | — | ⏸ AFTER the big smoke test |
 | **#112** | 🔗 Offer→answer binding | 🔴 S1 | S | ✅ exact failing sequence returns BOTH summaries | ✅ **CLOSED 2026-08-22** — the #80 binding existed; its ACCEPT_RE end-anchor made "yes booth" miss. Fix: affirmative may carry a quantifier/typo (both·booth·all·either·that one) while a topic word still routes normally; binding now covers EVERY offered video, not just the last. Prod `e175c5a3`, gate 0 |
-| **#104** | Adjacent-turn topic lag | 🔴 S1 | S-M | ✅ **VERIFIED: rerun of all 3 original fail-chains with recreated adjacency = 3/3 on-topic PASS** | ⛔ rides the Millie promote — **root cause: FC caught all 3, Gate Verdict pass-postfilter neutralized the catch (topic-mismatch is not a fact-claim); fix = off_topic field in FC rubric + non-filterable in Gate Verdict (regenerate, cap 2). Probe: exact failing sequence now on-topic, off_topic field live in FC output, gate 263/exit 0. Bonus same session: load_speakers.py --rescan (guest-becomes-member promotion in place, 27 checked/0 due)** |
-| **#105** | 🔐 Verify Meta's webhook signature (`X-Hub-Signature-256`) on every inbound — filed from #97's final review (Andy OK 2026-08-22) | 🔴 S1 | S | — | ⏸ next session, BEFORE any wide intros announcement |
+| **#104** | Adjacent-turn topic lag | 🔴 S1 | S-M | ✅ **VERIFIED: rerun of all 3 original fail-chains with recreated adjacency = 3/3 on-topic PASS** | ✅ **SHIPPED 2026-08-22** — it rode the Millie promote that same day, which the #97 block records at line 2399 ("15 nodes incl. the Millie/#104 set that rode along"). Verified live 2026-09-09: `off_topic` appears 22 times on prod `15649d68`. The "⛔ rides the Millie promote" note was stale by 18 days. **Root cause: FC caught all 3, Gate Verdict pass-postfilter neutralized the catch (topic-mismatch is not a fact-claim); fix = off_topic field in FC rubric + non-filterable in Gate Verdict (regenerate, cap 2). Probe: exact failing sequence now on-topic, off_topic field live in FC output, gate 263/exit 0. Bonus same session: load_speakers.py --rescan (guest-becomes-member promotion in place, 27 checked/0 due)** |
+| **#105** | 🔐 Verify Meta's webhook signature (`X-Hub-Signature-256`) on every inbound — filed from #97's final review (Andy OK 2026-08-22) | 🔴 S1 | S | n/a (relay — Render) | ✅ **ENFORCING 2026-09-10 04:47Z** — live at the relay (`d5d6bff`). 3 genuine Meta deliveries verified `ok`, then the switch was flipped; a forged post now gets 403 and is never forwarded. |
 | **#106** | 🙈 Staff / non-member records must never surface in member-facing lists (event_who names, who-to-meet, intro picker) — Andy 2026-08-22: "make sure I'm not searchable" | 🟡 S2 | S | SQL-verified exposure map | ✅ **LIVE 2026-08-24** (SQL, prod-shared) — 5 `#106` checks in the leak gate pass: `member_card`, `member_card_v2`, `expertise_search`, `member_match_v2`, finder |
 | **#107** | 🗣️ Millie-only self-name (Format Reply PS still says Olivia) + who-to-meet ends with "connect you with one of them?" Yes/No buttons → Yes = intro picker (Andy 2026-08-22: "Millie and only Millie — official name"; "ask if he would like to connect… if yes provide a list") | 🔴 S1 | S-M | — | ✅ **PROMOTED 2026-08-22 ~05:24Z (Andy) — prod `8f48fdb8`**: Millie PS (prepended when button-eligible) · who-to-meet ends with the exact offer + Yes/No buttons (96779) · Yes → member_intro, no plan replay (review caught the 500-char-trim defeat → `last_olivia_intro_offer` flag, proven 96864) · non-attendee no offer (96787) · gate 267 EXIT 0 |
 | **#109** | 📨 Requester-side intro notices must be TEMPLATES (accept / decline / 7-day lapse) — free-form text dies outside the 24h window (Meta 131047); found 2026-08-22 when Andy questioned the lapse promise | 🔴 S1 | S-M | n/a (route — no staging tier) | ✅ **SHIPPED 2026-09-01** `cae87c1` — `src/lib/intro-notices.ts` + template-first route with free-form fallback; 15 unit tests incl. a standing guard that no requester path can be text, 144/144 on main; live sweep probe expired=1 failed=0, lapse notice accepted by Meta (wamid …9B34A86B928F28CF3C). ⚠️ closed-window delivery not yet observed (probe requester's window was open) · lapsed template is MARKETING, so 131049 can still cap it |
 | **#110** | 🧾 Intro-tap turns are not saved to conversation history — `Save Conversation` on the intro-tap path errors on a `$('Resolve Member')` reference (swallowed by onError); SQL-proven zero rows for tap turns; no member impact, no effect on no-replay flag | 🔵 S3 | S | SQL + exec 97071 | ⏸ next session |
 | **#111** | 🎯 Who-to-meet results swing with the model's free-text topic query (Aaron: q="Retail, PPC, Amazon Ads, Sourcing, AI Automation" → 7 matches; q="Amazon PPC, Retail & Wholesale, Credit Cards & Travel Hacks, AI & Automation, Sourcing & Suppliers" → 1) — matcher should use the asker's own ledger topics deterministically + alias-normalize free text (execs 97152 vs 97286, same day) | 🟡 S2 | S-M | exec diff | ⏸ next session (or fold into #102) |
-| **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 292 EXIT 0, 26 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
+| **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 292 EXIT 0, 26 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** · row re-verified against live 2026-09-09 and it is accurate: prod `15649d68` has no Finder — `member_finder`, `find_members` and the node name all return zero across the 92 nodes, and the only "finder" strings on prod are two code comments. — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
 | **#113** | 🔄 Summit event refresh — the whole event (activities, sessions, rooms, access, rosters) reloads from a GroupOS export, removals included | 🔴 S1 | M | ✅ LOADED 2026-08-23 from the 09:52Z scan: activities 50→86 · access edges 180→227 · grants 183→698 · full descriptions; idempotent; self-test 7/8 | ✅ CLOSED — live lane serves the new day one |
 | **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ route live (`9d0ec41`) · seed PROMOTED `bbd597b7` 2026-08-23 02:49 ET · prod probe Sunday/Monday + full day | ✅ CLOSED — Andy tested on WhatsApp 2026-08-23 (ET afternoon, Singapore already on the next day): correct |
 | **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🔵 S3 | S | — | ⏸ next session |
@@ -124,7 +124,7 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#161** | 🎴 MDS Personas — staff library of members (library v2 · character sheet · cohort) on the persona + 51-stat ledger, Claude Design handoffs v1 + v2 | 🟡 S2 | L | ✅ built + reviewed LOCALLY | ✅ **SHIPPED 2026-09-04 (Andy: "lets promote personas")** — merged to `main` in both repos, Render deploy `e212bcf` — 3 screens live on `localhost:3000/personas`, 7 read-only RPCs, 639/760 portraits in Storage, 758/758 blurbs, gate 323/0, 359 tests, `npm run build` exit 0; 13 tasks + 5 feedback rounds + final review wave on `personas-20260904` (both repos); merge to main = Render deploy |
 | **#163** | 🔢 Personas scoring review — what each number means (level · stat value · today/peak · rank), cohort floor 60 hides the tail, "peak floor applied", asks = gives overlap. Andy 2026-09-04: "the worst performer in each category never goes below 60" | 🔵 S3 | M | filed | 📝 filed 2026-09-04 (Andy: "file it, we will check these things later, the whole scoring system") — after #161 ships |
 | **#164** | 🎨 Admin storefront + seven self-contained tools — split the shared nav bar into a launcher plus per-tool navigation, merge the three WhatsApp pages into one tabbed tool (design handoff `~/Downloads/design_handoff_mds_admin/`) | 🟡 S2 | L | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 00:19** — `mds-digest-web` `main` = `cfb3350`, Render live 00:22; 7 admin routes answer, `/dashboard` unaffected, all 12 retired URLs redirect; 91 commits, 200 files, 882 tests, `next build` clean. Open items (not blocking) in that repo's `docs/ADMIN_OPEN_ITEMS.md` |
-| **#165** | 🃏 The Personas sheet does not explain itself — FOCUS / GIVES / ASKS carry no source, "In their words" is a model paraphrase, 11 silent categories hide in a grey footer, "Top 6" reads as a filter and is an expand control | 🟡 S2 | M | n/a (web — Render, no staging tier) | ✅ **BUILT on `165-personas-sheet-20260907` (`50c7a4a`), awaiting Andy's look before merge** — all 18 categories as rows, provenance on every block (`docs/PERSONAS_FIELD_PROVENANCE.md`), "In their words" gone, "Top 6" → "Open top 6"; found 1,016 detail stats across 503 members that were unreachable; Ryan Pace's Member 360 correctly empty (Stripe sync lag); 892 tests, `next build` exit 0; open call: bar marker at 70 vs "60 is strong" copy |
+| **#165** | 🃏 The Personas sheet does not explain itself — FOCUS / GIVES / ASKS carry no source, "In their words" is a model paraphrase, 11 silent categories hide in a grey footer, "Top 6" reads as a filter and is an expand control | 🟡 S2 | M | n/a (web — Render, no staging tier) | ✅ **SHIPPED — merged and live.** Verified live 2026-09-09: `mds-digest-web` main carries `18bac76` ("#165 self-reported vs observed tag on every persona line") and `https://digest.mds.co/api/version` returns `15700f2e`, a later commit on the same main. The "awaiting Andy's look before merge" note was stale. What shipped — all 18 categories as rows, provenance on every block (`docs/PERSONAS_FIELD_PROVENANCE.md`), "In their words" gone, "Top 6" → "Open top 6"; found 1,016 detail stats across 503 members that were unreachable; Ryan Pace's Member 360 correctly empty (Stripe sync lag); 892 tests, `next build` exit 0; open call: bar marker at 70 vs "60 is strong" copy |
 | **#166** | 🔲 Personas and Digest have no tool switcher — every other tool got the header grid button in #164; these two never render `ToolHeader` | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "166 is good, we can promote it")** — merge `b91f2a4`, confirmed live via `/api/version`; switcher in the Personas top bar and both Digest headers, `← All tools` link retired, 1–7 jumps with no storefront round trip; fixed on the way: dismiss layer shrunk to header height under `backdrop-filter`; 920 tests, `next build` exit 0; open call: two grid icons (switcher + Browse) in the Personas header |
 | **#167** | 🔟 Team pulse survey — the rating popup where every number but 10 runs away from your cursor; design pack approved on sight, logic (when to ask, where answers land) agreed | 🟡 S2 | M | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 (Andy: "if u r sure, lets promote")** — merge `41da9e7`, confirmed live via `/api/version` 02:14 local; once per person ever (wave `survey_key`), from the 2nd login after `SURVEY_STARTED_AT` 2026-09-07, card centred (`Popup align="center"`, opt-in), `?pulse=1` for `SURVEY_TESTER_EMAILS` only (default Andy), `is_test` rows excluded everywhere, Team pulse results popup on the storefront, Slack `#automation-tests`; 1047 tests, 22/22 mutations killed, e2e script 32/32, `next build` exit 0; table holds 6 rows, all Andy's tests. **Roster fix same night (Andy: "no, its only people who r using now, but we have team of 30"): M = `member_attributes.membership_status = 'Staff'` (30 rows), not the 17 `@mds.co` portal logins — merge `491a968`, live 02:24 local, storefront reads 0 OF 30.** **Second-day rule (Andy: "go"): merge `e2d933d`, live 12:42 local — asked on the 2nd distinct UTC day the person opens `/admin` since launch, visits recorded in new `digest.admin_survey_visits` (RLS on, service_role only), `member_sessions` no longer read; 1068 tests, e2e 45/45, mutation 4/4 classes killed** |
 | **#168** | 💬 Millie test chat back in the admin at a new address — `/admin/olivia/test` was retired by #164; component + API survived, only the page died | 🟡 S2 | S | n/a (web — Render, no staging tier) | ✅ **SHIPPED TO PROD 2026-09-07 13:20 local** — merge `48851e7`, confirmed via `/api/version`; `/admin/millie/chat` as a Chat tab in the Millie tool, `/admin/olivia/test` 307 → the chat (checked on prod), anon 307, API 403 anon / 200 staff; 1068 tests, `next build` exit 0; not restyled to the kit (legacy Tailwind look kept) |
@@ -272,6 +272,55 @@ A parser that is wrong is worse than no tool, because people will trust it. This
 3. A `status: 2` execution renders `degraded` and the tile text says warning, not failed.
 4. A unit test in `make.test.ts` covers all three codes.
 5. `tsc`, lint, tests and `next build` clean. Merge = Render deploy, verified on `/api/version`.
+
+
+#### ✅ #179 CLOSED 2026-09-09 — shipped `0fcb6df`, merged `6a31026`, live on Render
+
+**Story:** *As MDS staff, I want a red tile to mean something is actually broken, so that I do not learn to ignore the health alert.*
+
+**Root cause, from Make's own API reference rather than from the ticket.** Make grades a finished execution
+with a number: "1 is for success, 2 is for warning, and 3 is for error", and the execution-detail endpoint
+spells the same three out as SUCCESS / WARNING / ERROR. `make.ts` read that number as
+`Number(log.status) === 1 ? "success" : "error"`, and `classifyMakeTool()` turned `"error"` into `down`.
+Guest Multi-Event Alert (scenario `4676457`) has one execution in its whole life, `3f286739…` at
+2026-09-02T13:11:43Z, graded 2. Make's detail endpoint calls it `"WARNING"`. Verified live this session, both
+the numeric grade and the string.
+
+**The fix.** `makeRunStatus()` maps the grades Make documents, and a warning gets its own display state:
+amber, worded "warning" rather than "failed", counted as degraded rather than down. An unrecognised grade
+still reads as an error on purpose — Make also has a RUNNING state and may add more, and a false green hides
+a real failure, which is worse than a false red.
+
+**Before → after, the shipped code run against the live Make API, same data through both versions:**
+
+| | Guest Multi-Event Alert | other three Make tiles |
+|---|---|---|
+| before | `DOWN` · `✕ failed 7d ago` | Luma healthy · Slack→Luma healthy · Stripe syncs healthy |
+| after | `DEGRADED` · `⚠ warning 7d ago` | identical, byte for byte |
+
+**AC checklist:**
+1. Guest Multi-Event no longer `down`, scenario untouched — ✅ live run reads `DEGRADED`; nothing was changed in Make.
+2. A `status: 3` execution still renders `down` — ✅ unit test, and so does any grade we do not recognise.
+3. A `status: 2` renders `degraded` and says warning, not failed — ✅ live text is `⚠ warning 7d ago`.
+4. Unit test covering all three codes — ✅ `make.test.ts`, 13 tests, plus the unknown grade, the pipeline roll-up and the real Guest Multi-Event case.
+5. `tsc`, lint, tests, `next build` clean; merge = Render deploy verified on `/api/version` — ✅ 1270 tests pass, tsc/eslint/build exit 0, `/api/version` = `6a31026`.
+
+**⚠️ One thing I did NOT verify, stated plainly: the rendered dashboard tile.** `/tools-health` needs a
+member session and `GET /api/health/report?secret=…&dry=1` returns `{"error":"forbidden"}` — the stale
+`HEALTH_REPORT_SECRET` the 2026-09-09 triage already recorded. I did not sign in as Andy. What is proven is
+the shipped classifier against the live Make API, before and after, plus the deploy. **Andy or the next
+session should open `digest.mds.co/tools-health` once and confirm the tile is amber.** The stale secret is
+the chore already sitting in the #179 + #181 + #183 cluster.
+
+**Found alongside, NOT chased, no ticket filed yet — two repo traps:**
+- **`node_modules` is a broken symlink committed into `mds-digest-web`** (`0b932ce`, 2026-09-08, mode
+  120000, target `../../../node_modules` which resolves to `/node_modules`). `next build` dies on it with
+  "Symlink [project]/node_modules is invalid, it points out of the filesystem root", and a worktree created
+  *inside* the repo inherits it. Render is unaffected because its `npm install` replaces it. Workaround
+  that works: put the worktree OUTSIDE the repo, as the #178 session did — `/Users/Born/wt-179-make-warning`.
+- **Make's `pg[limit]` caps below 100 and fails silently.** `?pg[limit]=100` returns an empty
+  `scenarioLogs` array rather than an error; 50 returns 50. The health checker asks for 1, so it is
+  unaffected, but any future census code would read "no runs" and call a live scenario unknown.
 
 ### #180 · Millie's niche data has been frozen since 7 Sep — the nightly derive times out
 **🟡 S2 · size S-M — filed 2026-09-09 (health alert 13:15 UTC; Andy: "s2").** Runs on the Mac launchd job `com.mds.olivia.derivations`.
@@ -2374,6 +2423,58 @@ scope for "the team" but sit in the same subject position.
 **Spec (one Code node, first after `WA Inbound (POST)`, staging → promote):** compute `HMAC-SHA256(raw request body, META_APP_SECRET)`; compare constant-time to the `X-Hub-Signature-256` header (`sha256=<hex>`); mismatch/missing → return null (drop) + one Slack `Notify Team` line with the source IP; match → pass through unchanged. The app secret lives in n8n as a credential/env, never in node JS. Needs the RAW body (n8n webhook `rawBody` option) — verify the staging webhook node exposes it before writing the node. Probe: a crafted unsigned post (the exact T4/T5 probe technique) must now be dropped; a real member message must still flow; Meta's own deliveries carry the header (verify on a live event in `olivia_webhook_events` payload headers if persisted, else on the webhook node's input). Mitigation already shipped in #97: taps bind to the exact template wamid (`consent_wamid`), so a forged Accept without the real wamid does nothing.
 
 **Accept when:** unsigned probe dropped (execution shows the drop, zero downstream nodes) · real inbound unaffected (one live turn) · selftest/probe tooling updated to sign its crafted posts (or use a staging-only bypass secret — Andy's call) · gate GREEN · promote.
+
+
+#### ✅ #105 ENFORCING 2026-09-10 — a forged webhook post is refused before anything runs
+
+**Story:** *As the owner, every inbound the assistant acts on is provably from Meta — a forged webhook post is dropped before any node runs.*
+
+**The ticket's spec was wrong, and finding that out was most of the day.** It said "one Code node, first
+after `WA Inbound (POST)`". Meta does not post to n8n. Its callback URL is the relay at
+`digest.mds.co/api/olivia/webhook`, which forwards to n8n **without** the signature header — `OLIVIA_HANDBOOK.md`
+line 72 has said so since 2026-07-21. Built to spec, promoted to prod `021bb4b6`, and **rolled back within
+eight minutes**. Andy's own test message settled it: `user-agent: node`, forwarded via `74.220.48.55`, no
+`x-hub-signature-256`. A check anywhere downstream of the relay sees no signature on ANY real delivery and
+would refuse every member.
+
+**Where it lives now.** The relay verifies the raw bytes it already reads. The app secret is in **Supabase
+Vault**, the on-switch in an `olivia_alarm_config` row, both read through `digest.meta_webhook_config()` and
+cached 5 minutes — so rotating the secret or enforcing needs **no deploy** and puts no plaintext in Render.
+n8n could not hold it at all: `$env` and `$vars` read empty on this plan, `$secrets` is undefined, and the
+Variables page 404s.
+
+**Three stages, each pinned by a test.** No secret → forward. Secret, no enforce → verify, record, forward
+(**where we are**). Enforce → refuse, 403 never 502, because 502 asks Meta to retry and a forgery must not be.
+Enforcement is ignored without a secret, and an unreachable database degrades to "not configured" and forwards
+— a blip must never become every member refused.
+
+**AC checklist:**
+1. Unsigned probe dropped, zero downstream — ✅ **live**: an unsigned post to the relay returns **403** and is never forwarded to n8n.
+2. Real inbound unaffected — ✅ nothing is refused; a live relay post returned 200 and forwarded.
+3. Probe tooling signs — ✅ **moot**: the health ping and uptime probe post to n8n directly and never touch the relay.
+4. Gate GREEN — ✅ 346 checks, including the new `meta_signature.js` check.
+5. Promote — ✅ deployed `d5d6bff`, enforcement ON (`meta_webhook_enforce = '1'`, 2026-09-10 04:47Z).
+
+**How it was proven.** Andy sent one WhatsApp message; Meta's delivery and its status callbacks recorded
+**`ok` × 3** in `digest.meta_webhook_verdicts` — genuine Meta traffic verifying against the Vault secret. Only then
+was the switch flipped. An unsigned post to the relay now returns **403**. `missing_signature × 2` in the table is
+my own two test posts, nothing legitimate.
+
+**Rollback, no deploy:** `update digest.olivia_alarm_config set v = '0' where k = 'meta_webhook_enforce';` —
+effective within the 5-minute config cache. Watch `digest.meta_webhook_verdicts`: a rising `mismatch` or
+`missing_signature` alongside falling `ok` is the signal to flip it back.
+
+**Dead end, do not retry:** Meta will not self-trigger a delivery — `subscriptions_sample` is "Unknown path
+components" on v18/v19/v20/v21 even with an app token built inside Postgres.
+
+**Residual, deliberately not widened into this ticket.** The n8n webhook is still reachable directly — this
+closes Meta's front door, not the side door our own health ping uses. Closing it means a shared secret between
+relay and n8n. **Worth its own ticket.**
+
+**Artefacts:** `src/lib/meta-signature.ts` · `meta-webhook-config.ts` · the relay route, 21+7+4 tests written
+before the code · `scripts/olivia_loop/meta_signature.js` + gate check · `digest.meta_signature_ok()` ·
+`meta_webhook_config()` · `meta_webhook_record()` · `meta_webhook_verdicts`. Rollback point:
+`olivia_snapshots/prod_2026-09-10T032618Z_pre-promote.json`.
 
 ### #97 · Brokered intros — message the person she recommends
 

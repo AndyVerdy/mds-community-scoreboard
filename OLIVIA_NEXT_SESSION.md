@@ -11,6 +11,44 @@
 
 # Olivia — next session
 
+## STATE 2026-09-10 (close) — #179 SHIPPED · #105 SHIPPED and ENFORCING
+
+**#179 closed and live.** A Make WARNING (`status: 2`) was mapped to error, so "Guest Multi-Event Alert" had
+read DOWN since 2026-09-02 on its one and only execution, permanently, because the scenario is Airtable-triggered
+and no clean run was coming. Make's own reference says 1 success · 2 warning · 3 error. Shipped `0fcb6df`, merged
+`6a31026`, live on Render. Before/after on the same live data: `DOWN ✕ failed 7d ago` → `DEGRADED ⚠ warning 7d ago`,
+other three Make tiles byte-identical. **Not verified: the rendered tile** — `/tools-health` needs a session and
+`/api/health/report` 403s on the stale `HEALTH_REPORT_SECRET`. Open it once and confirm it is amber.
+
+**#105 is live at the relay and refusing nothing.** Read the board's #105 block before touching it. The ticket's
+spec pointed at n8n; **Meta posts to the relay** (`digest.mds.co/api/olivia/webhook`), which forwards to n8n
+without the signature header — handbook line 72, true since 2026-07-21. Built to spec, promoted to prod
+`021bb4b6`, **rolled back in eight minutes**; Andy's test message proved real traffic reaches n8n unsigned.
+Rebuilt at the relay: secret in **Supabase Vault**, switch in `olivia_alarm_config`, both via
+`digest.meta_webhook_config()`, cached 5 min — **no deploy needed to enforce or to rotate**.
+
+**ENFORCING since 2026-09-10 04:47Z.** Andy's message recorded `ok` × 3 (genuine Meta deliveries verifying),
+then the switch was flipped; an unsigned post to the relay now returns **403** and is never forwarded.
+**Watch `digest.meta_webhook_verdicts` for a day** — rising `mismatch`/`missing_signature` with falling `ok` means
+flip back: `update digest.olivia_alarm_config set v = '0' where k = 'meta_webhook_enforce';`, effective within the
+5-minute cache, no deploy.
+
+**Dead end, do not retry:** Meta will not self-trigger a delivery (`subscriptions_sample` = "Unknown path
+components" on v18-v21, even with an app token).
+
+**Live state.** prod n8n `12wj6h1TWqb0d4Dq` = `4cea7bc8` (92 nodes, the rolled-back graph **plus** `rawBody` on
+`WA Inbound`, harmless and now unused — remove it when convenient) · staging `6067cd65` still carries the
+**abandoned** 97-node n8n version of #105; **re-stage from prod before using staging for anything else** ·
+`mds-digest-web` main `d5d6bff` · gate 346 GREEN · lock free.
+
+**Open behind it:** ⚠️ **the app secret was pasted into chat — reset it in the Meta dashboard and update the Vault
+row** (`vault.update_secret`); the n8n webhook is still reachable directly, so this closes Meta's front door and
+not the side door our health ping uses — **worth its own ticket**, not a widening of #105.
+
+**Board drift fixed this session, four stale rows:** #97 (promoted 2026-08-22, not awaiting one), #165 (merged
+and live), #104 (shipped 2026-08-22), and the "#105 + #97" cluster line. Verify rows against live before trusting
+them.
+
 ## STATE 2026-09-09 (close) — triage + backlog session, NO code shipped · board re-evaluated · next = **#105 + #97 together**
 
 **Nothing was promoted, merged to a live service, or changed in the workflow this session.** Prod is still
@@ -20,15 +58,14 @@ priorities and evidence only. All of it is on branch `health-tickets-20260909`, 
 **Andy's word at close: "for the next one we are following your plan."** That plan is written into
 `OLIVIA_SPRINT_4.md` at the top, in the **🔗 WORK THESE TOGETHER** block. Read that block before picking anything up.
 
-**Start here — #105 + #97, together.** #97 brokered intros is BUILT and waiting only on Andy's promote. #105 says
+**Start here — #105.** ⚠️ Corrected 2026-09-09 against live: **#97 was already promoted on 2026-08-22** (`7e4be40a`) and the 7 intro nodes are on prod `15649d68` today — the "waiting on Andy's promote" line below was 18 days stale. The cluster is really #105 alone, and what waits on it is the wide intros ANNOUNCEMENT, not a promote. #105 says
 the WhatsApp webhook accepts any POST from anyone and never verifies `X-Hub-Signature-256`, and the board's own
 note is "BEFORE any wide intros announcement". Promoting and announcing intros while that endpoint is
 unauthenticated is the wrong order. Ship them as one piece.
 
 **The board after the 2026-09-09 re-evaluation.** 46 open — **S1 5 · S2 14 · S3 18 · S4 6 · standing 3** (was
 S1 7 · S2 26 · S3 4 · S4 5); 21 priorities changed. The bar is stated on the board: S1 = a member or member-facing
-surface is wrong today, or we are exposed. Three tickets are BUILT and awaiting Andy's promote, not work: **#97**
-(intros), **#108** (the Finder), **#165** (the Personas sheet).
+surface is wrong today, or we are exposed. ONE ticket is BUILT and awaiting Andy's promote: **#108** (the Finder). The board claimed three; two of those had already shipped and the rows were stale — corrected 2026-09-09 against live. **#97** was promoted 2026-08-22 (`7e4be40a`) and its 7 intro nodes are on prod `15649d68`. **#165** is merged into `mds-digest-web` main (`18bac76`) and live at `digest.mds.co` (`/api/version` = `15700f2e`).
 
 **8 tickets filed 2026-09-09** — #179 Make WARNING renders DOWN · #180 `derive_niches` times out, niches frozen
 since 07 Sep · #181 events cron (Sprint 5, blocked) · #182 `GROUPOS_PAT` (Sprint 5, blocked) · #183 storefront
