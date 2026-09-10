@@ -164,13 +164,39 @@ def anthropic(key, system, user, tries=3):
         if attempt < tries - 1:
             print(f"  anthropic retry {attempt + 1}/{tries - 1} after {last}")
             time.sleep(3 * (attempt + 1))
-    sys.exit(f"anthropic failed after {tries} tries: {last}")
+    # #180: was sys.exit, which threw away every batch already classified. The caller now
+    # commits what finished and reports the reason, so a wedged call costs one batch.
+    print(f"  anthropic failed after {tries} tries: {last}")
+    return None
+
+
+def writable_ids(all_ids, need_llm, batches_done, batch=BATCH):
+    """#180 — which members a cut-short run may safely write.
+
+    The write DELETES a member's rows before inserting the new ones, so committing the whole
+    dictionary after a partial run would replace the stated niches of every member whose batch
+    never ran with the thinner category-derived set. That is a silent downgrade, and worse than
+    the stale data this ticket is about.
+
+    Writable = everyone who never needed a model call, plus the members in the batches that
+    actually completed. Everyone else keeps what they already have.
+    """
+    queued = [mid for mid, _ in need_llm]
+    done = set(queued[:max(batches_done, 0) * batch])
+    never_needed = set(all_ids) - set(queued)
+    return never_needed | done
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int)
     ap.add_argument("--dry-run", action="store_true")
+    # #180: the real cause of the 2026-09-07..09 freeze was the Mac being ASLEEP at 04:30, not
+    # the work being too big — ten model calls, two and a half minutes awake. A sleeping machine
+    # still burns the wall clock, so bound the run by it and commit what finished rather than
+    # discarding three hours of work on the last call.
+    ap.add_argument("--budget-seconds", type=int, default=1500,
+                    help="stop starting new batches past this wall-clock age and commit what is done")
     a = ap.parse_args()
     env = load_env()
     sb, ak = env["SUPABASE_SECRET_KEY"], env["CENTURION_ANTHROPIC_API_KEY"]
@@ -217,10 +243,23 @@ def main():
               "Output ONLY minified JSON: "
               '{"m":[{"id":"<id>","niches":["<label>",...]}]} with one entry per id given.\n'
               "LIST: " + json.dumps(CANON))
+    t_start = time.time()
+    batches_done = 0
+    stopped = None
+    total_batches = (len(need_llm) + BATCH - 1) // BATCH
     for i in range(0, len(need_llm), BATCH):
+        elapsed = time.time() - t_start
+        if elapsed > a.budget_seconds:
+            stopped = (f"wall-clock budget {a.budget_seconds}s exceeded at {elapsed:.0f}s "
+                       f"after {batches_done}/{total_batches} batches")
+            print(f"  {stopped}")
+            break
         chunk = need_llm[i:i + BATCH]
         out = anthropic(ak, system,
                         json.dumps([{"id": mid, "niche": t[:120]} for mid, t in chunk]))
+        if out is None:
+            stopped = f"model call failed on batch {batches_done + 1}/{total_batches}"
+            break
         try:
             got = json.loads(out[out.index("{"):out.rindex("}") + 1])["m"]
         except Exception:
@@ -233,12 +272,21 @@ def main():
                 continue
             for niche in [n for n in (g.get("niches") or []) if n in CANON]:
                 derived[mid][niche] = ("main_niche", raw_by_id.get(mid, ""))
-        print(f"  batch {i//BATCH+1}/{(len(need_llm)+BATCH-1)//BATCH} classified")
+        batches_done += 1
+        print(f"  batch {batches_done}/{total_batches} classified")
 
     # 3) rebuild rows. is_primary = the Main-Niche-sourced value (Andy's precedence); when the
     #    member never gave one, no row is primary rather than guessing which category is "main".
+    # #180: a cut-short run writes ONLY the members it finished. Writing the rest would delete
+    # their stated niches and replace them with the thinner category-derived set.
+    writable = writable_ids(list(derived.keys()), need_llm, batches_done, BATCH)
+    if stopped:
+        print(f"PARTIAL: {stopped} — committing {len(writable)} of {len(derived)} members, "
+              f"leaving the rest untouched")
     payload = []
     for mid, got in derived.items():
+        if mid not in writable:
+            continue
         # is_main_niche = the member stated it themselves. Several can be true and they rank
         # equally; a member who never stated one simply has none flagged.
         for niche, (src, raw) in sorted(got.items()):
@@ -246,7 +294,7 @@ def main():
                             "is_main_niche": (src == "main_niche"),
                             "source": src, "raw_value": (raw or "")[:200]})
     print(f"writing {len(payload)} member-niche rows…")
-    ids = list(derived.keys())
+    ids = [mid for mid in derived if mid in writable]
     for i in range(0, len(ids), 200):          # clear then insert, so removals propagate
         batch = ",".join(f'"{x}"' for x in ids[i:i + 200])
         curl_json(f"{BASE}/member_niches?at_member_id=in.({batch})", sb, method="DELETE",
@@ -254,6 +302,10 @@ def main():
     for i in range(0, len(payload), 400):
         curl_json(f"{BASE}/member_niches", sb, method="POST", body=payload[i:i + 400],
                   headers=["Prefer: resolution=merge-duplicates,return=minimal"])
+    if stopped:
+        # Non-zero so the runner's heartbeat says error and the alarm still fires — the data is
+        # saved, but a run that did not finish must never look like a clean night.
+        sys.exit(f"partial run committed: {stopped}")
     print("done")
 
 
