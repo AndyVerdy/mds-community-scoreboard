@@ -100,6 +100,8 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | ✅ **CLOSED 2026-09-10** — cause was NOT the health checks: pins load from localStorage after mount. `pinLayout()`, 6 tests, live `588ef08`. |
 | **#189** | 🃏 The persona builder fails intermittently and cannot say why — 19 of 31 on 2026-09-09, reported only as "no valid JSON" | 🟡 S2 | S | n/a (launchd job) | ✅ **CLOSED 2026-09-10** — cause found and fixed: the answer parser broke on a stray brace after the JSON. 40/40 built, 0 failed. |
 | **#190** | 🧪 The nightly eval is at **9.5% FAIL** against Andy's **<1%** bar — 21 of 220 on 2026-09-09 | 🔴 S1 | M | n/a (report) | 📝 filed 2026-09-10, needs a session 🔎 **ANALYSED 2026-09-10** — two classes are **86%** of it (`false_denial` 10, `wrong_fact` 8 of 21), and **3 of the 21 are one known bug, #123**, proven: every denied answer was sitting in `events_catalog`. |
+| **#191** | 🧪 The nightly eval is DEAD since this morning — #105's webhook secret 403s all 220 posts, no report for 2026-09-10 | 🔴 S1 | XS | n/a (local job) | 📝 filed 2026-09-10 |
+| **#123** | 🗺️ `event_lookup` never reaches the events catalog — every `event_*` call is prefix-routed to the Summit schedule endpoint | 🟡 S2 | M | — | ⏸ ROOT CAUSE CONFIRMED 2026-09-10 on prod `22d81380` |
 | **#188** | 🩺 One tile, two writers — "Member profiles ← Airtable sync" reported the events catalog's staleness under the member-profiles name | ⚪ S4 | XS | n/a (app code) | ✅ **CLOSED 2026-09-10** — the worse half now names its writer; 5 tests, live `2208d78`. |
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🟡 S2 | M | — | — 🟡 **INVENTORY DONE 2026-09-10 → `RUNTIME_INVENTORY.md`**, plists copied to `ops/launchd/`. **Headline: 7 of 9 jobs are scheduled 02:15–05:40, inside the window the laptop spends asleep** — that one fact produced #180. Five jobs have no heartbeat at all. `mds-scorecard-tools` is not a git repo. The moves that remain need Andy. |
@@ -246,6 +248,43 @@ A parser that is wrong is worse than no tool, because people will trust it. This
 5. Ticket counts on the page match a manual count of the board on the same day — proven once, in writing.
 6. The page degrades honestly: if a source cannot be read, it says so rather than showing a shorter list.
 7. `tsc`, lint, tests and `next build` clean. Merge = Render deploy.
+
+### #191 · The nightly eval is dead — #105's webhook secret refuses all 220 posts
+**🔴 S1 · size XS — filed 2026-09-10 from the #123 investigation.**
+
+> **In plain words:** the nightly quality check stopped working this morning. It talks to Millie
+> through the WhatsApp webhook, and that door now demands a secret it does not send, so every
+> question is refused and there is no report for today.
+
+*As the owner, the nightly eval keeps telling me where answer quality is, including on the mornings
+after we harden something.*
+
+**Evidence, from the job's own log (`/Users/Born/mds-scorecard-tools/olivia_eval.log`).** The run
+that started `2026-09-10T08:30:05Z` fired 220 questions and logged **`[403]` NO REPLY in 120s on
+every one — 180 posts, 0 with `[200]`** before it gave up; no `# Olivia eval — 2026-09-10` header
+was ever written. The three previous runs (09-07, 09-08, 09-09) each logged **220 `[200]`** and
+produced a report, so this is new today.
+
+**Root cause.** #105 closed the n8n side door by putting header auth on the `WA Inbound (POST)`
+node — prod `22d81380` carries `"authentication": "headerAuth"` with the credential
+`Olivia Relay Secret` (`kKOzVnAzRFE0ZiVN`). The relay sends `X-Olivia-Relay: <relay_secret>`
+(`n8nWebhookHeaders()` in `mds-digest-web/src/lib/meta-webhook-config.ts`), read from Supabase Vault
+via `digest.meta_webhook_config()`, which returns `secret, enforce, relay_secret` with
+`relay_secret` set and `enforce = true`. `olivia_eval.py` line 93 curls the live webhook with
+`Content-Type` and nothing else. No header, no entry.
+
+**Shape of the fix.** The eval sends the same header the relay sends, reading `relay_secret` from
+`digest.meta_webhook_config()` at run start rather than holding a copy — so a rotation cannot
+break it. The same one-line gap exists in any other local script that posts to the live webhook;
+sweep for them (`olivia_selftest.py` is the first suspect) in the same pass. #105 stays as it is.
+
+**Accept when:**
+1. A nightly run posts 220 questions with `[200]`, not `[403]`, and writes its report.
+2. The secret is read at run time from `meta_webhook_config()`, never pasted into the script.
+3. Every other local script that posts to `olivia-wa-live` is checked in the same pass, and the
+   ones that were broken are fixed or named as deliberately dead.
+4. A 403 from the webhook makes the run FAIL LOUDLY — a Slack line — instead of a silent
+   no-report morning.
 
 ### #184 · Part 1 — take Tony's post and the two partner profiles out of Millie's reach, now
 **🔴 S1 · size S — filed 2026-09-09 · CU [`86e35hm1p` — Response to Joe Nilsen (MajestIQ)](https://app.clickup.com/t/86e35hm1p) (Eugene Khayman → Andy).** Part 2 is #185.
