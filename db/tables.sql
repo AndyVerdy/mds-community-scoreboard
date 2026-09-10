@@ -359,6 +359,7 @@ CREATE UNIQUE INDEX fb_comments_pkey ON digest.fb_comments USING btree (comment_
 --   tags                               jsonb
 --   run_at                             timestamp with time zone
 --   rewrites                           integer not null default 0
+--   draft_history                      jsonb not null default '[]'::jsonb
 alter table digest.fb_group_posts add constraint fb_group_posts_pkey PRIMARY KEY (story_key);
 alter table digest.fb_group_posts add constraint fb_group_posts_status_chk CHECK ((status = ANY (ARRAY['draft'::text, 'offered'::text, 'posted'::text, 'rejected'::text, 'skipped'::text, 'blocked'::text])));
 CREATE INDEX fb_group_posts_created_idx ON digest.fb_group_posts USING btree (created_at DESC);
