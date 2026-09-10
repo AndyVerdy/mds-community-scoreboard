@@ -26,11 +26,9 @@ measurement half became #187.
 1. ~~Reset the Meta app secret.~~ **ANDY'S RULING 2026-09-10: "secret stays".** Not rotating. The value is in the
    chat transcript and in Vault; it is not in the repo. **Do not raise this again** — if it is ever rotated, the
    Vault row needs `vault.update_secret` on `META_APP_SECRET` in the same minutes or the signature check fails.
-2. **`sudo pmset repeat wakeorpoweron MTWRFSU 04:25:00`** — ⚠️ **still not in effect as of 2026-09-10 morning.**
-   Andy said it was done; `pmset -g sched` shows no *Repeating power events* section, only calendar/analytics
-   alarms, which is what it looks like when the command ran without `sudo`. **Verify by looking for that heading**,
-   not by the command exiting quietly. Without it #180 refreezes the next night the lid is shut. Moving these jobs
-   off the laptop is **#64**.
+2. ~~`sudo pmset repeat …`~~ **✅ DONE 2026-09-10, verified live:** `Repeating power events: wakepoweron at
+   4:25AM every day`. The machine now wakes five minutes before the 04:30 job, so **#180's root cause is closed**.
+   Moving these jobs off the laptop remains the durable answer (**#64**).
 
 **✅ `mds-scorecard-tools` is now a git repository** (2026-09-10, his call) — 59 source files, 1.3MB, deny-by-default
 ignores, no credentials in history. **Local only: no remote**, so revert exists but a second machine does not.
