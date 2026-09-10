@@ -23,6 +23,8 @@ near/like · destination · traits/audience · self/chats · gates-must-refuse-h
 import argparse
 import json
 import subprocess
+
+from olivia_relay import webhook_curl_headers
 import sys
 import time
 
@@ -99,8 +101,9 @@ def fire(text, tag):
         "messages": [{"from": PROBE_PHONE, "id": f"{MARK}_{tag}_{ts}",
                       "timestamp": str(ts), "type": "text", "text": {"body": text}}]},
         "field": "messages"}]}]}
-    p = subprocess.run(["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", TARGET_WEBHOOK,
-                        "-H", "Content-Type: application/json", "-d", json.dumps(payload)],
+    # #191: the webhook door has header auth since #105 — no header, flat 403.
+    p = subprocess.run(["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", TARGET_WEBHOOK]
+                       + webhook_curl_headers() + ["-d", json.dumps(payload)],
                        capture_output=True, text=True)
     return p.stdout
 

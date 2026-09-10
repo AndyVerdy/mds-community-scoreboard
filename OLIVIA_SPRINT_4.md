@@ -100,6 +100,8 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | ✅ **CLOSED 2026-09-10** — cause was NOT the health checks: pins load from localStorage after mount. `pinLayout()`, 6 tests, live `588ef08`. |
 | **#189** | 🃏 The persona builder fails intermittently and cannot say why — 19 of 31 on 2026-09-09, reported only as "no valid JSON" | 🟡 S2 | S | n/a (launchd job) | ✅ **CLOSED 2026-09-10** — cause found and fixed: the answer parser broke on a stray brace after the JSON. 40/40 built, 0 failed. |
 | **#190** | 🧪 The nightly eval is at **9.5% FAIL** against Andy's **<1%** bar — 21 of 220 on 2026-09-09 | 🔴 S1 | M | n/a (report) | 📝 filed 2026-09-10, needs a session 🔎 **ANALYSED 2026-09-10** — two classes are **86%** of it (`false_denial` 10, `wrong_fact` 8 of 21), and **3 of the 21 are one known bug, #123**, proven: every denied answer was sitting in `events_catalog`. |
+| **#191** | 🧪 The nightly eval is DEAD since this morning — #105's webhook secret 403s all 220 posts, no report for 2026-09-10 | 🔴 S1 | XS | n/a (local job) | ✅ **CLOSED 2026-09-10** — 25/25 posts `200` on the live webhook; 4 scripts fixed, a refused door now aborts loudly |
+| **#123** | 🗺️ `event_lookup` never reaches the events catalog — every `event_*` call is prefix-routed to the Summit schedule endpoint | 🟡 S2 | M | ✅ proven `9d91109e` | ✅ **LIVE `b4db92d0`** (promoted 2026-09-10 17:56Z by Andy) — prod probe 68019, gate 346 EXIT 0 |
 | **#188** | 🩺 One tile, two writers — "Member profiles ← Airtable sync" reported the events catalog's staleness under the member-profiles name | ⚪ S4 | XS | n/a (app code) | ✅ **CLOSED 2026-09-10** — the worse half now names its writer; 5 tests, live `2208d78`. |
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
 | **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🟡 S2 | M | — | — 🟡 **INVENTORY DONE 2026-09-10 → `RUNTIME_INVENTORY.md`**, plists copied to `ops/launchd/`. **Headline: 7 of 9 jobs are scheduled 02:15–05:40, inside the window the laptop spends asleep** — that one fact produced #180. Five jobs have no heartbeat at all. `mds-scorecard-tools` is not a git repo. The moves that remain need Andy. |
@@ -246,6 +248,65 @@ A parser that is wrong is worse than no tool, because people will trust it. This
 5. Ticket counts on the page match a manual count of the board on the same day — proven once, in writing.
 6. The page degrades honestly: if a source cannot be read, it says so rather than showing a shorter list.
 7. `tsc`, lint, tests and `next build` clean. Merge = Render deploy.
+
+### #191 · The nightly eval is dead — #105's webhook secret refuses all 220 posts
+**🔴 S1 · size XS — filed 2026-09-10 from the #123 investigation.**
+
+> **In plain words:** the nightly quality check stopped working this morning. It talks to Millie
+> through the WhatsApp webhook, and that door now demands a secret it does not send, so every
+> question is refused and there is no report for today.
+
+*As the owner, the nightly eval keeps telling me where answer quality is, including on the mornings
+after we harden something.*
+
+**Evidence, from the job's own log (`/Users/Born/mds-scorecard-tools/olivia_eval.log`).** The run
+that started `2026-09-10T08:30:05Z` fired 220 questions and logged **`[403]` NO REPLY in 120s on
+every one — 180 posts, 0 with `[200]`** before it gave up; no `# Olivia eval — 2026-09-10` header
+was ever written. The three previous runs (09-07, 09-08, 09-09) each logged **220 `[200]`** and
+produced a report, so this is new today.
+
+**Root cause.** #105 closed the n8n side door by putting header auth on the `WA Inbound (POST)`
+node — prod `22d81380` carries `"authentication": "headerAuth"` with the credential
+`Olivia Relay Secret` (`kKOzVnAzRFE0ZiVN`). The relay sends `X-Olivia-Relay: <relay_secret>`
+(`n8nWebhookHeaders()` in `mds-digest-web/src/lib/meta-webhook-config.ts`), read from Supabase Vault
+via `digest.meta_webhook_config()`, which returns `secret, enforce, relay_secret` with
+`relay_secret` set and `enforce = true`. `olivia_eval.py` line 93 curls the live webhook with
+`Content-Type` and nothing else. No header, no entry.
+
+**Shape of the fix.** The eval sends the same header the relay sends, reading `relay_secret` from
+`digest.meta_webhook_config()` at run start rather than holding a copy — so a rotation cannot
+break it. The same one-line gap exists in any other local script that posts to the live webhook;
+sweep for them (`olivia_selftest.py` is the first suspect) in the same pass. #105 stays as it is.
+
+**Accept when:**
+1. A nightly run posts 220 questions with `[200]`, not `[403]`, and writes its report.
+2. The secret is read at run time from `meta_webhook_config()`, never pasted into the script.
+3. Every other local script that posts to `olivia-wa-live` is checked in the same pass, and the
+   ones that were broken are fixed or named as deliberately dead.
+4. A 403 from the webhook makes the run FAIL LOUDLY — a Slack line — instead of a silent
+   no-report morning.
+
+#### ✅ CLOSED 2026-09-10 — the eval talks to Millie again, and a closed door can no longer be silent
+**The fix:** `scripts/olivia_relay.py` is the single place that knows the door — it reads `relay_secret`
+from the Vault-backed `digest.meta_webhook_config()` at call time and returns the curl args, so rotating
+the secret cannot break the tools again. `olivia_eval.py` carries the same helper (it lives in the other
+repo), and `smoke_manual_suite.py` imports it. Prod and staging share the `Olivia Relay Secret`
+credential, so one header covers both targets. #105 was not touched.
+
+| AC | result |
+|---|---|
+| a run posts its questions with `200`, not `403`, and writes its report | ✅ **25/25 `200`** on the live webhook, every one answered (`--fire --limit 25`, 2026-09-10 17:36Z). The full 220-question report is tonight's nightly at 03:30 — the harness is proven, the report itself is not yet written |
+| the secret is read at run time, never pasted into a script | ✅ `meta_webhook_config()` per run; no secret in either repo |
+| every other local script that posts to `olivia-wa-live` is checked in the same pass | ✅ four found, three were broken the same way and are fixed: `olivia_eval.py`, `olivia_selftest.py`, `olivia_reaction_canary.py`, `smoke_manual_suite.py`. `olivia_wf.py` only names webhook paths, it never posts |
+| a 403 makes the run fail loudly instead of a silent no-report morning | ✅ three refusals in a row abort with a Slack line and exit code 2 |
+
+**Before → after:** the 2026-09-10 08:30:05Z run logged **180 posts, every one `403`, zero answers, no
+report**. The same path now answers: 25 of 25, 6.6-19s each. The three runs before the outage each logged
+220 × `200`, which is what made this new rather than chronic.
+
+**Found while sweeping, not fixed:** the spend ledger recorded **$6.71 for the dead run** — the preflight
+books the spend before a single answer comes back, so an outage still spends the daily cap on paper. Not
+filed; it costs nothing real and the cap is generous.
 
 ### #184 · Part 1 — take Tony's post and the two partner profiles out of Millie's reach, now
 **🔴 S1 · size S — filed 2026-09-09 · CU [`86e35hm1p` — Response to Joe Nilsen (MajestIQ)](https://app.clickup.com/t/86e35hm1p) (Eugene Khayman → Andy).** Part 2 is #185.
@@ -4398,6 +4459,51 @@ in the answer, so the wrong label is contained — but it is one prompt away fro
 event's catalog row shows a correct start and a live registration link (no "already happened") · A4071
 still passes for the right reason, from the right source · a side event asked about by name answers from
 the catalog with its own RSVP link · `event_history` reaches its RPC too · gate EXIT 0.
+
+#### ✅ CLOSED 2026-09-10 — LIVE on prod `b4db92d0` (promoted 17:56Z, snapshot `prod_2026-09-10T175648Z_123-event-catalog-routing.json`)
+**The fix:** `Answer Tool` routed by `String($json.tool_name||'').startsWith('event_')`, so all four event
+tools landed on `https://digest.mds.co/api/olivia/schedule`. That route parses only
+op/phone/q/at/event_id/lead/in_minutes — **`p_terms` is dropped** — and always loads
+`events?order=starts_at.desc&limit=1` from the `event` schema, which today is the single row **MDS Summit
+Singapore, ended 2026-08-26**. Every event question therefore got an over-event's agenda. Now the two
+schedule-backed tools are named explicitly (`event_schedule`, `event_who`) and the two catalog tools fall
+through to PostgREST, where `Attach Embedding`'s `EXEC_NAME` has always renamed them
+(`event_lookup → event_lookup_v3`, `event_history → event_history_v2`); both are granted to `service_role`,
+and `Answer Parse` already injects `p_phone`, so the RPC path needed nothing else.
+`scripts/olivia_loop/apply_123_event_catalog_routing.py` (`--dry-run DIR` first), staging `9d91109e`.
+An offline check of the patched expression routes all 8 tool names correctly.
+
+**Fold-in, and it is LIVE now, not staged:** `digest.event_lookup` printed `(time as listed: 18:30 UTC)`
+for rows with no `app_starts_at`, and the routing fix put that in a member answer as "6:30 PM UTC" for a
+Miami evening event. The catalog stores the **listed clock time**, not a UTC instant, and only 19 of 1,455
+rows carry `app_timezone`, so the honest fix is to claim no zone: `(time as listed: 18:30)`. Applied with
+`CREATE OR REPLACE` (the ACL stays); a shared function is live on prod the moment it is applied, so this
+half is already in front of members. Rollback is the inverse one-token replace.
+
+| AC | result |
+|---|---|
+| an `event_lookup` call reaches the catalog RPC and returns catalog rows | ✅ staging turns 67946/67947 and the two before it — 3/3 of #190's EVENT failures now answered |
+| the running event's catalog row shows a correct start and a live registration link (no "already happened") | ✅ "MDS Ecom Founder Dinner at Accelerate 2026" → Tue Sep 22 2026, 7:00 PM, Seattle, 32 spots left, member RSVP + guest luma link |
+| A4071 still passes for the right reason, from the right source | ⚠️ **not testable as written** — A4071 is not in the live bank (`eval_bank_v2.json`). Its live equivalent is **2035** "What city is the MDS Summit being held in?", which now answers **MDS Summit Cancun 2027, Cancun, Mexico, Sep 26 2027** from the catalog. Correct today, since Singapore is past — but if the bank's stored truth still says Singapore, the judge will mark it FAIL. **Bank truth needs a look, the routing does not.** |
+| a side event asked about by name answers from the catalog with its own RSVP link | ✅ same Accelerate dinner answer, both links |
+| `event_history` reaches its RPC too | ✅ "what events am i registered for?" → the asker's own 4 past events, no upcoming, from `event_history_v2` |
+| gate EXIT 0 | ✅ `scripts/olivia_leak_gate.py` — **346 checks, 0 FAIL, exit 0** (exit code read directly, not through `tail`) |
+
+**Before → after** on the three EVENT failures from the 2026-09-09 eval:
+
+| question | before (17:35Z) | after (17:40Z+) |
+|---|---|---|
+| what time does the SoFlo Chapter TikTok Tour Afterparty start | *"I'm not finding a 'SoFlo Chapter TikTok Tour Afterparty' on file anywhere"* | *"it took place Thursday, November 13, 2025 at 6:30 PM, in Miami, as part of the SoFlo Chapter"* |
+| what type of event is the TikTok Shop (Verified Sellers) Channel Meetup | denied | *"was a virtual event — Thursday, November 7, 2024"* |
+| where is the Billion Dollar Seller Summit Recommended Event | denied | *"held in Kaua'i, Hawaii — a past event, from Saturday, May 18, 2024"* plus its event page |
+
+**Re-verified on prod after the promote (not on staging).** Turn 68019: *"The SoFlo Chapter TikTok Tour Afterparty already happened — it was Thu, Nov 13, 2025, listed at 6:30 PM, in Miami"* — the catalog row, and the zone claim gone with it. Second lane: *"The TikTok Shop (Verified Sellers) Channel Meetup was a Virtual event — Thu, Nov 7, 2024"* with its listing link. Gate re-run against prod: **346 checks, 0 FAIL, exit 0**.
+
+**Left alone deliberately:** `Answer Merge` still carries the A4077 workaround that detects a schedule-shaped
+payload coming back from an `event_lookup*` call and tells Millie not to narrate the mismatch. With routing
+fixed it never fires; it stays as the tripwire if anyone re-broadens that route. The duplicate `event_lookup`
+key in `Attach Embedding`'s `EXEC_NAME` literal (v2 then v3, last one wins) is untouched — it is confusing
+but correct, and #123 is not the place to re-open that node.
 
 ### #113 · Summit event refresh — reload the whole event from a GroupOS export, removals included
 **🔴 S1 · size M — filed + built + loaded 2026-08-23.**

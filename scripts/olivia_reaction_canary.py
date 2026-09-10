@@ -22,6 +22,8 @@ Exit 0 = both rows landed (or cleanup done) · exit 1 = a layer is dropping reac
 """
 import json
 import subprocess
+
+from olivia_relay import webhook_curl_headers
 import sys
 import time
 
@@ -79,8 +81,9 @@ def main():
                       "type": "reaction",
                       "reaction": {"message_id": target, "emoji": "\U0001f44d"}}]},
         "field": "messages"}]}]}
-    p = subprocess.run(["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", target_webhook,
-                        "-H", "Content-Type: application/json", "-d", json.dumps(payload)],
+    # #191: the webhook door has header auth since #105 — no header, flat 403.
+    p = subprocess.run(["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", target_webhook]
+                       + webhook_curl_headers() + ["-d", json.dumps(payload)],
                        capture_output=True, text=True)
     print(f"webhook {target_webhook.rsplit('/', 1)[1]}: HTTP {p.stdout}")
     if p.stdout != "200":
