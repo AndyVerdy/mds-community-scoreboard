@@ -46,6 +46,46 @@ wrong right now · **S3** = worth doing, no pressure, or blocked on someone else
 the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, which is a decision not a ticket (#157).
 
 
+
+## 🌙 OVERNIGHT TRIAGE 2026-09-10 — where the other tickets actually stand
+
+Worked through the open list rather than only the ones I closed. **Nine closed** (#179 #105 #180 #183 #148 #115
+#117 #187 #188), **#152 verified as already-fixed drift**, **#72 retired**, and the rest sorted below with what is
+actually true today rather than what the row said.
+
+**⛔ BLOCKED ON ANDY — nothing moves without these, and each is minutes of his time**
+| # | the exact ask |
+|---|---|
+| **#181** | GitHub PAT with `actions:write`. Its symptom is live right now: the events catalog ~2h behind an hourly schedule is the amber tile on the health report. |
+| **#182**, **#17** | One GroupOS PAT unblocks both. |
+| **#184**, **#185** | Eugene's ruling on whether members' own posts are in scope, not just the two partner profiles. |
+| **#36** | Circleback details. |
+| **#157** | The Sonnet 5 vs GPT-5.6 vendor call — a decision, not a ticket. |
+| **#32** | Rides the Big Smoke and reports to Pavel; Andy sends. |
+
+**⚖️ NEEDS A PRODUCT RULING BEFORE ANY CODE — verified, not guessed**
+- **#71** — re-probed tonight, still contradicting (above). What counts as a "call" spans two catalogs.
+- **#118** — a plain "who is coming" returns a ranked, personalised subset. Touching it moves the **name-disclosure**
+  rules Andy and Eugene set in #96, so it is not a solo change.
+- **#148's lane-skipping** — refusing stale mirror rows changes **who Millie will answer**; a wrong threshold
+  refuses real members. The rest of #148 shipped.
+
+**🔎 RE-SCOPE BEFORE WORKING — the premise changed**
+- **#74** — see the row: mostly non-members by design, and matching does not work (above).
+- **#72** — RETIRED tonight; its measurement half is #187, closed.
+
+**🧱 REAL WORK, NO BLOCKER, JUST SIZE** — #172 (L, team chat) · #170 (thread memory) · #173 (source trail) ·
+#177 (Public answer under-names) · #116 → #111/#118 (the Finder retires the lanes they patch — confirm the overlap
+first or the work is thrown away) · #68 → #66 → #73 (one forms epic) · #64 (runtime inventory — **tonight proved
+why it matters**) · #158 (FKs) · #102 · #92 · #119 (Bank B) · #186 (roadmap, peer-owned).
+
+**🪫 LOW VALUE / STALE FRAMING** — #14, #19, #34, #35, #48, #67 are bare rows with no story, no ACs and no recent
+evidence. Worth a sweep with Andy to decide which still matter rather than carrying them.
+
+**⚠️ Two things that will bite if left:** the Meta app secret is in a chat transcript and needs rotating, and
+`derive_niches` refreezes on the next night the laptop lid is shut (`sudo pmset repeat wakeorpoweron MTWRFSU
+04:25:00`).
+
 ## 📋 At a glance
 
 | # | Ticket | Priority | Size | Staging | Prod |
@@ -96,9 +136,9 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#119** | 🧪 Bank B — a second eval bank for everything built since the 100-question bank was frozen (2026-08-16): schedule + venue-day, Summit registration & who-to-meet, intros, 2025-26 transcripts/quotes, speakers, offer binding, the finder — ORGANIC questions only (real member asks from `olivia_messages` since 08-16), `expect` from the tickets' ACs/rulings, sized by the questions not padded; runner gets `--bank`; first staging run scored against the tickets' truth | 🔵 S3 | M | ticket ACs + `olivia_question_labels` | 🔨 building 2026-08-23 (Andy: "file #119, do it while bank A runs") |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🔵 S3 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🔵 S3 | M | — | — |
-| **#74** | Identity: 51% of form submissions belong to nobody | 🔵 S3 | M | — | — |
+| **#74** | Identity: 51% of form submissions belong to nobody | 🔵 S3 | M | — | — 🔎 **RE-VERIFIED 2026-09-10, and the premise is mostly a category error.** 58.2% orphaned now (8,011 of 13,759), not 51% — but the 100%-orphan forms are *MDS Inspire 2024/2025*, *Best in Show* and raw public form ids, filled by **non-members**, and *Start your MDS journey* is the application form, 65% orphan **by definition**. Matching them up does not work either: only **108 of 8,011** are claimable via the alias resolver and **76 of those matches are ambiguous** (one email, several members). Re-scope before working. |
 | **#17** | Auto-refresh videos and partners | 🔵 S3 | M | — | — |
-| **#71** | "Virtual event" vs "call" vs "recording" — two contradicting "latest" answers | 🟡 S2 | M | — | — |
+| **#71** | "Virtual event" vs "call" vs "recording" — two contradicting "latest" answers | 🟡 S2 | M | — | — 🔎 **RE-VERIFIED 2026-09-10, still real.** Two silent probes, same minute: *"latest MDS virtual event"* → **MDS 9 Call, 14 Aug 2026** (events catalog); *"most recent MDS call"* → **a recording published 2 Sep 2026** (video library). Two sources, two "latest", three weeks apart, both plausible to a member. **Needs Andy's ruling on what "call" means across the two catalogs** before it can be fixed. |
 | **#48** | AT roster write-back | ⚪ S4 | S-M | — | — |
 | **#19** | Privacy: share, keep, delete | ⚪ S4 | M | — | — |
 | **#35** | New data source — DOCUMENTS (GroupOS) | ⚪ S4 | M | — | — |
