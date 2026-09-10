@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>OLIVIA_EVAL_DAILY_CAP</key>
+		<string>15</string>
+		<key>OLIVIA_EVAL_SLACK</key>
+		<string>1</string>
+	</dict>
+	<key>Label</key>
+	<string>com.mds.olivia-eval</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/bin/python3</string>
+		<string>/Users/Born/mds-scorecard-tools/olivia_eval.py</string>
+		<string>--nightly</string>
+	</array>
+	<key>StandardErrorPath</key>
+	<string>/Users/Born/mds-scorecard-tools/olivia_eval.log</string>
+	<key>StandardOutPath</key>
+	<string>/Users/Born/mds-scorecard-tools/olivia_eval.log</string>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>3</integer>
+		<key>Minute</key>
+		<integer>30</integer>
+	</dict>
+	<key>WorkingDirectory</key>
+	<string>/Users/Born/mds-scorecard-tools</string>
+</dict>
+</plist>

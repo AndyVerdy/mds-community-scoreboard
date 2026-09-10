@@ -35,7 +35,7 @@ wrong right now · **S3** = worth doing, no pressure, or blocked on someone else
 |---|---|
 | **#105** *(alone — was "#105 + #97", corrected 2026-09-09)* | #97 needs no promote: it shipped 2026-08-22 (`7e4be40a`) and its seven intro nodes are on prod `15649d68`, verified live. So the pairing was built on a stale row. #105 stands on its own as the engineering: the WhatsApp webhook still accepts any POST from anyone and never verifies `X-Hub-Signature-256`. What waits on it is Andy's wide intros ANNOUNCEMENT, not a promote. Note the exposure is narrower than the old row implied — a forged intro Accept is already inert, because taps bind to the exact template `consent_wamid`; the real hole is unsigned inbound in general. |
 | **#180 + #64** | `derive_niches` is one of the eight launchd plists that exist only on Andy's Mac and in no repo. Fixing #180 alone fixes one of eight. |
-| **#116 before #111 / #118** | Finder phase 2-3 retires `member_match` / `member_count` / the schedule matcher — the very lanes #111 and #118 patch. Confirm the overlap or the work is thrown away. |
+| **#116 before #111 / #118** | ✅ **OVERLAP CONFIRMED 2026-09-10, and it is DEFERRED, not immediate.** The finder spec names retiring `member_match` / `member_count` / `event_who` as an explicit **phase-1 NON-GOAL** (§ "Non-goals (phase 1)"), and puts retirement in phase 2-3 — i.e. **#116**, which is size **L** with no plan and no date. So **#108 does not throw #111 or #118 away**; #116 eventually will. Decide on that basis: patch them now and accept the rework when #116 lands, or schedule #116 first and skip both. |
 | **#182 + #17** | One GroupOS PAT unblocks both; #17 is "stop pulling videos and partners by hand", so #182 alone means pulling by hand again next week. |
 | **#184 → #185** | A hand edit for #184 reverts at the next re-embed — exactly what #185 exists to prevent. Build the smallest real mechanism, then apply it to the three keys. |
 | **#68 → #66 → #73 (+ #74, #67)** | One forms epic: #66's mapping was split out to #68, #67 depends on #66, #73 needs the mapping, #74's orphans only matter once forms are wired. |
@@ -98,9 +98,11 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#181** | 🅿️ **SPRINT 5** · Events catalog hourly on paper, four-hourly in fact — 9 of 13 intervals in the down band, 14/14 runs green | 🔵 S3 | S | n/a (GH Action) | ⛔ blocked: GitHub PAT `actions:write` (Andy) |
 | **#182** | 🅿️ **SPRINT 5** · Five days of recordings invisible to Millie — `zoom_weekly` runs on time but skips videos, no `GROUPOS_PAT` | 🟡 S2 | S | n/a (weekly job) | ⛔ blocked: GroupOS PAT (Andy) |
 | **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | ✅ **CLOSED 2026-09-10** — cause was NOT the health checks: pins load from localStorage after mount. `pinLayout()`, 6 tests, live `588ef08`. |
+| **#189** | 🃏 The persona builder fails intermittently and cannot say why — 19 of 31 on 2026-09-09, reported only as "no valid JSON" | 🟡 S2 | S | n/a (launchd job) | ✅ **CLOSED 2026-09-10** — cause found and fixed: the answer parser broke on a stray brace after the JSON. 40/40 built, 0 failed. |
+| **#190** | 🧪 The nightly eval is at **9.5% FAIL** against Andy's **<1%** bar — 21 of 220 on 2026-09-09 | 🔴 S1 | M | n/a (report) | 📝 filed 2026-09-10, needs a session |
 | **#188** | 🩺 One tile, two writers — "Member profiles ← Airtable sync" reported the events catalog's staleness under the member-profiles name | ⚪ S4 | XS | n/a (app code) | ✅ **CLOSED 2026-09-10** — the worse half now names its writer; 5 tests, live `2208d78`. |
 | **#61** | 🏗️ Schema audit: tables with no declared connections *(research + orphan audit + COMMENTs SHIPPED 2026-08-12; FK-constraint follow-up filed)* | 🔴 S1 | M | n/a (SQL) | ✅ audit shipped |
-| **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🟡 S2 | M | — | — |
+| **#64** | 🏗️ Runtime inventory: where every job runs — failure mode is silence | 🟡 S2 | M | — | — 🟡 **INVENTORY DONE 2026-09-10 → `RUNTIME_INVENTORY.md`**, plists copied to `ops/launchd/`. **Headline: 7 of 9 jobs are scheduled 02:15–05:40, inside the window the laptop spends asleep** — that one fact produced #180. Five jobs have no heartbeat at all. `mds-scorecard-tools` is not a git repo. The moves that remain need Andy. |
 | **#158** | 🏗️ Foreign keys on what we own + nightly orphan check *(the #61 follow-up; external architecture review 2026-09-02)* | 🔵 S3 | M | n/a (SQL) | — |
 | **#66** | Forms warehouse: 4 remaining gaps (validation · refresh · units · lag) | 🔵 S3 | M | — | — |
 | **#100** | 🔑 Identity aliases — one member, all their known emails | 🔴 S1 | M | n/a (SQL) | ✅ **CLOSED 2026-08-20** — 5,763 aliases, resolver live, 12/12 verify, gate 0 |
@@ -125,14 +127,14 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#107** | 🗣️ Millie-only self-name (Format Reply PS still says Olivia) + who-to-meet ends with "connect you with one of them?" Yes/No buttons → Yes = intro picker (Andy 2026-08-22: "Millie and only Millie — official name"; "ask if he would like to connect… if yes provide a list") | 🔴 S1 | S-M | — | ✅ **PROMOTED 2026-08-22 ~05:24Z (Andy) — prod `8f48fdb8`**: Millie PS (prepended when button-eligible) · who-to-meet ends with the exact offer + Yes/No buttons (96779) · Yes → member_intro, no plan replay (review caught the 500-char-trim defeat → `last_olivia_intro_offer` flag, proven 96864) · non-attendee no offer (96787) · gate 267 EXIT 0 |
 | **#109** | 📨 Requester-side intro notices must be TEMPLATES (accept / decline / 7-day lapse) — free-form text dies outside the 24h window (Meta 131047); found 2026-08-22 when Andy questioned the lapse promise | 🔴 S1 | S-M | n/a (route — no staging tier) | ✅ **SHIPPED 2026-09-01** `cae87c1` — `src/lib/intro-notices.ts` + template-first route with free-form fallback; 15 unit tests incl. a standing guard that no requester path can be text, 144/144 on main; live sweep probe expired=1 failed=0, lapse notice accepted by Meta (wamid …9B34A86B928F28CF3C). ⚠️ closed-window delivery not yet observed (probe requester's window was open) · lapsed template is MARKETING, so 131049 can still cap it |
 | **#110** | 🧾 Intro-tap turns are not saved to conversation history — `Save Conversation` on the intro-tap path errors on a `$('Resolve Member')` reference (swallowed by onError); SQL-proven zero rows for tap turns; no member impact, no effect on no-replay flag | 🔵 S3 | S | SQL + exec 97071 | ⏸ next session |
-| **#111** | 🎯 Who-to-meet results swing with the model's free-text topic query (Aaron: q="Retail, PPC, Amazon Ads, Sourcing, AI Automation" → 7 matches; q="Amazon PPC, Retail & Wholesale, Credit Cards & Travel Hacks, AI & Automation, Sourcing & Suppliers" → 1) — matcher should use the asker's own ledger topics deterministically + alias-normalize free text (execs 97152 vs 97286, same day) | 🟡 S2 | S-M | exec diff | ⏸ next session (or fold into #102) |
+| **#111** | 🎯 Who-to-meet results swing with the model's free-text topic query (Aaron: q="Retail, PPC, Amazon Ads, Sourcing, AI Automation" → 7 matches; q="Amazon PPC, Retail & Wholesale, Credit Cards & Travel Hacks, AI & Automation, Sourcing & Suppliers" → 1) — matcher should use the asker's own ledger topics deterministically + alias-normalize free text (execs 97152 vs 97286, same day) | 🟡 S2 | S-M | exec diff | ⏸ next session (or fold into #102) 🔎 **2026-09-10:** the lane it patches (`member_match`) survives #108 — retiring it is an explicit phase-1 non-goal — so this is **not** thrown away today. #116 (size L, unplanned) does retire it. Worth doing only if it hurts members now. |
 | **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 292 EXIT 0, 26 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** · row re-verified against live 2026-09-09 and it is accurate: prod `15649d68` has no Finder — `member_finder`, `find_members` and the node name all return zero across the 92 nodes, and the only "finder" strings on prod are two code comments. — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
 | **#113** | 🔄 Summit event refresh — the whole event (activities, sessions, rooms, access, rosters) reloads from a GroupOS export, removals included | 🔴 S1 | M | ✅ LOADED 2026-08-23 from the 09:52Z scan: activities 50→86 · access edges 180→227 · grants 183→698 · full descriptions; idempotent; self-test 7/8 | ✅ CLOSED — live lane serves the new day one |
 | **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ route live (`9d0ec41`) · seed PROMOTED `bbd597b7` 2026-08-23 02:49 ET · prod probe Sunday/Monday + full day | ✅ CLOSED — Andy tested on WhatsApp 2026-08-23 (ET afternoon, Singapore already on the next day): correct |
 | **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🔵 S3 | S | — | ⏸ next session ✅ **CLOSED 2026-09-10** — `IS` folded to Iceland, so 5 Israeli members were counted as Icelandic; fixed. 8 corrupt rows repaired at derive time, 0 left. The 38 non-current resellers were already excluded by the gate. |
 | **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🔵 S3 | L | — | ⏸ own plan |
 | **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | ⚪ S4 | S | — | ⏸ next session ✅ **CLOSED 2026-09-10** — cause was `+` in a URL being a space, so the bound matched nothing; **5,104 probe turns had piled up**. Exact rule now, proven on a real-vs-probe pair. Purging the 5,104 backlog waits on Andy. |
-| **#118** | 🗺️ `event_who`'s `op=people` returns a ranked/personalized subset (#99 behavior), not a flat roster, for a plain "who is coming" ask — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
+| **#118** | 🗺️ `event_who`'s `op=people` returns a ranked/personalized subset (#99 behavior), not a flat roster, for a plain "who is coming" ask — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session 🔎 **2026-09-10:** same as #111 — `event_who` retirement is a phase-1 **non-goal**, so this is live work today, and #116 eventually supersedes it. ⚠️ Note it moves the **name-disclosure** rules Andy+Eugene set in #96, so it is not a solo change. |
 | **#119** | 🧪 Bank B — a second eval bank for everything built since the 100-question bank was frozen (2026-08-16): schedule + venue-day, Summit registration & who-to-meet, intros, 2025-26 transcripts/quotes, speakers, offer binding, the finder — ORGANIC questions only (real member asks from `olivia_messages` since 08-16), `expect` from the tickets' ACs/rulings, sized by the questions not padded; runner gets `--bank`; first staging run scored against the tickets' truth | 🔵 S3 | M | ticket ACs + `olivia_question_labels` | 🔨 building 2026-08-23 (Andy: "file #119, do it while bank A runs") |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🔵 S3 | S | — | ⏸ waits for event #2's export |
 | **#67** | Cohort + trend comparison, per field (panel vs cross-section) | 🔵 S3 | M | — | — |
@@ -4164,6 +4166,50 @@ extra when both are fine. 5 tests written first. 1,345 pass, tsc/eslint/build cl
 **Worth knowing:** the amber itself is **not** a new problem — the events catalog running ~2h behind an hourly
 schedule is **#181**, which is blocked on a GitHub PAT with `actions:write`. This ticket is only about the tile
 telling the truth about which one it means.
+
+
+#### ✅ #189 CLOSED 2026-09-10 — the persona builder could not say why it failed, so nobody knew
+
+**🟡 S2 · size S — found 2026-09-10 doing #64's runtime inventory (`launchctl` said `com.mds.persona.refresh` last exited 1).**
+
+**Story:** *As MDS staff, when the persona builder fails I can see why, and it does not fail for a reason we could have fixed months ago.*
+
+**How bad it was.** The log's own history: `built 61 · failed 0` → `built 122 · failed 28` → `built 740 · failed 16`
+→ **`built 12 · failed 19`** — a **61% failure rate** on the last real run, and 229 FAIL lines in the log overall.
+Every one reported identically: *"builder returned no valid JSON"*.
+
+**Why nobody knew the cause.** `haiku()` wrapped the whole call in `except Exception: pass`. An API error, a curl
+timeout, a truncated answer and a genuinely unparseable one all came out as the same sentence. The failure was
+**unobservable** — the same theme as #180 and #117 tonight.
+
+**What it actually was, probed rather than guessed.** At the job's own concurrency of 5: the API is healthy, no
+call errors, nothing truncates (output 1.9-3.6k against a 6,000 cap), and failures are **intermittent parse
+failures on clean 200s**, about 1 in 20. The parser was
+`json.loads(txt[txt.index("{"):txt.rindex("}")+1])` — which breaks the moment the model adds a closing sentence
+containing a brace, or wraps the JSON in a fence and says something after it. `rindex` reaches past the object and
+takes the stray brace with it.
+
+**Fix.** A string- and escape-aware brace walker takes the **first complete** JSON object and ignores whatever
+follows; and every failure now reports its real reason — `curl exit N`, `api overloaded_error: …`,
+`truncated (raise max_tokens)`, `missing focus/summary`, or the unparseable text itself.
+
+**Proof, old parser vs new, on the shapes that matter:**
+| answer shape | old | new |
+|---|---|---|
+| plain object | ✅ | ✅ |
+| fenced, prose after | ❌ | ✅ |
+| prose after with a stray brace | ❌ | ✅ |
+| braces inside strings / escaped quotes | ✅ | ✅ |
+| no object / truncated | correctly fails | correctly fails |
+
+**Live:** `persona_refresh.py --limit 40` → **built 40 · failed 0** (previous real run: 12 built, 19 failed), then
+a full pass → **built 19 · failed 0**, ending `staleness after: missing 0 · older-than-35d 0`. **59 personas rebuilt
+tonight, zero failures**, and the staleness backlog is clear. (The "759 due" in the fingerprint list is the active
+roster, not the rebuild queue — only 59 were actually stale.)
+
+**⚠️ Where this lives.** `/Users/Born/mds-scorecard-tools/` is **not a git repository** — `persona_refresh.py` and
+`olivia_eval.py` are single-copy untracked files on Andy's Mac. A `.bak-20260910` was taken before editing. That
+is a #64 finding in its own right and worse than the ticket's "eight plists exist only on Andy's Mac".
 
 ### #148 · The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever
 **🔵 S3 · size S — filed 2026-08-25 from #126's audit.**

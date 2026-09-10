@@ -294,6 +294,8 @@ grant execute on function digest.geo_country_unmatched(p text) to postgres;
 grant execute on function digest.geo_country_unmatched(p text) to public;
 grant execute on function digest.geo_state_set(p text) to postgres;
 grant execute on function digest.geo_state_set(p text) to public;
+grant execute on function digest.health_report_secret() to postgres;
+grant execute on function digest.health_report_secret() to service_role;
 grant execute on function digest.immutable_text_array_join(p_arr text[]) to postgres;
 grant execute on function digest.immutable_text_array_join(p_arr text[]) to service_role;
 grant execute on function digest.is_active_member_status(p_status text) to postgres;
@@ -438,6 +440,8 @@ grant execute on function digest.selftest_cleanup(p_dry_run boolean, p_phone tex
 grant execute on function digest.selftest_cleanup(p_dry_run boolean, p_phone text) to service_role;
 grant execute on function digest.session_rollup() to postgres;
 grant execute on function digest.session_rollup() to public;
+grant execute on function digest.set_health_report_secret(p_secret text) to postgres;
+grant execute on function digest.set_health_report_secret(p_secret text) to service_role;
 grant execute on function digest.set_relay_secret(p_secret text) to postgres;
 grant execute on function digest.set_relay_secret(p_secret text) to service_role;
 grant execute on function digest.stamp_event_registrations() to postgres;

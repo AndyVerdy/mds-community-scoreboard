@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.mds.scorecard.autoimport</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Library/Frameworks/Python.framework/Versions/3.12/bin/python3</string>
+    <string>/Users/Born/mds-scorecard-tools/auto_import.py</string>
+  </array>
+  <key>WatchPaths</key>
+  <array>
+    <string>/Users/Born/Downloads</string>
+  </array>
+  <key>StandardOutPath</key>
+  <string>/Users/Born/mds-scorecard-tools/launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/Born/mds-scorecard-tools/launchd.err.log</string>
+  <key>RunAtLoad</key>
+  <false/>
+</dict>
+</plist>
