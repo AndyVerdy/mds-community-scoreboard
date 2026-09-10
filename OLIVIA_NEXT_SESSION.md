@@ -11,6 +11,32 @@
 
 # Olivia — next session
 
+## STATE 2026-09-10 (overnight close) — 8 tickets closed · #105 ENFORCING · two things wait on Andy
+
+**Read this first, then the board's close blocks.** Prod n8n `22d81380` · staging `ae74d26d` (clean, re-staged
+from prod) · `mds-digest-web` main `588ef08` · gate GREEN · lock free · all 11 nightly jobs green.
+
+**Closed overnight, each with live proof in its board block:** #179 (Make warning read as DOWN) · **#105**
+(Meta's signature, front door AND the n8n side door, ENFORCING) · #180 (niche freeze) · #183 (storefront
+reshuffle) · #148 (mirror reconcile) · #115 (`IS` folded to Iceland) · #117 (selftest cleanup) · #187 (first
+turn ever timed). #152 was verified as already-fixed drift; **#72 was RETIRED** on Andy's word and its
+measurement half became #187.
+
+**⚠️ TWO THINGS WAIT ON ANDY — the second one recurs tonight if it is not done.**
+1. **Reset the Meta app secret.** It was pasted into a chat transcript. Meta app `955961257089837`, Settings →
+   Basic. Then the Vault row needs `vault.update_secret` on `META_APP_SECRET`, and the signature check starts
+   failing the moment he rotates until that is done.
+2. **`sudo pmset repeat wakeorpoweron MTWRFSU 04:25:00`.** #180's root cause is that the nightly job runs at
+   04:30 on a closed laptop. Tonight's run only worked because the Mac was awake. Without a scheduled wake it
+   freezes again. Moving these jobs off the laptop is **#64**.
+
+**Two more his call, neither urgent:** the 10,208-row selftest purge (`--cleanup --yes`, irreversible, his own
+history) and #148's lane-skipping (refusing stale rows changes who Millie answers).
+
+**The lesson this session paid for twice.** #105 was built against n8n because the ticket said so; Meta posts to
+the RELAY and the handbook's line 72 has said so since July. **Verify a ticket's architecture claim against the
+handbook and against live before building to it** — and read payloads before announcing what they are.
+
 ## STATE 2026-09-10 (close) — #179 SHIPPED · #105 SHIPPED and ENFORCING
 
 **#179 closed and live.** A Make WARNING (`status: 2`) was mapped to error, so "Guest Multi-Event Alert" had

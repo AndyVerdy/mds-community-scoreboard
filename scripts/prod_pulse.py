@@ -170,6 +170,13 @@ def collect(key, phone):
     # --- row counts that must never drop ---
     s["rows"] = {t: count_of(t, key) for t in ROW_COUNT_TABLES}
 
+    # --- #148: mirror rows Airtable has stopped returning ---
+    # digest.members only ever adds and updates, so a record that stops coming back just sits
+    # there saying whatever it last said. Eleven rows were frozen for 36 days before anyone
+    # noticed. digest.mark_stale_members() marks them; this is the number that makes the
+    # freezing visible instead of silent.
+    s["members_stale"] = count_of("members", key, "&stale_since=not.is.null")
+
     # --- read-only RPC smoke ---
     smoke = {}
     for fn, mk in SMOKE_RPCS:
@@ -203,6 +210,16 @@ def compare(base, now):
         check("failed sends did not increase",
               now["sends_failed_24h"] <= base["sends_failed_24h"],
               f"{base['sends_failed_24h']} -> {now['sends_failed_24h']}")
+
+    print("\n— the Airtable members mirror (#148) —")
+    if now.get("members_stale") is not None:
+        b_stale = base.get("members_stale")
+        if b_stale is None:
+            warn("stale mirror rows (no baseline yet)", f"{now['members_stale']} marked")
+        else:
+            check("mirror rows Airtable stopped returning did not increase",
+                  now["members_stale"] <= b_stale,
+                  f"{b_stale} -> {now['members_stale']}")
 
     print("\n— alarms and jobs —")
     new_alarms = sorted(set(now["alarms_firing"]) - set(base["alarms_firing"]))

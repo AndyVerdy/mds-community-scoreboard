@@ -4,6 +4,60 @@
 
 
 
+## 2026-09-10 (overnight) — 8 tickets closed · #105 finished and enforcing · a sleeping Mac, a `+` that is a space
+
+**Andy's brief:** work through the night on small and medium tickets, make my own calls, report in the morning.
+This is that report. **Eight closed with live proof, one verified as already-fixed drift, one retired.**
+
+| # | what | proof |
+|---|---|---|
+| **#179** | A Make WARNING read as a tool DOWN | live: `DOWN ✕ failed 7d` → `DEGRADED ⚠ warning 7d`, `6a31026` |
+| **#105** | Meta's webhook signature, both doors | `ok`×3 on real deliveries, forged post → 403, prod `2b568155` |
+| **#180** | niche data frozen 3 days | job `ok` in 93s, partial-commit forced and proven |
+| **#183** | storefront reshuffled after load | `pinLayout()`, 6 tests, `588ef08` |
+| **#148** | members mirror never reconciled | mark set (11) and cleared (11) on live data |
+| **#115** | `IS` folded to Iceland | 5 Israeli members no longer Icelandic; 8 corrupt rows → 0 |
+| **#117** | selftest cleanup deleted nothing | probe pair deleted, real pair survived |
+| **#187** | no turn had ever been timed | first measurement: **23,838 ms**, prod `22d81380` |
+| #152 | already fixed 2026-09-02, row stale | `statement_timeout=900s` live, job green |
+| #72 | LOAD TEST retired on Andy's word | measurement half carved out as #187 |
+
+**Three root causes worth remembering, none of them what its ticket said.**
+
+1. **#180 — the job was fine, the machine was asleep.** The ticket blamed batch size, a page bound, or a retry.
+   `derive_niches` runs at 04:30 on a laptop that is closed; macOS wakes ~8s an hour. That one fact explains the
+   3.5h wall clock for ten 120s-capped calls, the runner's `timeout=1800` never firing (monotonic stops during
+   sleep, wall clock does not), and `cache_member_photos` at 5,749s against a normal 106s. Awake, unchanged: 2m30s.
+2. **#117 — a `+` in a URL is a space.** The cleanup's `created_at=gte.<timestamp>` ended `+00:00`, so the filter
+   was malformed, matched nothing, and printed "cleanup done" while 5,104 probe turns piled up. The project
+   already documents that trap; it bit its own tooling. And `PROBE_PHONE` is Andy's own number, so that bound was
+   the only thing between the cleanup and his real history — matching nothing was the LUCKY failure.
+3. **#105 — I built the whole thing against the wrong front door.** Meta posts to the relay on Render, not n8n,
+   and the relay strips the signature. `OLIVIA_HANDBOOK.md` line 72 has said so since July. I promoted to prod,
+   saw real deliveries dropping, and rolled back in eight minutes — then told Andy they were "only our own probes",
+   which was also wrong. His own test message settled it. **Read the handbook's architecture before building to a
+   ticket's spec, and read the payloads before announcing what they are.**
+
+**Two things staging caught that prod never saw.** #187's first version added `latency_ms` to the answer row only;
+PostgREST rejects a bulk insert whose objects have different keys, so it saved **nothing** — every turn would have
+gone unrecorded. And #105's n8n version dropped every unsigned delivery, which is all of them by the time they
+reach n8n.
+
+**Left for Andy, each named where it matters:**
+- ⚠️ **Reset the Meta app secret** — it was pasted into the chat transcript. Then tell me and I update the Vault row.
+- ⚠️ **`sudo pmset repeat wakeorpoweron MTWRFSU 04:25:00`** — without it #180 recurs the next night the lid is shut.
+  Tonight's run only worked because the Mac was awake. Moving these jobs off the laptop is #64.
+- **The 10,208-row selftest purge** (`--cleanup --yes`). Irreversible, on his own conversation history, so his call.
+- **#148's lane-skipping** — refusing stale rows changes who Millie answers; wrong threshold refuses real members.
+
+**Also found, not chased:** `nightly_derivations.py` hardcoded `REPO = /Users/Born/Scorecard`, a working tree
+sessions switch branches in, so "the live nightly script" was whichever branch was checked out — it was a peer's
+feature branch tonight, predating a fix already on main. Now resolves from its own location. And a broken
+`node_modules` symlink committed in `mds-digest-web` kills `next build` for any worktree made inside that repo.
+
+**State at hand-off.** prod n8n `22d81380` · staging `ae74d26d` · `mds-digest-web` main `588ef08` · gate GREEN ·
+lock free · all 11 nightly jobs green on a forced full run.
+
 ## 2026-09-09 (evening) — #179 shipped · #105 built twice, live at the relay, not enforcing
 
 **Two tickets worked, one closed. Four stale board rows fixed before starting, all verified against live.**

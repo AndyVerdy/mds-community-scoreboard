@@ -147,6 +147,8 @@ def wait_persisted(key, baseline, timeout, text=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cleanup", action="store_true", help="delete this run's test rows and exit")
+    ap.add_argument("--yes", action="store_true",
+                    help="#117: actually delete. Without it --cleanup only reports what it would remove.")
     ap.add_argument("--questions", nargs="+", help="override the question bank")
     ap.add_argument("--staging", action="store_true",
                     help="fire at the STAGING copy (scripts/olivia_wf.py stage) instead of live")
@@ -160,15 +162,27 @@ def main():
     print(f"target: {TARGET_WEBHOOK}")
 
     if args.cleanup:
-        curl("POST", f"{BASE}/rpc/", key)  # no-op keepalive
-        # bounded by SELFTEST claim timestamps — real member turns are untouched
-        subprocess.run(["curl", "-s", "-X", "DELETE",
-            f"{BASE}/olivia_messages?phone=eq.{PROBE_PHONE}&created_at=gte." +
-            json.dumps(curl("GET", f"{BASE}/olivia_seen?wamid=like.{MARK}*&select=seen_at&order=seen_at.asc&limit=1", key)[0]["seen_at"]).strip('"'),
-            "-H", f"apikey: {key}", "-H", f"Authorization: Bearer {key}",
-            "-H", "Content-Profile: digest"], capture_output=True, text=True)
-        curl("DELETE", f"{BASE}/olivia_seen?wamid=like.{MARK}*", key)
-        print("cleanup done (bounded by this run's SELFTEST timestamps)")
+        # #117. This used to hand-build a PostgREST URL carrying `created_at=gte.<timestamp>`,
+        # and a timestamp ends `+00:00`. A `+` in a URL query string IS A SPACE, so the filter
+        # was malformed, matched nothing, and 5,104 probe turns piled up in olivia_messages
+        # while the run reported "cleanup done".
+        #
+        # Worse than untidy: PROBE_PHONE is Andy's own number, so that bound is the only thing
+        # between this and his real conversation. Matching nothing was the lucky failure.
+        #
+        # The bound is gone. digest.selftest_cleanup() identifies test turns exactly — a probe
+        # question by its wamid.SELFTEST wamid, which a real inbound can never carry, and its
+        # answer by sitting between that question and the next member row. Dry-run first,
+        # always, and print what it would do.
+        preview = curl("POST", f"{BASE}/rpc/selftest_cleanup", key, {"p_dry_run": True})
+        print(f"would delete: {preview['questions']} questions · {preview['answers']} answers · "
+              f"{preview['seen']} seen rows")
+        if not args.yes:
+            print("nothing deleted. Re-run with --yes to delete.")
+            return
+        done = curl("POST", f"{BASE}/rpc/selftest_cleanup", key, {"p_dry_run": False})
+        print(f"cleanup done: {done['questions']} questions · {done['answers']} answers · "
+              f"{done['seen']} seen rows deleted")
         return
 
     bank = [(q, 20) for q in args.questions] if args.questions else BANK

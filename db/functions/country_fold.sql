@@ -10,7 +10,10 @@ AS $function$
     when 'united states of america' then 'united states'
     when 'ca' then 'canada' when 'gb' then 'united kingdom' when 'uk' then 'united kingdom'
     when 'sg' then 'singapore' when 'au' then 'australia' when 'fr' then 'france'
-    when 'es' then 'spain' when 'de' then 'germany' when 'is' then 'iceland'
+    when 'es' then 'spain' when 'de' then 'germany'
+    -- DATA FIX, not ISO (#115, 2026-09-10): ISO says Iceland. Every 'IS' row in this table is
+    -- Israeli by its own city/state, and there is no Icelandic member. Same class as 'ne' below.
+    when 'is' then 'israel'
     when 'cy' then 'cyprus' when 'mx' then 'mexico' when 'th' then 'thailand'
     when 'ee' then 'estonia' when 'pr' then 'puerto rico' when 'se' then 'sweden'
     when 'pa' then 'panama' when 'jp' then 'japan' when 'br' then 'brazil'
@@ -45,6 +48,9 @@ AS $function$
     when 'sc' then 'seychelles'
     -- DATA FIX, not ISO: the single 'NE' row is a Haarlem member (Netherlands).
     when 'ne' then 'netherlands'
+    -- Not countries. Unknown is honest; a junk string masquerading as one is not.
+    when 'n/a' then null when 'hello' then null
+    when 'https://app.mds.co/settings/edit' then null
     else c end
   from (select nullif(trim(lower(coalesce(p,''))), '') c) s
 $function$

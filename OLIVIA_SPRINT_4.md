@@ -54,7 +54,7 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#184** | 🙈 Part 1 — unindex Tony Brink's post + MajestIQ/TraceFuse from Millie, nothing deleted for members ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🔴 S1 | S | — | — |
 | **#185** | 🚧 Part 2 — a general way to keep restricted content out of Millie: blacklist, detection, or both ([CU `86e35hm1p`](https://app.clickup.com/t/86e35hm1p)) | 🟡 S2 | M | — | — |
 | **#179** | 🩺 A Make WARNING shows as a tool DOWN — `status !== 1` maps to error, so Guest Multi-Event is permanently red | 🔴 S1 | XS | n/a (app code) | ✅ **CLOSED 2026-09-09** — shipped `0fcb6df`, merged `6a31026`, live on Render (`/api/version`) |
-| **#180** | 🩺 Millie's niche data frozen since 7 Sep — `derive_niches` times out on Anthropic after 3.5h, nightly | 🟡 S2 | S-M | n/a (launchd job) | — |
+| **#180** | 🩺 Millie's niche data frozen since 7 Sep — `derive_niches` times out on Anthropic after 3.5h, nightly | 🟡 S2 | S-M | n/a (launchd job) | ✅ **CLOSED 2026-09-10** — root cause was the Mac ASLEEP at 04:30, not the work. Data current, job resumable, tile fixed (`e7c18d9`). One thing left for Andy: a scheduled wake. |
 | **#181** | 🅿️ **SPRINT 5** · Events catalog hourly on paper, four-hourly in fact — 9 of 13 intervals in the down band, 14/14 runs green | 🔵 S3 | S | n/a (GH Action) | ⛔ blocked: GitHub PAT `actions:write` (Andy) |
 | **#182** | 🅿️ **SPRINT 5** · Five days of recordings invisible to Millie — `zoom_weekly` runs on time but skips videos, no `GROUPOS_PAT` | 🟡 S2 | S | n/a (weekly job) | ⛔ blocked: GroupOS PAT (Andy) |
 | **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | — |
@@ -66,7 +66,7 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#101** | 🎬 Video transcripts + real access gating | 🔴 S1 | L | n/a (SQL+data) | ✅ **CLOSED 2026-08-20** — 2,730 chunks, video_access live, gate 263/0 · NEXT: 2025 batch |
 | **#162** | 🎬 Transcripts for the 33 videos published 25 Aug–4 Sep (AI Mastermind · AI Scaling Live · Summit day 2) — AssemblyAI from the S3 links the dev opened 2026-09-04 | 🔴 S1 | S | n/a (data) | ✅ **CLOSED 2026-09-04** — 33/33 transcribed ($2.62), 697 chunks, 33 summaries, 5 new restricted videos → 44 grants each, 2026 = 212/212, E2E quote proven, gate 313/0 |
 | **#72** | 🚦 LOAD TEST — 100 concurrent probes | ⚪ **RETIRED 2026-09-10** | M | — | ❌ **Andy: "I think this is an old ticket. I don't want to do a 100-probe."** Filed for a demo two weeks out; that demo was the August Summit and it has passed. The measurement half survives as **#187**. |
-| **#187** | 🅿️ **SPRINT 5** · ⏱️ Millie has never recorded how long a turn takes — `latency_ms` is NULL on all 13,309 rows | 🔵 S3 | S | — | — |
+| **#187** | 🅿️ **SPRINT 5** · ⏱️ Millie has never recorded how long a turn takes — `latency_ms` is NULL on all 13,309 rows | 🔵 S3 | S | — | — ✅ **CLOSED 2026-09-10** — prod `22d81380`. First turn ever timed: **23,838 ms**. |
 | **#73** | Connect the useful forms to Olivia — she reads 5 of 161 | 🔵 S3 | M | — | — |
 | **#68** | 🔑 Canonical question dictionary + mapping at scale | 🔵 S3 | L | — | — |
 | **#18** | How-MDS-works answers | 🟡 S2 | M | ✅ first slice proven `6581548e` | ✅ **first slice LIVE** `f3850dd7` (prod probes: FAQ cited; no-doc honest) — open for more docs |
@@ -88,9 +88,9 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#108** | 👥 The Finder — one composable filter tool, every data layer (Belen's reseller question: Millie named brand owners, missed the 3 real resellers) | 🟡 S2 | M | ✅ proven (gate 292 EXIT 0, 26 finder checks) | ✅ **BUILT 2026-08-23 — READY FOR PROMOTE (Andy)** · row re-verified against live 2026-09-09 and it is accurate: prod `15649d68` has no Finder — `member_finder`, `find_members` and the node name all return zero across the 92 nodes, and the only "finder" strings on prod are two code comments. — 17 Summit resellers / 122 community, reasons per person, disclosure engine R1-R10 holding — full block below |
 | **#113** | 🔄 Summit event refresh — the whole event (activities, sessions, rooms, access, rosters) reloads from a GroupOS export, removals included | 🔴 S1 | M | ✅ LOADED 2026-08-23 from the 09:52Z scan: activities 50→86 · access edges 180→227 · grants 183→698 · full descriptions; idempotent; self-test 7/8 | ✅ CLOSED — live lane serves the new day one |
 | **#114** | 🕐 "Today at the Summit" must resolve in the VENUE's zone, not US Eastern (Ian Sells, Singapore, got Saturday on his Sunday) | 🔴 S1 | S | ✅ route live (`9d0ec41`) · seed PROMOTED `bbd597b7` 2026-08-23 02:49 ET · prod probe Sunday/Monday + full day | ✅ CLOSED — Andy tested on WhatsApp 2026-08-23 (ET afternoon, Singapore already on the next day): correct |
-| **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🔵 S3 | S | — | ⏸ next session |
+| **#115** | 🌍 Country/state normalised at derive time (`country_fold` in `derive_member_attributes`) + 4 WA-layer "resellers" with non-current AT status + 8 corrupt `OEM…'Wholesale…` business-model rows — data hygiene found building #108 | 🔵 S3 | S | — | ⏸ next session ✅ **CLOSED 2026-09-10** — `IS` folded to Iceland, so 5 Israeli members were counted as Icelandic; fixed. 8 corrupt rows repaired at derive time, 0 left. The 38 non-current resellers were already excluded by the gate. |
 | **#116** | 🔎 Finder phase 2 (content + video: `return: content` / `videos`, who-leaves as author/speaker constraint, speaker/year/category filters, `speaker_of`) + phase 3 (events/partners/forms; retire `member_match` / `member_count` / the schedule matcher) — spec §6 | 🔵 S3 | L | — | ⏸ own plan |
-| **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | ⚪ S4 | S | — | ⏸ next session |
+| **#117** | 🧹 `olivia_selftest.py --cleanup` doesn't delete probe message rows, only `olivia_seen` — found during #108 staging probes | ⚪ S4 | S | — | ⏸ next session ✅ **CLOSED 2026-09-10** — cause was `+` in a URL being a space, so the bound matched nothing; **5,104 probe turns had piled up**. Exact rule now, proven on a real-vs-probe pair. Purging the 5,104 backlog waits on Andy. |
 | **#118** | 🗺️ `event_who`'s `op=people` returns a ranked/personalized subset (#99 behavior), not a flat roster, for a plain "who is coming" ask — found during #108 staging probes | 🟡 S2 | S | — | ⏸ next session |
 | **#119** | 🧪 Bank B — a second eval bank for everything built since the 100-question bank was frozen (2026-08-16): schedule + venue-day, Summit registration & who-to-meet, intros, 2025-26 transcripts/quotes, speakers, offer binding, the finder — ORGANIC questions only (real member asks from `olivia_messages` since 08-16), `expect` from the tickets' ACs/rulings, sized by the questions not padded; runner gets `--bank`; first staging run scored against the tickets' truth | 🔵 S3 | M | ticket ACs + `olivia_question_labels` | 🔨 building 2026-08-23 (Andy: "file #119, do it while bank A runs") |
 | **#92** | Event selection for a multi-event world — she must pick the RIGHT schedule | 🔵 S3 | S | — | ⏸ waits for event #2's export |
@@ -109,12 +109,12 @@ the parse-vs-restructure fork on #186 · the Sonnet 5 vs GPT-5.6 vendor call, wh
 | **#147** | 🔀 "Is this member registered?" answered twice by two sources that disagree (agenda says yes, who-to-meet says no) | 🔴 S1 | M | n/a (SQL) | ⏸ **PAUSED mid-ticket 2026-08-25 — HALF LIVE**: measured 36 disagreements (S1 confirmed); `member_alias_ids` + `registration_status` + `is_registered` shipped and `event_who` wired (130 → 145 registered, 15 recognised, 0 lost, gate 306 EXIT 0). BLOCKED on Andy's choice of authority shape; event resolver + schedule route not started |
 | **#146** | 🔇 A member who hides their WhatsApp number is invisible — silent drop, no answer, no error (Danson Hui) | 🔴 S1 | M | ✅ built + probed | ✅ **PROMOTED 2026-08-25** `64995b68` — Danson live. Remainders open: silent-drop alarm · hidden-number history keyed by the opaque id · ~~refusal path bypasses the SELFTEST silent gate~~ **fixed under #125** |
 | **#145** | 🧪 No-regression re-run of the 319 already-passing bank C questions — the last gate before the promote | 🔴 S1 | S | ✅ 319 graded, 8 regressions fixed | ✅ **CLOSED + PROMOTED 2026-08-25** — 311/319 hold (97.5%); links 654→808, dead links 5→0, dates 641→862, route changes 0; prod `8bb0827d` |
-| **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🔵 S3 | S | — | ⏸ filed 2026-08-25 |
+| **#148** | 🧊 The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever (oldest 2026-08-05), no freshness signal | 🔵 S3 | S | — | ⏸ filed 2026-08-25 ✅ **CLOSED 2026-09-10** — `stale_since` + `mark_stale_members()` (guarded), nightly job, `prod_pulse` reports it. **The 11 rows CAME BACK on their own** — absence is intermittent, not permanent. |
 | **#126** | 🧾 WA mirror leaves `at_member_id` NULL although the AT record carries `source_member_id` | 🟡 S3 | XS | n/a (audit) | ✅ **CLOSED 2026-08-25 — NOT REPRODUCIBLE**: field map proven correct against mirror exec 110330; all 57/671 NULLs are genuinely unmatched. Audit found 11 matched members with no `AT Database Status` (Airtable-side, Andy/ops) and the stale-row gap, filed as #148 |
 | **#149** | 🗣️ Two real answers were wrong in shape — a live event called finished, a yes/no answered with machinery | 🔴 S1 | M | ✅ staging turns 52883/52885 | ✅ **PROMOTED 2026-08-26** `7abb9fc9` (rules+clamp) · route `eventPhase` pushed `102bf14` (Render deploys on push) |
 | **#150** | 🔒 Summit videos restricted with ZERO `video_access` rows — nobody could be entitled | 🔴 S1 | S | n/a (SQL) | ✅ **CLOSED 2026-08-26** (Andy: attendees + staff) — 1,225 grants (7×175), rerunnable `scripts/sql/150_summit_video_grants.sql`; `is_restricted` now means restricted FOR the asker (video_search + v2); staging turn 52889 answers Tamar content; gate 306 EXIT 0 |
 | **#151** | 🎯 Video answers ignore the member — Inspire volunteered, no count, no tailoring, follow-up fled the list + dangling old-event links (Andy, prod 52891/52893/52935/52941/52951) | 🔴 S1 | S | ✅ probe wave 8/8 · orphan-strip unit 6/6 | ✅ **PROMOTED 2026-08-26** `06df948a` — prod turn 52959: 1 link, Denver gone; gate 306 EXIT 0 |
-| **#152** | ⏱️ `refresh_entity_dossiers` statement-timeout — `zoom_weekly` heartbeat error, last success 2026-08-07; video chain exits 1 every run (found by scorecard-df) | 🟡 S2 | S | — | ⏸ filed 2026-08-28 |
+| **#152** | ⏱️ `refresh_entity_dossiers` statement-timeout — `zoom_weekly` heartbeat error, last success 2026-08-07; video chain exits 1 every run (found by scorecard-df) | 🟡 S2 | S | — | ⏸ filed 2026-08-28 ✅ **CLOSED 2026-09-02, row was stale — verified live 2026-09-10:** `refresh_entity_dossiers` carries `statement_timeout=900s` in `proconfig`, and the `entity_dossiers` heartbeat is `ok` on tonight's full nightly run. |
 | **#154** | 🔗 People she names carry NO link — `member_match_v2` / `expertise_search` return no url column at all | 🔴 S1 | S-M | ✅ proven `e55a45c6` — 4/4 and 10/10 linked; gate 312/0 | ✅ **LIVE 2026-09-02** prod `d40a837d` (seed) + Render `8f368b3` (finder) — prod probe 5/5 linked, live finder 5/5 linked; 718/741 actives resolve |
 | **#155** | 💬 A chat quote carries its own message link, and "what should I know" is not a capability tour | 🟡 S2 | M | — | — |
 | **#153** | 🎯 Intent probes: ranking had no recency, stated facts refused (3/4 screenshot probes failed) | 🔴 S1 | S | ✅ **3/3 FIXED + PROVEN** `0faa9be5` — decay live (SQL), seed rule staged; gate 306 EXIT 0 | ✅ **PROMOTED 2026-08-26** `15ff4978` — verified 2026-08-28: prod/staging graphs identical (only webhook path differs), gate 306 PASS · 0 FAIL · EXIT 0; re-embed of 7 still awaits Andy |
@@ -342,6 +342,50 @@ the chore already sitting in the #179 + #181 + #183 cluster.
 3. One run finishes inside a stated wall-clock budget, and that budget is written into the job.
 4. A timeout on one batch no longer discards the batches that already succeeded — proven by forcing a mid-run failure.
 5. The derivations tile shows the oldest failing job's timestamp, not the freshest.
+
+
+#### ✅ #180 CLOSED 2026-09-10 — the job was fine, the machine was asleep
+
+**Story:** *As a member, when I ask who works in a niche, I want the answer to include the people who joined or changed niche this week.*
+
+**The ticket's three hypotheses were all wrong.** It proposed batch size, a missing page bound, or a retry
+re-sending the whole set. The real cause: `derive_niches` is scheduled for **04:30 on a laptop that is closed and
+asleep**. macOS wakes ~8s an hour for maintenance, so the job starts, gets a few seconds, and the machine sleeps
+mid-request. Evidence, `pmset -g log` for both failing nights: sleep at 03:17, then hourly DarkWakes of 8-9s,
+straight through 04:30.
+
+That one fact explains every oddity at once:
+- **3.5 hours of wall clock for ten model calls** — each call is capped at 120s, so the work cannot cost that.
+- **The runner's `timeout=1800` never firing** — it measures a monotonic clock, which stops during sleep on Darwin;
+  the reported elapsed uses wall clock, which does not.
+- **Other jobs in the same file showing wild times** — `cache_member_photos` at 5,749s against a normal 106s.
+- Reproduced the opposite way: the same script, unchanged, **awake: 2m30s, exit 0, 1,907 rows**.
+
+**What shipped.** A failed model call no longer `sys.exit`s the run; it returns and the run commits what it
+finished. A wall-clock budget (default 1500s) stops it starting new batches. Committing partially is **not** "write
+the dictionary as it stands": the write DELETEs a member's rows first, and step 1 fills that dictionary for
+everyone from controlled categories while only step 2 adds what they typed themselves — so writing everyone after
+batch 3 of 10 would delete the stated niches of the members in batches 4-10 and replace them with the thinner set.
+`writable_ids()` commits exactly the members who needed no model call plus the batches that completed.
+**Also fixed:** `nightly_derivations.py` hardcoded `REPO = /Users/Born/Scorecard`, a working tree sessions switch
+branches in — so "the live nightly script" was whichever branch was checked out. It now resolves from its own
+location.
+
+**AC checklist:**
+1. `derive_niches` completes and `last_success_at` advances — ✅ `2026-09-10 05:49:19`, detail `done [93s]`, status `ok`.
+2. `member_niches.derived_at` same-day after a run — ✅ 1,936 rows / 697 members, freshest today.
+3. One run inside a stated budget, written into the job — ✅ 93s against the 1500s default.
+4. A timeout no longer discards finished batches, **proven by forcing a mid-run failure** — ✅ forced a stop after
+   batch 1: **893 rows rewritten for the 391 members it finished, 1,013 rows left untouched for the other 306, no
+   member lost.** Exit 1, so the heartbeat still says error — saved data must never look like a clean night.
+5. The tile shows the oldest failing job, not the freshest — ✅ `summarizeDerivations()`, 8 tests, live `e7c18d9`.
+
+**Before → after:** niche data 3 days stale, nightly burning 3.5h for nothing, tile reading "last success <1h ago"
+beside a DOWN status → data current, run 93s, a cut-short run keeps its work, tile names the worst offender.
+
+**⚠️ Left open, needs Andy — this WILL recur otherwise.** The machine must be awake at 04:30. That means
+`sudo pmset repeat wakeorpoweron MTWRFSU 04:25:00`, which needs his password. Tonight's run only succeeded because
+the Mac was awake. **Moving these jobs off the laptop is #64.**
 
 ### #181 · 🅿️ SPRINT 5 · The events catalog is hourly on paper and four-hourly in fact
 **🔵 S3 · size S — filed 2026-09-09 · CARRIES TO SPRINT 5 (Andy: "s3 sprint 5"). BLOCKED on a credential only Andy can create.**
@@ -1484,6 +1528,43 @@ re-verified 2026-08-28: `olivia_wf.py diff prod staging` = identical bar the web
 **Remainder:** the 7 metadata-only re-embeds (scorecard-df executes on Andy's go) · the cited
 timestamp read "(at 00:00:00)" because early chunks carry start_sec 0 — cosmetic, filed under #103's
 umbrella rather than new.
+
+
+#### ✅ #148 CLOSED 2026-09-10 — and the ticket's premise was half wrong
+
+**Story:** *As a member, the system never answers me out of a record it stopped being able to check.*
+
+**What the ticket said, and what is actually true.** It said 12 rows "Airtable stopped returning are frozen
+forever". Live on 2026-09-10 it was **11 rows, all last synced 2026-08-05 — 36 days**. Then, mid-ticket, the 06:00
+sync wave **returned every one of them**. So the rows are **intermittently absent, not permanently gone**. That is a
+different failure and arguably a nastier one: a record can go quiet for five weeks, keep answering out of its last
+known state, and then reappear as if nothing happened.
+
+**The triage also cleared the scariest claim.** The ticket warned one of them was "a COMPLETE row (name, status,
+`at_member_id`) that the front door will happily match a phone against and treat as current". Not any more: all 11
+carried **only a phone and an `airtable_id`** — no name, no `membership_status`, no `at_member_id`, no email. They
+could not be matched to a member identity, so the front-door exposure it feared did not exist.
+
+**What shipped.** `digest.members.stale_since` + `digest.mark_stale_members(p_stale_after, p_min_healthy_share)`,
+`SECURITY DEFINER`, service_role only. It **marks, never deletes** — a row that vanishes on one bad Airtable call
+must never be removed. The guard is a *share* of the table, not a raw count, so it keeps working as the roster
+grows: below 80% freshness it marks nothing and says why. Clearing a mark always runs, even on an unhealthy wave,
+because un-marking can never hide a live member. Nightly via `scripts/mark_stale_members.py`.
+
+**AC checklist:**
+1. Rows absent from a run are marked, not silently kept — ✅ a healthy wave marked **11**.
+2. A one-run Airtable failure cannot mark everything stale — ✅ at a 0.99 threshold against 0.984 real freshness it
+   marked **0** and returned `sync wave looks unhealthy`.
+3. Stale count visible in `prod_pulse.py` — ✅ its own section, compared against baseline.
+4. The current rows triaged — ✅ all 11 phone-only Airtable shells, and they returned at 06:00.
+5. Gate GREEN — ✅.
+
+**Both transitions were observed on live data, not simulated:** mark set (11), mark cleared (11), and the mirror
+wave that made it true. Current state: 684 rows, 0 stale.
+
+**Not done, deliberately.** The ticket's prose also wanted the front door and member lanes to *skip* stale rows.
+That changes who Millie will answer, and getting the threshold wrong refuses real members — not a thing to ship
+unattended overnight. **It is not in the ACs**, and it wants Andy's ruling on the threshold.
 
 ### #152 · `refresh_entity_dossiers` times out — dossiers 20 days stale for every new video
 
@@ -2647,6 +2728,27 @@ concept map — verify against its own executions · **#106** stays open for lan
 fix rounds in total (Tasks 3/4/5: one each · Task 9: three · the Task 8 geo fix: two)).
 
 ### #187 · Millie has never recorded how long a turn takes
+#### ✅ #187 CLOSED 2026-09-10 — the first turn this system has ever timed
+
+**Story:** *As the owner, I can see how long Millie is taking to answer, so a slowdown shows up as a number instead of as a member complaint.*
+
+**Before:** 13,309 turns, **0 with a latency**. Every figure this project had ever quoted — median 22.8s, worst
+56.1s — came from eight hand-timed probes during #23.
+
+**After:** `Save Conversation` records `latency_ms` on the answer row. Meta stamps the member's send in whole
+seconds, so the number is the **member-perceived wait**, Meta's own delivery hop included, clamped at 0 because a
+phone's clock can run ahead. The question row carries the key as null — latency belongs to the answer, not to the
+asking.
+
+**Live proof, staging then promoted:** a real turn measured **23,838 ms**, which lands on the 22.8s the hand-timed
+probes had estimated. Prod `22d81380`, gate GREEN, probe rows removed.
+
+**Caught on staging, and worth recording.** The first attempt added the key to the answer row only. PostgREST
+rejects a bulk insert whose objects have different keys (`PGRST102 — All object keys must match`), so that version
+saved **nothing at all** — it would have stopped every turn being recorded. Staging is why prod never saw it.
+
+**Not in scope, from the retired #72:** queue wait as a separate number, and any load generation.
+
 **🅿️ SPRINT 5 · 🔵 S3 · size S — filed 2026-09-10 (Andy: "move it to sprint 5 - s3"), carved out of the retired #72 (Andy: "I think this is an old ticket. I don't want to do a 100-probe.")**
 
 > **In plain words:** we cannot answer "is Millie slower this week than last", because nothing has ever written down how long an answer took.
@@ -3923,6 +4025,73 @@ Staging `01c8670d` → **prod `c20c1811`**. Re-verified ON PROD after the bounce
 the Members DB record, which is Airtable and therefore Andy's or ops' to make, never the agent's
 (2026-08-25 rule). The list of 21 is in the session log. `Current Member- Paused ` (2 rows, trailing
 space) is not in `ACTIVE` and keeps the inactive copy — correct today, flagged to #115 as hygiene.
+
+
+#### ✅ #115 CLOSED 2026-09-10 — one real wrong answer, one real corruption, one non-issue
+
+**Story:** *As a member, the attributes Millie counts and matches me by are the ones I actually gave, spelled one way.*
+
+**Part 1 — country. The ticket asked for a fold at derive time; that turns out not to be the problem.**
+`member_count` and `member_match_v2` already call `digest.country_fold()` at query time, so `US` (2,216 rows) and
+`United States` (454) have never been two different answers to a member. Folding at derive would be tidier, not
+more correct.
+
+**What WAS wrong, and it was answering members wrongly: `IS` folded to `iceland`.** Five members were counted and
+matched as Icelandic. Every `IS` row carries an Israeli city or state — Jerusalem, Herzlia, Ness Ziona,
+Rishon LeZion, state "Israel" — and there is no Icelandic member. Evidence beats the ISO table, and the function
+already had this precedent: `ne` was mapped to netherlands for exactly the same reason in August. Also folded the
+three values that are not countries at all (`N/A` ×11, `hello`, a settings URL) to NULL — unknown is honest.
+
+**Part 2 — 8 corrupt business-model rows, real and now gone.** They carried a single array element that should be
+two: `OEM Design & Development'Wholesale and/or Arbitrage`, an apostrophe where a delimiter belonged upstream.
+`digest.attr_list()` now splits on **lowercase-apostrophe-uppercase only**, which that value matches and ordinary
+apostrophes do not — proven: `Men's Health` and `L'Oreal` survive intact. The 8 stored rows were repaired to match;
+**0 corrupt rows remain**, and the two real values now count 159 and 127 members.
+
+**Part 3 — the "4 WA-layer resellers with non-current AT status" need no fix.** The two layers agree on every one,
+and there are 38 non-current resellers in total, not 4. `digest.is_active_member_status()` returns **false for
+every single one**, so none is reachable by a member-facing lane. The guard already does the job the ticket was
+worried about.
+
+**Before → after:** 5 members on the wrong continent · 8 rows carrying a value no filter could match → both fixed
+at the source so the next derive keeps them fixed, gate GREEN.
+
+
+#### ✅ #117 CLOSED 2026-09-10 — a `+` in a URL is a space, and it was guarding Andy's own history
+
+**Story:** *As whoever runs the self-test, `--cleanup` removes the turns it created and nothing else.*
+
+**Cause.** The cleanup hand-built a PostgREST URL carrying `created_at=gte.<timestamp>`, and a timestamp ends
+`+00:00`. **A `+` in a URL query string IS A SPACE**, so the filter was malformed, matched nothing, and every run
+printed "cleanup done" while deleting no messages at all. That trap is already written down in this project
+(`reference_postgrest_plus_is_space`) — it bit its own tooling.
+
+**It had piled up: 5,104 probe questions and 5,104 answers were sitting in `digest.olivia_messages`** — more than a
+third of all 13,309 turns — plus 91 orphaned `olivia_seen` rows. Not neutral: `prod_pulse` and the outage alarm both
+read that table to ask "is Millie answering".
+
+**Sharper than the ticket said.** `PROBE_PHONE` is **Andy's own number** — "the only member whose phone may be
+simulated" — so that bound was the only thing between the cleanup and his real conversation. Matching nothing was
+the *lucky* failure; the same defect parsed differently deletes real member turns, and that cannot be undone.
+
+**The fix removes the bound entirely.** `digest.selftest_cleanup(p_dry_run, p_phone)` identifies test turns exactly:
+a probe question by its `wamid.SELFTEST…` wamid, which a real inbound can never carry; its answer by sitting between
+that question and the next member row, since `id` is a sequence. `--cleanup` now **dry-runs by default** and needs
+`--yes` to delete.
+
+**Proven end to end on the hardest case** — a probe answer and a real answer side by side, both with no wamid:
+| row | outcome |
+|---|---|
+| probe question (`wamid.SELFTEST_117PROOF`) | deleted |
+| its answer, no wamid | deleted |
+| REAL question (`wamid.HBgLREAL117`) | **survived** |
+| its answer, no wamid | **survived** |
+
+The 1:1 dry-run count across the whole table (5,104 questions ↔ 5,104 answers) corroborates the rule.
+
+**⚠️ Left for Andy, deliberately.** Purging the 5,104-turn backlog is 10,208 irreversible deletions on his own
+conversation history. The tool is fixed and proven; the one-time purge is his call:
+`python3 scripts/olivia_selftest.py --cleanup --yes`.
 
 ### #148 · The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever
 **🔵 S3 · size S — filed 2026-08-25 from #126's audit.**

@@ -7,7 +7,8 @@ CREATE OR REPLACE FUNCTION digest.attr_list(j jsonb)
 AS $function$
   select coalesce(array_agg(distinct v order by v), '{}')
   from (
-    select nullif(trim(both ' ''' from regexp_replace(e, '\s+', ' ', 'g')), '') as v
-    from jsonb_array_elements_text(case when jsonb_typeof(j) = 'array' then j else '[]'::jsonb end) e
+    select nullif(trim(both ' ''' from regexp_replace(part, '\s+', ' ', 'g')), '') as v
+    from jsonb_array_elements_text(case when jsonb_typeof(j) = 'array' then j else '[]'::jsonb end) e,
+         lateral unnest(regexp_split_to_array(e, '(?<=[a-z])''(?=[A-Z])')) as part
   ) x where v is not null
 $function$
