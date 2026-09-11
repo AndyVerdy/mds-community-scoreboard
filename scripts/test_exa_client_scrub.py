@@ -107,5 +107,63 @@ with mock.patch('exa_client.subprocess.run') as mock_run:
     except SystemExit as e:
         check("curl non-JSON raises", "non-JSON" in str(e))
 
+# === NEW BREAKAGE 1: Placeholder spoofing ===
+text_with_placeholder = "Reference ID __URL_0__ see https://example.com/real for details"
+out = ex.scrub({"text": text_with_placeholder})
+check("placeholder-like text survives", "__URL_0__" in out["text"])
+check("real URL in same text protected", "https://example.com/real" in out["text"])
+
+# === NEW BREAKAGE 2: Contact key false positives — should NOT be nulled ===
+out = ex.scrub({"miscellaneous": "some info"})
+check("miscellaneous not nulled", out["miscellaneous"] == "some info")
+
+out = ex.scrub({"isCancelled": True})
+check("isCancelled not nulled", out["isCancelled"] is True)
+
+out = ex.scrub({"cellular_data_plan": "5GB"})
+check("cellular_data_plan not nulled", out["cellular_data_plan"] == "5GB")
+
+out = ex.scrub({"purcellStreet": "123 Main"})
+check("purcellStreet not nulled", out["purcellStreet"] == "123 Main")
+
+out = ex.scrub({"hotel": "Hilton"})
+check("hotel not nulled", out["hotel"] == "Hilton")
+
+out = ex.scrub({"hotelName": "Hilton"})
+check("hotelName not nulled", out["hotelName"] == "Hilton")
+
+out = ex.scrub({"intel": "confidential"})
+check("intel not nulled", out["intel"] == "confidential")
+
+out = ex.scrub({"telemetry": "data"})
+check("telemetry not nulled", out["telemetry"] == "data")
+
+out = ex.scrub({"telemetry_id": "123"})
+check("telemetry_id not nulled", out["telemetry_id"] == "123")
+
+# === Contact keys that SHOULD be nulled ===
+nulled_cases = [
+    ("email", "test@example.com"),
+    ("emails", ["test@example.com"]),
+    ("work_email", "work@example.com"),
+    ("phone", "555-1234"),
+    ("phoneNumber", "555-1234"),
+    ("mobile", "555-1234"),
+    ("tel", "555-1234"),
+    ("telephone", "555-1234"),
+    ("fax", "555-1234"),
+    ("cell_phone", "555-1234"),
+    ("cellPhone", "555-1234"),
+    ("msisdn", "555-1234"),
+    ("whatsapp", "555-1234"),
+    ("contactNumber", "555-1234"),
+    ("contact_number", "555-1234"),
+]
+
+for key, value in nulled_cases:
+    out = ex.scrub({key: value})
+    is_nulled = out[key] is None or out[key] == []
+    check(f"{key} nulled", is_nulled)
+
 print(("FAILED " + str(len(fails))) if fails else "ALL PASS")
 sys.exit(1 if fails else 0)

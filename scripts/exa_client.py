@@ -10,6 +10,7 @@ Secrets: /Users/Born/mds-digest-web/.env.local (EXA_API_KEY).
 import json
 import re
 import subprocess
+import secrets
 
 ENV = "/Users/Born/mds-digest-web/.env.local"
 BASE = "https://api.exa.ai"
@@ -27,12 +28,6 @@ ISO_DATETIME_RE = re.compile(r"\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(
 # Phone pattern: leading + OR 9+ digits; add asterisk to character class
 PHONE_RE = re.compile(r"\+[\d\s()\-.–]*\d(?![\w.])|(?<![.\w])[\d*][\d()\-.–* ]{6,}[\d*](?![\w.])")
 
-# Contact keys: expanded list including cell, fax, msisdn, whatsapp, and camelCase variants
-CONTACT_KEYS = re.compile(
-    r"(email|phone|mobile|tel|cell|fax|msisdn|whatsapp|contact[_\s]?number)",
-    re.IGNORECASE
-)
-
 
 def env(name):
     for line in open(ENV):
@@ -44,18 +39,42 @@ def env(name):
     raise SystemExit(f"{name} missing from {ENV}")
 
 
+def _get_contact_tokens(key):
+    """Split key into tokens by camelCase and non-alphanumeric boundaries."""
+    # Split on camelCase boundaries and non-alphanumeric separators
+    tokens = re.split(r'(?<=[a-z])(?=[A-Z])|[^a-zA-Z0-9]+', key)
+    return [t.lower() for t in tokens if t]
+
+
+def _is_contact_key(key):
+    """Check if key is a contact-like field using token matching."""
+    tokens = _get_contact_tokens(key)
+    contact_tokens = {"email", "emails", "phone", "phones", "mobile", "tel", "telephone", "fax", "cell", "msisdn", "whatsapp"}
+
+    # Check if any token is in the contact set
+    if any(t in contact_tokens for t in tokens):
+        return True
+
+    # Check if tokens contain both "contact" and "number"
+    if "contact" in tokens and "number" in tokens:
+        return True
+
+    return False
+
+
 def _protect_and_restore(text):
-    """Protect URLs and ISO-8601 dates, apply scrubbing, restore."""
+    """Protect URLs and ISO-8601 dates with random nonce, apply scrubbing, restore."""
+    nonce = secrets.token_hex(8)  # 16-character random hex string
     placeholders = {}
 
     # Protect URLs
-    for match in URL_RE.finditer(text):
-        key = f"__URL_{len(placeholders)}__"
+    for i, match in enumerate(URL_RE.finditer(text)):
+        key = f"__URL_{nonce}_{i}__"
         placeholders[key] = match.group(0)
 
     # Protect ISO-8601 dates
-    for match in ISO_DATETIME_RE.finditer(text):
-        key = f"__DATE_{len(placeholders)}__"
+    for i, match in enumerate(ISO_DATETIME_RE.finditer(text)):
+        key = f"__DATE_{nonce}_{i}__"
         placeholders[key] = match.group(0)
 
     # Apply replacements
@@ -84,7 +103,7 @@ def scrub(value):
     if isinstance(value, dict):
         out = {}
         for k, v in value.items():
-            if CONTACT_KEYS.search(k):
+            if _is_contact_key(k):
                 out[k] = [] if isinstance(v, list) else None
             else:
                 out[k] = scrub(v)
