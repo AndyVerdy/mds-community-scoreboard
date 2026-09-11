@@ -53,9 +53,22 @@ a partner to a person the evidence does not support.
 
 ## What Exa is, and why it is the right source
 
-Exa sells search, but the part that matters here is a structured company and people layer built
-largely from LinkedIn. A company result carries key executives with titles, headcount, headquarters,
-founding year, industry, tech stack and recent public posts as fields, not as prose to be scraped.
+Exa sells search, but the part that matters here is a structured entity layer sitting under the
+index. A company or person result carries names, titles, headcount, headquarters, founding year,
+industry, work history, education and web-traffic history as **fields**, not as prose to be scraped.
+
+**LinkedIn is one source among many, and not the important one.** A single search on one member with
+LinkedIn excluded returned six different kinds of page: the brand's own founding story, a press
+release, a lender's customer case study explaining how the company finances inventory, Exa's
+structured company record, Exa's structured person record, and a completely unrelated factory. The
+company record alone carried facts no MDS system holds: the legal entity **Suit Up Brands LLC**,
+16 employees, a Newport Beach address, six months of web-traffic history, and the fact that Happy
+Innovations is the brand house behind Happy Nuts, Happy Curves and Happy Soles.
+
+**Exa keeps stable entity IDs.** People and companies have permanent identifiers
+(`exa.ai/library/organization/…`, `exa.ai/library/person/…`). This matters more than it sounds: it
+gives the company nodes in the graph a real key instead of a company-name string. Matching on a name
+string is exactly how the Hector founder got attached to the wrong company.
 
 This is the complement to #160, not a replacement. #160 crawls a partner's own website and extracts
 with Sonnet, which can only ever learn what that site publishes and only when we already know the
@@ -89,8 +102,12 @@ about $250 a year. Cost is not the constraint. Identity is.
 
 ## Identity, and the phase split
 
-The wrong-person risk is the whole risk. It is removed entirely when we read a URL the member
-themselves gave us.
+The wrong-person risk is the whole risk, and the sweep above put a number on it: **three of ten
+results were the wrong entity** when the only anchor was a brand name.
+
+LinkedIn is not special as a *source*; it is special as an *anchor*, because it is a URL the member
+handed us themselves, so reading it cannot return somebody else. Everything the sweep finds beyond
+that URL has to earn its place by corroboration.
 
 | cohort | count | how identity is anchored | phase |
 | --- | --- | --- | --- |
@@ -166,14 +183,29 @@ This is a different question from the profile read and gets its own collection.
 | 2. Presence | what has the world said about them | third parties only | Search, $7 / 1k |
 
 **Third-party only, enforced in the query, not by hand.** Exclude the member's own domains, taken
-from `Brand(s) URL / Name(s)`, `Own Website & % of Revenue` and `Storefront - Census`; exclude
-LinkedIn, which collection 1 already covers; exclude Exa's `personal site` category. Include news,
-publications, podcasts and video. Date floor 2023-01-01, so a decade of noise does not arrive with
-the signal.
+from `Brand(s) URL / Name(s)`, `Own Website & % of Revenue` and `Storefront - Census`; exclude Exa's
+`personal site` category. Include news, publications, podcasts, video and company records. Date floor
+2023-01-01, so a decade of noise does not arrive with the signal.
 
-**Proven in the probe.** Searching Matt Greene with his own domains and LinkedIn excluded returned a
-PR Newswire release of 2025-09-13 quoting *"Matthew Greene, CEO of Happy Innovations"* launching
-Happy Soles, the company's third brand. Third-party, dated, quotable, and absent from our warehouse.
+**What a real sweep returns, measured 2026-09-11 on one member with LinkedIn excluded.** Ten results,
+six distinct source types, cost $0.017 including page summaries:
+
+| source type | example | what it gave us |
+| --- | --- | --- |
+| brand's own story page | `myhappynuts.com/pages/our-story` | founding story, four founders |
+| press release | einpresswire, 2025-06-04 | a product launch |
+| lender case study | Wayflyer customer story | how the company finances inventory |
+| structured company record | Exa entity `57m0gbzgjp6` | legal entity Suit Up Brands LLC, 16 employees, address, 6 months of web traffic, the brand-house structure |
+| structured person record | Exa entity `xfb2twbsslj` | work history and education as fields |
+| PR wire, separate search | PR Newswire 2025-09-13 | *"Matthew Greene, CEO of Happy Innovations"* launching a third brand |
+
+Not one of those is LinkedIn, and none of it is in our warehouse today.
+
+**The same sweep also proved the risk.** Three of the ten results were the wrong entity entirely: a
+nut factory in Chiba Prefecture, a Vietnamese corporate-gifting company whose founder is also listed
+as "Founder/CEO at Happy Nuts", and a Dubai business called Gourmet Happy Nuts LLC. **A 30% collision
+rate on a single common brand name is the #5068 failure reproducing in front of us**, and it is the
+reason corroboration below is mandatory rather than a nicety.
 
 **New table `digest.member_web_presence`:** `at_member_id`, `url`, `domain`, `title`, `published_at`,
 `kind` (`news` \| `podcast` \| `video` \| `publication`), `summary`, `corroborated_by`, `confidence`,
@@ -190,7 +222,8 @@ evidence in the entire system that is public, third-party and not self-reported,
 honest input for any future proficiency signal. That is stage D, and it still has to beat
 `expertise_truth` before it ships.
 
-**Cost:** about $6 for a full sweep of 733 members including page summaries.
+**Cost:** $0.017 for the measured single-member sweep including summaries, so about **$12.50** for
+all 733 members in one pass.
 
 ## The knowledge graph
 
@@ -249,9 +282,15 @@ rebuild.
 | `fetched_at` | timestamptz | |
 | `confidence` | numeric | 1.0 for a member-supplied URL |
 
-**New table `digest.web_entity`** gives companies a node at last: `entity_id`, `name`, `domain`,
-`linkedin_url`, `industry`, `headcount`, `hq`, `raw`, `source_url`, `fetched_at`. A separate table
-rather than a new `entity_dossier` kind, so no existing loader changes behaviour.
+**New table `digest.web_entity`** gives companies a node at last: `entity_id` (**Exa's stable
+identifier**, e.g. `57m0gbzgjp6`, not a name string), `kind`, `name`, `legal_name`, `domain`,
+`linkedin_url`, `industry`, `headcount`, `hq`, `web_traffic`, `raw`, `source_url`, `fetched_at`.
+A separate table rather than a new `entity_dossier` kind, so no existing loader changes behaviour.
+
+**Keying on Exa's entity ID is the single most important choice in this section.** Every previous
+attempt in this system to relate a company to a person matched on the company NAME, which is what
+put Hector's founder on the wrong company and what pulled three unrelated businesses into a
+ten-result sweep. An entity ID does not collide.
 
 **Edge types phase 1 can produce, all straight out of the Exa payload:**
 
@@ -336,6 +375,11 @@ at $15 per 1k, and it is worth revisiting once stage B proves the data is used.
 9b. `digest.member_web_presence` is populated, and **zero rows carry a domain the member owns**,
    proven by SQL against their own brand and website fields. Report how many members got at least
    one third-party hit, and how many of those hits are corroborated.
+9c. **Every company node keys on an Exa entity ID, not a name.** Zero rows in `web_entity` with a
+   null `entity_id`, proven by SQL.
+9d. **The collision rate is measured, not assumed.** Re-run the Matt Greene sweep through the
+   corroboration rule: the three known wrong entities (the Chiba factory, the Vietnamese gifting
+   company, Gourmet Happy Nuts LLC) must all be rejected or stored below full confidence.
 10. `python3 scripts/olivia_leak_gate.py` GREEN, exit 0, before anything merges.
 11. Millie's answers are unchanged. No gated function is modified on this ticket. Proven by a prod
     probe on a member question before and after, returning the same answer.
