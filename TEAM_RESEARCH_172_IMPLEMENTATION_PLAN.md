@@ -71,7 +71,7 @@
 **Interfaces:**
 - Produces: `digest.team_sql(p_sql text, p_max_rows int default 200) returns jsonb` — `{rows: [...], row_count: n, truncated: bool}` on success; on failure PostgREST returns HTTP 400 with `{code, message, details, hint}` (the verbatim Postgres error). Role `millie_team_ro`. View `digest.member_profiles_team`.
 
-- [ ] **Step 1: Write the failing check script**
+- [x] **Step 1: Write the failing check script**
 
 ```python
 #!/usr/bin/env python3
@@ -175,12 +175,12 @@ print("all green" if not fails else f"{fails} failing")
 sys.exit(1 if fails else 0)
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `python3 scripts/test_172_team_sql.py; echo EXIT=$?`
 Expected: every check FAIL with HTTP 404 (`Could not find the function digest.team_sql`) and `EXIT=1`.
 
-- [ ] **Step 3: Write the migration**
+- [x] **Step 3: Write the migration**
 
 ```sql
 -- scripts/sql/20260911_team_sql_172.sql  (#172 Team research mode — the read-only SQL surface)
@@ -296,7 +296,7 @@ comment on function digest.team_sql(text, integer) is
 notify pgrst, 'reload schema';
 ```
 
-- [ ] **Step 4: Write the fallback (only applied if Step 5 refuses `BYPASSRLS`)**
+- [x] **Step 4: Write the fallback (only applied if Step 5 refuses `BYPASSRLS`)**
 
 ```sql
 -- scripts/sql/20260911_team_sql_172_policies_fallback.sql
@@ -320,14 +320,14 @@ begin
 end $do$;
 ```
 
-- [ ] **Step 5: Apply the migration to prod** (Andy's Day-0 go in hand). Through the Supabase MCP `execute_sql` or `psql` if a DSN exists — paste the file's contents as one statement batch. If `create role … bypassrls` errors, apply the fallback file first, then re-run the main file (its `do` block skips the existing role).
+- [x] **Step 5: Apply the migration to prod** (Andy's Day-0 go in hand). Through the Supabase MCP `execute_sql` or `psql` if a DSN exists — paste the file's contents as one statement batch. If `create role … bypassrls` errors, apply the fallback file first, then re-run the main file (its `do` block skips the existing role).
 
-- [ ] **Step 6: Run the check script to verify it passes**
+- [x] **Step 6: Run the check script to verify it passes**
 
 Run: `python3 scripts/test_172_team_sql.py; echo EXIT=$?`
 Expected: checks 1–7 and 9–13 `ok`; check 8 prints the observed HTTP status and seconds for `pg_sleep(55)` — **write that number into the session log**; `EXIT=0`. If check 2 fails with a write succeeding, STOP: the read-only forcing does not bind inside PostgREST's transaction — escalate to Andy with the fallback (a LOGIN role with `rolconfig default_transaction_read_only=on` reached over a direct connection, which is the agent-service design), and do not proceed to the route.
 
-- [ ] **Step 7: Re-export the schema and commit**
+- [x] **Step 7: Re-export the schema and commit**
 
 ```bash
 python3 scripts/db_export_schema.py
@@ -343,7 +343,7 @@ git commit -m "#172: millie_team_ro, member_profiles_team, digest.team_sql — t
 **Interfaces:**
 - Consumes: `check(name, ok, detail)`, `curl(method, url, key, body, profile_hdr)`, `rpc(fn, params, key)`, `load_env()`, `key`, `ANON_KEY`, `BASE` — all already defined in the gate.
 
-- [ ] **Step 1: Add the section (it must FAIL against a database without the migration — run it once on a branch checkout that points at a fresh snapshot is not possible, so the negative controls below are the proof the checks bite: each check has a control that asserts the *opposite* privilege on a role that must hold it)**
+- [x] **Step 1: Add the section (it must FAIL against a database without the migration — run it once on a branch checkout that points at a fresh snapshot is not possible, so the negative controls below are the proof the checks bite: each check has a control that asserts the *opposite* privilege on a role that must hold it)**
 
 ```python
     # ---------------------------------------------------------------------------------------------
@@ -394,7 +394,7 @@ git commit -m "#172: millie_team_ro, member_profiles_team, digest.team_sql — t
 
 Add `import hashlib` and `import os` to the gate's imports if not already present (grep first: `grep -n "^import" scripts/olivia_leak_gate.py`).
 
-- [ ] **Step 2: Write the pre-ticket prod hash** (the snapshot the check compares against; taken BEFORE any other change this ticket makes)
+- [x] **Step 2: Write the pre-ticket prod hash** (the snapshot the check compares against; taken BEFORE any other change this ticket makes)
 
 ```bash
 python3 - <<'PY'
@@ -406,12 +406,12 @@ open('olivia_snapshots/prod_pre_172.sha256','w').write(hashlib.sha256(canon.enco
 PY
 ```
 
-- [ ] **Step 3: Run the gate, exit code read directly**
+- [x] **Step 3: Run the gate, exit code read directly**
 
 Run: `python3 scripts/olivia_leak_gate.py > /tmp/gate172.txt 2>&1; echo EXIT=$?; grep -c "^  FAIL" /tmp/gate172.txt`
 Expected: `EXIT=0`, `0` failures, the new section printing thirteen PASS lines (previous total 346 + 13).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add scripts/olivia_leak_gate.py olivia_snapshots/prod_pre_172.sha256
@@ -427,7 +427,7 @@ git commit -m "#172 gate: the read-only surface is service_role-only, runs as mi
 **Interfaces:**
 - Produces: the three numbers the design needs — heartbeat stream held for N s, silent response held for M s, through `digest.mds.co`.
 
-- [ ] **Step 1: Write the probe route** (no test: throwaway, staff-cookie gated, measurement only)
+- [x] **Step 1: Write the probe route** (no test: throwaway, staff-cookie gated, measurement only)
 
 ```ts
 // src/app/api/admin/millie/research/probe/route.ts — #172 Milestone A, THROWAWAY.
@@ -466,11 +466,11 @@ export async function GET(req: NextRequest) {
 }
 ```
 
-- [ ] **Step 2: Pin Node** — in `package.json` add `"engines": { "node": ">=22 <25" }`; in Render, Andy adds `NODE_VERSION=22` (check-before-add) and redeploys. Run `npm run build` locally to confirm the build is unaffected.
+- [x] **Step 2: Pin Node** — in `package.json` add `"engines": { "node": ">=22 <25" }`; in Render, Andy adds `NODE_VERSION=22` (check-before-add) and redeploys. Run `npm run build` locally to confirm the build is unaffected.
 
-- [ ] **Step 3: Merge to `main` (= deploy)** on `mds-digest-web`, then confirm `curl -s https://digest.mds.co/api/version` shows the new sha.
+- [x] **Step 3: Merge to `main` (= deploy)** on `mds-digest-web`, then confirm `curl -s https://digest.mds.co/api/version` shows the new sha.
 
-- [ ] **Step 4: Measure through the real edge, with the real cookie** (export the staff cookie value from the browser's devtools once; never commit it)
+- [x] **Step 4: Measure through the real edge, with the real cookie** (export the staff cookie value from the browser's devtools once; never commit it)
 
 ```bash
 COOKIE='mds_digest_session=<value>'
@@ -481,22 +481,22 @@ done
 
 Also open `https://digest.mds.co/api/admin/millie/research/probe?secs=300` in the admin browser tab and confirm lines arrive progressively (the fetch reader through the admin layout is what the client will use).
 
-- [ ] **Step 5: Record the numbers** in `SESSION_LOG_OLIVIA.md` as "heartbeat stream held N s, silent held M s through digest.mds.co, browser reader progressive: yes/no". Decision rule: heartbeat ≥ 300 s → **stream** transport in Task B9; < 300 s → **poll** transport (Task B9's fallback branch becomes the primary path).
+- [x] **Step 5: Record the numbers** in `SESSION_LOG_OLIVIA.md` as "heartbeat stream held N s, silent held M s through digest.mds.co, browser reader progressive: yes/no". Decision rule: heartbeat ≥ 300 s → **stream** transport in Task B9; < 300 s → **poll** transport (Task B9's fallback branch becomes the primary path).
 
 ### Task A4: The five-question spike (throwaway, TDD exception — a prototype, per the skill's stated exception; nothing from it is kept)
 
 **Files:**
 - Create outside git: `~/mds-team-proof/spike.mjs`, `~/mds-team-proof/references/`
 
-- [ ] **Step 1: Write the spike** — a local Node script using the installed SDK from `mds-digest-web/node_modules`: system prompt = a first-cut rules block (the eight canonical rules in Task B4) + the table index for `member_attributes`, `member_profiles_team`, `members`, `events_catalog`, `event_registrations_live`, `wa_messages`, `content_items`, `calls`, `call_attendance`, `member_identity`; one tool `sql_query` calling `rpc/team_sql` with the service key; manual `client.messages.stream()` loop, 15 laps, thinking off, `cache_control` on the last system block; prints per lap `usage` (`input_tokens`, `output_tokens`, `cache_read_input_tokens`, `cache_creation_input_tokens`), the tool calls, and the final answer.
+- [x] **Step 1: Write the spike** — a local Node script using the installed SDK from `mds-digest-web/node_modules`: system prompt = a first-cut rules block (the eight canonical rules in Task B4) + the table index for `member_attributes`, `member_profiles_team`, `members`, `events_catalog`, `event_registrations_live`, `wa_messages`, `content_items`, `calls`, `call_attendance`, `member_identity`; one tool `sql_query` calling `rpc/team_sql` with the service key; manual `client.messages.stream()` loop, 15 laps, thinking off, `cache_control` on the last system block; prints per lap `usage` (`input_tokens`, `output_tokens`, `cache_read_input_tokens`, `cache_creation_input_tokens`), the tool calls, and the final answer.
 
-- [ ] **Step 2: Freeze five references** — for Q1 (member profile), Q4 (members per chapter + 90-day delta), Q9 (lowest fill rate next 30 days), Q18 (most recent revenue for a member), Q20 (failed payment / non-active Stripe): write the reference SELECT, run it through the Supabase MCP, save `references/Qn.json` with `{sql, rows, ran_at}`.
+- [x] **Step 2: Freeze five references** — for Q1 (member profile), Q4 (members per chapter + 90-day delta), Q9 (lowest fill rate next 30 days), Q18 (most recent revenue for a member), Q20 (failed payment / non-active Stripe): write the reference SELECT, run it through the Supabase MCP, save `references/Qn.json` with `{sql, rows, ran_at}`.
 
-- [ ] **Step 3: Run the five questions immediately after each reference** and save `runs/Qn.json` with `{answer, tool_calls, laps, wall_ms, usage_per_lap, cost_usd}`.
+- [x] **Step 3: Run the five questions immediately after each reference** and save `runs/Qn.json` with `{answer, tool_calls, laps, wall_ms, usage_per_lap, cost_usd}`.
 
-- [ ] **Step 4: Score** — exact match on the reference values (Q1 fields, Q4 counts, Q9 table, Q18 figure+date+tier, Q20 set). Record: exact N/5, Q18 and Q20 answered via SQL yes/no, `cache_read_input_tokens > 0` on lap 2 for every multi-lap turn yes/no, p50 wall, mean cost.
+- [x] **Step 4: Score** — exact match on the reference values (Q1 fields, Q4 counts, Q9 table, Q18 figure+date+tier, Q20 set). Record: exact N/5, Q18 and Q20 answered via SQL yes/no, `cache_read_input_tokens > 0` on lap 2 for every multi-lap turn yes/no, p50 wall, mean cost.
 
-- [ ] **Step 5: The Milestone A verdict, one message to Andy** — the nine-check result, the transport numbers, the five scores. **Doable =** 13/13 checks · heartbeat ≥ 300 s · ≥ 4/5 exact · Q18 + Q20 via SQL · cache hit on lap 2 · p50 < 90 s · mean cost < $0.30. Any miss names its fallback before Milestone B starts.
+- [x] **Step 5: The Milestone A verdict, one message to Andy** — the nine-check result, the transport numbers, the five scores. **Doable =** 13/13 checks · heartbeat ≥ 300 s · ≥ 4/5 exact · Q18 + Q20 via SQL · cache hit on lap 2 · p50 < 90 s · mean cost < $0.30. Any miss names its fallback before Milestone B starts.
 
 ---
 

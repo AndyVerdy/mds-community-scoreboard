@@ -291,6 +291,7 @@ access-tagged. An undefined source does not exist to her.* No crawling raw bases
 | `member_expertise` | 16,630 | The expertise ledger v2: 742 members × 51 topics with evidence. |
 | `member_attributes` | 5,757 (756 active) | The derived member profile — the canonical member population. |
 | `member_profiles` | 6,037 | Raw Airtable field mirror (`at_fields` jsonb). |
+| `member_profiles_team` (view) | 6,113 (2026-09-10) | **#172 the deny-list view — the ONLY way Team research mode reads member profiles.** Every `member_profiles` column, with the `at_fields` keys that stay closed in Team mode removed by regex (`removal · reason · ltv · score card · member score · notes · lead scor · budget` → 29 keys on 2026-09-10). Read by `millie_team_ro`, which holds no privilege on the table itself. The Team column of `OLIVIA_SHAREABLE_FIELDS.md` is this view written as prose. |
 | `members` | 680 (617 linked) | **The WhatsApp channel layer** — phone → member. Not the population. |
 | `member_wa_ids` | 108 | **#146:** opaque WhatsApp sender id → phone, for members who hide their number. Learned automatically when id and number arrive together; paired by hand (`olivia_link_wa_id.py`) when only the id does. |
 | `member_email_alias` | 5,763 | **#100:** every address known to belong to a member, with its evidence (§4.10). |
@@ -610,6 +611,20 @@ drop+create. `CREATE OR REPLACE` preserves grants; prefer it. The leak gate chec
 
 **After any RPC DDL:** `notify pgrst, 'reload schema'` and then hammer the REST path — stale
 connection-pool caches produce *intermittent* 404s that look exactly like a quality regression.
+
+**The Team research surface (#172, live on prod 2026-09-10) — NOT part of Olivia's tool set.**
+`digest.team_sql(p_sql, p_max_rows)` runs one `SELECT`/`WITH`/`VALUES` over `digest` + `event` **as the
+NOLOGIN role `millie_team_ro`** (SECURITY DEFINER, owned by that role), forces `transaction_read_only`
+for the rest of the PostgREST transaction (proven: `net.http_post` → `25006`), wraps the query in
+`select * from (…) q limit N+1` (a second statement is a syntax error; a data-modifying CTE dies at
+`0A000`), returns `{rows,row_count,truncated}` or the verbatim Postgres error, and is executable by
+`service_role` only. The role reads every table and view in the two schemas EXCEPT `member_profiles`
+(→ the `member_profiles_team` view), `olivia_web_messages`, the OTP hash columns on `members` and
+`token_hash` on `member_sessions`; it holds no CREATE, no `pg_read_all_data`, no USAGE on `vault` /
+`auth` / `storage`, and cannot execute the secret-returning functions. It is the SQL tool of the Team
+research loop that lives in `mds-digest-web` (Milestone B), never reachable from the n8n graph — 20
+`#172` gate checks pin all of this plus the prod graph hash. Migration
+`scripts/sql/20260911_team_sql_172.sql`; proof `scripts/test_172_team_sql.py` (18 live checks).
 
 **The `video_access` rule type (#101, 2026-08-20).** Transcript chunks from a RESTRICTED video carry
 `access_rule = {"type":"video_access","video_id":…}` with `sensitivity='restricted'`.
@@ -1542,6 +1557,24 @@ treatment — a verify built on the same broken boundary passes exactly what the
    `access_restriction` differ — take the more restrictive one.
 
 
+
+### #172 Milestone A — five traps from the read-only SQL surface (2026-09-10)
+
+1. **PostgREST maps SQLSTATEs to HTTP statuses:** `42501` → 403, `25006` → 405, `42P01` / `42883` → 404,
+   everything else in `42*` / `0A*` / `3F*` → 400. A check that expects "400 for every refusal" passes on
+   nothing. Assert the status AND the `code` in the body.
+2. **`ALTER … OWNER TO role` requires the receiving role to hold CREATE on the schema** at that moment
+   (PG 16+). Grant CREATE, hand over, revoke, and pin "no CREATE" in the gate — a read-only role must
+   never keep it.
+3. **A data-modifying CTE nested inside a subquery dies at `0A000`** ("must be at the top level") before
+   any privilege or read-only check — so it proves nothing about `transaction_read_only`. The proof that
+   binds is a PUBLIC-executable writer reached on privilege alone: pg_net's `net.http_post` enqueue is
+   an INSERT, and the read-only check runs before the permission check → `25006`.
+4. **Every PUBLIC-executable SECURITY DEFINER writer in `digest` is a trigger function** — not callable
+   directly, so "call a writer through the tool" needs a real callable (see 3).
+5. **Chrome DOWNLOADS `application/x-ndjson` instead of rendering it.** A streaming route cannot be
+   measured by opening it in a tab; run a `fetch` reader inside a same-origin page (the admin page) and
+   read its progress — that is the client's real path anyway.
 
 ## 14. Known limits (2026-09-04)
 
