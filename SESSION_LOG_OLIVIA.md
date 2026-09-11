@@ -4,6 +4,50 @@
 
 
 
+## 2026-09-11 (evening) · #199 SHIPPED — `scan_content`: Millie reads EVERY message of a member set for a fuzzy trait
+
+**Andy's framing, which set the design:** *"this is just one request… we can't even predict these requests now. So is
+there a way to analyze the question and build custom DB queries?"* plus *"super important to control cost."* So nothing
+is written per question: the model writes the SELECT that picks the rows (exactly as it writes `sql_query`), and the tool
+adds the one thing it could not do — read every returned row. Spec + six-task plan approved first, then executed
+subagent-driven (task reviews, a whole-branch review, three fix rounds on the proof and two fix waves after review).
+
+**Shipped.** Web `c630307 → 9ade4b6` on Render, one new module and four touched files, no n8n edit, no new SQL function,
+no new grant. `src/lib/millie/team/scan.ts`: probe the SELECT's seven columns → `count(*)` + `count(distinct id)` +
+`sum(length(text))` → price it → refuse `too_many_rows` (>5,000) / `over_budget` ($2 default, $5 ceiling) / `unstable_id`
+/ `no_time`, reading nothing and charging nothing → page through `digest.team_sql` in keyset 500s → classify 40 rows per
+`claude-haiku-4-5` call, four in flight, rows numbered locally and quotes kept only when verbatim → stop on the wall
+clock, the cost cap or a failed batch with `complete:false` and the real `scanned` of `total_rows` → tally per member,
+trimmed by MEASURED payload size with `omitted_members`. `tools.ts` exposes it and relays refusals as normal results;
+`loop.ts` sums every tool step's `cost_usd` into the turn (so `MILLIE_TEAM_DAILY_USD` binds scans) and gained three rules
+on when to scan and how to report a partial; the trail shows each step's cost.
+
+**Proof (live DB, live models, in process — the route is gated on Andy's own session).** AC 1 tool level: four planted
+Miami messages from real Inspire 2026 attendees, 4/4 with verbatim quotes, `complete:true`, $0.0008. AC 1 end to end:
+Andy's question — 242-attendee set built, ONE `scan_content` call, 3 named with quotes + the deliberately hedged 4th
+correctly `unsure` and surfaced anyway, "read 11 messages … cost $0.0019", 6 laps, $0.121. AC 2: `refused:"over_budget"`
+with the estimate and `cost_usd: 0`; forced wall cap → `scanned 1702 of 4087`. AC 3: real 30-day WhatsApp scan, 2,541
+rows, scan $0.35, turn $0.5676. AC 4: gate **exit 0**, graph untouched. 1,425 tests, tsc + eslint clean.
+
+**The proof changed the product twice — this is the part worth remembering.** (1) The first end-to-end run FAILED:
+15 laps, `cut: lap_cap`, no answer, because the model was SAMPLING `content_items.meta` to derive how a row attributes to
+a member. That join was known to us and written nowhere. Put it in the tool description + catalog → the next run took
+**6 laps** and scanned. (2) Fixing that, the catalog's own Facebook claim proved false: `meta->>'sender_member'` is the WA
+Airtable id for `wa_message` (17,611/17,611 via `member_identity`) but the CANONICAL `at_member_id` for `fb_post` /
+`fb_comment` (19,077/19,241 direct; **0/19,241** via `member_identity`). One key, two identity spaces, by source — now in
+the handbook beside the `content_items` DDL.
+
+**Review findings that changed the code after the branch was "done".** `complete:true` could be returned for a scan that
+silently under-read (the equality compared `scanned` against what the PAGER FETCHED, not the count — reachable because the
+model writes `row_number()` ids, and the pager re-executes the SELECT per page). One classifier rejection discarded every
+verdict AND the spent cost, so it never reached `metrics.cost_usd`. Both fixed, plus the scan wall now respects the loop's
+remaining budget, the retry unions instead of replacing, and the tally is trimmed by measured size.
+
+**Found alongside, filed for priority evaluation, NOT worked:** the event-spend field trap (`Event Cost (Expense)` read as
+member spend, while `Event Revenue - All Time` sits in the catalog unused — Jake Ryan $183k) · no payment history in the
+mirror, so "past due twice in 6 months" can only be proxied · a thrown research turn logs `cost_usd: 0` (pre-existing).
+⚠️ `db_export_schema.py --check` exits 1 on FOREIGN drift (`member_web_*`, the parallel Exa.ai session): #199 added no SQL.
+
 ## 2026-09-11 (afternoon) · #170 SHIPPED — Millie's long thread memory: Team in process, Public via the door, Test/Prod untouched
 
 **Andy's scope call:** *"Team. and if possible in Public."* Test/Prod targets deliberately keep the 16-row window —
