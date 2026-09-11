@@ -749,6 +749,43 @@ CREATE INDEX member_wa_ids_at_member_idx ON digest.member_wa_ids USING btree (at
 CREATE INDEX member_wa_ids_phone_idx ON digest.member_wa_ids USING btree (phone);
 CREATE UNIQUE INDEX member_wa_ids_pkey ON digest.member_wa_ids USING btree (wa_user_id);
 
+-- digest.member_web_presence
+--   at_member_id                       text not null
+--   url                                text not null
+--   domain                             text not null
+--   kind                               text not null
+--   title                              text
+--   published_at                       date
+--   summary                            text
+--   corroborated_by                    text
+--   confidence                         numeric not null default 1.0
+--   raw                                jsonb
+--   fetched_at                         timestamp with time zone not null default now()
+alter table digest.member_web_presence add constraint member_web_presence_pkey PRIMARY KEY (at_member_id, url);
+CREATE INDEX member_web_presence_kind_idx ON digest.member_web_presence USING btree (at_member_id, kind);
+CREATE UNIQUE INDEX member_web_presence_pkey ON digest.member_web_presence USING btree (at_member_id, url);
+
+-- digest.member_web_profile
+--   at_member_id                       text not null
+--   source_url                         text not null
+--   source_kind                        text not null
+--   fetch_status                       text not null
+--   fetched_at                         timestamp with time zone not null default now()
+--   headline                           text
+--   location                           text
+--   industry                           text
+--   headcount                          text
+--   entity_id                          text
+--   work_history                       jsonb not null default '[]'::jsonb
+--   education                          jsonb not null default '[]'::jsonb
+--   raw                                jsonb
+--   source_hash                        text not null
+--   model                              text not null
+--   confidence                         numeric not null default 1.0
+alter table digest.member_web_profile add constraint member_web_profile_pkey PRIMARY KEY (at_member_id, fetched_at);
+CREATE INDEX member_web_profile_member_idx ON digest.member_web_profile USING btree (at_member_id, fetched_at DESC);
+CREATE UNIQUE INDEX member_web_profile_pkey ON digest.member_web_profile USING btree (at_member_id, fetched_at);
+
 -- digest.members
 --   airtable_id                        text not null
 --   phone                              text
@@ -988,6 +1025,20 @@ alter table digest.olivia_web_messages add constraint olivia_web_messages_target
 CREATE INDEX olivia_web_messages_asker_idx ON digest.olivia_web_messages USING btree (asker_email, created_at DESC);
 CREATE INDEX olivia_web_messages_thread_idx ON digest.olivia_web_messages USING btree (thread_id, created_at DESC);
 CREATE UNIQUE INDEX olivia_web_messages_pkey ON digest.olivia_web_messages USING btree (id);
+
+-- digest.olivia_web_threads
+--   thread_id                          text not null
+--   asker_email                        text not null
+--   mode                               text not null
+--   title                              text
+--   summary                            text not null default ''::text
+--   summary_through_id                 bigint not null default 0
+--   turns                              integer not null default 0
+--   updated_at                         timestamp with time zone not null default now()
+alter table digest.olivia_web_threads add constraint olivia_web_threads_mode_check CHECK ((mode = ANY (ARRAY['team'::text, 'public'::text])));
+alter table digest.olivia_web_threads add constraint olivia_web_threads_pkey PRIMARY KEY (thread_id);
+CREATE INDEX olivia_web_threads_asker_idx ON digest.olivia_web_threads USING btree (asker_email, updated_at DESC);
+CREATE UNIQUE INDEX olivia_web_threads_pkey ON digest.olivia_web_threads USING btree (thread_id);
 
 -- digest.olivia_webhook_events
 --   id                                 bigint not null
@@ -1246,6 +1297,42 @@ alter table digest.wa_messages add constraint wa_messages_sender_member_fkey FOR
 CREATE INDEX wa_messages_chat_time_idx ON digest.wa_messages USING btree (chat_id, sent_at DESC);
 CREATE INDEX wa_messages_member_chat_idx ON digest.wa_messages USING btree (sender_member, chat_id, sent_at DESC);
 CREATE UNIQUE INDEX wa_messages_pkey ON digest.wa_messages USING btree (id);
+
+-- digest.web_edges
+--   a_id                               text not null
+--   a_kind                             text not null
+--   b_id                               text not null
+--   b_kind                             text not null
+--   edge_type                          text not null
+--   valid_from                         date
+--   valid_to                           date
+--   weight                             numeric not null default 1.0
+--   evidence                           jsonb not null default '{}'::jsonb
+--   source_url                         text not null
+--   fetched_at                         timestamp with time zone not null default now()
+--   confidence                         numeric not null default 1.0
+CREATE INDEX web_edges_b_idx ON digest.web_edges USING btree (b_id, b_kind, edge_type);
+CREATE INDEX web_edges_type_idx ON digest.web_edges USING btree (edge_type);
+CREATE UNIQUE INDEX web_edges_uk ON digest.web_edges USING btree (a_id, a_kind, b_id, b_kind, edge_type, valid_from) NULLS NOT DISTINCT;
+
+-- digest.web_entity
+--   entity_id                          text not null
+--   entity_key_source                  text not null
+--   kind                               text not null
+--   name                               text not null
+--   legal_name                         text
+--   domain                             text
+--   linkedin_url                       text
+--   industry                           text
+--   headcount                          text
+--   hq                                 text
+--   web_traffic                        jsonb
+--   raw                                jsonb
+--   source_url                         text not null
+--   fetched_at                         timestamp with time zone not null default now()
+--   confidence                         numeric not null default 1.0
+alter table digest.web_entity add constraint web_entity_pkey PRIMARY KEY (entity_id);
+CREATE UNIQUE INDEX web_entity_pkey ON digest.web_entity USING btree (entity_id);
 
 -- digest.zoom_name_alias
 --   name_folded                        text not null

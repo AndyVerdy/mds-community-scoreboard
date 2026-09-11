@@ -47,6 +47,8 @@ alter table digest.member_profile_embeddings enable row level security;
 alter table digest.member_sessions enable row level security;
 -- digest.member_state_snapshot: row level security DISABLED
 -- digest.member_wa_ids: row level security DISABLED
+-- digest.member_web_presence: row level security DISABLED
+-- digest.member_web_profile: row level security DISABLED
 alter table digest.members enable row level security;
 -- digest.meta_webhook_verdicts: row level security DISABLED
 alter table digest.olivia_alarm_config enable row level security;
@@ -64,6 +66,7 @@ alter table digest.olivia_requests enable row level security;
 -- digest.olivia_seen: row level security DISABLED
 -- digest.olivia_sends: row level security DISABLED
 alter table digest.olivia_web_messages enable row level security;
+alter table digest.olivia_web_threads enable row level security;
 -- digest.olivia_webhook_events: row level security DISABLED
 alter table digest.partner_reviews enable row level security;
 -- digest.partner_web_profile: row level security DISABLED
@@ -79,4 +82,6 @@ alter table digest.video_files enable row level security;
 alter table digest.video_speakers enable row level security;
 alter table digest.videos_catalog enable row level security;
 alter table digest.wa_messages enable row level security;
+-- digest.web_edges: row level security DISABLED
+-- digest.web_entity: row level security DISABLED
 -- digest.zoom_name_alias: row level security DISABLED
