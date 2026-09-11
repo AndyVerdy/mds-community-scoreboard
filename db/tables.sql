@@ -761,6 +761,7 @@ CREATE UNIQUE INDEX member_wa_ids_pkey ON digest.member_wa_ids USING btree (wa_u
 --   confidence                         numeric not null default 1.0
 --   raw                                jsonb
 --   fetched_at                         timestamp with time zone not null default now()
+--   corroboration_state                text
 alter table digest.member_web_presence add constraint member_web_presence_pkey PRIMARY KEY (at_member_id, url);
 CREATE INDEX member_web_presence_kind_idx ON digest.member_web_presence USING btree (at_member_id, kind);
 CREATE UNIQUE INDEX member_web_presence_pkey ON digest.member_web_presence USING btree (at_member_id, url);
