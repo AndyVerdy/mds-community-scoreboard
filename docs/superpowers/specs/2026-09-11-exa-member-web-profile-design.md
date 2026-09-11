@@ -153,6 +153,89 @@ day one with `location` and `role` in conflict.
 The same fetch fills `partner_web_profile.people` for the 281 empty rows. No new table is needed
 there; `people` is already an existing, already-empty column, so filling it is not a rewrite.
 
+## The knowledge graph
+
+**Andy 2026-09-11: "We need to make sure we have a proper knowledge graph. That all is related."**
+Agreed, and the probe shows the current graph cannot express any of it.
+
+### What the graph actually is today
+
+`digest.member_edges` holds 139,967 rows and exactly three edge types, every one of them
+member-to-member co-presence:
+
+| edge_type | rows | distinct a-nodes |
+| --- | --- | --- |
+| `co_attended` | 95,049 | 1,559 |
+| `same_chat` | 24,368 | 360 |
+| `same_chapter` | 20,550 | 685 |
+
+`digest.entity_dossier` holds 3,121 entities across four kinds: event 1,457, video 1,084,
+partner 509, chapter 71. **There is no company node and no member node anywhere in the graph.**
+
+So the graph answers one question, "who was in the same room", and cannot answer "who works where",
+"who founded what", "which company owns this product" or "which two members are colleagues".
+
+### Why that is exactly why #5068 failed
+
+Hector is the in-house technology of an agency, Neon Digital Media. The founder Exa returns for
+Hector is that agency's founder. Without a company-to-company edge there is no way to say "the
+person founded the parent, not the product", so any answer about Hector's founder is a coin flip.
+The empty `people` column is the symptom. The missing edge is the cause.
+
+### Two hard constraints found in the code
+
+1. **`derive_knowledge_graph()` begins with `delete from digest.member_edges where true;`** and
+   rebuilds nightly. Any Exa-derived edge written into `member_edges` is destroyed on the next run.
+   Web edges therefore need their own table.
+2. **The graph's fourth edge type is dead.** The function also inserts `thread_interaction`, the
+   Facebook commenter-to-author edge, and the live table contains **zero** of them. The insert joins
+   `digest.members.airtable_id = content_items.meta->>'sender_member'`, which matches 0 rows;
+   joining on `at_member_id` matches 13,407 comments, and on `member_profiles.at_member_id` 15,503.
+   This is the `airtable_id` vs `at_member_id` trap named in handbook chapter 07. **Found alongside,
+   not fixed here** — see "Found alongside" below.
+
+### Design: one graph to query, two tables to write
+
+**New table `digest.web_edges`.** Typed, namespaced, additive, and never touched by the nightly
+rebuild.
+
+| column | type | notes |
+| --- | --- | --- |
+| `a_id` / `a_kind` | text | `member` \| `company` \| `partner` \| `external` |
+| `b_id` / `b_kind` | text | same |
+| `edge_type` | text | see below |
+| `weight` | numeric | |
+| `evidence` | jsonb | |
+| `source_url` | text | required, same rule as the profile table |
+| `fetched_at` | timestamptz | |
+| `confidence` | numeric | 1.0 for a member-supplied URL |
+
+**New table `digest.web_entity`** gives companies a node at last: `entity_id`, `name`, `domain`,
+`linkedin_url`, `industry`, `headcount`, `hq`, `raw`, `source_url`, `fetched_at`. A separate table
+rather than a new `entity_dossier` kind, so no existing loader changes behaviour.
+
+**Edge types phase 1 can produce, all straight out of the Exa payload:**
+
+| edge_type | from | to | proven in the probe by |
+| --- | --- | --- | --- |
+| `works_at` | member | company | Goldsmith to Lone Star Merchandising Group |
+| `founded` | member | company | Matthew Greene to Happy Innovations |
+| `previously_at` | member | company | Goldsmith to Daily Steals, 2012-2014 |
+| `colleague_of` | member | member | Casey Ames and Amelia Ames, both at Harkla |
+| `owns_brand` | member | company | Casey Ames to Harkla |
+| `parent_of` | company | company | **Neon Digital Media to Hector, the #5068 fix** |
+| `featured_in` | member | external | the Amazon Seller Spotlight on Happy Innovations |
+
+`colleague_of` is worth calling out: it is the first member-to-member edge in the system that means
+something other than "was in the same room", and it costs nothing extra to derive.
+
+**One graph to read: `digest.knowledge_graph`,** a view that UNIONs `member_edges` and `web_edges`
+into a single surface with a `source` column saying which side a row came from. Consumers query one
+place. The nightly rebuild keeps owning its own table and cannot wipe the web side.
+
+**Rollback stays one line per table.** Dropping `web_edges`, `web_entity` and the view returns the
+graph byte-identical to today.
+
 ## How the data gets applied
 
 Four consumers, shipped in order of blast radius. **Only stage A is in scope for this ticket.**
@@ -204,9 +287,31 @@ at $15 per 1k, and it is worth revisiting once stage B proves the data is used.
    hit rate honestly, including the misses; StoreClaw is a known miss and must be reported as one.
 6. The weekly job runs, stamps a heartbeat, and a second run within the same week writes zero new
    rows for unchanged pages.
-7. `python3 scripts/olivia_leak_gate.py` GREEN, exit 0, before anything merges.
-8. Millie's answers are unchanged. No gated function is modified on this ticket. Proven by a prod
-   probe on a member question before and after, returning the same answer.
+7. `digest.web_entity` and `digest.web_edges` exist and are populated, and `digest.knowledge_graph`
+   returns both sides in one query. Report edge counts by `edge_type`.
+8. **The `parent_of` edge exists for Hector and its parent agency**, and a SQL read of the graph
+   returns the founder attached to the parent rather than the product. This is the #5068 fix stated
+   as a graph query, not as a prose answer.
+9. `derive_knowledge_graph()` runs after the load and `digest.web_edges` still holds every row.
+   Proven by a count before and after, not by reading the function.
+10. `python3 scripts/olivia_leak_gate.py` GREEN, exit 0, before anything merges.
+11. Millie's answers are unchanged. No gated function is modified on this ticket. Proven by a prod
+    probe on a member question before and after, returning the same answer.
+
+## Found alongside, not fixed here
+
+**The knowledge graph's `thread_interaction` edge has never produced a row.**
+`digest.derive_knowledge_graph()` inserts it by joining
+`digest.members.airtable_id = content_items.meta->>'sender_member'`. That join matches **0** rows.
+Joining on `at_member_id` matches **13,407** fb comments; on `member_profiles.at_member_id`,
+**15,503**. The live table holds `co_attended`, `same_chat` and `same_chapter` only.
+
+Effect: the only edge in the graph that records members actually interacting, rather than being
+booked into the same room, is silently absent, and every consumer of `member_edges`
+(`member_dossier_v2`, `chat_recommendations_v2`, `event_lookup_v2`) has been reading a graph with
+that dimension missing. No existing ticket covers it; #158 touches `member_edges` only for foreign
+keys. **Flagged for priority evaluation, per the standing rule that issues found alongside are not
+the job.**
 
 ## Out of scope, explicitly
 
@@ -219,9 +324,9 @@ at $15 per 1k, and it is worth revisiting once stage B proves the data is used.
 
 ## Open questions for Andy
 
-1. **Retention of `raw`.** Storing Exa's unmodified payload makes every extraction re-runnable
-   without paying again, and it also means we hold a copy of a member's LinkedIn profile in our
-   warehouse. Keep it, or keep only the extracted fields?
+1. ~~**Retention of `raw`.**~~ **Decided by Andy 2026-09-11: keep the raw payload.** Every
+   extraction is re-runnable without paying again, and the graph below can be rebuilt from it
+   without a refetch.
 2. **The persona fabrication is a separate defect.** Goldsmith's "Miami-based e-commerce founder"
    is wrong whether or not Exa is ever bought. File it as its own ticket now, or fold it into
    stage C?
