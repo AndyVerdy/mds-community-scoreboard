@@ -17,6 +17,29 @@ COLS = ("at_member_id", "url", "domain", "kind", "title", "published_at",
         "summary", "corroborated_by", "corroboration_state", "confidence", "raw", "fetched_at")
 
 
+def edge_for(r):
+    """A featured_in edge's identity is "this member is featured at this URL" — never a date.
+    valid_from/valid_to model an interval a relationship HELD (someone worked somewhere from-to);
+    a document's publication date isn't that, so it lives in evidence instead (#211 fix round 1,
+    IMPORTANT 1). Keeping valid_from out of the row means it can never move: web_edges dedupes on
+    (a_id, a_kind, b_id, b_kind, edge_type, valid_from), so a later sweep that finds a different
+    or newly-known published_at for the same member+URL updates this same edge instead of minting
+    a rival one. Returns None for an uncorroborated row — the one rule this whole task exists to
+    enforce, pulled into its own function so it's unit-testable without a live database call."""
+    if not r.get("corroborated_by"):
+        return None
+    return {
+        "a_id": r["at_member_id"], "a_kind": "member",
+        "b_id": r["url"], "b_kind": "external",
+        "edge_type": "featured_in", "valid_from": None, "valid_to": None,
+        "weight": 1.0,
+        "evidence": {"kind": r["kind"], "title": r.get("title"),
+                     "corroborated_by": r.get("corroborated_by"),
+                     "published_at": r.get("published_at")},
+        "source_url": r["url"], "confidence": r["confidence"],
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("files", nargs="+")
@@ -31,15 +54,7 @@ def main():
                 rows.append(json.loads(line))
 
     presence = [{k: r.get(k) for k in COLS} for r in rows]
-    edges = [{
-        "a_id": r["at_member_id"], "a_kind": "member",
-        "b_id": r["url"], "b_kind": "external",
-        "edge_type": "featured_in", "valid_from": r.get("published_at"), "valid_to": None,
-        "weight": 1.0,
-        "evidence": {"kind": r["kind"], "title": r.get("title"),
-                     "corroborated_by": r.get("corroborated_by")},
-        "source_url": r["url"], "confidence": r["confidence"],
-    } for r in rows if r.get("corroborated_by")]
+    edges = [e for e in (edge_for(r) for r in rows) if e]
 
     by_kind = {}
     for r in rows:
