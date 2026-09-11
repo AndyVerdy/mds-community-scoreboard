@@ -245,7 +245,16 @@ tool: `Web Inbound (POST)` (path `olivia-web-live` / `-staging`, header-auth cre
 text, thread_id}` into the WhatsApp shape — the retrieval principal is the probe member phone, set INSIDE the
 node, and the wamid is generated as `wamid.SELFTEST_WEB_…`, so a web turn always takes the silent branch and can
 never reach `Send Reply (Meta)`. `Load Recent Turns` reads `olivia_web_messages` by `thread_id` for web turns
-(16-turn cap, no 24 h cut). After `Eval (silent)?` a `Web?` fork runs `Public?` → **Public Gate** (Public mode
+(16-row cap, no 24 h cut). **Long thread memory (#170, 2026-09-11):** the web app is the only writer of
+`digest.olivia_web_threads` — one row per Team/Public thread with a running summary of everything older than the
+16-row verbatim window. `src/lib/millie/thread-memory.ts` (`loadMemory`) folds only the rows above
+`summary_through_id` and below the window, lazily at the START of a turn, with Haiku 4.5 (`MILLIE_SUMMARY_MODEL`),
+so the per-turn cost is flat in thread length and a failed fold just retries the same range next turn. Team reads
+it in process (summary as the first message, then the 16 rows) and has a `web_thread_search` tool whose thread id
+and asker are injected server-side — the tool exists only in the Team runtime, never in this graph. Public sends
+the summary to the door as `thread_summary`; `Log Inbound` carries it and `Answer Seed` pushes it as the first
+`user` message before the recent rows (staged `d68bcd6e`, awaits promote). Test/Prod targets send nothing and keep
+reproducing what a WhatsApp member gets. Clear deletes the thread row too. After `Eval (silent)?` a `Web?` fork runs `Public?` → **Public Gate** (Public mode
 only: `Classify Evidence (Supabase)` + `Fetch Name Index (Supabase)` → `Public Inputs` → `Public Redact` →
 `Public Smooth (Claude)` [one Haiku call] → `Public Verify`) → `Format Web` → `Save Web (Supabase)` → `Web
 Response` (a code node; **never a `respondToWebhook` node on this fork — one reachable from `WA Inbound (POST)`
@@ -317,6 +326,7 @@ access-tagged. An undefined source does not exist to her.* No crawling raw bases
 | `docs` / `doc_entries` | 4 / 50 | **#18 org knowledge library** — team documents (FAQs, SOPs), audience fail-closed to staff, served by the `/api/olivia/kb` route. |
 | `olivia_messages` | 12,981 (1,385 real member turns from 143 members) | Conversation history, stamped with the member record; the rest is eval/probe traffic (`wamid.SELFTEST*`). |
 | `olivia_web_messages` | new (#169) | **Admin web chat turns** (Ask Millie: modes `test` · `public` · `team`), keyed by `thread_id` + staff `asker_email`; carries `answer_md`, `notes`, `sources`, `evidence_classes`, `redactions`, `source_summary`, `metrics`. service_role only, RLS on. Never member WhatsApp traffic — the daily review must not read it. |
+| `olivia_web_threads` | new (#170) | **Running summary per web thread** (`team` · `public` only), keyed by `thread_id` + `asker_email` + `mode`; `summary` (≤1,200 chars, Haiku fold), `summary_through_id` (last `olivia_web_messages.id` folded), `turns`, `title`. Written ONLY by `mds-digest-web` (`thread-memory.ts`); the graph never touches it. service_role only, RLS on, no policy by design. |
 
 > ⚠️ **`digest.members` is the WhatsApp layer; `digest.member_attributes` is the member
 > population.** Confusing the two has caused repeated bugs — most notably staff counts. Anything

@@ -11,6 +11,24 @@
 
 # Olivia — next session
 
+## ⛳ SESSION 2026-09-11 (afternoon) — **#170 SHIPPED** · web `e1eeb83` live on Render · staging `d68bcd6e` awaits Andy's promote · NEXT = **#199**
+
+**What shipped (#170, Team + Public — Andy: "Team. and if possible in Public").** `digest.olivia_web_threads` +
+`src/lib/millie/thread-memory.ts` (lazy Haiku fold, `summary_through_id` cursor, 16-row verbatim window as
+`VERBATIM_ROWS`), `web_thread_search` in the Team tool set (thread + asker injected server-side), `thread_summary`
+on the Public door POST, staging `Log Inbound` + `Answer Seed` render it. Test/Prod untouched. Full close block on
+the board under `### #170`; the design and plan live in `docs/superpowers/{specs,plans}/2026-09-11-170-*`.
+
+**Open for Andy.** (1) The route check: ask the MRR-date question on the seeded Team thread `t_170_long`, then
+`python3 scripts/olivia_170_seed_thread.py --cleanup` (seed rows are backdated three days; they never touch the
+daily budget). (2) Promote staging `d68bcd6e` — the Public half is inert until then. (3) Two flags found
+alongside, on the board under #170: web reads in `Load Recent Turns` are scoped by `thread_id` alone (pre-existing
+#169); a Public turn stacks a ≤30 s fold before the door call.
+
+**Live state.** Prod n8n `b31eadbb` (untouched), staging `d68bcd6e`, lock free, gate 368/0 exit 0, web main
+`e1eeb83`. **NEXT in the agreed order:** #199 scan tool (open with the vectorization audit + Andy's three probes)
+→ #200 Team access → #198 MCP door. Present the briefing and WAIT for go.
+
 ## ⛳ SESSION CLOSED 2026-09-11 — **NEXT = #170, and it is the MEMORY half only** · a parallel session opens on Exa.ai
 
 **Andy's close:** *"Let's close this session, and we will start the next one with 170 and I will create a second session
