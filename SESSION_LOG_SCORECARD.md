@@ -6,6 +6,111 @@ Newest first. **Every session close: prepend the full entry here + ONE index lin
 
 ---
 
+## 2026-09-11 (late) — "Unengaged is wrong" is three breaks · the spine's join key was never filled
+
+**Opened on Belen's report**, ClickUp `86e37cjc5` ("90 day Unengaged Members view is not working
+properly", high, in progress, Andy + Belen + Nausica). Three claims, all true, all measured live
+2026-09-11. Andy gave the go after the briefing. Hand-off doc: `SCORECARD_UNENGAGED_FIX.md`.
+
+### 1. The Airtable field reads a table that died in November — Andy's call, no write by me
+
+`Members & Scorecard` → `FB Group 90 Day Post Score` (`fldR66HCZ7ynqGEyz`) is
+`MIN(20, {Accumulative Groups 90 Day Posts} × 4)`. That input (`fld3WdQ2AvtbQ0imL`) sums three
+rollups named *Amazon / Investments / Shopify 90 Day Posts* (`fldz6T4ioCfJ4bEdp`,
+`fldUs3Hfl77cXXj6c`, `fldGKFKT4LgLv0DNx`) — **identical configs, all three rolling up the same
+table**, `Facebook Group Weekly Metrics` `tblckOTP8UkC6K8Xr`, whose newest row is **2025-11-15**.
+The `SCORECARD_AUDIT.md` line calling that table dead was right and nothing repointed the field.
+
+So the field is 0 for every member. View **"Unengaged 90 days" `viwywSN4BSgunz2Ts` = 176 rows, all
+scored 0** (131 Current Member, 45 New Member), and **17 of the 176 posted or commented in the MDS
+group in the last 28 days** — Belen's Dan Wills among them (8 posts · 10 comments · 15 reactions,
+`FB Engagement (NEW)` `tblVc38gw21iHLYMG`, scraped **2026-09-10**). The data was never missing; the
+field points at the wrong table.
+
+**There is no live 90-day count to repoint to.** The Chrome-extension capture is a 28-day window and
+`FB Engagement History (NEW)` stores only `Window = 28d`. Options handed to Andy, my pick first:
+retire the field and rebuild the view on `Posts 28d (FB)` + `Comments 28d (FB)`; or sum ~3
+consecutive 28d snapshots (approximate, history starts 2026-06); or add a 90-day window to the
+extension. The three `… 90 Day Posts` rollups retire with it.
+
+### 2. The digest's zeros are ONE blank join key — SHIPPED, awaiting the apply
+
+The digest mirrors Airtable faithfully — `mds-digest-web scripts/backfill_member_profiles.py` copies
+`Engagement Score` off `Member Scorecard (NEW)` joined by email — so the bug is upstream of it.
+
+`Engagement Score` is a plain number written by the Airtable automation **"Recompute Engagement
+Score" `wfltDzQ0oZq3JvbnE`** (config-driven over Pillars + Attributes), poked weekly by n8n
+`UCxyzY1RXzrIHtmX` Mon 02:30 CST. It scores whatever the spine's lookup fields hold. Those come from
+three weekly layer syncs — Events `uuXBxG6lqXCV9otJ` (01:30), WhatsApp `RPfnori7C26NcT9N` (01:40),
+Member Attributes `odfBrs6z9IxP7ndl` (01:50).
+
+**All three find the member the same way** — Events `Compute split + upsert` and Attributes `Derive`
+both do `String(f['MDS Member URL']).match(/rec[A-Za-z0-9]{14}/g)` and take the id that exists in the
+Members-DB map. They have to: the spine's `Member` link points at the **synced mirror**
+`tblbN6JVeSk2XoPst`, whose record ids are its own — a full-field scan of a mirror row (172 fields)
+finds **no** copy of the source rec id. `MDS Member URL` is the only carrier.
+
+`reconcile.py` section A created spine rows with `Member` + `Member Name (MDS DB)` only, so the key
+stayed blank and every sync wrote 0.
+
+| Measure | Live 2026-09-11 |
+|---|---|
+| Spine rows | 1350 |
+| Blank `MDS Member URL` | 68 |
+| Of those, Engagement Score 0 | **68 of 68** |
+| Blank rows that are New Members | 40 |
+
+**Shipped** — `~/mds-scorecard-tools` commit **`066e9bf`**, TDD (11 tests written first, watched fail
+on `AttributeError`, then green; suite **126 passed**): new `email_key()`, `resolve_member_db_id()`,
+`spine_url_updates()` and main-loop section **A2**. Unique email wins; a unique name is the fallback;
+**a key on two records is reported, never guessed**. New spine rows get the key at creation, not the
+following week. The Members-DB pull moved up to section A so A2 and link maintenance share one read.
+
+**Dry run against live:** `blank on the spine: 68 | resolved -> backfill: 62 | UNRESOLVED: 6`, and
+nothing else in the run changes (spine +0, FB rows +0, member-link backfill 0, links 0) — the apply
+writes 62 fields and nothing more. The 6 are duplicate member records, an ops job not a code one:
+2× "Andy Delete Me", **Justin Cao** (name on 2), **Brian Williams** (name on 5), **Christopher Hytry
+Derrington** and **Adrian Markus** (email on 2 each).
+
+⏸ **Not applied — I do not write to Airtable.** Andy runs
+`cd ~/mds-scorecard-tools && python3 reconcile.py --apply`; the Monday 01:30–02:30 CST chain scores
+them.
+
+### 3. Summit attendance — same key, and it is proven to clear
+
+Belen: *"some of these people attended the summit… Tamkin even won mvp"*. Registrations are live and
+**Confirmed** (`digest.event_registrations` × `events_catalog`): Ginny Lo, Omer Ege and Tamkin
+Collins all on **MDS Summit Singapore 2026-08-23**, plus Women's Lunch, Pre-Event Dinner, Night Out,
+TikTok Mastermind, Vegas Boardroom. Their `Events (NEW)` rows exist, are linked, were refreshed
+**2026-09-07**, and read 0 across every window because `mid` resolved to `undefined`.
+
+Replaying the sync's own window maths read-only against the live Event Roster with the resolved id:
+
+| Member | Resolved by | In-Person 3mo |
+|---|---|---|
+| Ginny Lo | email | **3** — Summit, Women's Lunch, TikTok Mastermind |
+| Omer Ege | email | **1** — Summit |
+| Tamkin Collins | email | **6** — incl. Summit, Women's Lunch, Night Out, TikTok |
+| Dan Wills | email | 0 — correct, his signal is Facebook |
+
+The same blank key zeroes `Profile % Complete`, `Years a Member`, `In Squad`, `App Active 7/30/90d`
+and **`MoM/MVP count`** in the Attributes sync, which is why Tamkin's MVP and Summit award score
+nothing.
+
+### Flagged, not chased — this is `FB_BACKLOG.md` #1
+
+**88 of 808 `FB Engagement (NEW)` rows have no `Member Scorecard (NEW)` link**, so their Facebook
+numbers never reach the spine. Six posted in the last 28 days: Mouad Errafik, Ginny Lo, Tamkin Amin
+Collins, **Dan Wills**, Ivan Ong, Chris Kjeldsen. Dan Wills and Ivan Ong are rows 1 and 2 of #1's
+table — same ticket, not a new one. Until #1 lands, Dan Wills scores 0 on the Facebook pillar even
+with the key filled.
+
+**Next:** Andy runs the apply and picks an option for the 90-day field. Then re-measure after the
+Monday chain: spine blanks 68 → stated, Engagement Score 0 count 79 → stated, and Ginny/Omer/Tamkin
+non-zero with the Summit named in `In-Person Events`.
+
+---
+
 ## 2026-09-04 (pm) — FB #4 CLOSED: the judge reads each text once · Hector is searchable
 
 **Andy's own question was Hector** ("hector" → 0 rows on the admin tab). Go given after #3 closed.
