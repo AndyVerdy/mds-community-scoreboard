@@ -3,14 +3,18 @@
 
 #160 crawled each partner's own site, which is why `people` is empty on 281 of 506 rows and on
 180 of the 405 that crawled fine: founders are not on marketing sites. This asks Exa for the
-company record instead. Writes ONLY the `people` column, and ONLY where it is currently empty.
+company record instead. Writes ONLY the `people` column (plus `updated_at`), and ONLY where it
+is currently empty — except the one-off `--backfill-roles` maintenance pass (fix round 1, below),
+which re-patches already-filled rows on purpose.
 
 An executive list alone does not settle "whose founder is this" — Hector (#5068) is the in-house
 technology of an agency (Neon Digital Media, itself part of Wondrlab), and the founder Exa returns
 for the Hector name (Meher Patel) is actually the founder of that agency, not of Hector. parent_edges()
 below writes a `parent_of` edge in digest.web_edges whenever a result names a parent/owner
 relationship, so a downstream consumer can attach the founder to the parent company instead of to
-the product — that edge, not the people column, is the actual fix.
+the product. Fix round 1 adds a second layer on top of the edge: every person entry now also
+carries `role_class` and, when a parent exists, `parent_company` — so the wrong-founder claim
+cannot be read without the correcting context sitting right next to it in the same JSON value.
 
 DEVIATION FROM THE ORIGINAL BRIEF, measured live 2026-09-11: the brief's people_from/parent_edges
 read `properties.keyExecutives` and `properties.homepage` off each result's `entities[]`. Live
@@ -33,8 +37,33 @@ only when the primary pass already found a corroborated match — the exact mome
 could get written — reliably surfaces it instead (measured live, 4/4 stable). This costs one extra
 Exa call for the subset of partners that resolve to a real company record, not for all 506.
 
+FIX ROUND 1 (review found two Criticals — see git log for the review verbatim):
+
+CRITICAL 1 — parent_edges() failed OPEN. `if host and host in home: continue` only excludes the
+partner itself when `home` (the candidate's own parsed homepage) is non-empty; a candidate with no
+parseable "Homepage:" line at all sailed straight through as if it were a stranger. Live result: 10
+of the first 15 parent_of edges written were self-referential (Create With Cura, Amobeez,
+NeonPanel, CBI Digital, SaneBox, Growi x2, MyFBAPrep, Mercury, Returnstack all pointed at
+themselves), and one recorded a person's own LinkedIn profile
+(https://www.linkedin.com/in/petersolimine, "Peter S.") as if it were a company. parent_edges() now
+fails CLOSED on three checks together: (a) no parseable homepage at all -> skip, never assume a
+stranger; (b) a linkedin.com/in/... URL is a person, not a company -> skip; (c) a candidate whose
+name normalises (lowercased, non-alphanumerics stripped) to the partner's own name is the partner
+itself under a formatting difference -> skip, even when its homepage happened to parse differently.
+
+CRITICAL 2 — Hector's `people` entry for Meher Patel still read "Founder" with nothing beside it
+saying that's the parent agency's founder, not Hector's — the literal #5068 wrong answer, sitting
+right next to the (correct) parent_of edge that doesn't get read by whatever renders `people`. The
+record itself is accurate (he IS listed on Hector's own LinkedIn page); what was missing was
+context. Fixed by never deleting the entry and instead making it unable to mislead on its own:
+role_class() classifies the verbatim title into founder/executive/staff, and enrich_people() stamps
+`parent_company` onto every person entry for a partner that has a parent_of edge.
+
   python3 scripts/exa_partner_people.py --limit 10
   python3 scripts/exa_partner_people.py --apply
+  python3 scripts/exa_partner_people.py --fix-parents --apply     # delete + re-derive parent_of
+  python3 scripts/exa_partner_people.py --backfill-roles --apply  # add role_class/parent_company
+                                                                   #   to rows already filled
 
 Note (PostgREST 1000-row cap): targets() issues a single unpaginated GET. partner_web_profile has
 506 rows today so this is complete; past 1000 rows PostgREST truncates the response and this would
@@ -66,6 +95,64 @@ _HOMEPAGE_RE = re.compile(r"(?im)^-\s*Homepage:\s*(\S+)\s*$")
 # match at the next 0-indent bullet ("- Breakdown:") instead of swallowing it and everything below.
 _EXEC_SECTION_RE = re.compile(r"(?im)^-\s*Key Executives:\s*\n((?:^[ \t]{2,}-.*\n?)+)", re.M)
 
+# fix round 1, MINOR 4: a parsed exec line this malformed is a parser miss, not a real person —
+# drop it rather than store it. 100/200 are generous (real names/titles are well under this) so
+# this only ever catches genuine garbage (a line the section regex swallowed by mistake, e.g.).
+MAX_NAME_LEN = 100
+MAX_ROLE_LEN = 200
+
+# fix round 1, CRITICAL 1(b): a linkedin.com/in/... URL is a PERSON's own profile, never a company.
+_PERSONAL_PROFILE_RE = re.compile(r"linkedin\.com/in/", re.I)
+
+# fix round 1, CRITICAL 2(a): title -> role_class. Checked in this order — a "CEO and Co-Founder"
+# must land on "founder", not "executive", so the founder check runs first.
+_FOUNDER_RE = re.compile(r"\b(founder|co-founder|owner|ceo)\b", re.I)
+_EXEC_RE = re.compile(r"\b(chief|c[a-z]{1,3}o|president|vice[\s-]?president|vp|head|director)\b", re.I)
+
+
+def _normalize_name(s):
+    """Lowercase + strip everything but letters/digits, so "CB/I Digital" and "CBI Digital" (or
+    "ReturnStack" and "Returnstack") compare equal — fix round 1, CRITICAL 1(c)."""
+    return re.sub(r"[^a-z0-9]", "", (s or "").lower())
+
+
+def _valid_exec_line(name, role):
+    """Reject a parsed exec line that's empty, absurdly long, or carries a stray newline — fix
+    round 1, MINOR 4. Malformed input from the free-text parser should be dropped, not stored."""
+    if not name or not role:
+        return False
+    if "\n" in name or "\n" in role:
+        return False
+    if len(name) > MAX_NAME_LEN or len(role) > MAX_ROLE_LEN:
+        return False
+    return True
+
+
+def role_class(title):
+    """founder: title names a founder/owner/CEO. executive: other C-level/chief/president/VP/head/
+    director titles. staff: everything else. Order matters — founder is checked first so "CEO and
+    Co-Founder" lands on founder, not executive (fix round 1, CRITICAL 2(a))."""
+    t = title or ""
+    if _FOUNDER_RE.search(t):
+        return "founder"
+    if _EXEC_RE.search(t):
+        return "executive"
+    return "staff"
+
+
+def enrich_people(people, parent_name=None):
+    """Stamp role_class on every entry, and parent_company when the partner has one — the
+    correcting context that must travel WITH the record, not sit in a side table nobody reading
+    `people` would think to check (fix round 1, CRITICAL 2)."""
+    out = []
+    for p in people:
+        q = dict(p)
+        q["role_class"] = role_class(q.get("role"))
+        if parent_name:
+            q["parent_company"] = parent_name
+        out.append(q)
+    return out
+
 
 def _org_text_fields(text):
     """Pull homepage + key-executive name/role pairs out of an entity's free-text org write-up —
@@ -86,8 +173,8 @@ def _org_text_fields(text):
             name, role = line.split(":", 1)
             name = name.strip()
             role = role.strip()
-            if name:
-                execs.append({"name": name, "role": role or None})
+            if _valid_exec_line(name, role):
+                execs.append({"name": name, "role": role})
     return homepage, execs
 
 
@@ -98,7 +185,9 @@ def targets(key, limit=None):
 
 
 def people_from(results, host):
-    """Prefer the record whose domain matches the partner's own site — that is the corroboration."""
+    """Prefer the record whose domain matches the partner's own site — that is the corroboration.
+    Also returns the matched entity's own name (own_name), needed by parent_edges' CRITICAL 1(c)
+    self-name check; None when nothing matched."""
     best = None
     for r in results:
         ents = r.get("entities") or []
@@ -107,28 +196,63 @@ def people_from(results, host):
             if not execs:
                 continue
             match = bool(host) and host in home
+            props = e.get("properties") or {}
             cand = ([{"name": x.get("name"), "role": x.get("role"),
                       "source": r.get("url") or r.get("id"),
                       "confidence": 1.0 if match else 0.5} for x in execs],
-                    e.get("id"), match)
+                    e.get("id"), match, props.get("name"))
             if match:
                 return cand
             best = best or cand
-    return best or ([], None, False)
+    return best or ([], None, False, None)
 
 
-def parent_edges(results, partner_id, host):
-    """A company-to-company edge, so a founder can attach to the parent instead of the product."""
+def _own_name_from_results(results, host):
+    """Find the entity among `results` whose own parsed homepage matches `host`, and return its
+    name — used by --fix-parents, which re-runs only the parent query (not the primary leadership
+    query) and so has no people_from() call to hand it own_name directly."""
+    if not host:
+        return None
+    for r in results:
+        home, _execs = _org_text_fields(r.get("text"))
+        if home and host in home:
+            for e in r.get("entities") or []:
+                nm = (e.get("properties") or {}).get("name")
+                if nm:
+                    return nm
+    return None
+
+
+def parent_edges(results, partner_id, host, own_name=None):
+    """A company-to-company edge, so a founder can attach to the parent instead of the product.
+
+    Fails CLOSED on three checks (fix round 1, CRITICAL 1 — the original code failed OPEN whenever
+    a candidate had no parseable Homepage: line, producing 10 self-referential edges plus one
+    pointing at a person's own LinkedIn profile instead of a company — see module docstring):
+      (a) no parseable homepage at all -> skip, never assume a stranger
+      (b) a linkedin.com/in/... URL is a PERSON's profile, never a company -> skip
+      (c) a candidate whose name normalises (lowercased, non-alphanumerics stripped) to the
+          partner's own name is the partner itself under a formatting difference -> skip
+    """
+    own_norm = _normalize_name(own_name) if own_name else None
     out = []
     for r in results:
         blob = " ".join(str(r.get(k) or "") for k in ("title", "text", "summary"))
         if not PARENT.search(blob):
             continue
         home, _execs = _org_text_fields(r.get("text"))
+        if not home:
+            continue                                  # (a) unparseable homepage: fail closed
+        if host and host in home:
+            continue                                  # the partner itself, by homepage
+        source_url = r.get("url") or r.get("id") or ""
+        if _PERSONAL_PROFILE_RE.search(source_url):
+            continue                                  # (b) a person, not a company
         for e in r.get("entities") or []:
             props = e.get("properties") or {}
-            if host and host in home:
-                continue                      # the partner itself, not its parent
+            cand_name = props.get("name")
+            if own_norm and _normalize_name(cand_name) == own_norm:
+                continue                              # (c) the partner itself, by name
             eid = (e.get("id") or "").rstrip("/").rsplit("/", 1)[-1]
             if not eid:
                 continue
@@ -137,8 +261,8 @@ def parent_edges(results, partner_id, host):
                 "b_id": f"partner:{partner_id}", "b_kind": "partner",
                 "edge_type": "parent_of", "valid_from": None, "valid_to": None,
                 "weight": 1.0,
-                "evidence": {"parent_name": props.get("name"), "phrase_matched": True},
-                "source_url": r.get("url") or r.get("id") or "",
+                "evidence": {"parent_name": cand_name, "phrase_matched": True},
+                "source_url": source_url,
                 "confidence": 0.8,
             })
     return out
@@ -152,24 +276,113 @@ def parent_query(name, summary, host):
     return f"{snippet} in-house technology of agency parent company {host}".strip()
 
 
+def _now():
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+EDGE_CONFLICT = "on_conflict=a_id,a_kind,b_id,b_kind,edge_type,valid_from"
+
+
+def _ours(people):
+    """True when every entry in `people` carries our pipeline's "confidence" key — the schema
+    #160's own-site crawl never wrote (its rows are {"name","role","linkedin"}). Used by
+    --fix-parents to scope re-derivation to partners this script actually corroborated, not every
+    partner with any people at all."""
+    return bool(people) and all(isinstance(p, dict) and "confidence" in p for p in people)
+
+
+def fix_parents(key, apply):
+    """fix round 1: delete every parent_of edge and re-derive with the fixed parent_edges() rule,
+    scoped to exactly the partners this pipeline corroborated. Re-runs only the parent_query (not
+    the primary leadership search, which already produced the stored `people` correctly) — one Exa
+    call per partner, same cost as the original derivation."""
+    rows = sb("GET", "partner_web_profile?select=partner_id,resolved_url,summary,people", key)
+    ours = [r for r in rows if _ours(r.get("people"))]
+    print(f"{len(ours)} partners with our own corroborated people entries")
+
+    before = sb("GET", "web_edges?edge_type=eq.parent_of&select=a_id", key)
+    print(f"before: {len(before)} parent_of edges")
+
+    if apply:
+        sb("DELETE", "web_edges?edge_type=eq.parent_of", key)
+
+    written = []
+    for i, r in enumerate(ours, 1):
+        host = urlparse(r.get("resolved_url") or "").netloc.lower().removeprefix("www.")
+        name = host.split(".")[0] if host else (r.get("summary") or "")[:40]
+        pbody = ex.search(parent_query(name, r.get("summary"), host),
+                          numResults=8, type="auto", contents=CONTENTS_OPT)
+        results = pbody.get("results") or []
+        own_name = _own_name_from_results(results, host)
+        row_edges = parent_edges(results, r["partner_id"], host, own_name)
+        if apply and row_edges:
+            sb("POST", f"web_edges?{EDGE_CONFLICT}", key, row_edges, prefer="resolution=merge-duplicates")
+        written += row_edges
+        if i % 25 == 0:
+            print(f"  {i}/{len(ours)}")
+        time.sleep(0.2)
+
+    after = sb("GET", "web_edges?edge_type=eq.parent_of&select=a_id,b_id,evidence,source_url", key) if apply else written
+    print(f"after: {len(after)} parent_of edges")
+    for e in after:
+        parent_name = (e.get("evidence") or {}).get("parent_name")
+        print(f"  {e.get('b_id')} <- {parent_name} ({e.get('a_id')})")
+    if not apply:
+        print("dry-run; pass --apply to delete + write")
+
+
+def backfill_roles(key, apply):
+    """fix round 1, CRITICAL 2: add role_class (+ parent_company where one exists) to every
+    already-filled people row — not just rows filled from here on. Still writes only the `people`
+    column (plus updated_at)."""
+    rows = sb("GET", "partner_web_profile?select=partner_id,people", key)
+    rows = [r for r in rows if r.get("people")]
+    edges = sb("GET", "web_edges?edge_type=eq.parent_of&select=b_id,evidence", key)
+    parents = {}
+    for e in edges:
+        b_id = e.get("b_id") or ""
+        if b_id.startswith("partner:"):
+            parents[b_id.split("partner:", 1)[1]] = (e.get("evidence") or {}).get("parent_name")
+
+    changed = 0
+    for r in rows:
+        parent_name = parents.get(r["partner_id"])
+        new_people = enrich_people(r["people"], parent_name)
+        if new_people != r["people"]:
+            changed += 1
+            if apply:
+                sb("PATCH", f"partner_web_profile?partner_id=eq.{r['partner_id']}", key,
+                   {"people": new_people, "updated_at": _now()})
+    print(f"{len(rows)} rows with people · {changed} updated with role_class/parent_company"
+          + ("" if apply else " (dry-run; pass --apply to write)"))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int)
     ap.add_argument("--apply", action="store_true")
+    ap.add_argument("--fix-parents", action="store_true",
+                    help="delete all parent_of edges and re-derive them with the fixed rule")
+    ap.add_argument("--backfill-roles", action="store_true",
+                    help="add role_class/parent_company to every already-filled people row")
     a = ap.parse_args()
     key = env()["SUPABASE_SECRET_KEY"]
+
+    if a.fix_parents:
+        return fix_parents(key, a.apply)
+    if a.backfill_roles:
+        return backfill_roles(key, a.apply)
 
     rows = targets(key, a.limit)
     filled = missed = uncorroborated = 0
     edges_written = 0
-    EDGE_CONFLICT = "on_conflict=a_id,a_kind,b_id,b_kind,edge_type,valid_from"
     for i, r in enumerate(rows, 1):
         host = urlparse(r.get("resolved_url") or "").netloc.lower().removeprefix("www.")
         name = host.split(".")[0] if host else (r.get("summary") or "")[:40]
         body = ex.search(f"category:company {name} — official company record and leadership",
                          numResults=5, type="auto", contents=CONTENTS_OPT)
         results = body.get("results") or []
-        people, entity_id, matched = people_from(results, host)
+        people, entity_id, matched, own_name = people_from(results, host)
         if not people:
             missed += 1
         elif not matched:
@@ -182,10 +395,12 @@ def main():
             # corroborated match is exactly the case #5068 is about.
             pbody = ex.search(parent_query(name, r.get("summary"), host),
                               numResults=8, type="auto", contents=CONTENTS_OPT)
-            row_edges = parent_edges(pbody.get("results") or [], r["partner_id"], host)
+            row_edges = parent_edges(pbody.get("results") or [], r["partner_id"], host, own_name)
             time.sleep(0.2)
         if a.apply and people and matched:
-            sb("PATCH", f"partner_web_profile?partner_id=eq.{r['partner_id']}", key, {"people": people})
+            parent_name = row_edges[0]["evidence"]["parent_name"] if row_edges else None
+            sb("PATCH", f"partner_web_profile?partner_id=eq.{r['partner_id']}", key,
+               {"people": enrich_people(people, parent_name), "updated_at": _now()})
         # Written per-row, not batched to the end of the run: a run over hundreds of live API
         # calls can be interrupted, and batching-to-the-end would silently lose every edge
         # computed before the interruption even though the people PATCHes for those same rows
