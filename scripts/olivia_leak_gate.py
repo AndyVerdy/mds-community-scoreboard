@@ -2214,6 +2214,27 @@ def main():
             except (ValueError, TypeError) as _e:
                 check("#172 prod graph hash equals the pre-ticket snapshot", False, f"could not hash the export: {_e!r}")
 
+    # ---- #211 web layer: stage A must stay invisible to every gated path ----
+    # db/functions/ is regenerated from the live database by scripts/db_export_schema.py, so
+    # grepping it is a check against live, not against a hand-written file.
+    import glob as _glob
+    WEB_NAMES = ("member_web_profile", "member_web_presence", "web_entity", "web_edges")
+    leaked = []
+    for fn in _glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                      "..", "db", "functions", "*.sql")):
+        body = open(fn, encoding="utf-8", errors="replace").read()
+        if any(n in body for n in WEB_NAMES):
+            leaked.append(os.path.basename(fn))
+    check("#211 no gated function reads the web layer", not leaked, ", ".join(leaked))
+
+    for t in WEB_NAMES:
+        # BASE (not SB) and a real Accept-Profile header (not a bare schema name) are this
+        # file's own curl() convention (see e.g. line ~160) — the task brief's snippet named
+        # both differently, which would NameError on SB and silently query the wrong (public)
+        # schema with the bare string, letting a 404 pass this check vacuously.
+        rows = curl("GET", f"{BASE}/{t}?select=*&limit=1", key, profile_hdr=["Accept-Profile: digest"])[1]
+        check(f"#211 {t} exists and is readable by service_role", rows is not None)
+
     print()
     if failures:
         print(f"GATE FAILED — {len(failures)} failure(s): {failures}")
