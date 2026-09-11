@@ -40,9 +40,9 @@ def env(name):
 
 
 def _get_contact_tokens(key):
-    """Split key into tokens by camelCase and non-alphanumeric boundaries."""
-    # Split on camelCase boundaries and non-alphanumeric separators
-    tokens = re.split(r'(?<=[a-z])(?=[A-Z])|[^a-zA-Z0-9]+', key)
+    """Split key into tokens by camelCase, letter-digit boundaries, and non-alphanumeric separators."""
+    # Split on: camelCase, letter-to-digit, digit-to-letter, and non-alphanumeric
+    tokens = re.split(r'(?<=[a-z])(?=[A-Z])|(?<=[a-zA-Z])(?=[0-9])|(?<=[0-9])(?=[a-zA-Z])|[^a-zA-Z0-9]+', key)
     return [t.lower() for t in tokens if t]
 
 

@@ -165,5 +165,49 @@ for key, value in nulled_cases:
     is_nulled = out[key] is None or out[key] == []
     check(f"{key} nulled", is_nulled)
 
+# === NEW BREAKAGE 3: Numbered contact keys with non-string values ===
+# NULLED with INT values
+numbered_int_cases = [
+    ("phone2", 5551234567),
+    ("cell2", 6195550142),
+    ("email3", 123456),
+    ("phoneNumber2", 5551234567),
+    ("fax1", 1234567),
+]
+
+for key, value in numbered_int_cases:
+    out = ex.scrub({key: value})
+    is_nulled = out[key] is None or out[key] == []
+    check(f"{key} (int) nulled", is_nulled)
+
+# NULLED with STR values
+numbered_str_cases = [
+    ("phone2", "555-1234"),
+    ("cell2", "555-1234"),
+]
+
+for key, value in numbered_str_cases:
+    out = ex.scrub({key: value})
+    is_nulled = out[key] is None or out[key] == []
+    check(f"{key} (str) nulled", is_nulled)
+
+# STILL UNTOUCHED - expanded list
+still_untouched = [
+    "miscellaneous",
+    "isCancelled",
+    "cellular_data_plan",
+    "purcellStreet",
+    "hotel",
+    "hotelName",
+    "intel",
+    "telemetry",
+    "telemetry_id",
+    "s3_url",
+]
+
+for key in still_untouched:
+    out = ex.scrub({key: "test_value"})
+    check(f"{key} not nulled", out[key] == "test_value")
+
 print(("FAILED " + str(len(fails))) if fails else "ALL PASS")
 sys.exit(1 if fails else 0)
