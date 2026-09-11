@@ -53,8 +53,10 @@ over every table and view in `digest` + `event`, so the deny-list is written as 
 | **Over-blocked by the regex — Andy's call** | `Member Removal Reconciliation Date` (+ `- YYMM`), `Member Removal/Applied Consolidated Date - Year`, `Days of Membership (From Payment to Removal)`, `Typeform Removal Link`, `Referred by from call notes` — dates and links, not reasons. Opening them = loosening the regex in the migration AND the gate, same commit. |
 | **Open by omission — Andy's call** | birthdays (`Actual Birthday v2`, `Birthday-Application Form`): not one of the three categories, not on the closed list either; the only ID-like keys the profile holds (no passport / tax / bank keys exist, checked 2026-09-10). Closing them = one more word in the regex. |
 
-Enforcement: `scripts/test_172_team_sql.py` (17 live checks through PostgREST) + the `#172` section of
-the leak gate. The WhatsApp, member and Public paths gain nothing: `team_sql` is `service_role`-only and
+Enforcement: `scripts/test_172_team_sql.py` (20 live checks through PostgREST) + the `#172` section of
+the leak gate (21 checks). The role holds exactly ONE private EXECUTE grant — `is_active_member_status(text)`, the
+pure status test the identity views call — and the gate pins that set; `member_links` is dark in Team mode (#197).
+**Live since 2026-09-10** for the askers in `MILLIE_TEAM_ASKERS` (Andy only at launch). The WhatsApp, member and Public paths gain nothing: `team_sql` is `service_role`-only and
 the research route accepts only the staff cookie; no n8n node and no gated function changes.
 
 ## Enforcement

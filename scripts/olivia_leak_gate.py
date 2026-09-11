@@ -2185,6 +2185,15 @@ def main():
                                         "or has_schema_privilege('millie_team_ro', 'event', 'CREATE') as can_create"}, key)
     check("#172 millie_team_ro holds no CREATE on digest or event (the ownership hand-off grant was revoked)",
           st == 200 and _first_row(_c).get("can_create") is False, f"status {st} {_first_row(_c)}")
+    # the role's PRIVATE execute grants (beyond what anon/PUBLIC hold) are exactly the one pure helper the
+    # identity views call — any new grant, however innocent, goes red here first
+    st, _x = rpc("team_sql", {"p_sql": "select string_agg(p.pronamespace::regnamespace::text || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')', ',' order by 1) as fns from pg_proc p "
+                                        "where p.pronamespace in ('digest'::regnamespace, 'event'::regnamespace) and p.proname <> 'team_sql' "
+                                        "and has_function_privilege('millie_team_ro', p.oid, 'EXECUTE') "
+                                        "and not has_function_privilege('anon', p.oid, 'EXECUTE') and p.proacl is not null"}, key)
+    check("#172 millie_team_ro's private EXECUTE grants are exactly is_active_member_status(p_status text)",
+          st == 200 and (_first_row(_x).get("fns") or "") == "digest.is_active_member_status(p_status text)",
+          f"status {st} {str(_first_row(_x))[:160]}")
     # the WhatsApp graph is untouched: neither export mentions the new surface, prod's hash = the snapshot
     _n8n = load_env()
     _snap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "olivia_snapshots", "prod_pre_172.sha256")

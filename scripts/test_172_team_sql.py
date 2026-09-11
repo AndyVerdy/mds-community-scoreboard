@@ -147,6 +147,16 @@ st, b, _ = team_sql("select count(*) as n from digest.member_profiles_team where
 check("13 the deny-list view keeps 'Most Recent Revenue' (the category #172 opens)", st == 200 and (first_n(b) or 0) > 900,
       f"{st} n={first_n(b)}")
 
+# --- views that call functions: the caller needs EXECUTE (found by the Milestone B proof) ----------
+st, b, _ = team_sql("select count(*) as n from digest.member_identity")
+check("19 member_identity (a view calling is_active_member_status) is readable by the role", st == 200 and (first_n(b) or 0) > 600,
+      f"{st} n={first_n(b)}")
+
+st, b, _ = team_sql("select string_agg(p.pronamespace::regnamespace::text || '.' || p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')', ',' order by 1) as fns from pg_proc p where p.pronamespace in ('digest'::regnamespace, 'event'::regnamespace) and p.proname <> 'team_sql' and has_function_privilege('millie_team_ro', p.oid, 'EXECUTE') and not has_function_privilege('anon', p.oid, 'EXECUTE') and not (p.proacl is null)")
+_fns = ((b.get("rows") or [{}])[0].get("fns") if isinstance(b, dict) else None) or ""
+check("20 the role's private EXECUTE grants are exactly is_active_member_status (pinned set)",
+      st == 200 and _fns == "digest.is_active_member_status(p_status text)", f"{st} fns={_fns[:200]}")
+
 # --- the wrapper ---------------------------------------------------------------------------------
 st, b, _ = team_sql("select id from digest.content_items order by id limit 500", max_rows=200)
 check("14 LIMIT wrapper: 500 asked, 200 returned, truncated=true",
