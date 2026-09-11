@@ -1,0 +1,159 @@
+CREATE OR REPLACE FUNCTION digest.video_search_v2(p_phone text, p_query text DEFAULT NULL::text, p_limit integer DEFAULT 8, p_embedding text DEFAULT NULL::text, p_at_member_id text DEFAULT NULL::text, p_call_type text DEFAULT NULL::text, p_order text DEFAULT NULL::text, p_video_id text DEFAULT NULL::text)
+ RETURNS TABLE(title text, call_type text, speakers text[], description_snippet text, cliff_notes_snippet text, attachments jsonb, duration text, categories text[], tags text[], published_at timestamp with time zone, video_url text, matched_rank real, is_restricted boolean, fit_reason text, strength_note text, summary text, event_total integer)
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'digest', 'pg_temp'
+AS $function$
+declare
+  v_n int; v_atid text; v_q tsquery; v_strict tsquery; v_vec extensions.vector(1024);
+  v_my_videos text[];
+begin
+  if p_at_member_id is not null then
+    select count(*) into v_n from digest.member_attributes mz where mz.at_member_id = p_at_member_id and digest.is_active_member_status(mz.membership_status);
+  else
+    select count(*) into v_n from digest.member_identity mz where mz.at_member_id = digest.resolve_asker(p_phone) and digest.is_active_member_status(mz.membership_status);
+  end if;
+  if v_n < 1 then return; end if;
+  select case when p_at_member_id is not null
+              then (select a.at_member_id from digest.member_attributes a
+                     where a.at_member_id = p_at_member_id
+                       and digest.is_active_member_status(a.membership_status))
+              else digest.resolve_asker(p_phone) end into v_atid;
+  if p_at_member_id is not null and v_atid is null then v_atid := p_at_member_id; end if;
+  if v_atid is null then return; end if;
+
+  -- #101 parity (2026-08-21): v1 got the grant-bounded restricted treatment, v2 (the live
+  -- workflow lane) was missed. Which restricted videos THIS asker may see:
+  select coalesce(array_agg(distinct va.video_id), '{}') into v_my_videos
+    from digest.video_access va where va.at_member_id = v_atid;
+
+  if nullif(trim(coalesce(p_query, '')), '') is not null then
+    v_q := digest.expertise_query(p_query);
+    v_strict := plainto_tsquery('english', p_query);
+    if v_strict::text = '' then v_strict := null; end if;
+    begin
+      v_vec := nullif(trim(coalesce(p_embedding, '')), '')::extensions.vector(1024);
+    exception when others then v_vec := null; end;
+  end if;
+
+  return query
+  with me as (
+    select tp.topic, tp.is_working_on, tp.sort_score from digest.member_topic_profile(v_atid) tp
+  ), base as (
+    select v.*,
+           (v.access_restriction = 'restricted'
+            and not (v.video_id = any(v_my_videos))) as restricted,
+           to_tsvector('english',
+             concat_ws(' ', v.title,
+                            array_to_string(coalesce(v.speaker_names, '{}'), ' '),
+                            array_to_string(coalesce(v.category_names, '{}'), ' '),
+                            array_to_string(coalesce(v.tag_names, '{}'), ' '),
+                            coalesce(v.call_type, ''))) as safe_tsv
+      from digest.videos_catalog v
+     where v.status = 'published' and v.deleted_at is null
+       and (p_video_id is null or v.video_id = p_video_id)
+  ), scoped as (
+    select b.*, case when b.restricted then b.safe_tsv else b.search_tsv end as match_tsv from base b
+  ), dos as (
+    select s.video_id vid,
+           ed.strength_note snote, coalesce(ed.weak_signal, 0) wsig,
+           f.fit, f.fit_topics
+    from scoped s
+    left join digest.entity_dossier ed on ed.kind = 'video' and ed.entity_id = s.video_id
+    left join lateral (
+      select sum((ed.topic_profile->>m.topic)::numeric
+                 * case when m.is_working_on then 1.5 else 1.0 end) fit,
+             array_agg(m.topic order by m.is_working_on desc, (ed.topic_profile->>m.topic)::numeric desc) fit_topics
+      from me m
+      where ed.topic_profile ? m.topic and (ed.topic_profile->>m.topic)::numeric >= 0.2
+    ) f on true
+  ), scored as (
+    select s.*, d.snote, d.wsig, coalesce(d.fit, 0) fitv, d.fit_topics,
+           (case when v_q is null or not (s.match_tsv @@ v_q) then 0.0::real
+                 else ts_rank(s.match_tsv, v_q)
+                      + case when v_strict is not null and s.match_tsv @@ v_strict
+                             then 3.0::real * ts_rank(s.match_tsv, v_strict) else 0.0::real end
+            end)::real as kw_rank,
+           case when v_vec is not null and s.embedding is not null
+                then (s.embedding operator(extensions.<=>) v_vec)::real else null end as vec_dist
+      from scoped s join dos d on d.vid = s.video_id
+  ), fused as (
+    select sc.*,
+           rank() over (order by sc.kw_rank desc)              as kw_pos,
+           rank() over (order by coalesce(sc.vec_dist, 9) asc) as vec_pos
+      from scored sc
+  )
+  select f.title, f.call_type, f.speaker_names,
+         case
+           when f.restricted then
+             '[RESTRICTED VIDEO - it exists in the library but the content is not shareable. Tell the member it exists (title, speakers, date, link) and that access is restricted. Never describe, summarize or guess its content.]'
+           when nullif(trim(coalesce(f.description_text, '')), '') is null then
+             '[no description on file - only title, speakers and date are known; do not guess the content]'
+           else left(f.description_text, 700)
+         end,
+         case when f.restricted then null else left(f.cliff_notes, 2000) end,
+         case when f.access_restriction = 'restricted' then null else
+           -- attachments stay PUBLIC-only even for entitled askers (#101 file_key rule)
+           (select jsonb_agg(jsonb_build_object('name', fl.file_name, 'kind', fl.file_kind, 'key', fl.file_key)
+                             order by fl.ordinal)
+              from digest.video_files fl
+             where fl.video_id = f.video_id and fl.file_kind not in ('junk','test_data')) end,
+         f.duration, f.category_names, f.tag_names, f.app_created_at,
+         digest.member_video_url(f.video_id),
+         ((case when f.kw_rank > 0 then 1.0/(60 + f.kw_pos) else 0 end)
+          + (case when f.vec_dist is not null then 1.0/(60 + f.vec_pos) else 0 end))::real,
+         -- #150 (2026-08-26): report the ASKER's entitlement, not the video's raw property.
+         -- The content columns above already keyed on f.restricted (grant-aware); this flag
+         -- still said 'restricted' to an entitled member, so the model held back content it
+         -- had been handed - Andy, staff-granted, was told "I can't pull direct quotes".
+         f.restricted,
+         case when f.fitv > 0 and f.fit_topics is not null and array_length(f.fit_topics,1) > 0
+              then 'touches what you focus on: ' || array_to_string(f.fit_topics[1:2], ', ') end,
+         -- #201 (2026-09-11): view_count lives in videos_catalog and refresh_entity_dossiers
+         -- already reads it, but it never reached this tool's contract - so "top 5 most watched"
+         -- was answered "I don't have a view-count ranking" about a number we hold (#190 Q5100).
+         -- It rides strength_note, which keeps the RETURNS TABLE unchanged: CREATE OR REPLACE,
+         -- ACL intact, no n8n change needed to SEE it (p_order=views is what RANKS by it).
+         nullif(concat_ws(' · ',
+           case when coalesce(f.view_count, 0) > 0 then f.view_count || ' views' end,
+           f.snote), ''),
+         case when f.restricted then null else f.summary end,
+         -- #151 (2026-08-26): the COUNT of this video's event is a fact the tool states, never
+         -- something the model works out from how many rows a keyword happened to return. Two
+         -- runs of "do you have videos from summit" said 8 (rows returned) and then implied 1
+         -- ("a fresh one just landed"); the real number was 7. NULL for videos with no event.
+         case when coalesce(array_length(f.event_ids,1),0) > 0 then
+           (select count(*)::int from digest.videos_catalog vc
+             where vc.status='published' and vc.deleted_at is null
+               and vc.event_ids && f.event_ids) end
+    from fused f
+   where (v_q is null
+          or f.kw_rank > 0
+          or f.vec_dist is not null)
+     and (p_call_type is null
+          or f.call_type ilike '%' || p_call_type || '%'
+          or exists (select 1 from unnest(coalesce(f.tag_names, '{}'::text[])) t
+                      where t ilike '%' || p_call_type || '%')
+          or f.title ilike '%' || p_call_type || '%')
+   order by (case when lower(coalesce(p_order, '')) = 'views' then f.view_count end) desc nulls last,
+            (case when lower(coalesce(p_order, '')) = 'recent' then f.app_created_at end) desc nulls last,
+            (case when v_q is null or lower(coalesce(p_order, '')) in ('recent','views') then 0
+                  else (case when f.kw_rank > 0 then 1.0/(60 + f.kw_pos) else 0 end)
+                       + (case when f.vec_dist is not null then 1.0/(60 + f.vec_pos) else 0 end)
+                       + least(f.fitv, 2.0) * 0.004
+                       -- #102 time-decay slice (2026-08-28, Andy: "relevancy suffering, since it
+                       -- was last year summit"). A fresh session and a year-old one with equal
+                       -- topical match must not tie: problem-first intent questions were served
+                       -- Milan 2025 content over the running Summit. Bounded nudge, not a rewrite:
+                       -- 0.006 inside 60 days, 0.003 inside 180 (RRF legs max at 1/61 = 0.0164,
+                       -- so this reorders near-ties and cannot lift junk over a strong match).
+                       + (case when f.app_created_at > now() - interval '60 days' then 0.006
+                               when f.app_created_at > now() - interval '180 days' then 0.003
+                               else 0 end)
+             end) desc,
+            (case when v_q is null then false else f.restricted end) asc,
+            (case when v_q is null then f.fitv else 0 end) desc,
+            f.wsig asc,
+            f.app_created_at desc nulls last, f.title
+   limit least(greatest(coalesce(p_limit, 8), 1), 20);
+end $function$
