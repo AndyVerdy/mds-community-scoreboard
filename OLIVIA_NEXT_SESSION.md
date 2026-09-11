@@ -13,6 +13,13 @@
 
 ## STATE 2026-09-11 (early) — #172 CLOSED: Team research mode LIVE for Andy · gate 367/0 · prod n8n untouched · NEXT = Andy's pick (#199 scan tool is FILED and PARKED — "finish our plan first" · #198 MCP door · #192 audit · #190 sprint-closure eval last)
 
+**⛔ SESSION CLOSED 2026-09-11 — Andy's last word: "close the session. and i will follow your advice on next steps."** The
+advised order, which the next session presents as its briefing (NUMBER + NAME + STORY, then WAIT for the go): **① #190** the
+nightly eval at 9.5% FAIL vs the <1% bar — the sprint-closure eval, and now the sprint is closable (members are the audience,
+it is the one thing on the board wrong for them today) → **② #170** long thread memory for Ask Millie → **③ #199** the scan
+tool, opened by the vectorization audit + the three probe questions below → **④ #200** Team access (phase 1 any @mds.co) →
+**⑤ #198** the MCP door. Blocked-on-Andy items stay listed above. His earlier picks, kept for context:
+
 **Andy's picks for the NEXT session (2026-09-11):** ① **#199 the scan tool** — "for the next session, I think it should be a scan
 tool; maybe check how we are vectorizing the data" → open with a vectorization audit (what is embedded: `content_items` 57,586 /
 48,502 embedded on 2026-09-04, sub-30-char rows skipped by design; `videos_catalog`, `partners_catalog`, `events_catalog`

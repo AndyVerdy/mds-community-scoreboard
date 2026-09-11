@@ -64,6 +64,13 @@ message → **#199 `scan_content` filed and PARKED** ("do not start it yet, lets
 Q11–Q13 were hand-verified by tracing every example (not four judges); staff validation of the twenty (Day-0 item 5) not run.
 Handbook §11 ruling row added at close.
 
+**Session close (Andy: "close the session. and i will follow your advice on next steps").** Filed on his word: **#199** the scan
+tool (parked) and **#200** Team access without Render edits (phase 1 = any @mds.co; phase 2 = super-admin usage/spend page +
+offboarding). Explained #198 vs the web page (same brain, second door: sits beside his other tools, longer work, automation; no
+extra safety — needs #200's identity story first). **Next order = the advised one: #190 → #170 → #199 (vectorization audit +
+three probes first) → #200 → #198.** Scorecard main `0e71b07`+; web main `5c412c6`; both ticket branches merged; worktrees left
+in place. Prod n8n `b4db92d0` untouched all session; gate 367/0.
+
 ## 2026-09-10 (night) · #172 Milestone A — DOABLE · the read-only SQL surface is live on prod · transport = stream · spike 5/5
 
 **Andy's asks, in order:** "continue working on millie - #172 Team research mode, Milestone A" (briefing) → "go" → "too technical
