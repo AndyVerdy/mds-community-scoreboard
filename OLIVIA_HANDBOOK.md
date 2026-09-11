@@ -899,16 +899,26 @@ OLIVIA_EVAL_BANK=eval_bank_smoke.json python3 olivia_eval.py --fire --staging --
 OLIVIA_EVAL_BANK=eval_bank_smoke.json python3 olivia_eval.py --score
 ```
 - The banks are **organic questions real members asked** — generated questions were retired.
-  Four exist: the **locked 100** (`eval_bank_100_2026-08-16.json`, `scripts/run_eval_100.py` — the
-  sprint exit exam, a ruling: "not 30, not 220. 100"; it must also SHRINK, always-passing questions
-  retire) · **bank C** (602 organic asks through the Summit week, 2026-08-23/24 — 192 defects found,
-  155 fixed, the fix-loop that shaped waves 7–21) · **bank D** (30 Summit-video questions, 10
-  classes, 2026-08-28) · **bank B** (#119, the regression net for everything built after 08-16 —
-  still being written).
+  Five exist: the **2026-09-11 exit exam** (`eval_bank_exam_2026-09-11.json`, #190 — 100 real asks from
+  2026-08-16..09-10, deduped against every older bank, truths verified in the warehouse the day it was
+  built; **this is the current exit exam**) · the **locked 100** (`eval_bank_100_2026-08-16.json`,
+  `scripts/run_eval_100.py` — superseded as the exam, kept as history; the ruling behind it stands:
+  "not 30, not 220. 100", and a bank must SHRINK as well as grow) · **bank C** (602 organic asks through
+  the Summit week, 2026-08-23/24 — 192 defects found, 155 fixed, the fix-loop that shaped waves 7–21) ·
+  **bank D** (30 Summit-video questions, 10 classes, 2026-08-28) · **bank B** (#119, the regression net
+  for everything built after 08-16 — still being written).
 - **The nightly eval** (`com.mds.olivia-eval`, 03:30) fires `eval_bank_v2.json` at the LIVE
-  webhook and writes `OLIVIA_EVAL_<date>.md` with per-source health and failure classes. 2026-09-04:
-  220 judged · 194 pass · 24 fail (10.9%) against Andy's target of **<1% inaccurate**; worst
-  classes `false_denial` and `wrong_fact`. It is the daily routine, never a release gate.
+  webhook and writes `OLIVIA_EVAL_<date>.md` with per-source health and failure classes. It is the
+  daily routine, never a release gate. 2026-09-09: 220 judged · 21 fail (9.5%) against Andy's target of
+  **<1% inaccurate**; worst classes `false_denial` and `wrong_fact`.
+  ⚠️ **That bank overstates by roughly 2× and its number is not a defect count** (#190, 2026-09-11): of the
+  13 questions failing three nights running, 4 were judged against **stale or wrong truths**, 3 are synthetic
+  CROSS mash-ups that can only half-pass, 2 are ambiguous, 3 were already fixed, and **1 was a real defect**.
+  Five of those truths were repaired on 2026-09-11. **An eval FAIL is a hypothesis: re-fire every failure and
+  read it before quoting a rate** — the 09-11 exam scored 14 FAIL and only **7 reproduced**.
+  Also: `--nightly` and `--fire --score --cleanup` DELETE the run's own `olivia_messages` rows on the way out,
+  so read the answers before cleanup or you will be re-firing to triage. And a **context-dependent follow-up
+  can never pass** — the eval resets before every question by design.
 - Eval traffic uses `wamid.SELFTEST*` ids: the workflow answers fully but **skips the Meta send**.
 - Runs pace one question at a time and look stalled for minutes. **Never kill a run.**
 - **Eval RUNs are propose-and-wait** (they cost money); probes (single questions) are free.
