@@ -4,6 +4,78 @@
 
 
 
+## 2026-09-10 (evening) · #147 SQL half closed · backlog review + four rulings · #172 designed and planned — NEXT
+
+**Andy's asks, in order:** "whats next" → "go" on #147 → "whats next" → "why not to make api and our MCP so i can use it
+with claude?" → "i want to start working on this, the question is MCP vs Millie" → "but what is more efficient?" → "Team
+chat through Millie first" → "answers to all the questions, no gates … similar to the result if I ask you" → "Millie … is
+answering from supa, not AT" → "so whats the plan?" → `/writing-plans` → "lets close this session and this task will be the
+next one in the list".
+
+**#147 — the SQL half is live and merged (`1784b68`).** Andy's ruling ("AT roster, but we need to read the data from Supa,
+not AT since at has bottle necks") read together with the August fork = option 2, one function with two facets:
+`registration_status_v2(p_member, p_event)` returns `has_ticket` (roster mirror — GATES who-to-meet and attendee names)
+and `is_attending` (GroupOS export or any ticket holder — drives the personal agenda), plus `matched_via`, `attending_via`
+and three freshness stamps; both facets resolve through `member_alias_ids`. `registration_status` is now a wrapper over
+v2 (one implementation); `is_registered` untouched. **Before → after: 36 members answered differently by lane → 0
+contradictions across 155 people** (146 hold a ticket, 155 attend, 9 attend without a ticket, 0 hold a ticket without
+attending). Second half: `event_who` resolved events on words IN THE TITLE only, so **"seattle" landed on a sushi dinner
+from 2024-09-17** while three Seattle events twelve days out were unreachable (the ticket's "vegas → Feb 2025 dinner"
+example was stale — ordering already preferred upcoming). It now matches `city_state`/`location`/`app_city`/`chapter_hint`
+like `event_lookup`, and a title match outranks a place-only match (without that, "las vegas" jumped to Inspire 2027).
+Tests written first and watched to fail: `scripts/test_147_registration_authority.py` (13) and
+`scripts/test_147b_event_resolver.py` (5). Gate 346/0 exit 0. `db/` re-exported (161 files). **Left open, its own go:**
+the web schedule route still computes `registered = myTypes.size > 0` itself — Render has no staging tier.
+
+**Backlog review (from `main`).** 38 open: 17 workable, 12 waiting on a person, 5 needing a product ruling. Live clusters:
+#123+#92 · #111+#118 · #170+#173 · #66→#68→#73 · #184→#185 · #182+#17. Parallel lanes without collision: the n8n
+graph is the ONE hard mutex; Postgres is safe only across DIFFERENT functions; `mds-digest-web` serialises at the Render
+deploy; docs/decisions collide with nothing. Board defects found and left on the board: #102 gated on the retired #72
+smoke; #108's row says "awaiting promote" while prod already routes `find`.
+
+**Four rulings recorded (board + handoff):** #147 roster via the mirror · #184/#185 hold for Eugene · #157 stay on Sonnet 5
+(the 2026-09-02 OpenAI key still wants rotating) · #71 the recording is the answer. **#190 = the sprint-closure eval, run
+last, not mid-sprint** ("its like a logical sprint closure"). GitHub PAT for #181 created (fine-grained,
+`AndyVerdy/mds-digest-web`, read proven `200`; write scope visible on his screenshot as repo-wide Read+Write — broader
+than the job, raised once, his call; **expires 2026-10-10**; the value was pasted in chat so it wants regenerating once n8n
+holds it). #191's OpenAI/Meta secret handling: unchanged.
+
+**MCP vs Millie — settled, then reframed by Andy.** First answer: for a person asking one question Millie is the efficient
+path (~2¢, one paragraph); for computed questions across many rows typed data tools win (sub-second, no second LLM). Andy
+then set the real bar: **"answers to all the questions, no gates … similar to the result if I ask you"**, from Supabase
+only, with the asker visible. That is not "Millie with the gates off": Millie answers from ~20 fixed functions, n8n kills a
+Code node at 60 s and the webhook at ~100 s, so a minutes-long research turn cannot live in the graph. It is a second
+runtime beside her.
+
+**#172 designed and planned — `TEAM_RESEARCH_172_DESIGN.md` + `TEAM_RESEARCH_172_IMPLEMENTATION_PLAN.md` (`bc53a23`).**
+Built by a 13-agent workflow (5 read-only readers over the web app, the DB contract, the rulebook + tickets, the runtime
+and the question set → 3 designs → 3 judges → synthesis → completeness critic). The design: a Team target on Ask
+Millie served by a Claude tool loop in `mds-digest-web` (NDJSON stream with heartbeats; poll fallback if Render will
+not hold a 5-min stream — measured on Day 1), three tools (`sql_query` on `digest.team_sql`, a SECURITY DEFINER RPC
+OWNED by a new NOLOGIN read-only role `millie_team_ro` that forces a read-only transaction; `schema_catalog`, static;
+`semantic_search`, Voyage + pgvector through the same RPC, ungated), identity from the staff cookie + a FAIL-CLOSED
+`MILLIE_TEAM_ASKERS` allowlist, per-asker daily budgets, two `olivia_web_messages` rows per turn with the query trail
+as `sources`, a deny-list view `member_profiles_team` so removal reasons / LTV / internal notes / lead scoring stay
+closed in SQL not prompt, and thirteen new gate checks incl. a prod-graph hash pin. **Critic findings folded in:**
+`ask_millie` DROPPED (every call is a prod n8n execution on the probe member — `Touch Olivia Stats`, reachable to
+`Mark Welcomed` — gated evidence, shared quota); views run as owner → a gate check scans them; the "no Airtable import"
+vitest is vacuous (`supabase.ts` imports airtable) → a runtime fetch spy instead; `set_config('transaction_read_only')`
+binding inside a PostgREST transaction is UNVERIFIED → Milestone A's first check and a merge blocker; the Supabase
+HTTP edge cap for a 55-s RPC is unread → measured in the same check. Live facts gathered: PG 17.6; `postgres` has
+CREATEROLE + BYPASSRLS (not superuser); 33 digest tables have RLS on with 0 policies (export says 40 — drift); 31 digest
+functions are PUBLIC-executable incl. SECURITY DEFINER writers (side ticket); `VOYAGE_API_KEY` is used by
+`api/olivia/kb` (presence on Render unknown). Two milestones: **A** = half a day, no UI ("is it doable": migration +
+13 live checks, 7 gate checks, transport probe, 5-question spike); **B** = two days, the tool + 20 staff questions
+scored against reference SELECTs frozen in the same minute, bar PASS ≥ 16/20, Q18–Q20 via SQL, cache hit on lap 2,
+p50 < 90 s, mean cost < $0.30.
+
+**Session close: NEXT = #172 Milestone A.** Five Day-0 items only Andy can do (design §9): the migration go · the written
+rulebook ruling (a read-only SQL surface over the deny-list view IS the Team column) · Render env `MILLIE_TEAM_ASKERS`,
+`VOYAGE_API_KEY`, `NODE_VERSION` (check-before-add, Manual Deploy) · a member + an event placeholder · 2–3 staff validate
+the twenty questions. Execution choice still open: subagent-per-task or inline. **Housekeeping still unanswered:** the
+shared checkout `/Users/Born/Scorecard` sits on `186-design-request-20260909`; read docs from `main` (`git show
+main:<file>`) until it is moved.
+
 ## 2026-09-10 (day) · #191 + #123 — the eval was dead by breakfast, and event questions were answering from the wrong event
 
 **Andy's asks, in order:** "continue working on Millie" (a briefing, per the protocol) → review the open

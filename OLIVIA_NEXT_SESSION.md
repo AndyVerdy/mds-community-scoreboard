@@ -41,6 +41,46 @@ history) and #148's lane-skipping (refusing stale rows changes who Millie answer
 the RELAY and the handbook's line 72 has said so since July. **Verify a ticket's architecture claim against the
 handbook and against live before building to it** — and read payloads before announcing what they are.
 
+## STATE 2026-09-10 (close) — NEXT = **#172 Team research mode, Milestone A** · #147 SQL half live · prod `b4db92d0` · gate 346 EXIT 0 · lock free
+
+**Read first, in this order:** `TEAM_RESEARCH_172_DESIGN.md` (the design, what was ruled and why) → `TEAM_RESEARCH_172_IMPLEMENTATION_PLAN.md`
+(15 tasks, test-first, code included) → the #172 block on the board. Andy: *"this task will be the next one in the list."*
+
+**What #172 became today.** Not "Millie with the gates off". Andy's bar: *"answers to all the questions, no gates … similar to the
+result if I ask you"*, Supabase only, asker visible. Millie answers from ~20 fixed functions and n8n cannot host a minutes-long turn
+(Code node 60 s, webhook ~100 s), so Team mode is a **second runtime beside her**: a Claude tool loop in `mds-digest-web` with a
+read-only SQL tool on its own role, a schema catalog, and an ungated semantic search — identity from the staff cookie, a fail-closed
+allowlist, per-asker budgets, every query logged and shown. `ask_millie` is deliberately OUT (prod n8n execution on the probe member,
+gated evidence). The MCP door is a later ticket on the same principal.
+
+**Before any code — five Day-0 items only Andy can do (design §9):**
+1. The go on ONE migration (`scripts/sql/20260911_team_sql_172.sql`: role `millie_team_ro`, view `member_profiles_team`, RPC
+   `digest.team_sql`, grants) — live on prod the moment it is applied; a policies fallback is pre-written.
+2. The rulebook ruling in writing: Team mode reads through a read-only SQL surface over the deny-list view; that is the
+   `OLIVIA_SHAREABLE_FIELDS.md` Team column (opens exact revenue, contacts, Stripe/billing; keeps closed removal reasons, LTV, internal
+   notes, lead scoring).
+3. Render env, CHECK before add, then Manual Deploy: `MILLIE_TEAM_ASKERS` (proof participants), `VOYAGE_API_KEY`, `NODE_VERSION=22`.
+4. A member and an event as placeholders for Q1–Q3, Q14, Q17–Q19 (outside the repo).
+5. Two or three staff read the twenty questions and swap the ones they would never ask.
+Also open: subagent-per-task or inline execution.
+
+**Milestone A is the "is it doable" half-day, no UI:** apply the migration → `python3 scripts/test_172_team_sql.py` (13 live checks;
+check 2 INSERT → 25006 is a MERGE BLOCKER — if a write succeeds, stop and escalate; check 8 records the HTTP-edge cap for a 55-s RPC)
+→ 7 gate checks + `olivia_snapshots/prod_pre_172.sha256` → the throwaway heartbeat route through `digest.mds.co` (≥ 300 s = stream,
+else poll) → a 5-question spike. Verdict thresholds are in the plan.
+
+**#147 — SQL half CLOSED, one lane left.** `registration_status_v2` (roster `has_ticket` gates, GroupOS `is_attending` drives the
+agenda), v1 is a wrapper, `is_registered` untouched, `event_who` resolves on place; 36 → 0 contradictions; tests
+`scripts/test_147_registration_authority.py` + `test_147b_event_resolver.py`; merged `1784b68`. **Not done:** the web schedule route's own
+`registered = myTypes.size > 0` — needs an explicit go (Render deploys on merge).
+
+**Rulings recorded today:** #147 roster via the Supabase mirror · #184/#185 hold for Eugene · #157 stay on Sonnet 5 (rotate the
+2026-09-02 OpenAI key) · #71 the recording is the answer · **#190 = sprint-closure eval, run last**. #181's GitHub PAT exists
+(fine-grained, `AndyVerdy/mds-digest-web`, repo-wide Read+Write — his call — **expires 2026-10-10**, regenerate once n8n holds it).
+
+**Housekeeping, unanswered twice:** the shared checkout `/Users/Born/Scorecard` is parked on `186-design-request-20260909`. Until it
+is moved back to `main`, **read every doc from `main`** (`git show main:OLIVIA_NEXT_SESSION.md`), never from the working tree.
+
 ## STATE 2026-09-10 (evening) — #123 + #191 CLOSED · prod `b4db92d0` · gate 346 EXIT 0 · lock free
 
 **Read this first.** Prod n8n `b4db92d0` (promoted 17:56Z by Andy, snapshot
