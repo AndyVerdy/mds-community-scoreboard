@@ -153,6 +153,45 @@ day one with `location` and `role` in conflict.
 The same fetch fills `partner_web_profile.people` for the 281 empty rows. No new table is needed
 there; `people` is already an existing, already-empty column, so filling it is not a rewrite.
 
+## Web presence — the second collection
+
+**Andy 2026-09-11: "we want to see this person's presence on the web, like news articles (unless it's
+his personal blogs or websites), any public info, podcast, youtube, anything that can help us."**
+
+This is a different question from the profile read and gets its own collection.
+
+| collection | asks | source | endpoint |
+| --- | --- | --- | --- |
+| 1. Profile | where do they work, what do they run | their own LinkedIn or brand site | Contents, $1 / 1k |
+| 2. Presence | what has the world said about them | third parties only | Search, $7 / 1k |
+
+**Third-party only, enforced in the query, not by hand.** Exclude the member's own domains, taken
+from `Brand(s) URL / Name(s)`, `Own Website & % of Revenue` and `Storefront - Census`; exclude
+LinkedIn, which collection 1 already covers; exclude Exa's `personal site` category. Include news,
+publications, podcasts and video. Date floor 2023-01-01, so a decade of noise does not arrive with
+the signal.
+
+**Proven in the probe.** Searching Matt Greene with his own domains and LinkedIn excluded returned a
+PR Newswire release of 2025-09-13 quoting *"Matthew Greene, CEO of Happy Innovations"* launching
+Happy Soles, the company's third brand. Third-party, dated, quotable, and absent from our warehouse.
+
+**New table `digest.member_web_presence`:** `at_member_id`, `url`, `domain`, `title`, `published_at`,
+`kind` (`news` \| `podcast` \| `video` \| `publication`), `summary`, `corroborated_by`, `confidence`,
+`raw`, `fetched_at`. Each row also becomes a `featured_in` edge in `web_edges`.
+
+**The risk is name collision, and it is handled by corroboration, not by hope.** A member with a
+common name pulls the wrong person's press. A hit counts only when the page also mentions a company
+or brand we already hold for that member; that company name goes in `corroborated_by`.
+Uncorroborated hits are stored at `confidence < 1` and are never surfaced to a member or fed to any
+score. This is the same discipline that #5068 lacked.
+
+**Why this collection matters more than the profile in the long run.** It is the only class of
+evidence in the entire system that is public, third-party and not self-reported, which makes it the
+honest input for any future proficiency signal. That is stage D, and it still has to beat
+`expertise_truth` before it ships.
+
+**Cost:** about $6 for a full sweep of 733 members including page summaries.
+
 ## The knowledge graph
 
 **Andy 2026-09-11: "We need to make sure we have a proper knowledge graph. That all is related."**
@@ -294,6 +333,9 @@ at $15 per 1k, and it is worth revisiting once stage B proves the data is used.
    as a graph query, not as a prose answer.
 9. `derive_knowledge_graph()` runs after the load and `digest.web_edges` still holds every row.
    Proven by a count before and after, not by reading the function.
+9b. `digest.member_web_presence` is populated, and **zero rows carry a domain the member owns**,
+   proven by SQL against their own brand and website fields. Report how many members got at least
+   one third-party hit, and how many of those hits are corroborated.
 10. `python3 scripts/olivia_leak_gate.py` GREEN, exit 0, before anything merges.
 11. Millie's answers are unchanged. No gated function is modified on this ticket. Proven by a prod
     probe on a member question before and after, returning the same answer.
