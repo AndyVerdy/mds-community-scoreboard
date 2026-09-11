@@ -989,6 +989,20 @@ CREATE INDEX olivia_web_messages_asker_idx ON digest.olivia_web_messages USING b
 CREATE INDEX olivia_web_messages_thread_idx ON digest.olivia_web_messages USING btree (thread_id, created_at DESC);
 CREATE UNIQUE INDEX olivia_web_messages_pkey ON digest.olivia_web_messages USING btree (id);
 
+-- digest.olivia_web_threads
+--   thread_id                          text not null
+--   asker_email                        text not null
+--   mode                               text not null
+--   title                              text
+--   summary                            text not null default ''::text
+--   summary_through_id                 bigint not null default 0
+--   turns                              integer not null default 0
+--   updated_at                         timestamp with time zone not null default now()
+alter table digest.olivia_web_threads add constraint olivia_web_threads_mode_check CHECK ((mode = ANY (ARRAY['team'::text, 'public'::text])));
+alter table digest.olivia_web_threads add constraint olivia_web_threads_pkey PRIMARY KEY (thread_id);
+CREATE INDEX olivia_web_threads_asker_idx ON digest.olivia_web_threads USING btree (asker_email, updated_at DESC);
+CREATE UNIQUE INDEX olivia_web_threads_pkey ON digest.olivia_web_threads USING btree (thread_id);
+
 -- digest.olivia_webhook_events
 --   id                                 bigint not null
 --   received_at                        timestamp with time zone not null default now()
