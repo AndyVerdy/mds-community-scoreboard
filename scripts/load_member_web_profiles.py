@@ -133,15 +133,30 @@ def main():
 
     known = {r["at_member_id"]: r["source_hash"] for r in fetch_known(key)}
 
-    profiles, entities, edges, skipped, no_company = [], [], [], 0, 0
+    # entities/edges are deduped GLOBALLY (not just within one member's own work_history) before
+    # ever reaching a POST body. Two different members who both worked at "Amazon" produce two
+    # entities_from() calls that key to the SAME entity_id — harmless when the profile pass only
+    # sampled five members (never collided), but a real full-464 run hits it constantly, and
+    # PostgREST's single "INSERT ... ON CONFLICT DO UPDATE" statement errors ("cannot affect row a
+    # second time") the instant one entity_id (or one a_id/a_kind/b_id/b_kind/edge_type/valid_from
+    # edge key) appears twice in the same request body — confirmed live 2026-09-11, batch 1 of the
+    # full pass. Keeping the LAST occurrence mirrors what would happen if every row were POSTed in
+    # its own sequential upsert (merge-duplicates lets a later row overwrite an earlier one).
+    profiles, skipped, no_company = [], 0, 0
+    entities_by_id, edges_by_key = {}, {}
     for r in rows:
         if r.get("source_hash") and known.get(r["at_member_id"]) == r["source_hash"]:
             skipped += 1
             continue
         profiles.append(profile_row(r))
-        entities += entities_from(r)
-        edges += edges_from(r)
+        for e in entities_from(r):
+            entities_by_id[e["entity_id"]] = e
+        for e in edges_from(r):
+            edges_by_key[(e["a_id"], e["a_kind"], e["b_id"], e["b_kind"],
+                          e["edge_type"], e["valid_from"])] = e
         no_company += skipped_work_entries(r)
+    entities = list(entities_by_id.values())
+    edges = list(edges_by_key.values())
 
     print(f"{len(rows)} read · {len(profiles)} to insert · {skipped} unchanged · "
           f"{len(entities)} entities · {len(edges)} edges · "
