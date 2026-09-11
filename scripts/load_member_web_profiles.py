@@ -10,6 +10,7 @@ name-keyed row is held below full confidence and is never surfaced. Every role e
 source's own dates; a null valid_to is what "current" means. Nothing pre-existing is updated.
 """
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -31,12 +32,33 @@ def entity_key(company):
     domain = (company.get("domain") or "").strip().lower()
     if domain:
         return f"domain:{domain}", "domain"
-    return f"name:{slug(company.get('name'))}", "name"
+    name = company.get("name") or ""
+    s = slug(name)
+    if not s:
+        # slug() strips every character outside [a-z0-9]; a punctuation-only or non-Latin-script
+        # name (entirely plausible in an international seller community) collapses to "", which
+        # would make every such company key to the same bare "name:" node. Hash the raw name
+        # instead so distinct names stay distinct.
+        s = hashlib.sha1(name.encode("utf-8", "replace")).hexdigest()[:12]
+    return f"name:{s}", "name"
+
+
+def has_company(w):
+    return bool((w.get("company_name") or "").strip())
+
+
+def skipped_work_entries(row):
+    """Count of work_history entries with no usable company name — these produce neither an
+    edge nor an entity (see edges_from/entities_from), so the dry-run report needs its own way
+    to surface how many were dropped rather than silently vanishing from every count."""
+    return sum(1 for w in (row.get("work_history") or []) if not has_company(w))
 
 
 def edges_from(row):
     edges = []
     for w in row.get("work_history") or []:
+        if not has_company(w):
+            continue
         eid, src = entity_key({"id": w.get("company_entity_id"), "name": w.get("company_name")})
         ended = bool(w.get("to"))
         if ended:
@@ -62,8 +84,10 @@ def edges_from(row):
 def entities_from(row):
     seen = {}
     for w in row.get("work_history") or []:
+        if not has_company(w):
+            continue
         eid, src = entity_key({"id": w.get("company_entity_id"), "name": w.get("company_name")})
-        if eid in seen or not w.get("company_name"):
+        if eid in seen:
             continue
         seen[eid] = {"entity_id": eid, "entity_key_source": src, "kind": "company",
                      "name": w["company_name"], "source_url": row["source_url"],
@@ -109,7 +133,7 @@ def main():
 
     known = {r["at_member_id"]: r["source_hash"] for r in fetch_known(key)}
 
-    profiles, entities, edges, skipped = [], [], [], 0
+    profiles, entities, edges, skipped, no_company = [], [], [], 0, 0
     for r in rows:
         if r.get("source_hash") and known.get(r["at_member_id"]) == r["source_hash"]:
             skipped += 1
@@ -117,18 +141,25 @@ def main():
         profiles.append(profile_row(r))
         entities += entities_from(r)
         edges += edges_from(r)
+        no_company += skipped_work_entries(r)
 
     print(f"{len(rows)} read · {len(profiles)} to insert · {skipped} unchanged · "
-          f"{len(entities)} entities · {len(edges)} edges")
+          f"{len(entities)} entities · {len(edges)} edges · "
+          f"{no_company} work-history entries skipped (no company name)")
     if not a.apply:
         print("dry-run; pass --apply to write")
         return
 
-    # web_edges is deduplicated by a unique INDEX, not a primary key, so PostgREST needs the
-    # conflict target spelled out; the other two upsert on their primary keys.
+    # Every merge-duplicates call site in this codebase names its conflict target explicitly
+    # rather than relying on PostgREST's default (the table's primary key) — spelling it out
+    # here too, even though member_web_profile and web_entity's targets happen to match their
+    # primary keys, so a future PK change can't silently change upsert behavior underneath this.
+    # web_edges has no primary key at all (see db docstring), so its target is not optional.
+    PROFILE_CONFLICT = "on_conflict=at_member_id,fetched_at"
+    ENTITY_CONFLICT = "on_conflict=entity_id"
     EDGE_CONFLICT = "on_conflict=a_id,a_kind,b_id,b_kind,edge_type,valid_from"
-    for chunk, path in ((profiles, "member_web_profile"),
-                        (entities, "web_entity"),
+    for chunk, path in ((profiles, f"member_web_profile?{PROFILE_CONFLICT}"),
+                        (entities, f"web_entity?{ENTITY_CONFLICT}"),
                         (edges, f"web_edges?{EDGE_CONFLICT}")):
         for i in range(0, len(chunk), 200):
             sb("POST", path, key, chunk[i:i + 200], prefer="resolution=merge-duplicates")

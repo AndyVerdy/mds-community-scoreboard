@@ -76,7 +76,7 @@ def _base_row(at_member_id, url, fetch_status, **overrides):
         "source_url": url,
         "source_kind": "linkedin",
         "fetch_status": fetch_status,
-        "fetched_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "fetched_at": datetime.now(timezone.utc).isoformat(timespec="microseconds"),
         "headline": None,
         "location": None,
         "industry": None,
