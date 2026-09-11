@@ -298,6 +298,29 @@ in `olivia_web_messages`. *As Andy, I ask the warehouse from my own Claude and e
 one MCP tool call from Claude Desktop returns a Team answer with its trail; the log row carries the asker; the leak gate's `#172`
 section stays green; WhatsApp/member/anon gain nothing.
 
+### #199 · Team research: a `scan_content` tool — classify EVERY message of a member set for a fuzzy trait
+**🟠 S2 · size M — filed 2026-09-11 (Andy: "file #199 the scan tool. but do not start it yet, lets finish our plan first").
+PARKED — not started.** Depends on #172 (live).
+
+> **In plain words:** today Team mode finds a concept by words and by meaning and reads the hits. To answer "who
+> attended Inspire 2026 and is thinking of moving to Miami" for certain, it must READ every message of those people,
+> not search for likely ones. That is a scan job with a classifier, not a bigger prompt.
+
+*As MDS staff, I can ask a question about what a set of members has said anywhere (WhatsApp, Facebook, calls, forms) —
+"who is thinking of relocating", "who mentioned hiring a COO", "who sounds burned out" — and get a complete tally with
+the quotes, not a sample.*
+
+**Shape (design, to confirm before build):** a fourth tool beside `sql_query` / `schema_catalog` / `semantic_search`:
+`scan_content(filter: {members | chats | sources | since | until}, question: "<trait>", max_messages)` → the loop
+selects the rows through `team_sql`, a small model (Haiku-class) classifies them in batches of ~50 with a fixed rubric
+(yes / no / unsure + the quote), the tool returns the tally per member with quotes and the sample size; the trail step
+records rows scanned and cost; the per-asker daily budget already caps it. Live measure 2026-09-11: the last 30 days of
+WhatsApp ≈ 4,000 messages; one full-year scan of everything is tens of thousands of rows — the tool must say what it
+scanned and refuse silently-partial answers. **Acceptance:** 1. Andy's example question returns every attendee who said
+it, with quotes and dates, and the count of messages scanned. 2. A scan over a set the model cannot finish within the
+budget says so (no partial tally presented as complete). 3. Cost per scan is on the trail and in `metrics`; a 30-day
+WhatsApp scan costs under $5. 4. The leak gate's `#172` section stays green (no new grant, no n8n edit).
+
 ### #191 · The nightly eval is dead — #105's webhook secret refuses all 220 posts
 **🔴 S1 · size XS — filed 2026-09-10 from the #123 investigation.**
 

@@ -11,7 +11,13 @@
 
 # Olivia — next session
 
-## STATE 2026-09-11 (early) — #172 CLOSED: Team research mode LIVE for Andy · gate 367/0 · prod n8n untouched · NEXT = Andy's pick (#198 MCP door · #192 audit · #190 sprint-closure eval last)
+## STATE 2026-09-11 (early) — #172 CLOSED: Team research mode LIVE for Andy · gate 367/0 · prod n8n untouched · NEXT = Andy's pick (#199 scan tool is FILED and PARKED — "finish our plan first" · #198 MCP door · #192 audit · #190 sprint-closure eval last)
+
+**Andy's scope check (2026-09-11):** "not just about revenue — all the content, any personal info, complex requests…
+who attended Inspire 2026 and is thinking of moving to Miami". Ran live in his tab: roster (207 members) × WhatsApp ×
+Facebook × semantic, cross-checked, honest no-match — 24 queries, 14 laps, 112 s, $0.87. What it does NOT do: read every
+message (it searches, then reads hits) → **#199 `scan_content`**, filed, parked. Two env caps he may raise:
+`MILLIE_TEAM_DAILY_TURNS` (40) · `MILLIE_TEAM_DAILY_USD` (10) — a heavy cross-check costs ≈ $1.
 
 **Read first:** the #172 close block on the board (results, AC checklist, before → after, corrections, deferred list, the seven
 side tickets #192–#198) → `TEAM_RESEARCH_172_DESIGN.md` §10 for what was deliberately left out.
