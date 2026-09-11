@@ -98,7 +98,13 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#182** | 🅿️ **SPRINT 5** · Five days of recordings invisible to Millie — `zoom_weekly` runs on time but skips videos, no `GROUPOS_PAT` | 🟡 S2 | S | n/a (weekly job) | ⛔ blocked: GroupOS PAT (Andy) |
 | **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | ✅ **CLOSED 2026-09-10** — cause was NOT the health checks: pins load from localStorage after mount. `pinLayout()`, 6 tests, live `588ef08`. |
 | **#189** | 🃏 The persona builder fails intermittently and cannot say why — 19 of 31 on 2026-09-09, reported only as "no valid JSON" | 🟡 S2 | S | n/a (launchd job) | ✅ **CLOSED 2026-09-10** — cause found and fixed: the answer parser broke on a stray brace after the JSON. 40/40 built, 0 failed. |
-| **#190** | 🧪 The nightly eval is at **9.5% FAIL** against Andy's **<1%** bar — 21 of 220 on 2026-09-09 | 🔴 S1 | M | n/a (report) | 📝 filed 2026-09-10, needs a session 🔎 **ANALYSED 2026-09-10** — two classes are **86%** of it (`false_denial` 10, `wrong_fact` 8 of 21), and **3 of the 21 are one known bug, #123**, proven: every denied answer was sitting in `events_catalog`. |
+| **#190** | 🧪 The nightly eval is at **9.5% FAIL** against Andy's **<1%** bar — 21 of 220 on 2026-09-09 | 🔴 S1 | M | n/a (report) | ✅ **CLOSED 2026-09-11** — a fresh 100-question exam of real member asks (Andy: "do fresh 100"), fired at prod: **14% judged, 7% reproducing** after every failure was re-fired by hand. The nightly bank was overstating by ~2× (4 of 13 sticky fails were stale truths; 5 truths repaired). Failures named by mechanism → #201 #202 #203 #204 #205 #206. Triage `OLIVIA_EXAM_190_TRIAGE.md` |
+| **#204** | 🔐 An exact revenue figure (£14.5M) reached a member in Millie's own voice — quotable, but only attributed with its link and paired with the band | 🔴 S1 | S | — | 📝 filed 2026-09-11 from #190 — seen live 2026-09-04 (`olivia_messages` 62689) and in the exam; intermittent (the clamp caught the re-fire) |
+| **#201** | 🕳️ She denies what we hold because the tool never returns the column — `view_count` absent from `video_search_v2`, **Brand Name** in no gated function at all | 🔴 S1 | M | — | 📝 filed 2026-09-11 from #190 — 2 of the 7 reproducing failures, the biggest `false_denial` mechanism |
+| **#203** | 🔀 One lane denies while another holds it — "MDS 9" is 4 events + a video set; "Trybe" is spelled "Tribe" in the transcript | 🟡 S2 | M | — | 📝 filed 2026-09-11 from #190 — 2 of the 7 |
+| **#202** | 💬 "How do I join the supplements channel" ran the recommender with no query and offered TikTok instead | 🟡 S2 | S | — | 📝 filed 2026-09-11 from #190 — member report #34 sits in the same lane |
+| **#205** | ✂️ A post ranked 4th is cut at 500 chars, so the fact at char 658 never reaches the model (the Advisory Council deadline) | 🟡 S2 | S | — | 📝 filed 2026-09-11 from #190's sticky-13 triage |
+| **#206** | 📅 Coverage stated as a feeling — "the further back the thinner" instead of 4,283 posts, 2021-08-17 → 2026-09-10, 5 before 2025 | 🔵 S3 | XS | — | 📝 filed 2026-09-11 from #190 |
 | **#191** | 🧪 The nightly eval is DEAD since this morning — #105's webhook secret 403s all 220 posts, no report for 2026-09-10 | 🔴 S1 | XS | n/a (local job) | ✅ **CLOSED 2026-09-10** — 25/25 posts `200` on the live webhook; 4 scripts fixed, a refused door now aborts loudly |
 | **#123** | 🗺️ `event_lookup` never reaches the events catalog — every `event_*` call is prefix-routed to the Summit schedule endpoint | 🟡 S2 | M | ✅ proven `9d91109e` | ✅ **LIVE `b4db92d0`** (promoted 2026-09-10 17:56Z by Andy) — prod probe 68019, gate 346 EXIT 0 |
 | **#188** | 🩺 One tile, two writers — "Member profiles ← Airtable sync" reported the events catalog's staleness under the member-profiles name | ⚪ S4 | XS | n/a (app code) | ✅ **CLOSED 2026-09-10** — the worse half now names its writer; 5 tests, live `2208d78`. |
@@ -297,6 +303,129 @@ identity story (a research-only PostgREST role or a bearer bound to a staff emai
 in `olivia_web_messages`. *As Andy, I ask the warehouse from my own Claude and every query is logged under my name.* **Acceptance:**
 one MCP tool call from Claude Desktop returns a Team answer with its trail; the log row carries the asker; the leak gate's `#172`
 section stays green; WhatsApp/member/anon gain nothing.
+
+### #204 · An exact revenue figure reached a member in Millie's own voice
+
+**🔴 S1 · size S — filed 2026-09-11 from #190's exam. A member has already seen it.**
+
+> **In plain words:** the rulebook says a member's exact revenue may be repeated only as a quote, with its link, next
+> to our band. Millie instead wrote the number as a plain fact about the person, in her own sentence.
+
+*As a member, no answer ever states another member's exact revenue as a fact — even when the figure is public,
+it arrives as a quote with its source, or as the band.*
+
+**The evidence, twice.** A real member asked for an intro on **2026-09-04** and got *"I did find Joshua Asquith, a UK
+beauty brand owner (£14.5M/yr)…"* (`olivia_messages` 62689). The exam reproduced the same shape on 2026-09-11 (Q5043).
+The figure itself is legitimately quotable — it is in MDS's own public welcome post (`content_items` 133718,
+2026-07-29, *"a UK beauty brand doing £14.5M a year"*) — and `OLIVIA_SHAREABLE_FIELDS.md` is explicit: quotable
+**ONLY as an attributed quote with its link, paired with our band, never in Olivia's own voice**. A bare parenthetical
+is exactly the forbidden shape. On a re-fire the clamp caught the turn, so it is **intermittent, not deterministic**.
+
+**Why the gate did not catch it.** The leak gate probes our OWN revenue columns; this number came in as *content*, from
+a public post, so nothing in the retrieval layer was violated. The rule that was broken is a rendering rule.
+
+**Accept when:** 1. A revenue figure sourced from content appears only as an attributed quote with its link, or not at
+all ✅ 2. The band still appears where we hold one ✅ 3. A gate check fires on a currency figure rendered adjacent to a
+member name without a citation, using both 62689 and Q5043 as fixtures ✅ 4. No new over-refusal: the public quote is
+still available to members who ask for it ✅ 5. Gate GREEN.
+
+### #201 · Millie denies what we hold because the tool never returns the column
+
+**🔴 S1 · size M — filed 2026-09-11 from #190's exam (2 of the 7 reproducing failures, and the biggest `false_denial` mechanism).**
+
+> **In plain words:** twice she said "I don't have that" about something sitting in the database — not because search
+> failed, but because the function's output list never had the column in it.
+
+*As a member, when the warehouse holds the answer, the tool hands it over — a denial means we genuinely do not have it.*
+
+**Two proven cases.**
+- **`view_count`** — `digest.videos_catalog.view_count` is populated and `refresh_entity_dossiers` already reads it, but
+  `digest.video_search_v2`'s `RETURNS TABLE` has no such column. Q5100 *"what are the top 5 most watched mogul calls"*
+  → *"I don't have a view-count ranking"*, then an invented "members clearly engaged with" ordering. The real top 5 by
+  views starts with *Amazon Ranking Mastery — Alex Chiru & Matt Altman* (264).
+- **Brand Name** — `grep -rl "Brand Name" db/functions/` returns **nothing**, and `member_card_v2` emits a fixed
+  19-column set with no brand. Q5060 *"which member owns Stylia Beauty"* → not found, while Lenny Joseph's profile
+  carries `Brand Name = Stylia`.
+
+**Shape of the fix.** Add `view_count` (and `like_count`) to the video tool's contract and let the ranking lane order by
+it; add the member brand to the card and to whatever `find` searches, under the 🟢 SHARE column of the rulebook (a
+brand a member sells under is public by construction — it is on their listings). **Then audit the other direction
+once:** walk each gated function's RETURNS list against the columns its source table holds, and write down every field
+we deliberately do not expose, so the next denial of this kind is a decision and not an oversight.
+
+**Accept when:** 1. "Most watched" answers with real view counts ✅ 2. "Who owns <brand>" resolves from the profile
+field ✅ 3. The audit table lands in the handbook (§6.2) — every gated function, the columns it withholds, and why ✅
+4. Nothing new is exposed that the rulebook does not already permit; gate GREEN ✅
+
+### #203 · One lane denies while another lane holds the answer
+
+**🟡 S2 · size M — filed 2026-09-11 from #190's exam (2 of the 7).**
+
+> **In plain words:** she asks one place, it is silent, and she reports that silence as "we don't have it" — while a
+> different place in the same warehouse has it.
+
+*As a member, "I can't find that" means the whole record was checked, not one shelf of it.*
+
+**Two proven cases.** Q5071 *"how do I become a member of MDS 9"* → *"I'm not familiar with anything called MDS9"*,
+answered from `community_info` + `org_docs`, while `events_catalog` holds **MDS 9 100M+ Mastermind Dec 2026**,
+**MDS 9 BFCM Strategy Dinner Oct 2026**, **MDS 9 Michelin Dinner July 2026** and the library holds the July 2026
+MDS9 Mastermind sessions. Q5097 *"a speaker at Singapore spoke about Trybe"* → denied in the transcripts, where the
+word is spelled **"Tribe"** (Brandon Himmel's TikTok Mastermind, ~00:39) — she then supplied excellent Facebook and
+WhatsApp context on Trybe, which makes the denial of the transcript hit worse, not better.
+
+**Shape of the fix.** Two halves, and they are separable: (a) a denial about a NAMED thing must cost one more lookup
+before it is spoken — if the name appears in `events_catalog`, `videos_catalog` or `partners_catalog`, the answer
+cannot be "never heard of it"; (b) a proper-noun query should try close spellings (trigram) before concluding
+absence. (b) alone fixes Trybe; (a) alone fixes MDS 9.
+
+**Accept when:** 1. "MDS 9" returns the tier with its events and sessions ✅ 2. "Trybe" finds the Singapore transcript
+hit ✅ 3. No new false positives: a genuinely absent name still gets an honest miss (Roman Khan, Herdr and Stash all
+stay honest misses) ✅ 4. Gate GREEN.
+
+### #202 · "How do I join <named chat>" recommends other chats instead
+
+**🟡 S2 · size S — filed 2026-09-11 from #190's exam.**
+
+*As a member, when I name the chat I want, I get that chat's joining rule — not a list of chats you think suit me.*
+
+Q5022 *"how do i join the supplements channel"* planned `chat_recommendations` with **no query parameter at all**, so
+the named chat was dropped and the answer offered *MDS TikTok 1M+ TTM*. MDS Supplements is verification-gated
+(*"Member needs to sell supplements"*), its verification form is `form.typeform.com/to/j5JAS5sT` and its invite is
+`chat.whatsapp.com/Hz94bAWIbLX5NBhLA32t46` — none of it reached the member. Note the real member report **#34**
+("the link doesn't work?", John Cho, 2026-08-25) sits in the same lane.
+
+**Accept when:** 1. A named chat in the question routes to that chat's own record ✅ 2. Gated chats state the gate and
+give the form; open chats give the invite ✅ 3. The recommender still runs when no chat is named ✅ 4. Gate GREEN.
+
+### #205 · A post's tail is cut by its rank, so the answer's fact never reaches the model
+
+**🟡 S2 · size S — filed 2026-09-11 from #190's sticky-13 triage.**
+
+*As a member, the fact I asked for is not lost because its post ranked fourth instead of third.*
+
+`Build Prompt` renders Facebook hits on a tiered budget — **ranks 1-3 whole (1,600 chars), ranks 4-10 cut at 500, the
+rest at 220**. Q2103 asks when Advisory Council applications close; Millie cites **the right post** (Eugene Khayman,
+2026-05-13) and says no closing date is stated — because *"Applications close May 22, 2026"* sits at character **658**
+of a 744-character post that ranked outside the top 3. This is the failure the tiered budget was invented to fix
+(2026-07-25, bodies running 1,000-1,900 chars), only one tier lower down.
+
+**Shape of the fix:** never truncate a post that is already short — a floor of ~1,000 chars for any hit inside the
+top 10 costs a few hundred tokens and removes the whole class. Measure the prompt size before and after.
+
+**Accept when:** 1. Q2103 answers May 22, 2026 ✅ 2. The FB block stays inside its overall cap (18,000 chars) ✅
+3. The nightly's `false_denial` count does not rise ✅ 4. Gate GREEN.
+
+### #206 · She describes her coverage instead of stating it
+
+**🔵 S3 · size XS — filed 2026-09-11 from #190's exam.**
+
+*As a member, when I ask how far back you can see, I get the dates.*
+
+Q5047 *"can you do past posts on Facebook from many years ago?"* → *"the further back you go into 'many years ago'
+territory, the thinner it gets"*. The answer is a number: **4,283 posts, 2021-08-17 → 2026-09-10, of which 5 predate
+2025** (1,743 in 2025, 2,535 in 2026). Same shape as `reference_mirror_freshness_signal`: every mirror needs a
+freshness signal the answer can quote. **Accept when:** a coverage question answers with the real window and counts,
+and says plainly that pre-2025 is effectively absent.
 
 ### #200 · Team mode access without touching Render — any @mds.co in, offboarding, per-person usage and spend, super-admins only
 **🟠 S2 · size M — filed 2026-09-11 (Andy: "I don't like the idea of adding people to render so the team can use it. We should
@@ -4548,7 +4677,53 @@ says so in §6.2. **#123 is worth more than its current priority** — it is 14%
 **Where to start:** #123 first (proven, 3 fails, already understood), then the CROSS class (5 fails, the worst
 rate at 31%) which is multi-source retrieval, then VIDEO (3 fails, 30%).
 
-**Not started.** Needs a session; the analysis above is the map.
+#### ✅ CLOSED 2026-09-11 — a fresh 100-question exit exam, an honest number, and the failures named by mechanism
+
+**Andy's call at the top of the session: "do fresh 100" — a new bank, not the old one.** Both banks were old: the
+nightly `eval_bank_v2.json` was built 2026-07-25 (50 of its 220 machine-generated, 0 ever retired) and the locked 100
+was frozen 2026-08-16 and last fired 08-23. Since 08-16 members asked **4,058 real questions** (141 askers) that no
+bank had ever seen. **`eval_bank_exam_2026-09-11.json` is 100 of them** — deduped against both old banks, quota'd by
+what members actually ask (TACTICS 14 · CHAT_CONTENT 13 · VIDEOS 12 · EXPERT 10 · MEMBER 10 · EVENTS 7 · CAPABILITY 8
+· the rest 26), every truth verified in the warehouse the same day by five parallel read-only agents (238 SQL reads).
+
+**Results.** Fired at PROD `b4db92d0`, 04:36–05:20Z: **100 judged · PASS 78 · PARTIAL 8 · FAIL 14 (14.0 %)**,
+100/100 answered, every turn HTTP 200, $3.05. Then **every one of the 14 was re-fired and read by hand**:
+**7 reproduce · 5 do not · 2 are the bank's own error** (5057 described Andy's own application record correctly;
+5098 is a follow-up whose "they" the eval's reset deletes). **The honest defect rate is 7 %.**
+Full triage: **`OLIVIA_EXAM_190_TRIAGE.md`**.
+
+**The 7 are four mechanisms, and two of them are most of it.**
+| mechanism | ids | what it is |
+|---|---|---|
+| ① a column we hold that no tool returns | 5100 · 5060 | `view_count` is in `videos_catalog` but not in `video_search_v2`'s RETURNS TABLE; **Brand Name** is in no gated function at all (`grep -rl "Brand Name" db/functions/` = nothing) → **#201** |
+| ② one lane denies while another holds it | 5071 · 5097 | "MDS 9" is 4 events + a video set, denied by `community_info`; "Trybe" is spelled **"Tribe"** in the Singapore transcript → **#203** |
+| ③ the wrong lane answers | 5022 | "how do i join the supplements channel" ran `chat_recommendations` with no query and recommended TikTok → **#202** |
+| ④ coverage stated as a feeling | 5047 | "the further back the thinner" instead of 4,283 posts, 2021-08-17 → 2026-09-10, 5 predate 2025 → **#206** |
+
+**Found alongside, NOT chased (Andy's rule):** **#204** — an exact revenue figure (£14.5M) reached an answer in
+Millie's own voice, in the exam **and** in a real member conversation on 2026-09-04 (`olivia_messages` 62689). The
+figure is public (MDS's own welcome post) so it is quotable, but only attributed with its link and paired with the
+band. **S1, privacy.** · **#205** — `Build Prompt` cuts Facebook posts ranked 4-10 at 500 chars and the answer's fact
+sat at char 658 (the Advisory Council deadline, Q2103).
+
+**The nightly bank was overstating Millie by about 2×.** The 13 questions that failed three nights running were
+re-probed on staging: 3 fixed by #123 · 1 passes now · **4 were stale or wrong truths** · 2 ambiguous questions ·
+3 synthetic CROSS mash-ups that can only half-pass · **1 real defect (#205)**. All five bad v2 truths were rewritten
+(snapshot `eval_bank_snapshots/eval_bank_v2_2026-09-11_truths-refreshed.json`), so tonight's 03:30 nightly is the
+first run judged against truths that match the warehouse.
+
+**AC checklist.**
+| AC | result |
+|---|---|
+| 1. One valid full run on prod after #191's fix, report committed, number real | ✅ `OLIVIA_EVAL_2026-09-11.md` — 100/100 answered, 0 refusals (the 09-10 nightly had died 403 at 188 of 220) |
+| 2. No FAIL is the bank lying — stale truths fixed | ✅ 5 v2 truths rewritten + 2 exam truths corrected; each named in the triage |
+| 3. The sticky set triaged: every fail → a fix or a ticket, ranked by mechanism | ✅ 13 sticky + 14 exam fails, all classified; 5 tickets filed (#201-#206) |
+| 4. Re-run below 9.5 % | ❌ **not met and not attempted** — nothing was fixed this session by design (the tickets are the fix), and the exam is a different, harder bank. Measured honestly instead: 14 % judged, **7 % reproducing**. |
+
+**Before → after.** *Before:* one bank, 220 questions, 50 of them machine-written, truths from 2026-07-25, last valid
+run 09-09 at 9.5 % — with no way to tell a Millie defect from a stale truth. *After:* a 100-question exam of real
+member asks with same-day truths, **14 % judged / 7 % reproducing**, every failure named by mechanism and owned by a
+ticket, and the nightly's own truths repaired. Gate **367/0 exit 0**, prod n8n `b4db92d0` untouched all session.
 
 ### #148 · The WA members mirror never reconciles — 12 rows Airtable stopped returning are frozen forever
 **🔵 S3 · size S — filed 2026-08-25 from #126's audit.**

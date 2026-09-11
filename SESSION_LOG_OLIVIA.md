@@ -4,6 +4,66 @@
 
 
 
+## 2026-09-11 · #190 CLOSED — a fresh 100-question exit exam at prod: 14% judged, 7% reproducing; the nightly bank was overstating by ~2×
+
+**Andy's asks, in order:** "continue on millie" (briefing, then WAIT — he was given #190 with story, my proposed ACs and the cost)
+→ **"are you going to use new questions bank or old?"** → **"do fresh 100 ... This bank will take a lot of time to execute. Is there
+anything you can do in parallel?"** (so: build and fire the new bank, and triage the nightly's sticky failures while it runs).
+
+**Why a new bank.** Both existing banks were old: the nightly `eval_bank_v2.json` was built **2026-07-25** (220 questions, 50 of them
+machine-generated, **0 ever retired** against Andy's own retirement rule) and the locked 100 was frozen 2026-08-16, last fired 08-23.
+Since 08-16 members had asked **4,058 real questions** (141 askers, 579 in the last 14 days) that no bank had seen.
+
+**The bank.** `eval_bank_exam_2026-09-11.json` — 798 organic asks pulled from `olivia_messages` (selftest traffic excluded, then
+Andy's own genuine asks kept), deduped against BOTH old banks by normalised text, fragments and greetings dropped → 644 candidates →
+quota'd by the real topic mix and capped at 3 per asker → 103 picked → 100. **Truths verified the same day by five parallel read-only
+agents** (238 SQL reads, ~$0 beyond tokens): each got the member's exact wording, the answer Millie gave at the time, the disclosure
+rulebook, and wrote `expect` + `soft` + `evidence` + a judgment of the old answer. They found the warehouse had moved under four
+answers that were right when given (Member of the Month is now Michael Patrón; Member of the Year was awarded to Brandon Himmel on
+09-09; the Whatnot and Trybe sessions landed after the asks).
+
+**The run.** PROD `b4db92d0`, 04:36–05:20Z, `OLIVIA_EVAL_BANK=eval_bank_exam_2026-09-11.json … --fire --score --cleanup`:
+**100 judged · PASS 78 · PARTIAL 8 · FAIL 14 (14.0 %)**, 100/100 answered, **every turn HTTP 200**, $3.05, report
+`OLIVIA_EVAL_2026-09-11.md`. (The 09-10 nightly had died at 403 after #105's header auth — 188 of 220 never replied — so this is also
+the first valid full run since 09-09.)
+
+**Then the part that matters: all 14 failures were re-fired at prod and read by hand** (05:25–05:35Z, $0.43, rows cleaned after).
+**7 reproduce · 5 do not · 2 are the bank's own error.** The two bank errors: **5057** "tell me what you know about me" described a
+private-label supplements brand, 120 SKUs, since 2020 — which **is Andy's own record** (`content_items` 13380/13381, `access_rule
+{type: owner}`; `member_attributes` categories/sku_count/started_year all match), so the answer was right and the written truth was
+incomplete; **5098** is a follow-up whose "they" the eval's own reset deletes. The 7 real ones are **four mechanisms**: ① a column we
+hold that no tool returns (`view_count` is in `videos_catalog` but not in `video_search_v2`'s RETURNS TABLE; **Brand Name** is in no
+gated function at all — `grep -rl "Brand Name" db/functions/` is empty) → **#201** · ② one lane denies while another holds it
+("MDS 9" is four events plus a video set, denied by `community_info`; "Trybe" is spelled **"Tribe"** in the Singapore transcript) →
+**#203** · ③ the wrong lane answers (`chat_recommendations` with **no query** for "how do i join the supplements channel") →
+**#202** · ④ coverage stated as a feeling → **#206**.
+
+**Found alongside, flagged not chased: #204 (S1, privacy).** An answer wrote *"Joshua Asquith, a UK beauty brand owner (£14.5M/yr)"* —
+an exact revenue figure in Millie's own voice. The figure is public (MDS's own welcome post, `content_items` 133718) and therefore
+quotable, but `OLIVIA_SHAREABLE_FIELDS.md` allows it **only as an attributed quote with its link, paired with our band**. It happened
+in a **real member conversation on 2026-09-04** (`olivia_messages` 62689) as well as in the exam; the re-fire hit the clamp, so it is
+intermittent. The leak gate cannot see it — the number arrived as content, so no retrieval rule was broken; the broken rule is a
+rendering rule.
+
+**In parallel: the nightly bank was overstating Millie by about 2×.** The 13 questions that had failed 09-07 AND 09-08 AND 09-09 were
+re-probed on staging `9d91109e` (26 turns, all 200): **3 are fixed by #123** (event routing) · **1 passes now** · **4 were stale or
+wrong truths** — transcripts DO exist for the Lisa De Rosa Mogul Call (`content_items` 161942/161943 carry the exact "breakpoint 3,
+which is 8 million to 12 million" line the bank called a fabrication), the newest videos are the Sept 2 batch not July 23, and the
+probe asker holds **3 `video_access` grants** on the "restricted" Centurion call so a summary was correct for him · **2 were ambiguous
+questions** · **3 are synthetic CROSS mash-ups that can only half-pass** · **1 is a real defect → #205**: `Build Prompt` cuts Facebook
+hits ranked 4-10 at **500 chars** and the Advisory Council deadline sits at char **658** of a 744-char post, so she cites the right
+post and misses the fact inside it. Five v2 truths were rewritten; tonight's 03:30 nightly is the first judged against truths that
+match the warehouse.
+
+**Artifacts.** Scorecard branch `190-eval-20260910`: `OLIVIA_EXAM_190_TRIAGE.md` (the full triage), `OLIVIA_EVAL_2026-09-11.md`,
+`OLIVIA_EVAL_2026-09-10.md`, both bank snapshots, the #190 close block and tickets **#201–#206** on the board. Tools repo
+`mds-scorecard-tools` `161f22b`: the exam bank + the repaired v2 truths. **Gate 367/0 exit 0** (run at session open, no code changed
+since). **Prod n8n `b4db92d0` untouched all session; nothing promoted, nothing merged to a live service.**
+
+**NEXT.** The agreed order after #190 is **#170** (long thread memory) — but **#201 and #204 are S1 and both came out of this exam**,
+so the order is now Andy's call: #204 is small and a member has already seen the leak; #201 is the biggest single `false_denial`
+mechanism. Present all three and wait.
+
 ## 2026-09-11 (early) · #172 Milestone B — Team research mode BUILT, PROVEN 20/20 through the route, LIVE for Andy · #172 CLOSED
 
 **Andy's asks, in order:** "continue" (taken as the go for Milestone B) → "a small test page on digest.mds.co - link?" → the Render
