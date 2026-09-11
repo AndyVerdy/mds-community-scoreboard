@@ -13,10 +13,15 @@
 
 ## STATE 2026-09-11 (overnight) — ⏳ **STAGING IS WAITING ON ANDY'S PROMOTE**: nine core fixes from #190, 17 of the 22 exam failures addressed, 5 still failing for one shared reason
 
-**Do this first: promote staging.** Prod n8n is still `b4db92d0`. Staging `2c16e59b` (92 nodes) carries the whole night's
-graph work; the SQL half is already live on prod. Roll-back point if anything looks wrong:
-`olivia_snapshots/staging_2026-09-11T054855Z_pre-190-overnight.json` (the pre-work graph) and the four SQL functions are all
-CREATE OR REPLACE, so the inverse is a re-apply of the `db/` copy.
+**✅ PROMOTED — prod n8n is `b31eadbb`** (2026-09-11 14:33Z, on Andy's "promote staging"). Hash pin re-snapshotted
+(`08013a8e…`), gate **367/0 exit 0**, lock free, probe rows cleaned. Roll-back:
+`olivia_snapshots/prod_2026-09-11T141737Z_pre-190-promote.json`.
+
+**⚠️ The promote is what caught #208's real defect** — on prod the Trybe question still denied it, because the transcript
+fetch sat a few lines ABOVE the videos lane's own reset and was overwritten. The staging 4/4 had been luck: the model called
+`content_search` itself and hit once. Fixed (`apply_208b_transcript_fetch_order.py`), re-proven with the PLAN inspected
+(`raw sources=['call_transcript'] terms=['trybe','tribe']`), promoted again. **Lesson: verify the PLAN, not just the answer,
+whenever the fix is a deterministic fetch.**
 
 **Andy's instruction (00:50):** *"22% failure. Partial = fail. Work overnight, close tickets one by one, fix the core issue
 not a specific question, reprobe the failed question plus 3 similar, <2% in the morning unless we have core issues."* He also
