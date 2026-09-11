@@ -724,64 +724,88 @@ Staging now waits for Andy's promote. Do not promote.
 
 ---
 
-### Task 7: Prove the acceptance criteria
+### Task 7: Prove the acceptance criteria (in-process, before the deploy)
+
+**Why in-process:** the Team route is gated on the staff session and the allowlist, and nobody signs in as Andy. The route's own logic is thin (gate → `loadMemory` → `runResearchLoop` → `closeTurn`), so the proof drives the same two functions the route calls, with the same deps, against the live database and the live models. The route itself is checked once after the deploy, by Andy asking one question in the UI (Task 8 step 2).
 
 **Files:**
-- Create: `scripts/olivia_170_seed_thread.py` (Scorecard) — seeds a long Team thread for the AC 1 / AC 2 measurement
+- Create (Scorecard): `scripts/olivia_170_seed_thread.py` — seeds and cleans the proof threads
+- Create (web worktree): `scripts/olivia_170_proof.ts` — runs the memory + loop in process and prints the evidence
 - Read: `digest.olivia_web_messages`, `digest.olivia_web_threads`
 
-- [ ] **Step 1: Seed a thread past 100 turns with a decision made early**
+**Interfaces:**
+- Consumes: `loadMemory` (Task 2), `threadSearchFor` + `defaultDeps` + `runResearchLoop` (Tasks 3, 4), the Supabase service key and Anthropic key in `/Users/Born/mds-digest-web/.env.local` (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `CENTURION_ANTHROPIC_API_KEY`).
 
-Write `scripts/olivia_170_seed_thread.py`: insert 110 alternating rows into `digest.olivia_web_messages` with `thread_id='t_170_long'`, `asker_email='andy@mds.co'`, `mode='team'`, `target='prod'`, `route='team-research'`. Row 3 (a `member` row) is "let's agree: we report MRR on the paid date, not the invoice date" and row 4 (an `olivia` row) confirms that decision. Rows 5-110 are ordinary filler about unrelated topics, so the decision is far outside the verbatim window.
+- [ ] **Step 1: The seed script**
 
-- [ ] **Step 2: Ask the long thread the AC 1 question**
+`scripts/olivia_170_seed_thread.py` (Scorecard) talks to PostgREST directly with the service key (read from `/Users/Born/mds-digest-web/.env.local`, never printed), headers `apikey`, `Authorization: Bearer`, `Content-Profile: digest`, `Accept-Profile: digest`. It seeds three threads for `asker_email='andy@mds.co'`, `mode='team'`, `target='prod'`, `route='team-research'`, and is idempotent (deletes those thread ids from `olivia_web_messages` and `olivia_web_threads` first):
 
-Ask through the live Team route (signed in as Andy in the browser, or the same POST the page makes) on `thread_id=t_170_long`:
+| thread_id | rows | content |
+|---|---|---|
+| `t_170_long` | 110, alternating `member` / `olivia` | row 3 (member): "Let's agree on this now: we report MRR on the paid date, not the invoice date." · row 4 (olivia, `answer_md`): "Agreed and noted: MRR is reported on the paid date, not the invoice date." · rows 5–110: filler on unrelated topics (members in Miami, the Singapore summit agenda, partner offers, video library, WhatsApp digests), each question ≥ 80 characters, each answer ≥ 160 characters, varied so the fold has real prose to summarise |
+| `t_170_mid` | 20, same shape | filler only, no decision |
+| `t_170_fresh` | 0 | nothing seeded; the id is used for the fresh-thread run |
 
-> "what did we decide earlier about which date MRR is reported on?"
+Every seeded row carries an explicit `created_at` starting three days ago and advancing two minutes per row, so the Team route's per-day budget (`dailySpend` counts today's `olivia` rows) is never touched by the seed. `member` rows set `text`; `olivia` rows set `answer_md`, `text: null`, `notes: ["seed-170"]`, `sources: []`, `plan: []`. `--cleanup` deletes all three threads from both tables and prints the deleted counts.
 
-Expected: the paid date, not the invoice date. Read the trail: the answer comes from the summary or from a `web_thread_search` step, never from a member-data tool.
+- [ ] **Step 2: The in-process proof**
 
-- [ ] **Step 3: Measure AC 2**
+`scripts/olivia_170_proof.ts` in the web worktree, run as `npx tsx --env-file=.env.local scripts/olivia_170_proof.ts` from that worktree root (install `tsx` as a dev dependency only if `npx tsx` cannot resolve it; the `@/` alias comes from `tsconfig.json` paths, which tsx honours). For each of `t_170_long`, `t_170_mid`, `t_170_fresh`, in that order:
 
-```sql
-select thread_id, (metrics->>'cost_usd')::numeric as cost, metrics->>'laps' as laps
-from digest.olivia_web_messages
-where role='olivia' and thread_id in ('t_170_long','t_170_fresh') order by id desc limit 4;
+```ts
+const askerEmail = "andy@mds.co";
+const memory = await loadMemory({ askerEmail, threadId, mode: "team" });
+const history = [] as Array<{ role: "user" | "assistant"; content: string }>;
+for (const t of memory.recent) {
+  if (t.role === "member") history.push({ role: "user", content: t.text || "" });
+  else if (t.answer_md) history.push({ role: "assistant", content: t.answer_md });
+}
+const client = new Anthropic({ apiKey: config.centurion.anthropicApiKey, maxRetries: 2 });
+const deps = { ...defaultDeps(), threadSearch: threadSearchFor({ askerEmail, threadId }) };
+const result = await runResearchLoop({
+  question: "What did we decide earlier about which date MRR is reported on?",
+  askerEmail, history, summary: memory.summary, model: config.millie.researchModel,
+  client: { stream: (p) => client.messages.stream(p) }, deps,
+  onEvent: () => undefined, onTrail: () => undefined,
+});
+console.log(JSON.stringify({ threadId, summary_chars: memory.summary.length, recent_rows: memory.recent.length, laps: result.laps, cost_usd: result.cost_usd, tools: result.sources.map((s) => s.tool), answer: result.answer.slice(0, 600) }, null, 2));
 ```
 
-Ask the same question in a brand-new thread `t_170_fresh` first, so both rows exist. Expected: the long thread's `cost_usd` within 10% of the fresh one.
+The script never calls `openTurn`/`closeTurn` — it writes no `olivia_web_messages` rows. It does let `loadMemory` upsert `olivia_web_threads` (that is the memory under test).
 
-- [ ] **Step 4: Prove AC 4 three ways**
+Expected, and what to record verbatim in the report:
+- `t_170_long`: `summary_chars > 0`, `recent_rows = 16`, the answer names the **paid date** (not the invoice date), and either the summary carried it or `tools` includes `"thread"`.
+- `t_170_fresh`: the answer says no such decision is on record in this conversation (it must not invent one).
+- **AC 2 (cost):** `cost_usd(t_170_long)` within 10 % of `cost_usd(t_170_mid)` — both carry the same 16-row verbatim window; the only difference is the summary. Also print `cost_usd(t_170_fresh)` for the record: a fresh thread carries no window at all, so it is cheaper than both; the AC's bar is "cost does not grow with the thread", which is long ≈ mid. Run each thread twice and report both numbers, since laps vary.
+
+- [ ] **Step 3: AC 4 three ways**
 
 ```bash
-cd /Users/Born/Scorecard && python3 scripts/olivia_leak_gate.py; echo "exit=$?"          # green
-python3 - <<'PY'                                                                          # the graph has no such tool
+cd /Users/Born/Scorecard/.claude/worktrees/170-memory-20260911 && python3 scripts/olivia_leak_gate.py > /tmp/gate170.txt; echo "exit=$?"; tail -3 /tmp/gate170.txt
+python3 - <<'PY'
 import json,glob
-d=json.load(open(sorted(glob.glob('olivia_snapshots/staging_*.json'))[-1]))
-print('web_thread_search in graph:', 'web_thread_search' in json.dumps(d))
+d=json.load(open(sorted(glob.glob('olivia_snapshots/staging_*post-170-thread-summary.json'))[-1]))
+print('web_thread_search in staging graph:', 'web_thread_search' in json.dumps(d))
 PY
 ```
 
-Expected: `exit=0`, and `False` for the graph. Third: send a WhatsApp probe turn (`scripts/olivia_selftest.py`, the SELFTEST path) asking "search our earlier web chat for the refund decision" and confirm the answer neither calls nor claims such a tool.
+Expected: `exit=0`, and `False`. Third: a WhatsApp-shaped probe. `scripts/olivia_selftest.py` sends SELFTEST turns (the silent path, never Meta); read its `--help` and fire ONE turn at the STAGING workflow with the text "search our earlier web chat for the refund decision". Read the reply from `digest.olivia_messages` (or the script's own output) and record it: it must neither call nor claim a thread-search tool. Also record the execution id.
 
-- [ ] **Step 5: Confirm the table holds exactly one row per long thread**
-
-```sql
-select thread_id, mode, turns, summary_through_id, length(summary) from digest.olivia_web_threads order by updated_at desc limit 5;
-```
-
-Expected: `t_170_long` with `mode='team'`, a non-empty summary, `summary_through_id` equal to the id of the last row outside the verbatim window.
-
-- [ ] **Step 6: Clean up the seeded rows and commit the script**
+- [ ] **Step 4: The table holds one row per long thread**
 
 ```sql
-delete from digest.olivia_web_messages where thread_id in ('t_170_long','t_170_fresh');
-delete from digest.olivia_web_threads where thread_id in ('t_170_long','t_170_fresh');
+select thread_id, mode, turns, summary_through_id, length(summary) from digest.olivia_web_threads where thread_id like 't_170_%' order by thread_id;
 ```
+
+Expected: `t_170_long` with `mode='team'`, non-empty summary, `summary_through_id` = the id of the last seeded row outside the verbatim window (row 94 of 110). `t_170_mid` has a row (20 rows > 16, 4 folded). `t_170_fresh` has none.
+
+- [ ] **Step 5: Commit the scripts; leave the seed in place**
+
+The seed threads stay until Andy's route check in Task 8 (then `--cleanup`).
 
 ```bash
-git add scripts/olivia_170_seed_thread.py && git commit -m "#170: seed script for the long-thread proof"
+cd /Users/Born/Scorecard/.claude/worktrees/170-memory-20260911 && git add scripts/olivia_170_seed_thread.py && git commit -m "#170: seed script for the long-thread proof"
+cd /Users/Born/mds-digest-web/.claude/worktrees/170-memory-20260911 && git add scripts/olivia_170_proof.ts && git commit -m "#170: in-process proof harness for the thread memory" && git push
 ```
 
 ---
@@ -796,9 +820,17 @@ cd /Users/Born/mds-digest-web && git switch main && git pull --ff-only && git me
 
 Then confirm the deploy is live: `curl -s https://digest.mds.co/api/version`.
 
-- [ ] **Step 2: Hand staging to Andy**
+- [ ] **Step 2: The route check, by Andy, then the cleanup**
 
-Tell him the graph change is staged on `bqHstPDi84uOhTCJ` and what it is, so he knows whose edits ride his next promote.
+With the deploy live, Andy opens Ask Millie → MDS Team, picks the seeded session `t_170_long` in the rail, and asks: "What did we decide earlier about which date MRR is reported on?" Then read the answer row back:
+
+```sql
+select id, left(answer_md, 300) as answer, metrics->>'cost_usd' as cost, sources from digest.olivia_web_messages where thread_id='t_170_long' and role='olivia' order by id desc limit 1;
+```
+
+Expected: the paid date, with either a `thread` step in `sources` or the summary carrying it. Then `python3 scripts/olivia_170_seed_thread.py --cleanup`.
+
+Tell Andy the graph change is staged on `bqHstPDi84uOhTCJ` and what it is, so he knows whose edits ride his next promote.
 
 - [ ] **Step 3: Close the ticket on the board**
 
