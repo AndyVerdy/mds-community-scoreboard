@@ -95,19 +95,24 @@ st, b, _ = team_sql("insert into digest.chats(chat_id, chat_name) values ('gate-
 check("2 a plain INSERT is refused by the SELECT-only pre-check (42501)", refused(st, b, 403, "42501") and "team_sql" in json.dumps(b),
       f"{st} {json.dumps(b)[:140]}")
 
+# The wrapper nests every statement inside `select * from (...) q`, and Postgres refuses a data-modifying
+# CTE anywhere but the top level (0A000) — so a write cannot even be PARSED through the tool. (First run
+# 2026-09-10 expected 25006 here; the structural refusal fires first.)
 st, b, _ = team_sql("with w as (insert into digest.chats(chat_id, chat_name) values ('gate-172','gate-172') returning chat_id) select * from w")
-ok3 = refused(st, b, 405, "25006")
-check("3 a data-modifying CTE is refused by the READ-ONLY TRANSACTION (25006) — merge blocker", ok3,
-      f"{st} {json.dumps(b)[:140]}")
+check("3 a data-modifying CTE cannot be nested inside the wrapper (0A000) — structural, before any privilege",
+      refused(st, b, 400, "0A000"), f"{st} {json.dumps(b)[:140]}")
 if st == 200:
-    print("      !!! STOP: the write went through — transaction_read_only does not bind inside PostgREST. Escalate; do not build the route.")
+    print("      !!! STOP: the write went through — escalate; do not build the route.")
 
-# pg_net's http_post is PUBLIC-executable and SECURITY DEFINER: the one writer the role can reach on
-# privilege alone. Its enqueue is an INSERT into net.http_request_queue, so the read-only transaction
-# is the only thing standing between the SQL tool and an outbound HTTP call (exfiltration channel).
+# THE read-only proof (merge blocker). pg_net's http_post is PUBLIC-executable and callable from a plain
+# SELECT; its enqueue is an INSERT into net.http_request_queue, and the read-only check runs before the
+# privilege check — so 25006 here proves transaction_read_only binds inside PostgREST's transaction AND
+# closes the one outbound-HTTP (exfiltration) channel the role can name.
 st, b, _ = team_sql("select net.http_post('https://example.invalid/172', '{}'::jsonb) as id")
-check("4 outbound HTTP via net.http_post cannot be enqueued (25006 read-only, or 42501)",
-      refused(st, b, 405, "25006") or refused(st, b, 403, "42501"), f"{st} {json.dumps(b)[:140]}")
+check("4 the READ-ONLY TRANSACTION binds: net.http_post cannot enqueue (25006) — merge blocker",
+      refused(st, b, 405, "25006"), f"{st} {json.dumps(b)[:140]}")
+if st == 200:
+    print("      !!! STOP: the enqueue went through — transaction_read_only does not bind inside PostgREST. Escalate; do not build the route.")
 
 st, b, _ = team_sql("select 1; select 2")
 check("5 a second statement is a syntax error (42601)", refused(st, b, 400, "42601"), f"{st} {json.dumps(b)[:120]}")
@@ -151,9 +156,14 @@ st, b, _ = team_sql("select 1 as one -- a trailing line comment")
 check("15 a trailing line comment does not swallow the wrapper", st == 200 and isinstance(b, dict) and b.get("row_count") == 1,
       f"{st} {str(b)[:80]}")
 
-# --- who may call it -----------------------------------------------------------------------------
+# --- who may call it, and what the role may never do ---------------------------------------------
 st, b, _ = team_sql("select 1 as one", key=ANON_KEY or "x")
 check("16 anon key is refused", st in (401, 403, 404), f"{st}")
+
+st, b, _ = team_sql("select has_schema_privilege('millie_team_ro', 'digest', 'CREATE') or has_schema_privilege('millie_team_ro', 'event', 'CREATE') as can_create")
+_cc = (b.get("rows") or [{}])[0].get("can_create") if isinstance(b, dict) else None
+check("18 the role holds no CREATE on digest or event (granted for the ownership hand-off only, then revoked)",
+      st == 200 and _cc is False, f"{st} can_create={_cc}")
 
 # --- the cap (last: it takes 55 s) --------------------------------------------------------------
 st, b, secs = team_sql("select pg_sleep(55), 1 as one", timeout=120)

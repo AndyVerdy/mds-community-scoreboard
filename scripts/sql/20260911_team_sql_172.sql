@@ -114,7 +114,12 @@ begin
 end
 $function$;
 
+-- Handing an object to a role requires that role to hold CREATE on the schema at that moment
+-- (first apply 2026-09-10 failed here: "permission denied for schema digest"). Grant it for the one
+-- statement and take it back: the role must never be able to create anything, and the gate pins that.
+grant create on schema digest to millie_team_ro;
 alter function digest.team_sql(text, integer) owner to millie_team_ro;
+revoke create on schema digest from millie_team_ro;
 revoke all on function digest.team_sql(text, integer) from public;
 grant execute on function digest.team_sql(text, integer) to service_role;
 comment on function digest.team_sql(text, integer) is

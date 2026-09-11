@@ -2118,12 +2118,13 @@ def main():
           st == 200 and isinstance(_b, dict) and _b.get("row_count") == 1, f"status {st} body {str(_b)[:80]}")
     st, _b = rpc("team_sql", {"p_sql": "with w as (insert into digest.chats(chat_id, chat_name) "
                                         "values ('gate-172','gate-172') returning chat_id) select * from w"}, key)
-    check("#172 team_sql refuses a write inside the read-only transaction (25006)",
-          st == 405 and _sqlstate(_b) == "25006", f"status {st} {str(_b)[:120]}")
+    check("#172 a data-modifying CTE cannot be nested inside the wrapper (0A000, structural)",
+          st == 400 and _sqlstate(_b) == "0A000", f"status {st} {str(_b)[:120]}")
+    # the read-only transaction binds: pg_net's enqueue INSERT is refused with 25006 (the read-only check
+    # runs before the privilege check), which also closes the one outbound-HTTP channel the role can name
     st, _b = rpc("team_sql", {"p_sql": "select net.http_post('https://example.invalid/172', '{}'::jsonb) as id"}, key)
-    check("#172 team_sql cannot enqueue outbound HTTP (net.http_post → 25006 or 42501)",
-          (st == 405 and _sqlstate(_b) == "25006") or (st == 403 and _sqlstate(_b) == "42501"),
-          f"status {st} {str(_b)[:120]}")
+    check("#172 the read-only transaction binds inside PostgREST: net.http_post cannot enqueue (25006)",
+          st == 405 and _sqlstate(_b) == "25006", f"status {st} {str(_b)[:120]}")
     st, _b = rpc("team_sql", {"p_sql": "select 1; select 2"}, key)
     check("#172 team_sql refuses a second statement (42601)", st == 400 and _sqlstate(_b) == "42601",
           f"status {st} {str(_b)[:120]}")
@@ -2180,6 +2181,10 @@ def main():
     check("#172 millie_team_ro is NOLOGIN, not superuser, not pg_read_all_data",
           st == 200 and _rr.get("login") is False and _rr.get("super") is False and _rr.get("read_all") == 0,
           f"status {st} {_rr}")
+    st, _c = rpc("team_sql", {"p_sql": "select has_schema_privilege('millie_team_ro', 'digest', 'CREATE') "
+                                        "or has_schema_privilege('millie_team_ro', 'event', 'CREATE') as can_create"}, key)
+    check("#172 millie_team_ro holds no CREATE on digest or event (the ownership hand-off grant was revoked)",
+          st == 200 and _first_row(_c).get("can_create") is False, f"status {st} {_first_row(_c)}")
     # the WhatsApp graph is untouched: neither export mentions the new surface, prod's hash = the snapshot
     _n8n = load_env()
     _snap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "olivia_snapshots", "prod_pre_172.sha256")
