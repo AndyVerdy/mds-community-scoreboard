@@ -4,7 +4,7 @@
 
 
 
-## 2026-09-11 (overnight) · the #190 remediation — eight core fixes, 16 of 22 addressed, SQL live, graph STAGED for Andy's promote
+## 2026-09-11 (overnight) · the #190 remediation — nine core fixes, 17 of 22 addressed, SQL live, graph STAGED for Andy's promote
 
 **Andy's instruction at 00:50:** *"It's a 22% failure. There is no such thing as partial. Partial = fail … work overnight and
 close tickets one by one … fix the core issue, not a specific question … reprobe the failed question plus 3 similar types of
@@ -38,11 +38,17 @@ and 5067's "2 months free" is in no tool row (`partner_lookup_v2` returns the st
 5061 no longer offers an unrelated member as a near match), and **four were flaky rather than broken** — 5041, 5044, 5087 and
 5094 all answered correctly on the hand re-fire before any change was made.
 
-**⛔ Six still fail: 5011 · 5027 · 5034 · 5042 · 5068 · 5098 — 6 of 100, against Andy's <2%.** The honest diagnosis is one
-thing, not six: **none of them is missing capability.** In every case the tool already returned what the answer needed, and
-the standing rule for that exact case is already in the shared STYLE block — a distance question, a widening, an antecedent,
-naming only what the tool returned. Adding more rule text did not move them. The fix is **deterministic assembly** (the answer
-built from the returned rows rather than written around them), which is a design decision for Andy.
+**Lap 3 (#209) measured how far a rule can carry.** Seven rules added to the shared STYLE block moved NONE of the four they
+targeted. Moving the same rules into the lane that answers that shape moved half of them, and the one that was really an
+evidence problem was fixed by evidence: the chat block went from **12 rows × 400 chars to 20 × 700** and the weekly-update
+answer now carries every real topic in both chats (5027 ✅). Geo went 2 of 3 — "within 50 miles of Dallas" and "near me in
+New Jersey" now name members, the original zip question still refuses.
+
+**⛔ Five still fail: 5011 · 5034 · 5042 · 5068 · 5098 — 5 of 100, against Andy's <2%.** The honest diagnosis is one thing,
+not five: **none is missing capability.** In every case the tool already returned what the answer needed (Hector's
+`web_people` is empty, so the right answer names nobody — the wrong name came from memory, not from a row). The fix is
+**deterministic assembly** — the answer built from the returned rows rather than written around them — which is a design
+decision for Andy.
 
 **Two traps this night paid for.** (1) **`olivia_eval.py --cleanup` is bounded by the EARLIEST `wamid.SELFTEST_EVAL` row, not
 by the current run** — the regression run's cleanup deleted every probe row from the whole night, so read answers before any
