@@ -11,7 +11,7 @@
 
 # Olivia — next session
 
-## STATE 2026-09-11 (overnight) — ⏳ **STAGING IS WAITING ON ANDY'S PROMOTE**: eight core fixes from #190, 16 of the 22 exam failures addressed, 6 still failing for one shared reason
+## STATE 2026-09-11 (overnight) — ⏳ **STAGING IS WAITING ON ANDY'S PROMOTE**: nine core fixes from #190, 17 of the 22 exam failures addressed, 5 still failing for one shared reason
 
 **Do this first: promote staging.** Prod n8n is still `b4db92d0`. Staging `2c16e59b` (92 nodes) carries the whole night's
 graph work; the SQL half is already live on prod. Roll-back point if anything looks wrong:
@@ -26,19 +26,19 @@ ruled: no full re-run of the bank · SQL may go live, the graph stays staged · 
 chat answers about that chat, 5/5) · #203 (a named MDS programme reaches the events lane, 4/4) · #204 (no exact revenue in
 her own voice — prompt rule AND a deterministic strip, 4/4) · #206 (coverage answered with dates from a new `content_stats`
 coverage metric, 4/4) · #207 (ability questions answer from the curated list, which now says what she cannot do, 4/4) ·
-#208 (transcript passages + spelling variants, so "what did they say about Trybe" finds "Tribe", 4/4). Two more were **the
+#208 (transcript passages + spelling variants, so "what did they say about Trybe" finds "Tribe", 4/4) · #209 (each STYLE rule moved into its own lane, and the digest block widened from 12 rows × 400 chars to 20 × 700 — which fixed the thin weekly updates). Two more were **the
 bank's error, not Millie's** (5057, 5067 — both truths corrected), two improved (5032, 5061), and four were **flaky rather
 than broken** (5041, 5044, 5087, 5094 all answered correctly on the hand re-fire before any change).
 
 **Regression guard:** eight previously-passing exam questions across every lane touched → **7 PASS · 1 PARTIAL · 0 FAIL**.
 **Gate 367/0 exit 0.** `db/` re-exported (164 files, + `member_card_v3`).
 
-**⛔ The six that still fail, and the core issue behind them.** #5011 · #5027 · #5034 · #5042 · #5068 · #5098.
-**None of them is missing capability** — in every case the tool already returned what the answer needed, and the standing
-rule for that exact case is already in the shared STYLE block. Adding more rule text did not move them. They are the model
-using its evidence loosely, and the fix is **deterministic assembly** — building the answer from the returned rows rather
-than writing prose around them — which is a design decision for Andy, not a night's patch. **6 of 100 = 6%, against his
-<2% bar.**
+**⛔ The five that still fail, and the core issue behind them.** #5011 (the zip question; "50 miles of Dallas" and "near me
+in New Jersey" now answer) · #5034 · #5042 · #5068 · #5098. **None is missing capability** — in every case the tool already
+returned what the answer needed. The night measured how far rules carry: **seven rules in the shared STYLE block moved none
+of them; the same rules moved into each answering lane (#209) moved half.** The rest needs the answer ASSEMBLED from the
+returned rows rather than written around them — a design decision for Andy, not a night's patch. **5 of 100 = 5%, against
+his <2% bar.**
 
 **Two traps this night paid for.** (1) `olivia_eval.py --cleanup` is bounded by the EARLIEST `wamid.SELFTEST_EVAL` row, not
 by the current run — the regression run's cleanup deleted every probe row from the whole night. Read answers before any run

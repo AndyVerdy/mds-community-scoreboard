@@ -314,7 +314,7 @@ similar types of questions … I'm expecting <2% of issues unless we have core i
 started: **no full re-run of the 100 bank** · **new SQL functions may go live, the workflow stays staged for his promote** ·
 **a member's brand is public — add it to the 🟢 SHARE column.**
 
-**Where it landed: of the 22 (14 FAIL + 8 PARTIAL), 16 are addressed and 6 still fail.** Every fix was proven with the
+**Where it landed: of the 22 (14 FAIL + 8 PARTIAL), 17 are addressed and 5 still fail — 5%, against his <2% bar.** Every fix was proven with the
 failed question plus three siblings of the same shape, fired at staging.
 
 | # | what was wrong | the CORE fix (not the question) | proof |
@@ -329,18 +329,22 @@ failed question plus three siblings of the same shape, fired at staging.
 | — | Q5057 and Q5067 | **the bank was wrong, not Millie** — 5057 described Andy's own application record correctly; 5067's "2 months free" is in no tool row (`partner_lookup_v2` returns the standing *1 month FREE + 20% + 5% OFF ULTRA*, `event_offer` NULL). Both truths corrected | — |
 | — | Q5032 · Q5061 | improved and passing on re-probe: the roster now returns a count and no names; a near-miss no longer offers an unrelated member | — |
 | — | Q5041 · Q5044 · Q5087 · Q5094 | **flaky, not broken** — all four answered correctly on the hand re-fire before any change. Nothing was fixed for them and nothing needed to be | — |
+| **#209** | four failures that seven new rules in the shared STYLE block did NOT move | **each rule moved into the lane that answers that shape**, and the one that was really an evidence problem got evidence: the digest block went from **12 rows × 400 chars to 20 × 700** | **5027 ✅** (both chats, every real topic) · **5061/5032 ✅** · geo **2/3** (Dallas and New Jersey now name members; the original zip question still refuses) · 5068 ✗ · 5098 ✗ |
 
 **Regression guard before the promote:** eight previously-passing exam questions across every lane touched (videos, member,
 chats, events, capability, partners, content) re-fired at staging: **7 PASS · 1 PARTIAL · 0 FAIL**, and the one partial is
 the corrected-truth 5067. **Gate 367/0 exit 0** after the SQL. `db/` re-exported (164 files, +`member_card_v3`).
 
-**⛔ STILL FAILING — 6 of 100, and they share one honest diagnosis.** #5011 (a distance question refused instead of answered
-by city) · #5027 (digest bullets miss most of the week's topics) · #5034 (no Montreal event and no widening to Toronto) ·
-#5042 (expert names beyond what the tool returned) · #5068 (a partner credited to the wrong person) · #5098 ("they" with no
-antecedent answered anyway). **These are not missing capability — the tools already return what each answer needed.** They
-are the model using its evidence loosely, and the standing rules for exactly these cases already exist in the shared STYLE
-block; adding more rule text did not move them. Fixing them means deterministic assembly (the answer is built from the rows
-rather than written around them), which is a design change, not a night's patch. **That is the core issue to put to Andy.**
+**⛔ STILL FAILING — 5 of 100 (5%).** #5011 (the zip-code question still refuses, though "within 50 miles of Dallas" and
+"near me in New Jersey" now name members) · #5034 (no Montreal event and no widening to Toronto) · #5042 (expert names
+beyond what the tool returned) · #5068 (a partner credited to a person the evidence does not support — Hector's
+`web_people` is empty, so the right answer names nobody) · #5098 ("they" with no antecedent answered anyway).
+
+**The core issue, and it is one thing.** None of the five is missing capability: in every case the tool already returned
+what the answer needed. They are the model using its evidence loosely — and the night proved how far rules can carry that.
+**Seven rules added to the shared STYLE block moved none of them. Moving the same rules into each answering lane moved
+half.** The other half needs the answer to be ASSEMBLED from the returned rows rather than written around them — a design
+change, not a night's patch. **That is the decision for Andy**, and it is what stands between 5% and his <2%.
 
 **Nothing was promoted.** Prod n8n is still `b4db92d0`; staging carries all eight fixes (versionId `2c16e59b`, snapshot
 `olivia_snapshots/staging_2026-09-11T054855Z_pre-190-overnight.json` is the pre-work state to roll back to).
