@@ -136,9 +136,9 @@ since 2026-09-03.
 | `source_kind` | text | `linkedin` \| `company_site` \| `search` |
 | `fetch_status` | text | `ok` \| `unreachable` \| `empty` \| `no_source` |
 | `fetched_at` | timestamptz | |
-| `role` | text | |
-| `company` | text | |
-| `company_url` | text | |
+| ~~`role`~~ | — | **dropped.** A member has many roles over time; they live as dated edges |
+| ~~`company`~~ | — | **dropped.** Ian Sells has eight. One column cannot hold that |
+| `headline` | text | the one-line self-description the source shows, verbatim, not parsed |
 | `location` | text | |
 | `headcount` | text | banded as Exa returns it, never a false precision |
 | `industry` | text | |
@@ -182,6 +182,47 @@ This is a different question from the profile read and gets its own collection.
 | 1. Profile | where do they work, what do they run | their own LinkedIn or brand site | Contents, $1 / 1k |
 | 2. Presence | what has the world said about them | third parties only | Search, $7 / 1k |
 
+### What a sweep on a well-known member actually returns
+
+Andy ran one on Ian Sells on 2026-09-11. Ten results, **$0.007**, and the shape of the answer is
+not a profile row. It is a dossier:
+
+| source | class | what it carried |
+| --- | --- | --- |
+| LinkedIn entity | profile | Founder & CEO of MDS since Jan 2016, Solvolt, SDSU |
+| Equilar ExecAtlas | executive database | "sold 2 multi million dollar amazon brands", RebateKey, Elite Seller |
+| amzsummits.com speaker page | **expertise evidence** | conference speaker bio, managed $10M+ on Amazon in 2018 |
+| success.ai | aggregator | work history across five companies, plus a masked work email |
+| Authority Magazine, Medium, 2021 | long-form interview | full biography, two exits, $30M managed |
+| joinbrands.com/about-us | company page | **COO & Co-Founder**, alongside Leo Limin and Johan Geuze |
+| freeup.net podcast, 2019 | **podcast transcript** | the origin story of MDS in his own words |
+| three LinkedIn posts, 2024-2026 | own content | dated, quotable |
+
+**Three corrections to this design fall out of that, and they matter.**
+
+**1. A member has many companies, not one.** Ian appears with MDS, JoinBrands, RebateKey,
+EliteSeller, Pixelfy.me, Dev Salsa, eComPartners.co and Solvolt. A single `company` column on
+`member_web_profile` is simply the wrong shape. The companies belong in `web_edges`, many per
+member, which the graph section already allows — but the profile table must stop pretending there
+is one answer.
+
+**2. Facts are time-scoped, and sources disagree because time passed.** LinkedIn says Founder & CEO
+of MDS. The JoinBrands about-page says COO & Co-Founder. The 2021 Medium interview says CEO of
+RebateKey. **All three are true, at different times.** Exa's `workHistory` carries `from` and `to`
+dates, so every `works_at` and `founded` edge stores them, and "current" is *derived* from a null
+`to`, never stored as the only value. Without this, `member_fact_conflicts` would raise false alarms
+on every member who has ever changed roles.
+
+**3. Speaker pages and podcasts are the expertise evidence the system lacks.** The amzsummits
+speaker page and the freeup podcast are exactly the public, third-party, non-self-reported signal
+that `member_expertise` has zero of today. They are classed `speaking` in
+`member_web_presence` and are the strongest candidate input for stage D.
+
+**One rule added from the same sweep: no contact data.** Aggregator sites such as success.ai and
+Equilar return work emails and phone numbers. **Those fields are dropped at extraction and never
+stored**, regardless of `raw` retention. We do not need them, and harvesting a member's contact
+details from a data broker is not something this system should start doing.
+
 **Third-party only, enforced in the query, not by hand.** Exclude the member's own domains, taken
 from `Brand(s) URL / Name(s)`, `Own Website & % of Revenue` and `Storefront - Census`; exclude Exa's
 `personal site` category. Include news, publications, podcasts, video and company records. Date floor
@@ -208,8 +249,10 @@ rate on a single common brand name is the #5068 failure reproducing in front of 
 reason corroboration below is mandatory rather than a nicety.
 
 **New table `digest.member_web_presence`:** `at_member_id`, `url`, `domain`, `title`, `published_at`,
-`kind` (`news` \| `podcast` \| `video` \| `publication`), `summary`, `corroborated_by`, `confidence`,
-`raw`, `fetched_at`. Each row also becomes a `featured_in` edge in `web_edges`.
+`kind` (`news` \| `podcast` \| `video` \| `publication` \| **`speaking`** \| `company_page` \|
+`aggregator`), `summary`, `corroborated_by`, `confidence`, `raw`, `fetched_at`. Each row also
+becomes a `featured_in` edge in `web_edges`. `speaking` is the class that carries conference speaker
+pages and podcast appearances, and it is the one stage D will care about.
 
 **The risk is name collision, and it is handled by corroboration, not by hope.** A member with a
 common name pulls the wrong person's press. A hit counts only when the page also mentions a company
@@ -276,6 +319,7 @@ rebuild.
 | `a_id` / `a_kind` | text | `member` \| `company` \| `partner` \| `external` |
 | `b_id` / `b_kind` | text | same |
 | `edge_type` | text | see below |
+| `valid_from` / `valid_to` | date | **from the source's own dates; a null `valid_to` is what "current" means.** Without this, three true statements about Ian Sells read as a three-way conflict |
 | `weight` | numeric | |
 | `evidence` | jsonb | |
 | `source_url` | text | required, same rule as the profile table |
@@ -287,10 +331,19 @@ identifier**, e.g. `57m0gbzgjp6`, not a name string), `kind`, `name`, `legal_nam
 `linkedin_url`, `industry`, `headcount`, `hq`, `web_traffic`, `raw`, `source_url`, `fetched_at`.
 A separate table rather than a new `entity_dossier` kind, so no existing loader changes behaviour.
 
-**Keying on Exa's entity ID is the single most important choice in this section.** Every previous
-attempt in this system to relate a company to a person matched on the company NAME, which is what
-put Hector's founder on the wrong company and what pulled three unrelated businesses into a
-ten-result sweep. An entity ID does not collide.
+**Key on Exa's entity ID whenever there is one.** Every previous attempt in this system to relate a
+company to a person matched on the company NAME, which is what put Hector's founder on the wrong
+company and what pulled three unrelated businesses into a ten-result sweep. An entity ID does not
+collide.
+
+**But the ID is not always there, and the spec must not pretend otherwise.** In the Matt Greene
+sweep, Happy Innovations came back with `id: https://exa.ai/library/organization/57m0gbzgjp6`. In
+the Ian Sells sweep, every `workHistory` entry carried `"company": {"id": null, "name": …}`. So the
+key is a three-step ladder, recorded per row in `entity_key_source`:
+
+1. Exa entity ID, when present — no collision possible.
+2. The company's own domain, when the payload carries one.
+3. Name plus corroboration, at `confidence < 1`, never surfaced and never scored.
 
 **Edge types phase 1 can produce, all straight out of the Exa payload:**
 
@@ -375,8 +428,16 @@ at $15 per 1k, and it is worth revisiting once stage B proves the data is used.
 9b. `digest.member_web_presence` is populated, and **zero rows carry a domain the member owns**,
    proven by SQL against their own brand and website fields. Report how many members got at least
    one third-party hit, and how many of those hits are corroborated.
-9c. **Every company node keys on an Exa entity ID, not a name.** Zero rows in `web_entity` with a
-   null `entity_id`, proven by SQL.
+9c. **Every company node records how it was keyed.** Zero rows in `web_entity` with a null
+   `entity_key_source`, and the split across the three ladder steps is reported, not assumed.
+   Name-keyed rows all sit at `confidence < 1`.
+9e. **Role edges carry dates.** Every `works_at` and `founded` edge has a `from` date where the
+   source gave one, and "current" is derived from a null `to`. Proven on Ian Sells, whose three
+   sources disagree only because they describe different periods: none of those three may appear
+   in `member_fact_conflicts` as a conflict.
+9f. **No contact data is stored.** Zero email addresses and zero phone numbers anywhere in
+   `member_web_profile`, `member_web_presence` or `web_entity`, including inside `raw`. Proven by
+   a regex scan over the stored rows.
 9d. **The collision rate is measured, not assumed.** Re-run the Matt Greene sweep through the
    corroboration rule: the three known wrong entities (the Chiba factory, the Vietnamese gifting
    company, Gourmet Happy Nuts LLC) must all be rejected or stored below full confidence.
