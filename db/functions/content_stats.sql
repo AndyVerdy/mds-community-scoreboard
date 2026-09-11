@@ -64,5 +64,22 @@ begin
     select to_char(occurred_at, 'YYYY-MM')::text, count(*)::numeric, ''::text
     from visible where p_metric = 'by_month'
     group by 1 order by 1 desc limit 12
-  ) c;
+  ) c
+  union all
+  -- #206: one row per source the asker can see — how many items, and the real window they span,
+  -- with how thin the oldest end actually is. This is what a coverage question must be answered
+  -- from; anything vaguer ("it gets thinner further back") is a guess dressed as an answer.
+  select * from (
+    select v.source::text,
+           count(*)::numeric,
+           'earliest ' || min((v.occurred_at at time zone 'utc')::date)::text ||
+           ' · latest ' || max((v.occurred_at at time zone 'utc')::date)::text ||
+           ' · before 2025: ' || count(*) filter (where (v.occurred_at at time zone 'utc')::date < date '2025-01-01')::text ||
+           ' · in 2025: ' || count(*) filter (where (v.occurred_at at time zone 'utc') >= date '2025-01-01' and (v.occurred_at at time zone 'utc') < date '2026-01-01')::text ||
+           ' · in 2026: ' || count(*) filter (where (v.occurred_at at time zone 'utc') >= date '2026-01-01')::text
+    from visible v
+    where p_metric = 'coverage'
+    group by v.source
+    order by 2 desc
+  ) d;
 end $function$

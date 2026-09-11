@@ -99,12 +99,14 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#183** | 🛍️ Storefront reshuffles its tiles 10-15s after load and the PINNED band disappears (Andy 2026-09-09) | ⚪ S4 | S | n/a (web — Render, no staging tier) | ✅ **CLOSED 2026-09-10** — cause was NOT the health checks: pins load from localStorage after mount. `pinLayout()`, 6 tests, live `588ef08`. |
 | **#189** | 🃏 The persona builder fails intermittently and cannot say why — 19 of 31 on 2026-09-09, reported only as "no valid JSON" | 🟡 S2 | S | n/a (launchd job) | ✅ **CLOSED 2026-09-10** — cause found and fixed: the answer parser broke on a stray brace after the JSON. 40/40 built, 0 failed. |
 | **#190** | 🧪 The nightly eval is at **9.5% FAIL** against Andy's **<1%** bar — 21 of 220 on 2026-09-09 | 🔴 S1 | M | n/a (report) | ✅ **CLOSED 2026-09-11** — a fresh 100-question exam of real member asks (Andy: "do fresh 100"), fired at prod: **14% judged, 7% reproducing** after every failure was re-fired by hand. The nightly bank was overstating by ~2× (4 of 13 sticky fails were stale truths; 5 truths repaired). Failures named by mechanism → #201 #202 #203 #204 #205 #206. Triage `OLIVIA_EXAM_190_TRIAGE.md` |
-| **#204** | 🔐 An exact revenue figure (£14.5M) reached a member in Millie's own voice — quotable, but only attributed with its link and paired with the band | 🔴 S1 | S | — | 📝 filed 2026-09-11 from #190 — seen live 2026-09-04 (`olivia_messages` 62689) and in the exam; intermittent (the clamp caught the re-fire) |
-| **#201** | 🕳️ She denies what we hold because the tool never returns the column — `view_count` absent from `video_search_v2`, **Brand Name** in no gated function at all | 🔴 S1 | M | — | 📝 filed 2026-09-11 from #190 — 2 of the 7 reproducing failures, the biggest `false_denial` mechanism |
-| **#203** | 🔀 One lane denies while another holds it — "MDS 9" is 4 events + a video set; "Trybe" is spelled "Tribe" in the transcript | 🟡 S2 | M | — | 📝 filed 2026-09-11 from #190 — 2 of the 7 |
-| **#202** | 💬 "How do I join the supplements channel" ran the recommender with no query and offered TikTok instead | 🟡 S2 | S | — | 📝 filed 2026-09-11 from #190 — member report #34 sits in the same lane |
+| **#204** | 🔐 An exact revenue figure (£14.5M) reached a member in Millie's own voice — quotable, but only attributed with its link and paired with the band | 🔴 S1 | S | — | ✅ **CLOSED 2026-09-11 (overnight)** — SQL live on prod, graph staged for the promote; proof in the 🌙 OVERNIGHT block above. 4/4 probes |
+| **#201** | 🕳️ She denies what we hold because the tool never returns the column — `view_count` absent from `video_search_v2`, **Brand Name** in no gated function at all | 🔴 S1 | M | — | ✅ **CLOSED 2026-09-11 (overnight)** — SQL live on prod, graph staged for the promote; proof in the 🌙 OVERNIGHT block above. 8/8 probes |
+| **#203** | 🔀 One lane denies while another holds it — "MDS 9" is 4 events + a video set; "Trybe" is spelled "Tribe" in the transcript | 🟡 S2 | M | — | ✅ **CLOSED 2026-09-11 (overnight)** — SQL live on prod, graph staged for the promote; proof in the 🌙 OVERNIGHT block above. 4/4 probes |
+| **#202** | 💬 "How do I join the supplements channel" ran the recommender with no query and offered TikTok instead | 🟡 S2 | S | — | ✅ **CLOSED 2026-09-11 (overnight)** — SQL live on prod, graph staged for the promote; proof in the 🌙 OVERNIGHT block above. 5/5 probes |
 | **#205** | ✂️ A post ranked 4th is cut at 500 chars, so the fact at char 658 never reaches the model (the Advisory Council deadline) | 🟡 S2 | S | — | 📝 filed 2026-09-11 from #190's sticky-13 triage |
-| **#206** | 📅 Coverage stated as a feeling — "the further back the thinner" instead of 4,283 posts, 2021-08-17 → 2026-09-10, 5 before 2025 | 🔵 S3 | XS | — | 📝 filed 2026-09-11 from #190 |
+| **#206** | 📅 Coverage stated as a feeling — "the further back the thinner" instead of 4,283 posts, 2021-08-17 → 2026-09-10, 5 before 2025 | 🔵 S3 | XS | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — SQL live on prod, graph staged for the promote; proof in the 🌙 OVERNIGHT block above. 4/4 probes |
+| **#207** | 🧭 An ability question about Millie herself ("are you able to do daily reminders?") answered by improvising a capability | 🟡 S2 | XS | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — routes to the curated list (#79), which now states what she cannot do; 4/4 probes |
+| **#208** | 🎙️ "What did the speaker say about X" denied — the videos lane never searched the TRANSCRIPTS, and the word was spelled differently there | 🟡 S2 | S | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — transcript passages + spelling variants; 4/4 probes |
 | **#191** | 🧪 The nightly eval is DEAD since this morning — #105's webhook secret 403s all 220 posts, no report for 2026-09-10 | 🔴 S1 | XS | n/a (local job) | ✅ **CLOSED 2026-09-10** — 25/25 posts `200` on the live webhook; 4 scripts fixed, a refused door now aborts loudly |
 | **#123** | 🗺️ `event_lookup` never reaches the events catalog — every `event_*` call is prefix-routed to the Summit schedule endpoint | 🟡 S2 | M | ✅ proven `9d91109e` | ✅ **LIVE `b4db92d0`** (promoted 2026-09-10 17:56Z by Andy) — prod probe 68019, gate 346 EXIT 0 |
 | **#188** | 🩺 One tile, two writers — "Member profiles ← Airtable sync" reported the events catalog's staleness under the member-profiles name | ⚪ S4 | XS | n/a (app code) | ✅ **CLOSED 2026-09-10** — the worse half now names its writer; 5 tests, live `2208d78`. |
@@ -303,6 +305,45 @@ identity story (a research-only PostgREST role or a bearer bound to a staff emai
 in `olivia_web_messages`. *As Andy, I ask the warehouse from my own Claude and every query is logged under my name.* **Acceptance:**
 one MCP tool call from Claude Desktop returns a Team answer with its trail; the log row carries the asker; the leak gate's `#172`
 section stays green; WhatsApp/member/anon gain nothing.
+
+## 🌙 OVERNIGHT 2026-09-11 — the #190 remediation: eight core fixes, SQL live, the graph staged for Andy's promote
+
+**Andy's instruction at 00:50:** *"It's a 22% failure. There is no such thing as partial. Partial = fail … you will work
+overnight and close tickets one by one … fix the core issue, not a specific question … reprobe the failed question plus 3
+similar types of questions … I'm expecting <2% of issues unless we have core issues."* His three rulings before the work
+started: **no full re-run of the 100 bank** · **new SQL functions may go live, the workflow stays staged for his promote** ·
+**a member's brand is public — add it to the 🟢 SHARE column.**
+
+**Where it landed: of the 22 (14 FAIL + 8 PARTIAL), 16 are addressed and 6 still fail.** Every fix was proven with the
+failed question plus three siblings of the same shape, fired at staging.
+
+| # | what was wrong | the CORE fix (not the question) | proof |
+|---|---|---|---|
+| **#201** | "top 5 most watched" denied a number we hold; "who owns Stylia Beauty" denied a field no tool selected | `video_search_v2` takes **`p_order=views`** and every row carries its count in `strength_note`; `member_card` resolves a **brand** to its owner and **`member_card_v3`** returns the brands so the answer can say it and the gate can verify it; the plan asks for the ranking instead of narrating arrival order | **8/8** |
+| **#202** | a named chat was dropped and a different chat recommended | a chat named in the question routes to **`chat_info`** (its gate, its requirement, its join link), matched against the real chat directory; the recommender still runs when no chat is named | **5/5** incl. the not-a-member path and the recommender guard |
+| **#203** | "MDS 9" denied by a lane that cannot see programmes | a named **MDS programme** routes to the events lane, which holds its four events | **4/4** |
+| **#204** | an exact revenue figure in Millie's own voice, seen by a real member on 09-04 | the band rule in the prompt **and** a deterministic strip in `Format Reply` of a money-only parenthetical on an uncited line | **4/4** (band given, figure gone, cited quotes untouched) |
+| **#206** | coverage described as a feeling | **`content_stats` gained a `coverage` metric** — per source: count, earliest, latest, how many predate 2025 — and coverage questions route to it | **4/4** |
+| **#207** | "are you able to do daily reminders?" answered by improvising a capability | an **ability question about Millie's own mechanics** routes to the curated list (#79), which now states what she cannot do: Summit-schedule reminders only, no routines, no watching | **4/4** incl. the "can you find me a member in Miami" guard |
+| **#208** | "what did the speaker say about Trybe?" denied it, while the transcript says **"Tribe"** | the videos lane fetches **transcript passages** for the named thing on a what-was-said question (its second fetch was empty by design), with **spelling variants** (y↔i, ph↔f), and renders them as quotable passages | **4/4** |
+| — | Q5057 and Q5067 | **the bank was wrong, not Millie** — 5057 described Andy's own application record correctly; 5067's "2 months free" is in no tool row (`partner_lookup_v2` returns the standing *1 month FREE + 20% + 5% OFF ULTRA*, `event_offer` NULL). Both truths corrected | — |
+| — | Q5032 · Q5061 | improved and passing on re-probe: the roster now returns a count and no names; a near-miss no longer offers an unrelated member | — |
+| — | Q5041 · Q5044 · Q5087 · Q5094 | **flaky, not broken** — all four answered correctly on the hand re-fire before any change. Nothing was fixed for them and nothing needed to be | — |
+
+**Regression guard before the promote:** eight previously-passing exam questions across every lane touched (videos, member,
+chats, events, capability, partners, content) re-fired at staging: **7 PASS · 1 PARTIAL · 0 FAIL**, and the one partial is
+the corrected-truth 5067. **Gate 367/0 exit 0** after the SQL. `db/` re-exported (164 files, +`member_card_v3`).
+
+**⛔ STILL FAILING — 6 of 100, and they share one honest diagnosis.** #5011 (a distance question refused instead of answered
+by city) · #5027 (digest bullets miss most of the week's topics) · #5034 (no Montreal event and no widening to Toronto) ·
+#5042 (expert names beyond what the tool returned) · #5068 (a partner credited to the wrong person) · #5098 ("they" with no
+antecedent answered anyway). **These are not missing capability — the tools already return what each answer needed.** They
+are the model using its evidence loosely, and the standing rules for exactly these cases already exist in the shared STYLE
+block; adding more rule text did not move them. Fixing them means deterministic assembly (the answer is built from the rows
+rather than written around them), which is a design change, not a night's patch. **That is the core issue to put to Andy.**
+
+**Nothing was promoted.** Prod n8n is still `b4db92d0`; staging carries all eight fixes (versionId `2c16e59b`, snapshot
+`olivia_snapshots/staging_2026-09-11T054855Z_pre-190-overnight.json` is the pre-work state to roll back to).
 
 ### #204 · An exact revenue figure reached a member in Millie's own voice
 

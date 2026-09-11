@@ -11,6 +11,40 @@
 
 # Olivia — next session
 
+## STATE 2026-09-11 (overnight) — ⏳ **STAGING IS WAITING ON ANDY'S PROMOTE**: eight core fixes from #190, 16 of the 22 exam failures addressed, 6 still failing for one shared reason
+
+**Do this first: promote staging.** Prod n8n is still `b4db92d0`. Staging `2c16e59b` (92 nodes) carries the whole night's
+graph work; the SQL half is already live on prod. Roll-back point if anything looks wrong:
+`olivia_snapshots/staging_2026-09-11T054855Z_pre-190-overnight.json` (the pre-work graph) and the four SQL functions are all
+CREATE OR REPLACE, so the inverse is a re-apply of the `db/` copy.
+
+**Andy's instruction (00:50):** *"22% failure. Partial = fail. Work overnight, close tickets one by one, fix the core issue
+not a specific question, reprobe the failed question plus 3 similar, <2% in the morning unless we have core issues."* He also
+ruled: no full re-run of the bank · SQL may go live, the graph stays staged · a member's brand is public.
+
+**What shipped — the board's 🌙 OVERNIGHT block has the full table.** #201 (view ranking + brand lookup, 8/8) · #202 (a named
+chat answers about that chat, 5/5) · #203 (a named MDS programme reaches the events lane, 4/4) · #204 (no exact revenue in
+her own voice — prompt rule AND a deterministic strip, 4/4) · #206 (coverage answered with dates from a new `content_stats`
+coverage metric, 4/4) · #207 (ability questions answer from the curated list, which now says what she cannot do, 4/4) ·
+#208 (transcript passages + spelling variants, so "what did they say about Trybe" finds "Tribe", 4/4). Two more were **the
+bank's error, not Millie's** (5057, 5067 — both truths corrected), two improved (5032, 5061), and four were **flaky rather
+than broken** (5041, 5044, 5087, 5094 all answered correctly on the hand re-fire before any change).
+
+**Regression guard:** eight previously-passing exam questions across every lane touched → **7 PASS · 1 PARTIAL · 0 FAIL**.
+**Gate 367/0 exit 0.** `db/` re-exported (164 files, + `member_card_v3`).
+
+**⛔ The six that still fail, and the core issue behind them.** #5011 · #5027 · #5034 · #5042 · #5068 · #5098.
+**None of them is missing capability** — in every case the tool already returned what the answer needed, and the standing
+rule for that exact case is already in the shared STYLE block. Adding more rule text did not move them. They are the model
+using its evidence loosely, and the fix is **deterministic assembly** — building the answer from the returned rows rather
+than writing prose around them — which is a design decision for Andy, not a night's patch. **6 of 100 = 6%, against his
+<2% bar.**
+
+**Two traps this night paid for.** (1) `olivia_eval.py --cleanup` is bounded by the EARLIEST `wamid.SELFTEST_EVAL` row, not
+by the current run — the regression run's cleanup deleted every probe row from the whole night. Read answers before any run
+that cleans. (2) A rule added to the shared STYLE block does NOT reliably reach a lane that has its own MODE rules; the
+capability and transcript fixes only worked because they changed ROUTING and EVIDENCE, not wording.
+
 ## STATE 2026-09-11 — #190 CLOSED: the exam says **14% judged / 7% reproducing** · 6 tickets filed (#201–#206) · NEXT = **Andy's call: #170 (the agreed order) or #204/#201 (new S1s from the exam)**
 
 **Read first:** `OLIVIA_EXAM_190_TRIAGE.md` (what the 14 failures actually are) → the #190 close block on the board →

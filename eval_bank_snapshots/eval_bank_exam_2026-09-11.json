@@ -934,7 +934,7 @@
    "pool_id": 38184,
    "class": "PARTNERS",
    "q": "What does StoreClaw offer at the Summit?",
-   "expect": "StoreClaw (StoreClaw.Ai, partner page app.mds.co/partners/6a1d6831c1394707852ef3f6) is an AI growth engine/agent for Amazon, Shopify and multichannel sellers (listing audits, PPC, SEO/GEO, content, analytics) with the standing MDS deal '1 month FREE + 20% + 5% OFF Ultra' (i.e. 25% off Ultra); its Singapore Summit offer (Aug 31, 2026 Summit partners post) was 2 months free for clients who sign up during the Summit, claimed by emailing partners@mds.co (CC partners@caelith.ai) with member name, StoreClaw account email, approximate annual GMV and preferred credit allocation. Context: co-founder Steven Zhou is an MDS Centurion member and did a Mogul Call with StoreClaw.Ai on Jul 22, 2026 (app.mds.co/videos/6a61336d8a427b8944df6106) with Emily Wang and Oc from StoreClaw.",
+   "expect": "StoreClaw (StoreClaw.Ai, partner page app.mds.co/partners/6a1d6831c1394707852ef3f6) is an AI growth engine for Amazon/Shopify/multichannel sellers. The MDS deal the tool actually returns is the STANDING one — '1 month FREE + 20% + 5% OFF ULTRA' — and `event_offer` is NULL for this partner, so no Summit-specific offer is on file (the Summit is over and event offers are gated to registered attendees anyway). A correct answer describes StoreClaw AND states the standing offer; claiming a specific Summit-only offer that the tool did not return is FAIL. VERIFY AT RUN with partner_lookup_v2.",
    "soft": true,
    "asker": "recyk2LjXkjxzDVVh",
    "first_asked": "2026-08-19",
@@ -942,7 +942,8 @@
    "observed_looks": "ok",
    "evidence": "partners_catalog 6a1d6831c1394707852ef3f6 StoreClaw offer_value '1 month FREE + 20% + 5% OFF ULTRA', public, no reviews, created 2026-06-01; partner_web_profile summary; fb_posts 27084374081239403 (Anita Petrov, 2026-08-31) Summit partner offers incl. StoreClaw.Ai '2 months free if clients sign up during the Summit'; fb_post 26666050856405063 Mogul Call recap; videos 6a61336d8a427b8944df6106. Observed (asked Aug 19, pre-Summit) matched the standing deal and people; Summit offer detail was not yet posted.",
    "retired": false,
-   "id": 5067
+   "id": 5067,
+   "truth_refreshed": "2026-09-11 (#190 overnight: the '2 months free' in the first truth is in no tool row)"
   },
   {
    "pool_id": 48716,
