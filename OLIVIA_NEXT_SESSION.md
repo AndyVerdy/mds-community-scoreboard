@@ -13,6 +13,16 @@
 
 ## STATE 2026-09-11 (early) — #172 CLOSED: Team research mode LIVE for Andy · gate 367/0 · prod n8n untouched · NEXT = Andy's pick (#199 scan tool is FILED and PARKED — "finish our plan first" · #198 MCP door · #192 audit · #190 sprint-closure eval last)
 
+**Andy's picks for the NEXT session (2026-09-11):** ① **#199 the scan tool** — "for the next session, I think it should be a scan
+tool; maybe check how we are vectorizing the data" → open with a vectorization audit (what is embedded: `content_items` 57,586 /
+48,502 embedded on 2026-09-04, sub-30-char rows skipped by design; `videos_catalog`, `partners_catalog`, `events_catalog`
+vectors; what is NOT embedded) and probe Team mode with his three questions BEFORE designing the tool: *who was past due more
+than 2 times in the past 6 months* (needs payment HISTORY — check whether the mirror holds more than the latest `Failed Payment
+Date (Stripe)` / `Recovered Date (Stripe)` / `Past Due Weekly Snapshot` / `stripe event log` keys), *who was past due for more than 10
+days* (`Days Past Due (live)` — answerable now), *who spent the most on events* (`Event Revenue - All Time` / `- Last 12 Months`
+keys — answerable now). ② **#200 Team access** — phase 1 = unlock for any @mds.co (his call, "I know it's scary"); phase 2 =
+super-admin usage/spend page + offboarding. ③ #198 the MCP door after those.
+
 **Andy's scope check (2026-09-11):** "not just about revenue — all the content, any personal info, complex requests…
 who attended Inspire 2026 and is thinking of moving to Miami". Ran live in his tab: roster (207 members) × WhatsApp ×
 Facebook × semantic, cross-checked, honest no-match — 24 queries, 14 laps, 112 s, $0.87. What it does NOT do: read every

@@ -298,6 +298,31 @@ in `olivia_web_messages`. *As Andy, I ask the warehouse from my own Claude and e
 one MCP tool call from Claude Desktop returns a Team answer with its trail; the log row carries the asker; the leak gate's `#172`
 section stays green; WhatsApp/member/anon gain nothing.
 
+### #200 · Team mode access without touching Render — any @mds.co in, offboarding, per-person usage and spend, super-admins only
+**🟠 S2 · size M — filed 2026-09-11 (Andy: "I don't like the idea of adding people to render so the team can use it. We should
+have a system that lets anyone on the MDS team use it, along with a way to offboard people. And we need a tracking mechanism on
+how the team is using it, ideally how much they spent, and this should be gated for super admins only… phase 1 is to unlock for
+any @mds.co, but I know it's scary").**
+
+> **In plain words:** today a colleague gets Team mode only if Andy edits a Render setting and redeploys. Instead: every
+> MDS staff login works by default, one switch turns a person off, and a page only super-admins can open shows who asked
+> what and what it cost.
+
+*As MDS staff, I open Ask Millie's Team tab and it works because I am @mds.co. As a super-admin, I see each person's turns
+and spend for today and the last 30 days, I can switch anyone off (and back on) without a deploy, and nobody else can open
+that page.*
+
+**Phase 1 (Andy's call, deliberately):** the allowlist becomes "every @mds.co session" — `MILLIE_TEAM_ASKERS` turns into an
+optional DENY list plus a kill switch (`MILLIE_TEAM_ENABLED=false` → 403 for all); per-asker daily budgets stay (40 turns /
+$10, env-adjustable); every turn still logged with the asker. **Phase 2:** a `digest.team_access` table (email, enabled,
+daily_turns, daily_usd, added_by, disabled_at, note) read by the gate at request time (no deploy to change it); an admin page
+`/admin/millie/team-access` gated to `MILLIE_TEAM_ADMINS` (super-admins — a Render setting is acceptable for THAT short list) with
+per-person turns / $ / last ask for today and 30 days straight from `olivia_web_messages.metrics`, enable/disable, per-person
+budget override, CSV export. Offboarding = disable here; leaving MDS also kills the staff OTP login, so both layers close.
+**Acceptance:** 1. A new @mds.co staff member uses Team mode with no deploy. 2. A disabled email gets 403 on the next turn. 3. A
+super-admin sees per-person turns and spend (today / 30 d); any other staff gets 403 on the page. 4. The kill switch takes
+effect on the next request. 5. Leak gate `#172` section green; nothing new for members/WhatsApp/anon.
+
 ### #199 · Team research: a `scan_content` tool — classify EVERY message of a member set for a fuzzy trait
 **🟠 S2 · size M — filed 2026-09-11 (Andy: "file #199 the scan tool. but do not start it yet, lets finish our plan first").
 PARKED — not started.** Depends on #172 (live).
