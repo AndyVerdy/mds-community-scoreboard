@@ -33,10 +33,16 @@ CONNECTIONS_RE = re.compile(r"^[\d,]+\+?\s+connections\b", re.IGNORECASE)
 def fetch_all_members(key):
     """member_profiles has 6000+ rows; PostgREST caps an unpaginated GET at 1000, so this pages
     with limit/offset the same way scripts/cache_member_photos.py does — otherwise most active
-    members are silently missed (measured live 2026-09-11: 111/733 active seen without paging)."""
+    members are silently missed (measured live 2026-09-11: 111/733 active seen without paging).
+
+    select includes full_name (added #211 task 5): a consumer written after this function existed
+    (exa_member_presence.py's sweep) needs the member's name to search on, and its absence here
+    was silently sending every sweep query with a blank name — confirmed live 2026-09-11, this
+    function's own output had no "full_name" key at all. Existing callers only read
+    at_member_id/at_fields/status and are unaffected by the extra column."""
     rows, offset = [], 0
     while True:
-        page = sb("GET", f"member_profiles?select=at_member_id,at_fields,status&limit=1000&offset={offset}", key)
+        page = sb("GET", f"member_profiles?select=at_member_id,full_name,at_fields,status&limit=1000&offset={offset}", key)
         if not page:
             break
         rows += page
