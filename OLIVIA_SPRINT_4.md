@@ -105,6 +105,7 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#202** | 💬 "How do I join the supplements channel" ran the recommender with no query and offered TikTok instead | 🟡 S2 | S | — | ✅ **CLOSED 2026-09-11 (overnight)** — SQL live on prod, graph staged for the promote; proof in the 🌙 OVERNIGHT block above. 5/5 probes |
 | **#205** | ✂️ A post ranked 4th is cut at 500 chars, so the fact at char 658 never reaches the model (the Advisory Council deadline) | 🟡 S2 | S | — | 📝 filed 2026-09-11 from #190's sticky-13 triage |
 | **#206** | 📅 Coverage stated as a feeling — "the further back the thinner" instead of 4,283 posts, 2021-08-17 → 2026-09-10, 5 before 2025 | 🔵 S3 | XS | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — SQL live on prod, graph staged for the promote; proof in the 🌙 OVERNIGHT block above. 4/4 probes |
+| **#210** | 🅿️ **SPRINT 5** · 🪪 She refuses a member their OWN job title — the never-share rule is not scoped to the subject, and the dossier lane volunteers the same fact | 🔵 S3 | XS | — | 📝 filed 2026-09-11 from the nightly (Q2096), confirmed live on prod `b31eadbb` 14:41Z: plan hit the application lane, the item says "Title: Head of Tech & Automation", the answer refused |
 | **#207** | 🧭 An ability question about Millie herself ("are you able to do daily reminders?") answered by improvising a capability | 🟡 S2 | XS | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — routes to the curated list (#79), which now states what she cannot do; 4/4 probes |
 | **#208** | 🎙️ "What did the speaker say about X" denied — the videos lane never searched the TRANSCRIPTS, and the word was spelled differently there | 🟡 S2 | S | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — transcript passages + spelling variants; 4/4 probes |
 | **#191** | 🧪 The nightly eval is DEAD since this morning — #105's webhook secret 403s all 220 posts, no report for 2026-09-10 | 🔴 S1 | XS | n/a (local job) | ✅ **CLOSED 2026-09-10** — 25/25 posts `200` on the live webhook; 4 scripts fixed, a refused door now aborts loudly |
@@ -362,6 +363,43 @@ inspected this time (`raw sources=['call_transcript'] terms=['trybe','tribe']`),
 "who owns Stylia Beauty" → Lenny Joseph · "are you able to do daily reminders" → the curated capability list · "a speaker
 spoke about Trybe" → found in Brandon Himmel's TikTok Mastermind, *also written "Tribe"*, with the context. Probe rows
 cleaned; lock released.
+
+### #210 · 🅿️ SPRINT 5 · She refuses a member their OWN job title — the never-share rule is not scoped to other people
+
+**🔵 S3 · size XS — filed 2026-09-11 from the nightly eval (Q2096), confirmed live on prod `b31eadbb` the same morning.**
+
+> **In plain words:** ask "what is my title according to my membership application?" and she says she cannot share job
+> titles, even your own. It is your own application, and the rulebook already says your own application answers are
+> yours to see.
+
+*As a member, my own application answers are mine — when I ask what I put on my own form, I get it back.*
+
+**Proven live, not inferred** (prod, 2026-09-11 14:41Z, after the promote). The lane is right and the evidence is there:
+the plan ran `content_lookup` with `p_source: 'application'`, and that item (`content_items` 13380, `access_rule
+{type: owner, member: recCUUw8iiUnJjac1}`) literally reads *"Title: Head of Tech & Automation"*. The answer was:
+
+> *"I'm not able to share job titles, even someone's own — that field stays out of what I hand back."*
+
+**The cause is a rule that lost its subject.** `OLIVIA_SHAREABLE_FIELDS.md` lists **job titles** under 🔴 NEVER, and that
+list is about **another member** — the same page carries the self-exception in writing: *"a member may see their OWN
+billing, dossier, application answers (self-only functions, fail-closed)."* The refusal applies the other-person rule to
+the asker's own record. **She is already inconsistent about it:** asked "tell me what you know about me" on the same
+prod graph she answers *"Staff at MDS (Head of Tech & Automation)"* (re-fire 2026-09-11 05:25Z) — the same fact, given on
+the dossier lane and refused on the application lane.
+
+**Shape of the fix.** Scope the never-share wording to the SUBJECT, not the field: a job title is closed about *another
+member* and open about *yourself*, exactly like billing and application answers. The self lanes (`my_form_answers`,
+the `self`/`dossier` periods, `content_lookup p_source='application'`) already fail closed on identity, so the guard is
+the lane, not the sentence.
+
+**⚠️ Andy's call if he wants the opposite:** if job titles should stay closed even to the asker, then the DOSSIER lane is
+the bug and the fix is to stop volunteering it there. One of the two has to change — today she both refuses it and
+volunteers it, which is the worst of both.
+
+**Accept when:** 1. "What is my title according to my membership application?" returns Head of Tech & Automation ✅
+2. Asking for ANOTHER member's job title is still refused ✅ 3. The dossier lane and the application lane agree ✅
+4. `OLIVIA_SHAREABLE_FIELDS.md` says which rules are subject-scoped, so the next field does not repeat this ✅
+5. Gate GREEN, with a check that another member's title stays closed.
 
 ### #204 · An exact revenue figure reached a member in Millie's own voice
 
