@@ -11,6 +11,40 @@
 
 # Olivia — next session
 
+## ⛳ SESSION CLOSED 2026-09-11 — **NEXT = #170, and it is the MEMORY half only** · a parallel session opens on Exa.ai
+
+**Andy's close:** *"Let's close this session, and we will start the next one with 170 and I will create a second session
+to check the exa.ai — just connected MCP and I want to check how this can help us to improve search by enriching the
+members list, maybe partners list."*
+
+**#170 · Millie web chat — long thread memory.** *As MDS staff, I want to keep several chats with Millie and come back to
+any of them, and I want her to remember the whole thread — not just the last 16 turns — so a long investigation can
+continue over days without me re-explaining it, at a per-question cost that does not grow with the thread.*
+
+**Read the 📐 SCOPE CHECKED block under #170 on the board before planning it.** Andy asked whether this was already
+shipped; it is half-shipped and the halves are clean:
+- **DONE in #169 — do not rebuild:** the sessions rail (New session, search, per-mode grouping, reopening a thread with
+  its provenance). AC 3 is struck through on the board. `listThreads` in `src/lib/millie/web-chat.ts` derives it from the
+  caller's own rows — no model call, no extra table.
+- **NOT STARTED — the ticket:** prod's `Load Recent Turns` reads **`limit=16`**, `/api/admin/millie/chat` sends the door
+  **no history beyond `thread_id`**, **`digest.olivia_web_threads` does not exist**, and there is no `web_thread_search`
+  tool. ACs 1, 2, 4, 5 are the work: a running summary of everything older than the recent turns, the search tool for
+  exact recall, the table, and the gate proof that a WhatsApp turn cannot reach the tool.
+
+**The second session (Andy's, in parallel): Exa.ai MCP for enrichment.** He wants to see whether it can improve search by
+enriching the **members list**, and possibly the **partners list**. Two things that session should know before it starts:
+the partner enrichment pattern already exists — **#160** built `digest.partner_web_profile` (506 rows: summary, services,
+markets, pricing, people, `crawl_status`) by crawling each partner's own site and extracting with Sonnet, refreshed weekly
+— so Exa would be measured against that, not against nothing. And **`partner_web_profile.people` is empty for the
+partners we checked today** (Hector, StoreClaw), which is exactly what made #5068 name the wrong founder: a concrete,
+already-proven gap for enrichment to close. **Never write to Airtable** ([[feedback_never_write_to_airtable]]); member
+enrichment lands in Supabase.
+
+**Live state at close.** Prod n8n **`b31eadbb`** (92 nodes, active, all nine #190 fixes promoted), staging `2b621554`,
+lock **free**, gate **367/0 exit 0**, hash pin re-snapshotted (`08013a8e…`). Scorecard `main` at the #210 merge; tools repo
+`eef65e2`. **Open for Andy:** the deterministic-assembly decision behind the five remaining exam failures · whether to
+retire the machine-generated CROSS class (44%, the worst) · the Team column signature · the Voyage key rotation.
+
 ## STATE 2026-09-11 (overnight) — ⏳ **STAGING IS WAITING ON ANDY'S PROMOTE**: nine core fixes from #190, 17 of the 22 exam failures addressed, 5 still failing for one shared reason
 
 **✅ PROMOTED — prod n8n is `b31eadbb`** (2026-09-11 14:33Z, on Andy's "promote staging"). Hash pin re-snapshotted
