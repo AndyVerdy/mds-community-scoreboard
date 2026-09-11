@@ -4,6 +4,40 @@
 
 
 
+## 2026-09-11 (afternoon) · #170 SHIPPED — Millie's long thread memory: Team in process, Public via the door, Test/Prod untouched
+
+**Andy's scope call:** *"Team. and if possible in Public."* Test/Prod targets deliberately keep the 16-row window —
+they exist to reproduce what a WhatsApp member gets. Design spec + eight-task plan written and approved first
+(`docs/superpowers/specs/2026-09-11-170-millie-thread-memory-design.md`, `…/plans/2026-09-11-170-millie-thread-memory.md`),
+then executed subagent-driven: fresh implementer per task, a spec + quality review per task, a whole-branch review
+at the end (three fix rounds in total: the fold prompt's no-new-facts clause, the cost proof's cache instrumentation,
+and Clear deleting the thread row).
+
+**Shipped.** Migration `olivia_web_threads_170_20260911` (`digest.olivia_web_threads`, service_role only, RLS on, no
+policy; `db/` re-exported, `scripts/sql/20260911_170_olivia_web_threads.sql`). Web `5c412c6 → e1eeb83` on Render:
+`src/lib/millie/thread-memory.ts` (`loadMemory`: 16-row window verbatim, lazy Haiku fold of rows above
+`summary_through_id` and below the window, upsert with `Prefer: resolution=merge-duplicates`, reads scoped by asker +
+thread + mode), `web_thread_search` in `team/tools.ts` (`threadSearchFor` closes over asker + thread), the research
+route reads `loadMemory` and binds the tool, the loop takes `summary` as the first message, the chat route sends
+`thread_summary` for Public only, `deleteThread` now removes the thread row. Staging graph `2b621554 → d68bcd6e`:
+`Log Inbound` carries `thread_summary`, `Answer Seed` pushes it into `msgs` before the rows loop (the plan had guessed
+`conversation.unshift`; `Build Prompt`/`Ask Claude` turned out to be orphaned nodes — nothing connects into them).
+
+**Proof.** In process against live DB + live models (route gated on Andy's session; nobody signs in as him):
+`t_170_long` (110 rows, decision at rows 3–4, backdated 3 days) → "paid date, not the invoice date" via
+`web_thread_search` 2/2; `t_170_fresh` → no decision on record. Cost: warm long $0.0227 vs warm 20-row $0.0234
+(3 %); cold long $0.0756 = `cache_creation_input_tokens` 23,610; ~$0.002 fold per turn past 16 rows. Gate 368/0 exit
+0; tool absent from graph JSON; WhatsApp-shaped staging probe exec 145554 clean. Staging probes 145499/145506. Table:
+`t_170_long` `summary_through_id=391` = row 94 of 110, summary 1,157 chars. 1,401 tests green. **Route check PASSED
+by Andy in his own session (17:00Z, row 429):** "MRR is reported on the paid date, not the invoice date … via
+`web_thread_search`", 1 thread query, 8 rows, 345 ms, $0.0766 cold. It exposed one defect, fixed and merged the same
+hour: the #172 "No query returned rows" footer flag did not count a `thread` hit (`footer.ts` `noRowsFlag`). Seed
+threads + the two staging probe threads deleted.
+
+**Found alongside (flagged, not worked).** `Load Recent Turns` scopes web reads by `thread_id` alone (pre-existing
+#169). Public fold (≤30 s) stacks before the 85 s door call. `service_role` holds ALL on the new table via the schema
+default ACL, same as `olivia_web_messages`.
+
 ## 2026-09-11 (overnight) · the #190 remediation — nine core fixes, 17 of 22 addressed, SQL live, graph STAGED for Andy's promote
 
 **Andy's instruction at 00:50:** *"It's a 22% failure. There is no such thing as partial. Partial = fail … work overnight and

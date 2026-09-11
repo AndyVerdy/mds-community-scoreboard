@@ -64,6 +64,7 @@ alter table digest.olivia_requests enable row level security;
 -- digest.olivia_seen: row level security DISABLED
 -- digest.olivia_sends: row level security DISABLED
 alter table digest.olivia_web_messages enable row level security;
+alter table digest.olivia_web_threads enable row level security;
 -- digest.olivia_webhook_events: row level security DISABLED
 alter table digest.partner_reviews enable row level security;
 -- digest.partner_web_profile: row level security DISABLED

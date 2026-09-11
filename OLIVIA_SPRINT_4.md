@@ -1479,6 +1479,44 @@ stays #170; the rail itself ships here because the design is built around it."* 
 **So reopening a three-day investigation shows you the whole transcript on screen while Millie remembers only its
 tail.** That is the gap, and ACs 1, 2, 4 and 5 are exactly the fix.
 
+**✅ SHIPPED 2026-09-11 — web merge `e1eeb83` (Render, live), migration `olivia_web_threads_170_20260911`, staging
+graph `2b621554 → d68bcd6e` (Public half; awaits Andy's promote).** Spec `docs/superpowers/specs/2026-09-11-170-…`,
+plan `docs/superpowers/plans/2026-09-11-170-…`.
+
+*Results.* One store, one writer. `digest.olivia_web_threads` holds a running summary per Team/Public thread;
+`src/lib/millie/thread-memory.ts` folds only the rows older than the 16-row verbatim window that the summary has
+not seen (`summary_through_id`), lazily at the start of a turn, with Haiku 4.5 — flat cost in thread length, a
+failed fold retries the same range next turn, the prompt forbids inventing facts or turning a band into a figure.
+**Team:** the research route answers from summary + last 16 rows and gains `web_thread_search` (terms from the
+model; thread id and asker injected server-side, so it cannot be pointed elsewhere). **Public:** the chat route
+sends `thread_summary` on the door POST; staging `Log Inbound` carries it, `Answer Seed` pushes it as the first
+message. **Test/Prod** targets send nothing — byte-identical, by design. Clear now removes the thread row too.
+
+*Proof.* In process against the live DB and live models (the route is gated on Andy's own session, so no one
+signs in as him): 110-row thread `t_170_long` → "paid date, not the invoice date" via `web_thread_search`, 2/2; a
+fresh thread says no such decision is on record. **Cost:** warm 110-row $0.0227 vs warm 20-row $0.0234 (3 %);
+the cold first run $0.0756 was cache creation (23,610 tokens), not thread length; plus one ~$0.002 Haiku fold per
+turn once a thread passes 16 rows. Gate **368/0 exit 0**; `web_thread_search` absent from the graph JSON; a
+WhatsApp-shaped probe on staging (exec 145554) neither called nor claimed it. Staging probes 145499 (summary is
+`messages[0]`) / 145506 (nothing injected without the field). 1,401 tests green, tsc + eslint clean.
+
+*ACs.* 1 ✅ · 2 ✅ read as "cost does not grow with the thread" — long ≈ 20-row; a truly fresh thread is cheaper
+because it carries no window at all · 3 ✅ already by #169 · 4 ✅ (structural + gate + probe) · 5 ✅.
+
+*Before / after.* Memory: 16 rows → the whole thread. Per-turn cost on a 110-row thread: $0.023 (before, not
+measurable — the thread was cut to 16 rows either way). Public memory is INERT until the staging promote.
+
+*Route check — PASSED, Andy in his own session, 2026-09-11 17:00Z.* On the 110-row thread through the live
+route: *"Decision: MRR is reported on the paid date, not the invoice date … I pulled it from thread history via
+`web_thread_search`"* — row 429, 1 query (`thread`, 8 rows, 345 ms), 2 laps, $0.0766 (cold cache, 23,610 tokens).
+Seed threads and the two staging probe threads deleted afterwards. One defect the check exposed and fixed the same
+hour: the "No query returned rows" footer flag did not count a `thread` hit as evidence (`footer.ts`, `noRowsFlag`).
+
+*Found alongside — not this ticket, flag for priority evaluation.* (a) `Load Recent Turns` scopes web reads by
+`thread_id` ALONE — no `asker_email`, no `mode` — so a staff caller supplying another staff member's thread id
+gets their last 16 turns as context (pre-existing since #169). (b) A Public turn now stacks a ≤30 s fold before
+the 85 s door call; a 10–15 s deadline on the Public fold is cheap hardening.
+
 ### #171 · Public answer from the Facebook tool
 
 **🟡 S2 · size M — filed 2026-09-07 (Andy: "delivery 2: generate public answer from facebook tool" · earlier: "we
