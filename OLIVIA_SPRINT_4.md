@@ -346,8 +346,22 @@ what the answer needed. They are the model using its evidence loosely — and th
 half.** The other half needs the answer to be ASSEMBLED from the returned rows rather than written around them — a design
 change, not a night's patch. **That is the decision for Andy**, and it is what stands between 5% and his <2%.
 
-**Nothing was promoted.** Prod n8n is still `b4db92d0`; staging carries all eight fixes (versionId `2c16e59b`, snapshot
-`olivia_snapshots/staging_2026-09-11T054855Z_pre-190-overnight.json` is the pre-work state to roll back to).
+**✅ PROMOTED 2026-09-11 14:33Z on Andy's word ("promote staging").** Prod n8n `12wj6h1TWqb0d4Dq` is now **`b31eadbb`**
+(92 nodes, active, webhooks intact); the permanent graph hash pin `olivia_snapshots/prod_pre_172.sha256` was re-snapshotted
+deliberately (`08013a8e…`) and the gate is **367/0 exit 0** against it. Roll-back: `olivia_snapshots/prod_2026-09-11T141737Z_pre-190-promote.json`.
+
+**The promote caught a real defect in #208, which the staging proof had missed.** On prod, "a speaker spoke about Trybe"
+still denied it — and the stored plan showed the videos lane's own empty second fetch
+(`p_terms: [], p_sources: ['fb_post'], p_limit: 0`), not the transcript search. The block had been inserted a few lines
+ABOVE that reset, so it never survived. It had passed 4/4 on staging **for the wrong reason**: `sources_used` shows the
+model called `content_search` three times on its own and got lucky once — exactly the variance the deterministic fetch
+exists to remove. Moved below the reset (`apply_208b_transcript_fetch_order.py`), re-proven on staging with the plan
+inspected this time (`raw sources=['call_transcript'] terms=['trybe','tribe']`), promoted again.
+
+**Live proof on prod after the promote:** "top 5 most watched mogul calls" → the real ranking with counts (264, 192, …) ·
+"who owns Stylia Beauty" → Lenny Joseph · "are you able to do daily reminders" → the curated capability list · "a speaker
+spoke about Trybe" → found in Brandon Himmel's TikTok Mastermind, *also written "Tribe"*, with the context. Probe rows
+cleaned; lock released.
 
 ### #204 · An exact revenue figure reached a member in Millie's own voice
 

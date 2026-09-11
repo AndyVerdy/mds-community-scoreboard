@@ -55,7 +55,30 @@ by the current run** — the regression run's cleanup deleted every probe row fr
 run that cleans. (2) **A rule added to the shared STYLE block does not reliably reach a lane that has its own MODE rules** —
 the fixes that worked changed ROUTING and EVIDENCE; the ones that only changed wording did not move.
 
-**Nothing promoted. Prod n8n `b4db92d0` untouched all night.** Scorecard branch `190-eval-20260910`; tools repo `eef65e2`.
+**PROMOTED 2026-09-11 14:20Z and again 14:33Z on Andy's "promote staging".** Prod `b4db92d0` → `760454c8` → **`b31eadbb`**
+(92 nodes, active, webhooks intact, settings preserved, one bounce each). The permanent graph hash pin
+`olivia_snapshots/prod_pre_172.sha256` was re-snapshotted after each promote (final `08013a8e…`); gate **367/0 exit 0**
+against the promoted graph; probe rows cleaned; lock released.
+
+**The promote earned its keep immediately: it caught a defect the staging proof had missed.** On prod the Trybe question
+still denied the Singapore sessions mention it, and the stored plan showed the videos lane's own empty second fetch
+(`p_terms: [], p_sources: ['fb_post'], p_limit: 0`) — #208's transcript search had been inserted a few lines ABOVE that
+reset and was overwritten every time. It had passed 4/4 on staging **for the wrong reason**: `sources_used` shows the model
+called `content_search` three times itself and found the passage once. Moved below the reset
+(`scripts/olivia_loop/apply_208b_transcript_fetch_order.py`), re-proven on staging with the PLAN inspected this time
+(`raw sources=['call_transcript'] terms=['trybe','tribe']`), promoted again, re-proven on prod.
+
+**Live prod proof after the second promote:** top 5 most-watched Mogul Calls with real counts (264 / 192 / …) · "who owns
+Stylia Beauty" → Lenny Joseph · "are you able to do daily reminders" → the curated capability list · "a speaker spoke about
+Trybe" → Brandon Himmel's TikTok Mastermind, *also written "Tribe"*, with the context.
+
+**The 03:30 nightly (finished 05:05) ran on prod against the repaired truths: 220 judged · PASS 202 · PARTIAL 3 · FAIL 15 =
+6.8%**, down from 9.5% on 09-09 — VIDEO 30%→0, EVENT 27%→0, WA_DIGEST 17%→0, AT_PROFILE 5%→0. CROSS went the other way
+(31%→44%, 7 of 16) and is now the worst class; those are the machine-generated two-source questions the triage already
+recommended retiring. One NEW failure worth a ticket: **Q2096 — she refuses to give a member their OWN application title**,
+which is self-shareable under the rulebook.
+
+Scorecard branch `190-eval-20260910`; tools repo `eef65e2`.
 
 ## 2026-09-11 · #190 CLOSED — a fresh 100-question exit exam at prod: 14% judged, 7% reproducing; the nightly bank was overstating by ~2×
 
