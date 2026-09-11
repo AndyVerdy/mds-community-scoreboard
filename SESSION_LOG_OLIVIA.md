@@ -55,6 +55,15 @@ redeploy with the env at 22:24 CDT (his screenshot).
 #196 `db/` count drift + stale Vercel comment · #197 `member_links` dark · #198 the MCP door. **NEXT = Andy's pick** (#198 is his
 original ask; #190 sprint-closure eval runs last).
 
+**Addendum (Andy's scope check, then the session close).** "You realize it's not just about revenue… who attended Inspire 2026
+and thinking of moving to Miami… process all the conversations." Ran his example live in his own tab (row 290, thread
+`t_mtwe9n4m9ow3`): roster `recN4InljvcfdqCji` (273 tickets / 207 members) × `wa_messages` × `fb_posts`/`fb_comments` × one
+semantic query, three candidates cross-checked against the roster, honest no-match with the evidence and an offer to widen — 24
+queries (2 repaired 42883 errors), 14 laps, 111.8 s, $0.87. Said plainly: it searches then reads the hits, it does not read every
+message → **#199 `scan_content` filed and PARKED** ("do not start it yet, lets finish our plan first"). Plan deviations owned:
+Q11–Q13 were hand-verified by tracing every example (not four judges); staff validation of the twenty (Day-0 item 5) not run.
+Handbook §11 ruling row added at close.
+
 ## 2026-09-10 (night) · #172 Milestone A — DOABLE · the read-only SQL surface is live on prod · transport = stream · spike 5/5
 
 **Andy's asks, in order:** "continue working on millie - #172 Team research mode, Milestone A" (briefing) → "go" → "too technical

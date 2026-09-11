@@ -1160,6 +1160,14 @@ edit one while working the other.
 
 ## 11. The privacy model
 
+> **Ruling row — Team research mode (#172, Andy 2026-09-10: "answers to all the questions, no gates").** Staff on the
+> `MILLIE_TEAM_ASKERS` allowlist read the warehouse through a read-only SQL surface plus a catalog and an ungated
+> semantic search, over the deny-list view `member_profiles_team`: exact revenue, contact details and Stripe/billing
+> OPEN; removal reasons, LTV, internal notes and lead scoring CLOSED in SQL (`OLIVIA_SHAREABLE_FIELDS.md`, Team column —
+> Andy's signature pending on birthdays and five removal-date keys). Every Team turn is logged under the asker's email
+> with the queries it ran, behind a per-browser-session acknowledgement of the "never paste it outside the team" notice.
+> Nothing in this section changes for members: Millie's member, WhatsApp and Public paths reach none of it (gate-pinned).
+
 > **Visibility ruling (Andy, 2026-08-24) — reads on top of R1–R10:** the asker's own access defines
 > shareability. Public info carries no privacy expectation. Restricted-chat content — all field
 > types, contacts and self-stated revenue included — is shareable to that chat's members. Rule of
