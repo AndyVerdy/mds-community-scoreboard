@@ -1,0 +1,828 @@
+# Millie long thread memory (#170) Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** A Millie web thread answers from its whole history, not its last sixteen rows, at a per-question cost that does not grow with the thread.
+
+**Architecture:** One row per thread in `digest.olivia_web_threads` holds a running summary of everything older than the verbatim window. `mds-digest-web` is the only writer: at the start of a turn it folds the not-yet-summarised older rows into that summary with Haiku, then answers with summary + last sixteen rows. Team also gets a `web_thread_search` tool whose thread and asker are injected server-side. Public gets the summary only, carried to the n8n door as one new request field.
+
+**Tech Stack:** TypeScript / Next.js (`mds-digest-web`, Render) · Vitest · Supabase PostgREST (`sbRequest`) · Anthropic SDK (`claude-haiku-4-5` fold, `claude-sonnet-5` research loop) · n8n Code nodes (`12wj6h1TWqb0d4Dq` prod, `bqHstPDi84uOhTCJ` staging).
+
+## Global Constraints
+
+- **Two repos, two branches.** Tasks 1, 6, 7, 8 are in `/Users/Born/Scorecard` on branch `170-memory-20260911` (worktree `.claude/worktrees/170-memory-20260911`). Tasks 2–5 are in `/Users/Born/mds-digest-web` on a branch `170-memory-20260911` cut from `origin/main` (`5c412c6`). Never commit on `main` in either repo.
+- **Merging to `main` in `mds-digest-web` deploys Render.** There is no staging tier for the web routes.
+- **Never write to Airtable.** Everything here is Supabase and n8n.
+- **Prod graph edits are Andy's promote, never ours.** Graph work is staged on `bqHstPDi84uOhTCJ` under `python3 scripts/olivia_wf.py lock`, released as soon as the gate is green.
+- **SQL:** `CREATE` only, never `DROP`; after any migration, re-export `db/` in the Scorecard repo.
+- **The verbatim window is 16 rows**, matching today's `history.slice(-16)` and `Load Recent Turns` `limit=16`. Name it once, in code, as `VERBATIM_ROWS`.
+- **Test and Prod targets get no memory**: no thread row, no `thread_summary` field, byte-identical behaviour to today.
+- **Scores, ranks and exact revenue stay internal** — the fold writes prose about a thread, never new member facts.
+- Tests run with `npm test` (`vitest run`) in `mds-digest-web`.
+
+---
+
+## File Structure
+
+| File | Responsibility |
+|---|---|
+| `db/migrations/…olivia_web_threads_170_20260911.sql` (Scorecard) | the table, its grants, its RLS |
+| `src/lib/millie/thread-memory.ts` (new) | read thread rows, fold older ones into the stored summary, hand back `{ summary, recent }` |
+| `src/lib/millie/thread-memory.test.ts` (new) | the module's tests |
+| `src/lib/millie/team/tools.ts` (modify) | the `web_thread_search` tool definition and its runner |
+| `src/lib/millie/team/tools.test.ts` (modify) | tool scoping tests |
+| `src/app/api/admin/millie/research/route.ts` (modify) | Team: use `loadMemory`, bind the tool to this thread |
+| `src/lib/millie/web-chat.ts` (modify) | carry `thread_summary` on the door call |
+| `src/app/api/admin/millie/chat/route.ts` (modify) | Public: load memory, send the summary |
+| `src/app/api/admin/millie/chat/route.test.ts` (modify) | Public sends it, Test and Prod do not |
+| n8n `Log Inbound` (staging) | accept `thread_summary` on a web turn |
+| n8n `Answer Seed` (staging) | render it ahead of the conversation |
+
+---
+
+### Task 1: The table
+
+**Files:**
+- Create (Scorecard): `db/migrations/20260911_olivia_web_threads_170.sql`
+- Modify: `db/` export (regenerated, not hand-edited)
+
+**Interfaces:**
+- Produces: table `digest.olivia_web_threads(thread_id text pk, asker_email text, mode text, title text, summary text, summary_through_id bigint, turns int, updated_at timestamptz)`, service_role only.
+
+- [ ] **Step 1: Write the migration file**
+
+```sql
+-- #170 — the running summary of one Millie web thread. Written ONLY by mds-digest-web
+-- (Team + Public turns); the n8n graph never touches this table. service_role only.
+create table if not exists digest.olivia_web_threads (
+  thread_id          text primary key,
+  asker_email        text not null,
+  mode               text not null check (mode in ('team','public')),
+  title              text,
+  summary            text not null default '',
+  summary_through_id bigint not null default 0,
+  turns              int not null default 0,
+  updated_at         timestamptz not null default now()
+);
+create index if not exists olivia_web_threads_asker_idx on digest.olivia_web_threads (asker_email, updated_at desc);
+alter table digest.olivia_web_threads enable row level security;
+revoke all on digest.olivia_web_threads from public, anon, authenticated;
+grant select, insert, update on digest.olivia_web_threads to service_role;
+comment on table digest.olivia_web_threads is
+  '#170 running summary per Millie web thread (mode team|public). summary_through_id = last olivia_web_messages.id folded in. No RLS policy exists: service_role only, by design.';
+```
+
+- [ ] **Step 2: Apply it**
+
+Apply with the Supabase MCP `apply_migration`, name `olivia_web_threads_170_20260911`, body = the file above.
+
+- [ ] **Step 3: Read the grants back from live**
+
+Run this through the Supabase MCP `execute_sql` and read the output — do not assume the apply implies the grants:
+
+```sql
+select grantee, privilege_type from information_schema.role_table_grants
+where table_schema='digest' and table_name='olivia_web_threads' order by 1,2;
+select relrowsecurity from pg_class where oid='digest.olivia_web_threads'::regclass;
+```
+
+Expected: privileges for `service_role` only (SELECT/INSERT/UPDATE), no `anon`, no `authenticated`, `relrowsecurity = true`.
+
+- [ ] **Step 4: Re-export `db/`**
+
+Run the repo's usual export (`python3 scripts/db_export.py` if present; otherwise the command named at the top of `db/README.md`) and check `git status` shows the new table's file.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add db/
+git commit -m "#170: digest.olivia_web_threads — one running summary per web thread"
+```
+
+---
+
+### Task 2: The memory module
+
+**Files:**
+- Create: `src/lib/millie/thread-memory.ts`
+- Create: `src/lib/millie/thread-memory.test.ts`
+
+**Interfaces:**
+- Consumes: `sbRequest` from `@/lib/supabase`, `WebTurn` from `@/lib/millie/web-chat`, `config` from `@/lib/config`.
+- Produces:
+
+```ts
+export const VERBATIM_ROWS = 16;
+export type MemoryMode = "team" | "public";
+export type FoldInput = { previous: string; rows: WebTurn[] };
+export type Fold = (a: FoldInput) => Promise<string>;
+export type ThreadMemory = { summary: string; recent: WebTurn[] };
+export async function loadMemory(a: { askerEmail: string; threadId: string; mode: MemoryMode; fold?: Fold }): Promise<ThreadMemory>;
+export async function foldWithHaiku(a: FoldInput): Promise<string>;
+```
+
+- [ ] **Step 1: Write the failing tests**
+
+Create `src/lib/millie/thread-memory.test.ts`:
+
+```ts
+// #170 — the running summary folds ONLY the rows older than the verbatim window that it has not seen.
+import { beforeEach, describe, expect, it, vi } from "vitest";
+const { sbRequest } = vi.hoisted(() => ({ sbRequest: vi.fn() }));
+vi.mock("@/lib/supabase", () => ({ sbRequest, isSupabaseConfigured: () => true }));
+import { loadMemory, VERBATIM_ROWS } from "./thread-memory";
+
+const row = (id: number, role: "member" | "olivia") => ({
+  id, role, text: role === "member" ? `q${id}` : null, answer_md: role === "olivia" ? `a${id}` : null,
+  notes: [], sources: [], created_at: "2026-09-11T10:00:00Z",
+});
+// 40 rows, ids 1..40, alternating member/olivia
+const all = Array.from({ length: 40 }, (_, i) => row(i + 1, i % 2 === 0 ? "member" : "olivia"));
+const newest = all.slice(-VERBATIM_ROWS);            // ids 25..40
+const older = all.slice(0, all.length - VERBATIM_ROWS); // ids 1..24
+
+beforeEach(() => sbRequest.mockReset());
+
+describe("loadMemory", () => {
+  it("returns the last sixteen rows verbatim, oldest first, and folds only unseen older rows", async () => {
+    sbRequest
+      .mockResolvedValueOnce([...newest].reverse())                        // recent window (id.desc)
+      .mockResolvedValueOnce([{ thread_id: "t1", summary: "so far", summary_through_id: 10, turns: 5 }]) // thread row
+      .mockResolvedValueOnce(older.filter((r) => r.id > 10))               // pending rows 11..24
+      .mockResolvedValueOnce(undefined);                                   // upsert
+    const fold = vi.fn().mockResolvedValue("so far + more");
+    const mem = await loadMemory({ askerEmail: "andy@mds.co", threadId: "t1", mode: "team", fold });
+    expect(mem.recent.map((r) => r.id)).toEqual(newest.map((r) => r.id));
+    expect(mem.summary).toBe("so far + more");
+    expect(fold).toHaveBeenCalledTimes(1);
+    expect(fold.mock.calls[0][0].previous).toBe("so far");
+    expect(fold.mock.calls[0][0].rows.map((r: { id: number }) => r.id)).toEqual([11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]);
+    const upsert = sbRequest.mock.calls[3];
+    expect(upsert[0]).toBe("olivia_web_threads");
+    expect(upsert[1].body).toMatchObject({ thread_id: "t1", asker_email: "andy@mds.co", mode: "team", summary: "so far + more", summary_through_id: 24 });
+  });
+
+  it("never calls the model when nothing is older than the verbatim window", async () => {
+    sbRequest
+      .mockResolvedValueOnce([...all.slice(0, 10)].reverse())
+      .mockResolvedValueOnce([]);
+    const fold = vi.fn();
+    const mem = await loadMemory({ askerEmail: "andy@mds.co", threadId: "t2", mode: "team", fold });
+    expect(fold).not.toHaveBeenCalled();
+    expect(mem.summary).toBe("");
+    expect(mem.recent).toHaveLength(10);
+  });
+
+  it("keeps the stored summary and does not advance the cursor when the fold fails", async () => {
+    sbRequest
+      .mockResolvedValueOnce([...newest].reverse())
+      .mockResolvedValueOnce([{ thread_id: "t3", summary: "stored", summary_through_id: 0, turns: 0 }])
+      .mockResolvedValueOnce(older);
+    const fold = vi.fn().mockRejectedValue(new Error("haiku down"));
+    const mem = await loadMemory({ askerEmail: "andy@mds.co", threadId: "t3", mode: "team", fold });
+    expect(mem.summary).toBe("stored");
+    expect(sbRequest.mock.calls.some((c) => c[0] === "olivia_web_threads" && c[1]?.method === "POST")).toBe(false);
+  });
+
+  it("scopes every read to the asker and the thread", async () => {
+    sbRequest
+      .mockResolvedValueOnce([...newest].reverse())                                        // recent window
+      .mockResolvedValueOnce([{ thread_id: "t4", summary: "s", summary_through_id: 24, turns: 12 }]) // thread row
+      .mockResolvedValueOnce([]);                                                          // nothing pending
+    const fold = vi.fn();
+    await loadMemory({ askerEmail: "andy@mds.co", threadId: "t4", mode: "public", fold });
+    expect(sbRequest).toHaveBeenCalledTimes(3);
+    expect(fold).not.toHaveBeenCalled();
+    for (const call of sbRequest.mock.calls) {
+      expect(String(call[0])).toContain("asker_email=eq.andy%40mds.co");
+      expect(String(call[0])).toContain("thread_id=eq.t4");
+    }
+  });
+});
+```
+
+- [ ] **Step 2: Run the tests to verify they fail**
+
+Run: `cd /Users/Born/mds-digest-web && npx vitest run src/lib/millie/thread-memory.test.ts`
+Expected: FAIL — cannot find module `./thread-memory`.
+
+- [ ] **Step 3: Write the module**
+
+Create `src/lib/millie/thread-memory.ts`:
+
+```ts
+// #170 — SERVER ONLY. Millie's long memory of one web thread: the last VERBATIM_ROWS rows
+// verbatim plus a running summary of everything older, kept in digest.olivia_web_threads.
+//
+// The fold is LAZY — it happens at the START of a turn, folding only rows the stored summary
+// has not seen (id > summary_through_id) that are already outside the verbatim window. So the
+// per-turn cost is flat no matter how long the thread is, and nothing runs detached after a
+// response has been sent. A fold failure is never fatal: the turn answers from the stored
+// summary and the verbatim window, and the same range is retried next turn.
+import Anthropic from "@anthropic-ai/sdk";
+import { config } from "@/lib/config";
+import { sbRequest } from "@/lib/supabase";
+import type { WebTurn } from "@/lib/millie/web-chat";
+
+export const VERBATIM_ROWS = 16;
+const MAX_FOLD_ROWS = 400;
+const MAX_SUMMARY_CHARS = 1200;
+const ROW_CLIP = 700;
+
+export type MemoryMode = "team" | "public";
+export type FoldInput = { previous: string; rows: WebTurn[] };
+export type Fold = (a: FoldInput) => Promise<string>;
+export type ThreadMemory = { summary: string; recent: WebTurn[] };
+type ThreadRow = { thread_id: string; summary: string; summary_through_id: number; turns: number };
+
+const SELECT = "id,role,text,answer_md,notes,sources,redactions,source_summary,evidence_classes,created_at";
+const scope = (askerEmail: string, threadId: string) =>
+  `asker_email=eq.${encodeURIComponent(askerEmail)}&thread_id=eq.${encodeURIComponent(threadId)}`;
+
+export function turnText(r: WebTurn): string {
+  const body = (r.role === "member" ? r.text : r.answer_md) || "";
+  const flat = body.replace(/\s+/g, " ").trim();
+  return `${r.role === "member" ? "Asked" : "Millie"}: ${flat.length > ROW_CLIP ? flat.slice(0, ROW_CLIP) + "…" : flat}`;
+}
+
+/** The summary + the verbatim window for one thread, folding anything older it has not seen. */
+export async function loadMemory(a: { askerEmail: string; threadId: string; mode: MemoryMode; fold?: Fold }): Promise<ThreadMemory> {
+  const fold = a.fold ?? foldWithHaiku;
+  const newestFirst = await sbRequest<WebTurn[]>(
+    `olivia_web_messages?select=${SELECT}&${scope(a.askerEmail, a.threadId)}&order=id.desc&limit=${VERBATIM_ROWS}`,
+  );
+  const recent = [...newestFirst].reverse();
+  if (recent.length < VERBATIM_ROWS) return { summary: "", recent };
+
+  const rows = await sbRequest<ThreadRow[]>(
+    `olivia_web_threads?select=thread_id,summary,summary_through_id,turns&${scope(a.askerEmail, a.threadId)}&limit=1`,
+  );
+  const stored = rows[0] ?? { thread_id: a.threadId, summary: "", summary_through_id: 0, turns: 0 };
+  const windowStart = recent[0].id;
+  const pending = await sbRequest<WebTurn[]>(
+    `olivia_web_messages?select=${SELECT}&${scope(a.askerEmail, a.threadId)}` +
+      `&id=gt.${stored.summary_through_id}&id=lt.${windowStart}&order=id.asc&limit=${MAX_FOLD_ROWS}`,
+  );
+  if (pending.length === 0) return { summary: stored.summary, recent };
+
+  let summary: string;
+  try {
+    summary = (await fold({ previous: stored.summary, rows: pending })).trim();
+  } catch {
+    return { summary: stored.summary, recent }; // cursor unchanged: the same range is retried next turn
+  }
+  if (!summary) return { summary: stored.summary, recent };
+
+  const body: Record<string, unknown> = {
+    thread_id: a.threadId, asker_email: a.askerEmail, mode: a.mode,
+    summary: summary.slice(0, MAX_SUMMARY_CHARS),
+    summary_through_id: pending[pending.length - 1].id,
+    turns: stored.turns + pending.filter((r) => r.role === "member").length,
+    updated_at: new Date().toISOString(),
+  };
+  // The title is written once, when the row is created, from the thread's own first question —
+  // an update must not overwrite it, which is why the key is absent on later folds.
+  const firstQuestion = pending.find((r) => r.role === "member")?.text || "";
+  if (stored.turns === 0 && firstQuestion) body.title = firstQuestion.slice(0, 80);
+  await sbRequest<void>("olivia_web_threads", {
+    method: "POST", prefer: "resolution=merge-duplicates,return=minimal", body,
+  }).catch(() => undefined); // a failed write costs one re-fold next turn, never the answer
+  return { summary: summary.slice(0, MAX_SUMMARY_CHARS), recent };
+}
+
+const FOLD_SYSTEM =
+  "You keep a running summary of one research conversation so it can continue days later. " +
+  "Rewrite the summary so it carries: decisions and conclusions reached, the names, numbers and dates they rest on, " +
+  "what was ruled out and why, and questions left open. Drop pleasantries, tool mechanics and anything superseded later. " +
+  `Plain prose, no headings, at most ${MAX_SUMMARY_CHARS} characters. Return the summary only.`;
+
+export async function foldWithHaiku(a: FoldInput): Promise<string> {
+  const key = config.centurion.anthropicApiKey;
+  if (!key) throw new Error("no anthropic key for the thread summary");
+  const client = new Anthropic({ apiKey: key, maxRetries: 1 });
+  const body =
+    (a.previous ? `SUMMARY SO FAR:\n${a.previous}\n\n` : "") +
+    `NEW TURNS (older part of the thread, oldest first):\n${a.rows.map(turnText).join("\n")}`;
+  const msg = await client.messages.create({
+    model: config.millie.summaryModel, max_tokens: 700, system: FOLD_SYSTEM,
+    messages: [{ role: "user", content: body }],
+  }, { signal: AbortSignal.timeout(30_000) });
+  return msg.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("").trim();
+}
+```
+
+- [ ] **Step 4: Add the model to config**
+
+In `src/lib/config.ts`, inside the `millie: { … }` block, directly after the `researchModel` line:
+
+```ts
+    // #170 the running thread summary — small, flat-cost, one call per turn on a long thread.
+    summaryModel: process.env.MILLIE_SUMMARY_MODEL || "claude-haiku-4-5",
+```
+
+- [ ] **Step 5: Run the tests to verify they pass**
+
+Run: `cd /Users/Born/mds-digest-web && npx vitest run src/lib/millie/thread-memory.test.ts`
+Expected: PASS, 4 tests.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/lib/millie/thread-memory.ts src/lib/millie/thread-memory.test.ts src/lib/config.ts
+git commit -m "#170: thread memory module — lazy Haiku fold over the rows outside the verbatim window"
+```
+
+---
+
+### Task 3: `web_thread_search`, scoped server-side
+
+**Files:**
+- Modify: `src/lib/millie/team/tools.ts`
+- Modify: `src/lib/millie/team/tools.test.ts`
+
+**Interfaces:**
+- Consumes: `sbRequest`, `TrailStep`, `ToolDeps` from Task 3's own file.
+- Produces:
+
+```ts
+export type ThreadSearch = (terms: string, limit: number) => Promise<{ rows: unknown[]; row_count: number }>;
+export type ToolDeps = { teamSql: …; embed: …; threadSearch?: ThreadSearch };
+export function threadSearchFor(a: { askerEmail: string; threadId: string }): ThreadSearch;
+```
+`TrailStep["tool"]` gains `"thread"`.
+
+- [ ] **Step 1: Write the failing tests**
+
+Append to `src/lib/millie/team/tools.test.ts`:
+
+```ts
+describe("web_thread_search", () => {
+  it("searches only the injected thread and asker, ignoring any ids the model supplies", async () => {
+    const calls: string[] = [];
+    const { sbRequest } = await import("@/lib/supabase");
+    (sbRequest as unknown as ReturnType<typeof vi.fn>).mockImplementation(async (path: string) => { calls.push(path); return []; });
+    const { threadSearchFor, runTool } = await import("./tools");
+    const deps = { teamSql: vi.fn(), embed: vi.fn(), threadSearch: threadSearchFor({ askerEmail: "andy@mds.co", threadId: "t_real" }) };
+    const r = await runTool({ id: "1", name: "web_thread_search", input: { terms: "pricing decision", thread_id: "t_other", asker_email: "someone@else.com", limit: 5 } }, 1, deps);
+    expect(r.is_error).toBe(false);
+    expect(r.step.tool).toBe("thread");
+    expect(calls[0]).toContain("thread_id=eq.t_real");
+    expect(calls[0]).toContain("asker_email=eq.andy%40mds.co");
+    expect(calls[0]).not.toContain("t_other");
+    expect(calls[0]).not.toContain("else.com");
+  });
+
+  it("tells the model when the tool is not bound to a thread instead of searching everything", async () => {
+    const { runTool } = await import("./tools");
+    const r = await runTool({ id: "1", name: "web_thread_search", input: { terms: "x" } }, 1, { teamSql: vi.fn(), embed: vi.fn() });
+    expect(r.is_error).toBe(true);
+    expect(r.result).toContain("not available");
+  });
+});
+```
+
+- [ ] **Step 2: Run the tests to verify they fail**
+
+Run: `cd /Users/Born/mds-digest-web && npx vitest run src/lib/millie/team/tools.test.ts`
+Expected: FAIL — `threadSearchFor` is not exported.
+
+- [ ] **Step 3: Add the tool definition**
+
+In `src/lib/millie/team/tools.ts`, add to `TOOL_DEFS` (the array is sorted into `TOOLS` by name, so position does not matter):
+
+```ts
+  {
+    name: "web_thread_search",
+    description: "Search THIS conversation's own earlier turns by keyword — what was asked, what you answered, what was decided. Use it when the question refers to something earlier in this thread that the summary above does not pin down exactly. Searches only this thread; it cannot see other threads or other people's chats.",
+    input_schema: { type: "object", properties: { terms: { type: "string", description: "words to look for, e.g. 'pricing decision'" }, limit: { type: "integer", minimum: 1, maximum: 20 } }, required: ["terms"] },
+  },
+```
+
+- [ ] **Step 4: Add the type, the binder and the runner branch**
+
+In the same file, widen the trail step and the deps:
+
+```ts
+export type TrailStep = { n: number; tool: "sql" | "catalog" | "semantic" | "thread"; sql?: string; input?: unknown; rows?: number; ms: number; truncated?: boolean; error?: string };
+export type ThreadSearch = (terms: string, limit: number) => Promise<{ rows: unknown[]; row_count: number }>;
+export type ToolDeps = { teamSql: (sql: string, maxRows: number) => Promise<TeamSqlResult>; embed: (q: string) => Promise<number[] | null>; threadSearch?: ThreadSearch };
+```
+
+Then the binder — the thread and asker come from the closure, never from the model:
+
+```ts
+/**
+ * #170. The thread and the asker are CLOSED OVER here, from the route's session and request —
+ * the model only ever supplies `terms`, exactly as `p_phone` is injected for a member. A search
+ * therefore cannot be pointed at another thread or another person's chat.
+ */
+export function threadSearchFor(a: { askerEmail: string; threadId: string }): ThreadSearch {
+  return async (terms: string, limit: number) => {
+    const words = terms.replace(/[,%*()]/g, " ").trim().split(/\s+/).filter(Boolean).slice(0, 6);
+    if (words.length === 0) return { rows: [], row_count: 0 };
+    const or = `or=(${words.map((w) => `text.ilike.*${encodeURIComponent(w)}*,answer_md.ilike.*${encodeURIComponent(w)}*`).join(",")})`;
+    const rows = await sbRequest<Array<{ id: number; role: string; text: string | null; answer_md: string | null; created_at: string }>>(
+      `olivia_web_messages?select=id,role,text,answer_md,created_at` +
+        `&asker_email=eq.${encodeURIComponent(a.askerEmail)}&thread_id=eq.${encodeURIComponent(a.threadId)}` +
+        `&${or}&order=id.asc&limit=${limit}`,
+    );
+    const hits = rows.map((r) => ({ at: r.created_at, who: r.role === "member" ? "asked" : "millie", passage: ((r.role === "member" ? r.text : r.answer_md) || "").replace(/\s+/g, " ").slice(0, 700) }));
+    return { rows: hits, row_count: hits.length };
+  };
+}
+```
+
+And in `runTool`, before the final `unknown tool` return:
+
+```ts
+  if (call.name === "web_thread_search") {
+    const terms = typeof input.terms === "string" ? input.terms.trim() : "";
+    const limit = Math.min(20, Math.max(1, Number(input.limit) || 8));
+    if (!deps.threadSearch) return { result: "web_thread_search is not available on this turn.", step: { n, tool: "thread", input: { terms, limit }, ms: Date.now() - t0, error: "unbound" }, is_error: true };
+    try {
+      const r = await deps.threadSearch(terms, limit);
+      return { result: clip(JSON.stringify(r)), step: { n, tool: "thread", input: { terms, limit }, rows: r.row_count, ms: Date.now() - t0 }, is_error: false };
+    } catch (e) {
+      const msg = errorText(e);
+      return { result: `thread search failed: ${msg}`, step: { n, tool: "thread", input: { terms, limit }, ms: Date.now() - t0, error: msg }, is_error: true };
+    }
+  }
+```
+
+- [ ] **Step 5: Run the tests to verify they pass**
+
+Run: `cd /Users/Born/mds-digest-web && npx vitest run src/lib/millie/team/tools.test.ts`
+Expected: PASS, including the two new cases.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/lib/millie/team/tools.ts src/lib/millie/team/tools.test.ts
+git commit -m "#170: web_thread_search — terms from the model, thread and asker from the server"
+```
+
+---
+
+### Task 4: Team answers with the memory
+
+**Files:**
+- Modify: `src/app/api/admin/millie/research/route.ts:46-52` and its `defaultDeps()` call at line 56
+- Modify: `src/lib/millie/team/loop.ts` (one added line, the summary message)
+- Test: `src/lib/millie/team/loop.test.ts`
+
+**Interfaces:**
+- Consumes: `loadMemory` (Task 2), `threadSearchFor` (Task 3).
+- Produces: the loop accepts `summary: string` alongside `history`.
+
+- [ ] **Step 1: Write the failing test**
+
+Append to `src/lib/millie/team/loop.test.ts`:
+
+```ts
+it("puts the running summary into the conversation ahead of the recent turns", async () => {
+  const sent: Array<{ messages: Array<{ role: string; content: unknown }> }> = [];
+  const stream = (p: { messages: Array<{ role: string; content: unknown }> }) => {
+    sent.push(p);
+    return fakeStream({ text: "done", stop_reason: "end_turn" }); // helper already used by this file
+  };
+  await runResearchLoop({
+    question: "and what did we decide?", askerEmail: "andy@mds.co",
+    history: [{ role: "user", content: "q16" }], summary: "Earlier: we chose the weekly cadence.",
+    model: "claude-sonnet-5", client: { stream }, deps: { teamSql: vi.fn(), embed: vi.fn() },
+    onEvent: () => undefined, onTrail: () => undefined,
+  });
+  const first = sent[0].messages[0];
+  expect(String(first.content)).toContain("weekly cadence");
+  expect(sent[0].messages.map((m) => String(m.content)).join(" ")).toContain("q16");
+});
+```
+
+- [ ] **Step 2: Run it to verify it fails**
+
+Run: `cd /Users/Born/mds-digest-web && npx vitest run src/lib/millie/team/loop.test.ts`
+Expected: FAIL — `summary` is not accepted / not present in the messages.
+
+- [ ] **Step 3: Thread the summary through the loop**
+
+In `src/lib/millie/team/loop.ts`, add `summary` to the argument type (beside `history`) and build the messages array as:
+
+```ts
+  const messages: Anthropic.MessageParam[] = [
+    ...(a.summary
+      ? [{ role: "user", content: `EARLIER IN THIS CONVERSATION (running summary of everything before the turns below):\n${a.summary}\n\nUse web_thread_search when you need the exact earlier wording.` } as Anthropic.MessageParam]
+      : []),
+    ...a.history.map((h) => ({ role: h.role, content: h.content }) as Anthropic.MessageParam),
+```
+
+(keep the rest of the array exactly as it is.)
+
+- [ ] **Step 4: Use the memory in the route**
+
+In `src/app/api/admin/millie/research/route.ts` replace lines 46–52 (the `history` build and `slice(-16)`) with:
+
+```ts
+  // #170 The thread's long memory: the last VERBATIM_ROWS rows verbatim plus a running summary of
+  // everything older, folded lazily here so the per-turn cost does not grow with the thread.
+  const memory = await loadMemory({ askerEmail: email, threadId, mode: "team" }).catch(() => ({ summary: "", recent: [] as WebTurn[] }));
+  const recent: Array<{ role: "user" | "assistant"; content: string }> = [];
+  for (const t of memory.recent) {
+    if (t.role === "member") recent.push({ role: "user", content: t.text || "" });
+    else if (t.answer_md) recent.push({ role: "assistant", content: t.answer_md });
+  }
+```
+
+Change the imports at the top: replace `import { readThread } from "@/lib/millie/web-chat";` with
+
+```ts
+import { type WebTurn } from "@/lib/millie/web-chat";
+import { loadMemory } from "@/lib/millie/thread-memory";
+```
+
+Bind the tool and pass the summary — `deps` at line 56 and the `runResearchLoop` call at line 63:
+
+```ts
+  const deps = { ...defaultDeps(), threadSearch: threadSearchFor({ askerEmail: email, threadId }) };
+```
+
+```ts
+        question: text, askerEmail: email, history: recent, summary: memory.summary, model, client: { stream: (p) => client.messages.stream(p) }, deps,
+```
+
+and add `threadSearchFor` to the existing `@/lib/millie/team/tools` import.
+
+- [ ] **Step 5: Run the whole suite**
+
+Run: `cd /Users/Born/mds-digest-web && npm test`
+Expected: PASS, no regressions in the existing Team tests.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/app/api/admin/millie/research/route.ts src/lib/millie/team/loop.ts src/lib/millie/team/loop.test.ts
+git commit -m "#170: Team answers from the running summary plus the verbatim window"
+```
+
+---
+
+### Task 5: Public carries the summary to the door
+
+**Files:**
+- Modify: `src/lib/millie/web-chat.ts:44-54` (`callMillieWeb`)
+- Modify: `src/app/api/admin/millie/chat/route.ts:39-43`
+- Test: `src/app/api/admin/millie/chat/route.test.ts`
+
+**Interfaces:**
+- Consumes: `loadMemory` (Task 2).
+- Produces: the door POST body gains `thread_summary?: string`.
+
+- [ ] **Step 1: Write the failing tests**
+
+Append to `src/app/api/admin/millie/chat/route.test.ts`, in the POST describe block (reuse the file's existing session/fetch mocks):
+
+```ts
+it("sends the running summary on a Public turn", async () => {
+  memory.mockResolvedValueOnce({ summary: "Earlier: the group asked about refunds.", recent: [] });
+  await POST(postReq({ target: "public", text: "and what about shipping?", thread_id: "t_pub" }));
+  const body = JSON.parse(String(fetchMock.mock.calls[0][1].body));
+  expect(body.thread_summary).toBe("Earlier: the group asked about refunds.");
+  expect(body.mode).toBe("public");
+});
+
+it("sends no summary field on Test or Prod turns", async () => {
+  await POST(postReq({ target: "prod", text: "hello", thread_id: "t_test" }));
+  const body = JSON.parse(String(fetchMock.mock.calls[0][1].body));
+  expect(body.thread_summary).toBeUndefined();
+  expect(memory).not.toHaveBeenCalled();
+});
+```
+
+Mock the module beside the file's existing `vi.mock` calls:
+
+```ts
+const { memory } = vi.hoisted(() => ({ memory: vi.fn().mockResolvedValue({ summary: "", recent: [] }) }));
+vi.mock("@/lib/millie/thread-memory", () => ({ loadMemory: memory, VERBATIM_ROWS: 16 }));
+```
+
+- [ ] **Step 2: Run them to verify they fail**
+
+Run: `cd /Users/Born/mds-digest-web && npx vitest run src/app/api/admin/millie/chat/route.test.ts`
+Expected: FAIL — `thread_summary` is undefined on the Public call.
+
+- [ ] **Step 3: Carry the field on the door call**
+
+In `src/lib/millie/web-chat.ts`, add `threadSummary?: string` to `callMillieWeb`'s input type and send it only when non-empty:
+
+```ts
+    body: JSON.stringify({
+      web: true, asker_email: input.askerEmail, asker_name: input.askerName, mode: input.mode,
+      target: input.target, text: input.text, thread_id: input.threadId,
+      // #170 Public only: the thread's running summary, prose the graph renders ahead of the
+      // recent turns. Never sent for the Test/Prod targets — they must keep reproducing what a
+      // WhatsApp member gets, which is the last sixteen turns inside twenty-four hours.
+      ...(input.threadSummary ? { thread_summary: input.threadSummary.slice(0, 4000) } : {}),
+    }),
+```
+
+- [ ] **Step 4: Load the memory for Public in the route**
+
+In `src/app/api/admin/millie/chat/route.ts`, after `threadId` is resolved (line 39) and before `callMillieWeb`:
+
+```ts
+  const threadSummary = doorArgs.mode === "public"
+    ? (await loadMemory({ askerEmail: email, threadId, mode: "public" }).catch(() => ({ summary: "" }))).summary
+    : "";
+```
+
+and pass it: `call = await callMillieWeb({ …, threadId, threadSummary });`. Add the import `import { loadMemory } from "@/lib/millie/thread-memory";`.
+
+- [ ] **Step 5: Run the suite**
+
+Run: `cd /Users/Born/mds-digest-web && npm test`
+Expected: PASS.
+
+- [ ] **Step 6: Commit and push the branch**
+
+```bash
+git add src/lib/millie/web-chat.ts src/app/api/admin/millie/chat/route.ts src/app/api/admin/millie/chat/route.test.ts
+git commit -m "#170: Public sends the thread summary to the door; Test and Prod unchanged"
+git push -u origin 170-memory-20260911
+```
+
+---
+
+### Task 6: The graph accepts and renders the summary (staging)
+
+**Files:**
+- Modify (staging `bqHstPDi84uOhTCJ` only): Code node `Log Inbound`, Code node `Answer Seed`
+- Scorecard: `olivia_snapshots/` (the pre-edit snapshot the tool writes)
+
+**Interfaces:**
+- Consumes: the door request field `thread_summary` (Task 5).
+- Produces: nothing the web side reads back; the effect is in the answer.
+
+- [ ] **Step 1: Take the lock and a snapshot**
+
+```bash
+cd /Users/Born/Scorecard && python3 scripts/olivia_wf.py lock --reason "#170 thread summary into the web lane"
+python3 scripts/olivia_wf.py snapshot --target staging --label pre-170-thread-summary
+```
+
+- [ ] **Step 2: Carry the field in `Log Inbound`**
+
+In the web branch of `Log Inbound` (the `if (b && b.web === true) {` block), add one key to the returned object, beside `thread_id`:
+
+```js
+    thread_summary: String(b.thread_summary || '').slice(0, 4000),
+```
+
+- [ ] **Step 3: Render it in `Answer Seed`**
+
+`Answer Seed` builds its own conversation from `$('Load Recent Turns')` (its line "---- conversation: last 24h turns …"). Directly after that conversation is assembled, insert:
+
+```js
+// #170 LONG THREAD MEMORY (web, Public only). mds-digest-web folds everything older than the
+// verbatim window into a running summary and sends it on the request; it is prose about THIS
+// thread, never a source of member facts. Absent for WhatsApp and for the Test/Prod targets.
+let thread_summary = '';
+try { thread_summary = String(($('Log Inbound').first().json || {}).thread_summary || '').trim(); } catch (e) {}
+if (thread_summary) {
+  conversation.unshift({ role: 'user', content: 'EARLIER IN THIS CONVERSATION (running summary of everything before the turns below):' + String.fromCharCode(10) + thread_summary });
+}
+```
+
+Use the conversation variable's real name as it appears in the node — read the node first and match it; the array is the one passed to `Answer Claude` as `messages`.
+
+- [ ] **Step 4: Prove the field arrives, on staging**
+
+Send a Public web turn to the staging door with a summary, and read the execution's `Answer Seed` input:
+
+```bash
+curl -s -X POST "https://mdsco.app.n8n.cloud/webhook/olivia-web-staging" \
+  -H "Content-Type: application/json" -H "X-Olivia-Web-Secret: $OLIVIA_WEB_SECRET" \
+  -d '{"web":true,"asker_email":"andy@mds.co","asker_name":"Andy","mode":"public","target":"staging","text":"what did we decide about the refund wording?","thread_id":"t_170probe","thread_summary":"Earlier in this thread we decided refunds are answered with the 14-day wording and never a figure."}'
+```
+
+Expected: a 200 whose answer uses the 14-day wording. Then confirm from the n8n execution that `Answer Seed` received the summary in its messages — inspect the node input, do not infer it from the answer alone.
+
+- [ ] **Step 5: Gate, then release the lock**
+
+```bash
+cd /Users/Born/Scorecard && python3 scripts/olivia_leak_gate.py; echo "exit=$?"
+python3 scripts/olivia_wf.py unlock
+```
+
+Expected: `0 FAIL`, `exit=0`. Do not pipe the gate through `tail` — the exit code is the result.
+
+- [ ] **Step 6: Commit the snapshot note and stop**
+
+```bash
+git add -A olivia_snapshots
+git commit -m "#170: staging carries the thread summary into the web answer lane"
+```
+
+Staging now waits for Andy's promote. Do not promote.
+
+---
+
+### Task 7: Prove the acceptance criteria
+
+**Files:**
+- Create: `scripts/olivia_170_seed_thread.py` (Scorecard) — seeds a long Team thread for the AC 1 / AC 2 measurement
+- Read: `digest.olivia_web_messages`, `digest.olivia_web_threads`
+
+- [ ] **Step 1: Seed a thread past 100 turns with a decision made early**
+
+Write `scripts/olivia_170_seed_thread.py`: insert 110 alternating rows into `digest.olivia_web_messages` with `thread_id='t_170_long'`, `asker_email='andy@mds.co'`, `mode='team'`, `target='prod'`, `route='team-research'`. Row 3 (a `member` row) is "let's agree: we report MRR on the paid date, not the invoice date" and row 4 (an `olivia` row) confirms that decision. Rows 5-110 are ordinary filler about unrelated topics, so the decision is far outside the verbatim window.
+
+- [ ] **Step 2: Ask the long thread the AC 1 question**
+
+Ask through the live Team route (signed in as Andy in the browser, or the same POST the page makes) on `thread_id=t_170_long`:
+
+> "what did we decide earlier about which date MRR is reported on?"
+
+Expected: the paid date, not the invoice date. Read the trail: the answer comes from the summary or from a `web_thread_search` step, never from a member-data tool.
+
+- [ ] **Step 3: Measure AC 2**
+
+```sql
+select thread_id, (metrics->>'cost_usd')::numeric as cost, metrics->>'laps' as laps
+from digest.olivia_web_messages
+where role='olivia' and thread_id in ('t_170_long','t_170_fresh') order by id desc limit 4;
+```
+
+Ask the same question in a brand-new thread `t_170_fresh` first, so both rows exist. Expected: the long thread's `cost_usd` within 10% of the fresh one.
+
+- [ ] **Step 4: Prove AC 4 three ways**
+
+```bash
+cd /Users/Born/Scorecard && python3 scripts/olivia_leak_gate.py; echo "exit=$?"          # green
+python3 - <<'PY'                                                                          # the graph has no such tool
+import json,glob
+d=json.load(open(sorted(glob.glob('olivia_snapshots/staging_*.json'))[-1]))
+print('web_thread_search in graph:', 'web_thread_search' in json.dumps(d))
+PY
+```
+
+Expected: `exit=0`, and `False` for the graph. Third: send a WhatsApp probe turn (`scripts/olivia_selftest.py`, the SELFTEST path) asking "search our earlier web chat for the refund decision" and confirm the answer neither calls nor claims such a tool.
+
+- [ ] **Step 5: Confirm the table holds exactly one row per long thread**
+
+```sql
+select thread_id, mode, turns, summary_through_id, length(summary) from digest.olivia_web_threads order by updated_at desc limit 5;
+```
+
+Expected: `t_170_long` with `mode='team'`, a non-empty summary, `summary_through_id` equal to the id of the last row outside the verbatim window.
+
+- [ ] **Step 6: Clean up the seeded rows and commit the script**
+
+```sql
+delete from digest.olivia_web_messages where thread_id in ('t_170_long','t_170_fresh');
+delete from digest.olivia_web_threads where thread_id in ('t_170_long','t_170_fresh');
+```
+
+```bash
+git add scripts/olivia_170_seed_thread.py && git commit -m "#170: seed script for the long-thread proof"
+```
+
+---
+
+### Task 8: Ship and write it down
+
+- [ ] **Step 1: Merge the web branch (this deploys Render)**
+
+```bash
+cd /Users/Born/mds-digest-web && git switch main && git pull --ff-only && git merge --no-ff 170-memory-20260911 && git push
+```
+
+Then confirm the deploy is live: `curl -s https://digest.mds.co/api/version`.
+
+- [ ] **Step 2: Hand staging to Andy**
+
+Tell him the graph change is staged on `bqHstPDi84uOhTCJ` and what it is, so he knows whose edits ride his next promote.
+
+- [ ] **Step 3: Close the ticket on the board**
+
+In `OLIVIA_SPRINT_4.md`, under `### #170`, add the close block: short results · the AC checklist (1, 2, 4, 5 met; 3 already delivered by #169) · before and after numbers (16 rows of memory → whole thread; cost per turn before/after on the long thread).
+
+- [ ] **Step 4: Update the handbook and the handoff**
+
+`OLIVIA_HANDBOOK.md`: the web-chat section gains the memory model and the new table in the tables list. `OLIVIA_NEXT_SESSION.md`: replace the #170 block with the shipped state and the next ticket.
+
+- [ ] **Step 5: Session log**
+
+Full dated entry at the top of `SESSION_LOG_OLIVIA.md`, one index line in `SESSION_LOG.md`.
+
+- [ ] **Step 6: Merge the Scorecard branch**
+
+```bash
+cd /Users/Born/Scorecard/.claude/worktrees/170-memory-20260911 && git switch main && git pull --ff-only && git merge --no-ff 170-memory-20260911 && git push
+```
+
+---
+
+## Self-review notes
+
+- Spec coverage: table (Task 1) · lazy fold and flat cost (Task 2) · Team read + tool (Tasks 3, 4) · Public summary (Tasks 5, 6) · every AC proven (Task 7) · Test/Prod untouched (asserted in Task 5's second test).
+- `VERBATIM_ROWS` is the single name for the window, used in Tasks 2, 4 and 6.
+- `loadMemory`, `foldWithHaiku`, `threadSearchFor`, `ThreadSearch` and `TrailStep["tool"] = "thread"` are spelled identically everywhere they appear.
+- Task 6 deliberately stops before `promote`: the prod graph is Andy's to move.
