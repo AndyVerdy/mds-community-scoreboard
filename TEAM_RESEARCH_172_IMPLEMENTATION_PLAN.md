@@ -511,7 +511,7 @@ Also open `https://digest.mds.co/api/admin/millie/research/probe?secs=300` in th
 **Interfaces:**
 - Produces: `config.millie.teamAskers: string[]`, `config.millie.teamDailyTurns: number` (default 40), `config.millie.teamDailyUsd: number` (default 10), `config.millie.voyageApiKey: string`, `config.millie.researchModel: string` (default `"claude-sonnet-5"`); helper `parseAskers(raw: string | undefined): string[]` exported from `src/lib/millie/team/config.ts`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 // src/lib/millie/team/config.test.ts
@@ -539,12 +539,12 @@ describe("daily budgets", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx vitest run src/lib/millie/team/config.test.ts`
 Expected: FAIL — `Cannot find module './config'`.
 
-- [ ] **Step 3: Write the helpers and wire config**
+- [x] **Step 3: Write the helpers and wire config**
 
 ```ts
 // src/lib/millie/team/config.ts — #172: the allowlist is FAIL-CLOSED. An unset MILLIE_TEAM_ASKERS is an
@@ -578,9 +578,9 @@ In `src/lib/config.ts`, extend the `millie` block:
 
 with `import { parseAskers, parseBudget } from "@/lib/millie/team/config";` at the top of `config.ts`.
 
-- [ ] **Step 4: Run test to verify it passes** — `npx vitest run src/lib/millie/team/config.test.ts` → PASS. Then `npm test` → all green, `npx tsc --noEmit` clean.
+- [x] **Step 4: Run test to verify it passes** — `npx vitest run src/lib/millie/team/config.test.ts` → PASS. Then `npm test` → all green, `npx tsc --noEmit` clean.
 
-- [ ] **Step 5: Commit** — `git add src/lib/config.ts src/lib/millie/team/config.ts src/lib/millie/team/config.test.ts && git commit -m "#172: fail-closed team allowlist, per-asker daily budgets, Voyage key"`
+- [x] **Step 5: Commit** — `git add src/lib/config.ts src/lib/millie/team/config.ts src/lib/millie/team/config.test.ts && git commit -m "#172: fail-closed team allowlist, per-asker daily budgets, Voyage key"`
 
 ### Task B2: SQL guard (pure pre-check, never the boundary)
 
@@ -590,7 +590,7 @@ with `import { parseAskers, parseBudget } from "@/lib/millie/team/config";` at t
 **Interfaces:**
 - Produces: `guardSql(sql: string): { ok: true; sql: string } | { ok: false; reason: string }`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -618,9 +618,9 @@ describe("guardSql — a fast pre-check; the database is the real boundary", () 
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails** — `npx vitest run src/lib/millie/team/sql-guard.test.ts` → FAIL (module missing).
+- [x] **Step 2: Run to verify it fails** — `npx vitest run src/lib/millie/team/sql-guard.test.ts` → FAIL (module missing).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // src/lib/millie/team/sql-guard.ts — #172. A cheap pre-check so the model gets a readable reason
@@ -650,9 +650,9 @@ export function guardSql(sql: string): { ok: true; sql: string } | { ok: false; 
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes** — PASS. Note the `into` keyword refuses `select … into`; a false positive on a column named `into` is acceptable for a pre-check (the model sees the reason and rewrites).
+- [x] **Step 4: Run to verify it passes** — PASS. Note the `into` keyword refuses `select … into`; a false positive on a column named `into` is acceptable for a pre-check (the model sees the reason and rewrites).
 
-- [ ] **Step 5: Commit** — `git commit -am "#172: sql-guard pre-check (pure, tested)"` after `git add src/lib/millie/team/sql-guard.ts src/lib/millie/team/sql-guard.test.ts`.
+- [x] **Step 5: Commit** — `git commit -am "#172: sql-guard pre-check (pure, tested)"` after `git add src/lib/millie/team/sql-guard.ts src/lib/millie/team/sql-guard.test.ts`.
 
 ### Task B3: Pricing (usage → USD)
 
@@ -662,7 +662,7 @@ export function guardSql(sql: string): { ok: true; sql: string } | { ok: false; 
 **Interfaces:**
 - Produces: `type Usage = { input_tokens: number; output_tokens: number; cache_read_input_tokens?: number; cache_creation_input_tokens?: number }`, `costUsd(model: string, u: Usage): number`, `sumUsage(a: Usage, b: Usage): Usage`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -689,9 +689,9 @@ describe("sumUsage", () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails** — module missing.
+- [x] **Step 2: Run to verify it fails** — module missing.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // src/lib/millie/team/pricing.ts — #172. Per-lap usage → USD, stored in metrics.cost_usd on the log row
@@ -722,7 +722,7 @@ export function sumUsage(a: Usage, b: Usage): Required<Usage> {
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes**, then commit: `git add src/lib/millie/team/pricing.ts src/lib/millie/team/pricing.test.ts && git commit -m "#172: pricing (pure, tested)"`.
+- [x] **Step 4: Run to verify it passes**, then commit: `git add src/lib/millie/team/pricing.ts src/lib/millie/team/pricing.test.ts && git commit -m "#172: pricing (pure, tested)"`.
 
 ### Task B4: The schema catalog (generated index + hand-written rules)
 
@@ -734,7 +734,7 @@ export function sumUsage(a: Usage, b: Usage): Required<Usage> {
 **Interfaces:**
 - Produces: `CATALOG_SYSTEM_TEXT: string` (byte-stable), `describeTable(name: string): string | null`, `searchCatalog(q: string): string[]` (table.column or `at_fields:Key` hits), `RULES: string`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -764,9 +764,9 @@ describe("the schema catalog", () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails** — module missing.
+- [x] **Step 2: Run to verify it fails** — module missing.
 
-- [ ] **Step 3: Write the generator and run it once**
+- [x] **Step 3: Write the generator and run it once**
 
 ```js
 // scripts/gen-team-catalog.mjs — #172. Read-only. Writes src/lib/millie/team/catalog.generated.json from
@@ -790,7 +790,7 @@ console.log(`tables ${out.tables.length}, at_fields keys ${out.at_fields_keys.le
 
 Run: `node scripts/gen-team-catalog.mjs` → prints counts (expect ~95 tables/views the role can read, ~790 keys). Because `has_table_privilege('millie_team_ro', …)` filters, `member_profiles`, `olivia_web_messages` are absent and `member_profiles_team` is present — the test relies on that.
 
-- [ ] **Step 4: Write the catalog module**
+- [x] **Step 4: Write the catalog module**
 
 ```ts
 // src/lib/millie/team/catalog.ts — #172. The system-prompt catalog: a hand-written RULES block (the traps
@@ -846,9 +846,9 @@ export function searchCatalog(q: string): string[] {
 
 Add `"resolveJsonModule": true` to `tsconfig.json` `compilerOptions` if it is not already set (check with `grep resolveJsonModule tsconfig.json`).
 
-- [ ] **Step 5: Run to verify it passes** — `npx vitest run src/lib/millie/team/catalog.test.ts` → PASS. `npx tsc --noEmit` clean.
+- [x] **Step 5: Run to verify it passes** — `npx vitest run src/lib/millie/team/catalog.test.ts` → PASS. `npx tsc --noEmit` clean.
 
-- [ ] **Step 6: Commit** — `git add scripts/gen-team-catalog.mjs src/lib/millie/team/catalog.generated.json src/lib/millie/team/catalog.ts src/lib/millie/team/catalog.test.ts tsconfig.json && git commit -m "#172: schema catalog — generated index through the role's own eyes, hand-written rules"`.
+- [x] **Step 6: Commit** — `git add scripts/gen-team-catalog.mjs src/lib/millie/team/catalog.generated.json src/lib/millie/team/catalog.ts src/lib/millie/team/catalog.test.ts tsconfig.json && git commit -m "#172: schema catalog — generated index through the role's own eyes, hand-written rules"`.
 
 ### Task B5: Tools — definitions and runners
 
@@ -859,7 +859,7 @@ Add `"resolveJsonModule": true` to `tsconfig.json` `compilerOptions` if it is no
 - Consumes: `guardSql` (B2), `describeTable`/`searchCatalog` (B4), `sbRequest` (`@/lib/supabase`), `config.millie.voyageApiKey` (B1).
 - Produces: `TOOLS: Anthropic.Tool[]` (sorted by name, byte-stable), `type ToolCall = { id: string; name: string; input: unknown }`, `type TrailStep = { n: number; tool: "sql" | "catalog" | "semantic"; sql?: string; input?: unknown; rows?: number; ms: number; truncated?: boolean; error?: string }`, `runTool(call: ToolCall, n: number, deps?: ToolDeps): Promise<{ result: string; step: TrailStep; is_error: boolean }>`, `type ToolDeps = { teamSql: (sql: string, maxRows: number) => Promise<TeamSqlResult>; embed: (q: string) => Promise<number[] | null> }`, `defaultDeps()`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { describe, expect, it, vi } from "vitest";
@@ -938,9 +938,9 @@ describe("semantic_search", () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails** — module missing.
+- [x] **Step 2: Run to verify it fails** — module missing.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // src/lib/millie/team/tools.ts — #172. The three tools of Team research mode and how each is run.
@@ -1054,9 +1054,9 @@ export async function runTool(call: ToolCall, n: number, deps: ToolDeps = defaul
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes** — PASS; `npx tsc --noEmit` clean. (The role needs `USAGE` on schema `extensions` for `operator(extensions.<=>)` — the migration grants it.)
+- [x] **Step 4: Run to verify it passes** — PASS; `npx tsc --noEmit` clean. (The role needs `USAGE` on schema `extensions` for `operator(extensions.<=>)` — the migration grants it.)
 
-- [ ] **Step 5: Commit** — `git add src/lib/millie/team/tools.ts src/lib/millie/team/tools.test.ts && git commit -m "#172: the three tools — sql_query, schema_catalog, semantic_search"`.
+- [x] **Step 5: Commit** — `git add src/lib/millie/team/tools.ts src/lib/millie/team/tools.test.ts && git commit -m "#172: the three tools — sql_query, schema_catalog, semantic_search"`.
 
 ### Task B6: The turn log (two rows, per-lap and final PATCH, daily budget)
 
@@ -1067,7 +1067,7 @@ export async function runTool(call: ToolCall, n: number, deps: ToolDeps = defaul
 - Consumes: `sbRequest`, `TrailStep` (B5), `Usage` (B3).
 - Produces: `openTurn(args: { askerEmail: string; threadId: string; text: string; ackAt: string | null }): Promise<{ questionId: number; answerId: number }>`, `patchTrail(answerId: number, sources: TrailStep[], plan: unknown[]): Promise<void>`, `closeTurn(answerId: number, final: { answer_md: string; sources: TrailStep[]; plan: unknown[]; metrics: TurnMetrics; model: string; latency_ms: number; notes: string[] }): Promise<void>`, `type TurnMetrics = { model: string; thinking: boolean; laps: number; wall_ms: number; input_tokens: number; output_tokens: number; cache_read_tokens: number; cache_write_tokens: number; cost_usd: number; cut: string | null; transport: "stream" | "poll" }`, `dailySpend(askerEmail: string, dayIso: string): Promise<{ turns: number; usd: number }>`, `threadMode(askerEmail: string, threadId: string): Promise<string | null>`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -1120,9 +1120,9 @@ describe("dailySpend / threadMode", () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails** — module missing.
+- [x] **Step 2: Run to verify it fails** — module missing.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // src/lib/millie/team/log.ts — #172. Every Team turn is two rows in digest.olivia_web_messages, the same
@@ -1170,7 +1170,7 @@ export async function threadMode(askerEmail: string, threadId: string): Promise<
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes**, `npx tsc --noEmit` clean, then commit: `git add src/lib/millie/team/log.ts src/lib/millie/team/log.test.ts && git commit -m "#172: turn log — two rows, per-lap trail, daily spend"`.
+- [x] **Step 4: Run to verify it passes**, `npx tsc --noEmit` clean, then commit: `git add src/lib/millie/team/log.ts src/lib/millie/team/log.test.ts && git commit -m "#172: turn log — two rows, per-lap trail, daily spend"`.
 
 ### Task B7: The loop (injected client, caps, cache layout, events)
 
@@ -1181,7 +1181,7 @@ export async function threadMode(askerEmail: string, threadId: string): Promise<
 - Consumes: `TOOLS`, `runTool`, `ToolDeps`, `TrailStep` (B5); `costUsd`, `sumUsage`, `Usage` (B3); `CATALOG_SYSTEM_TEXT` (B4).
 - Produces: `type LoopEvent = { type: "started" } | { type: "tool_call"; n: number; name: string; input: unknown } | { type: "tool_result"; step: TrailStep } | { type: "text"; delta: string } | { type: "lap"; lap: number; usage: Usage; cache_read: number }`, `runResearchLoop(args: { question: string; askerEmail: string; history: Array<{ role: "user" | "assistant"; content: string }>; model: string; thinking?: boolean; client: LoopClient; deps?: ToolDeps; onEvent: (e: LoopEvent) => void; onTrail: (sources: TrailStep[], plan: unknown[]) => Promise<void>; signal?: AbortSignal }): Promise<{ answer: string; sources: TrailStep[]; plan: unknown[]; laps: number; usage: Required<Usage>; cost_usd: number; cut: string | null }>`, `type LoopClient = { stream: (params: Anthropic.MessageCreateParamsStreaming) => MessageStreamLike }` where `MessageStreamLike` exposes `[Symbol.asyncIterator]()` over raw stream events and `finalMessage(): Promise<Anthropic.Message>` — the shape of `client.messages.stream()` in SDK 0.100.1.
 
-- [ ] **Step 1: Write the failing test** (a fake client that scripts two laps: a tool call, then a final text; plus the Airtable runtime spy)
+- [x] **Step 1: Write the failing test** (a fake client that scripts two laps: a tool call, then a final text; plus the Airtable runtime spy)
 
 ```ts
 import { describe, expect, it, vi } from "vitest";
@@ -1256,9 +1256,9 @@ describe("runResearchLoop", () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails** — module missing.
+- [x] **Step 2: Run to verify it fails** — module missing.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // src/lib/millie/team/loop.ts — #172. A manual tool-use loop over client.messages.stream() (SDK 0.100.1).
@@ -1360,9 +1360,9 @@ export async function runResearchLoop(a: {
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes** — `npx vitest run src/lib/millie/team/loop.test.ts` → PASS; `npx tsc --noEmit` clean (adjust the `Anthropic` type imports to the SDK's exported names if `MessageStreamEvent`/`TextBlockParam` differ in 0.100.1: check `node_modules/@anthropic-ai/sdk/resources/messages/messages.d.ts`).
+- [x] **Step 4: Run to verify it passes** — `npx vitest run src/lib/millie/team/loop.test.ts` → PASS; `npx tsc --noEmit` clean (adjust the `Anthropic` type imports to the SDK's exported names if `MessageStreamEvent`/`TextBlockParam` differ in 0.100.1: check `node_modules/@anthropic-ai/sdk/resources/messages/messages.d.ts`).
 
-- [ ] **Step 5: Commit** — `git add src/lib/millie/team/loop.ts src/lib/millie/team/loop.test.ts && git commit -m "#172: the research loop — injected client, caps, cache layout, trail events, Airtable runtime spy"`.
+- [x] **Step 5: Commit** — `git add src/lib/millie/team/loop.ts src/lib/millie/team/loop.test.ts && git commit -m "#172: the research loop — injected client, caps, cache layout, trail events, Airtable runtime spy"`.
 
 ### Task B8: Answer guards — "Data as of" footer and the no-rows flag
 
@@ -1373,7 +1373,7 @@ export async function runResearchLoop(a: {
 - Consumes: `TrailStep` (B5), `ToolDeps.teamSql`.
 - Produces: `dataAsOf(teamSql: ToolDeps["teamSql"]): Promise<string>` (a Markdown line), `noRowsFlag(answer: string, sources: TrailStep[]): boolean`, `FRESHNESS_SQL: string`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { describe, expect, it, vi } from "vitest";
@@ -1407,9 +1407,9 @@ describe("noRowsFlag", () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails** — module missing.
+- [x] **Step 2: Run to verify it fails** — module missing.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 ```ts
 // src/lib/millie/team/footer.ts — #172. Two guards the ROUTE applies to every answer, so they hold even
@@ -1444,7 +1444,7 @@ export function noRowsFlag(answer: string, sources: TrailStep[]): boolean {
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes**, then commit: `git add src/lib/millie/team/footer.ts src/lib/millie/team/footer.test.ts && git commit -m "#172: data-as-of footer and the no-rows flag (code, not prompt)"`.
+- [x] **Step 4: Run to verify it passes**, then commit: `git add src/lib/millie/team/footer.ts src/lib/millie/team/footer.test.ts && git commit -m "#172: data-as-of footer and the no-rows flag (code, not prompt)"`.
 
 ### Task B9: The request gate and the route
 
@@ -1456,7 +1456,7 @@ export function noRowsFlag(answer: string, sources: TrailStep[]): boolean {
 - Consumes: `readSessionCookie`, `isStaffEmail`, `config.millie.*` (B1), `dailySpend`/`threadMode`/`openTurn`/`patchTrail`/`closeTurn` (B6), `runResearchLoop` (B7), `dataAsOf`/`noRowsFlag` (B8), `defaultDeps` (B5), `MAX_TEXT` (`@/lib/millie/web-chat`).
 - Produces: `gateRequest(input: { email: string | null; askers: string[]; text: string; threadId: string; existingMode: string | null; spend: { turns: number; usd: number }; limits: { turns: number; usd: number } }): { ok: true } | { ok: false; status: number; error: string }` (pure); the route's NDJSON event contract: one JSON object per line — `{type:"started",turn_id,thread_id,transport}` · `{type:"tool_call",n,name,input}` · `{type:"tool_result",step}` · `{type:"text",delta}` · `{type:"hb",t}` · `{type:"answer",...DoorResponse-shaped}` · `{type:"done"}`; or, in poll transport, an immediate JSON body `{turn_id, thread_id, poll:true}`.
 
-- [ ] **Step 1: Write the failing gate test**
+- [x] **Step 1: Write the failing gate test**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -1494,9 +1494,9 @@ describe("gateRequest — order: session → staff → allowlist → text → th
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails** — module missing.
+- [x] **Step 2: Run to verify it fails** — module missing.
 
-- [ ] **Step 3: Implement the gate**
+- [x] **Step 3: Implement the gate**
 
 ```ts
 // src/lib/millie/team/gate.ts — #172. The request gate as a pure function so every refusal is a test,
@@ -1521,9 +1521,9 @@ export function gateRequest(i: { email: string | null; askers: string[]; text: s
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes**, then commit: `git add src/lib/millie/team/gate.ts src/lib/millie/team/gate.test.ts && git commit -m "#172: the request gate, pure and tested"`.
+- [x] **Step 4: Run to verify it passes**, then commit: `git add src/lib/millie/team/gate.ts src/lib/millie/team/gate.test.ts && git commit -m "#172: the request gate, pure and tested"`.
 
-- [ ] **Step 5: Write the route** (no unit test — it is wiring; its behaviour is proven live in Step 7)
+- [x] **Step 5: Write the route** (no unit test — it is wiring; its behaviour is proven live in Step 7)
 
 ```ts
 // src/app/api/admin/millie/research/route.ts — #172 Team research mode.
@@ -1625,9 +1625,9 @@ export async function POST(req: NextRequest) {
 }
 ```
 
-- [ ] **Step 6: Type-check and test** — `npx tsc --noEmit` clean, `npm test` green, `npm run lint` clean.
+- [x] **Step 6: Type-check and test** — `npx tsc --noEmit` clean, `npm test` green, `npm run lint` clean.
 
-- [ ] **Step 7: Live proof of the route (after the client in B10 — or with curl now):** merge to `main`, confirm `/api/version`, then with the staff cookie:
+- [x] **Step 7: Live proof of the route (after the client in B10 — or with curl now):** merge to `main`, confirm `/api/version`, then with the staff cookie:
 
 ```bash
 curl -sN -H "Cookie: mds_digest_session=<value>" -H "Content-Type: application/json" \
@@ -1636,7 +1636,7 @@ curl -sN -H "Cookie: mds_digest_session=<value>" -H "Content-Type: application/j
 ```
 Expected: `started`, `tool_call`, `tool_result`, `hb` lines, an `answer` with the footer, `done`. Then in Supabase: `select id, role, mode, asker_email, notes, metrics->>'cost_usd', jsonb_array_length(sources) from digest.olivia_web_messages where thread_id='t_proof1' order by id` → two rows, `mode='team'`, asker = your email, cost > 0, sources count = the tool calls you saw. A non-allowlisted staff account must get 403; no cookie must get 403.
 
-- [ ] **Step 8: Commit** — `git add src/app/api/admin/millie/research/route.ts && git commit -m "#172: the research route — gate, two log rows, NDJSON stream with heartbeats, poll transport"`.
+- [x] **Step 8: Commit** — `git add src/app/api/admin/millie/research/route.ts && git commit -m "#172: the research route — gate, two log rows, NDJSON stream with heartbeats, poll transport"`.
 
 ### Task B10: The client — Team unlock, stream reader, trail panel
 
@@ -1651,7 +1651,7 @@ Expected: `started`, `tool_call`, `tool_result`, `hb` lines, an `answer` with th
 - Consumes: the route's NDJSON contract (B9), `TrailStep` shape (B5).
 - Produces: `parseNdjsonChunk(buffer: string, chunk: string): { lines: unknown[]; rest: string }`, `applyResearchEvent(turn: ChatTurn, ev: ResearchEvent): ChatTurn`, `type ResearchEvent = { type: string; [k: string]: unknown }`, `trailFromSources(sources: unknown[]): TrailStep[]` (sources may be legacy `string[]` for non-team turns → `[]`).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 // src/components/tools/ask-millie/chat-model.test.ts
@@ -1696,9 +1696,9 @@ describe("trailFromSources", () => {
 });
 ```
 
-- [ ] **Step 2: Run to verify it fails** — the three exports do not exist.
+- [x] **Step 2: Run to verify it fails** — the three exports do not exist.
 
-- [ ] **Step 3: Implement in `chat-model.ts`** (add at the end; extend `ChatTurn` with `trail?: TrailStep[]` and `shapeTurns` to set `last.trail = trailFromSources(r.sources ?? [])`)
+- [x] **Step 3: Implement in `chat-model.ts`** (add at the end; extend `ChatTurn` with `trail?: TrailStep[]` and `shapeTurns` to set `last.trail = trailFromSources(r.sources ?? [])`)
 
 ```ts
 export type TrailStep = { n: number; tool: "sql" | "catalog" | "semantic"; sql?: string; input?: unknown; rows?: number; ms: number; truncated?: boolean; error?: string };
@@ -1740,9 +1740,9 @@ export function applyResearchEvent(t: ChatTurn, ev: ResearchEvent): ChatTurn {
 
 In `src/lib/millie/web-chat.ts` change `WebTurn.sources` to `sources: unknown[]` (Team rows carry objects, other rows strings) and keep `ChatTurn.sources: string[]` for chips by filtering strings in `shapeTurns`: `last.sources = (r.sources ?? []).filter((s): s is string => typeof s === "string"); last.trail = trailFromSources(r.sources ?? []);`.
 
-- [ ] **Step 4: Run to verify it passes** — `npx vitest run src/components/tools/ask-millie/chat-model.test.ts` → PASS.
+- [x] **Step 4: Run to verify it passes** — `npx vitest run src/components/tools/ask-millie/chat-model.test.ts` → PASS.
 
-- [ ] **Step 5: The Trail panel**
+- [x] **Step 5: The Trail panel**
 
 ```tsx
 // src/components/tools/ask-millie/Trail.tsx — #172. "Queries run": the trail beneath a Team answer.
@@ -1776,7 +1776,7 @@ export function Trail({ steps }: { steps: TrailStep[] }): React.ReactElement | n
 }
 ```
 
-- [ ] **Step 6: Wire `AskMillie.tsx`** — the exact edits:
+- [x] **Step 6: Wire `AskMillie.tsx`** — the exact edits:
   1. `const API = "/api/admin/millie/chat";` → add `const RESEARCH_API = "/api/admin/millie/research";`.
   2. `TARGET_COPY.team`: `body` → "Unrestricted — MDS team only. Reads closed WhatsApp groups, private call transcripts, member records and partner terms, and it will name people. Never paste it anywhere outside the team." ; `placeholder` → "Ask the warehouse anything — it will show every query it ran…" ; `empty` → "Every Team answer carries the queries it ran. Read the notice, acknowledge, then ask."
   3. Line ~826 `const disabled = t === "team";` → `const disabled = false;` and drop the `title={disabled ? …}`.
@@ -1787,11 +1787,11 @@ export function Trail({ steps }: { steps: TrailStep[] }): React.ReactElement | n
   8. Render `<Trail steps={turn.trail ?? []} />` under a Team answer's Markdown, above the copy button; the Team copy button copies the answer + "\n\nQueries run:\n" + each step's SQL.
   9. `listThreads` stays unchanged (it already maps `mode==='team'` → the Team target).
 
-- [ ] **Step 7: Help copy** — in `src/lib/tools/ask-millie-help.ts`: change the overview sentence "MDS Team, the unrestricted one, is not switched on yet." to "MDS Team answers from the whole warehouse with no member gates, runs its own research loop rather than the WhatsApp workflow, and shows every query it ran beneath the answer."; replace the FAQ "WHY IS MDS TEAM GREYED OUT?" with "WHAT DOES TEAM MODE READ?" → "Everything in the Supabase warehouse, exact revenue, contact details and billing included, except a short list that stays closed: removal reasons, lifetime value, internal notes, lead scoring. It reads a copy, not Airtable live — the footer says how old the copy is. Every turn is logged under your email with the queries it ran."
+- [x] **Step 7: Help copy** — in `src/lib/tools/ask-millie-help.ts`: change the overview sentence "MDS Team, the unrestricted one, is not switched on yet." to "MDS Team answers from the whole warehouse with no member gates, runs its own research loop rather than the WhatsApp workflow, and shows every query it ran beneath the answer."; replace the FAQ "WHY IS MDS TEAM GREYED OUT?" with "WHAT DOES TEAM MODE READ?" → "Everything in the Supabase warehouse, exact revenue, contact details and billing included, except a short list that stays closed: removal reasons, lifetime value, internal notes, lead scoring. It reads a copy, not Airtable live — the footer says how old the copy is. Every turn is logged under your email with the queries it ran."
 
-- [ ] **Step 8: Verify in the browser** — `npm run build` clean; run locally against `.env.local` with your own email in `MILLIE_TEAM_ASKERS`; open `/admin/ask-millie?target=team`; the amber notice locks the composer; acknowledge; ask "How many current members per chapter?"; watch the trail fill and the answer stream; reload the page and confirm the thread reloads with the same trail (byte-equal to the log row's `sources`). Then merge to `main` (deploy) and repeat once on `digest.mds.co`.
+- [x] **Step 8: Verify in the browser** — `npm run build` clean; run locally against `.env.local` with your own email in `MILLIE_TEAM_ASKERS`; open `/admin/ask-millie?target=team`; the amber notice locks the composer; acknowledge; ask "How many current members per chapter?"; watch the trail fill and the answer stream; reload the page and confirm the thread reloads with the same trail (byte-equal to the log row's `sources`). Then merge to `main` (deploy) and repeat once on `digest.mds.co`.
 
-- [ ] **Step 9: Commit** — `git add -A src/components/tools/ask-millie src/lib/tools/ask-millie-help.ts src/lib/millie/web-chat.ts && git commit -m "#172: Team target unlocked — notice + acknowledge, research stream, queries-run trail, poll fallback"`.
+- [x] **Step 9: Commit** — `git add -A src/components/tools/ask-millie src/lib/tools/ask-millie-help.ts src/lib/millie/web-chat.ts && git commit -m "#172: Team target unlocked — notice + acknowledge, research stream, queries-run trail, poll fallback"`.
 
 ### Task B11: The twenty-question proof, then docs and side tickets
 
@@ -1800,17 +1800,17 @@ export function Trail({ steps }: { steps: TrailStep[] }): React.ReactElement | n
 - Modify (Scorecard): `OLIVIA_SPRINT_4.md` (#172 block), `OLIVIA_HANDBOOK.md` §3 / §4.3 / §6.2 / §11 / §13, `OLIVIA_SHAREABLE_FIELDS.md` (Team column), `SESSION_LOG_OLIVIA.md`, `SESSION_LOG.md`
 - Delete (mds-digest-web): `src/app/api/admin/millie/research/probe/route.ts`
 
-- [ ] **Step 1: The questions** — the twenty in `TEAM_RESEARCH_172_DESIGN.md` §8 come from the questions reader; write them to `questions.json` with `<member>` / `<event>` placeholders, the tables each needs, the expected shape and the scoring rule. Have two or three staff read them; record every swap in `scores.md` ("N of 20 replaced by staff").
+- [x] **Step 1: The questions** — the twenty in `TEAM_RESEARCH_172_DESIGN.md` §8 come from the questions reader; write them to `questions.json` with `<member>` / `<event>` placeholders, the tables each needs, the expected shape and the scoring rule. Have two or three staff read them; record every swap in `scores.md` ("N of 20 replaced by staff").
 
-- [ ] **Step 2: References, back-to-back with the runs** — for each question: write the reference SELECT, run it through the Supabase MCP (read-only), save `{sql, rows, ran_at}`; **immediately** POST the same question through the route with your own staff cookie (never Andy's) via a small runner that captures the `answer` event and the log row's `metrics`. Q3, Q14, Q15 references are hand-verified (the `sender_member` ↔ `at_member_id` bridge and `fb_member_map` coverage were never proven by a join). Q11–Q13 (semantic) get four-judge PASS/PARTIAL/FAIL with hand re-verification of every non-PASS, per `OLIVIA_SMOKE_2026-08-21.md`.
+- [x] **Step 2: References, back-to-back with the runs** — for each question: write the reference SELECT, run it through the Supabase MCP (read-only), save `{sql, rows, ran_at}`; **immediately** POST the same question through the route with your own staff cookie (never Andy's) via a small runner that captures the `answer` event and the log row's `metrics`. Q3, Q14, Q15 references are hand-verified (the `sender_member` ↔ `at_member_id` bridge and `fb_member_map` coverage were never proven by a join). Q11–Q13 (semantic) get four-judge PASS/PARTIAL/FAIL with hand re-verification of every non-PASS, per `OLIVIA_SMOKE_2026-08-21.md`.
 
-- [ ] **Step 3: Score** — mechanical for Q1–Q9, Q14–Q20 (exact counts, set equality, top-N overlap, required caveat present); re-execute every logged SQL through `team_sql` (every one must run); validate every quoted snippet by position in its source row; pull `metrics` for all twenty; assert `cache_read_tokens > 0` on lap 2 for every multi-lap turn; run the leak gate (exit code). **Bar:** PASS ≥ 16/20 · Q18/Q19/Q20 PASS via `sql_query` · 0 fabricated sources · 20/20 logged with asker + cost + laps · p50 < 90 s · p95 < 5 min · mean cost < $0.30. Every cap hit or cut is recorded with its partial trail as a transport finding.
+- [x] **Step 3: Score** — mechanical for Q1–Q9, Q14–Q20 (exact counts, set equality, top-N overlap, required caveat present); re-execute every logged SQL through `team_sql` (every one must run); validate every quoted snippet by position in its source row; pull `metrics` for all twenty; assert `cache_read_tokens > 0` on lap 2 for every multi-lap turn; run the leak gate (exit code). **Bar:** PASS ≥ 16/20 · Q18/Q19/Q20 PASS via `sql_query` · 0 fabricated sources · 20/20 logged with asker + cost + laps · p50 < 90 s · p95 < 5 min · mean cost < $0.30. Every cap hit or cut is recorded with its partial trail as a transport finding.
 
-- [ ] **Step 4: Delete the probe route**, `npm test` + `npm run build` green, merge to `main`.
+- [x] **Step 4: Delete the probe route**, `npm test` + `npm run build` green, merge to `main`.
 
-- [ ] **Step 5: Docs on the same branch** — `OLIVIA_SPRINT_4.md` #172: story unchanged, the AC table (1 exact revenue/contact/billing facts returned — Q18–Q20 · 2 anonymous/member/WhatsApp gain nothing — the 13 gate checks · 3 disclaimer acknowledged per session, every turn stored with asker + mode — the log rows · 4 the Team column — `member_profiles_team`), before/after (0 Team turns → 20 logged; `400 "Team mode ships with #172"` → live behind the allowlist), the proof numbers, the deferred list with triggers (design §10). `OLIVIA_HANDBOOK.md`: §3 a "Team lane = the Render route, not the n8n door" paragraph; §4.3 rows for `millie_team_ro`, `team_sql`, `member_profiles_team`; §6.2 grant table; §11 the ruling row (Team = SQL + catalog + semantic over the deny-list view); §13 the traps learned (set_config binding, views run as owner, the HTTP-edge cap number from A1 check 8). `OLIVIA_SHAREABLE_FIELDS.md`: the Team column — opens exact revenue, contacts, Stripe/billing; keeps closed removal reasons, LTV, internal notes, lead scoring, enforced by the view + gate. Stream log entry + one index line. File the four side tickets from design §11.
+- [x] **Step 5: Docs on the same branch** — `OLIVIA_SPRINT_4.md` #172: story unchanged, the AC table (1 exact revenue/contact/billing facts returned — Q18–Q20 · 2 anonymous/member/WhatsApp gain nothing — the 13 gate checks · 3 disclaimer acknowledged per session, every turn stored with asker + mode — the log rows · 4 the Team column — `member_profiles_team`), before/after (0 Team turns → 20 logged; `400 "Team mode ships with #172"` → live behind the allowlist), the proof numbers, the deferred list with triggers (design §10). `OLIVIA_HANDBOOK.md`: §3 a "Team lane = the Render route, not the n8n door" paragraph; §4.3 rows for `millie_team_ro`, `team_sql`, `member_profiles_team`; §6.2 grant table; §11 the ruling row (Team = SQL + catalog + semantic over the deny-list view); §13 the traps learned (set_config binding, views run as owner, the HTTP-edge cap number from A1 check 8). `OLIVIA_SHAREABLE_FIELDS.md`: the Team column — opens exact revenue, contacts, Stripe/billing; keeps closed removal reasons, LTV, internal notes, lead scoring, enforced by the view + gate. Stream log entry + one index line. File the four side tickets from design §11.
 
-- [ ] **Step 6: Close** — Scorecard branch merged to `main` (`git switch main && git pull --ff-only && git merge --no-ff <branch> && git push`), Andy gets one short message: results, the AC checklist, before/after, the deferred list, the MCP follow-on ticket number.
+- [x] **Step 6: Close** — Scorecard branch merged to `main` (`git switch main && git pull --ff-only && git merge --no-ff <branch> && git push`), Andy gets one short message: results, the AC checklist, before/after, the deferred list, the MCP follow-on ticket number.
 
 ---
 

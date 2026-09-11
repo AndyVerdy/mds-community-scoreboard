@@ -4,6 +4,57 @@
 
 
 
+## 2026-09-11 (early) · #172 Milestone B — Team research mode BUILT, PROVEN 20/20 through the route, LIVE for Andy · #172 CLOSED
+
+**Andy's asks, in order:** "continue" (taken as the go for Milestone B) → "a small test page on digest.mds.co - link?" → the Render
+screenshot "this?" (MILLIE_TEAM_ASKERS = andy@mds.co — yes) → a Voyage key pasted in chat (refused to type it anywhere; asked him
+to add it himself and consider rotating) → "render done not to voyage on render" → "VOYAGE_API_KEY already existed" → "whats this
+19 vulnerabilities" (npm audit on the build — pre-existing, filed #192).
+
+**Execution: inline, test-first, plan Tasks B1–B11.** Nine test files written from the plan and watched to fail (9 files, module
+missing) → implementations → 39/39 → then the client tests (67/67 across the team dir + ask-millie) → whole suite **1,389/1,389**,
+`tsc` clean, eslint 0 errors on the touched files, build green. Web commits `fd93ebc` (B1–B3) · `5cb0508` (B4–B5, catalog generated
+through the role: 114 relations, 796 keys) · `26df817` (B6–B9a) · `61437a8` (B9–B10 route + client) · `66c183b` (rule 2 unnest,
+started-line dedupe) · merge **`0aa34c0` = the deploy** · probe deleted → merge **`5c412c6`**.
+
+**Local proof before the deploy** (a throwaway staff identity `qa-172@mds.co` on a dev-only `.env.development.local` allowlist, a
+cookie minted with the app's own `SESSION_SECRET` against localhost only — never Andy's session): 403 no cookie · 403 staff off the
+allowlist · 400 empty text · a streamed turn (`started · tool_call · tool_result · lap · text · answer · done`, 23,311 cached tokens
+on lap 2) · two log rows (`mode='team'`, `route='team-research'`, ack + cost + laps + transport) · the Browser pane (cookie set via
+`document.cookie`): notice → **I understand** → the answer streamed with a 4-step trail (3 sql + 1 catalog) → reload rebuilt the
+thread from the log (trail byte-equal to `sources`). The dev server ran from Bash on port 3172 because the launch config lives in
+the peer's parked checkout. **Pre-existing hydration error** on the header title noted → #193.
+
+**The gap the proof found — and fixed:** views run as their owner for TABLES, but a function called inside a view runs as the CALLER.
+`member_identity`/`member_phones` call `is_active_member_status(text)`; the role had no EXECUTE, so the identity bridge (rule 4)
+died with 42501 (Q2/Q3 references and the model's first bridging attempts). Migration `team_sql_172b_view_helper_20260910` grants
+that one pure IMMUTABLE helper; check 19 (view readable) + check 20 / a gate check pin the role's private EXECUTE set to exactly
+`digest.is_active_member_status(p_status text)` (first rendering lacked the schema, then the parameter name — pinned literally).
+`member_link(text)` reads `member_profiles` in its body → `member_links` stays dark → #197.
+
+**The twenty-question proof** (`~/mds-team-proof/questions20.json`, `run20.mjs`; references through `team_sql` in the same minute,
+question POSTed through the local route; Q2/Q3/Q12 re-run after the grant and a reference fix — `videos_catalog` has no
+`published_at`, it is `app_created_at`): **PASS 20/20** on the rules — 17 mechanical exact/set/top-N, Q11–Q13 judged with every
+example traced (Q11's three `fb_posts` ids exist with those authors/dates and the "3K monthly spend" comment is on the SQP post;
+Q12's titles exist; Q13's 41/35/30 match `olivia_question_labels`). Q5 and Q8 differ from the inclusive reference by exactly the
+7 paused/not-renewing members — exact under the rulebook's strict definition (verified by SQL). Cosmetic: Q3 reported 82 of
+Khalid's 123 messages (two Airtable ids), Q14 wrote "(23)" over a 21-name list, Q12 opened with "This confirms…". Metrics: laps
+2–8 · **p50 8.7 s · p95 46.9 s · max 81.2 s** · **mean $0.063**, max $0.48 (Q20, 8 laps) · cache hit lap 2 **20/20** · **0 cuts** ·
+**45/45 logged SQL re-execute** · **23/23 logged with asker + cost + laps** · the model itself flagged $1B revenue values and an
+"andy v test" row → #194. The 50 `qa-172` rows were deleted afterwards.
+
+**Prod proof, in Andy's own Chrome tab (claude-in-chrome, no cookie handling):** rows 279–282 under `andy@mds.co`, `transport=stream`
+— revenue bands 243/178/137/98/70 + one member's exact revenue and email (2 sql, 2 laps, $0.018); "TikTok Shop affiliates" through
+`semantic_search` + 3 sql (4 laps, $0.043) — the Voyage lane is ON in prod. Deploy poll: `0aa34c0` live 22:36 CDT; Andy's manual
+redeploy with the env at 22:24 CDT (his screenshot).
+
+**Gate 367/0 exit 0** (21 `#172` checks). `scripts/test_172_team_sql.py` 20/20. Prod n8n `b4db92d0` untouched (hash pin green).
+
+**Closed:** #172 with results · AC checklist (4/4 met; AC 4 awaits Andy's signature on two calls) · before → after. **Filed:**
+#192 npm audit (Next critical) · #193 hydration warning · #194 revenue data quality · #195 PUBLIC-executable digest functions ·
+#196 `db/` count drift + stale Vercel comment · #197 `member_links` dark · #198 the MCP door. **NEXT = Andy's pick** (#198 is his
+original ask; #190 sprint-closure eval runs last).
+
 ## 2026-09-10 (night) · #172 Milestone A — DOABLE · the read-only SQL surface is live on prod · transport = stream · spike 5/5
 
 **Andy's asks, in order:** "continue working on millie - #172 Team research mode, Milestone A" (briefing) → "go" → "too technical

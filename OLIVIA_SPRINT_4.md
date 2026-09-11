@@ -248,6 +248,56 @@ A parser that is wrong is worse than no tool, because people will trust it. This
 6. The page degrades honestly: if a source cannot be read, it says so rather than showing a shorter list.
 7. `tsc`, lint, tests and `next build` clean. Merge = Render deploy.
 
+### #192 · `npm audit` on every Render build: 1 critical (Next.js 16.2.4), 8 high — bump and re-prove
+**🟠 S2 · size S — filed 2026-09-10 from the #172 deploy log (Andy: "whats this 19 vulnerabilities").**
+
+*As the owner, the web app runs on a Next.js without published DoS / middleware-bypass advisories, and the audit line on a build is
+zero-critical.* The critical is `next` itself (two advisories); the highs are transitive (`sharp` direct, `postcss`, `undici`,
+`js-yaml`, `brace-expansion`, `browserslist`, `fast-uri`, `ip-address`). None arrived with #172 (the lockfile last changed in
+`b648d4c`). The middleware-bypass advisory does not open `/admin`: every admin layout and API route checks the session cookie
+itself. Fix = `next` + `sharp` bumps, then `npm audit fix`, tests green, build green, one deploy. **Acceptance:** audit line shows 0
+critical / 0 high on the Render build; 1,389 tests green; `/api/version` shows the new sha.
+
+### #193 · Ask Millie: the header title hydrates from the client and React logs a hydration error on every load with a thread
+**🟡 S3 · size XS — filed 2026-09-10 from the #172 local proof (Next dev overlay: `ToolHeader.tsx:185`, client "How many current…"
+vs server "…").** Pre-existing (the shell title is set before hydration finishes). Cosmetic in prod (React regenerates the tree),
+noisy in dev. *As a developer, opening a thread does not throw a hydration error.* **Acceptance:** no hydration error in the console
+on `/admin/ask-millie` with a saved thread, on dev and prod.
+
+### #194 · Revenue data quality: `Most Recent Revenue` holds implausible values and a test row
+**🟡 S3 · size S — filed 2026-09-10 from a Team research answer (the model flagged it unprompted).** Five current members carry
+`Most Recent Revenue` between $500,000,000 and $1,000,000,000 and a row named "andy v test" carries $1.2B. Airtable is the SoT, so
+this is Andy's/ops' to correct; the mirror only copies it. *As staff, a "top members by revenue" question returns members, not
+data-entry errors.* **Acceptance:** the test row is gone from the Members table; the five values are verified or corrected; the
+Team answer to "top 5 by most recent revenue" names real figures.
+
+### #195 · 31 of 138 `digest` functions are EXECUTE-able by anon/authenticated while PostgREST exposes `digest`
+**🟠 S2 · size S — filed 2026-09-10 (design §11 of #172).** Includes SECURITY DEFINER trigger functions (`content_delete_*`,
+`content_ingest_*`, `tg_member_event_*`) and `olivia_front_door_v2`. Trigger functions cannot be called directly, but the surface
+is wider than the #62 revoke intended. *As the owner, only `service_role` may execute a `digest` function unless it is a deliberate
+public helper.* **Acceptance:** a gate check lists every anon/authenticated-executable `digest` function against an explicit
+allowlist; everything else revoked with `CREATE OR REPLACE`-safe grants; gate green.
+
+### #196 · `db/` drift: README says 104 functions, `db/` holds 139; `db/rls.sql` lists 40 RLS tables, live has 33
+**🟡 S3 · size XS — filed 2026-09-10 (design §11 of #172).** Housekeeping: regenerate the README counts from the export and make
+`db_export_schema.py` write them; add the live RLS count to the drift check. Also the stale "before Vercel cuts us" comment in
+`src/app/api/admin/millie/chat/route.ts` (the app is on Render) — one-line fix, ride along.
+
+### #197 · `member_links` and any view that calls a raw-table helper are dark in Team mode
+**🟡 S3 · size XS — filed 2026-09-10 from the #172 proof.** `digest.member_link(text)` reads `member_profiles` inside its body, so
+`member_links` fails with 42501 for `millie_team_ro` even though the view itself is granted. Either point the helper at
+`member_profiles_team` or document the view as Team-dark in the catalog. *As staff, a catalog table that is listed is readable.*
+**Acceptance:** `select * from digest.member_links limit 1` through `team_sql` returns 200, or the catalog marks it dark.
+
+### #198 · The MCP door: the Team research principal on a second transport (Andy: "why not to make api and our MCP so i can use
+it with claude?")
+**🟠 S2 · size M — filed 2026-09-10 (design §10 of #172, Andy's original ask).** Same role, same `team_sql`, same deny-list view
+and log table, exposed as an MCP server (or an authenticated API) so Andy's Claude can ask the warehouse directly. Needs its own
+identity story (a research-only PostgREST role or a bearer bound to a staff email), the same per-asker budget, and the same trail
+in `olivia_web_messages`. *As Andy, I ask the warehouse from my own Claude and every query is logged under my name.* **Acceptance:**
+one MCP tool call from Claude Desktop returns a Team answer with its trail; the log row carries the asker; the leak gate's `#172`
+section stays green; WhatsApp/member/anon gain nothing.
+
 ### #191 · The nightly eval is dead — #105's webhook secret refuses all 220 posts
 **🔴 S1 · size XS — filed 2026-09-10 from the #123 investigation.**
 
@@ -1186,7 +1236,8 @@ posts with no path to an answer → a Draft-an-answer action on every row.
 ### #172 · Team chat — everything-access mode
 
 **🔴 S1 · size L — filed 2026-09-07 (Andy: "I need team mode to include all categories - everything. That's why we
-need a huge disclaimer" · "delivery 3: Team chat").** Depends on #169's door.
+need a huge disclaimer" · "delivery 3: Team chat").** Depends on #169's door. **✅ CLOSED 2026-09-10 — live on
+`digest.mds.co/admin/ask-millie?target=team` behind `MILLIE_TEAM_ASKERS`; close block below the Milestone A notes.**
 
 **Story.** As MDS staff, I want a Team mode where Millie answers from everything we hold — the three internal
 categories included: exact revenue from our records, contact details, Stripe and billing — behind a disclaimer
@@ -1245,6 +1296,62 @@ already has answers starts a new session — one thread never mixes an unrestric
   an event placeholder (the spike used a current member picked by hash), 2–3 staff validating the twenty questions.
 - **NEXT = Milestone B** (plan Tasks B1–B11, ~two days): route + loop + three tools + log + client + catalog +
   docs, then the twenty questions. The prod hash pin leaves with the Milestone B merge (the ticket makes no n8n edit).
+
+#### ✅ Close block (2026-09-10, Milestone B — same day as A; Andy: "continue" · "feel free to apply and merge")
+
+**What shipped.** `mds-digest-web` main `0aa34c0` (the tool) → `5c412c6` (probe removed): `POST /api/admin/millie/research`
+— session → staff → FAIL-CLOSED allowlist (`MILLIE_TEAM_ASKERS`) → text → thread-mode → per-asker daily budget (40 turns /
+$10) → two `olivia_web_messages` rows (`mode='team'`, `route='team-research'`) → a `claude-sonnet-5` tool loop (15 laps, 8 min,
+8k out; sorted tools + cached catalog block) with `sql_query` (→ `digest.team_sql`), `schema_catalog` (static, 114 relations, 796
+keys, generated through the role's own eyes) and `semantic_search` (Voyage + pgvector through the same RPC) → NDJSON stream with
+10-s heartbeats (poll transport switchable by env) → per-lap trail PATCH → final PATCH with `metrics` (tokens, cost, laps, wall,
+cut, transport) and the code-computed "Data as of" footer + `no_rows` flag. Client: the Team target unlocked, amber notice + **I
+understand** once per browser session (stamped `ack:<iso>` into the turn's notes), the answer streams, **Queries run** renders the
+SAME array the log row stores, reload rebuilds the thread from the log, **Copy (internal)** copies the queries with the answer.
+Scorecard: migration `team_sql_172b_view_helper_20260910` (the one private EXECUTE grant, see corrections), 21 gate checks.
+
+**The twenty-question proof** (`~/mds-team-proof`, outside git; references frozen through `team_sql` in the same minute, then the
+question POSTed through the route as a throwaway staff identity on a dev-only allowlist; rows deleted after): **PASS 20/20** on the
+scoring rules — Q1–Q10, Q14–Q20 mechanical (exact fields / counts / sets / top-N), Q11–Q13 judged with every cited example traced to
+its source row (Q11's three post ids exist with those authors and dates, Q12's titles exist, Q13's counts match
+`olivia_question_labels`). Three cosmetic defects, no fabrication: Q3 split one member's count across his two Airtable ids (82 of
+123), Q14 labelled a 21-name bucket "(23)", Q12 opened with a stray "This confirms…" line. **Q18 · Q19 · Q20 via `sql_query`: yes
+— exact revenue, Stripe id + renewal amount, the past-due set.** Laps 2–8 · **p50 8.7 s · p95 46.9 s · max 81.2 s** · **mean $0.063**
+(max $0.48, Q20) · **cache hit on lap 2: 20/20** (23,403 cached system tokens) · **0 cuts** · **45/45 logged SQL steps re-execute** ·
+**23/23 turns logged with asker, cost, laps** · 0 Airtable calls (runtime spy test).
+
+**Live on prod, as Andy** (ids 279–282, `asker_email = andy@mds.co`, `transport = stream`): revenue bands + one member's exact
+revenue and email in 2 SQL laps ($0.018); a semantic question answered through `semantic_search` + 3 SQL ($0.043) — the Voyage lane
+is ON (`VOYAGE_API_KEY` was already on Render). Without a cookie the route answers 403; a staff account not on the allowlist gets
+403 "Team research is not enabled for this account"; empty text 400.
+
+**AC checklist.** 1 ✅ exact revenue / contact / billing facts a member never gets (Q1, Q18, Q19, Q20 + the prod turn) · 2 ✅
+anonymous, member and WhatsApp paths gain nothing (21 `#172` gate checks: `team_sql` service_role-only, read-only transaction proven
+by `net.http_post` → 25006, OTP/session-token/olivia_web_messages/member_profiles/vault/secret functions dark, no CREATE, the
+private EXECUTE set pinned, neither workflow export mentions the surface, prod graph hash = pre-ticket snapshot; gate **367/0**) ·
+3 ✅ disclaimer acknowledged once per browser session and stamped; every turn stored with `asker_email` + `mode='team'` · 4 ✅ the
+Team column of `OLIVIA_SHAREABLE_FIELDS.md` = the `member_profiles_team` view (29 closed keys) — **Andy still signs it** (birthdays
+and five removal-date keys are his call).
+
+**Before → after.** 0 Team turns → 27 logged today (25 proof + 2 prod) · `400 "Team mode ships with #172"` → live behind the
+allowlist · gate 346 → 367 checks · the four `#172` categories: exact revenue, contacts, Stripe/billing reachable; removal
+reasons, LTV, internal notes, lead scoring provably not (view + gate).
+
+**Corrections found by the proof.** A view runs as its owner for TABLES, but a function it calls runs as the CALLER:
+`member_identity` and `member_phones` call `is_active_member_status(text)`, so the identity bridge died with 42501 until that one
+pure IMMUTABLE helper got EXECUTE (migration `…172b`; the gate pins the private EXECUTE set to exactly it). `member_links` stays
+dark (its helper reads the raw table) — the link is in `member_profiles_team.at_fields`. Rule 2 now says `unnest()` the `text[]`
+columns (the first local turn grouped by the whole array). The route drops the loop's own `started` line. The catalog generator
+aggregates in SQL (`team_sql` caps a call at 500 rows). `engines` was NOT added to `package.json` (Render's Node stays whatever it is:
+v24.14.1 measured) — `NODE_VERSION` is still Andy's call.
+
+**Deferred, each with its trigger (design §10):** typed wrappers for the `p_phone` functions · a durable job runner (no cut turns in
+the proof → not needed) · per-user persistent acknowledgement · a child table for trails (largest `sources` today ≈ 4 KB) · a
+research-only PostgREST role · **the MCP door → #198** · Public mode on the team principal · `member_links` in Team mode.
+
+**Side findings filed:** #192 npm audit (Next.js critical) · #193 Ask Millie header hydration warning · #194 revenue data quality
+($1B values, a test row) · #195 31 PUBLIC-executable `digest` functions · #196 `db/` count drift · #197 stale Vercel comment ·
+#198 the MCP door.
 
 ### #169 · Millie web front door + Public mode
 

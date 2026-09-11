@@ -11,6 +11,31 @@
 
 # Olivia — next session
 
+## STATE 2026-09-11 (early) — #172 CLOSED: Team research mode LIVE for Andy · gate 367/0 · prod n8n untouched · NEXT = Andy's pick (#198 MCP door · #192 audit · #190 sprint-closure eval last)
+
+**Read first:** the #172 close block on the board (results, AC checklist, before → after, corrections, deferred list, the seven
+side tickets #192–#198) → `TEAM_RESEARCH_172_DESIGN.md` §10 for what was deliberately left out.
+
+**Live now.** `digest.mds.co/admin/ask-millie?target=team` answers for `MILLIE_TEAM_ASKERS` = `andy@mds.co` only (Render env, set by
+Andy 2026-09-10 22:24 CDT; add staff comma-separated). `VOYAGE_API_KEY` was already on Render → the meaning-search lane is ON.
+`NODE_VERSION` still unpinned (Render runs v24.14.1). Web main `5c412c6` (probe route deleted). Prod n8n `b4db92d0`, 92 nodes,
+UNTOUCHED — pinned by `olivia_snapshots/prod_pre_172.sha256`, which now stays as a permanent "Millie's graph did not change for
+Team mode" check: **re-snapshot it deliberately on the next promote** (the gate goes red otherwise, on purpose). Staging `9d91109e`
+· lock free · gate **367/0**. Supabase: migrations `team_sql_172_20260910` + `team_sql_172b_view_helper_20260910`; `db/` re-exported.
+
+**Waits on Andy:** sign the Team column in `OLIVIA_SHAREABLE_FIELDS.md` (+ rule birthdays and the five removal-date keys) · the
+Voyage key pasted in chat on 2026-09-10 — rotate or keep, his call (same ruling shape as the Meta secret) · more askers ·
+`NODE_VERSION`.
+
+**Traps this half-day paid for (all in handbook §13):** a view runs as its owner for tables but a function it calls runs as the
+CALLER (`member_identity` → `is_active_member_status` needed EXECUTE) · PostgREST maps 42501→403, 25006→405 · `ALTER OWNER` needs
+CREATE on the schema · nested data-modifying CTEs die at 0A000 · Chrome downloads `x-ndjson` · the Browser pane cannot log in
+(staff OTP), so local UI proof used a dev-only allowlisted throwaway identity with a locally minted cookie, never Andy's · the
+prod proof ran in Andy's own logged-in Chrome tab, no cookie handling.
+
+**Branch state:** Scorecard `172-team-research-20260910` merged to `main`; web `172-team-research-20260910` merged to `main`
+(= deployed). Shared checkout still parked on `186-design-request-20260909` — read docs from `main`.
+
 ## STATE 2026-09-10 (night) — #172 Milestone A DONE: DOABLE · `team_sql` LIVE on prod · gate 366/0 · NEXT = #172 Milestone B
 
 **Read first:** the #172 block on the board (Milestone A results + Andy's open calls) → `TEAM_RESEARCH_172_IMPLEMENTATION_PLAN.md`

@@ -170,6 +170,15 @@ LLM lane** (#97, in prod since 2026-08-22), everything else flows through normal
 
 ## 3. How an answer happens — the pipeline
 
+> **Team research mode is NOT this pipeline (#172, live 2026-09-10).** The `MDS Team` target of Ask Millie is a second
+> runtime beside Millie: `POST /api/admin/millie/research` in `mds-digest-web` (Render) runs a `claude-sonnet-5` tool loop
+> in-process — `sql_query` → `digest.team_sql` as the read-only role, `schema_catalog` (static), `semantic_search`
+> (Voyage + pgvector through the same RPC) — streams NDJSON to the page, and writes two `olivia_web_messages` rows per turn
+> (`mode='team'`, `route='team-research'`, the query trail as `sources`, cost and laps in `metrics`). The n8n graph is never
+> called for a Team turn (`/api/admin/millie/chat` still returns 400 for `target=team`), there are no member gates, and the
+> asker is always the staff session, on a FAIL-CLOSED allowlist (`MILLIE_TEAM_ASKERS`). Everything below describes Millie's
+> own pipeline for members and the three other Ask Millie targets.
+
 A member's message travels through the **production n8n workflow** (`12wj6h1TWqb0d4Dq`, 80 nodes —
 Appendix C). The path, in order:
 
@@ -622,9 +631,11 @@ for the rest of the PostgREST transaction (proven: `net.http_post` → `25006`),
 (→ the `member_profiles_team` view), `olivia_web_messages`, the OTP hash columns on `members` and
 `token_hash` on `member_sessions`; it holds no CREATE, no `pg_read_all_data`, no USAGE on `vault` /
 `auth` / `storage`, and cannot execute the secret-returning functions. It is the SQL tool of the Team
-research loop that lives in `mds-digest-web` (Milestone B), never reachable from the n8n graph — 20
+research loop that lives in `mds-digest-web` (§3's callout), never reachable from the n8n graph — 21
 `#172` gate checks pin all of this plus the prod graph hash. Migration
-`scripts/sql/20260911_team_sql_172.sql`; proof `scripts/test_172_team_sql.py` (18 live checks).
+`scripts/sql/20260911_team_sql_172.sql` (+ `…172b`: the ONE private EXECUTE grant, `is_active_member_status(text)`, because
+`member_identity` and `member_phones` call it and a function inside a view runs as the caller; the gate pins that set exactly);
+proof `scripts/test_172_team_sql.py` (20 live checks). `member_links` is dark to the role (#197): its helper reads the raw table.
 
 **The `video_access` rule type (#101, 2026-08-20).** Transcript chunks from a RESTRICTED video carry
 `access_rule = {"type":"video_access","video_id":…}` with `sensitivity='restricted'`.
@@ -1558,7 +1569,14 @@ treatment — a verify built on the same broken boundary passes exactly what the
 
 
 
-### #172 Milestone A — five traps from the read-only SQL surface (2026-09-10)
+### #172 — six traps from the read-only SQL surface (2026-09-10)
+
+6. **A view runs as its OWNER for the tables it reads, but a function it calls runs as the CALLER.** `member_identity`
+   and `member_phones` are granted to the role, yet both died with `42501 permission denied for function
+   is_active_member_status` until that pure helper got EXECUTE. Any grant like it is a widening of the surface: the gate
+   pins the role's private EXECUTE set literally (`digest.is_active_member_status(p_status text)`) so the next one is a
+   deliberate edit, not a quiet drift. A helper that reads a dark table (`member_link` → `member_profiles`) cannot be
+   fixed this way — the view stays dark (#197).
 
 1. **PostgREST maps SQLSTATEs to HTTP statuses:** `42501` → 403, `25006` → 405, `42P01` / `42883` → 404,
    everything else in `42*` / `0A*` / `3F*` → 400. A check that expects "400 for every refusal" passes on

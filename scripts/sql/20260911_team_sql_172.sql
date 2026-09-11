@@ -53,6 +53,15 @@ begin
   end loop;
 end $do$;
 
+-- 2b. views run as their owner for TABLE access, but a function called inside a view runs as the CALLER:
+--     digest.member_identity and digest.member_phones call is_active_member_status(text), a pure IMMUTABLE
+--     status test, so the role needs EXECUTE on it or the identity bridge dies with 42501 (found by the
+--     Milestone B proof, applied as team_sql_172b_view_helper_20260910). This is the ONE private EXECUTE
+--     grant beyond PUBLIC; the leak gate pins the set. member_link(text) reads member_profiles in its body
+--     and stays dark on purpose — member_links is unreadable in Team mode; the link is in
+--     member_profiles_team.at_fields->>'Facebook Profile Link'.
+grant execute on function digest.is_active_member_status(text) to millie_team_ro;
+
 -- 3. the deny-list view (#172 AC 4, the "Team mode column", as SQL not prose). Keeps the three categories
 --    #172 opens — exact revenue, contact details, Stripe/billing — and drops the at_fields keys that stay
 --    closed. Runs as its owner (postgres), which is why the role needs no grant on the table itself.

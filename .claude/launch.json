@@ -39,6 +39,20 @@
       "port": 8765
     },
     {
+      "name": "digest-web-172-team-research",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/Born/mds-digest-web/.claude/worktrees/172-team-research-20260910",
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3172"
+      ],
+      "port": 3172
+    },
+    {
       "name": "digest-web-fbstory-p0",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
