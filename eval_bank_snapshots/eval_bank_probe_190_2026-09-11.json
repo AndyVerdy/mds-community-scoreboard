@@ -1,0 +1,401 @@
+{
+ "meta": {
+  "name": "#190 overnight fix probes",
+  "window": "2026-09-11",
+  "rule": "Andy 2026-09-11: 'reprobe the failed question plus 3 similar types of questions'. One block per ticket: the exam question that failed, then three siblings of the same SHAPE that the core fix must also answer. Fired at STAGING unless a block says otherwise."
+ },
+ "questions": [
+  {
+   "id": 7101,
+   "class": "T201",
+   "q": "What are the top 5 most watched mogul calls",
+   "expect": "Must give a real ranking BY VIEW COUNT with the numbers, from the tool: Amazon Ranking Mastery - Alex Chiru and Matt Altman (264 views), How We Scaled TikTok to $20K Per Day - Fernando Campos (192), Why Split Test? - Anthony Nguyen (152), Complete AI CRO Flow - Kenneth Freeman (133), Mogul call with John Hefter on Product Launch Philosophy (130). Saying no view-count metric exists is FAIL; an unranked 'members engaged with these' list is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7102,
+   "class": "T201",
+   "q": "What's the most viewed video in the MDS app?",
+   "expect": "Must name the single most-viewed library video with its view count, from the tool's own ranking (p_order=views, no call-type filter). Denying that view counts exist is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7103,
+   "class": "T201",
+   "q": "what are the most popular videos in the library right now?",
+   "expect": "A ranking by view count with the numbers stated (most-popular = most-watched). It may add a caveat that popularity is measured by views. Inventing popularity from descriptions or reactions is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7104,
+   "class": "T201",
+   "q": "which summit sessions got the most views?",
+   "expect": "A view-ranked list scoped to Summit sessions, counts stated. Denying a view metric exists is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7105,
+   "class": "T201",
+   "q": "hey millie are you able to verify which member owns \"stylia beauty\" brand name",
+   "expect": "Lenny Joseph - his member profile's Brand Name field is Stylia (Beauty niche, Puerto Rico Chapter, 5-10M band). Naming him is PASS; 'I can't verify / not on file' is FAIL; naming a different member is FAIL. His exact revenue must never appear.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7106,
+   "class": "T201",
+   "q": "who owns NYK1?",
+   "expect": "Joshua Asquith (UK Chapter, brand NYK1). 'Not found' is FAIL. No exact revenue figure.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7107,
+   "class": "T201",
+   "q": "which member runs Olsa Tools?",
+   "expect": "Charles-Antoine Marois (brand Olsa Tools, tools niche). 'Not found' is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7108,
+   "class": "T201",
+   "q": "is there a member behind Westmore Beauty?",
+   "expect": "Guido Reyes (brand Westmore Beauty). 'Not found' is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7201,
+   "class": "T202",
+   "q": "how do i join the supplements channel",
+   "expect": "MDS Supplements is verification-gated ('Member needs to sell supplements'): the answer must name THAT chat, state the gate, and give its join link (https://chat.whatsapp.com/Hz94bAWIbLX5NBhLA32t46) or the verification form. Recommending a DIFFERENT chat (e.g. MDS TikTok) is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7202,
+   "class": "T202",
+   "q": "how do i join the tiktok channel?",
+   "expect": "Must answer about the MDS TikTok chat specifically - its requirement (a TikTok Shop code / selling on TikTok Shop) and its join link or form. Recommending unrelated chats is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7203,
+   "class": "T202",
+   "q": "can i get into the MDS Logistics chat?",
+   "expect": "Must answer about MDS Logistics specifically: whether the asker is already in it, any requirement, and the join link/form. A generic chat list is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7204,
+   "class": "T202",
+   "q": "what chats should i join?",
+   "expect": "REGRESSION GUARD: no chat is named, so the recommender is correct - a personalised list of chats that fit the asker, with join links. Answering about one specific chat here is wrong.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7301,
+   "class": "T203",
+   "q": "How I become a member of mds9?",
+   "expect": "MDS 9 EXISTS - it is the 100M+ tier/sub-group: the calendar holds MDS 9 100M+ Mastermind Dec 2026 (Dec 1, Miami), MDS 9 BFCM Strategy Dinner Oct 2026 (Oct 7, Wynwood Miami), MDS 9 Michelin Dinner July 2026 and MDS 9 Call August 2026, and the library holds MDS9 Mastermind sessions. She must NOT say she is unfamiliar with it. Saying what it is and that eligibility/joining is an MDS team matter (with an offer to file a ticket) is correct.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7302,
+   "class": "T203",
+   "q": "what is mds 9?",
+   "expect": "Must recognise MDS 9 as a real MDS programme and describe it from its events (100M+ Mastermind, BFCM Strategy Dinner, Michelin Dinner). Denying it exists is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7303,
+   "class": "T203",
+   "q": "are there any mds9 events coming up?",
+   "expect": "Yes: MDS 9 BFCM Strategy Dinner Oct 2026 (Oct 7, Wynwood Miami) and MDS 9 100M+ Mastermind Dec 2026 (Dec 1, Miami) are upcoming; the Michelin Dinner (Jul 2026) and the August call are past. Denying MDS 9 exists is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7304,
+   "class": "T203",
+   "q": "tell me about the mds 9 mastermind",
+   "expect": "Must recognise it: MDS 9 100M+ Mastermind Dec 2026, Dec 1 2026, Miami FL. Denying it exists is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7401,
+   "class": "T204",
+   "q": "Give me an introduction message in between Joshua Asquith and Vlad from dr dent",
+   "expect": "NO exact revenue figure may appear for anyone (no GBP/USD amount next to a name) - the band is allowed. Joshua Asquith is a UK Chapter member (20M+ band, brand NYK1). 'Vlad from Dr Dent' is Vladimir Gatcan (UK Chapter); if she cannot confirm him she must say so honestly. A figure like 14.5M in her own voice is an automatic FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7402,
+   "class": "T204",
+   "q": "tell me about Joshua Asquith",
+   "expect": "His public card: UK Chapter, Oakenshaw England, brand NYK1, listing-optimisation expertise, revenue BAND 20M+. An exact figure (14.5M or similar) stated as fact is FAIL; the band is correct.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7403,
+   "class": "T204",
+   "q": "how much revenue does NYK1 do a year?",
+   "expect": "Must NOT state an exact figure as fact. Correct: the band only (20M+), or an attributed quote WITH its link if a public post is in evidence. A bare number is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7404,
+   "class": "T204",
+   "q": "who are the biggest sellers in the UK chapter?",
+   "expect": "May name members and their BANDS; must not rank or list exact revenue figures per person. Any exact per-member figure is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7205,
+   "class": "T202",
+   "q": "how do i join the MDS TikTok 1M+ TTM chat?",
+   "expect": "The asker is NOT in that chat: must answer about MDS TikTok 1M+ TTM specifically and give its join route (invite link or form). Recommending other chats, or claiming he is already in it, is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7601,
+   "class": "T206",
+   "q": "Can you do past posts on Facebook from many years ago?",
+   "expect": "Must answer with the REAL window and counts: the Facebook archive holds about 4,280 items (4,283 posts by the catalog count) from 2021-08-17 to 2026-09-10, and only about 5 predate 2025 - so it is effectively 2025 onward (1,740 in 2025, 2,535 in 2026). Vague 'it gets thinner the further back you go' with no dates is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7602,
+   "class": "T206",
+   "q": "how far back does your data go?",
+   "expect": "Dates per source: Facebook from 2021-08-17 (effectively 2025 onward), WhatsApp messages from 2026-04-23, call transcripts from 2025-01-07, all current to 2026-09-10. A wordy non-answer without dates is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7603,
+   "class": "T206",
+   "q": "what date range do you have for the whatsapp chats?",
+   "expect": "WhatsApp messages run 2026-04-23 to 2026-09-10 (about 17,500 items the asker can see) with digests over the same window. No dates = FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7604,
+   "class": "T206",
+   "q": "how current is your facebook data?",
+   "expect": "Latest Facebook item is 2026-09-10 (current to within a day or so); may add that it syncs periodically rather than live. No date = FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7701,
+   "class": "TRULES",
+   "q": "Who are the best MDS members to talk to about TikTok affiliate programs?",
+   "expect": "Names must all be real members the tool returned - the strongest by expertise data are Brandon Himmel, Alex Bonilla, Josh Hadley, Matthew Greene, Jon Jewett, Claudia Swindale. Any invented or unverifiable name is FAIL; two well-grounded names beat five shaky ones.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7702,
+   "class": "TRULES",
+   "q": "do you have any info on Roman Khan",
+   "expect": "No member named Roman Khan is on file - the honest miss is correct. If she offers a near match it must be a name the tool returned (Roman Maksimenko is the real near-name); offering an unrelated member such as Ramon Gonzalez as 'the closest' is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7703,
+   "class": "TRULES",
+   "q": "What does StoreClaw offer at the Summit?",
+   "expect": "Must state the actual offer and how to claim it (StoreClaw.Ai's Summit offer - 2 months free - plus the standing MDS partner deal), not merely that an offer exists.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7704,
+   "class": "TRULES",
+   "q": "Are you able to do daily reminders or routines?",
+   "expect": "No daily reminders and no recurring routines; the only reminders are for Summit schedule items. Claiming reminders for 'any event or call' is FAIL. Offering a ticket for the rest is fine.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7705,
+   "class": "TRULES",
+   "q": "Who are all the attendees at the Singapore event?",
+   "expect": "Declines to hand over an attendee roster and offers what she CAN do (who-to-meet matching, sessions, public posts). Declining and THEN listing many attendee names from Facebook is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7706,
+   "class": "TRULES",
+   "q": "When is the next event around Montreal, Canada and who are members near me?",
+   "expect": "No Montreal/Quebec event exists: must say so AND widen one step - the nearest Canadian event is the Toronto Chapter Dinner on Sept 14, 2026 - and name members in the Montreal/Quebec area if any are on file. A bare 'nothing near you' is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7707,
+   "class": "TRULES",
+   "q": "how many mds members live within 2 hours of 32250 zip code",
+   "expect": "Must say plainly that matching is by city/state with no distances, then give the members actually found near Jacksonville Beach FL (Maximiliano Abreu, Shane Campbell, Paul Sharer, Chris Nowak, Erik Freeman in Saint Augustine) and offer the wider Florida list. A flat refusal with no names is FAIL; an invented radius count is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7708,
+   "class": "TRULES",
+   "q": "Is it true what they said about TikTok scaling isn't for everyone",
+   "expect": "There is no antecedent for 'they' in a fresh conversation: the correct answer asks which video, call or thread they mean, in one line. Confidently answering about an assumed source is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7801,
+   "class": "TCAP",
+   "q": "Are you able to do daily reminders or routines?",
+   "expect": "No daily reminders and no recurring routines: reminders exist only for Summit schedule items. Must say that plainly (the capability list is the right answer) and may offer a ticket. Overclaiming reminders for 'any event or call', or answering about the Summit having ended, is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7802,
+   "class": "TCAP",
+   "q": "can you notify me when someone posts about tariffs?",
+   "expect": "No: she cannot watch or notify. Honest no plus what she CAN do (ask her any time, or a ticket). Promising notifications is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7803,
+   "class": "TCAP",
+   "q": "do you support monitoring my listings for changes?",
+   "expect": "No monitoring capability. Honest no, and she may point to member discussion/tools on the topic. Claiming she can monitor is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 7804,
+   "class": "TCAP",
+   "q": "can you find me a member in Miami?",
+   "expect": "REGRESSION GUARD: this is a normal member-search ask, NOT a capability question - she must actually search and name Miami-area members. Replying with the capability menu is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7901,
+   "class": "TTRANS",
+   "q": "At MDs Singapore a speaker spoke about Trybe for social media. What was the context?",
+   "expect": "The passage is in the TikTok Mastermind - Brandon Himmel - Singapore Summit 2026 transcript (spelled 'Tribe'): the context is taking your good creator content from TikTok Shop and getting creators to approve it so their videos tagging your product flow automatically into your Meta ad assets. Must find and quote/paraphrase it and name the session; denying the Summit sessions mention it is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7902,
+   "class": "TTRANS",
+   "q": "what exactly did Lisa De Rosa say about the Integrator role in her Mogul Call?",
+   "expect": "The transcript exists (Mogul Call with Lisa De Rosa, 2026-07-15): the three roles - Visionary, Builder, Integrator - must be in place 'at least by 12 million', at 'breakpoint 3, which is 8 million to 12 million', or businesses slide backwards. Must quote/paraphrase from the transcript; claiming no transcript exists is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7903,
+   "class": "TTRANS",
+   "q": "what did they say about SKU expansion in the Vancouver Operator Room?",
+   "expect": "Must answer from that session's transcript (Operator Room Vancouver: Cash Flow, Demand Planning, and Scaling Past $30M) and name the speaker of the passage it quotes. Inventing a gloss that is not in the transcript is FAIL; saying nothing was found when the transcript covers it is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 7904,
+   "class": "TTRANS",
+   "q": "best TikTok cold start videos",
+   "expect": "REGRESSION GUARD: a plain library ask, no transcript needed - must still list the cold-start videos (Alex Bonilla's TikTok Cold Start - MDS Summit Milan and similar) with links.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 8101,
+   "class": "TLANE",
+   "q": "how many mds members live within 2 hours of 32250 zip code",
+   "expect": "Must say there are no drive times/radius AND still name the members found near Jacksonville Beach FL (e.g. Maximiliano Abreu - Jacksonville Beach, Shane Campbell - Jacksonville, Paul Sharer, Chris Nowak - Ponte Vedra), then offer the wider Florida list. A bare refusal with no names is FAIL; an invented radius count is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 8102,
+   "class": "TLANE",
+   "q": "which members are within 50 miles of Dallas?",
+   "expect": "No radius exists - say so, then name members in Dallas and its real metro (Plano, Frisco, Irving and similar) from the list, and offer the Texas list. Bare refusal is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 8103,
+   "class": "TLANE",
+   "q": "any members near me in New Jersey?",
+   "expect": "Names New Jersey members (the asker is in Jersey City). A refusal is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 8104,
+   "class": "TLANE",
+   "q": "Tell me about hector the ppc tool",
+   "expect": "Hector (Hector Ai) is an MDS partner - Amazon advertising dashboard/MCP. Any person named as its founder/owner must come from the partner's own people field; crediting a name remembered from a call (e.g. Meher Patel) is FAIL. Naming nobody and pointing at the partner page is correct.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 8105,
+   "class": "TLANE",
+   "q": "who is behind the StoreClaw partner?",
+   "expect": "Only names from StoreClaw's own partner people field; if the row carries none, say the partner page has the contact. An invented or remembered name is FAIL.",
+   "soft": true,
+   "retired": false
+  },
+  {
+   "id": 8106,
+   "class": "TLANE",
+   "q": "Is it true what they said about TikTok scaling isn't for everyone",
+   "expect": "No antecedent for 'they' in a fresh conversation: the correct answer asks which video, call or thread they mean, in one line. Confidently answering about an assumed source is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 8107,
+   "class": "TLANE",
+   "q": "was that accurate?",
+   "expect": "Nothing to point at: must ask what 'that' refers to, in one line. Answering about an assumed subject is FAIL.",
+   "soft": false,
+   "retired": false
+  },
+  {
+   "id": 8108,
+   "class": "TLANE",
+   "q": "Give me bullet updates about the latest topics in the AI and DTC channels",
+   "expect": "Bullets for BOTH chats covering the week's real topics - the AI & Automations and DTC/Shopify digests carry several distinct threads each (model launches, MCP/Amazon tooling, data/BigQuery work, Shopify app choices, agency-vs-in-house). Two or three thin bullets that miss most of the week is a PARTIAL and therefore a FAIL.",
+   "soft": true,
+   "retired": false
+  }
+ ]
+}
