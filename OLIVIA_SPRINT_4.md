@@ -1211,6 +1211,41 @@ composer is locked ("Read the notice above, then acknowledge to start") until ac
 copy button reads **Copy (internal)**; the target belongs to the session, so switching target inside a session that
 already has answers starts a new session — one thread never mixes an unrestricted answer with a gated one.
 
+**Milestone A — DONE 2026-09-10 (the "is it doable" half-day, no UI; branch `172-team-research-20260910`, web
+`85efba4`). Verdict: DOABLE — every threshold met.**
+- **The read-only surface is LIVE on prod** (migration `team_sql_172_20260910`, second attempt): role `millie_team_ro`
+  (NOLOGIN, BYPASSRLS, no CREATE), view `digest.member_profiles_team` (29 closed `at_fields` keys dropped in SQL),
+  RPC `digest.team_sql` (SECURITY DEFINER owned by the role, read-only transaction forced, LIMIT-wrapped,
+  `service_role`-only). `scripts/test_172_team_sql.py` **18/18 green**; the failing-first run was 15/17 × 404.
+  **Merge blocker cleared:** `transaction_read_only` binds inside PostgREST's transaction — `net.http_post` →
+  `25006 cannot execute INSERT in a read-only transaction` (which also closes the one outbound-HTTP channel the
+  role could name); a data-modifying CTE cannot even be parsed through the wrapper (`0A000`). `pg_sleep(55)`
+  answered 200 after 55.2 s: the Supabase edge holds a long RPC; the cap is `service_role`'s 60-s `statement_timeout`.
+- **Gate 366/0 exit 0** (346 + 20 `#172` checks, incl. the prod graph pin `olivia_snapshots/prod_pre_172.sha256` =
+  versionId `b4db92d0`, 92 nodes; prod and staging exports contain neither `team_sql` nor the research route).
+  Millie's workflow untouched, `db/` re-exported (163 files).
+- **Transport = STREAM.** Through `digest.mds.co`, from the admin page's own `fetch` reader on the staff cookie:
+  heartbeat 300 s held to `done` (61 lines) · silent 180 s held · 600 s held to `done` (121 lines). A parallel Chrome download of
+  the 300-s stream completed too. Render runs Node **v24.14.1** (nothing pins it). The throwaway probe route
+  `/api/admin/millie/research/probe` is live — **delete it in the Milestone B merge.**
+- **Spike 5/5 EXACT** against reference SELECTs frozen in the same minute (`sql_query` only, `claude-sonnet-5`,
+  thinking off, catalog v0, outside git): Q1 profile · Q4 members per chapter + 90-day joins (22/22 rows) · Q9
+  lowest fill next 30 days (7/7, same order) · Q18 most recent revenue + date + tier · Q20 failed/past-due/
+  non-active (8/8 core + the one canceled). **Q18 + Q20 via SQL: yes.** Laps 2·3·3·2·3 · **p50 wall 17.9 s**
+  (5.4–35.5) · **mean cost $0.035** (max $0.095) · **cache hit on lap 2: 5/5** (3,601 cached system tokens). The
+  model repaired its one error (a second statement, 42601) on the next lap and rejected a stale signal on its own
+  (81 "failed payment date" rows → the 9 live delinquencies).
+- **Plan corrections, all verified live:** PostgREST maps 42501→403 and 25006→405 · `content_delete_summary(-1)`
+  is a trigger function, not callable — every PUBLIC-executable SECURITY DEFINER writer in `digest` is · handing
+  `team_sql` to the role needs CREATE on the schema for that one statement (granted, revoked, pinned by a check) ·
+  `member_sessions.token_hash` made dark like the OTP hashes · the SDK was not installed.
+- **Andy's calls, open:** (1) sign the Team column draft in `OLIVIA_SHAREABLE_FIELDS.md`, and rule on the five
+  removal-DATE keys the regex over-blocks and on birthdays (open by omission). (2) Day-0 items 3–5 are still his:
+  Render env `MILLIE_TEAM_ASKERS` / `VOYAGE_API_KEY` / `NODE_VERSION` (check-before-add, Manual Deploy), a member +
+  an event placeholder (the spike used a current member picked by hash), 2–3 staff validating the twenty questions.
+- **NEXT = Milestone B** (plan Tasks B1–B11, ~two days): route + loop + three tools + log + client + catalog +
+  docs, then the twenty questions. The prod hash pin leaves with the Milestone B merge (the ticket makes no n8n edit).
+
 ### #169 · Millie web front door + Public mode
 
 **🟡 S2 · size L — designed 2026-09-07.** Spec: `docs/superpowers/specs/2026-09-07-millie-web-front-door-public-mode-design.md`.

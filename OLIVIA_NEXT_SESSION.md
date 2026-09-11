@@ -11,6 +11,33 @@
 
 # Olivia — next session
 
+## STATE 2026-09-10 (night) — #172 Milestone A DONE: DOABLE · `team_sql` LIVE on prod · gate 366/0 · NEXT = #172 Milestone B
+
+**Read first:** the #172 block on the board (Milestone A results + Andy's open calls) → `TEAM_RESEARCH_172_IMPLEMENTATION_PLAN.md`
+Milestone B (Tasks B1–B11; the Milestone A steps are ticked) → design §10 (the deferred list, each with its trigger).
+
+**Live now.** Prod n8n `b4db92d0` (92 nodes, UNTOUCHED — pinned by `olivia_snapshots/prod_pre_172.sha256`) · staging `9d91109e` ·
+lock free · gate **366 checks, 0 FAIL, exit 0** · web main `85efba4` = Render (throwaway probe route
+`/api/admin/millie/research/probe`, staff-cookie only — **DELETE in the Milestone B merge**) · Supabase: `millie_team_ro`,
+`digest.member_profiles_team`, `digest.team_sql` live (migration `team_sql_172_20260910`), `db/` re-exported (163 files).
+
+**Milestone A verdict — doable, every threshold met:** 18/18 live checks · read-only binds inside PostgREST (`net.http_post` →
+25006) · heartbeat stream 300 s held, silent 180 s held, 600 s held to `done` (121 lines) → **transport = stream** (Task B9's primary path) ·
+spike 5/5 exact, Q18 + Q20 via SQL, cache hit on lap 2 5/5, p50 17.9 s, mean $0.035. Render runs Node v24.14.1.
+
+**Waits on Andy (nothing blocks B1–B8; B9/B10 need the env):** sign the Team column in `OLIVIA_SHAREABLE_FIELDS.md` and rule
+on birthdays + the five removal-date keys · Render env `MILLIE_TEAM_ASKERS`, `VOYAGE_API_KEY`, `NODE_VERSION` (check-before-add,
+Manual Deploy) · a member + an event placeholder · 2–3 staff validate the twenty questions.
+
+**Traps this half-day paid for:** PostgREST maps SQLSTATEs to statuses (42501→403, 25006→405, 42P01→404, the rest 400) — assert
+status AND code · `ALTER … OWNER TO role` needs that role to hold CREATE on the schema (grant, hand over, revoke, pin) · a
+nested data-modifying CTE dies at 0A000 before any privilege check · Chrome DOWNLOADS `application/x-ndjson` instead of
+rendering it — measure streams with a `fetch` reader in a same-origin tab · a Supabase connect timeout (21:41) failed three
+spike runs at once — re-run before suspecting code.
+
+**Branch state:** Scorecard `172-team-research-20260910` carries the proven Milestone A slice; Milestone B starts its own branch.
+The shared checkout is still parked on `186-design-request-20260909` — read docs from `main`.
+
 ## STATE 2026-09-10 (overnight close) — 8 tickets closed · #105 ENFORCING · two things wait on Andy
 
 **Read this first, then the board's close blocks.** Prod n8n `22d81380` · staging `ae74d26d` (clean, re-staged

@@ -4,6 +4,60 @@
 
 
 
+## 2026-09-10 (night) · #172 Milestone A — DOABLE · the read-only SQL surface is live on prod · transport = stream · spike 5/5
+
+**Andy's asks, in order:** "continue working on millie - #172 Team research mode, Milestone A" (briefing) → "go" → "too technical
+to me" (plain-language recap) → "when you apply it where I will be able to use it?" (nowhere yet — the screen is Milestone B) →
+"and this will not affect prod millie?" (no: additive migration, no n8n edit, hash-pinned) → "feel free to apply and merge".
+
+**Branch** `172-team-research-20260910` (own worktree; the shared checkout stays parked on `186-design-request-20260909`).
+Commits: `2af4033` A1+A2 test-first (migration written, 17 checks, gate section, hash pin, Team column draft) · `fb93a23` birthdays
+row · `5a72a92` migration APPLIED and proven, `db/` re-exported · docs commit below. Web `172-team-research-20260910` `2a37102`
+merged to main as `85efba4` (= Render deploy, live 21:36).
+
+**Task A1 — the migration.** Written from the plan with live facts checked first: the 32 `member_profiles` columns, schema and
+table owners (all `postgres`), PG 17.6, `postgres` = CREATEROLE + BYPASSRLS, `createrole_self_grant` empty, 33 RLS tables /
+0 policies, 787 distinct `at_fields` keys of which 29 match the deny regex, `service_role` `statement_timeout` 60 s. Extra
+denies over the plan: `member_sessions.token_hash` (the only other credential-shaped column; `form_responses.token` is a
+Typeform response id). The test script ran first: 15/17 FAIL with 404 `PGRST202`, exit 1. **First apply was refused** at
+`alter function … owner to millie_team_ro` — "permission denied for schema digest": the receiving role must hold CREATE on the
+schema. Fix = grant CREATE, hand over, revoke; check 18 + a gate check pin that it stays revoked. The MCP wraps the migration in
+a transaction, so nothing had landed. Second apply succeeded (`team_sql_172_20260910`). **18/18 green, exit 0.** The proof that
+matters: `net.http_post` (pg_net, PUBLIC-executable, SECURITY INVOKER) → `405 25006 cannot execute INSERT in a read-only
+transaction` — `set_config('transaction_read_only','on',true)` binds inside PostgREST's transaction, and the outbound-HTTP
+channel is closed by the same fact. The plan's CTE probe turned out structural: a data-modifying CTE nested inside the wrapper is
+refused with `0A000` before any privilege check (expectation corrected in the script and the gate). `pg_sleep(55)` → HTTP 200
+after 55.2 s. PostgREST status mapping learned the hard way: 42501→403, 25006→405, 42601/0A000/3F000→400.
+
+**Task A2 — the gate.** 20 `#172` checks appended (plan said 7): anon refused · service_role control · CTE structural ·
+read-only binds · second statement · OTP/session-token/olivia_web_messages/member_profiles/meta_webhook_config/vault dark ·
+deny-list view carries no closed key · no readable view re-opens a dark thing · no readable view exposes `at_fields` whole ·
+owner + ACL of `team_sql` · role NOLOGIN/not super/not pg_read_all_data · no CREATE · prod + staging exports mention neither
+`team_sql` nor the route · prod graph hash = `olivia_snapshots/prod_pre_172.sha256` (un-ignored in `.gitignore`; versionId
+`b4db92d0`, 92 nodes, hash `0b167f85…`). Baseline before any change 346/0; after: **366/0 exit 0**.
+
+**Task A3 — transport.** Probe route merged (`85efba4`), refuses without the cookie (403). Chrome DOWNLOADS
+`application/x-ndjson` instead of rendering it, so the measurement ran as three concurrent `fetch` readers inside the admin
+page (`/admin/ask-millie`, Andy's logged-in Chrome, no cookie handling): **heartbeat 300 s → `done` at 300 s (61 lines)** ·
+**silent 180 s → `done` at 180 s** · **600 s → `done` at 600 s (121 lines)**. The parallel Chrome download of the 300-s stream also completed
+(`probe.ndjson`, 61 lines). Render Node **v24.14.1**. **Decision: stream transport** (Task B9 primary path); `engines` was
+deliberately NOT added to `package.json` so the probe merge could not move Render's Node.
+
+**Task A4 — the spike** (`~/mds-team-proof/spike.mjs`, outside git; SDK 0.100.1 via `createRequire` from the web repo;
+`claude-sonnet-5`, thinking off, one tool, 15-lap cap, `cache_control` on the system block; references run through
+`team_sql` in the same minute). Placeholder member = a current member picked by `md5(at_member_id)` with revenue, a chapter and
+a niche (Day-0 item 4 not delivered; Andy's probe member is Staff with no revenue). **5/5 exact:** Q4 22/22 chapter counts +
+joins · Q9 7/7 events, same order and fill % · Q1 every field · Q18 figure + date + tier · Q20 the 8 past-due/unpaid plus the one
+canceled, and the model rejected the 81-row "failed payment date" signal as historical on its own. Laps 3·3·3·2·2 · walls 17.9 ·
+18.2 · 35.5 · 8.7 · 5.4 s (**p50 17.9**) · costs $0.033 · 0.028 · 0.095 · 0.013 · 0.008 (**mean $0.035**) · cache_read 3,601 on
+lap 2 for all five. One lap-1 error (two statements, 42601) repaired on lap 2. Three runs died at 21:41 on a Supabase
+`UND_ERR_CONNECT_TIMEOUT` (a GitHub push timed out in the same minute) — re-run clean.
+
+**Verdict: DOABLE.** 18/18 · read-only binds · heartbeat ≥ 300 s · 5/5 exact (≥ 4 needed) · Q18 + Q20 via SQL · cache hit on
+lap 2 · p50 17.9 s (< 90) · mean $0.035 (< $0.30). No fallback needed. **NEXT = Milestone B**, Tasks B1–B11; delete the probe
+route in that merge; the hash pin leaves with it. Andy's open calls: sign the Team column (+ birthdays, five removal-date keys);
+Day-0 items 3–5 (Render env, placeholders, staff validation).
+
 ## 2026-09-10 (evening) · #147 SQL half closed · backlog review + four rulings · #172 designed and planned — NEXT
 
 **Andy's asks, in order:** "whats next" → "go" on #147 → "whats next" → "why not to make api and our MCP so i can use it
