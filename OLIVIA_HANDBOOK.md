@@ -176,8 +176,18 @@ LLM lane** (#97, in prod since 2026-08-22), everything else flows through normal
 > (Voyage + pgvector through the same RPC) — streams NDJSON to the page, and writes two `olivia_web_messages` rows per turn
 > (`mode='team'`, `route='team-research'`, the query trail as `sources`, cost and laps in `metrics`). The n8n graph is never
 > called for a Team turn (`/api/admin/millie/chat` still returns 400 for `target=team`), there are no member gates, and the
-> asker is always the staff session, on a FAIL-CLOSED allowlist (`MILLIE_TEAM_ASKERS`). Everything below describes Millie's
-> own pipeline for members and the three other Ask Millie targets.
+> asker is always the staff session, on a FAIL-CLOSED allowlist (`MILLIE_TEAM_ASKERS`). Two tools were added later:
+> `web_thread_search` (#170 — this thread's own earlier turns, thread and asker injected server-side) and **`scan_content`
+> (#199, live 2026-09-11)** — READ EVERY ROW of a member set for a trait no column holds. The model writes the SELECT (it
+> must return `id, member, at_member_id, occurred_at, text, url, source`, with `id` a **stable unique integer from the base
+> table** — a synthesised `row_number()` is refused, because the pager re-executes the SELECT per page); `scan.ts` counts
+> and PRICES the set before reading, refuses over 5,000 rows / over `max_cost_usd` ($2 default, $5 ceiling) / on a
+> non-unique id, pages through `team_sql` in 500s, classifies 40 rows per `claude-haiku-4-5` call (four in flight, quotes
+> kept only when verbatim), stops on the wall clock or the cost cap with `complete:false` and the real `scanned` of
+> `total_rows`, and returns a tally trimmed to fit the tool payload with `omitted_members`. **Every tool step's `cost_usd`
+> now counts in the turn's cost**, so `MILLIE_TEAM_DAILY_USD` binds scans too — but one scan may take up to $5 of a $10
+> day, and the gate reads spend BEFORE the turn, so a single turn can overshoot. A 30-day WhatsApp scan ≈ 2,500 rows ≈
+> $0.35. Everything below describes Millie's own pipeline for members and the three other Ask Millie targets.
 
 A member's message travels through the **production n8n workflow** (`12wj6h1TWqb0d4Dq`, 80 nodes —
 Appendix C). The path, in order:
@@ -1799,6 +1809,10 @@ content_items(
   access_rule jsonb,          -- {type: public|chat_member|owner|fb_group, chat?, member?}  UNKNOWN TYPE = DENIED
   sensitivity content_sensitivity,  -- normal | restricted | never_surface
   meta jsonb,                 -- chat_name, sender_member, author_name, post_id, msg_count, topics…
+  --   ⚠ ATTRIBUTION TRAP (#199, verified live 2026-09-11): meta->>'sender_member' is ONE key with TWO identity
+  --   spaces. wa_message: the WA Airtable id — bridge through digest.member_identity (airtable_id ↔ at_member_id),
+  --   17,611/17,611. fb_post + fb_comment: already the CANONICAL at_member_id — join at_member_id directly,
+  --   19,077/19,241; 0/19,241 resolve through member_identity. Never bridge a Facebook row through member_identity.
   search_tsv tsvector,        -- GIN indexed
   embedding vector(1024),     -- HNSW indexed (cosine); NULL for sub-30-char rows by design
   ingested_at timestamptz)
