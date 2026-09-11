@@ -30,6 +30,31 @@ for name, text in (("chiba factory", chiba), ("vietnam gifting", vietnam), ("dub
 check("own domain is excluded, not corroborated",
       "myhappynuts.com" in P.own_domains({"Own Website & % of Revenue": "myhappynuts.com"}))
 
+# #211 round 2, MINOR 5 — the checks above dodge the CRITICAL 1 bug (own_domains truncating a
+# three-plus-label host at its first internal dot) because "myhappynuts.com" has only two labels.
+# A three-label URL is the case that broke live (member recN2dGfelmx01pWf: "www.intimaterose"
+# with the TLD silently lost).
+check("a three-label URL keeps its TLD, no www",
+      P.own_domains({"Own Website & % of Revenue": "https://www.intimaterose.com/"})
+      == ["intimaterose.com"])
+
+multi_line = ("Intimate Rose\nhttps://www.intimaterose.com/ \nTreat My Feet\n"
+              "https://www.treatmyfeet.net/ \nEnduriMed\nhttps://endurimed.com/ \n"
+              "Dwelling With Pride\nhttps://www.dwellingwithpride.com")
+multi_domains = P.own_domains({"Brand(s) URL / Name(s)": multi_line})
+check("a multi-brand multi-line field yields every host with its TLD intact",
+      multi_domains == ["dwellingwithpride.com", "endurimed.com", "intimaterose.com", "treatmyfeet.net"],
+      str(multi_domains))
+
+fake_results = [
+    {"url": "https://www.intimaterose.com/blog/our-story", "title": "Our Story — Intimate Rose"},
+    {"url": "https://someothersite.com/article", "title": "A completely unrelated third-party article"},
+]
+fake_rows, fake_dropped = P.process_results(fake_results, ["intimate rose"], ["intimaterose.com"])
+check("process_results drops a result whose host is the member's own www-prefixed domain",
+      fake_dropped == 1 and len(fake_rows) == 1 and fake_rows[0]["domain"] == "someothersite.com",
+      f"dropped={fake_dropped} rows={[r['domain'] for r in fake_rows]}")
+
 check("speaker page classified as speaking",
       P.classify("https://amzsummits.com/speakers/ian-sells/", None) == "speaking")
 check("podcast classified as podcast",
