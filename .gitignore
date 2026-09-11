@@ -40,3 +40,6 @@ OLIVIA_EVAL_*_[0-9][0-9][0-9][0-9].md
 # Bulk working artifacts, reproducible or backed up elsewhere
 scripts/make_backups/
 scripts/.partners_delta_dump.json
+
+# #172: the pre-ticket prod graph hash pin is versioned (the gate compares live prod against it)
+!olivia_snapshots/prod_pre_172.sha256

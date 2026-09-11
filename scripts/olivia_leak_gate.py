@@ -56,6 +56,7 @@ Secrets come from /Users/Born/mds-digest-web/.env.local (parsed here — sourcin
 in bash breaks). Requests go through curl: python-urllib SSL is broken on this Mac.
 """
 import argparse
+import hashlib
 import os
 import re
 import json
@@ -2089,6 +2090,115 @@ def main():
     check("#176 name index: no placeholder row is left to mask an ordinary word "
           "(a digit, an '@', a 'test' token, or a function-word first name)",
           _idx_ok and not _junk, f"{len(_junk)} still there, e.g. {_junk[:6]}")
+
+    # ---------------------------------------------------------------------------------------------
+    # 9. #172 Team research mode: the read-only SQL surface (digest.team_sql) is service_role-only,
+    #    runs as millie_team_ro, cannot write, cannot enqueue outbound HTTP, cannot see OTP or
+    #    session token hashes, other askers' Team answers, secret-returning functions, vault, or the
+    #    raw member_profiles table (the deny-list view is the door) — and the WhatsApp graph is
+    #    byte-identical to the pre-ticket snapshot. PostgREST maps 42501 → 403 and 25006 → 405, so
+    #    every refusal is pinned on BOTH the status and the SQLSTATE; the control check proves the
+    #    surface answers at all, so a wrong function name cannot pass the refusals by accident.
+    #    The hash pin lives for the life of #172 (the ticket makes NO n8n edit) and leaves with it;
+    #    a peer's promote moves prod and is re-snapshotted deliberately, never silently.
+    # ---------------------------------------------------------------------------------------------
+    print()
+    print("— #172 team research: read-only surface, role reach, graph untouched —")
+
+    def _sqlstate(b):
+        return str(b.get("code", "")) if isinstance(b, dict) else ""
+
+    def _first_row(b):
+        return ((b.get("rows") or [{}])[0] if isinstance(b, dict) else {}) or {}
+
+    st, _b = rpc("team_sql", {"p_sql": "select 1 as one"}, ANON_KEY)
+    check("#172 anon is refused on team_sql", st in (401, 403, 404), f"status {st}")
+    st, _b = rpc("team_sql", {"p_sql": "select 1 as one"}, key)
+    check("#172 service_role executes team_sql (control)",
+          st == 200 and isinstance(_b, dict) and _b.get("row_count") == 1, f"status {st} body {str(_b)[:80]}")
+    st, _b = rpc("team_sql", {"p_sql": "with w as (insert into digest.chats(chat_id, chat_name) "
+                                        "values ('gate-172','gate-172') returning chat_id) select * from w"}, key)
+    check("#172 team_sql refuses a write inside the read-only transaction (25006)",
+          st == 405 and _sqlstate(_b) == "25006", f"status {st} {str(_b)[:120]}")
+    st, _b = rpc("team_sql", {"p_sql": "select net.http_post('https://example.invalid/172', '{}'::jsonb) as id"}, key)
+    check("#172 team_sql cannot enqueue outbound HTTP (net.http_post → 25006 or 42501)",
+          (st == 405 and _sqlstate(_b) == "25006") or (st == 403 and _sqlstate(_b) == "42501"),
+          f"status {st} {str(_b)[:120]}")
+    st, _b = rpc("team_sql", {"p_sql": "select 1; select 2"}, key)
+    check("#172 team_sql refuses a second statement (42601)", st == 400 and _sqlstate(_b) == "42601",
+          f"status {st} {str(_b)[:120]}")
+    for _label, _sql in (("OTP hash columns", "select otp_code_hash from digest.members limit 1"),
+                         ("session token hashes", "select token_hash from digest.member_sessions limit 1"),
+                         ("olivia_web_messages (other askers' Team answers)",
+                          "select id from digest.olivia_web_messages limit 1"),
+                         ("the raw member_profiles table (the deny-list view is the door)",
+                          "select at_member_id from digest.member_profiles limit 1"),
+                         ("secret-returning functions (meta_webhook_config)",
+                          "select * from digest.meta_webhook_config()")):
+        st, _b = rpc("team_sql", {"p_sql": _sql}, key)
+        check(f"#172 {_label} are dark to the role (42501)", st == 403 and _sqlstate(_b) == "42501",
+              f"status {st} {str(_b)[:120]}")
+    st, _b = rpc("team_sql", {"p_sql": "select * from vault.decrypted_secrets limit 1"}, key)
+    check("#172 vault is dark to the role (42501 or 3F000)",
+          (st == 403 and _sqlstate(_b) == "42501") or (st == 400 and _sqlstate(_b) == "3F000"),
+          f"status {st} {str(_b)[:120]}")
+    st, _b = rpc("team_sql", {"p_sql": "select count(*) as n from digest.member_profiles_team "
+                                        "where at_fields ? 'Removal Reason' or at_fields ? 'Staff Notes' "
+                                        "or at_fields ? 'Member LTV (Membership + Event Profit)'"}, key)
+    check("#172 the deny-list view carries no closed key (removal reason, staff notes, LTV)",
+          st == 200 and _first_row(_b).get("n") == 0, f"status {st} n={_first_row(_b).get('n')}")
+    # views run as their OWNER and bypass table grants: none the role can read may reference a dark thing
+    st, _v = rpc("team_sql", {"p_sql": "select v from (select schemaname||'.'||viewname as v, definition, "
+                                        "has_table_privilege('millie_team_ro', format('%I.%I', schemaname, viewname), 'SELECT') as readable "
+                                        "from pg_views where schemaname in ('digest','event') union all "
+                                        "select schemaname||'.'||matviewname, definition, "
+                                        "has_table_privilege('millie_team_ro', format('%I.%I', schemaname, matviewname), 'SELECT') "
+                                        "from pg_matviews where schemaname in ('digest','event')) x "
+                                        "where readable and (definition ilike '%otp_code_hash%' or definition ilike '%delivery_otp_hash%' "
+                                        "or definition ilike '%token_hash%' or definition ilike '%olivia_web_messages%')"}, key)
+    check("#172 no view the role can read re-opens a dark column or table (views run as their owner)",
+          st == 200 and isinstance(_v, dict) and _v.get("row_count") == 0, f"status {st} rows {str(_v)[:160]}")
+    # ... and none other than the deny-list view itself hands the role member_profiles.at_fields WHOLE
+    # (a `->> 'One Key'` read is fine — member_phones does that; the raw column re-opens every closed key)
+    st, _v = rpc("team_sql", {"p_sql": "select schemaname||'.'||viewname as v from pg_views where schemaname in ('digest','event') "
+                                        "and viewname <> 'member_profiles_team' "
+                                        "and has_table_privilege('millie_team_ro', format('%I.%I', schemaname, viewname), 'SELECT') "
+                                        "and definition ilike '%member_profiles%' and definition ~* 'at_fields\\s*(,|\\s+as\\b|\\s+from\\b|\\))'"}, key)
+    check("#172 no view the role can read exposes member_profiles.at_fields whole (the closed keys ride in it)",
+          st == 200 and isinstance(_v, dict) and _v.get("row_count") == 0, f"status {st} rows {str(_v)[:160]}")
+    st, _o = rpc("team_sql", {"p_sql": "select pg_get_userbyid(p.proowner) as owner, (select count(*) from aclexplode(p.proacl) a "
+                                        "left join pg_roles r on r.oid = a.grantee where a.grantee = 0 or r.rolname in ('anon','authenticated')) "
+                                        "as public_grants from pg_proc p join pg_namespace n on n.oid = p.pronamespace "
+                                        "where n.nspname = 'digest' and p.proname = 'team_sql'"}, key)
+    _row = _first_row(_o)
+    check("#172 team_sql is owned by millie_team_ro and holds no PUBLIC/anon/authenticated EXECUTE",
+          st == 200 and _row.get("owner") == "millie_team_ro" and _row.get("public_grants") == 0, f"status {st} {_row}")
+    st, _r = rpc("team_sql", {"p_sql": "select rolcanlogin as login, rolsuper as super, (select count(*) from pg_auth_members m "
+                                        "join pg_roles g on g.oid = m.roleid where m.member = r.oid and g.rolname = 'pg_read_all_data') "
+                                        "as read_all from pg_roles r where rolname = 'millie_team_ro'"}, key)
+    _rr = _first_row(_r)
+    check("#172 millie_team_ro is NOLOGIN, not superuser, not pg_read_all_data",
+          st == 200 and _rr.get("login") is False and _rr.get("super") is False and _rr.get("read_all") == 0,
+          f"status {st} {_rr}")
+    # the WhatsApp graph is untouched: neither export mentions the new surface, prod's hash = the snapshot
+    _n8n = load_env()
+    _snap_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "olivia_snapshots", "prod_pre_172.sha256")
+    for _wid, _label in (("12wj6h1TWqb0d4Dq", "prod"), ("bqHstPDi84uOhTCJ", "staging")):
+        _wf = subprocess.run(["curl", "-s", "-m", "60", f"{_n8n['N8N_API_URL'].rstrip('/')}/api/v1/workflows/{_wid}",
+                              "-H", f"X-N8N-API-KEY: {_n8n['N8N_API_KEY']}"], capture_output=True, text=True).stdout
+        check(f"#172 {_label} workflow export contains neither team_sql nor the research route",
+              len(_wf) > 1000 and "team_sql" not in _wf and "/api/admin/millie/research" not in _wf,
+              f"export {len(_wf)} bytes, or a reference found")
+        if _label == "prod":
+            try:
+                _graph = json.loads(_wf)
+                _canon = json.dumps({"nodes": _graph.get("nodes"), "connections": _graph.get("connections")}, sort_keys=True)
+                _h = hashlib.sha256(_canon.encode()).hexdigest()
+                _want = open(_snap_path).read().strip() if os.path.exists(_snap_path) else ""
+                check("#172 prod graph hash equals the pre-ticket snapshot (olivia_snapshots/prod_pre_172.sha256)",
+                      _want != "" and _h == _want, f"live {_h[:12]} vs snapshot {_want[:12] or 'MISSING'}")
+            except (ValueError, TypeError) as _e:
+                check("#172 prod graph hash equals the pre-ticket snapshot", False, f"could not hash the export: {_e!r}")
 
     print()
     if failures:
