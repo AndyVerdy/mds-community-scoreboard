@@ -11,6 +11,45 @@
 
 # Olivia — next session
 
+## STATE 2026-09-11 — #190 CLOSED: the exam says **14% judged / 7% reproducing** · 6 tickets filed (#201–#206) · NEXT = **Andy's call: #170 (the agreed order) or #204/#201 (new S1s from the exam)**
+
+**Read first:** `OLIVIA_EXAM_190_TRIAGE.md` (what the 14 failures actually are) → the #190 close block on the board →
+the #201–#206 blocks. The raw report is `OLIVIA_EVAL_2026-09-11.md`.
+
+**What happened.** Andy chose a **fresh bank** ("do fresh 100"). Both old banks were stale — the nightly's
+`eval_bank_v2.json` was built 2026-07-25 with 50 machine-written questions and **not one ever retired** (against his own
+retirement rule), the locked 100 was frozen 08-16 — while members had asked **4,058 questions since 08-16** that no bank
+had seen. The new exam is 100 of those real asks with truths verified the same day. Fired at prod: **100 judged · PASS 78
+· PARTIAL 8 · FAIL 14 (14.0 %)**, 100/100 answered. Then **every failure was re-fired and read by hand: 7 reproduce,
+5 do not, 2 were the bank's own error** — so the honest defect rate is **7 %**, and the nightly's 9.5 % was inflated
+(4 of its 13 three-night-running failures were stale truths, now repaired).
+
+**The failures are four mechanisms, not fourteen bugs:** a column we hold that no tool returns (**#201** — `view_count`
+is missing from `video_search_v2`'s RETURNS TABLE, **Brand Name** is in no gated function at all) · one lane denying
+while another lane holds the answer (**#203** — "MDS 9", "Trybe"/"Tribe") · the wrong lane answering (**#202** — the
+chat recommender ran with no query) · coverage stated as a feeling (**#206**). Plus **#205** (a post ranked 4th is cut
+at 500 chars and the fact sat at 658) from the sticky-13 triage.
+
+**⚠️ The one to look at first is #204 (S1, privacy).** An answer wrote an exact revenue figure — *"a UK beauty brand
+owner (£14.5M/yr)"* — in Millie's own voice. The figure is public (MDS's own welcome post) so it is quotable, but only
+as an attributed quote with its link, paired with our band. It happened in a **real member conversation on 2026-09-04**
+(`olivia_messages` 62689), not only in the exam. Intermittent: the re-fire hit the clamp. **The leak gate cannot see
+this class** — the number arrives as content, so no retrieval rule is broken; the broken rule is a rendering rule.
+
+**Live state, unchanged by this session.** Prod n8n `b4db92d0` (92 nodes) · staging `9d91109e` · lock free ·
+gate **367 checks, 0 FAIL, exit 0** · web main `5c412c6`. **Nothing was promoted, merged to a live service, or edited
+in the workflow.** The 03:30 CDT nightly runs `eval_bank_v2.json` as always — with five repaired truths, so it is the
+first nightly judged against facts that match the warehouse; read it before quoting any trend.
+
+**Two notes for whoever runs the eval next.** (1) `--nightly` and `--fire --score --cleanup` both **delete this run's
+own rows** when they finish, so read the answers BEFORE cleanup or you will have to re-fire to triage. (2) Context-
+dependent follow-ups ("is it true what they said…") can never pass: the eval resets before every question by design.
+Either carry the parent turn in the bank or leave them out.
+
+**Still waiting on Andy (carried over):** sign the Team column in `OLIVIA_SHAREABLE_FIELDS.md` (+ birthdays and the five
+removal-date keys) · the Voyage key pasted in chat on 09-10, rotate or keep · more Team askers · `NODE_VERSION` ·
+GroupOS PAT (#182, #17) · Circleback (#36) · #186's two-docs call · #118 with Eugene · #32's send.
+
 ## STATE 2026-09-11 (early) — #172 CLOSED: Team research mode LIVE for Andy · gate 367/0 · prod n8n untouched · NEXT = Andy's pick (#199 scan tool is FILED and PARKED — "finish our plan first" · #198 MCP door · #192 audit · #190 sprint-closure eval last)
 
 **⛔ SESSION CLOSED 2026-09-11 — Andy's last word: "close the session. and i will follow your advice on next steps."** The
