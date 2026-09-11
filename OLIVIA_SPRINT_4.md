@@ -1455,11 +1455,29 @@ of a cent per question, flat) · a `web_thread_search` tool she calls for exact 
 used). Plus the sidebar: threads per mode, titled by the first question, New chat.
 
 **Acceptance.** 1. A thread of 100+ turns answers "what did we decide earlier about X?" correctly from the
-summary or the tool. 2. Per-question cost on a long thread is within 10% of a fresh thread. 3. Sidebar lists the
-caller's own threads per mode, newest first; New chat starts one. 4. The tool is reachable only for web turns and
-only for the asker's own thread (server-injected `thread_id`, like `p_phone`); gate proves WhatsApp turns cannot
-call it. 5. New table `digest.olivia_web_threads` (thread_id, asker_email, mode, title, summary, updated_at),
-service_role only.
+summary or the tool. 2. Per-question cost on a long thread is within 10% of a fresh thread. 3. ~~Sidebar lists the
+caller's own threads per mode, newest first; New chat starts one.~~ **ALREADY DELIVERED by #169 — see below.**
+4. The tool is reachable only for web turns and only for the asker's own thread (server-injected `thread_id`, like
+`p_phone`); gate proves WhatsApp turns cannot call it. 5. New table `digest.olivia_web_threads` (thread_id,
+asker_email, mode, title, summary, updated_at), service_role only.
+
+#### 📐 SCOPE CHECKED against live 2026-09-11 (Andy: *"this is already happening, or is the idea here different?"*) — **half of this ticket shipped, the other half has not started**
+
+**Shipped, in #169, deliberately:** the sessions rail in the screenshot — New session, Search sessions, per-mode
+grouping, a session count, and reopening a thread with its provenance intact. `src/lib/millie/web-chat.ts`
+(`listThreads`) says so in its own comment: *"Millie's LONG memory of a thread (running summary + search tool)
+stays #170; the rail itself ships here because the design is built around it."* It is derived from the caller's own
+`olivia_web_messages` rows — no model call, no extra table. **So AC 3 is done and must not be rebuilt.**
+
+**Not started — and this is the whole remaining ticket: MEMORY, not navigation.**
+- The prod graph's `Load Recent Turns` reads **`limit=16`**. Sixteen turns is all Millie remembers of a thread.
+- `/api/admin/millie/chat` sends the door **no history at all** beyond `thread_id` — the web side contributes nothing.
+- **`digest.olivia_web_threads` does not exist** (Supabase holds only `olivia_web_messages`), so there is nowhere for
+  a running summary to live.
+- There is no `web_thread_search` tool.
+
+**So reopening a three-day investigation shows you the whole transcript on screen while Millie remembers only its
+tail.** That is the gap, and ACs 1, 2, 4 and 5 are exactly the fix.
 
 ### #171 · Public answer from the Facebook tool
 

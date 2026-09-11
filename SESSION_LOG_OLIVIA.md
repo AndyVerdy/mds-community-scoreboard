@@ -80,6 +80,27 @@ which is self-shareable under the rulebook.
 
 Scorecard branch `190-eval-20260910`; tools repo `eef65e2`.
 
+**Close of day.** **#210 filed** (Sprint 5, 🔵 S3) from the nightly's Q2096 and confirmed live on prod at 14:41Z: asked
+*"what is my title according to my membership application?"* the plan reaches the application lane, the item reads
+*"Title: Head of Tech & Automation"*, and the answer is *"I'm not able to share job titles, even someone's own."* The
+rulebook's 🔴 NEVER list is about ANOTHER member — the same page carries the self-exception for a member's own
+application answers — and she already volunteers the same title on the dossier lane, so today she both refuses it and
+gives it.
+
+**#170 scope-checked against live on Andy's challenge** (*"this is already happening, or is the idea here different?"*,
+with a screenshot of the sessions rail). **Half of it shipped in #169 and must not be rebuilt:** the rail — New session,
+search, per-mode grouping, reopening a thread with its provenance — derived from the caller's own `olivia_web_messages`
+rows, with `listThreads` saying in its own comment that the long memory stays #170. **The other half has not started:**
+prod's `Load Recent Turns` reads **`limit=16`**, `/api/admin/millie/chat` sends the door no history beyond `thread_id`,
+**`digest.olivia_web_threads` does not exist**, and there is no `web_thread_search` tool. AC 3 struck through on the
+board; ACs 1/2/4/5 are the ticket.
+
+**NEXT (Andy's close):** **#170, the memory half only.** He is opening a **second session in parallel on the newly
+connected Exa.ai MCP** — whether it can improve search by enriching the **members list**, possibly the **partners list**.
+That session should start from #160's existing `partner_web_profile` (506 crawled partner profiles, weekly refresh) rather
+than from nothing, and from the proven gap it leaves: `people` is EMPTY for the partners checked today (Hector,
+StoreClaw), which is exactly what made #5068 credit the wrong founder.
+
 ## 2026-09-11 · #190 CLOSED — a fresh 100-question exit exam at prod: 14% judged, 7% reproducing; the nightly bank was overstating by ~2×
 
 **Andy's asks, in order:** "continue on millie" (briefing, then WAIT — he was given #190 with story, my proposed ACs and the cost)
