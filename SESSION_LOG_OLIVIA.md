@@ -4,6 +4,53 @@
 
 
 
+## 2026-09-11 (overnight) · the #190 remediation — eight core fixes, 16 of 22 addressed, SQL live, graph STAGED for Andy's promote
+
+**Andy's instruction at 00:50:** *"It's a 22% failure. There is no such thing as partial. Partial = fail … work overnight and
+close tickets one by one … fix the core issue, not a specific question … reprobe the failed question plus 3 similar types of
+questions … in the morning I'm expecting <2% of issues unless we have core issues."* He was asked three questions before any
+work started and ruled: **no full re-run of the bank** · **new SQL functions may go live, the workflow stays staged for his
+promote** · **a member's brand is public — put it in the 🟢 SHARE column.**
+
+**SQL applied to prod** (all CREATE OR REPLACE with unchanged signatures, so ACLs survived — `reference_drop_function_revokes_acl`):
+`member_card_brand_201_20260911` (a brand resolves to its owner) · `member_card_v3_brands_201_20260911` (returns the brands,
+REVOKE PUBLIC + GRANT service_role to match v2 exactly) · `video_view_count_201_20260911` (`p_order=views`, view count in
+`strength_note`) · `content_stats_coverage_206_20260911` (a `coverage` metric: per source, count, earliest, latest, how many
+predate 2025). `db/` re-exported, 164 files.
+
+**Staged on the graph** (versionId `2c16e59b`, snapshot `staging_2026-09-11T064422Z_190-overnight-staged.json`; pre-work state
+`staging_2026-09-11T054855Z_pre-190-overnight.json`): Plan Request — a most-watched ask sets `p_order=views` · a quoted brand
+becomes the member subject · a named chat routes to `chat_info` · a named MDS programme routes to the events lane · a coverage
+question routes to `content_stats` · an ability question routes to the curated capability list · a what-was-said question
+fetches transcript passages with spelling variants. Attach Embedding — `member_card` → `member_card_v3`. Answer Seed — the
+view ranking, the brands column, the coverage metric. Build Prompt — revenue is a band not a figure, the over-claim rules, the
+transcript block. Format Reply — strips a money-only parenthetical on an uncited line. Build Verbatim Digest — the capability
+list now states what she cannot do.
+
+**Proof, every fix with its failed question plus three siblings, fired at staging:** #201 **8/8** · #202 **5/5** (including the
+not-a-member join path and a recommender regression guard) · #203 **4/4** · #204 **4/4** · #206 **4/4** · #207 **4/4**
+(including "can you find me a member in Miami" as the guard) · #208 **4/4**. **Regression guard:** eight previously-passing
+exam questions across every touched lane → **7 PASS · 1 PARTIAL · 0 FAIL**. **Gate 367/0 exit 0.**
+
+**Two of the 22 were the BANK's error, not Millie's:** 5057 described Andy's own owner-scoped application record correctly,
+and 5067's "2 months free" is in no tool row (`partner_lookup_v2` returns the standing *1 month FREE + 20% + 5% OFF ULTRA*,
+`event_offer` NULL). Both truths corrected in the bank. Two more improved on re-probe (5032 now returns a count and no names;
+5061 no longer offers an unrelated member as a near match), and **four were flaky rather than broken** — 5041, 5044, 5087 and
+5094 all answered correctly on the hand re-fire before any change was made.
+
+**⛔ Six still fail: 5011 · 5027 · 5034 · 5042 · 5068 · 5098 — 6 of 100, against Andy's <2%.** The honest diagnosis is one
+thing, not six: **none of them is missing capability.** In every case the tool already returned what the answer needed, and
+the standing rule for that exact case is already in the shared STYLE block — a distance question, a widening, an antecedent,
+naming only what the tool returned. Adding more rule text did not move them. The fix is **deterministic assembly** (the answer
+built from the returned rows rather than written around them), which is a design decision for Andy.
+
+**Two traps this night paid for.** (1) **`olivia_eval.py --cleanup` is bounded by the EARLIEST `wamid.SELFTEST_EVAL` row, not
+by the current run** — the regression run's cleanup deleted every probe row from the whole night, so read answers before any
+run that cleans. (2) **A rule added to the shared STYLE block does not reliably reach a lane that has its own MODE rules** —
+the fixes that worked changed ROUTING and EVIDENCE; the ones that only changed wording did not move.
+
+**Nothing promoted. Prod n8n `b4db92d0` untouched all night.** Scorecard branch `190-eval-20260910`; tools repo `eef65e2`.
+
 ## 2026-09-11 · #190 CLOSED — a fresh 100-question exit exam at prod: 14% judged, 7% reproducing; the nightly bank was overstating by ~2×
 
 **Andy's asks, in order:** "continue on millie" (briefing, then WAIT — he was given #190 with story, my proposed ACs and the cost)

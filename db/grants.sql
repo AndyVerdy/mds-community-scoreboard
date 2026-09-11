@@ -300,6 +300,7 @@ grant execute on function digest.health_report_secret() to postgres;
 grant execute on function digest.health_report_secret() to service_role;
 grant execute on function digest.immutable_text_array_join(p_arr text[]) to postgres;
 grant execute on function digest.immutable_text_array_join(p_arr text[]) to service_role;
+grant execute on function digest.is_active_member_status(p_status text) to millie_team_ro;
 grant execute on function digest.is_active_member_status(p_status text) to postgres;
 grant execute on function digest.is_active_member_status(p_status text) to service_role;
 grant execute on function digest.is_internal_record(p_status text) to postgres;
@@ -322,6 +323,8 @@ grant execute on function digest.member_card(p_phone text, p_member text) to pos
 grant execute on function digest.member_card(p_phone text, p_member text) to service_role;
 grant execute on function digest.member_card_v2(p_phone text, p_member text) to postgres;
 grant execute on function digest.member_card_v2(p_phone text, p_member text) to service_role;
+grant execute on function digest.member_card_v3(p_phone text, p_member text) to postgres;
+grant execute on function digest.member_card_v3(p_phone text, p_member text) to service_role;
 grant execute on function digest.member_count(p_phone text, p_niche text, p_city text, p_state text, p_chapter text, p_band text, p_main_only boolean, p_group_by text, p_at_member_id text) to postgres;
 grant execute on function digest.member_count(p_phone text, p_niche text, p_city text, p_state text, p_chapter text, p_band text, p_main_only boolean, p_group_by text, p_at_member_id text) to service_role;
 grant execute on function digest.member_display_name(p_at_member_id text) to postgres;

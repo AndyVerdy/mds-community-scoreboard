@@ -104,18 +104,19 @@ begin
          ((case when f.kw_rank > 0 then 1.0/(60 + f.kw_pos) else 0 end)
           + (case when f.vec_dist is not null then 1.0/(60 + f.vec_pos) else 0 end))::real,
          -- #150 (2026-08-26): report the ASKER's entitlement, not the video's raw property.
-         -- The content columns above already keyed on f.restricted (grant-aware); this flag
-         -- still said 'restricted' to an entitled member, so the model held back content it
-         -- had been handed - Andy, staff-granted, was told "I can't pull direct quotes".
          f.restricted,
          case when f.fitv > 0 and f.fit_topics is not null and array_length(f.fit_topics,1) > 0
               then 'touches what you focus on: ' || array_to_string(f.fit_topics[1:2], ', ') end,
-         f.snote,
+         -- #201 (2026-09-11): view_count lives in videos_catalog and refresh_entity_dossiers already
+         -- reads it, but it never reached this tool's contract - so "the top 5 most watched mogul
+         -- calls" was answered "I don't have a view-count ranking" about a number we hold (#190
+         -- Q5100). It rides strength_note, which leaves the RETURNS TABLE unchanged: CREATE OR
+         -- REPLACE keeps the ACL and no n8n change is needed to SEE it. p_order=views RANKS by it.
+         nullif(concat_ws(' - ',
+           case when coalesce(f.view_count, 0) > 0 then f.view_count || ' views' end,
+           f.snote), ''),
          case when f.restricted then null else f.summary end,
-         -- #151 (2026-08-26): the COUNT of this video's event is a fact the tool states, never
-         -- something the model works out from how many rows a keyword happened to return. Two
-         -- runs of "do you have videos from summit" said 8 (rows returned) and then implied 1
-         -- ("a fresh one just landed"); the real number was 7. NULL for videos with no event.
+         -- #151 (2026-08-26): the COUNT of this video's event is a fact the tool states.
          case when coalesce(array_length(f.event_ids,1),0) > 0 then
            (select count(*)::int from digest.videos_catalog vc
              where vc.status='published' and vc.deleted_at is null
@@ -129,17 +130,13 @@ begin
           or exists (select 1 from unnest(coalesce(f.tag_names, '{}'::text[])) t
                       where t ilike '%' || p_call_type || '%')
           or f.title ilike '%' || p_call_type || '%')
-   order by (case when lower(coalesce(p_order, '')) = 'recent' then f.app_created_at end) desc nulls last,
-            (case when v_q is null or lower(coalesce(p_order, '')) = 'recent' then 0
+   order by (case when lower(coalesce(p_order, '')) = 'views' then f.view_count end) desc nulls last,
+            (case when lower(coalesce(p_order, '')) = 'recent' then f.app_created_at end) desc nulls last,
+            (case when v_q is null or lower(coalesce(p_order, '')) in ('recent','views') then 0
                   else (case when f.kw_rank > 0 then 1.0/(60 + f.kw_pos) else 0 end)
                        + (case when f.vec_dist is not null then 1.0/(60 + f.vec_pos) else 0 end)
                        + least(f.fitv, 2.0) * 0.004
-                       -- #102 time-decay slice (2026-08-28, Andy: "relevancy suffering, since it
-                       -- was last year summit"). A fresh session and a year-old one with equal
-                       -- topical match must not tie: problem-first intent questions were served
-                       -- Milan 2025 content over the running Summit. Bounded nudge, not a rewrite:
-                       -- 0.006 inside 60 days, 0.003 inside 180 (RRF legs max at 1/61 = 0.0164,
-                       -- so this reorders near-ties and cannot lift junk over a strong match).
+                       -- #102 time-decay slice (2026-08-28): bounded nudge, not a rewrite.
                        + (case when f.app_created_at > now() - interval '60 days' then 0.006
                                when f.app_created_at > now() - interval '180 days' then 0.003
                                else 0 end)
