@@ -106,6 +106,7 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#205** | ✂️ A post ranked 4th is cut at 500 chars, so the fact at char 658 never reaches the model (the Advisory Council deadline) | 🟡 S2 | S | — | 📝 filed 2026-09-11 from #190's sticky-13 triage |
 | **#206** | 📅 Coverage stated as a feeling — "the further back the thinner" instead of 4,283 posts, 2021-08-17 → 2026-09-10, 5 before 2025 | 🔵 S3 | XS | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — SQL live on prod, graph staged for the promote; proof in the 🌙 OVERNIGHT block above. 4/4 probes |
 | **#210** | 🅿️ **SPRINT 5** · 🪪 She refuses a member their OWN job title — the never-share rule is not scoped to the subject, and the dossier lane volunteers the same fact | 🔵 S3 | XS | — | 📝 filed 2026-09-11 from the nightly (Q2096), confirmed live on prod `b31eadbb` 14:41Z: plan hit the application lane, the item says "Title: Head of Tech & Automation", the answer refused |
+| **#212** | 🅿️ **SPRINT 5** · 🧾 The forms layer already resolves a member's CURRENT answer (`digest.member_fact`, 1,314 questions over 114 forms) and no gated function reads it — Millie reads the undated Airtable mirror instead | 🔵 S3 | M | — | 📝 filed 2026-09-11 while probing for #211: `member_fact` referenced only by `grants.sql` and three sibling views, zero files in `db/functions/`; 447 of 733 actives answered a form in the last 12 months; no `brand_name` concept exists |
 | **#207** | 🧭 An ability question about Millie herself ("are you able to do daily reminders?") answered by improvising a capability | 🟡 S2 | XS | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — routes to the curated list (#79), which now states what she cannot do; 4/4 probes |
 | **#208** | 🎙️ "What did the speaker say about X" denied — the videos lane never searched the TRANSCRIPTS, and the word was spelled differently there | 🟡 S2 | S | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — transcript passages + spelling variants; 4/4 probes |
 | **#191** | 🧪 The nightly eval is DEAD since this morning — #105's webhook secret 403s all 220 posts, no report for 2026-09-10 | 🔴 S1 | XS | n/a (local job) | ✅ **CLOSED 2026-09-10** — 25/25 posts `200` on the live webhook; 4 scripts fixed, a refused door now aborts loudly |
@@ -400,6 +401,54 @@ volunteers it, which is the worst of both.
 2. Asking for ANOTHER member's job title is still refused ✅ 3. The dossier lane and the application lane agree ✅
 4. `OLIVIA_SHAREABLE_FIELDS.md` says which rules are subject-scoped, so the next field does not repeat this ✅
 5. Gate GREEN, with a check that another member's title stays closed.
+
+### #212 · 🅿️ SPRINT 5 · The forms layer already resolves a member's CURRENT answer, and nothing reads it
+
+**🔵 S3 · size M — filed 2026-09-11 from live probing during the Exa session (#211).**
+
+> **In plain words:** members keep answering forms — 183 census responses since 5 August alone — and the warehouse
+> already works out which answer is the current one. Millie never looks at it. She reads a frozen Airtable copy where
+> five years of answers sit in one box with no dates, so she can state a brand a member sold years ago.
+
+*As a member, when Millie tells someone what I do, she uses the answer I gave most recently, not one I gave five years ago.*
+
+**The resolved layer exists.** `digest.member_fact` is `DISTINCT ON (member_at_id, concept, year)` ordered
+`submitted_at DESC`, over `form_responses` joined to `form_question_map` — **1,314 questions across 114 forms** mapped to
+concepts. That is the dynamic layer the answer path needs, already built.
+
+**Nothing gated reads it.** `member_fact` appears only in `db/grants.sql` and three sibling views
+(`member_fact_population`, `member_fact_num`, `metric_lineage`). **Zero files under `db/functions/` reference it.**
+
+**What Millie reads instead** is `member_profiles.at_fields`, the Airtable mirror, where answers accumulate with no dates
+and no current value. Chris Kjeldsen's `Brand Name` is literally `["CGK Linens", "CGK Linens", "CGK Linens",
+"CGK Linens & Meliusly", "CGK Linens, Beckham Hotel Collection, Saferest & Hotel Sheets Direct & Meliusly"]` — five
+answers over five years, and nothing says which is now.
+
+**Coverage, measured 2026-09-11.** 733 actives · **447** answered some form in the last 12 months · 554 within 24 months ·
+**159** completed the 2026 census (`DFeK5yop`: 183 responses, 165 members, synced 2026-09-10) · **77** have never answered
+any form. The census leg is healthy; it is the reading end that is not wired.
+
+**Two concept gaps.** `formal_title` exists (2 questions, 1,490 answers) and so does `brand_count`, but there is **no
+`brand_name` concept at all**, so the brand a member names is never resolved even though several forms ask for it. And
+`at_fields->>'Responsibilities in Company - per census/application'` is filled for 482 actives as free prose — the most
+common value occurs **twice**; real answers include "Growth", "Manage the business", "operations, amazon account
+managing, production".
+
+**Shape of the fix.** Point the member-facing lanes at the resolved layer instead of the frozen mirror: audit
+`form_question_map` for the missing concepts, `brand_name` first · add a gated function returning a member's current
+facts, each with its `submitted_at` and source form · have `member_card_v3` and the dossier lane read it, so every fact
+Millie states about a member carries when it was said.
+
+**Accept when:**
+1. A gated function returns, per member, one row per concept with value, `submitted_at` and `form_name` — proven by SQL
+   on at least three members whose historical answers disagree.
+2. `brand_name` exists as a concept and resolves for a measured share of the 444 actives with a brand on file; the share
+   is reported, not asserted.
+3. A prod probe on a member whose brand changed returns the newest answer **with its date**.
+4. Coverage report: how many of 733 actives get a current answer per concept, and how many still fall back to the mirror.
+5. Gate GREEN, exit 0.
+
+**Not in scope:** the web layer (#211), and normalising the free-prose role answers, which needs its own decision.
 
 ### #204 · An exact revenue figure reached a member in Millie's own voice
 
