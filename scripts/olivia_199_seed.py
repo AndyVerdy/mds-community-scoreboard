@@ -3,27 +3,41 @@
 #199 — seeds four digest.content_items rows for the scan_content proof
 (scripts/olivia_199_scan_direct.ts + olivia_team_probe.ts, in the mds-digest-web worktree).
 
+Fix round 1 (2026-09-11): the first version keyed the seed under
+meta->>'at_member_id', which no production row ever uses (real wa_message
+rows key the author under meta->>'sender_member' — verified: 17,611 of
+17,611 content_items rows with a 'sender_member' meta key, zero with
+'at_member_id'). That made AC1 end-to-end invisible to the model. Fixing the
+key alone was not enough: `sender_member` is NOT the attendee's canonical
+Members-table id either — it is a SEPARATE Airtable record id, from
+digest.member_identity.airtable_id (a WA-identity mapping table), joined as
+`member_identity.airtable_id = content_items.meta->>'sender_member'`
+(verified: 17,611/17,611 real wa_message rows resolve via that join; 0
+resolve via `member_identity.at_member_id = meta->>'sender_member'`). Of the
+original four attendees, only Ward Gahan has a member_identity row — the
+other three have never sent a linked WhatsApp message, so under EITHER id no
+value would make them attributable via the real join path. Swapped in three
+more real, confirmed Inspire 2026 attendees who do have a WA identity
+mapping, kept Ward Gahan, kept all four message bodies unchanged.
+
 Four REAL Inspire 2026 attendees (verified live 2026-09-11 via
 digest.event_registrations joined to digest.events_catalog on event_at_id =
 at_record_id — the brief's guessed `e.at_id` column does not exist; the real
-PK is `at_record_id` — then joined to digest.member_profiles_team so each id
-resolves to a real member):
+PK is `at_record_id` — then joined to digest.member_profiles_team for a real
+member, AND to digest.member_identity by at_member_id for a real WA identity):
 
-  rec00zt4nbb6LdmC2  Ward Gahan
-  rec05lSD6p6ElrsIZ  BJ Wright
-  rec077pootHBidody  Sofia Tamez
-  rec0ERr7rc82WeArG  Jake Ryan
+  at_member_id        wa_identity (member_identity.airtable_id)   name
+  rec00zt4nbb6LdmC2    recRDZuJxWu24HdBo                          Ward Gahan
+  rec0T1V7UJMz9n6hH    recqVhcrnPBppqVJk                          Max Mikhaylenko
+  rec1bCuc9X1LU6QjV    recQupPrlneoKfjJl                          Kayvon Tavakoli
+  rec1PiOmfUxwkiBZz    recxVSAS11YmDdcSY                          Shinghi Detlefsen
 
 Each gets one digest.content_items row: source='wa_message', kind='seed-199',
-occurred_at 3 days ago (well within the last 30), meta={"seed":"199",
-"at_member_id":<id>} — the shape scan_content's example SELECT joins on
-(c.meta->>'at_member_id'). NOTE: live wa_message rows key the author under
-meta->>'sender_member', not meta->>'at_member_id' — no production row carries
-an 'at_member_id' key (verified: `content_items where meta ? 'at_member_id'`
-returns zero rows across all sources). So these four seeded rows are the ONLY
-rows in the table that will ever match the AC1 example SELECT's join/filter;
-"scanned = their real rows + 4" in the brief does not apply — real matching
-rows do not exist under this meta shape.
+occurred_at 3 days ago (well within the last 30), meta={"chat_id":"seed-199",
+"chat_name":"seed-199","sender_member":<wa_identity_id>} — mirroring the
+exact 3-key shape real wa_message rows carry, with the real WA-identity id
+(not the canonical member id) under 'sender_member', matching the live join
+graph exactly.
 
 access_rule is NOT NULL with no default; team_sql (SECURITY DEFINER, no
 access_rule filtering) doesn't care about its content, so a placeholder that
@@ -45,11 +59,13 @@ from datetime import datetime, timedelta, timezone
 ENV_PATH = "/Users/Born/mds-digest-web/.env.local"
 KIND = "seed-199"
 
+# (at_member_id, wa_identity_id, name) — wa_identity_id is member_identity.airtable_id,
+# the value real wa_message rows carry at meta->>'sender_member'.
 MEMBERS = [
-    ("rec00zt4nbb6LdmC2", "Ward Gahan"),
-    ("rec05lSD6p6ElrsIZ", "BJ Wright"),
-    ("rec077pootHBidody", "Sofia Tamez"),
-    ("rec0ERr7rc82WeArG", "Jake Ryan"),
+    ("rec00zt4nbb6LdmC2", "recRDZuJxWu24HdBo", "Ward Gahan"),
+    ("rec0T1V7UJMz9n6hH", "recqVhcrnPBppqVJk", "Max Mikhaylenko"),
+    ("rec1bCuc9X1LU6QjV", "recQupPrlneoKfjJl", "Kayvon Tavakoli"),
+    ("rec1PiOmfUxwkiBZz", "recxVSAS11YmDdcSY", "Shinghi Detlefsen"),
 ]
 
 BODIES = [
@@ -98,7 +114,7 @@ def sb(method, path, body=None, prefer=None):
 def build_rows():
     base = datetime.now(timezone.utc) - timedelta(days=3)
     rows = []
-    for i, ((at_member_id, name), body) in enumerate(zip(MEMBERS, BODIES)):
+    for i, ((at_member_id, wa_identity_id, name), body) in enumerate(zip(MEMBERS, BODIES)):
         occurred_at = (base + timedelta(minutes=5 * i)).isoformat()
         rows.append({
             "source": "wa_message",
@@ -111,7 +127,8 @@ def build_rows():
             "url": None,
             "access_rule": {"chat": "seed-199", "type": "chat_member"},
             "search_extra": None,
-            "meta": {"seed": "199", "at_member_id": at_member_id, "member_name": name},
+            # mirrors the exact 3-key shape real wa_message rows carry
+            "meta": {"chat_id": "seed-199", "chat_name": "seed-199", "sender_member": wa_identity_id},
         })
     return rows
 
@@ -136,8 +153,10 @@ def seed():
     inserted = sb("POST", "content_items", body=rows, prefer="return=representation") or []
     ids = [r["id"] for r in inserted]
     print(f"  inserted {len(inserted)} row(s), ids: {ids}")
+    name_by_wa_id = {wa_id: name for (_, wa_id, name) in MEMBERS}
     for r in inserted:
-        print(f"    id={r['id']} at_member_id={r['meta'].get('at_member_id')} member={r['meta'].get('member_name')} occurred_at={r['occurred_at']}")
+        wa_id = r["meta"].get("sender_member")
+        print(f"    id={r['id']} sender_member={wa_id} member={name_by_wa_id.get(wa_id)} occurred_at={r['occurred_at']}")
 
     # Independent read-back verification via PostgREST (not the insert response).
     check = sb("GET", f"content_items?select=id,meta,occurred_at&kind=eq.{KIND}&order=id.asc") or []
