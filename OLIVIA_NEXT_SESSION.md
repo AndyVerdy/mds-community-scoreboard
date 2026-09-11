@@ -19,9 +19,11 @@
 on the Public door POST, staging `Log Inbound` + `Answer Seed` render it. Test/Prod untouched. Full close block on
 the board under `### #170`; the design and plan live in `docs/superpowers/{specs,plans}/2026-09-11-170-*`.
 
-**Open for Andy.** (1) The route check: ask the MRR-date question on the seeded Team thread `t_170_long`, then
-`python3 scripts/olivia_170_seed_thread.py --cleanup` (seed rows are backdated three days; they never touch the
-daily budget). (2) Promote staging `d68bcd6e` — the Public half is inert until then. (3) Two flags found
+**Route check PASSED** — Andy, in his own session, on the 110-row seeded thread: the paid-date decision recalled via
+`web_thread_search` (row 429). It exposed the #172 no-rows footer flag ignoring a `thread` hit — fixed the same hour
+(`footer.ts`). Seed and probe threads deleted.
+
+**Open for Andy.** (1) Promote staging `d68bcd6e` — the Public half is inert until then. (2) Two flags found
 alongside, on the board under #170: web reads in `Load Recent Turns` are scoped by `thread_id` alone (pre-existing
 #169); a Public turn stacks a ≤30 s fold before the door call.
 

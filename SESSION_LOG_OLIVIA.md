@@ -28,8 +28,11 @@ route reads `loadMemory` and binds the tool, the loop takes `summary` as the fir
 `web_thread_search` 2/2; `t_170_fresh` → no decision on record. Cost: warm long $0.0227 vs warm 20-row $0.0234
 (3 %); cold long $0.0756 = `cache_creation_input_tokens` 23,610; ~$0.002 fold per turn past 16 rows. Gate 368/0 exit
 0; tool absent from graph JSON; WhatsApp-shaped staging probe exec 145554 clean. Staging probes 145499/145506. Table:
-`t_170_long` `summary_through_id=391` = row 94 of 110, summary 1,157 chars. 1,401 tests green. Route check by Andy +
-seed cleanup pending at the time of writing.
+`t_170_long` `summary_through_id=391` = row 94 of 110, summary 1,157 chars. 1,401 tests green. **Route check PASSED
+by Andy in his own session (17:00Z, row 429):** "MRR is reported on the paid date, not the invoice date … via
+`web_thread_search`", 1 thread query, 8 rows, 345 ms, $0.0766 cold. It exposed one defect, fixed and merged the same
+hour: the #172 "No query returned rows" footer flag did not count a `thread` hit (`footer.ts` `noRowsFlag`). Seed
+threads + the two staging probe threads deleted.
 
 **Found alongside (flagged, not worked).** `Load Recent Turns` scopes web reads by `thread_id` alone (pre-existing
 #169). Public fold (≤30 s) stacks before the 85 s door call. `service_role` holds ALL on the new table via the schema

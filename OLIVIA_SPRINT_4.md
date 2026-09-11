@@ -1506,8 +1506,11 @@ because it carries no window at all · 3 ✅ already by #169 · 4 ✅ (structura
 *Before / after.* Memory: 16 rows → the whole thread. Per-turn cost on a 110-row thread: $0.023 (before, not
 measurable — the thread was cut to 16 rows either way). Public memory is INERT until the staging promote.
 
-*Route check.* Pending: Andy asks the MRR-date question on `t_170_long` in the UI after the deploy; then
-`scripts/olivia_170_seed_thread.py --cleanup`.
+*Route check — PASSED, Andy in his own session, 2026-09-11 17:00Z.* On the 110-row thread through the live
+route: *"Decision: MRR is reported on the paid date, not the invoice date … I pulled it from thread history via
+`web_thread_search`"* — row 429, 1 query (`thread`, 8 rows, 345 ms), 2 laps, $0.0766 (cold cache, 23,610 tokens).
+Seed threads and the two staging probe threads deleted afterwards. One defect the check exposed and fixed the same
+hour: the "No query returned rows" footer flag did not count a `thread` hit as evidence (`footer.ts`, `noRowsFlag`).
 
 *Found alongside — not this ticket, flag for priority evaluation.* (a) `Load Recent Turns` scopes web reads by
 `thread_id` ALONE — no `asker_email`, no `mode` — so a staff caller supplying another staff member's thread id
