@@ -106,6 +106,7 @@ evidence. Worth a sweep with Andy to decide which still matter rather than carry
 | **#205** | ✂️ A post ranked 4th is cut at 500 chars, so the fact at char 658 never reaches the model (the Advisory Council deadline) | 🟡 S2 | S | — | 📝 filed 2026-09-11 from #190's sticky-13 triage |
 | **#206** | 📅 Coverage stated as a feeling — "the further back the thinner" instead of 4,283 posts, 2021-08-17 → 2026-09-10, 5 before 2025 | 🔵 S3 | XS | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — SQL live on prod, graph staged for the promote; proof in the 🌙 OVERNIGHT block above. 4/4 probes |
 | **#210** | 🅿️ **SPRINT 5** · 🪪 She refuses a member their OWN job title — the never-share rule is not scoped to the subject, and the dossier lane volunteers the same fact | 🔵 S3 | XS | — | 📝 filed 2026-09-11 from the nightly (Q2096), confirmed live on prod `b31eadbb` 14:41Z: plan hit the application lane, the item says "Title: Head of Tech & Automation", the answer refused |
+| **#211** | 🅿️ **SPRINT 5** · 🌐 Exa web layer — what the open web says about members and partners, stored beside the warehouse and related as a graph | 🟡 S2 | L | n/a (no graph change) | ⏳ **BUILT + REVIEWED, NOT MERGED** on `211-exa-web-profile-20260911` — 464 member profiles, 1,965 edges, partner `people` 281→139 empty, gate 376/0 EXIT 0. **Two decisions wait on Andy: AC11 is FALSE for partners, and a 225-row scope breach.** Close block below |
 | **#212** | 🅿️ **SPRINT 5** · 🧾 The forms layer already resolves a member's CURRENT answer (`digest.member_fact`, 1,314 questions over 114 forms) and no gated function reads it — Millie reads the undated Airtable mirror instead | 🔵 S3 | M | — | 📝 filed 2026-09-11 while probing for #211: `member_fact` referenced only by `grants.sql` and three sibling views, zero files in `db/functions/`; 447 of 733 actives answered a form in the last 12 months; no `brand_name` concept exists |
 | **#207** | 🧭 An ability question about Millie herself ("are you able to do daily reminders?") answered by improvising a capability | 🟡 S2 | XS | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — routes to the curated list (#79), which now states what she cannot do; 4/4 probes |
 | **#208** | 🎙️ "What did the speaker say about X" denied — the videos lane never searched the TRANSCRIPTS, and the word was spelled differently there | 🟡 S2 | S | ✅ staged | ✅ **CLOSED 2026-09-11 (overnight)** — transcript passages + spelling variants; 4/4 probes |
@@ -401,6 +402,98 @@ volunteers it, which is the worst of both.
 2. Asking for ANOTHER member's job title is still refused ✅ 3. The dossier lane and the application lane agree ✅
 4. `OLIVIA_SHAREABLE_FIELDS.md` says which rules are subject-scoped, so the next field does not repeat this ✅
 5. Gate GREEN, with a check that another member's title stays closed.
+
+### #211 · 🅿️ SPRINT 5 · Exa web layer — member and partner enrichment, stored beside the warehouse and related as a graph
+
+**🟡 S2 · size L — built 2026-09-11 on `211-exa-web-profile-20260911`. BUILT AND REVIEWED, NOT MERGED.**
+
+> **In plain words:** Millie only ever knew what a member typed on a form, sometimes years ago, and 160 actives never
+> typed anything. This reads what the open web says about members and partners, stores it in new tables beside the old
+> ones, records how things connect, and shows staff where the web disagrees with us. Stage A stores and compares only.
+
+*As a member asking Millie about another member or a partner, I get facts that are true today and carry their source,
+because the profile behind them was checked against that person's own public page instead of left empty or guessed.*
+
+**Spec** `docs/superpowers/specs/2026-09-11-exa-member-web-profile-design.md` · **plan**
+`docs/superpowers/plans/2026-09-11-211-exa-web-layer.md`. Eight tasks, each reviewed, seven needing a fix round.
+
+#### What is live in the warehouse
+
+| | count |
+|---|---|
+| `member_web_profile` | 464 rows over 464 distinct members — 421 ok, 43 unreachable, 0 failed |
+| `web_entity` | 1,561 — 962 keyed on a stable Exa id, 598 on a name at confidence 0.7, zero unkeyed |
+| `web_edges` | 1,965 — `previously_at` 1,315 · `works_at` 380 · `founded` 254 · `featured_in` 15 · `parent_of` 1 |
+| `knowledge_graph` view | 142,566 = `member_edges` 140,601 + `web_edges` 1,965 |
+| `member_fact_conflicts` view | 568 — company 340, location 228 |
+| `member_web_presence` | 100 rows over 10 members — a Task 5 sample, **not** a delivery |
+| `partner_web_profile.people` empty | **281 → 139** |
+
+#### AC table
+
+| AC | result |
+|---|---|
+| 1. Tables exist, append-only, no UPDATE on a pre-existing table | ⚠️ **breached** — 225 `#160` rows were patched by the role-class backfill. See the decision below |
+| 2. Full pass over the 464 with a LinkedIn URL, every `fetch_status` accounted | ✅ 421 ok · 43 unreachable · 0 failed |
+| 3. Every stored field carries `source_url` and `fetched_at` | ✅ both NOT NULL in the schema |
+| 4. Goldsmith appears in `member_fact_conflicts` with location **and role** | ⚠️ **half** — location yes (`MIAMI` vs `Los Angeles Metropolitan Area`); the view has no role branch |
+| 5. Partner `people` filled, hit rate reported honestly incl. misses | ✅ 142 filled · 85 no executives (61%) · 54 uncorroborated, not written (39%). **StoreClaw was a HIT, contradicting the spec's own expectation** |
+| 6. Weekly job runs and stamps a heartbeat | ❌ **not met** — the job has never run and its `SKILL.md` is outside the repo |
+| 7. `web_entity`/`web_edges` exist, `knowledge_graph` returns both sides | ✅ |
+| 8. `parent_of` edge for Hector, the founder reachable via the parent | ✅ Hector ← Neon Digital Media, `valid_from`/`valid_to` null. **But no gated function reads that edge** |
+| 9. `derive_knowledge_graph()` runs, `web_edges` survives | ✅ 1,965 → 1,965 across a 140,601-row rebuild |
+| 9b. Presence populated, zero self-owned domains | ✅ 0 own-domain rows — on a 10-member sample, 1.4% coverage |
+| 9c. Every company node records how it was keyed | ✅ 962 `exa_id` / 598 `name`, zero nulls |
+| 9d. The three known wrong entities rejected by name | ⚠️ proven in unit tests; **no stored live artefact ties them to a rejection** |
+| 9e. Role edges carry dates; an ended role cannot raise a conflict | ✅ all 1,315 `previously_at` rows have a non-null `valid_to`; the view's branch requires null |
+| 9f. No contact data anywhere, `raw` included | ✅ 0 emails, 0 phone numbers across 1,817 person entries |
+| 10. Gate GREEN, exit 0 | ✅ **376 checks, 0 FAIL, `GATE_EXIT=0`** |
+| 11. **Millie's answers are unchanged** | ❌ **FALSE for partners.** See below |
+
+#### ⛔ Two decisions for Andy, and neither is a patch
+
+**1. AC11 is false, and my plan was wrong to promise it.** `digest.partner_web_profile.people` is read by
+`digest.partner_lookup_v2`, a `SECURITY DEFINER` asker-gated function that is one of Millie's live tools — the leak gate
+itself probes it with the query *"hector"*. This ticket changed that column on **324 rows the function joins**: 99 newly
+filled, which is the sanctioned case and is the whole point of fixing #5068, and 225 pre-existing rows, which is the
+breach below. So partner answers **do** change, and dropping the new tables does not undo it. The plan's rollback
+promise holds for the member half only. No prod probe has been run; the probe that settles this must ask about a
+**partner**, not a member.
+
+**2. A 225-row scope breach, disclosed.** The role-class backfill patched every row with a non-empty `people`, including
+225 whose contents came from #160 and were never empty, against a constraint that permitted writes only to empty rows.
+Caused by an ambiguous instruction of mine. Audited across all 1,817 person entries: the #160 rows gained **only**
+`role_class`, with every `name`, `role` and `linkedin` value and the entry order intact, nothing dropped or renamed.
+`updated_at` was bumped on those rows and nothing in the repo reads it; `crawled_at` still carries #160's 2026-09-03
+provenance. Benign in effect, a breach in letter. Reverting is one command.
+
+#### Named exceptions, in writing
+
+- **The presence collection is a sample, not a delivery** — 10 of 734 members. The first weekly run would sweep all 734
+  in one unreviewed pass.
+- **The weekly job is not in the repo.** It lives only at `~/.claude/scheduled-tasks/member-web-weekly/SKILL.md`, so it
+  neither rides this branch nor rolls back with it, and its step 5 writes the member-facing partner column every Sunday.
+- **`founded` is lost for an ended founding role** — the loader checks "did it end" before "is it a founder", so all 254
+  `founded` edges are current roles.
+- **Two definitions of founder** coexist: member edges require founder or co-founder; partner `role_class` also counts
+  owner and CEO.
+- **9 of 340 company conflicts remain false positives** from legal suffixes and punctuation — "RUGPADUSA" against
+  "Rug Pad USA", "Total Comm Inc" against "Total Comm, Inc". A normalisation pass would clear them.
+- **The scrubber can delete real content.** It strips digit runs that are not protected as URLs or ISO dates, so
+  "2015 - 2020" inside prose is removed. Structured dates are intact; `headline` and `raw` may have lost spans, and
+  because scrubbing runs before storage the loss cannot be counted after the fact.
+- **32% of actives have no brand anchor at all**, so corroboration is impossible for them by construction.
+- **The batch-1 recovery script was never committed**, so that one step is not reproducible from the repo.
+
+#### What the reviews cost, and what they caught
+
+Seven of eight tasks needed at least one fix round; Task 2 needed three. Every defect below came from the plan I wrote,
+not from an implementer: a contact scrubber that let obfuscated emails through while destroying every publication date ·
+a profile hash built from a live follower count, so every weekly run would have looked like a change · an own-domain
+filter that dropped the last part of any three-part web address, letting a member's own site self-corroborate at full
+confidence · a company-to-company rule that failed open, writing ten partners as their own parent · a gate check with
+three compounding bugs that would have passed unconditionally without testing anything · and a conflicts view comparing
+against the text of a JSON array, which made 368 of 368 rows noise.
 
 ### #212 · 🅿️ SPRINT 5 · The forms layer already resolves a member's CURRENT answer, and nothing reads it
 

@@ -4,6 +4,68 @@
 
 
 
+## 2026-09-11 (night) · #211 BUILT AND REVIEWED, NOT MERGED — the Exa web layer, and the promise it broke
+
+**The parallel Exa session Andy opened at the #190 close.** Andy: *"I want to check how this can help us to improve
+search by enriching the members list, maybe partners list."* Spec, plan and eight tasks executed subagent-driven on
+`211-exa-web-profile-20260911`. **Nothing merged. Two decisions wait on Andy.**
+
+**What the probing established before a line was written.** Exa is not a search engine to us, it is a LinkedIn-backed
+company and people layer wearing a search interface. Measured live: `partner_web_profile.people` empty on **281 of 506**
+rows and on 180 of the 405 that crawled fine, because founders are not on marketing sites · **160 of 733** actives hold
+no company anchor at all and **77** have never answered any form · `member_expertise` evidence across all 17,868 rows is
+`persona_gives_hits` 10,676 + `form_hits` 7,424 + `persona_asks_hits` 4,794 against `comments` 2,058 and
+`videos_spoken` 1,821, with `posts` at **zero** — so proficiency is largely the census form counted twice, and public
+evidence is absent entirely. The knowledge graph turned out not to be one: `member_edges` holds three edge types, all
+member-to-member co-presence, and `entity_dossier` has no company node, which is why **#5068** could not tell that
+Hector is the in-house tech of an agency and attached that agency's founder to the product.
+
+**What is live in the warehouse.** `member_web_profile` 464 rows over 464 members (421 ok · 43 unreachable · 0 failed) ·
+`web_entity` 1,561 (962 keyed on a stable Exa id, 598 on a name at confidence 0.7, zero unkeyed) · `web_edges` 1,965
+(`previously_at` 1,315 · `works_at` 380 · `founded` 254 · `featured_in` 15 · `parent_of` 1) · `knowledge_graph` 142,566
+= 140,601 + 1,965 · `member_fact_conflicts` 568 · `member_web_presence` 100 rows over 10 members, a sample not a
+delivery · **`partner_web_profile.people` empty 281 → 139**. Gate **376 checks, 0 FAIL, EXIT 0**, and the gate's #211
+section was proven load-bearing in both directions by making it fail on purpose. Six test suites, 146 checks.
+
+**⛔ AC11 is false, and the plan was wrong to promise it.** `partner_web_profile.people` is read by
+`partner_lookup_v2`, a `SECURITY DEFINER` asker-gated tool the leak gate itself probes with the query *"hector"*. This
+ticket changed that column on **324 rows the function joins** — 99 sanctioned fills, which is the point of the #5068
+fix, and 225 pre-existing #160 rows, which is a disclosed scope breach. Partner answers therefore **do** change, and
+dropping the new tables does not undo it. No prod probe has run, and the probe that settles it must ask about a
+**partner**. The #5068 fix itself is proven only as a graph query, on an edge **no gated function reads**, while the
+surface Millie does read still leads with "Meher Patel, Founder" — now with `parent_company` beside it, untested against
+the model.
+
+**The 225-row breach, audited.** The role-class backfill patched every non-empty `people` row, including 225 from #160,
+against a constraint permitting writes only to empty rows. Across all 1,817 person entries the #160 rows gained **only**
+`role_class`; every `name`, `role` and `linkedin` value and the entry order are intact. `updated_at` moved and nothing
+reads it; `crawled_at` still carries #160's 2026-09-03 provenance. Benign in effect, a breach in letter, reversible in
+one command.
+
+**Seven of eight tasks needed a fix round; Task 2 needed three. Every defect was in the plan, not the implementation.**
+A contact scrubber that let `x(at)y(dot)com` through while stripping every ISO date, which would have blanked every
+publication date downstream · a profile hash computed over text containing the member's live follower count, so every
+weekly run would have looked like a change and re-inserted all 464 · an own-domain filter that truncated any three-label
+host, affecting 72 of the 135 members with a website, letting a member's own site pass the third-party rule and
+self-corroborate at full confidence · a parent-company rule that failed open when no homepage parsed, writing **10 of 15
+partners as their own parent** and one person's LinkedIn profile as a company · a gate check with three compounding bugs
+that would have passed unconditionally without testing anything · a conflicts view comparing against the **text** of a
+JSON array, making 368 of 368 rows noise · and a `featured_in` edge keyed on a publication date, so a date that moved
+would have accumulated rival edges for the same fact.
+
+**Measurements worth keeping.** The presence sweep on ten anchored members returned 100 rows, **15 corroborated, 85
+no_match, 0 no_anchor**, bimodal by member — one at 9-10/10, two at 2-3/10, seven at 0/10 — which reads as genuine
+namesake noise correctly rejected rather than an over-strict rule. Partner fills: 142 written, 85 missed for no
+executives in the record (61%), 54 found but uncorroborated and therefore not written (39%). A single Exa sweep on one
+member cost $0.017 including summaries.
+
+**Filed alongside: #212** — `digest.member_fact` already resolves a member's current answer across 1,314 questions on
+114 forms, and **no gated function reads it**; Millie reads the undated Airtable mirror instead.
+
+**Also on this branch:** the `db/` re-export carries the peer session's `digest.olivia_web_threads` (#170), because
+`db/` is a snapshot of live and that table is live. `origin/main` moved to the #199 merge during review and was merged
+in rather than rebased, since four commits here regenerate `db/`.
+
 ## 2026-09-11 (evening) · #199 SHIPPED — `scan_content`: Millie reads EVERY message of a member set for a fuzzy trait
 
 **Andy's framing, which set the design:** *"this is just one request… we can't even predict these requests now. So is

@@ -11,6 +11,44 @@
 
 # Olivia — next session
 
+## ⛳ #211 — the Exa web layer: BUILT, REVIEWED, **NOT MERGED**. Two decisions wait on Andy.
+
+**Branch `211-exa-web-profile-20260911`, merged up to `origin/main` at the #199 merge, nothing merged down.** Spec
+`docs/superpowers/specs/2026-09-11-exa-member-web-profile-design.md`, plan
+`docs/superpowers/plans/2026-09-11-211-exa-web-layer.md`, close block and full AC table under `### #211` on the board.
+
+**Decision 1 — AC11 is false, and the plan was wrong to promise it.** `digest.partner_web_profile.people` is read by
+`digest.partner_lookup_v2`, a `SECURITY DEFINER` asker-gated tool the leak gate probes with the query *"hector"*. #211
+changed that column on **324 rows the function joins**: 99 sanctioned fills, which is exactly the #5068 fix, and 225
+pre-existing #160 rows. Partner answers therefore change, and dropping the new tables does not undo it. **Nothing about
+members changes** — that half is clean and invisible to every gated path. Andy's call: accept that partner answers move
+and run a prod probe on a **partner** question before merging, or hold the partner half back.
+
+**Decision 2 — a 225-row scope breach, disclosed and reversible.** The role-class backfill patched every non-empty
+`people` row, not only the empty ones it was permitted to touch. Audited across all 1,817 person entries: the #160 rows
+gained **only** `role_class`, with every name, role and linkedin value and the entry order intact. `updated_at` moved,
+nothing reads it, `crawled_at` still carries #160's provenance. Revert or keep, one command either way.
+
+**What is live in the warehouse right now**, whatever is decided, because stage A already ran:
+`member_web_profile` 464 rows over 464 members (421 ok · 43 unreachable) · `web_entity` 1,561 · `web_edges` 1,965
+(previously_at 1,315 · works_at 380 · founded 254 · featured_in 15 · parent_of 1) · `knowledge_graph` 142,566 ·
+`member_fact_conflicts` 568 · `member_web_presence` 100 rows over 10 members, a sample · `partner_web_profile.people`
+empty **281 → 139**. Gate **376/0 EXIT 0**.
+
+**Three things the next session should not re-learn.**
+1. **Ask who READS a column before promising nothing changes.** The whole AC11 failure is that the plan audited what was
+   written and never grepped for the reader.
+2. **A gate check can pass without testing anything.** The #211 gate section had three compounding bugs that made it
+   unconditionally green. It is only trustworthy now because a reviewer made it fail on purpose and watched the exit
+   code flip. Do that to every new gate section.
+3. **The census layer is healthy; the reading end is not wired.** 447 of 733 actives answered a form in the last twelve
+   months and `digest.member_fact` already resolves the current answer over 114 forms — and no gated function reads it.
+   That is **#212**, filed.
+
+**Not done, in writing:** the weekly job has never run and its `SKILL.md` lives outside the repo, so it neither rides
+this branch nor rolls back with it · the presence collection is 10 of 734 members · AC4 is half met, the conflicts view
+has a location branch and no role branch · 9 of 340 company conflicts are still false positives from legal suffixes.
+
 ## ⛳ SESSION 2026-09-11 (evening) — **#199 SHIPPED** · web `9ade4b6` live on Render · NEXT = **#200**
 
 **What shipped (#199 `scan_content`).** A fifth Team tool that READS EVERY ROW of a member set for a trait no column
