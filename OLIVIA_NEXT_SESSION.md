@@ -11,6 +11,51 @@
 
 # Olivia — next session
 
+## ⛳ SESSION 2026-09-11 (evening) — **#199 SHIPPED** · web `9ade4b6` live on Render · NEXT = **#200**
+
+**What shipped (#199 `scan_content`).** A fifth Team tool that READS EVERY ROW of a member set for a trait no column
+holds. Millie writes the SELECT herself, so no question has to be anticipated; the tool prices the set before reading,
+refuses over 5,000 rows / over the cap ($2 default, $5 ceiling) / on an unstable `id`, reads with Haiku 40 rows at a
+time, and always reports what it read and what it cost. Tool costs now count in the turn, so the daily budget binds
+them, and the trail shows each step's cost. Full close block on the board under `### #199`.
+
+**Proven:** Andy's Miami question end to end (242 attendees → one scan → 3 named with quotes + 1 correctly flagged
+`unsure`, $0.0019); a real 30-day WhatsApp scan, 2,541 rows, $0.35, turn $0.5676; refusal and partial both fire;
+gate exit 0; 1,425 tests.
+
+**The proof changed the product twice.** The first end-to-end run hit the lap cap because the content→member join was
+nowhere written down; it is now in the tool description and the catalog (15 laps → 6). And the catalog's Facebook claim
+was false: `content_items.meta->>'sender_member'` is the WA Airtable id for `wa_message` but the canonical
+`at_member_id` for Facebook rows — one key, two identity spaces. Both documented in the handbook.
+
+**Open for Andy.** (1) **#170's Public half is still inert** — staging `d68bcd6e` awaits your promote. (2) Two tickets
+to file from #199's findings, on the board under `### #199`: the event-spend field trap (`Event Cost (Expense)` read as
+member spend while `Event Revenue - All Time` sits unused) and the missing payment history in the mirror. (3)
+`db_export_schema.py --check` exits 1 on drift owned by the parallel Exa.ai session, not by #199.
+
+**NEXT = #200 Team access** (phase 1: any @mds.co; phase 2: super-admin usage/spend page + offboarding), then #198 the
+MCP door. Present the briefing and WAIT for the go.
+
+## ⛳ SESSION 2026-09-11 (afternoon) — **#170 SHIPPED** · web `e1eeb83` live on Render · staging `d68bcd6e` awaits Andy's promote · NEXT = **#199**
+
+**What shipped (#170, Team + Public — Andy: "Team. and if possible in Public").** `digest.olivia_web_threads` +
+`src/lib/millie/thread-memory.ts` (lazy Haiku fold, `summary_through_id` cursor, 16-row verbatim window as
+`VERBATIM_ROWS`), `web_thread_search` in the Team tool set (thread + asker injected server-side), `thread_summary`
+on the Public door POST, staging `Log Inbound` + `Answer Seed` render it. Test/Prod untouched. Full close block on
+the board under `### #170`; the design and plan live in `docs/superpowers/{specs,plans}/2026-09-11-170-*`.
+
+**Route check PASSED** — Andy, in his own session, on the 110-row seeded thread: the paid-date decision recalled via
+`web_thread_search` (row 429). It exposed the #172 no-rows footer flag ignoring a `thread` hit — fixed the same hour
+(`footer.ts`). Seed and probe threads deleted.
+
+**Open for Andy.** (1) Promote staging `d68bcd6e` — the Public half is inert until then. (2) Two flags found
+alongside, on the board under #170: web reads in `Load Recent Turns` are scoped by `thread_id` alone (pre-existing
+#169); a Public turn stacks a ≤30 s fold before the door call.
+
+**Live state.** Prod n8n `b31eadbb` (untouched), staging `d68bcd6e`, lock free, gate 368/0 exit 0, web main
+`e1eeb83`. **NEXT in the agreed order:** #199 scan tool (open with the vectorization audit + Andy's three probes)
+→ #200 Team access → #198 MCP door. Present the briefing and WAIT for go.
+
 ## ⛳ SESSION CLOSED 2026-09-11 — **NEXT = #170, and it is the MEMORY half only** · a parallel session opens on Exa.ai
 
 **Andy's close:** *"Let's close this session, and we will start the next one with 170 and I will create a second session

@@ -621,6 +621,50 @@ it, with quotes and dates, and the count of messages scanned. 2. A scan over a s
 budget says so (no partial tally presented as complete). 3. Cost per scan is on the trail and in `metrics`; a 30-day
 WhatsApp scan costs under $5. 4. The leak gate's `#172` section stays green (no new grant, no n8n edit).
 
+**✅ SHIPPED 2026-09-11 — web merge `9ade4b6` (Render, live).** Spec `docs/superpowers/specs/2026-09-11-199-scan-content-design.md`,
+plan `docs/superpowers/plans/2026-09-11-199-scan-content.md`. No n8n edit, no new SQL function, no new grant.
+
+*Results.* A fifth Team tool. Millie picks the rows by writing a read-only SELECT, exactly as she writes `sql_query`;
+`scan_content` probes that SELECT's shape, COUNTS AND PRICES the set before reading a single row, refuses over 5,000 rows,
+over the cost cap ($2 default, $5 ceiling) or on a non-unique `id`, pages through the existing `digest.team_sql` in 500s,
+then reads EVERY row with `claude-haiku-4-5` (40 per call, four in flight) and returns a per-member tally with quotes
+verified verbatim against the source text. It stops honestly on the wall clock, on the cost cap or on a failed batch, and
+`complete:false` then carries the real `scanned` of `total_rows`. Tool costs now count in the turn's `cost_usd`, so the
+per-asker daily budget binds them, and the trail shows each step's cost.
+
+*Proof.* **AC 1 tool level:** four planted "moving to Miami" messages from real Inspire 2026 attendees, `complete:true`,
+4/4 with verbatim quotes, $0.0008. **AC 1 end to end:** Andy's own question — the model built the 242-attendee set, called
+`scan_content` once, returned 3 confirmed with quotes plus the deliberately hedged 4th flagged `unsure` and surfaced
+anyway, "read 11 messages … cost $0.0019, complete: true", 6 laps, $0.121. *(That run pre-filtered on "Miami" before
+scanning, so the TOOL-LEVEL proof is the one that demonstrates "reads every row"; the e2e run demonstrates routing.)*
+**AC 2:** a 4,087-row set at `max_cost_usd 0.05` → `refused:"over_budget"` with the estimate, `cost_usd: 0`, nothing read;
+a forced wall cap → `complete:false, scanned 1702 of 4087`. **AC 3:** a real 30-day WhatsApp scan, 2,541 rows, scan $0.35,
+turn $0.5676, cost on the trail step and in `metrics` — under the $5 bar. **AC 4:** gate **exit 0**; no new function, no
+grant, graph untouched. 1,425 tests green, tsc and eslint clean. ⚠️ `db_export_schema.py --check` exits 1 on FOREIGN drift
+(`member_web_presence` / `web_edges` / `web_entity`, the parallel Exa.ai session) — #199 added no SQL; "gate green" here
+does NOT mean the schema export is clean.
+
+*What the proof changed in the product.* The first end-to-end run FAILED — 15 laps, `lap_cap`, no answer — because the
+model was sampling the database to derive how a content row attributes to a member. That join was never written down.
+`scan_content`'s description and the static catalog now carry it, and the next run took **6 laps**. While fixing it we
+found the catalog's own claim about Facebook rows was false: `content_items.meta->>'sender_member'` is the WA Airtable id
+for `wa_message` (17,611/17,611 via `member_identity`) but the **canonical `at_member_id`** for `fb_post`/`fb_comment`
+(19,077/19,241 direct; **0/19,241** via `member_identity`). One key, two identity spaces, by source — now documented.
+
+*ACs.* 1 ✅ · 2 ✅ · 3 ✅ · 4 ✅.
+
+*Before / after.* Finding a trait over a set: search-then-read-the-hits (Andy's scope check: 24 queries, 14 laps, 112 s,
+$0.87, honest no-match) → every message read, with a tally, quotes and the count scanned. A 30-day WhatsApp read costs
+$0.35. Millie's answer now always states what it read and what it cost.
+
+*Found alongside — not this ticket, flag for priority evaluation.* (a) **The event-spend field trap:** asked "who spent the
+most on events", she answered from `Event Cost (Expense) - Last 12 Months` — what the event cost MDS — and declared no
+all-time field exists, while `Event Revenue - All Time` sits in the catalog (Jake Ryan $183k, Brian Williams $155k).
+(b) **No payment history in the mirror:** "past due more than twice in 6 months" cannot be answered exactly; the mirror
+holds only the latest `Failed Payment Date (Stripe)` / `Recovered Date (Stripe)`, so she proxied from the weekly snapshot
+and said so. (c) If `runResearchLoop` throws, the route logs `cost_usd: 0` — a crashed expensive turn charges nothing
+against the daily budget (pre-existing from #172, higher stakes now).
+
 ### #191 · The nightly eval is dead — #105's webhook secret refuses all 220 posts
 **🔴 S1 · size XS — filed 2026-09-10 from the #123 investigation.**
 
@@ -1527,6 +1571,44 @@ stays #170; the rail itself ships here because the design is built around it."* 
 
 **So reopening a three-day investigation shows you the whole transcript on screen while Millie remembers only its
 tail.** That is the gap, and ACs 1, 2, 4 and 5 are exactly the fix.
+
+**✅ SHIPPED 2026-09-11 — web merge `e1eeb83` (Render, live), migration `olivia_web_threads_170_20260911`, staging
+graph `2b621554 → d68bcd6e` (Public half; awaits Andy's promote).** Spec `docs/superpowers/specs/2026-09-11-170-…`,
+plan `docs/superpowers/plans/2026-09-11-170-…`.
+
+*Results.* One store, one writer. `digest.olivia_web_threads` holds a running summary per Team/Public thread;
+`src/lib/millie/thread-memory.ts` folds only the rows older than the 16-row verbatim window that the summary has
+not seen (`summary_through_id`), lazily at the start of a turn, with Haiku 4.5 — flat cost in thread length, a
+failed fold retries the same range next turn, the prompt forbids inventing facts or turning a band into a figure.
+**Team:** the research route answers from summary + last 16 rows and gains `web_thread_search` (terms from the
+model; thread id and asker injected server-side, so it cannot be pointed elsewhere). **Public:** the chat route
+sends `thread_summary` on the door POST; staging `Log Inbound` carries it, `Answer Seed` pushes it as the first
+message. **Test/Prod** targets send nothing — byte-identical, by design. Clear now removes the thread row too.
+
+*Proof.* In process against the live DB and live models (the route is gated on Andy's own session, so no one
+signs in as him): 110-row thread `t_170_long` → "paid date, not the invoice date" via `web_thread_search`, 2/2; a
+fresh thread says no such decision is on record. **Cost:** warm 110-row $0.0227 vs warm 20-row $0.0234 (3 %);
+the cold first run $0.0756 was cache creation (23,610 tokens), not thread length; plus one ~$0.002 Haiku fold per
+turn once a thread passes 16 rows. Gate **368/0 exit 0**; `web_thread_search` absent from the graph JSON; a
+WhatsApp-shaped probe on staging (exec 145554) neither called nor claimed it. Staging probes 145499 (summary is
+`messages[0]`) / 145506 (nothing injected without the field). 1,401 tests green, tsc + eslint clean.
+
+*ACs.* 1 ✅ · 2 ✅ read as "cost does not grow with the thread" — long ≈ 20-row; a truly fresh thread is cheaper
+because it carries no window at all · 3 ✅ already by #169 · 4 ✅ (structural + gate + probe) · 5 ✅.
+
+*Before / after.* Memory: 16 rows → the whole thread. Per-turn cost on a 110-row thread: $0.023 (before, not
+measurable — the thread was cut to 16 rows either way). Public memory is INERT until the staging promote.
+
+*Route check — PASSED, Andy in his own session, 2026-09-11 17:00Z.* On the 110-row thread through the live
+route: *"Decision: MRR is reported on the paid date, not the invoice date … I pulled it from thread history via
+`web_thread_search`"* — row 429, 1 query (`thread`, 8 rows, 345 ms), 2 laps, $0.0766 (cold cache, 23,610 tokens).
+Seed threads and the two staging probe threads deleted afterwards. One defect the check exposed and fixed the same
+hour: the "No query returned rows" footer flag did not count a `thread` hit as evidence (`footer.ts`, `noRowsFlag`).
+
+*Found alongside — not this ticket, flag for priority evaluation.* (a) `Load Recent Turns` scopes web reads by
+`thread_id` ALONE — no `asker_email`, no `mode` — so a staff caller supplying another staff member's thread id
+gets their last 16 turns as context (pre-existing since #169). (b) A Public turn now stacks a ≤30 s fold before
+the 85 s door call; a 10–15 s deadline on the Public fold is cheap hardening.
 
 ### #171 · Public answer from the Facebook tool
 

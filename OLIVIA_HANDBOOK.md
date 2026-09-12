@@ -176,8 +176,18 @@ LLM lane** (#97, in prod since 2026-08-22), everything else flows through normal
 > (Voyage + pgvector through the same RPC) — streams NDJSON to the page, and writes two `olivia_web_messages` rows per turn
 > (`mode='team'`, `route='team-research'`, the query trail as `sources`, cost and laps in `metrics`). The n8n graph is never
 > called for a Team turn (`/api/admin/millie/chat` still returns 400 for `target=team`), there are no member gates, and the
-> asker is always the staff session, on a FAIL-CLOSED allowlist (`MILLIE_TEAM_ASKERS`). Everything below describes Millie's
-> own pipeline for members and the three other Ask Millie targets.
+> asker is always the staff session, on a FAIL-CLOSED allowlist (`MILLIE_TEAM_ASKERS`). Two tools were added later:
+> `web_thread_search` (#170 — this thread's own earlier turns, thread and asker injected server-side) and **`scan_content`
+> (#199, live 2026-09-11)** — READ EVERY ROW of a member set for a trait no column holds. The model writes the SELECT (it
+> must return `id, member, at_member_id, occurred_at, text, url, source`, with `id` a **stable unique integer from the base
+> table** — a synthesised `row_number()` is refused, because the pager re-executes the SELECT per page); `scan.ts` counts
+> and PRICES the set before reading, refuses over 5,000 rows / over `max_cost_usd` ($2 default, $5 ceiling) / on a
+> non-unique id, pages through `team_sql` in 500s, classifies 40 rows per `claude-haiku-4-5` call (four in flight, quotes
+> kept only when verbatim), stops on the wall clock or the cost cap with `complete:false` and the real `scanned` of
+> `total_rows`, and returns a tally trimmed to fit the tool payload with `omitted_members`. **Every tool step's `cost_usd`
+> now counts in the turn's cost**, so `MILLIE_TEAM_DAILY_USD` binds scans too — but one scan may take up to $5 of a $10
+> day, and the gate reads spend BEFORE the turn, so a single turn can overshoot. A 30-day WhatsApp scan ≈ 2,500 rows ≈
+> $0.35. Everything below describes Millie's own pipeline for members and the three other Ask Millie targets.
 
 A member's message travels through the **production n8n workflow** (`12wj6h1TWqb0d4Dq`, 80 nodes —
 Appendix C). The path, in order:
@@ -245,7 +255,16 @@ tool: `Web Inbound (POST)` (path `olivia-web-live` / `-staging`, header-auth cre
 text, thread_id}` into the WhatsApp shape — the retrieval principal is the probe member phone, set INSIDE the
 node, and the wamid is generated as `wamid.SELFTEST_WEB_…`, so a web turn always takes the silent branch and can
 never reach `Send Reply (Meta)`. `Load Recent Turns` reads `olivia_web_messages` by `thread_id` for web turns
-(16-turn cap, no 24 h cut). After `Eval (silent)?` a `Web?` fork runs `Public?` → **Public Gate** (Public mode
+(16-row cap, no 24 h cut). **Long thread memory (#170, 2026-09-11):** the web app is the only writer of
+`digest.olivia_web_threads` — one row per Team/Public thread with a running summary of everything older than the
+16-row verbatim window. `src/lib/millie/thread-memory.ts` (`loadMemory`) folds only the rows above
+`summary_through_id` and below the window, lazily at the START of a turn, with Haiku 4.5 (`MILLIE_SUMMARY_MODEL`),
+so the per-turn cost is flat in thread length and a failed fold just retries the same range next turn. Team reads
+it in process (summary as the first message, then the 16 rows) and has a `web_thread_search` tool whose thread id
+and asker are injected server-side — the tool exists only in the Team runtime, never in this graph. Public sends
+the summary to the door as `thread_summary`; `Log Inbound` carries it and `Answer Seed` pushes it as the first
+`user` message before the recent rows (staged `d68bcd6e`, awaits promote). Test/Prod targets send nothing and keep
+reproducing what a WhatsApp member gets. Clear deletes the thread row too. After `Eval (silent)?` a `Web?` fork runs `Public?` → **Public Gate** (Public mode
 only: `Classify Evidence (Supabase)` + `Fetch Name Index (Supabase)` → `Public Inputs` → `Public Redact` →
 `Public Smooth (Claude)` [one Haiku call] → `Public Verify`) → `Format Web` → `Save Web (Supabase)` → `Web
 Response` (a code node; **never a `respondToWebhook` node on this fork — one reachable from `WA Inbound (POST)`
@@ -317,6 +336,7 @@ access-tagged. An undefined source does not exist to her.* No crawling raw bases
 | `docs` / `doc_entries` | 4 / 50 | **#18 org knowledge library** — team documents (FAQs, SOPs), audience fail-closed to staff, served by the `/api/olivia/kb` route. |
 | `olivia_messages` | 12,981 (1,385 real member turns from 143 members) | Conversation history, stamped with the member record; the rest is eval/probe traffic (`wamid.SELFTEST*`). |
 | `olivia_web_messages` | new (#169) | **Admin web chat turns** (Ask Millie: modes `test` · `public` · `team`), keyed by `thread_id` + staff `asker_email`; carries `answer_md`, `notes`, `sources`, `evidence_classes`, `redactions`, `source_summary`, `metrics`. service_role only, RLS on. Never member WhatsApp traffic — the daily review must not read it. |
+| `olivia_web_threads` | new (#170) | **Running summary per web thread** (`team` · `public` only), keyed by `thread_id` + `asker_email` + `mode`; `summary` (≤1,200 chars, Haiku fold), `summary_through_id` (last `olivia_web_messages.id` folded), `turns`, `title`. Written ONLY by `mds-digest-web` (`thread-memory.ts`); the graph never touches it. service_role only, RLS on, no policy by design. |
 
 > ⚠️ **`digest.members` is the WhatsApp layer; `digest.member_attributes` is the member
 > population.** Confusing the two has caused repeated bugs — most notably staff counts. Anything
@@ -1789,6 +1809,10 @@ content_items(
   access_rule jsonb,          -- {type: public|chat_member|owner|fb_group, chat?, member?}  UNKNOWN TYPE = DENIED
   sensitivity content_sensitivity,  -- normal | restricted | never_surface
   meta jsonb,                 -- chat_name, sender_member, author_name, post_id, msg_count, topics…
+  --   ⚠ ATTRIBUTION TRAP (#199, verified live 2026-09-11): meta->>'sender_member' is ONE key with TWO identity
+  --   spaces. wa_message: the WA Airtable id — bridge through digest.member_identity (airtable_id ↔ at_member_id),
+  --   17,611/17,611. fb_post + fb_comment: already the CANONICAL at_member_id — join at_member_id directly,
+  --   19,077/19,241; 0/19,241 resolve through member_identity. Never bridge a Facebook row through member_identity.
   search_tsv tsvector,        -- GIN indexed
   embedding vector(1024),     -- HNSW indexed (cosine); NULL for sub-30-char rows by design
   ingested_at timestamptz)
