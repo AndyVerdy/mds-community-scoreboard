@@ -17,4 +17,4 @@ create or replace view digest.member_web_profile_current as
     model,
     confidence
    FROM digest.member_web_profile
-  ORDER BY at_member_id, fetched_at DESC;
+  ORDER BY at_member_id, (fetch_status = 'ok'::text) DESC, fetched_at DESC;

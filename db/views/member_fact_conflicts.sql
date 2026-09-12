@@ -9,7 +9,17 @@ create or replace view digest.member_fact_conflicts as
     c.fetched_at
    FROM digest.member_web_profile_current c
      JOIN digest.member_profiles mp ON mp.at_member_id = c.at_member_id
-  WHERE c.location IS NOT NULL AND COALESCE(mp.at_fields ->> 'City'::text, ''::text) <> ''::text AND lower(c.location) !~~ (('%'::text || lower(mp.at_fields ->> 'City'::text)) || '%'::text)
+     CROSS JOIN LATERAL ( SELECT COALESCE(array_agg(v.value) FILTER (WHERE COALESCE(v.value, ''::text) <> ''::text), ARRAY[]::text[]) AS vals
+           FROM jsonb_array_elements_text(
+                CASE
+                    WHEN (mp.at_fields -> 'City'::text) IS NULL THEN '[]'::jsonb
+                    WHEN jsonb_typeof(mp.at_fields -> 'City'::text) = 'array'::text THEN mp.at_fields -> 'City'::text
+                    WHEN jsonb_typeof(mp.at_fields -> 'City'::text) = 'string'::text AND "left"(mp.at_fields ->> 'City'::text, 1) = '['::text AND pg_input_is_valid(mp.at_fields ->> 'City'::text, 'jsonb'::text) AND jsonb_typeof((mp.at_fields ->> 'City'::text)::jsonb) = 'array'::text THEN (mp.at_fields ->> 'City'::text)::jsonb
+                    ELSE jsonb_build_array(mp.at_fields ->> 'City'::text)
+                END) v(value)) city_vals
+  WHERE COALESCE(c.location, ''::text) <> ''::text AND cardinality(city_vals.vals) > 0 AND NOT (EXISTS ( SELECT 1
+           FROM unnest(city_vals.vals) cv(cv)
+          WHERE POSITION((lower(cv.cv)) IN (lower(c.location))) > 0 OR POSITION((lower(c.location)) IN (lower(cv.cv))) > 0))
 UNION ALL
  SELECT e.a_id AS at_member_id,
     mp.full_name,
@@ -20,4 +30,14 @@ UNION ALL
     e.fetched_at
    FROM digest.web_edges e
      JOIN digest.member_profiles mp ON mp.at_member_id = e.a_id
-  WHERE e.a_kind = 'member'::text AND (e.edge_type = ANY (ARRAY['works_at'::text, 'founded'::text])) AND e.valid_to IS NULL AND COALESCE(mp.at_fields ->> 'Brand Name'::text, ''::text) <> ''::text AND POSITION((lower(e.evidence ->> 'company_name'::text)) IN (lower(mp.at_fields ->> 'Brand Name'::text))) = 0;
+     CROSS JOIN LATERAL ( SELECT COALESCE(array_agg(v.value) FILTER (WHERE COALESCE(v.value, ''::text) <> ''::text), ARRAY[]::text[]) AS vals
+           FROM jsonb_array_elements_text(
+                CASE
+                    WHEN (mp.at_fields -> 'Brand Name'::text) IS NULL THEN '[]'::jsonb
+                    WHEN jsonb_typeof(mp.at_fields -> 'Brand Name'::text) = 'array'::text THEN mp.at_fields -> 'Brand Name'::text
+                    WHEN jsonb_typeof(mp.at_fields -> 'Brand Name'::text) = 'string'::text AND "left"(mp.at_fields ->> 'Brand Name'::text, 1) = '['::text AND pg_input_is_valid(mp.at_fields ->> 'Brand Name'::text, 'jsonb'::text) AND jsonb_typeof((mp.at_fields ->> 'Brand Name'::text)::jsonb) = 'array'::text THEN (mp.at_fields ->> 'Brand Name'::text)::jsonb
+                    ELSE jsonb_build_array(mp.at_fields ->> 'Brand Name'::text)
+                END) v(value)) brand_vals
+  WHERE e.a_kind = 'member'::text AND (e.edge_type = ANY (ARRAY['works_at'::text, 'founded'::text])) AND e.valid_to IS NULL AND COALESCE(e.evidence ->> 'company_name'::text, ''::text) <> ''::text AND cardinality(brand_vals.vals) > 0 AND NOT (EXISTS ( SELECT 1
+           FROM unnest(brand_vals.vals) bv(bv)
+          WHERE POSITION((lower(bv.bv)) IN (lower(e.evidence ->> 'company_name'::text))) > 0 OR POSITION((lower(e.evidence ->> 'company_name'::text)) IN (lower(bv.bv))) > 0));

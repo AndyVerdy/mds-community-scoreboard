@@ -9,7 +9,9 @@ create or replace view digest.knowledge_graph as
     NULL::date AS valid_to,
     member_edges.weight,
     member_edges.evidence,
-    'member_edges'::text AS source
+    'member_edges'::text AS source,
+    NULL::numeric AS confidence,
+    NULL::text AS source_url
    FROM digest.member_edges
 UNION ALL
  SELECT web_edges.a_id,
@@ -21,5 +23,7 @@ UNION ALL
     web_edges.valid_to,
     web_edges.weight,
     web_edges.evidence,
-    'web_edges'::text AS source
+    'web_edges'::text AS source,
+    web_edges.confidence,
+    web_edges.source_url
    FROM digest.web_edges;
