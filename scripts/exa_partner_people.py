@@ -226,13 +226,16 @@ def _own_name_from_results(results, host):
 def parent_edges(results, partner_id, host, own_name=None):
     """A company-to-company edge, so a founder can attach to the parent instead of the product.
 
-    Fails CLOSED on three checks (fix round 1, CRITICAL 1 — the original code failed OPEN whenever
+    Fails CLOSED on four checks (fix round 1, CRITICAL 1 — the original code failed OPEN whenever
     a candidate had no parseable Homepage: line, producing 10 self-referential edges plus one
     pointing at a person's own LinkedIn profile instead of a company — see module docstring):
       (a) no parseable homepage at all -> skip, never assume a stranger
       (b) a linkedin.com/in/... URL is a PERSON's profile, never a company -> skip
       (c) a candidate whose name normalises (lowercased, non-alphanumerics stripped) to the
           partner's own name is the partner itself under a formatting difference -> skip
+      (d) (fix round 3, FIX 6) no name at all -> skip; entities_from_parent_edges() below builds
+          the paired digest.web_entity row straight off this edge's evidence.parent_name, and
+          web_entity.name is NOT NULL — an edge written with no name could never get one.
     """
     own_norm = _normalize_name(own_name) if own_name else None
     out = []
@@ -251,6 +254,8 @@ def parent_edges(results, partner_id, host, own_name=None):
         for e in r.get("entities") or []:
             props = e.get("properties") or {}
             cand_name = props.get("name")
+            if not cand_name:
+                continue                              # (d) no name: fail closed, see docstring
             if own_norm and _normalize_name(cand_name) == own_norm:
                 continue                              # (c) the partner itself, by name
             eid = (e.get("id") or "").rstrip("/").rsplit("/", 1)[-1]
@@ -268,6 +273,25 @@ def parent_edges(results, partner_id, host, own_name=None):
     return out
 
 
+def entities_from_parent_edges(edges):
+    """The paired digest.web_entity row for every parent_of edge parent_edges() produces — keyed
+    identically to the edge's own a_id, which is always the candidate's Exa id here (parent_edges()
+    only ever emits an edge once `eid`, derived from that id, is non-empty; see check (d) above for
+    why the name is guaranteed present too). Without this, every parent_of edge points at a company
+    node that digest.web_entity has never heard of: unlike scripts/load_member_web_profiles.py
+    (entities_from/edges_from always write both), this script used to write only the edge (#211 fix
+    round 3, FIX 6). Deduped by entity_id so one candidate named by several results in the same
+    batch is written once."""
+    out = {}
+    for e in edges:
+        out[e["a_id"]] = {
+            "entity_id": e["a_id"], "entity_key_source": "exa_id", "kind": "company",
+            "name": (e.get("evidence") or {}).get("parent_name"),
+            "source_url": e.get("source_url"), "confidence": e.get("confidence", 0.8),
+        }
+    return list(out.values())
+
+
 def parent_query(name, summary, host):
     """A second, narrower query used only for a partner whose own record already corroborated —
     see the module docstring for why the plain leadership query never surfaces the parent page."""
@@ -281,6 +305,10 @@ def _now():
 
 
 EDGE_CONFLICT = "on_conflict=a_id,a_kind,b_id,b_kind,edge_type,valid_from"
+# #211 fix round 3, FIX 6: every parent_of edge's company endpoint must have a matching web_entity
+# row — written via this same merge-duplicates upsert target, ahead of the edge (see call sites),
+# so a run that crashes mid-way leaves an unreferenced entity rather than a dangling edge.
+ENTITY_CONFLICT = "on_conflict=entity_id"
 
 
 def _ours(people):
@@ -316,6 +344,10 @@ def fix_parents(key, apply):
         own_name = _own_name_from_results(results, host)
         row_edges = parent_edges(results, r["partner_id"], host, own_name)
         if apply and row_edges:
+            row_entities = entities_from_parent_edges(row_edges)
+            if row_entities:
+                sb("POST", f"web_entity?{ENTITY_CONFLICT}", key, row_entities,
+                   prefer="resolution=merge-duplicates")
             sb("POST", f"web_edges?{EDGE_CONFLICT}", key, row_edges, prefer="resolution=merge-duplicates")
         written += row_edges
         if i % 25 == 0:
@@ -407,6 +439,10 @@ def main():
         # had already landed (measured live 2026-09-11 — a killed run left 19 people-fills
         # committed and zero edges, because the old code only POSTed edges after the loop).
         if a.apply and row_edges:
+            row_entities = entities_from_parent_edges(row_edges)
+            if row_entities:
+                sb("POST", f"web_entity?{ENTITY_CONFLICT}", key, row_entities,
+                   prefer="resolution=merge-duplicates")
             sb("POST", f"web_edges?{EDGE_CONFLICT}", key, row_edges, prefer="resolution=merge-duplicates")
             edges_written += len(row_edges)
         if i % 25 == 0:

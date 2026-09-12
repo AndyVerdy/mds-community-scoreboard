@@ -149,5 +149,45 @@ check("_org_text_fields stops the exec section at the next 0-indent bullet, and 
       "empty-role line (MINOR 4)",
       execs == [{"name": "Jane Doe", "role": "Founder"}], str(execs))
 
+# --- fix round 3, FIX 6(d): a candidate entity with no name produces NO edge, regardless of
+# everything else — entities_from_parent_edges() below builds web_entity.name straight off the
+# edge, and that column is NOT NULL, so an edge with no name could never get a paired entity row.
+no_name_result = {
+    "url": "https://linkedin.com/company/no-name-listing",
+    "title": "A product of an unnamed parent",
+    "text": "This is a product of its unnamed parent.\n"
+            "## Company Details\n- Homepage: unnamedparent.example\n",
+    "entities": [{"id": "https://exa.ai/library/organization/noname1", "type": "company",
+                  "properties": {}}],
+}
+edges = P.parent_edges([no_name_result], "partner4", "someproduct.com")
+check("a candidate entity with no name produces NO parent edge (FIX 6(d) regression guard)",
+      edges == [], f"edges={edges}")
+
+# --- fix round 3, FIX 6: entities_from_parent_edges() builds the paired web_entity row(s) that
+# were previously never written, leaving every parent_of edge's company endpoint dangling.
+real_edge = P.parent_edges([real_parent_result], "679a26b601681a357fc083cc", "hectorai.live",
+                           own_name="Hector")
+entities = P.entities_from_parent_edges(real_edge)
+check("entities_from_parent_edges produces exactly one entity for the one real edge",
+      len(entities) == 1, f"entities={entities}")
+if entities:
+    ent = entities[0]
+    check("the entity is keyed identically to the edge's a_id (exa_id), with the edge's name/url",
+          ent["entity_id"] == "cy5tyjxxc1d" and ent["entity_key_source"] == "exa_id"
+          and ent["kind"] == "company" and ent["name"] == "Neon Digital Media"
+          and ent["source_url"] == real_edge[0]["source_url"],
+          str(ent))
+
+# --- entities_from_parent_edges dedupes by entity_id: two edges sharing the same parent company
+# (e.g. two different partners both owned by the same agency) must not double-insert that entity.
+dup_edges = real_edge + [dict(real_edge[0], b_id="partner:another-partner-id")]
+dup_entities = P.entities_from_parent_edges(dup_edges)
+check("two edges naming the same parent company collapse to one entity row",
+      len(dup_entities) == 1, f"entities={dup_entities}")
+
+check("entities_from_parent_edges of no edges is empty, not an error",
+      P.entities_from_parent_edges([]) == [])
+
 print(("FAILED " + str(len(fails))) if fails else "ALL PASS")
 sys.exit(1 if fails else 0)

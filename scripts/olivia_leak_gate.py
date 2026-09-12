@@ -2218,12 +2218,25 @@ def main():
     # db/functions/ is regenerated from the live database by scripts/db_export_schema.py, so
     # grepping it is a check against live, not against a hand-written file.
     import glob as _glob
-    WEB_NAMES = ("member_web_profile", "member_web_presence", "web_entity", "web_edges")
+    # The three views (member_web_profile_current, knowledge_graph, member_fact_conflicts) are the
+    # surface the spec tells future consumers to query — a gated function written as e.g.
+    # "from digest.knowledge_graph" names none of the four base tables and would pass this check
+    # vacuously without them (#211 fix round 3, FIX 1).
+    WEB_NAMES = ("member_web_profile", "member_web_presence", "web_entity", "web_edges",
+                 "member_web_profile_current", "knowledge_graph", "member_fact_conflicts")
     leaked = []
     for fn in _glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                       "..", "db", "functions", "*.sql")):
         body = open(fn, encoding="utf-8", errors="replace").read()
-        if any(n in body for n in WEB_NAMES):
+        # A function's own "CREATE OR REPLACE FUNCTION digest.<name>(...)" declaration line
+        # necessarily contains its own name — which can collide as a plain substring with an
+        # unrelated web-layer name (e.g. digest.derive_knowledge_graph() contains "knowledge_graph"
+        # without the function ever reading digest.knowledge_graph; caught live running this very
+        # check after adding the three view names in fix round 3, FIX 1). Blank out just that one
+        # line before searching; every other line — RETURNS/LANGUAGE/SET clauses and the full body,
+        # where a genuine reference would actually live — is still searched in full.
+        searchable = re.sub(r"(?m)^CREATE (?:OR REPLACE )?FUNCTION\b.*$", "", body, count=1)
+        if any(n in searchable for n in WEB_NAMES):
             leaked.append(os.path.basename(fn))
     check("#211 no gated function reads the web layer", not leaked, ", ".join(leaked))
 
@@ -2232,8 +2245,12 @@ def main():
         # file's own curl() convention (see e.g. line ~160) — the task brief's snippet named
         # both differently, which would NameError on SB and silently query the wrong (public)
         # schema with the bare string, letting a 404 pass this check vacuously.
-        rows = curl("GET", f"{BASE}/{t}?select=*&limit=1", key, profile_hdr=["Accept-Profile: digest"])[1]
-        check(f"#211 {t} exists and is readable by service_role", rows is not None)
+        # PostgREST answers a missing table/view with a JSON error object — a dict, not None — so
+        # asserting on the body (the task brief's own snippet) can never fail even if the object
+        # were dropped. Assert on the HTTP status code instead (#211 fix round 3, FIX 2).
+        st, rows = curl("GET", f"{BASE}/{t}?select=*&limit=1", key, profile_hdr=["Accept-Profile: digest"])
+        check(f"#211 {t} exists and is readable by service_role",
+              200 <= st < 300, f"status {st} body={str(rows)[:200]}")
 
     print()
     if failures:
